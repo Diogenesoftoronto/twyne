@@ -1,0 +1,16 @@
+{
+  "name": "Twyne",
+  "short_name": "Twyne",
+  "description": "The writer's room — AI-powered editing with a room full of editors",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf9f7",
+  "theme_color": "#6d5acf",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
