@@ -10,21 +10,23 @@ export const ProjectBriefCard = component$(
   ({ brief, onStartInterview$ }: ProjectBriefCardProps) => {
     if (!brief) {
       return (
-        <div class="rounded-2xl border border-[var(--color-surface-3)] bg-[var(--color-surface)] p-4">
-          <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
-            Project brief
-          </p>
-          <p class="mt-2 text-sm font-medium text-[var(--color-ink)]">
-            No brief yet
-          </p>
-          <p class="mt-1 text-sm leading-6 text-[var(--color-ink-light)]">
-            Start the anti-tabula-rasa interview to seed the draft with context.
-          </p>
-          <button
-            onClick$={onStartInterview$}
-            class="mt-3 rounded-full bg-[var(--color-brand)] px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[var(--color-brand-dark)]"
+        <div class="folio p-4 pt-5">
+          <p class="dept-label">The Dossier</p>
+          <p
+            class="mt-2 text-base text-[var(--color-ink)]"
+            style="font-family: var(--font-display); font-weight: 600;"
           >
-            Start interview
+            No dossier filed.
+          </p>
+          <p
+            class="mt-1.5 text-[13px] leading-6 text-[var(--color-ink-light)]"
+            style="font-family: var(--font-serif); font-style: italic;"
+          >
+            Sit for the interview to seed the draft with context. The room
+            cannot read what hasn't been briefed.
+          </p>
+          <button onClick$={onStartInterview$} class="btn-press mt-4">
+            Open the dossier
           </button>
         </div>
       );
@@ -33,34 +35,42 @@ export const ProjectBriefCard = component$(
     const { answers } = brief;
 
     return (
-      <div class="rounded-2xl border border-[var(--color-surface-3)] bg-[var(--color-surface)] p-4">
-        <div class="flex items-start justify-between gap-3">
-          <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
-              Project brief
-            </p>
-            <h3 class="mt-2 text-base font-semibold text-[var(--color-ink)]">
-              {answers.workingTitle}
-            </h3>
-          </div>
-          <button
-            onClick$={onStartInterview$}
-            class="rounded-full border border-[var(--color-surface-3)] px-3 py-1.5 text-[11px] font-semibold text-[var(--color-ink-light)] transition-colors hover:bg-[var(--color-surface-2)]"
-          >
-            Refine
-          </button>
+      <div class="index-card p-4 pt-9 relative">
+        {/* Filed stamp — top right corner */}
+        <div class="absolute top-2 right-2">
+          <span class="stamp">Filed</span>
         </div>
 
-        <dl class="mt-4 space-y-3 text-sm">
+        <p class="dept-label">The Dossier</p>
+        <h3
+          class="mt-1 text-base leading-tight text-[var(--color-ink)]"
+          style="font-family: var(--font-display); font-weight: 700;"
+        >
+          {answers.workingTitle}
+        </h3>
+
+        <dl class="mt-4 space-y-3">
           <BriefRow label="Format" value={answers.format} />
           <BriefRow label="Audience" value={answers.audience} />
           <BriefRow label="Goal" value={answers.goal} />
           <BriefRow label="Tone" value={answers.tone} />
         </dl>
 
-        <p class="mt-4 text-xs leading-5 text-[var(--color-ink-muted)]">
-          Constraints: {answers.constraints}
+        <p
+          class="mt-4 pt-3 border-t border-dashed border-[var(--color-paper-3)] text-[11px] leading-5 text-[var(--color-ink-muted)]"
+          style="font-family: var(--font-serif); font-style: italic;"
+        >
+          <span class="not-italic dept-label">Non-negotiables · </span>
+          {answers.constraints}
         </p>
+
+        <button
+          onClick$={onStartInterview$}
+          class="btn-paper mt-3 w-full"
+          title="Reopen the interview"
+        >
+          ↻ Refine the dossier
+        </button>
       </div>
     );
   },
@@ -69,10 +79,11 @@ export const ProjectBriefCard = component$(
 function BriefRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt class="text-[10px] font-semibold uppercase tracking-[0.24em] text-[var(--color-ink-muted)]">
-        {label}
-      </dt>
-      <dd class="mt-1 text-sm leading-6 text-[var(--color-ink-light)]">
+      <dt class="dept-label">{label}</dt>
+      <dd
+        class="mt-0.5 text-[13px] leading-6 text-[var(--color-ink-light)]"
+        style="font-family: var(--font-serif);"
+      >
         {value}
       </dd>
     </div>

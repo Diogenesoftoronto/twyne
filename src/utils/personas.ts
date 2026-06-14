@@ -1,49 +1,59 @@
 import type { Persona } from "../types";
 
+/**
+ * The Cast — five resident editors of The Editorial Room.
+ * Naming nods to a 1955 magazine bullpen; functional ids are kept
+ * unchanged so downstream feedback logic continues to address them.
+ */
 export const PERSONAS: Persona[] = [
   {
     id: "devil",
-    name: "The Devil's Advocate",
-    role: "Challenger",
+    name: "Mlle. Sceptique",
+    role: "The Devil's Advocate",
     color: "var(--color-persona-devil)",
-    icon: "😈",
-    description: "Finds weaknesses, logical gaps, and counterarguments you haven't considered.",
-    focus: "Logic, argumentation, unstated assumptions",
+    icon: "♠",
+    description:
+      "Hunts the unstated assumption, the soft claim, the argument that quietly evades its strongest objection.",
+    focus: "Logic, argument, the load-bearing weakness",
   },
   {
     id: "angel",
-    name: "The Encourager",
-    role: "Supporter",
+    name: "Sœur Encourageante",
+    role: "The Patron of Strengths",
     color: "var(--color-persona-angel)",
-    icon: "😇",
-    description: "Highlights what's working beautifully and where your writing shines.",
-    focus: "Strengths, effective passages, emotional resonance",
+    icon: "♥",
+    description:
+      "Reads for the alive paragraph — the one with a real sentence in it — and tells you to protect it.",
+    focus: "Strengths, resonance, what to keep at all costs",
   },
   {
     id: "scholar",
-    name: "The Scholar",
-    role: "Researcher",
+    name: "Professeur Athenæum",
+    role: "The Scholar",
     color: "var(--color-persona-scholar)",
-    icon: "🎓",
-    description: "Checks claims, suggests citations, and points out where evidence is needed.",
-    focus: "Evidence, citations, factual accuracy, depth",
+    icon: "♦",
+    description:
+      "Points to where citation is owed, where evidence wants weight, where definition would clean a sentence.",
+    focus: "Evidence, citation, scholarly rigor",
   },
   {
     id: "editor",
-    name: "The Copy Editor",
-    role: "Polisher",
+    name: "M. Le Stylo",
+    role: "The Copy Chief",
     color: "var(--color-persona-editor)",
-    icon: "✏️",
-    description: "Catches grammar, style, clarity, and flow issues at the sentence level.",
-    focus: "Grammar, style, clarity, concision, flow",
+    icon: "✦",
+    description:
+      "Carries the blue pencil. Catches diction, rhythm, repetition, and any sentence that does not earn its place.",
+    focus: "Style, rhythm, concision, the cut",
   },
   {
     id: "reader",
-    name: "The Target Reader",
-    role: "Audience",
+    name: "Le Lecteur",
+    role: "The Target Reader",
     color: "var(--color-persona-reader)",
-    icon: "📖",
-    description: "Reads as your intended audience would — confused here, engaged there, moved here.",
-    focus: "Comprehension, engagement, pacing, audience fit",
+    icon: "♣",
+    description:
+      "Reads as your stated audience would — confused here, engaged there, won over (or not) by the close.",
+    focus: "Comprehension, engagement, audience fit",
   },
 ];

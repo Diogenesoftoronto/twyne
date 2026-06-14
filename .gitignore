@@ -5,6 +5,10 @@
 /release
 /server
 
+# Scratch / agent state
+/tmp
+.agents/
+
 # Development
 node_modules
 .env

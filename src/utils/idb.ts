@@ -16,7 +16,13 @@
  * see the `migrate` callback for the upgrade body.
  */
 
-import type { Folio, AiSettings } from "../types";
+import type {
+  Folio,
+  AiSettings,
+  WriterSettings,
+  Persona,
+  RubricResult,
+} from "../types";
 
 const DB_NAME = "twyne";
 const DB_VERSION = 1;
@@ -273,11 +279,11 @@ export async function saveActiveFolioIdToIdb(id: string): Promise<void> {
 
 /* ── Personas ───────────────────────────────────────────────────── */
 
-export async function loadPersonasFromIdb(): Promise<unknown[]> {
+export async function loadPersonasFromIdb(): Promise<Persona[]> {
   if (!isBrowser()) return [];
   try {
     const db = await openDb();
-    return reqAsPromise<unknown[]>(
+    return reqAsPromise<Persona[]>(
       db.transaction("personas").objectStore("personas").getAll(),
     );
   } catch {
@@ -285,7 +291,7 @@ export async function loadPersonasFromIdb(): Promise<unknown[]> {
   }
 }
 
-export async function savePersonasToIdb(personas: unknown[]): Promise<void> {
+export async function savePersonasToIdb(personas: Persona[]): Promise<void> {
   if (!isBrowser()) return;
   try {
     await tx("personas", "readwrite", async (t) => {
@@ -299,6 +305,125 @@ export async function savePersonasToIdb(personas: unknown[]): Promise<void> {
 }
 
 /* ── AI settings (single record, key="current") ─────────────────── */
+
+/* ── Writer settings (single record, key="current") ───────────── */
+
+export async function loadWriterSettingsFromIdb(): Promise<WriterSettings> {
+  if (!isBrowser()) return { interviewStyle: "form" };
+  try {
+    const db = await openDb();
+    const rec = (await reqAsPromise<MetaRecord | undefined>(
+      db.transaction("meta").objectStore("meta").get("writer-settings"),
+    )) ?? null;
+    if (!rec?.value || typeof rec.value !== "object") {
+      return { interviewStyle: "form" };
+    }
+    const v = rec.value as Partial<WriterSettings>;
+    return {
+      interviewStyle:
+        v.interviewStyle === "conversational" ? "conversational" : "form",
+    };
+  } catch {
+    return { interviewStyle: "form" };
+  }
+}
+
+export async function saveWriterSettingsToIdb(
+  settings: WriterSettings,
+): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    const rec: MetaRecord = {
+      key: "writer-settings",
+      value: settings,
+      updatedAt: Date.now(),
+    };
+    await reqAsPromise(
+      (await openDb())
+        .transaction("meta", "readwrite")
+        .objectStore("meta")
+        .put(rec),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+/* ── Rubric result (single record in `meta`, key="rubric-result") ── */
+
+export async function loadRubricResultFromIdb(): Promise<RubricResult | null> {
+  if (!isBrowser()) return null;
+  try {
+    const db = await openDb();
+    const rec =
+      (await reqAsPromise<MetaRecord | undefined>(
+        db.transaction("meta").objectStore("meta").get("rubric-result"),
+      )) ?? null;
+    if (!rec?.value || typeof rec.value !== "object") return null;
+    return rec.value as RubricResult;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveRubricResultToIdb(
+  result: RubricResult,
+): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    const rec: MetaRecord = {
+      key: "rubric-result",
+      value: result,
+      updatedAt: Date.now(),
+    };
+    await reqAsPromise(
+      (await openDb())
+        .transaction("meta", "readwrite")
+        .objectStore("meta")
+        .put(rec),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+/* ── Generic meta access (arbitrary key/value in `meta`) ──────── */
+
+/** Read any value previously stored in the `meta` store, or null. */
+export async function loadMetaFromIdb<T = unknown>(
+  key: string,
+): Promise<T | null> {
+  if (!isBrowser()) return null;
+  try {
+    const db = await openDb();
+    const rec =
+      (await reqAsPromise<MetaRecord | undefined>(
+        db.transaction("meta").objectStore("meta").get(key),
+      )) ?? null;
+    if (rec?.value === undefined || rec?.value === null) return null;
+    return rec.value as T;
+  } catch {
+    return null;
+  }
+}
+
+/** Write any JSON-serialisable value into the `meta` store under `key`. */
+export async function saveMetaToIdb(key: string, value: unknown): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    const rec: MetaRecord = { key, value, updatedAt: Date.now() };
+    await reqAsPromise(
+      (await openDb())
+        .transaction("meta", "readwrite")
+        .objectStore("meta")
+        .put(rec),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+/* ── AI settings (single record, key="current") ──────────────── */
 
 export async function loadAiSettingsFromIdb(): Promise<AiSettings | null> {
   if (!isBrowser()) return null;

@@ -18,6 +18,8 @@ import {
 import {
   loadAiSettingsFromIdb,
   saveAiSettingsToIdb,
+  loadWriterSettingsFromIdb,
+  saveWriterSettingsToIdb,
 } from "../../utils/idb";
 import {
   testProvider,
@@ -46,6 +48,9 @@ interface SettingsStore {
   editKey: string;
   /* per-feature overrides open */
   openFeature: AiFeature | null;
+  /* writer preferences */
+  writerStyle: "form" | "conversational";
+  writerToast: string | null;
   /* apparatus */
   defaultCitationStyle: "mla" | "apa" | "chicago";
   aiEnhanceCitations: boolean;
@@ -61,6 +66,8 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "citation-format": "Citation Format",
   "source-summarize": "Source Summarize",
   "source-detect-missing": "Missing Source Detection",
+  "interview-turn": "Conversational Interview",
+  "dossier-check": "Read My Draft",
 };
 
 const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
@@ -72,6 +79,10 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "citation-format": "Auto-format detected citations in your chosen style.",
   "source-summarize": "AI summarizes saved sources for your bibliography.",
   "source-detect-missing": "AI detects claims in your draft that need citations.",
+  "interview-turn":
+    "The room interviews you, one question at a time, and synthesises a dossier from your answers.",
+  "dossier-check":
+    "Cross-references the dossier against the current draft and surfaces where the draft has outgrown the brief.",
 };
 
 /* ── Component ──────────────────────────────────────────────────── */
@@ -96,12 +107,16 @@ export default component$(() => {
     defaultCitationStyle: "mla",
     aiEnhanceCitations: false,
     flagMissingSources: false,
+    writerStyle: "form",
+    writerToast: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
     const raw = await loadAiSettingsFromIdb();
     store.settings = normalizeAiSettings(raw);
+    const writer = await loadWriterSettingsFromIdb();
+    store.writerStyle = writer.interviewStyle;
     store.loaded = true;
   });
 
@@ -255,6 +270,91 @@ export default component$(() => {
 
         {store.loaded && (
           <div class="space-y-8">
+            {/* ── Writer preferences (always shown, no BYOK required) ── */}
+            <section class="folio p-5">
+              <h2
+                class="text-base font-semibold"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Interview style
+              </h2>
+              <p class="text-xs text-[var(--color-ink-light)] mt-1">
+                The dossier interview has two modes. The form is fast and
+                concrete; the conversation is slower but the room fills in
+                the dossier from your answers.
+              </p>
+              <div class="mt-4 grid sm:grid-cols-2 gap-3">
+                <button
+                  onClick$={$(async () => {
+                    const cur = await loadWriterSettingsFromIdb();
+                    await saveWriterSettingsToIdb({
+                      ...cur,
+                      interviewStyle: "form",
+                    });
+                    store.writerStyle = "form";
+                    store.writerToast = "Form mode set";
+                    setTimeout(() => (store.writerToast = null), 1800);
+                  })}
+                  class={`text-left rounded-lg border p-3 transition-colors ${
+                    store.writerStyle === "form"
+                      ? "border-[var(--color-vermilion)] bg-[var(--color-vermilion)]/5"
+                      : "border-[var(--color-surface-3)] hover:border-[var(--color-ink-muted)]"
+                  }`}
+                >
+                  <p
+                    class="text-sm font-semibold"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Form
+                  </p>
+                  <p
+                    class="text-[0.7rem] text-[var(--color-ink-muted)] mt-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Eight fixed fields. Fast.
+                  </p>
+                </button>
+                <button
+                  onClick$={$(async () => {
+                    const cur = await loadWriterSettingsFromIdb();
+                    await saveWriterSettingsToIdb({
+                      ...cur,
+                      interviewStyle: "conversational",
+                    });
+                    store.writerStyle = "conversational";
+                    store.writerToast = "Conversation mode set";
+                    setTimeout(() => (store.writerToast = null), 1800);
+                  })}
+                  class={`text-left rounded-lg border p-3 transition-colors ${
+                    store.writerStyle === "conversational"
+                      ? "border-[var(--color-vermilion)] bg-[var(--color-vermilion)]/5"
+                      : "border-[var(--color-surface-3)] hover:border-[var(--color-ink-muted)]"
+                  }`}
+                >
+                  <p
+                    class="text-sm font-semibold"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Conversation
+                  </p>
+                  <p
+                    class="text-[0.7rem] text-[var(--color-ink-muted)] mt-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    The room interviews you, one question at a time.
+                  </p>
+                </button>
+              </div>
+              {store.writerToast && (
+                <p
+                  class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-accent-green)] mt-2"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  {store.writerToast}
+                </p>
+              )}
+            </section>
+
             {/* ── BYOK Toggle ── */}
             <section class="folio p-5">
               <div class="flex items-center justify-between">

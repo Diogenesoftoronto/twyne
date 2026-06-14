@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 140" fill="none">
+  <rect width="760" height="140" fill="transparent"/>
+  <g fill="#7a1e22">
+    <path d="M45 31h21v57c0 12 8 17 18 17 11 0 19-5 19-17V31h21v59c0 26-19 38-40 38S45 116 45 90V31Z"/>
+    <path d="M152 31h24l25 57 25-57h24L189 130h-24L152 31Z"/>
+    <path d="M278 31h21v71h38v19h-59V31Z"/>
+    <path d="M368 31h21v71h38v19h-59V31Z"/>
+    <path d="M459 31h22l19 50 20-50h22l-32 89h-19l-32-89Z"/>
+    <path d="M560 31h20v89h-20V31Z"/>
+  </g>
+  <text x="381" y="128" text-anchor="middle" fill="#9c1a1f" font-family="Georgia, serif" font-size="18" letter-spacing="0.5em">THE EDITORIAL ROOM</text>
+</svg>
