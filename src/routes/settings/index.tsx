@@ -1,0 +1,1160 @@
+import {
+  component$,
+  useStore,
+  useVisibleTask$,
+  $,
+} from "@builder.io/qwik";
+import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import type {
+  AiSettings,
+  AiProviderConfig,
+  AiFeature,
+  AiFeatureOverride,
+} from "../../types";
+import {
+  DEFAULT_AI_SETTINGS,
+  PROVIDER_METAS,
+} from "../../types";
+import {
+  loadAiSettingsFromIdb,
+  saveAiSettingsToIdb,
+} from "../../utils/idb";
+import {
+  testProvider,
+  resolveFeatureConfig,
+  normalizeAiSettings,
+} from "../../utils/ai-client";
+
+/* ── Types ──────────────────────────────────────────────────────── */
+
+interface SettingsStore {
+  settings: AiSettings;
+  loaded: boolean;
+  saving: boolean;
+  toast: string | null;
+  /* provider form */
+  showAddProvider: boolean;
+  newProviderType: string;
+  newProviderName: string;
+  newProviderKey: string;
+  newProviderBaseUrl: string;
+  newProviderModel: string;
+  testingProvider: boolean;
+  testResult: { ok: boolean; latencyMs: number; error?: string } | null;
+  /* editing */
+  editingProviderId: string | null;
+  editKey: string;
+  /* per-feature overrides open */
+  openFeature: AiFeature | null;
+  /* apparatus */
+  defaultCitationStyle: "mla" | "apa" | "chicago";
+  aiEnhanceCitations: boolean;
+  flagMissingSources: boolean;
+}
+
+const FEATURE_LABELS: Record<AiFeature, string> = {
+  "persona-feedback": "Convene the Room",
+  "persona-reply": "Reply Thread",
+  "persona-rewrite": "Mark Up Draft",
+  "rubric-judge": "Galley Proof",
+  "comment-reply": "Ask Editor (Notes)",
+  "citation-format": "Citation Format",
+  "source-summarize": "Source Summarize",
+  "source-detect-missing": "Missing Source Detection",
+};
+
+const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
+  "persona-feedback": "All five editors read your draft at once.",
+  "persona-reply": "A single editor responds in a threaded conversation.",
+  "persona-rewrite": "Editors propose specific text replacements.",
+  "rubric-judge": "Five judges score the draft, then the rubric combines.",
+  "comment-reply": "Ask an editor to weigh in on a margin note.",
+  "citation-format": "Auto-format detected citations in your chosen style.",
+  "source-summarize": "AI summarizes saved sources for your bibliography.",
+  "source-detect-missing": "AI detects claims in your draft that need citations.",
+};
+
+/* ── Component ──────────────────────────────────────────────────── */
+
+export default component$(() => {
+  const store = useStore<SettingsStore>({
+    settings: DEFAULT_AI_SETTINGS,
+    loaded: false,
+    saving: false,
+    toast: null,
+    showAddProvider: false,
+    newProviderType: "openai",
+    newProviderName: "",
+    newProviderKey: "",
+    newProviderBaseUrl: "",
+    newProviderModel: "",
+    testingProvider: false,
+    testResult: null,
+    editingProviderId: null,
+    editKey: "",
+    openFeature: null,
+    defaultCitationStyle: "mla",
+    aiEnhanceCitations: false,
+    flagMissingSources: false,
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    const raw = await loadAiSettingsFromIdb();
+    store.settings = normalizeAiSettings(raw);
+    store.loaded = true;
+  });
+
+  const persist = $(async () => {
+    store.saving = true;
+    await saveAiSettingsToIdb(store.settings);
+    store.saving = false;
+    store.toast = "Settings saved";
+    setTimeout(() => (store.toast = null), 2000);
+  });
+
+  const addProvider = $(async () => {
+    const meta = PROVIDER_METAS.find((m) => m.type === store.newProviderType);
+    if (!meta) return;
+    if (!store.newProviderName.trim() || !store.newProviderKey.trim()) return;
+
+    const config: AiProviderConfig = {
+      id: `pv-${Date.now()}`,
+      name: store.newProviderName.trim(),
+      type: store.newProviderType as AiProviderConfig["type"],
+      apiKey: store.newProviderKey.trim(),
+      baseUrl: store.newProviderBaseUrl.trim() || undefined,
+      defaultModel:
+        store.newProviderModel.trim() || meta.defaultModels[0] || "",
+    };
+
+    store.settings = {
+      ...store.settings,
+      advancedMode: true,
+      providers: [...store.settings.providers, config],
+      defaultProviderId:
+        store.settings.defaultProviderId ?? config.id,
+    };
+    store.showAddProvider = false;
+    store.newProviderName = "";
+    store.newProviderKey = "";
+    store.newProviderBaseUrl = "";
+    store.newProviderModel = "";
+    await persist();
+  });
+
+  const removeProvider = $((id: string) => {
+    const next = store.settings.providers.filter((p) => p.id !== id);
+    const isDefault = store.settings.defaultProviderId === id;
+    store.settings = {
+      ...store.settings,
+      providers: next,
+      defaultProviderId: isDefault ? (next[0]?.id ?? null) : store.settings.defaultProviderId,
+      perFeature: Object.fromEntries(
+        Object.entries(store.settings.perFeature).filter(
+          ([, v]) => v?.providerId !== id,
+        ),
+      ) as SettingsStore["settings"]["perFeature"],
+    };
+    void persist();
+  });
+
+  const setDefaultProvider = $((id: string) => {
+    store.settings = { ...store.settings, defaultProviderId: id };
+    void persist();
+  });
+
+  const updateProviderKey = $((id: string) => {
+    if (!store.editKey.trim()) {
+      store.editingProviderId = null;
+      return;
+    }
+    store.settings = {
+      ...store.settings,
+      providers: store.settings.providers.map((p) =>
+        p.id === id ? { ...p, apiKey: store.editKey.trim() } : p,
+      ),
+    };
+    store.editingProviderId = null;
+    store.editKey = "";
+    void persist();
+  });
+
+  const runTest = $(async (config: AiProviderConfig) => {
+    store.testingProvider = true;
+    store.testResult = null;
+    store.testResult = await testProvider(config);
+    store.testingProvider = false;
+  });
+
+  const setFeatureOverride = $((feature: AiFeature, override: AiFeatureOverride | undefined) => {
+    store.settings = {
+      ...store.settings,
+      perFeature: {
+        ...store.settings.perFeature,
+        [feature]: override,
+      },
+    };
+    void persist();
+  });
+
+  const resetAll = $(async () => {
+    if (!confirm("Reset all AI settings to defaults? Providers and keys will be removed.")) return;
+    store.settings = DEFAULT_AI_SETTINGS;
+    await saveAiSettingsToIdb(DEFAULT_AI_SETTINGS);
+    store.toast = "Reset to defaults";
+    setTimeout(() => (store.toast = null), 2000);
+  });
+
+  return (
+    <div
+      class="min-h-screen bg-[var(--color-paper-soft)] text-[var(--color-ink)]"
+      style={{ fontFamily: "var(--font-serif)" }}
+    >
+      <div class="max-w-4xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <p
+              class="dept-label mb-1"
+              style={{ fontFamily: "var(--font-typewriter)" }}
+            >
+              Twyne
+            </p>
+            <h1
+              style={{
+                fontFamily: "var(--font-display)",
+                fontWeight: 700,
+                fontSize: "1.75rem",
+              }}
+            >
+              The Editor's Desk
+            </h1>
+            <p class="text-sm text-[var(--color-ink-light)] mt-1">
+              Bring your own key. Choose your models. Own the room.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <Link
+              href="/"
+              class="btn-paper text-sm"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              ← Back to desk
+            </Link>
+          </div>
+        </div>
+
+        {!store.loaded && (
+          <div class="text-center py-20 text-[var(--color-ink-muted)]">
+            <p style={{ fontFamily: "var(--font-typewriter)" }}>
+              Loading preferences…
+            </p>
+          </div>
+        )}
+
+        {store.loaded && (
+          <div class="space-y-8">
+            {/* ── BYOK Toggle ── */}
+            <section class="folio p-5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h2
+                    class="text-base font-semibold"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Bring Your Own Key
+                  </h2>
+                  <p class="text-xs text-[var(--color-ink-light)] mt-1">
+                    Enable advanced mode to use your own API keys instead of the
+                    shared server.
+                  </p>
+                </div>
+                <button
+                  onClick$={() => {
+                    store.settings = {
+                      ...store.settings,
+                      advancedMode: !store.settings.advancedMode,
+                    };
+                    void persist();
+                  }}
+                  class={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    store.settings.advancedMode
+                      ? "bg-[var(--color-vermilion)]"
+                      : "bg-[var(--color-paper-3)]"
+                  }`}
+                  aria-pressed={store.settings.advancedMode}
+                >
+                  <span
+                    class={`inline-block h-4 w-4 transform rounded-full bg-[var(--color-paper)] transition-transform ${
+                      store.settings.advancedMode
+                        ? "translate-x-6"
+                        : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {store.settings.advancedMode &&
+                store.settings.providers.length === 0 && (
+                  <div class="mt-4 p-3 bg-[rgba(193,39,45,0.05)] border border-[var(--color-vermilion)]">
+                    <p
+                      class="text-xs text-[var(--color-vermilion-2)]"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      ⚠ No providers configured yet. Add one below to start
+                      using your own keys.
+                    </p>
+                  </div>
+                )}
+            </section>
+
+            {/* ── AI Providers ── */}
+            {store.settings.advancedMode && (
+              <section class="folio p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <h2
+                    class="text-base font-semibold"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    AI Providers
+                  </h2>
+                  <button
+                    onClick$={() => {
+                      store.showAddProvider = true;
+                      store.newProviderType = "openai";
+                      store.newProviderModel =
+                        PROVIDER_METAS.find((m) => m.type === "openai")
+                          ?.defaultModels[0] ?? "";
+                    }}
+                    class="btn-press text-xs"
+                  >
+                    + Add provider
+                  </button>
+                </div>
+
+                {/* Provider list */}
+                <div class="space-y-3">
+                  {store.settings.providers.map((p) => (
+                    <div
+                      key={p.id}
+                      class="p-3 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
+                      style={{ borderRadius: "2px" }}
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2">
+                            <span
+                              class="text-xs font-semibold text-[var(--color-ink)]"
+                              style={{ fontFamily: "var(--font-display)" }}
+                            >
+                              {p.name}
+                            </span>
+                            <span
+                              class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
+                              style={{ fontFamily: "var(--font-typewriter)" }}
+                            >
+                              {PROVIDER_METAS.find((m) => m.type === p.type)?.label ?? p.type}
+                            </span>
+                            {store.settings.defaultProviderId === p.id && (
+                              <span
+                                class="text-[0.6rem] tracking-[0.15em] uppercase px-1.5 py-0.5 border"
+                                style={{
+                                  fontFamily: "var(--font-typewriter)",
+                                  borderColor: "var(--color-accent-green)",
+                                  color: "var(--color-accent-green)",
+                                  borderRadius: "1px",
+                                }}
+                              >
+                                default
+                              </span>
+                            )}
+                          </div>
+                          <p
+                            class="text-[0.65rem] text-[var(--color-ink-muted)] mt-0.5"
+                            style={{ fontFamily: "var(--font-mono)" }}
+                          >
+                            {p.defaultModel}
+                          </p>
+
+                          {store.editingProviderId === p.id ? (
+                            <div class="mt-2 space-y-2">
+                              <input
+                                type="password"
+                                value={store.editKey}
+                                onInput$={(e) => {
+                                  store.editKey = (
+                                    e.target as HTMLInputElement
+                                  ).value;
+                                }}
+                                placeholder="New API key"
+                                class="w-full text-xs px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                style={{
+                                  fontFamily: "var(--font-typewriter)",
+                                  borderRadius: "2px",
+                                }}
+                              />
+                              <div class="flex gap-2">
+                                <button
+                                  onClick$={() => updateProviderKey(p.id)}
+                                  class="btn-press text-xs"
+                                >
+                                  Update key
+                                </button>
+                                <button
+                                  onClick$={() => {
+                                    store.editingProviderId = null;
+                                    store.editKey = "";
+                                  }}
+                                  class="btn-paper text-xs"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div class="mt-2 flex flex-wrap items-center gap-2">
+                              <button
+                                onClick$={() => {
+                                  store.editingProviderId = p.id;
+                                  store.editKey = "";
+                                }}
+                                class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                Change key
+                              </button>
+                              <button
+                                onClick$={() => runTest(p)}
+                                disabled={store.testingProvider}
+                                class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent-green)] disabled:opacity-40"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                {store.testingProvider
+                                  ? "Testing…"
+                                  : "Test connection"}
+                              </button>
+                              {store.settings.defaultProviderId !== p.id && (
+                                <button
+                                  onClick$={() => setDefaultProvider(p.id)}
+                                  class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                                  style={{ fontFamily: "var(--font-typewriter)" }}
+                                >
+                                  Set as default
+                                </button>
+                              )}
+                              <button
+                                onClick$={() => removeProvider(p.id)}
+                                class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          )}
+
+                          {store.testResult &&
+                            store.testingProvider === false && (
+                              <p
+                                class={`mt-1.5 text-[0.65rem] ${
+                                  store.testResult.ok
+                                    ? "text-[var(--color-accent-green)]"
+                                    : "text-[var(--color-vermilion)]"
+                                }`}
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                {store.testResult.ok
+                                  ? `✓ Connected (${store.testResult.latencyMs}ms)`
+                                  : `✗ ${store.testResult.error}`}
+                              </p>
+                            )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add provider form */}
+                {store.showAddProvider && (
+                  <div class="mt-4 p-4 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+                    <h3
+                      class="text-sm font-semibold mb-3"
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        color: "var(--color-vermilion)",
+                      }}
+                    >
+                      New provider
+                    </h3>
+                    <div class="space-y-3">
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Provider type
+                        </label>
+                        <select
+                          value={store.newProviderType}
+                          onChange$={(e) => {
+                            const type = (e.target as HTMLSelectElement).value;
+                            store.newProviderType = type;
+                            const m = PROVIDER_METAS.find(
+                              (meta) => meta.type === type,
+                            );
+                            store.newProviderModel =
+                              m?.defaultModels[0] ?? "";
+                          }}
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        >
+                          {PROVIDER_METAS.map((m) => (
+                            <option key={m.type} value={m.type}>
+                              {m.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Name
+                        </label>
+                        <input
+                          value={store.newProviderName}
+                          onInput$={(e) => {
+                            store.newProviderName = (
+                              e.target as HTMLInputElement
+                            ).value;
+                          }}
+                          placeholder="e.g. My OpenAI"
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          API key
+                        </label>
+                        <input
+                          type="password"
+                          value={store.newProviderKey}
+                          onInput$={(e) => {
+                            store.newProviderKey = (
+                              e.target as HTMLInputElement
+                            ).value;
+                          }}
+                          placeholder="sk-..."
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        />
+                        <p
+                          class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Stored only in your browser. Never sent to our
+                          servers.
+                        </p>
+                      </div>
+
+                      {PROVIDER_METAS.find(
+                        (m) => m.type === store.newProviderType,
+                      )?.needsBaseUrl && (
+                        <div>
+                          <label
+                            class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          >
+                            Base URL
+                          </label>
+                          <input
+                            value={store.newProviderBaseUrl}
+                            onInput$={(e) => {
+                              store.newProviderBaseUrl = (
+                                e.target as HTMLInputElement
+                              ).value;
+                            }}
+                            placeholder="https://api.example.com/v1"
+                            class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                            style={{
+                              fontFamily: "var(--font-typewriter)",
+                              borderRadius: "2px",
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Model
+                        </label>
+                        <input
+                          value={store.newProviderModel}
+                          onInput$={(e) => {
+                            store.newProviderModel = (
+                              e.target as HTMLInputElement
+                            ).value;
+                          }}
+                          placeholder={
+                            PROVIDER_METAS.find(
+                              (m) => m.type === store.newProviderType,
+                            )?.defaultModels[0] ?? ""
+                          }
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        />
+                      </div>
+
+                      <div class="flex gap-2 pt-1">
+                        <button onClick$={addProvider} class="btn-press text-xs">
+                          Add provider
+                        </button>
+                        <button
+                          onClick$={() => {
+                            store.showAddProvider = false;
+                          }}
+                          class="btn-paper text-xs"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ── Per-Feature Models ── */}
+            {store.settings.advancedMode &&
+              store.settings.providers.length > 0 && (
+                <section class="folio p-5">
+                  <h2
+                    class="text-base font-semibold mb-1"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Per-Feature Models
+                  </h2>
+                  <p class="text-xs text-[var(--color-ink-light)] mb-4">
+                    Choose which provider handles each feature. Unconfigured
+                    features use the default provider.
+                  </p>
+
+                  <div class="space-y-2">
+                    {(Object.keys(FEATURE_LABELS) as AiFeature[]).map(
+                      (feature) => {
+                        const resolved = resolveFeatureConfig(
+                          store.settings,
+                          feature,
+                        );
+                        const isOpen = store.openFeature === feature;
+                        return (
+                          <div
+                            key={feature}
+                            class="border border-[var(--color-paper-3)]"
+                            style={{ borderRadius: "2px" }}
+                          >
+                            <button
+                              onClick$={() => {
+                                store.openFeature = isOpen ? null : feature;
+                              }}
+                              class="w-full text-left px-3 py-2.5 flex items-center justify-between"
+                            >
+                              <div>
+                                <p
+                                  class="text-sm text-[var(--color-ink)]"
+                                  style={{
+                                    fontFamily: "var(--font-display)",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {FEATURE_LABELS[feature]}
+                                </p>
+                                <p
+                                  class="text-[0.65rem] text-[var(--color-ink-muted)] mt-0.5"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
+                                >
+                                  {FEATURE_DESCRIPTIONS[feature]}
+                                </p>
+                              </div>
+                              <div class="flex items-center gap-3">
+                                <span
+                                  class="text-[0.65rem] tracking-[0.1em] text-[var(--color-ink-light)]"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
+                                >
+                                  {resolved
+                                    ? `${resolved.provider.name} · ${resolved.model}`
+                                    : "Default provider"}
+                                </span>
+                                <span class="text-[var(--color-ink-muted)]">
+                                  {isOpen ? "▾" : "▸"}
+                                </span>
+                              </div>
+                            </button>
+
+                            {isOpen && (
+                              <div class="px-3 pb-3 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+                                <div class="mt-3 space-y-3">
+                                  <div>
+                                    <label
+                                      class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                                      style={{
+                                        fontFamily: "var(--font-typewriter)",
+                                      }}
+                                    >
+                                      Provider
+                                    </label>
+                                    <select
+                                      value={
+                                        store.settings.perFeature[feature]
+                                          ?.providerId ??
+                                        store.settings.defaultProviderId ??
+                                        ""
+                                      }
+                                      onChange$={(e) => {
+                                        const providerId = (
+                                          e.target as HTMLSelectElement
+                                        ).value;
+                                        const existing =
+                                          store.settings.perFeature[feature];
+                                        setFeatureOverride(feature, {
+                                          providerId,
+                                          model: existing?.model,
+                                          temperature: existing?.temperature,
+                                          maxTokens: existing?.maxTokens,
+                                        });
+                                      }}
+                                      class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                      style={{
+                                        fontFamily: "var(--font-typewriter)",
+                                        borderRadius: "2px",
+                                      }}
+                                    >
+                                      <option value="">
+                                        Use default provider
+                                      </option>
+                                      {store.settings.providers.map((p) => (
+                                        <option
+                                          key={p.id}
+                                          value={p.id}
+                                        >
+                                          {`${p.name} (${p.type})`}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+
+                                  <div class="grid grid-cols-3 gap-3">
+                                    <div>
+                                      <label
+                                        class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                        }}
+                                      >
+                                        Model override
+                                      </label>
+                                      <input
+                                        value={
+                                          store.settings.perFeature[feature]
+                                            ?.model ?? ""
+                                        }
+                                        onInput$={(e) => {
+                                          const model = (
+                                            e.target as HTMLInputElement
+                                          ).value;
+                                          const existing =
+                                            store.settings.perFeature[feature];
+                                          setFeatureOverride(feature, {
+                                            providerId:
+                                              existing?.providerId ??
+                                              store.settings
+                                                .defaultProviderId ??
+                                              "",
+                                            model: model || undefined,
+                                            temperature:
+                                              existing?.temperature,
+                                            maxTokens: existing?.maxTokens,
+                                          });
+                                        }}
+                                        placeholder="default"
+                                        class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                          borderRadius: "2px",
+                                        }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label
+                                        class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                        }}
+                                      >
+                                        Temperature
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min={0}
+                                        max={1}
+                                        step={0.1}
+                                        value={
+                                          store.settings.perFeature[feature]
+                                            ?.temperature ?? ""
+                                        }
+                                        onInput$={(e) => {
+                                          const temp = Number(
+                                            (e.target as HTMLInputElement)
+                                              .value,
+                                          );
+                                          const existing =
+                                            store.settings.perFeature[feature];
+                                          setFeatureOverride(feature, {
+                                            providerId:
+                                              existing?.providerId ??
+                                              store.settings
+                                                .defaultProviderId ??
+                                              "",
+                                            model: existing?.model,
+                                            temperature:
+                                              temp >= 0 && temp <= 1
+                                                ? temp
+                                                : undefined,
+                                            maxTokens: existing?.maxTokens,
+                                          });
+                                        }}
+                                        placeholder="auto"
+                                        class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                          borderRadius: "2px",
+                                        }}
+                                      />
+                                    </div>
+                                    <div>
+                                      <label
+                                        class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                        }}
+                                      >
+                                        Max tokens
+                                      </label>
+                                      <input
+                                        type="number"
+                                        min={50}
+                                        max={4000}
+                                        step={10}
+                                        value={
+                                          store.settings.perFeature[feature]
+                                            ?.maxTokens ?? ""
+                                        }
+                                        onInput$={(e) => {
+                                          const tokens = Number(
+                                            (e.target as HTMLInputElement)
+                                              .value,
+                                          );
+                                          const existing =
+                                            store.settings.perFeature[feature];
+                                          setFeatureOverride(feature, {
+                                            providerId:
+                                              existing?.providerId ??
+                                              store.settings
+                                                .defaultProviderId ??
+                                              "",
+                                            model: existing?.model,
+                                            temperature:
+                                              existing?.temperature,
+                                            maxTokens:
+                                              tokens > 0
+                                                ? tokens
+                                                : undefined,
+                                          });
+                                        }}
+                                        placeholder="auto"
+                                        class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                          borderRadius: "2px",
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+
+                                  <button
+                                    onClick$={() => {
+                                      setFeatureOverride(feature, undefined);
+                                      store.openFeature = null;
+                                    }}
+                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    Reset to defaults
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      },
+                    )}
+                  </div>
+                </section>
+              )}
+
+            {/* ── Apparatus ── */}
+            <section class="folio p-5">
+              <h2
+                class="text-base font-semibold mb-4"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                The Apparatus
+              </h2>
+              <div class="space-y-4">
+                <div>
+                  <label
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-2"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Default citation style
+                  </label>
+                  <div class="flex gap-1">
+                    {(["mla", "apa", "chicago"] as const).map((s) => (
+                      <button
+                        key={s}
+                        onClick$={() => {
+                          store.defaultCitationStyle = s;
+                        }}
+                        class={`flex-1 text-sm py-1.5 border ${
+                          store.defaultCitationStyle === s
+                            ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]"
+                            : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"
+                        }`}
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          borderRadius: "2px",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                        }}
+                        aria-pressed={store.defaultCitationStyle === s}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <label class="flex items-center justify-between cursor-pointer">
+                  <span
+                    class="text-sm text-[var(--color-ink)]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    AI-enhance detected citations
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={store.aiEnhanceCitations}
+                    onChange$={(e) => {
+                      store.aiEnhanceCitations = (
+                        e.target as HTMLInputElement
+                      ).checked;
+                    }}
+                    class="sr-only"
+                  />
+                  <span
+                    class={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      store.aiEnhanceCitations
+                        ? "bg-[var(--color-vermilion)]"
+                        : "bg-[var(--color-paper-3)]"
+                    }`}
+                  >
+                    <span
+                      class={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--color-paper)] transition-transform ${
+                        store.aiEnhanceCitations
+                          ? "translate-x-5"
+                          : "translate-x-1"
+                      }`}
+                    />
+                  </span>
+                </label>
+
+                <label class="flex items-center justify-between cursor-pointer">
+                  <span
+                    class="text-sm text-[var(--color-ink)]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Flag missing sources
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={store.flagMissingSources}
+                    onChange$={(e) => {
+                      store.flagMissingSources = (
+                        e.target as HTMLInputElement
+                      ).checked;
+                    }}
+                    class="sr-only"
+                  />
+                  <span
+                    class={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      store.flagMissingSources
+                        ? "bg-[var(--color-vermilion)]"
+                        : "bg-[var(--color-paper-3)]"
+                    }`}
+                  >
+                    <span
+                      class={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--color-paper)] transition-transform ${
+                        store.flagMissingSources
+                          ? "translate-x-5"
+                          : "translate-x-1"
+                      }`}
+                    />
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            {/* ── Advanced ── */}
+            <section class="folio p-5">
+              <h2
+                class="text-base font-semibold mb-4"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Advanced
+              </h2>
+              <div class="space-y-4">
+                <label class="flex items-center justify-between cursor-pointer">
+                  <div>
+                    <span
+                      class="text-sm text-[var(--color-ink)] block"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      Show provider tags
+                    </span>
+                    <span
+                      class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Display which AI served each response
+                    </span>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={store.settings.showProviderTags}
+                    onChange$={(e) => {
+                      store.settings = {
+                        ...store.settings,
+                        showProviderTags: (e.target as HTMLInputElement)
+                          .checked,
+                      };
+                      void persist();
+                    }}
+                    class="sr-only"
+                  />
+                  <span
+                    class={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                      store.settings.showProviderTags
+                        ? "bg-[var(--color-vermilion)]"
+                        : "bg-[var(--color-paper-3)]"
+                    }`}
+                  >
+                    <span
+                      class={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--color-paper)] transition-transform ${
+                        store.settings.showProviderTags
+                          ? "translate-x-5"
+                          : "translate-x-1"
+                      }`}
+                    />
+                  </span>
+                </label>
+
+                <div class="pt-3 border-t border-dashed border-[var(--color-paper-3)]">
+                  <button
+                    onClick$={resetAll}
+                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Reset all AI settings
+                  </button>
+                </div>
+
+                <div class="p-3 bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)]">
+                  <p
+                    class="text-[0.65rem] text-[var(--color-ink-muted)] leading-relaxed"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    <strong
+                      class="text-[var(--color-ink-light)]"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      Privacy note
+                    </strong>
+                    <br />
+                    Your API keys are stored only in your browser's IndexedDB
+                    and are never sent to Twyne's servers. We can't see them,
+                    and we don't want to.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
+      </div>
+
+      {/* Toast */}
+      {store.toast && (
+        <div
+          class="fixed bottom-6 right-6 z-50 px-4 py-2.5 bg-[var(--color-ink)] text-[var(--color-paper)]"
+          style={{
+            fontFamily: "var(--font-typewriter)",
+            fontSize: "0.75rem",
+            letterSpacing: "0.15em",
+            textTransform: "uppercase",
+            borderRadius: "2px",
+          }}
+        >
+          {store.toast}
+        </div>
+      )}
+    </div>
+  );
+});
+
+export const head: DocumentHead = {
+  title: "The Editor's Desk · Twyne",
+  meta: [
+    {
+      name: "description",
+      content:
+        "Configure AI providers, models, and per-feature settings for Twyne.",
+    },
+  ],
+};

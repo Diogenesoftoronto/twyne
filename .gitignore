@@ -41,3 +41,7 @@ lerna-debug.log*
 # Yarn
 .yarn/*
 !.yarn/releases
+
+# Tool state (Entire / .zero)
+.entire/
+.zero/
