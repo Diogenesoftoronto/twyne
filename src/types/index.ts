@@ -16,6 +16,23 @@ export interface PersonaFeedback {
   paragraphIndex?: number;
   timestamp: number;
   type: "encouragement" | "suggestion" | "critique" | "perspective";
+  /** Exact sentence from the draft this note is pinned to, when one was found. */
+  anchor?: string;
+  /** Stable id shared between the feed card and the inline mark in the manuscript. */
+  noteId?: string;
+  /** Title of the brief the note was filed against, for the timeline. */
+  briefTitle?: string;
+}
+
+/** Payload of the `twyne:persona-notes` window event: notes to pin inline. */
+export interface PersonaNotePayload {
+  id: string;
+  author: string;
+  color: string;
+  label: string;
+  note: string;
+  quote: string;
+  briefTitle?: string;
 }
 
 export interface RubricCriterion {
@@ -33,7 +50,32 @@ export interface RubricResult {
   overallGrade: string;
   summary: string;
   timestamp: number;
+  /** Per-persona judge scores, 0-10. */
+  judges: import("../utils/rubric").JudgeResult[];
+  /** Static-feature breakdown (length, pacing, evidence, …). */
+  staticScore: import("../utils/rubric").StaticScore;
 }
+
+/* ── Document chrome — page layout, header, footer, running metadata ── */
+
+export type DocWidth = "narrow" | "normal" | "wide";
+export type DocMargin = "tight" | "normal" | "roomy";
+
+export interface LayoutSettings {
+  width: DocWidth;
+  margin: DocMargin;
+  /** Show brief title / author / date in the running header (print + reading view). */
+  runningHeader: boolean;
+  /** Show page numbers in the footer of printed/exported output. */
+  pageNumbers: boolean;
+}
+
+export const DEFAULT_LAYOUT: LayoutSettings = {
+  width: "normal",
+  margin: "normal",
+  runningHeader: false,
+  pageNumbers: true,
+};
 
 export interface Comment {
   id: string;
@@ -51,6 +93,21 @@ export interface CommentReply {
   id: string;
   text: string;
   author: string;
+  timestamp: number;
+}
+
+export type PersonaReplyAuthor = "user" | "persona";
+
+/** A single reply in a persona-note conversation. */
+export interface PersonaReply {
+  id: string;
+  /** Note (PersonaFeedback.noteId) this reply is attached to. */
+  noteId: string;
+  author: string;
+  authorKind: PersonaReplyAuthor;
+  /** Set when authorKind === "persona". */
+  personaId?: string;
+  text: string;
   timestamp: number;
 }
 
@@ -96,28 +153,19 @@ export interface ProjectBrief {
   updatedAt: number;
 }
 
-/* ── Folio (the writer's working document) ──────────────────────── */
-
 export interface Folio {
   id: string;
-  title: string;
-  /** Optional short blurb / working subtitle. */
-  subtitle?: string;
-  /** Optional explicit word-count target. */
-  targetWordCount?: number;
-  /** Owner/created-by identifier (no auth model in BYOK mode). */
-  ownerId?: string;
+  name: string;
+  type: "draft" | "notes" | "outline";
   createdAt: number;
   updatedAt: number;
-  /** Last time the writer actually edited the document body. */
-  lastEditedAt?: number;
-  /** Optional archive flag — archived folios are hidden from the main list. */
-  archived?: boolean;
-  /** Tag list for ad-hoc grouping in the library view. */
-  tags?: string[];
+  /** Tunable page layout (margins, width, running header, page numbers). */
+  layout?: LayoutSettings;
+  /** Optional free-text running header for the editor surface. */
+  header?: string;
+  /** Optional free-text running footer for the editor surface. */
+  footer?: string;
 }
-
-/* ── Lix types (versioned document store) ───────────────────────── */
 
 export interface LixVersion {
   id: string;
@@ -133,13 +181,128 @@ export interface LixChangeProposal {
   createdAt: number;
 }
 
-/* ── AI provider configuration (BYOK, stored only in IndexedDB) ── */
+export interface LixHistoryEntry {
+  depth: number;
+  data: unknown;
+}
+
+/* ── Editorial change proposals (editors propose edits to the manuscript) ── */
+
+/** How large an edit a single suggestion makes. */
+export type SuggestionKind = "sentence" | "paragraph";
+
+/**
+ * An editor's proposed rewrite of one block, backed by a Lix branch
+ * (`versionId`). The original/replacement html lets the editor render an
+ * inline tracked change; accepting merges the branch into the writer's
+ * current version.
+ */
+export interface Suggestion {
+  /** Proposal id; also the SuggestionMark id in the manuscript. */
+  id: string;
+  /** Lix version (branch) holding the proposed block edit. */
+  versionId: string;
+  personaId: string;
+  personaName: string;
+  color: string;
+  /** Block (top-level Tiptap node) the edit targets. */
+  blockId: string;
+  /** The exact passage in the block this replaces (anchor for the mark). */
+  original: string;
+  /** Proposed replacement passage. */
+  replacement: string;
+  /** One-line justification, in the editor's voice. */
+  rationale: string;
+  kind: SuggestionKind;
+  status: "open" | "accepted" | "rejected";
+  createdAt: number;
+}
+
+/** Payload of the `twyne:suggestions` window event: edits to pin inline. */
+export interface SuggestionPayload {
+  id: string;
+  versionId: string;
+  author: string;
+  color: string;
+  original: string;
+  replacement: string;
+  rationale: string;
+  /** Exact passage to locate and mark in the manuscript. */
+  quote: string;
+}
+
+/* ── Tunable assistance (the editor-room settings) ── */
+
+export type AssistanceLevel = "comments" | "sentence" | "paragraph";
+
+/**
+ * Writer-controlled settings for how much the room edits. `level` is the
+ * room-wide ceiling; `perPersona` overrides it for individual editors;
+ * the budgets cap a proactive "mark up my draft" pass.
+ */
+export interface RoomSettings {
+  level: AssistanceLevel;
+  /** Total proposals allowed per markup pass. */
+  maxProposals: number;
+  /** Separate, smaller budget for paragraph-class edits. */
+  maxLargeEdits: number;
+  /** Persona ids allowed to propose; empty means "all in scope". */
+  personaScope: string[];
+  /** Optional per-editor level override. */
+  perPersona?: Record<string, AssistanceLevel>;
+}
+
+export const DEFAULT_ROOM_SETTINGS: RoomSettings = {
+  level: "sentence",
+  maxProposals: 6,
+  maxLargeEdits: 2,
+  personaScope: [],
+};
+
+/* ── Bibliography (re-exports from utils/bibliography) ─────────── */
+
+export type { BibEntry, CitationStyle } from "../utils/bibliography";
+
+/** Result of an LLM-formatted source summary. */
+export interface SourceSummarizeResult {
+  summary: string;
+  keyClaims: string[];
+  relevanceScore: number;
+  provider: string;
+}
+
+/* ── Conversational interview / dossier check ──────────────────── */
+
+export type InterviewStyle = "form" | "conversational";
+
+export interface DossierObservation {
+  field: keyof ProjectInterviewAnswers;
+  current: string;
+  suggested: string;
+  reason: string;
+}
+
+export interface DossierCheckResult {
+  observations: DossierObservation[];
+  provider: string;
+}
+
+/* ── AI Provider & BYOK Configuration ───────────────────────────── */
 
 export type AiProviderType =
   | "openai"
   | "anthropic"
   | "google"
   | "openai-compatible";
+
+export interface AiProviderConfig {
+  id: string;
+  name: string;
+  type: AiProviderType;
+  apiKey: string;
+  baseUrl?: string;
+  defaultModel: string;
+}
 
 export type AiFeature =
   | "persona-feedback"
@@ -149,49 +312,28 @@ export type AiFeature =
   | "comment-reply"
   | "citation-format"
   | "source-summarize"
-  | "source-detect-missing";
+  | "source-detect-missing"
+  | "interview-turn"
+  | "dossier-check";
 
-/* ── Client-side AI results (re-exported for the UI) ─────────────── */
-
-/** Result of an LLM-formatted citation. */
-export interface SourceSummarizeResult {
-  summary: string;
-  keyClaims: string[];
-  relevanceScore: number;
-  provider: string;
-}
-
-export interface AiProviderConfig {
-  id: string;
-  type: AiProviderType;
-  /** Display label for the UI. */
-  name: string;
-  /** Provider API key — never leaves the browser. */
-  apiKey: string;
-  /** The default model id for this provider (e.g. "gpt-4o-mini"). */
-  defaultModel: string;
-  /** For openai-compatible: required base URL of the API. */
-  baseUrl?: string;
-  /** Free-form notes for the writer (shown in the settings panel). */
-  notes?: string;
-  /** When this provider was added to the settings. */
-  addedAt?: number;
+/** Writer-level preferences (how onboarding / interview behaves). */
+export interface WriterSettings {
+  /** Form-based AntiTabulaRasa vs the conversational interview. */
+  interviewStyle: "form" | "conversational";
 }
 
 export interface AiFeatureOverride {
-  providerId?: string;
+  providerId: string;
   model?: string;
   temperature?: number;
   maxTokens?: number;
 }
 
 export interface AiSettings {
-  /** Master switch — when false, all BYOK calls short-circuit. */
   advancedMode: boolean;
   providers: AiProviderConfig[];
   defaultProviderId: string | null;
   perFeature: Partial<Record<AiFeature, AiFeatureOverride>>;
-  /** Whether the UI shows "via openai" / "via anthropic" provider tags. */
   showProviderTags: boolean;
 }
 
@@ -203,60 +345,41 @@ export const DEFAULT_AI_SETTINGS: AiSettings = {
   showProviderTags: false,
 };
 
-export interface AiProviderMeta {
+/* ── Provider metadata (labels, defaults) ───────────────────────── */
+
+export interface ProviderMeta {
   type: AiProviderType;
   label: string;
-  /** Help text shown beside the API-key field. */
-  help: string;
-  /** Default model ids to offer in the model picker. */
   defaultModels: string[];
-  /** Whether this provider needs a baseUrl field. */
   needsBaseUrl: boolean;
-  /** Whether this provider needs an API key. */
-  needsApiKey: boolean;
-  /** Human-readable placeholder for the model field. */
-  modelPlaceholder: string;
 }
 
-export const PROVIDER_METAS: ReadonlyArray<AiProviderMeta> = [
+export const PROVIDER_METAS: ProviderMeta[] = [
   {
     type: "openai",
     label: "OpenAI",
-    help: "Direct OpenAI API. Your key is stored only in this browser's IndexedDB.",
-    defaultModels: ["gpt-4o-mini", "gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
+    defaultModels: ["gpt-4o", "gpt-4o-mini", "o3-mini"],
     needsBaseUrl: false,
-    needsApiKey: true,
-    modelPlaceholder: "gpt-4o-mini",
   },
   {
     type: "anthropic",
     label: "Anthropic",
-    help: "Direct Anthropic API. Your key is stored only in this browser's IndexedDB.",
-    defaultModels: [
-      "claude-3-5-sonnet-latest",
-      "claude-3-5-haiku-latest",
-      "claude-3-opus-latest",
-    ],
+    defaultModels: ["claude-sonnet-4-5", "claude-haiku-4-5"],
     needsBaseUrl: false,
-    needsApiKey: true,
-    modelPlaceholder: "claude-3-5-sonnet-latest",
   },
   {
     type: "google",
-    label: "Google AI",
-    help: "Google Generative AI (Gemini). Your key is stored only in this browser's IndexedDB.",
-    defaultModels: ["gemini-1.5-flash", "gemini-1.5-pro", "gemini-2.0-flash-exp"],
+    label: "Google",
+    defaultModels: [
+      "gemini-2.5-flash-preview-05-20",
+      "gemini-2.5-pro-preview-06-05",
+    ],
     needsBaseUrl: false,
-    needsApiKey: true,
-    modelPlaceholder: "gemini-1.5-flash",
   },
   {
     type: "openai-compatible",
     label: "OpenAI-compatible",
-    help: "Any OpenAI-compatible endpoint (OpenRouter, Together, local Ollama, etc.). Provide the base URL.",
-    defaultModels: ["default"],
+    defaultModels: ["anthropic/claude-sonnet-4-5"],
     needsBaseUrl: true,
-    needsApiKey: true,
-    modelPlaceholder: "model-id",
   },
 ];

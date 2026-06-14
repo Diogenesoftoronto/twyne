@@ -7,6 +7,7 @@ import { defineConfig, type UserConfig } from "vite";
 import { qwikVite } from "@builder.io/qwik/optimizer";
 import { qwikCity } from "@builder.io/qwik-city/vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { fileURLToPath } from "node:url";
 import pkg from "./package.json";
 
 type PkgDep = Record<string, string>;
@@ -23,6 +24,21 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
 export default defineConfig(({ command, mode }): UserConfig => {
   return {
     plugins: [tailwindcss(), qwikCity(), qwikVite(), tsconfigPaths({ root: "." })],
+    resolve: {
+      // `@atproto/jwk-jose` imports `jose`, whose exports map exposes a
+      // `browser` build (WebCrypto) and a `node` build (`node:crypto`).
+      // Without `browser` in the condition list the client bundle pulls the
+      // node build and Rollup fails on `createHash` from `node:crypto`.
+      conditions: ["browser", "module", "import", "default"],
+      alias: {
+        // `ai` → `@ai-sdk/gateway` → `@vercel/oidc` reads `process` at
+        // module-eval time and crashes in the browser. Twyne is BYOK and
+        // never uses the Vercel gateway, so stub it out everywhere.
+        "@vercel/oidc": fileURLToPath(
+          new URL("./src/vendor-stubs/vercel-oidc.ts", import.meta.url),
+        ),
+      },
+    },
     // This tells Vite which dependencies to pre-build in dev mode.
     optimizeDeps: {
       // Put problematic deps that break bundling here, mostly those with binaries.

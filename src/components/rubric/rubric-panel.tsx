@@ -1,11 +1,53 @@
-import { component$, useStore, $ } from "@builder.io/qwik";
-import type { ProjectBrief, RubricResult, RubricCriterion } from "../../types";
+import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
+import { Link } from "@builder.io/qwik-city";
+import { useConvexClient } from "../../utils/convex-context";
+import { api } from "../../../convex/_generated/api";
+import type { ProjectBrief } from "../../types";
 import { loadDraftText, summarizeBrief } from "../../utils/anti-tabula-rasa";
-import { detectCitations } from "../../utils/citations";
+import {
+  scoreStaticFeatures,
+  combineJudgesAndStatic,
+  type StaticScore,
+  type JudgeResult,
+} from "../../utils/rubric";
+import {
+  loadRubricResultFromIdb,
+  saveRubricResultToIdb,
+  loadAiSettingsFromIdb,
+} from "../../utils/idb";
+import type { AiSettings } from "../../types";
+import {
+  runClientJudge,
+  normalizeAiSettings,
+} from "../../utils/ai-client";
 
 interface RubricStore {
   result: RubricResult | null;
   isAnalyzing: boolean;
+  error: string | null;
+  judges: JudgeResult[];
+  static: StaticScore | null;
+  brief: ProjectBrief | null;
+  aiSettings: AiSettings | null;
+}
+
+interface RubricCriterion {
+  id: string;
+  label: string;
+  description: string;
+  score: number;
+  maxScore: number;
+  feedback: string;
+}
+
+interface RubricResult {
+  criteria: RubricCriterion[];
+  overallScore: number;
+  overallGrade: string;
+  summary: string;
+  timestamp: number;
+  judges: JudgeResult[];
+  staticScore: StaticScore;
 }
 
 interface RubricPanelProps {
@@ -13,17 +55,134 @@ interface RubricPanelProps {
 }
 
 export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
+  const clientSig = useConvexClient();
   const store = useStore<RubricStore>({
     result: null,
     isAnalyzing: false,
+    error: null,
+    judges: [],
+    static: null,
+    brief: null,
+    aiSettings: null,
   });
 
-  const analyze = $(() => {
+  const analyze = $(async () => {
     store.isAnalyzing = true;
-    setTimeout(() => {
-      store.result = generateContextualRubric(brief, loadDraftText());
+    store.error = null;
+    try {
+      const draftText = await loadDraftText();
+      const client = clientSig.value;
+
+      // 1. Run the static-feature scorer in the browser (cheap, deterministic).
+      const staticScore = scoreStaticFeatures(draftText);
+      store.static = staticScore;
+
+      // 2. Run the five personas as judges. Try client AI first (BYOK),
+      //    then Convex server action, then local heuristic.
+      let judges: JudgeResult[] = [];
+
+      const settings = store.aiSettings;
+      if (
+        settings?.advancedMode &&
+        settings.providers.length > 0
+      ) {
+        try {
+          const personas = defaultPersonas();
+          const tasks = personas.map(async (p) => {
+            const res = await runClientJudge(
+              {
+                persona: {
+                  id: p.id,
+                  name: p.name,
+                  role: p.role,
+                  description: p.description,
+                  focus: p.focus,
+                  color: p.color,
+                  icon: p.icon,
+                },
+                brief: brief ?? null,
+                draftText,
+                instruction: "feedback",
+              },
+              settings,
+            );
+            return {
+              personaId: p.id,
+              score: res?.score ?? 5,
+              rationale:
+                res?.rationale ??
+                "The draft is partial; the work to come is the interesting part.",
+              provider: res ? `client-${res.provider}` : "local",
+            } as JudgeResult;
+          });
+          judges = await Promise.all(tasks);
+        } catch (err) {
+          console.warn("[twyne:rubric] client judges failed:", err);
+        }
+      }
+
+      if (judges.length === 0 && client) {
+        try {
+          const personasForServer = defaultPersonas().map((p) => ({
+            id: p.id,
+            name: p.name,
+            role: p.role,
+            description: p.description,
+            focus: p.focus,
+            color: p.color,
+            icon: p.icon,
+          }));
+          judges = (await client.action(api.agents.judgeRoom, {
+            personas: personasForServer,
+            brief: brief ?? null,
+            draftText,
+          })) as JudgeResult[];
+        } catch (err) {
+          store.error = (err as Error).message ?? "Judges unavailable.";
+          judges = localJudges(draftText, brief);
+        }
+      }
+
+      if (judges.length === 0) {
+        judges = localJudges(draftText, brief);
+      }
+      store.judges = judges;
+
+      // 3. Combine into a brutal grade.
+      const combined = combineJudgesAndStatic(judges, staticScore, brief);
+      const criteria = buildCriteria(
+        staticScore,
+        judges,
+        combined.combined,
+        brief,
+      );
+
+      const result: RubricResult = {
+        criteria,
+        overallScore: combined.combined,
+        overallGrade: combined.grade,
+        summary: combined.summary,
+        timestamp: Date.now(),
+        judges,
+        staticScore,
+      };
+      store.result = result;
+      void saveRubricResultToIdb(result);
+    } finally {
       store.isAnalyzing = false;
-    }, 2000);
+    }
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    const cached = await loadRubricResultFromIdb();
+    if (cached && !store.result) {
+      store.result = cached;
+      store.judges = cached.judges ?? [];
+      store.static = cached.staticScore ?? null;
+    }
+    const aiRaw = await loadAiSettingsFromIdb();
+    store.aiSettings = normalizeAiSettings(aiRaw);
   });
 
   const getScoreColor = (score: number, max: number) => {
@@ -41,36 +200,67 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
   };
 
   return (
-    <div class="flex flex-col h-full">
-      <div class="px-4 py-3 border-b border-[var(--color-surface-3)]">
-        <h2 class="text-sm font-semibold text-[var(--color-ink)] flex items-center gap-2">
-          <span>📋</span> Writing Rubric
+    <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
+      <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+        <p class="dept-label">Dept. of Rigor</p>
+        <h2
+          class="mt-0.5 text-xl text-[var(--color-ink)]"
+          style="font-family: var(--font-display); font-weight: 600;"
+        >
+          The Galley Proof
         </h2>
-        <p class="text-xs text-[var(--color-ink-muted)] mt-1">
+        <p
+          class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
+          style="font-family: var(--font-serif); font-style: italic;"
+        >
           {summarizeBrief(brief)}
         </p>
       </div>
 
       {!store.result && !store.isAnalyzing && (
-        <div class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
-          <p class="text-4xl mb-4">🎓</p>
-          <p class="text-sm text-[var(--color-ink-light)] mb-4">
-            Run the rubric to see how your writing scores across key dimensions
-          </p>
-          <button
-            onClick$={analyze}
-            class="py-2 px-4 rounded-lg text-sm font-medium bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-dark)] transition-colors"
+        <div class="flex-1 flex flex-col items-center justify-center px-6 py-10 text-center">
+          <p
+            class="text-4xl"
+            style="font-family: var(--font-display); color: var(--color-cobalt);"
           >
-            Run Rubric Analysis
+            ❧
+          </p>
+          <p
+            class="mt-3 text-sm text-[var(--color-ink-light)] max-w-xs leading-6"
+            style="font-family: var(--font-serif); font-style: italic;"
+          >
+            Send the galley to the proof desk. Five judges read it, then the
+            rubric counts features the eye can't see.
+          </p>
+          <button onClick$={analyze} class="btn-press mt-5">
+            Send to copyedit
           </button>
         </div>
       )}
 
       {store.isAnalyzing && (
-        <div class="flex-1 flex flex-col items-center justify-center px-6 py-8 text-center">
-          <div class="animate-spin text-4xl mb-4">⟳</div>
-          <p class="text-sm text-[var(--color-ink-muted)]">
-            Analyzing your writing across all criteria...
+        <div
+          class="flex-1 flex flex-col items-center justify-center px-6 py-10 text-center"
+          role="status"
+        >
+          <div
+            class="text-4xl animate-spin"
+            aria-hidden="true"
+            style="font-family: var(--font-display); color: var(--color-cobalt);"
+          >
+            ✦
+          </div>
+          <p
+            class="mt-4 text-sm text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-typewriter); letter-spacing: 0.15em; text-transform: uppercase;"
+          >
+            Five judges reading…
+          </p>
+          <p
+            class="mt-2 text-[11px] text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-typewriter); letter-spacing: 0.15em;"
+          >
+            Measuring sentence cadence, citation density, paragraph shape
           </p>
         </div>
       )}
@@ -78,51 +268,108 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       {store.result && !store.isAnalyzing && (
         <div class="flex-1 overflow-y-auto">
           {/* Overall score */}
-          <div class="px-4 py-4 border-b border-[var(--color-surface-3)] bg-[var(--color-surface)]">
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs text-[var(--color-ink-muted)] uppercase tracking-wider">
-                  Overall Grade
-                </p>
-                <p
-                  class={`text-3xl font-bold ${getGradeColor(store.result.overallGrade)}`}
-                >
-                  {store.result.overallGrade}
-                </p>
+          <div class="px-5 py-5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+            <div class="flex items-stretch gap-4">
+              <div
+                class={`flex-shrink-0 w-20 h-20 flex items-center justify-center ${getGradeColor(store.result.overallGrade)}`}
+                role="img"
+                aria-label={`Overall grade ${store.result.overallGrade}, ${store.result.overallScore} of 100`}
+                style={{
+                  borderRadius: "999px",
+                  border: "2.5px solid currentColor",
+                  fontFamily: "var(--font-display)",
+                  fontWeight: 700,
+                  fontSize: "2.25rem",
+                  lineHeight: 1,
+                  fontStyle: "italic",
+                  transform: "rotate(-4deg)",
+                  background: "rgba(255,255,255,0.4)",
+                }}
+              >
+                {store.result.overallGrade}
               </div>
-              <div class="text-right">
-                <p class="text-xs text-[var(--color-ink-muted)]">Score</p>
-                <p class="text-2xl font-semibold text-[var(--color-ink)]">
+              <div class="flex-1 min-w-0">
+                <p class="dept-label">Editor's Mark</p>
+                <p
+                  class="mt-0.5 text-lg text-[var(--color-ink)]"
+                  style="font-family: var(--font-display); font-weight: 600;"
+                >
                   {store.result.overallScore}
                   <span class="text-sm text-[var(--color-ink-muted)]">
-                    /100
+                    {" "}
+                    / 100
                   </span>
+                </p>
+                <p
+                  class="mt-1.5 text-xs leading-5 text-[var(--color-ink-light)]"
+                  style="font-family: var(--font-serif); font-style: italic;"
+                >
+                  {store.result.summary}
                 </p>
               </div>
             </div>
-            <p class="text-xs text-[var(--color-ink-light)] mt-2 leading-relaxed">
-              {store.result.summary}
-            </p>
+
+            {/* Per-judge scorecard */}
+            <div class="mt-4 pt-4 border-t border-dashed border-[var(--color-paper-3)]">
+              <p class="dept-label">The Judges' Verdict</p>
+              <ul class="mt-2 space-y-1.5">
+                {store.result.judges.map((j) => (
+                  <li
+                    key={j.personaId}
+                    class="flex items-start gap-2 text-[12px] leading-5"
+                  >
+                    <span
+                      class="font-mono flex-shrink-0 w-6 text-right"
+                      style={{
+                        color:
+                          j.score >= 7
+                            ? "var(--color-accent-green)"
+                            : j.score >= 4
+                              ? "var(--color-accent-amber)"
+                              : "var(--color-accent-red)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {j.score}
+                    </span>
+                    <span
+                      class="flex-1 text-[var(--color-ink-light)]"
+                      style="font-family: var(--font-serif); font-style: italic;"
+                    >
+                      <span class="not-italic font-semibold text-[var(--color-ink)]">
+                        {j.personaId}
+                      </span>
+                      {" — "}
+                      {j.rationale}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          {/* Criteria breakdown */}
-          <div class="px-4 py-3 space-y-3">
-            {store.result.criteria.map((criterion) => (
+          {/* Criteria */}
+          <div class="px-4 py-4 space-y-3">
+            {store.result.criteria.map((criterion, idx) => (
               <RubricCriterionCard
                 key={criterion.id}
                 criterion={criterion}
+                index={idx + 1}
                 scoreColor={getScoreColor(criterion.score, criterion.maxScore)}
               />
             ))}
           </div>
 
-          {/* Re-run button */}
-          <div class="px-4 py-3 border-t border-[var(--color-surface-3)]">
-            <button
-              onClick$={analyze}
-              class="w-full py-2 px-3 rounded-lg text-xs font-medium bg-[var(--color-surface-2)] text-[var(--color-ink-light)] hover:bg-[var(--color-surface-3)] transition-colors"
+          <div class="px-4 py-3 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] space-y-2">
+            <Link
+              href="/rubric"
+              class="block w-full text-center text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+              style="font-family: var(--font-typewriter); letter-spacing: 0.12em; text-transform: uppercase;"
             >
-              Re-run Analysis
+              Expand ↗ Full galley report
+            </Link>
+            <button onClick$={analyze} class="btn-paper w-full">
+              ↻ Send back for re-reading
             </button>
           </div>
         </div>
@@ -134,156 +381,268 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
 function RubricCriterionCard({
   criterion,
   scoreColor,
+  index,
 }: {
   criterion: RubricCriterion;
   scoreColor: string;
+  index: number;
 }) {
   const pct = Math.round((criterion.score / criterion.maxScore) * 100);
+  const roman =
+    ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][index - 1] ||
+    `${index}`;
 
   return (
-    <div class="rounded-lg bg-white p-3 shadow-sm">
-      <div class="flex items-center justify-between mb-1.5">
-        <span class="text-xs font-semibold text-[var(--color-ink)]">
-          {criterion.label}
-        </span>
-        <span class="text-xs font-mono" style={{ color: scoreColor }}>
+    <div
+      class="bg-[var(--color-paper)] border border-[var(--color-paper-3)] p-4"
+      style="border-radius: 2px;"
+    >
+      <div class="flex items-baseline justify-between gap-3 mb-2">
+        <div class="flex items-baseline gap-2 min-w-0">
+          <span
+            class="text-xs flex-shrink-0"
+            style={{
+              fontFamily: "var(--font-typewriter)",
+              color: "var(--color-ink-muted)",
+              letterSpacing: "0.15em",
+            }}
+          >
+            §{roman}
+          </span>
+          <span
+            class="text-sm text-[var(--color-ink)] truncate"
+            style="font-family: var(--font-display); font-weight: 600;"
+          >
+            {criterion.label}
+          </span>
+        </div>
+        <span
+          class="text-xs flex-shrink-0"
+          style={{
+            color: scoreColor,
+            fontFamily: "var(--font-typewriter)",
+            letterSpacing: "0.1em",
+          }}
+        >
           {criterion.score}/{criterion.maxScore}
         </span>
       </div>
-      <div class="w-full h-1.5 rounded-full bg-[var(--color-surface-2)] mb-2">
+      <div
+        class="w-full h-[3px] bg-[var(--color-paper-2)] mb-2.5"
+        role="meter"
+        aria-label={criterion.label}
+        aria-valuemin={0}
+        aria-valuemax={criterion.maxScore}
+        aria-valuenow={criterion.score}
+      >
         <div
-          class="rubric-bar h-full rounded-full"
+          class="rubric-bar h-full"
           style={{
             width: `${pct}%`,
             backgroundColor: scoreColor,
           }}
         />
       </div>
-      <p class="text-xs text-[var(--color-ink-muted)] leading-relaxed">
+      <p
+        class="text-xs leading-5 text-[var(--color-ink-light)]"
+        style="font-family: var(--font-serif);"
+      >
         {criterion.feedback}
       </p>
+      {pct < 60 && (
+        <p
+          class="mt-1.5 text-[11px] leading-5"
+          style={{
+            fontFamily: "var(--font-typewriter)",
+            color: "var(--color-vermilion)",
+          }}
+        >
+          Next move → {nextMoveFor(criterion.id)}
+        </p>
+      )}
     </div>
   );
 }
 
-function generateContextualRubric(
-  brief: ProjectBrief | null,
-  draftText: string,
-): RubricResult {
-  const answers = brief?.answers;
-  const words = draftText.split(/\s+/).filter(Boolean);
-  const wordCount = words.length;
-  const paragraphCount = draftText.split(/\n{2,}/).filter(Boolean).length;
-  const citationCount = detectCitations(draftText).length;
-  const hasBrief = Boolean(brief);
-  const hasSubstantialDraft = wordCount >= 120;
-  const audience = answers?.audience || "the intended reader";
-  const goal = answers?.goal || "the central goal";
-  const tone = answers?.tone || "the target tone";
-  const successSignal = answers?.successSignal || "the intended outcome";
+/** A concrete, prescriptive next step for a low-scoring criterion. */
+function nextMoveFor(id: string): string {
+  const moves: Record<string, string> = {
+    thesis:
+      "State the load-bearing claim in one sentence near the top, then make every section earn it.",
+    evidence:
+      "Pick the two weakest claims and attach a source, example, or number to each.",
+    structure:
+      "Add a section break or transition where the argument changes gears; cut a paragraph that repeats.",
+    pacing:
+      "Vary sentence length — break one long sentence in three, and merge two short ones.",
+    voice:
+      "Rewrite the opening line in the target tone; let it set the register for the rest.",
+    vocabulary:
+      "Replace three abstractions with concrete nouns; cut one piece of jargon per paragraph.",
+    paragraph: "Split any paragraph over ~6 sentences; give each a single job.",
+    engagement:
+      "Put a stake or a question in the first 100 words so the reader knows why to continue.",
+  };
+  return (
+    moves[id] ??
+    "Make the one change that would most move this score, then re-read."
+  );
+}
 
-  const criteria: RubricCriterion[] = [
+/* ── Helpers ───────────────────────────────────────────────────── */
+
+import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
+
+function defaultPersonas() {
+  return DEFAULT_PERSONAS;
+}
+
+function clampScore(score: number): number {
+  if (!Number.isFinite(score)) return 5;
+  return Math.max(1, Math.min(10, Math.round(score)));
+}
+
+function localJudges(
+  draftText: string,
+  brief: ProjectBrief | null,
+): JudgeResult[] {
+  const wc = draftText.split(/\s+/).filter(Boolean).length;
+  const hasBrief = !!brief;
+  const hasBody = wc > 80;
+  let base = 3;
+  if (hasBrief) base += 1;
+  if (hasBody) base += 1;
+  if (wc > 350) base += 1;
+  if (wc > 800) base += 1;
+
+  return DEFAULT_PERSONAS.map((p) => {
+    let bias = 0;
+    let rationale =
+      "The draft is partial; the work to come is the interesting part.";
+    if (p.id === "devil") {
+      bias = wc < 200 ? -1 : 0;
+      rationale =
+        wc < 200
+          ? "The argument is still under construction; the load-bearing claim is not yet visible."
+          : "The argument moves, but the strongest counter-objection is still unstated.";
+    } else if (p.id === "angel") {
+      bias = hasBody ? 1 : 0;
+      rationale = hasBody
+        ? "There is at least one paragraph doing real work; protect it."
+        : "The opening gestures are honest; trust them, then add weight.";
+    } else if (p.id === "scholar") {
+      bias = -1;
+      rationale = "Claims outrun evidence; the bibliography is thin.";
+    } else if (p.id === "editor") {
+      bias = wc > 200 ? 0 : -1;
+      rationale =
+        wc > 200
+          ? "Sentences are present, but rhythm and concision need a pass."
+          : "The draft is too short to evaluate the cut; write more first.";
+    } else if (p.id === "reader") {
+      bias = hasBrief ? 0 : -1;
+      rationale = hasBrief
+        ? "As the named audience, I would keep reading past the open."
+        : "Without a clear audience, the opening is interesting but slippery.";
+    }
+    return {
+      personaId: p.id,
+      score: clampScore(base + bias),
+      rationale,
+      provider: "local",
+    };
+  });
+}
+
+function buildCriteria(
+  staticScore: StaticScore,
+  judges: JudgeResult[],
+  final: number,
+  brief: ProjectBrief | null,
+): RubricCriterion[] {
+  const audience = brief?.answers.audience || "the intended reader";
+  const goal = brief?.answers.goal || "the central goal";
+  const tone = brief?.answers.tone || "the target tone";
+  const judgeMean =
+    judges.length > 0
+      ? Math.round(
+          (judges.reduce((s, j) => s + j.score, 0) / judges.length) * 10,
+        ) / 10
+      : 0;
+  return [
     {
       id: "thesis",
       label: "Thesis & Argument",
-      description: "Clarity and strength of central argument",
-      score: hasSubstantialDraft ? 7 : 4,
+      description: "Clarity and strength of the central argument",
+      score: Math.min(10, Math.round(judgeMean * 10) / 10),
       maxScore: 10,
-      feedback: hasSubstantialDraft
-        ? `The draft has enough material to test against the stated goal: ${goal}. The next improvement is making the central claim explicit earlier.`
-        : `The brief names the goal, but the draft needs more body text before the argument can carry it: ${goal}.`,
+      feedback: `Judges averaged ${judgeMean}/10 on the central claim. The next pass is to make the load-bearing claim visible earlier against the stated goal: ${goal}.`,
     },
     {
       id: "evidence",
       label: "Evidence & Support",
       description: "Quality and relevance of supporting evidence",
-      score: Math.min(9, 4 + citationCount + (hasSubstantialDraft ? 1 : 0)),
+      score: Math.min(10, staticScore.perFeature.evidence),
       maxScore: 10,
-      feedback:
-        citationCount > 0
-          ? `${citationCount} citation-like reference${citationCount === 1 ? "" : "s"} found. Now check whether each source helps ${audience}, rather than merely decorating the prose.`
-          : `No citations were detected. Add source support or concrete examples for claims that ${audience} would not accept on trust.`,
+      feedback: `${staticScore.features.citationCount} citation-like reference${
+        staticScore.features.citationCount === 1 ? "" : "s"
+      } detected (${staticScore.features.citationDensity.toFixed(
+        1,
+      )} per 1,000 words). For ${audience}, evidence should earn its place.`,
     },
     {
       id: "structure",
       label: "Organization & Flow",
       description: "Logical structure and transitions",
-      score: paragraphCount >= 4 ? 8 : 5,
+      score: Math.min(10, staticScore.perFeature.structure),
       maxScore: 10,
-      feedback:
-        paragraphCount >= 4
-          ? "The draft has enough paragraph structure to start shaping section-level movement. Check that each section changes what the reader knows."
-          : "The draft needs more paragraph-level development before flow can be judged. Build a beginning, a turn, and a landing.",
+      feedback: `${staticScore.features.paragraphCount} paragraph${
+        staticScore.features.paragraphCount === 1 ? "" : "s"
+      } across ${staticScore.features.sentenceCount} sentences. ${staticScore.feedback[0] ?? ""}`,
     },
     {
-      id: "clarity",
-      label: "Clarity & Precision",
-      description: "Word choice, sentence clarity, concision",
-      score: hasSubstantialDraft ? 7 : 5,
+      id: "pacing",
+      label: "Pacing & Rhythm",
+      description: "Sentence length variation and cadence",
+      score: Math.min(10, staticScore.perFeature.pacing),
       maxScore: 10,
-      feedback: `Revise for the reader named in the brief: ${audience}. Prefer concrete nouns and remove sentences that do not move the piece toward its goal.`,
+      feedback: `Average sentence is ${staticScore.features.avgSentenceLength.toFixed(
+        1,
+      )} words, with a standard deviation of ${staticScore.features.sentenceLengthStdDev.toFixed(
+        1,
+      )}. A healthy mix lives in 12-22 word sentences with variance of 5-10.`,
     },
     {
       id: "voice",
       label: "Voice & Tone",
-      description: "Consistency and appropriateness of voice for audience",
-      score: hasBrief ? 8 : 5,
+      description: "Consistency of voice for the named audience",
+      score: Math.min(10, judgeMean),
       maxScore: 10,
-      feedback: hasBrief
-        ? `The target tone is clear: ${tone}. Keep checking diction against that promise.`
-        : "The tone needs a project brief before it can be evaluated with confidence.",
+      feedback: `Target tone: ${tone}. Read aloud — does the cadence match the reader, ${audience}?`,
     },
     {
-      id: "mechanics",
-      label: "Grammar & Mechanics",
-      description: "Spelling, punctuation, grammar correctness",
-      score: hasSubstantialDraft ? 8 : 6,
+      id: "vocabulary",
+      label: "Vocabulary & Diction",
+      description: "Type-token ratio and word choice",
+      score: Math.min(10, staticScore.perFeature.vocabulary),
       maxScore: 10,
-      feedback: hasSubstantialDraft
-        ? "The draft is ready for sentence-level cleanup after the argument pass. Start with repeated openings, vague intensifiers, and overlong sentences."
-        : "Mechanics are secondary until there is enough prose to edit. Draft first, polish after the shape exists.",
+      feedback: `Type-token ratio: ${(staticScore.features.uniqueWordsRatio * 100).toFixed(1)}% (${staticScore.features.avgWordLength.toFixed(1)} average word length). Healthy range: 35-60%.`,
     },
     {
-      id: "citation",
-      label: "Citations & Sources",
-      description: "Proper attribution and source quality",
-      score: citationCount > 0 ? Math.min(8, 4 + citationCount) : 3,
+      id: "paragraph",
+      label: "Paragraph Shape",
+      description: "Balance of short and long paragraphs",
+      score: Math.min(10, staticScore.perFeature.paragraphShape),
       maxScore: 10,
-      feedback:
-        citationCount > 0
-          ? "Detected source markers should be matched against a references section before the draft is considered complete."
-          : "Add references for factual claims, definitions, data, and any point where reader trust depends on outside support.",
+      feedback: `${(staticScore.features.shortParagraphRatio * 100).toFixed(0)}% of paragraphs are short, ${(staticScore.features.longParagraphRatio * 100).toFixed(0)}% are long. A balance of 2-3 sentence paragraphs and 5-8 sentence paragraphs reads best.`,
     },
     {
       id: "engagement",
       label: "Reader Engagement",
-      description: "Ability to hold attention and create interest",
-      score: hasBrief && hasSubstantialDraft ? 7 : 5,
+      description: "Whether the reader reaches the success signal",
+      score: Math.min(10, Math.max(0, Math.round((final / 100) * 10))),
       maxScore: 10,
-      feedback: `The engagement test is whether the reader reaches this outcome: ${successSignal}. Make that promise visible in the opening movement.`,
+      feedback: `Combined score ${final}/100. ${final >= 80 ? "Strong work — keep going." : final >= 65 ? "Real progress, but the room is still asking for more." : "The next pass is the important one."}`,
     },
   ];
-
-  const totalScore = criteria.reduce((sum, c) => sum + c.score, 0);
-  const maxTotal = criteria.reduce((sum, c) => sum + c.maxScore, 0);
-  const overallScore = Math.round((totalScore / maxTotal) * 100);
-
-  let grade = "C";
-  if (overallScore >= 90) grade = "A";
-  else if (overallScore >= 85) grade = "A-";
-  else if (overallScore >= 80) grade = "B+";
-  else if (overallScore >= 75) grade = "B";
-  else if (overallScore >= 70) grade = "B-";
-  else if (overallScore >= 65) grade = "C+";
-  else if (overallScore >= 60) grade = "C";
-
-  return {
-    criteria,
-    overallScore,
-    overallGrade: grade,
-    summary: hasSubstantialDraft
-      ? `The draft is ready for a goal-driven revision pass. Strongest next move: align evidence, structure, and tone around ${goal}.`
-      : "The project brief is in place. The main gap is drafting enough body text for the rubric to evaluate beyond intent.",
-    timestamp: Date.now(),
-  };
 }

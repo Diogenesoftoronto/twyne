@@ -704,3 +704,183 @@ export function normalizeAiSettings(
     perFeature: partial.perFeature ?? {},
   };
 }
+
+/* ── Conversational interview (BYOK) ────────────────────────────── */
+
+import type { ProjectBrief, ProjectInterviewAnswers } from "../types";
+
+export type InterviewConfidence = "high" | "medium" | "low";
+
+export interface InterviewMessage {
+  author: "writer" | "interviewer";
+  text: string;
+}
+
+export type InterviewMode = "first-run" | "refine";
+
+export interface InterviewTurnRequest {
+  messages: InterviewMessage[];
+  mode: InterviewMode;
+  currentBrief: ProjectBrief | null;
+}
+
+/**
+ * The synthesis the AI hands back when it has enough information to
+ * draft a dossier. `brief` is filled best-effort from the conversation
+ * (defaults to the writer's current answer if a field wasn't discussed);
+ * `confidence` is per-field so the UI can mark the speculative ones.
+ */
+export type InterviewTurnResult =
+  | { kind: "question"; text: string; provider: string; model: string }
+  | {
+      kind: "synthesis";
+      brief: ProjectInterviewAnswers;
+      confidence: Partial<
+        Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+      >;
+      provider: string;
+      model: string;
+    };
+
+/**
+ * Run one conversational-interview turn against the writer's configured
+ * provider. Returns null when BYOK is off / no providers — the caller
+ * is expected to fall back to the form-based `AntiTabulaRasa`.
+ */
+export async function runClientInterviewTurn(
+  request: InterviewTurnRequest,
+  settings: AiSettings,
+): Promise<InterviewTurnResult | null> {
+  const cfg = resolveFeatureConfig(settings, "interview-turn");
+  if (!cfg) return null;
+  const model = await createModel(cfg.provider, cfg.model);
+  if (!model) return null;
+  try {
+    const lastUser = [...request.messages].reverse().find(
+      (m) => m.author === "writer",
+    );
+    const system = [
+      "You are a kind, incisive editorial interviewer helping a writer build a project dossier.",
+      "Ask one question at a time. Keep it short. When you have enough to draft the dossier, append a line that begins with `SYNTHESIZE:` followed by a JSON object with the fields { workingTitle, format, audience, goal, tone, constraints, successSignal } and a second JSON object with per-field confidence in { high, medium, low }.",
+      request.mode === "refine" && request.currentBrief
+        ? `Existing dossier: ${JSON.stringify(request.currentBrief.answers)} — refine it, don't restart.`
+        : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const transcript = request.messages
+      .map((m) => `${m.author === "writer" ? "Writer" : "You"}: ${m.text}`)
+      .join("\n");
+    const { text } = await generateText({
+      model,
+      system,
+      prompt: transcript,
+      temperature: cfg.temperature,
+      maxOutputTokens: cfg.maxTokens,
+    });
+    const synthMatch = text.match(
+      /SYNTHESIZE:\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})?/,
+    );
+    if (synthMatch) {
+      try {
+        const brief = JSON.parse(synthMatch[1]) as ProjectInterviewAnswers;
+        const confidence = synthMatch[2]
+          ? (JSON.parse(synthMatch[2]) as Partial<
+              Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+            >)
+          : {};
+        return {
+          kind: "synthesis",
+          brief,
+          confidence,
+          provider: cfg.provider.name,
+          model: cfg.model,
+        };
+      } catch {
+        // Malformed synthesis — fall through to a question reply.
+      }
+    }
+    const reply = text.trim() ||
+      (lastUser ? "Tell me more." : "What is the working title of this piece?");
+    return {
+      kind: "question",
+      text: reply,
+      provider: cfg.provider.name,
+      model: cfg.model,
+    };
+  } catch (err) {
+    console.warn("[twyne:ai-client] interview turn failed:", err);
+    return null;
+  }
+}
+
+/* ── Dossier check (BYOK) ───────────────────────────────────────── */
+
+/** Reads a draft against the brief, surfaces drift. */
+export interface DossierCheckRequest {
+  brief: ProjectBrief;
+  draftText: string | null;
+}
+
+/**
+ * Runs the "Read my draft" pass — asks the configured provider to
+ * compare the draft against the dossier and report fields that have
+ * drifted. Returns null when BYOK is off (caller shows the empty state).
+ */
+export async function runClientDossierCheck(
+  request: DossierCheckRequest,
+  settings: AiSettings,
+): Promise<{
+  observations: Array<{
+    field: keyof ProjectInterviewAnswers;
+    current: string;
+    suggested: string;
+    reason: string;
+  }>;
+  provider: string;
+} | null> {
+  const cfg = resolveFeatureConfig(settings, "dossier-check");
+  if (!cfg) return null;
+  const model = await createModel(cfg.provider, cfg.model);
+  if (!model) return null;
+  try {
+    const system = [
+      "You read a writer's draft against their project dossier.",
+      "Identify fields of the dossier that the draft has outgrown or contradicted.",
+      "Respond with a JSON object { observations: [{ field, current, suggested, reason }] }.",
+      "Valid fields: workingTitle, format, audience, goal, tone, constraints, successSignal.",
+      "If the draft is consistent with the dossier, return { observations: [] }.",
+    ].join("\n");
+    const user = `Dossier: ${JSON.stringify(request.brief.answers)}\n\nDraft:\n${request.draftText ?? "(no draft yet)"}`;
+    const { text } = await generateText({
+      model,
+      system,
+      prompt: user,
+      temperature: cfg.temperature,
+      maxOutputTokens: cfg.maxTokens,
+    });
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { observations: [] };
+    const observations = Array.isArray(parsed.observations) ? parsed.observations : [];
+    return {
+      observations: observations.filter(
+        (o: { field?: string }) =>
+          typeof o.field === "string" && o.field in DEFAULT_FIELDS,
+      ),
+      provider: cfg.provider.name,
+    };
+  } catch (err) {
+    console.warn("[twyne:ai-client] dossier check failed:", err);
+    return null;
+  }
+}
+
+const DEFAULT_FIELDS: Record<keyof ProjectInterviewAnswers, true> = {
+  workingTitle: true,
+  format: true,
+  audience: true,
+  goal: true,
+  tone: true,
+  constraints: true,
+  successSignal: true,
+};

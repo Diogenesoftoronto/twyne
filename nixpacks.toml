@@ -1,0 +1,19 @@
+# Nixpacks build for Railway.
+#
+# Twyne builds with Bun (fast install + Vite client/SSR build) but runs the
+# Qwik SSR server with Node — `server.js` uses `node:http` and listens on
+# `$PORT` (Railway injects it). Both toolchains are pinned in the setup phase
+# so the runtime image has `node` available for the start command.
+
+[phases.setup]
+nixPkgs = ["bun", "nodejs_20"]
+
+[phases.install]
+cmds = ["bun install --frozen-lockfile"]
+
+[phases.build]
+# Client browser bundle (dist/) then the SSR server entry (server/).
+cmds = ["bun run build.client && bun run build.server"]
+
+[start]
+cmd = "node server.js"

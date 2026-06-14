@@ -1,16 +1,32 @@
 {
   "name": "Twyne",
   "short_name": "Twyne",
-  "description": "The writer's room — AI-powered editing with a room full of editors",
+  "description": "A writer-first editing room for drafting with context and editorial voices.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf9f7",
-  "theme_color": "#6d5acf",
+  "background_color": "#f4ecd8",
+  "theme_color": "#9c1a1f",
   "icons": [
     {
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

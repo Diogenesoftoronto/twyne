@@ -8,7 +8,15 @@
  * @module
  */
 
+import type * as agentPrompts from "../agentPrompts.js";
+import type * as agents from "../agents.js";
+import type * as auth from "../auth.js";
+import type * as http from "../http.js";
+import type * as lixBlobs from "../lixBlobs.js";
+import type * as published from "../published.js";
 import type * as research from "../research.js";
+import type * as sync from "../sync.js";
+import type * as userComments from "../userComments.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +25,15 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  agentPrompts: typeof agentPrompts;
+  agents: typeof agents;
+  auth: typeof auth;
+  http: typeof http;
+  lixBlobs: typeof lixBlobs;
+  published: typeof published;
   research: typeof research;
+  sync: typeof sync;
+  userComments: typeof userComments;
 }>;
 
 /**
@@ -46,4 +62,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  betterAuth: import("@convex-dev/better-auth/_generated/component.js").ComponentApi<"betterAuth">;
+};

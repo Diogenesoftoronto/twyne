@@ -1,10 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <defs>
-    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6d5acf"/>
-      <stop offset="100%" stop-color="#8b7ae8"/>
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="6" fill="url(#g)"/>
-  <text x="16" y="23" text-anchor="middle" font-family="Georgia, serif" font-size="20" font-weight="bold" fill="white">τ</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#f4ecd8"/>
+  <g transform="translate(8 8) scale(0.32)" fill="#9c1a1f">
+    <path d="m134.8 1.6h-119.3v2.1c0 4.3-2.6 12.3-12.5 12.3h-0.9v118h0.9c9.9 0 12.5 7 12.5 12.3v2.3h119.4v-1.7c0.1-5.5 3.4-12.7 12.7-12.7h0.7v-118.1l-0.7-0.1c-10.2 0-12.8-7.3-12.8-12.3v-2.1zm8.2 19.3v108.4c-5.7 1.1-11.7 4.8-13.4 13.7h-109c-0.9-6.1-5.2-11.6-13.2-13.7v-108.2c8.7-1.7 12.2-8.1 13.2-14.1h109c1.1 5.6 4.8 12.3 13.4 13.9z"/>
+    <path d="m65.9 117c3.2 2 7.6 3.3 12 3.3 5.4 0 10.2-1.7 13.6-3.7 5-2.9 9.1-8.2 9.1-9l-2.8-3.7c-3.4 3.1-6.6 5.3-11.9 5.3-2 0-5.4-1-7.2-3.1-2.4-2.8-3.2-6.2-3.2-10.2v-45.5h21.9c0-2.9 0.1-6.5-0.2-7.2h-21.7v-18.9h-6.2l-0.9 2.3c-1.2 3.3-3.5 7-6.7 10.2-2.7 2.7-6.2 5.3-10.1 6.8l-0.4 0.2v6.1l0.1 0.5h7.3v49.6c0 3.6 1 8.1 2.7 11.3 1.1 1.8 2.7 4.3 4.6 5.7z"/>
+  </g>
 </svg>
