@@ -351,7 +351,7 @@ export default component$(() => {
             </p>
           </div>
           <Link
-            href="/"
+            href="/editor/"
             class="btn-paper text-sm"
             style={{ fontFamily: "var(--font-display)" }}
           >

@@ -236,7 +236,7 @@ export default component$(() => {
           </div>
           <div class="flex items-center gap-3">
             <Link
-              href="/"
+              href="/editor/"
               class="btn-paper text-sm"
               style={{ fontFamily: "var(--font-display)" }}
             >
