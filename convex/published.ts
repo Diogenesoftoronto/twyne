@@ -96,6 +96,15 @@ export const publish = mutation({
     authorName: v.optional(v.string()),
     briefSummary: v.optional(v.string()),
     content: v.string(),
+    /**
+     * "post" (default) for the writer's own share view at
+     * /p/[slug]. "blog" only succeeds when the caller is in the
+     * admin roster — non-admins asking for the blog kind fall
+     * back to "post" with a flag in the response.
+     */
+    kind: v.optional(
+      v.union(v.literal("post"), v.literal("blog")),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -105,6 +114,22 @@ export const publish = mutation({
     const now = Date.now();
     const cleanContent = sanitizeHtml(args.content);
     const cleanTitle = (args.title || "Untitled").trim().slice(0, 200);
+
+    // Gate the blog kind on admin status. A non-admin who asks
+    // for "blog" gets a "post" with `requestedBlog: true` in
+    // the response so the client can show a "you're not an
+    // admin" message. We never silently flip the kind — that
+    // would mask a privilege confusion.
+    let resolvedKind: "post" | "blog" = "post";
+    let requestedBlog = false;
+    if (args.kind === "blog") {
+      requestedBlog = true;
+      const isAdmin = await ctx.db
+        .query("admins")
+        .withIndex("by_userId", (q) => q.eq("userId", ownerId))
+        .first();
+      if (isAdmin) resolvedKind = "blog";
+    }
 
     // If a published row already exists for this owner + folio, update
     // it in place and keep the same slug.
@@ -120,9 +145,18 @@ export const publish = mutation({
         authorName: args.authorName ?? existing.authorName,
         briefSummary: args.briefSummary ?? existing.briefSummary,
         content: cleanContent,
+        // The kind can move on re-publish (admin decides what
+        // a given folio is today).
+        kind: resolvedKind,
         updatedAt: now,
       });
-      return { slug: existing.slug, _id: existing._id, updated: true };
+      return {
+        slug: existing.slug,
+        _id: existing._id,
+        updated: true,
+        kind: resolvedKind,
+        requestedBlog,
+      };
     }
 
     const slug = await generateUniqueSlug(ctx, cleanTitle);
@@ -130,6 +164,7 @@ export const publish = mutation({
       ownerId,
       slug,
       folioId: args.folioId,
+      kind: resolvedKind,
       title: cleanTitle,
       authorName: args.authorName,
       briefSummary: args.briefSummary,
@@ -137,7 +172,13 @@ export const publish = mutation({
       publishedAt: now,
       updatedAt: now,
     });
-    return { slug, _id: id, updated: false };
+    return {
+      slug,
+      _id: id,
+      updated: false,
+      kind: resolvedKind,
+      requestedBlog,
+    };
   },
 });
 

@@ -1,10 +1,17 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
+import { Link } from "@builder.io/qwik-city";
 import { WorkspacePreview } from "./workspace-preview";
+import { useFeatureFlags } from "../../utils/posthog-context";
 
 interface LandingPageProps {
   onStartBrief$: PropFunction<() => void>;
   onSkipToEditor$?: PropFunction<() => void>;
+  onSignIn$?: PropFunction<() => void>;
 }
+
+/** Where the Electrobun desktop builds are published (GitHub Releases). */
+const DESKTOP_DOWNLOAD_URL =
+  "https://github.com/Diogenesoftoronto/twyne/releases/latest";
 
 const annotations = [
   {
@@ -54,7 +61,9 @@ const steps = [
 ];
 
 export const LandingPage = component$<LandingPageProps>(
-  ({ onStartBrief$, onSkipToEditor$ }) => {
+  ({ onStartBrief$, onSkipToEditor$, onSignIn$ }) => {
+    const featureFlags = useFeatureFlags();
+
     return (
       <div class="landing-page">
         <div class="landing-shell pb-20">
@@ -67,12 +76,34 @@ export const LandingPage = component$<LandingPageProps>(
               <a class="landing-nav-link" href="#how-it-works">
                 How it works
               </a>
+              <a
+                class="landing-nav-link"
+                href={DESKTOP_DOWNLOAD_URL}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Desktop app
+              </a>
+              {featureFlags.value.flags.pricing && (
+                <Link class="landing-nav-link" href="/pricing">
+                  Pricing
+                </Link>
+              )}
             </nav>
             <div class="flex items-center gap-3">
               <img src="/assets/griffin-mark.svg" alt="" class="h-8 w-8" />
               <span class="landing-masthead ink-bleed">TWYNE</span>
             </div>
-            <div class="flex sm:justify-end">
+            <div class="flex items-center justify-end gap-4">
+              {onSignIn$ && (
+                <button
+                  onClick$={onSignIn$}
+                  class="text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-ink-light)] hover:text-[var(--color-ink)] focus-ring"
+                  style="font-family: var(--font-typewriter);"
+                >
+                  Sign in
+                </button>
+              )}
               <button onClick$={onStartBrief$} class="broadsheet-cta">
                 Start writing
               </button>
@@ -208,8 +239,7 @@ export const LandingPage = component$<LandingPageProps>(
                 </h2>
                 <p class="landing-deck mx-auto mt-4 max-w-md text-base">
                   Begin with the interview: ten minutes of questions, and every
-                  tool in the room knows what you are writing and who it is
-                  for.
+                  tool in the room knows what you are writing and who it is for.
                 </p>
                 <div class="mt-9 flex flex-wrap justify-center gap-3">
                   <button onClick$={onStartBrief$} class="broadsheet-cta">
@@ -224,6 +254,21 @@ export const LandingPage = component$<LandingPageProps>(
                     </button>
                   )}
                 </div>
+                <p
+                  class="mt-6 text-[0.9rem] text-[var(--color-ink-light)]"
+                  style="font-family: var(--font-serif);"
+                >
+                  Prefer your own desk?{" "}
+                  <a
+                    class="landing-download-link underline decoration-[var(--color-vermilion)] decoration-1 underline-offset-4 hover:text-[var(--color-ink)]"
+                    href={DESKTOP_DOWNLOAD_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Download Twyne for desktop
+                  </a>{" "}
+                  — Mac, Windows &amp; Linux.
+                </p>
               </div>
             </div>
           </section>
@@ -242,6 +287,32 @@ export const LandingPage = component$<LandingPageProps>(
             >
               Good writing is a conversation. Est. MMXXV.
             </p>
+            <nav
+              class="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[0.72rem] uppercase tracking-[0.16em] text-[var(--color-ink-light)]"
+              style="font-family: var(--font-typewriter);"
+              aria-label="Footer"
+            >
+              <a href="/blog/" class="hover:text-[var(--color-ink)]">
+                Field Notes
+              </a>
+              <a href="/docs/" class="hover:text-[var(--color-ink)]">
+                The Manual
+              </a>
+              <a href="/faq/" class="hover:text-[var(--color-ink)]">
+                FAQ
+              </a>
+              <a href="/terms/" class="hover:text-[var(--color-ink)]">
+                Terms
+              </a>
+              <a href="/privacy/" class="hover:text-[var(--color-ink)]">
+                Privacy
+              </a>
+              {featureFlags.value.flags.pricing && (
+                <a href="/pricing/" class="hover:text-[var(--color-ink)]">
+                  Pricing
+                </a>
+              )}
+            </nav>
           </footer>
         </div>
       </div>

@@ -9,10 +9,13 @@
  */
 
 import type * as agentPrompts from "../agentPrompts.js";
+import type * as admins from "../admins.js";
 import type * as agents from "../agents.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as lixBlobs from "../lixBlobs.js";
+import type * as payments from "../payments.js";
+import type * as posthog from "../posthog.js";
 import type * as published from "../published.js";
 import type * as research from "../research.js";
 import type * as sync from "../sync.js";
@@ -26,10 +29,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   agentPrompts: typeof agentPrompts;
+  admins: typeof admins;
   agents: typeof agents;
   auth: typeof auth;
   http: typeof http;
   lixBlobs: typeof lixBlobs;
+  payments: typeof payments;
+  posthog: typeof posthog;
   published: typeof published;
   research: typeof research;
   sync: typeof sync;

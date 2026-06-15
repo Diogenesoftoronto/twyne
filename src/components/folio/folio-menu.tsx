@@ -244,15 +244,40 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         return;
       }
       const draftText = await readActiveFolioHtml(props.activeFolioId);
+
+      // If the caller is an admin, route the publish through
+      // the blog stream (`kind: "blog"`) so it shows up on
+      // /blog instead of just at the private share URL. The
+      // server checks the admin roster; non-admins asking for
+      // "blog" get a plain "post" with `requestedBlog: true`
+      // in the response so the client can surface a "you're
+      // not an admin" message.
+      const isAdmin = await client.query(
+        api.admins.isCurrentUserAdmin,
+        {},
+      );
       const result = (await client.mutation(api.published.publish, {
         folioId: props.activeFolioId,
         title: props.activeFolioName || "Untitled",
         authorName: props.authorName ?? undefined,
         briefSummary: props.brief?.answers.goal ?? undefined,
         content: draftText,
-      })) as { slug: string };
+        kind: isAdmin ? "blog" : "post",
+      })) as {
+        slug: string;
+        kind: "post" | "blog";
+        requestedBlog: boolean;
+      };
       shareSlug.value = result.slug;
-      shareUrl.value = `${window.location.origin}/p/${result.slug}`;
+      // Admin publishes point at the blog; everyone else's
+      // private share URL keeps its existing form.
+      shareUrl.value = isAdmin
+        ? `${window.location.origin}/blog/${result.slug}`
+        : `${window.location.origin}/p/${result.slug}`;
+      if (result.requestedBlog && !isAdmin) {
+        shareError.value =
+          "You're not in the blog roster — published as a private share instead.";
+      }
     } catch (err) {
       shareError.value = (err as Error).message ?? "Publish failed";
     } finally {

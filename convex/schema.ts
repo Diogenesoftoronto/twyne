@@ -113,11 +113,17 @@ export default defineSchema({
 
   // ── Published pieces — public read-by-slug, owner-only writes. ──
   // Each row is a snapshot of a folio at publish time. The slug is the
-  // shareable handle; the index is used for the public reader route.
+  // ── Published pieces (post + blog). Same table — kind
+  // discriminates. The internal share view is at /p/[slug] for
+  // both kinds; the blog stream at /blog only shows "blog"
+  // pieces authored by an admin. The ownerId index is for the
+  // signed-in user's "my pieces" list; (kind, publishedAt) is
+  // for the public blog feed. ──
   published: defineTable({
     ownerId: v.string(),
     slug: v.string(),
     folioId: v.string(),
+    kind: v.union(v.literal("post"), v.literal("blog")),
     title: v.string(),
     authorName: v.optional(v.string()),
     briefSummary: v.optional(v.string()),
@@ -126,7 +132,18 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_slug", ["slug"])
-    .index("by_ownerId", ["ownerId"]),
+    .index("by_ownerId", ["ownerId"])
+    .index("by_kind_publishedAt", ["kind", "publishedAt"]),
+
+  // ── Admin roster. One row per user who can publish to the
+  // public blog. The first admin bootstraps via
+  // `admins.bootstrap`; subsequent additions are gated on
+  // the caller already being an admin. ──
+  admins: defineTable({
+    userId: v.string(),
+    addedBy: v.optional(v.string()),
+    addedAt: v.number(),
+  }).index("by_userId", ["userId"]),
 
   // ── Writer-authored inline comments (margin notes, with threads). ──
   // The CommentMark in the manuscript holds the id; the body, replies,
@@ -155,4 +172,20 @@ export default defineSchema({
   })
     .index("by_ownerId", ["ownerId"])
     .index("by_ownerId_commentId", ["ownerId", "commentId"]),
+
+  // ── Creem subscriptions — one row per user, updated by the Creem webhook. ──
+  // `status` mirrors Creem's subscription lifecycle; `active`/`trialing` grant
+  // the Pro tier. Keyed by userId, with a Creem-id index for webhook upserts.
+  subscriptions: defineTable({
+    userId: v.string(),
+    email: v.optional(v.string()),
+    productId: v.string(),
+    status: v.string(), // active | trialing | canceled | expired | unpaid | incomplete
+    creemCustomerId: v.optional(v.string()),
+    creemSubscriptionId: v.optional(v.string()),
+    currentPeriodEnd: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_creemSubscriptionId", ["creemSubscriptionId"]),
 });
