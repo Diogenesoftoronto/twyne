@@ -39,6 +39,10 @@ import {
   type UserCommentReply,
 } from "../../utils/user-comments";
 import {
+  collectCommentMarkIdsFromHtml,
+  reconcileCommentAnchors,
+} from "../../utils/reconcile-comments";
+import {
   computeDocumentMeta,
   formatWordCount,
   readingTimeLabel,
@@ -76,6 +80,8 @@ interface NotePopover {
   draft: string;
   /** True when the writer has dismissed this note. */
   dismissed: boolean;
+  /** True once the writer clicks the note: the card stays open on mouse-out. */
+  pinned: boolean;
 }
 
 /** Floating card for an editor's proposed rewrite (accept / strike). */
@@ -256,6 +262,26 @@ export const TwyneEditor = component$(
             void syncDraftToLix(store.activeFolioId, html);
           }, 1200);
         };
+
+        // Reconciliation of writer comments against the current
+        // document. Debounced to avoid walking the doc on every
+        // keystroke. Emits `twyne:comments-reconciled` with the
+        // three buckets (live, ghost, headless) so the Marginalia
+        // panel can show a writer what happened to their threads.
+        let reconcileTimer: ReturnType<typeof setTimeout> | null = null;
+        const reconcileCommentsDebounced = (html: string) => {
+          if (reconcileTimer) clearTimeout(reconcileTimer);
+          reconcileTimer = setTimeout(() => {
+            void (async () => {
+              const markIds = collectCommentMarkIdsFromHtml(html);
+              const threads = await loadUserComments();
+              const result = reconcileCommentAnchors(threads, markIds);
+              window.dispatchEvent(
+                new CustomEvent("twyne:comments-reconciled", { detail: result }),
+              );
+            })();
+          }, 400);
+        };
         const editor = new Editor({
           element: el,
           extensions: [
@@ -349,6 +375,7 @@ export const TwyneEditor = component$(
             store.content = html;
             store.meta = computeDocumentMeta(text);
             mirrorDraft(html);
+            reconcileCommentsDebounced(html);
 
             const citations = detectCitations(text);
             if (citations.length > 0) {
@@ -411,6 +438,73 @@ export const TwyneEditor = component$(
         renderMermaid();
         editor.on("update", renderMermaid);
 
+        // Build a persona-note popover, anchored near its sentence but always
+        // kept fully inside the viewport (it prefers below, flips above when
+        // there isn't room, and clamps on both axes as a last resort).
+        const CARD_W = 340;
+        const CARD_MARGIN = 8;
+        const buildNotePopover = (
+          noteSpan: HTMLElement,
+          pinned: boolean,
+        ): NotePopover => {
+          const rect = noteSpan.getBoundingClientRect();
+          const vw = window.innerWidth;
+          const vh = window.innerHeight;
+          // Matches the card's CSS max-height: min(60vh, 520px).
+          const cardH = Math.min(vh * 0.6, 520);
+
+          const x = Math.max(
+            CARD_MARGIN,
+            Math.min(rect.left, vw - CARD_W - CARD_MARGIN),
+          );
+
+          // Prefer sitting just below the sentence; if that would run past the
+          // bottom edge, shift up only as much as needed so the card's full box
+          // stays in view (overlapping the sentence rather than leaving a gap,
+          // which keeps it reachable on hover).
+          let y = rect.bottom + CARD_MARGIN;
+          const maxTop = vh - CARD_MARGIN - cardH;
+          if (y > maxTop) y = Math.max(CARD_MARGIN, maxTop);
+
+          return {
+            id: noteSpan.getAttribute("data-persona-note-id") ?? "",
+            author: noteSpan.getAttribute("data-persona-note-author") ?? "",
+            color:
+              noteSpan.getAttribute("data-persona-note-color") ??
+              "var(--color-vermilion)",
+            label: noteSpan.getAttribute("data-persona-note-label") ?? "",
+            note: noteSpan.getAttribute("data-persona-note-note") ?? "",
+            quote:
+              noteSpan.getAttribute("data-persona-note-quote") ?? undefined,
+            briefTitle:
+              noteSpan.getAttribute("data-persona-note-brief") ?? undefined,
+            draft: "",
+            dismissed: false,
+            pinned,
+            x,
+            y,
+          };
+        };
+
+        // ── Hover: preview a persona note below its sentence ──
+        el.addEventListener("mouseover", (e) => {
+          const noteSpan = (e.target as HTMLElement).closest(
+            ".twyne-persona-note",
+          ) as HTMLElement | null;
+          if (!noteSpan) return;
+          // Don't clobber a pinned card the writer is interacting with.
+          if (store.notePopover?.pinned) return;
+          store.notePopover = buildNotePopover(noteSpan, false);
+        });
+        el.addEventListener("mouseout", (e) => {
+          if (store.notePopover?.pinned) return;
+          const related = e.relatedTarget as HTMLElement | null;
+          // Stay open while moving onto the card or within the same note.
+          if (related?.closest(".persona-note-card")) return;
+          if (related?.closest(".twyne-persona-note")) return;
+          store.notePopover = null;
+        });
+
         // ── Comment + persona-note click handler ──
         el.addEventListener("click", (e) => {
           const target = e.target as HTMLElement;
@@ -460,25 +554,8 @@ export const TwyneEditor = component$(
             ".twyne-persona-note",
           ) as HTMLElement | null;
           if (noteSpan) {
-            const rect = noteSpan.getBoundingClientRect();
-            const noteId = noteSpan.getAttribute("data-persona-note-id") ?? "";
-            store.notePopover = {
-              id: noteId,
-              author: noteSpan.getAttribute("data-persona-note-author") ?? "",
-              color:
-                noteSpan.getAttribute("data-persona-note-color") ??
-                "var(--color-vermilion)",
-              label: noteSpan.getAttribute("data-persona-note-label") ?? "",
-              note: noteSpan.getAttribute("data-persona-note-note") ?? "",
-              quote:
-                noteSpan.getAttribute("data-persona-note-quote") ?? undefined,
-              briefTitle:
-                noteSpan.getAttribute("data-persona-note-brief") ?? undefined,
-              draft: "",
-              dismissed: false,
-              x: Math.max(8, Math.min(rect.left, window.innerWidth - 340)),
-              y: rect.bottom + 8,
-            };
+            // Clicking the sentence pins the card open (survives mouse-out).
+            store.notePopover = buildNotePopover(noteSpan, true);
           } else if (!target.closest(".persona-note-card")) {
             store.notePopover = null;
           }
@@ -487,6 +564,32 @@ export const TwyneEditor = component$(
             !target.closest(".suggestion-card")
           ) {
             store.suggestionPopover = null;
+          }
+        });
+
+        // ── Double-click: click through an inline comment mark so the
+        // writer can edit the sentence again. The single-click handler
+        // above pins the popover open; a second click within the
+        // browser's dblclick window dismisses it and drops the caret
+        // into the marked passage. The mark itself stays in place so
+        // the thread keeps its anchor — only the modal goes away. ──
+        el.addEventListener("dblclick", (e) => {
+          const target = e.target as HTMLElement;
+          const commentMark = target.closest(
+            ".twyne-comment-mark",
+          ) as HTMLElement | null;
+          if (!commentMark) return;
+          // Don't fight the popover: dismissing it is the whole point.
+          store.userCommentPopover = null;
+          // Resolve the mark's first text node to a ProseMirror position
+          // and focus the editor there. posAtDOM returns the document
+          // offset for the DOM node, which is exactly the anchor we
+          // want — the cursor lands inside the marked passage.
+          const pos = editor.view.posAtDOM(commentMark, 0);
+          if (typeof pos === "number" && pos >= 0) {
+            editor.commands.focus(pos);
+          } else {
+            editor.commands.focus();
           }
         });
 
@@ -933,6 +1036,10 @@ export const TwyneEditor = component$(
           console.warn("[twyne:editor] user comment reply sync failed:", err);
         }
       }
+      // Tell the Marginalia panel (and any other listener) the thread grew.
+      // Without this, the right-rail view stays stale until the panel
+      // remounts, which makes it look like the reply vanished.
+      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
     });
 
     const toggleResolveUserComment = $(async (commentId: string) => {
@@ -950,6 +1057,7 @@ export const TwyneEditor = component$(
           console.warn("[twyne:editor] resolve sync failed:", err);
         }
       }
+      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
     });
 
     const deleteUserCommentLocal = $(async (commentId: string) => {
@@ -981,6 +1089,7 @@ export const TwyneEditor = component$(
           console.warn("[twyne:editor] delete comment sync failed:", err);
         }
       }
+      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
     });
 
     /** Fire-and-forget: persist a new comment to Lix + Convex. */
@@ -1017,6 +1126,11 @@ export const TwyneEditor = component$(
               console.warn("[twyne:editor] addComment sync failed:", err);
             }
           }
+          // The Marginalia panel lives in a sibling component and watches
+          // this event to know when to refetch. Fire it once the local
+          // write is committed so the writer's new note shows up there
+          // without a manual reload.
+          window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
         } catch (err) {
           console.warn("[twyne:editor] persistNewComment failed:", err);
         }
@@ -1775,108 +1889,151 @@ export const TwyneEditor = component$(
           </span>
         </div>
 
-        {/* ── Persona-note modal: centered, dismissable, with reply ── */}
+        {/* ── Persona-note card: anchored below the sentence, hover/pin ── */}
         {store.notePopover && (
           <div
-            class="fixed inset-0 z-50 flex items-center justify-center p-6"
-            style="background: rgba(20, 16, 10, 0.55);"
+            class="persona-note-card fixed z-50 flex flex-col"
             role="dialog"
             aria-label={`Note from ${store.notePopover.author}`}
-            onClick$={() => {
+            style={{
+              left: `${store.notePopover.x}px`,
+              top: `${store.notePopover.y}px`,
+              width: "340px",
+              "max-height": "min(60vh, 520px)",
+              background: "var(--color-paper)",
+              border: `2px solid ${store.notePopover.color}`,
+              "border-radius": "4px",
+              "box-shadow": "0 14px 36px rgba(0,0,0,0.28)",
+            }}
+            onClick$={(e) => e.stopPropagation()}
+            onMouseLeave$={(e) => {
+              if (store.notePopover?.pinned) return;
+              const related = (e as MouseEvent)
+                .relatedTarget as HTMLElement | null;
+              if (related?.closest(".twyne-persona-note")) return;
               store.notePopover = null;
             }}
           >
             <div
-              class="bg-[var(--color-paper)] border-2 w-full max-w-xl flex flex-col"
+              class="px-5 py-3 border-b flex items-baseline justify-between gap-3"
               style={{
-                "border-color": store.notePopover.color,
-                "border-radius": "4px",
-                "box-shadow": "0 20px 50px rgba(0,0,0,0.35)",
+                "border-color": "var(--color-paper-3)",
+                background: "var(--color-paper-soft)",
               }}
-              onClick$={(e) => e.stopPropagation()}
             >
-              <div
-                class="px-5 py-3 border-b flex items-baseline justify-between gap-3"
-                style={{
-                  "border-color": "var(--color-paper-3)",
-                  background: "var(--color-paper-soft)",
-                }}
-              >
-                <div class="min-w-0">
-                  <p
-                    class="text-base text-[var(--color-ink)] truncate"
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {store.notePopover.author}
-                  </p>
-                  {store.notePopover.label && (
-                    <p
-                      class="text-[0.7rem] tracking-[0.14em] uppercase mt-0.5"
-                      style={{
-                        fontFamily: "var(--font-typewriter)",
-                        color: store.notePopover.color,
-                      }}
-                    >
-                      {store.notePopover.label}
-                    </p>
-                  )}
-                </div>
-                <button
-                  onClick$={() => {
-                    store.notePopover = null;
-                  }}
-                  class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
-                  aria-label="Close note"
-                >
-                  ✕
-                </button>
-              </div>
-              <div class="px-5 py-4 space-y-3">
-                {store.notePopover.quote && (
-                  <blockquote
-                    class="text-[0.85rem] leading-6 text-[var(--color-ink-light)] border-l-2 pl-3 italic"
-                    style={{ "border-color": store.notePopover.color }}
-                  >
-                    {`« ${store.notePopover.quote.length > 280 ? store.notePopover.quote.slice(0, 279) + "…" : store.notePopover.quote} »`}
-                  </blockquote>
-                )}
+              <div class="min-w-0">
                 <p
-                  class="text-[0.95rem] leading-6 text-[var(--color-ink)]"
-                  style={{ fontFamily: "var(--font-serif)" }}
+                  class="text-base text-[var(--color-ink)] truncate"
+                  style={{
+                    fontFamily: "var(--font-display)",
+                    fontWeight: 600,
+                  }}
                 >
-                  {store.notePopover.note}
+                  {store.notePopover.author}
                 </p>
-                {store.notePopover.briefTitle && (
+                {store.notePopover.label && (
                   <p
-                    class="text-[0.65rem] text-[var(--color-ink-muted)]"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
+                    class="text-[0.7rem] tracking-[0.14em] uppercase mt-0.5"
+                    style={{
+                      fontFamily: "var(--font-typewriter)",
+                      color: store.notePopover.color,
+                    }}
                   >
-                    {`filed against “${store.notePopover.briefTitle}”`}
+                    {store.notePopover.label}
                   </p>
                 )}
-                <div
-                  class="pt-2 border-t border-dashed"
-                  style={{ "border-color": "var(--color-paper-3)" }}
+              </div>
+              <button
+                onClick$={() => {
+                  store.notePopover = null;
+                }}
+                class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
+                aria-label="Close note"
+              >
+                ✕
+              </button>
+            </div>
+            <div class="px-5 py-4 space-y-3 overflow-y-auto">
+              {store.notePopover.quote && (
+                <blockquote
+                  class="text-[0.85rem] leading-6 text-[var(--color-ink-light)] border-l-2 pl-3 italic"
+                  style={{ "border-color": store.notePopover.color }}
                 >
-                  <textarea
-                    value={store.notePopover.draft}
-                    onInput$={(e) => {
-                      if (!store.notePopover) return;
-                      store.notePopover = {
-                        ...store.notePopover,
-                        draft: (e.target as HTMLTextAreaElement).value,
-                      };
-                    }}
-                    onKeyDown$={(e) => {
-                      if (
-                        (e.metaKey || e.ctrlKey) &&
-                        e.key === "Enter" &&
-                        store.notePopover
-                      ) {
-                        e.preventDefault();
+                  {`« ${store.notePopover.quote.length > 280 ? store.notePopover.quote.slice(0, 279) + "…" : store.notePopover.quote} »`}
+                </blockquote>
+              )}
+              <p
+                class="text-[0.95rem] leading-6 text-[var(--color-ink)]"
+                style={{ fontFamily: "var(--font-serif)" }}
+              >
+                {store.notePopover.note}
+              </p>
+              {store.notePopover.briefTitle && (
+                <p
+                  class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  {`filed against “${store.notePopover.briefTitle}”`}
+                </p>
+              )}
+              <div
+                class="pt-2 border-t border-dashed"
+                style={{ "border-color": "var(--color-paper-3)" }}
+              >
+                <textarea
+                  value={store.notePopover.draft}
+                  onInput$={(e) => {
+                    if (!store.notePopover) return;
+                    store.notePopover = {
+                      ...store.notePopover,
+                      draft: (e.target as HTMLTextAreaElement).value,
+                    };
+                  }}
+                  onKeyDown$={(e) => {
+                    if (
+                      (e.metaKey || e.ctrlKey) &&
+                      e.key === "Enter" &&
+                      store.notePopover
+                    ) {
+                      e.preventDefault();
+                      if (!store.notePopover.draft.trim()) return;
+                      window.dispatchEvent(
+                        new CustomEvent("twyne:persona-reply", {
+                          detail: {
+                            noteId: store.notePopover.id,
+                            text: store.notePopover.draft,
+                          },
+                        }),
+                      );
+                      store.notePopover = null;
+                    }
+                  }}
+                  placeholder={`Reply to ${store.notePopover.author}…`}
+                  class="w-full mt-2 px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
+                  style="font-family: var(--font-serif); border-radius: 2px;"
+                  rows={3}
+                />
+                <div class="mt-2 flex items-center justify-between gap-2">
+                  <span
+                    class="text-[10px] text-[var(--color-ink-muted)]"
+                    style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
+                  >
+                    ⌘↩ to reply
+                  </span>
+                  <div class="flex gap-2">
+                    <button
+                      onClick$={() => {
+                        if (!store.notePopover) return;
+                        dismissNote(store.notePopover.id);
+                        store.notePopover = null;
+                      }}
+                      class="btn-paper text-[11px]"
+                    >
+                      Strike
+                    </button>
+                    <button
+                      onClick$={() => {
+                        if (!store.notePopover) return;
                         if (!store.notePopover.draft.trim()) return;
                         window.dispatchEvent(
                           new CustomEvent("twyne:persona-reply", {
@@ -1886,54 +2043,15 @@ export const TwyneEditor = component$(
                             },
                           }),
                         );
+                        // Close the modal so the Cast panel (which the route
+                        // reveals) shows the editor's reply landing.
                         store.notePopover = null;
-                      }
-                    }}
-                    placeholder={`Reply to ${store.notePopover.author}…`}
-                    class="w-full mt-2 px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
-                    style="font-family: var(--font-serif); border-radius: 2px;"
-                    rows={3}
-                  />
-                  <div class="mt-2 flex items-center justify-between gap-2">
-                    <span
-                      class="text-[10px] text-[var(--color-ink-muted)]"
-                      style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
+                      }}
+                      disabled={!store.notePopover.draft.trim()}
+                      class="btn-press text-[11px] disabled:opacity-30 disabled:cursor-not-allowed"
                     >
-                      ⌘↩ to reply
-                    </span>
-                    <div class="flex gap-2">
-                      <button
-                        onClick$={() => {
-                          if (!store.notePopover) return;
-                          dismissNote(store.notePopover.id);
-                          store.notePopover = null;
-                        }}
-                        class="btn-paper text-[11px]"
-                      >
-                        Strike
-                      </button>
-                      <button
-                        onClick$={() => {
-                          if (!store.notePopover) return;
-                          if (!store.notePopover.draft.trim()) return;
-                          window.dispatchEvent(
-                            new CustomEvent("twyne:persona-reply", {
-                              detail: {
-                                noteId: store.notePopover.id,
-                                text: store.notePopover.draft,
-                              },
-                            }),
-                          );
-                          // Close the modal so the Cast panel (which the route
-                          // reveals) shows the editor's reply landing.
-                          store.notePopover = null;
-                        }}
-                        disabled={!store.notePopover.draft.trim()}
-                        class="btn-press text-[11px] disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        Reply
-                      </button>
-                    </div>
+                      Reply
+                    </button>
                   </div>
                 </div>
               </div>

@@ -14,7 +14,11 @@ import {
   saveFoliosToIdb,
   saveActiveFolioIdToIdb,
   saveFolioContentToIdb,
+  loadMetaFromIdb,
+  saveMetaToIdb,
 } from "../../utils/idb";
+import { useAuth } from "../../utils/auth-context";
+import { clearUserComments } from "../../utils/user-comments";
 import { TwyneEditor } from "../../components/editor/twyne-editor";
 import { PersonasPanel } from "../../components/personas/personas-panel";
 import { RubricPanel } from "../../components/rubric/rubric-panel";
@@ -27,6 +31,7 @@ import {
   kickBackgroundResearch,
   onDraftChanged,
 } from "../../utils/background-research";
+import { useFeatureFlags } from "../../utils/posthog-context";
 
 type RightPanel = "personas" | "rubric" | "comments" | "citations";
 
@@ -57,6 +62,8 @@ interface LayoutStore {
   // Inline form states (replace native prompts/confirms)
   newFolioFormOpen: boolean;
   confirmNukeOpen: boolean;
+  /** Whether the "you're working locally" sign-in nudge has been dismissed. */
+  signInToastDismissed: boolean;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -110,8 +117,10 @@ function editorialDateline(now = new Date()): string {
  * single-draft key into Folio I on first load.
  */
 export default component$(() => {
+  const featureFlags = useFeatureFlags();
   const nav = useNavigate();
   const clientSig = useConvexClient();
+  const auth = useAuth();
   const store = useStore<LayoutStore>({
     rightPanel: "personas",
     leftSidebarOpen: false,
@@ -126,6 +135,8 @@ export default component$(() => {
     rightPanelWidth: 340,
     newFolioFormOpen: false,
     confirmNukeOpen: false,
+    // Default true to avoid a flash before the meta flag loads.
+    signInToastDismissed: true,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -166,6 +177,17 @@ export default component$(() => {
 
       store.brief = brief;
       store.hydrated = true;
+
+      // Surface the local-only sign-in nudge unless it was dismissed before.
+      const dismissed = await loadMetaFromIdb<boolean>(
+        "signin-toast-dismissed",
+      );
+      store.signInToastDismissed = dismissed === true;
+
+      // Arriving from the landing "Sign in" link → open the auth panel.
+      if (new URLSearchParams(window.location.search).get("auth") === "1") {
+        store.authOpen = true;
+      }
     })();
 
     // ── Save editor content to the active folio ──
@@ -325,6 +347,57 @@ export default component$(() => {
 
   return (
     <div class="min-h-screen relative">
+      {/* ── Local-only nudge: prompt sign-in so work follows across devices ── */}
+      {!store.signInToastDismissed &&
+        !auth.value.loading &&
+        !auth.value.user && (
+          <div
+            role="status"
+            class="fixed bottom-4 left-1/2 z-[60] w-[min(92vw,30rem)] -translate-x-1/2 border-2 border-[var(--color-ink)] bg-[var(--color-paper)] px-4 py-3 shadow-[0_14px_36px_rgba(0,0,0,0.28)]"
+            style="border-radius: 4px;"
+          >
+            <div class="flex items-start gap-3">
+              <span
+                class="mt-0.5 text-lg leading-none text-[var(--color-vermilion)]"
+                style="font-family: var(--font-display);"
+                aria-hidden="true"
+              >
+                ❦
+              </span>
+              <div class="flex-1 min-w-0">
+                <p
+                  class="text-[13px] leading-5 text-[var(--color-ink)]"
+                  style="font-family: var(--font-serif);"
+                >
+                  You're writing locally. This draft won't be available on your
+                  other devices until you sign in.
+                </p>
+                <div class="mt-2 flex items-center gap-3">
+                  <button
+                    onClick$={$(() => {
+                      store.authOpen = true;
+                      store.signInToastDismissed = true;
+                      void saveMetaToIdb("signin-toast-dismissed", true);
+                    })}
+                    class="btn-press"
+                  >
+                    Sign in
+                  </button>
+                  <button
+                    onClick$={$(() => {
+                      store.signInToastDismissed = true;
+                      void saveMetaToIdb("signin-toast-dismissed", true);
+                    })}
+                    class="text-[11px] tracking-[0.16em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-ink)] focus-ring"
+                    style="font-family: var(--font-typewriter);"
+                  >
+                    Not now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       <div class="flex h-screen bg-[var(--color-paper)] overflow-hidden">
         {/* ── The Drawer (left sidebar) ──────────────────────── */}
         <aside
@@ -530,6 +603,17 @@ export default component$(() => {
                 Research + bibliography
               </Link>
 
+              {featureFlags.value.flags.pricing && (
+                <Link
+                  href="/pricing/"
+                  class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
+                  style="font-family: var(--font-display); border-radius: 2px;"
+                >
+                  <span class="dept-label block">Subscription</span>
+                  Pricing + Pro checkout
+                </Link>
+              )}
+
               <div
                 class="ornament-divider"
                 style="font-family: var(--font-display);"
@@ -543,12 +627,19 @@ export default component$(() => {
                     class="text-xs text-[var(--color-ink-light)]"
                     style="font-family: var(--font-serif);"
                   >
-                    Start a brand new piece? Your current draft and dossier will
-                    be replaced.
+                    Start a brand new piece? Your current draft, dossier,
+                    and any pending margin notes will all be cleared.
                   </p>
                   <div class="flex gap-2">
                     <button
                       onClick$={$(async () => {
+                        // Sweep the writer's comment threads out of the
+                        // Lix store so they don't silently orphan
+                        // against the new piece. Without this the
+                        // Marginalia panel of the next project would
+                        // light up with ghost notes the writer
+                        // never asked for.
+                        await clearUserComments();
                         await clearIdbStore();
                         store.brief = null;
                         store.folios = [];
@@ -849,17 +940,23 @@ export default component$(() => {
                         switches. Inactive panels are hidden, not unmounted. */}
                     <div class="flex-1 min-h-0 overflow-hidden">
                       <div
-                        class={store.rightPanel === "personas" ? "h-full" : "hidden"}
+                        class={
+                          store.rightPanel === "personas" ? "h-full" : "hidden"
+                        }
                       >
                         <PersonasPanel brief={store.brief} />
                       </div>
                       <div
-                        class={store.rightPanel === "rubric" ? "h-full" : "hidden"}
+                        class={
+                          store.rightPanel === "rubric" ? "h-full" : "hidden"
+                        }
                       >
                         <RubricPanel brief={store.brief} />
                       </div>
                       <div
-                        class={store.rightPanel === "comments" ? "h-full" : "hidden"}
+                        class={
+                          store.rightPanel === "comments" ? "h-full" : "hidden"
+                        }
                       >
                         <CommentsPanel
                           brief={store.brief}
@@ -867,7 +964,9 @@ export default component$(() => {
                         />
                       </div>
                       <div
-                        class={store.rightPanel === "citations" ? "h-full" : "hidden"}
+                        class={
+                          store.rightPanel === "citations" ? "h-full" : "hidden"
+                        }
                       >
                         <CitationsPanel />
                       </div>

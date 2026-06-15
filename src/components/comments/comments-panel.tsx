@@ -31,6 +31,10 @@ interface CommentsStore {
   askError: string | null;
   personas: Persona[];
   aiSettings: AiSettings | null;
+  /** Ids of threads whose anchor mark is gone from the doc. */
+  ghostIds: Set<string>;
+  /** Show only ghosts? Off by default; the chip flips it. */
+  ghostsOnly: boolean;
 }
 
 interface CommentsPanelProps {
@@ -54,6 +58,8 @@ export const CommentsPanel = component$(
       askError: null,
       personas: DEFAULT_PERSONAS,
       aiSettings: null,
+      ghostIds: new Set<string>(),
+      ghostsOnly: false,
     });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -253,7 +259,14 @@ export const CommentsPanel = component$(
       }
     });
 
-    const unresolved = store.comments.filter((c) => !c.resolved);
+    const unresolved = store.comments.filter((c) => {
+      if (c.resolved) return false;
+      // The "ghosts only" filter shows threads whose anchor
+      // passage is gone from the manuscript. Ghosts come first
+      // so the writer sees the orphans before anything else.
+      if (store.ghostsOnly && !store.ghostIds.has(c.id)) return false;
+      return true;
+    });
     const resolved = store.comments.filter((c) => c.resolved);
 
     return (
@@ -271,7 +284,40 @@ export const CommentsPanel = component$(
             style="font-family: var(--font-typewriter);"
           >
             {unresolved.length} pending · {resolved.length} struck
+            {store.ghostIds.size > 0 && (
+              <span
+                class="ml-1 text-[var(--color-vermilion)]"
+                title="Threads whose anchor passage is no longer in the manuscript"
+              >
+                · {store.ghostIds.size} ghost
+                {store.ghostIds.size === 1 ? "" : "s"}
+              </span>
+            )}
           </p>
+          {store.ghostIds.size > 0 && (
+            <button
+              type="button"
+              onClick$={() => {
+                store.ghostsOnly = !store.ghostsOnly;
+              }}
+              class="mt-2 inline-flex items-center gap-1 text-[10px] tracking-[0.16em] uppercase border px-2 py-0.5"
+              style={{
+                fontFamily: "var(--font-typewriter)",
+                borderColor: store.ghostsOnly
+                  ? "var(--color-vermilion)"
+                  : "var(--color-paper-3)",
+                color: store.ghostsOnly
+                  ? "var(--color-vermilion)"
+                  : "var(--color-ink-muted)",
+                borderRadius: "1px",
+                background: store.ghostsOnly
+                  ? "rgba(193, 39, 45, 0.06)"
+                  : "transparent",
+              }}
+            >
+              {store.ghostsOnly ? "✓ ghosts only" : "show ghosts only"}
+            </button>
+          )}
         </div>
 
         <div class="px-4 py-4 border-b border-[var(--color-paper-3)]">
