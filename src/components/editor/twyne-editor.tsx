@@ -43,6 +43,9 @@ import {
   reconcileCommentAnchors,
 } from "../../utils/reconcile-comments";
 import {
+  bindNetworkStatusEvents,
+} from "../../utils/convex-sync";
+import {
   computeDocumentMeta,
   formatWordCount,
   readingTimeLabel,
@@ -51,6 +54,7 @@ import { CommentMark } from "./extensions/comment-mark";
 import { PersonaNoteMark } from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
 import { MermaidDiagram } from "./extensions/mermaid-node";
+import { SyncDot, LastSavedLine } from "./sync-indicator";
 import mermaid from "mermaid";
 import {
   syncDraftToLix,
@@ -117,6 +121,8 @@ export interface EditorStore {
   suggestionPopover: SuggestionPopover | null;
   /** Approval stamp animation — set briefly when an edit is accepted. */
   stampVisible: boolean;
+  /** Epoch ms of the most recent successful Lix mirror, drives the colophon's "saved Xs ago" line. */
+  lastSavedAt: number | null;
   /** Floating margin card for the writer's own inline comments. */
   userCommentPopover: UserCommentPopover | null;
   /** Undo/redo availability — refreshed on every transaction. */
@@ -190,6 +196,7 @@ export const TwyneEditor = component$(
       notePopover: null,
       suggestionPopover: null,
       stampVisible: false,
+      lastSavedAt: null,
       userCommentPopover: null,
       canUndo: false,
       canRedo: false,
@@ -259,7 +266,13 @@ export const TwyneEditor = component$(
         const mirrorDraft = (html: string) => {
           if (mirrorTimer) clearTimeout(mirrorTimer);
           mirrorTimer = setTimeout(() => {
-            void syncDraftToLix(store.activeFolioId, html);
+            void syncDraftToLix(store.activeFolioId, html).then(() => {
+              // Stamp the "Saved Xs ago" line. The mirror only
+              // writes when there's actual content; we treat
+              // that as the source of truth for "your changes
+              // are on disk locally".
+              store.lastSavedAt = Date.now();
+            });
           }, 1200);
         };
 
@@ -684,6 +697,11 @@ export const TwyneEditor = component$(
           setTimeout(() => span.classList.remove("is-flashing"), 1600);
         };
         window.addEventListener("twyne:scroll-to-persona-note", onScrollToNote);
+
+        // Phase 4: the sync dot and the "Saved Xs ago" line read
+        // the browser's online/offline events. Wire them once at
+        // mount; the function is idempotent.
+        bindNetworkStatusEvents();
 
         // ── Suggestions: pin an editor's proposed rewrite to its passage ──
         const applySuggestionMark = (s: SuggestionPayload) => {
@@ -1565,6 +1583,11 @@ export const TwyneEditor = component$(
 
           <Sep />
 
+          {/* Sync dot — vermilion when offline, paper-3 while pending, accent-green when synced */}
+          <div class="flex items-center" style="padding-left: 0.5rem;">
+            <SyncDot />
+          </div>
+
           {/* Layout popover — one control for width, margin, running header, page numbers */}
           <div class="flex items-center relative">
             <button
@@ -1880,10 +1903,10 @@ export const TwyneEditor = component$(
           style="font-family: var(--font-typewriter); letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.72rem;"
         >
           <span>
-            <span class="text-[var(--color-vermilion)]">●</span>{" "}
             {formatWordCount(store.meta.wordCount)} words · {folios} folios
           </span>
           <span>
+            <LastSavedLine savedAt={store.lastSavedAt} /> ·{" "}
             {readingTimeLabel(store.meta.readingTime)} · set in Lora &amp;
             Fraunces
           </span>

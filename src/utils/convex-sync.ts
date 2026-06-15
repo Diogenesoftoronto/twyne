@@ -85,6 +85,14 @@ interface SyncState {
   lastSnapshot: LocalSnapshot | null;
   /** Whether the active user has any remote state to merge from. */
   hydratedFromRemote: boolean;
+  /** Last push that succeeded, epoch ms. Drives the "synced Xs ago" line. */
+  lastSyncedAt: number | null;
+  /** Last push that threw, epoch ms. Stays surfaced until the next success. */
+  lastErrorAt: number | null;
+  /** Last error message, paired with `lastErrorAt`. */
+  lastErrorMessage: string | null;
+  /** True while a push is in flight. */
+  pushing: boolean;
 }
 
 interface LocalSnapshot {
@@ -102,11 +110,81 @@ const state: SyncState = {
   userId: null,
   lastSnapshot: null,
   hydratedFromRemote: false,
+  lastSyncedAt: null,
+  lastErrorAt: null,
+  lastErrorMessage: null,
+  pushing: false,
 };
 
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
 const PUSH_DEBOUNCE_MS = 4_000;
 const SIGN_UP_PUSH_FLAG = "twyne:signed-up-once";
+
+/* ── Status surface (Phase 4) ──────────────────────────────────────── */
+
+/**
+ * The state the editor's sync indicator and the "last saved"
+ * line both read. Pure data — derived from the live `state`
+ * plus a `navigator.onLine` check on every call. The orchestrator
+ * fires `twyne:sync-status` on the window whenever any of the
+ * underlying inputs change; consumers can either poll
+ * `getSyncStatus()` or subscribe via `subscribeSyncStatus()`.
+ */
+export type SyncStatus =
+  | { kind: "local-only" } // no userId — never signed in
+  | { kind: "offline" } // navigator says we're offline
+  | { kind: "pending"; queuedAt: number } // a push is scheduled
+  | { kind: "syncing" } // a push is in flight
+  | { kind: "synced"; lastSyncedAt: number }
+  | { kind: "error"; lastErrorAt: number; message: string };
+
+export function getSyncStatus(): SyncStatus {
+  if (!state.userId) return { kind: "local-only" };
+  if (typeof navigator !== "undefined" && !navigator.onLine) {
+    return { kind: "offline" };
+  }
+  if (state.pushing) return { kind: "syncing" };
+  if (pushTimer) return { kind: "pending", queuedAt: Date.now() };
+  if (state.lastErrorAt && !state.lastSyncedAt) {
+    return {
+      kind: "error",
+      lastErrorAt: state.lastErrorAt,
+      message: state.lastErrorMessage ?? "Sync failed",
+    };
+  }
+  if (state.lastSyncedAt) {
+    return { kind: "synced", lastSyncedAt: state.lastSyncedAt };
+  }
+  // Signed in but no push has happened yet — the next markDirty
+  // will move us to "pending" or "syncing".
+  return { kind: "local-only" };
+}
+
+/** Fire the custom event the indicators listen for. */
+function notifyStatusChange(): void {
+  if (typeof window === "undefined") return;
+  const status = getSyncStatus();
+  window.dispatchEvent(
+    new CustomEvent("twyne:sync-status", { detail: status }),
+  );
+}
+
+/**
+ * Subscribe to sync status changes. Returns an unsubscribe
+ * function. The callback is invoked once immediately with the
+ * current status, then again on every change.
+ */
+export function subscribeSyncStatus(
+  cb: (status: SyncStatus) => void,
+): () => void {
+  if (typeof window === "undefined") return () => undefined;
+  const handler = (e: Event) => cb((e as CustomEvent).detail);
+  window.addEventListener("twyne:sync-status", handler);
+  // Fire once with the current snapshot so consumers don't have
+  // to re-read state on mount.
+  cb(getSyncStatus());
+  return () => window.removeEventListener("twyne:sync-status", handler);
+}
 
 /* ── Public surface ─────────────────────────────────────────────── */
 
@@ -164,10 +242,9 @@ export async function syncToConvex(): Promise<void> {
   const blob = await loadLixBlobFromIdb();
   if (!blob) return;
   const buffer = await blob.arrayBuffer();
-  const uint8 = new Uint8Array(buffer);
   await state.client.mutation(api.lixBlobs.upsert, {
     userId: state.userId,
-    blob: uint8,
+    blob: buffer,
   });
 }
 
@@ -220,6 +297,8 @@ async function buildLocalSnapshot(): Promise<LocalSnapshot> {
 async function pushLocalSnapshot(): Promise<void> {
   if (!state.client || !state.userId) return;
   if (typeof window === "undefined") return;
+  state.pushing = true;
+  notifyStatusChange();
   try {
     const snap = await buildLocalSnapshot();
     state.lastSnapshot = snap;
@@ -251,10 +330,34 @@ async function pushLocalSnapshot(): Promise<void> {
       })),
       rubricResult: snap.rubricResult ?? undefined,
     });
+    // Success: clear the error and stamp the synced time.
+    state.lastSyncedAt = Date.now();
+    state.lastErrorAt = null;
+    state.lastErrorMessage = null;
   } catch (err) {
     // Convex calls may fail in dev where auth is mocked — swallow and continue.
     console.warn("[twyne:sync] pushAll failed:", err);
+    state.lastErrorAt = Date.now();
+    state.lastErrorMessage =
+      (err as Error)?.message ?? "Sync failed — your changes are local only.";
+  } finally {
+    state.pushing = false;
+    notifyStatusChange();
   }
+}
+
+/**
+ * Wire the navigator's online/offline events to the sync
+ * indicator. Idempotent — calling this twice has the same
+ * effect as calling it once.
+ */
+let _networkListenersBound = false;
+export function bindNetworkStatusEvents(): void {
+  if (_networkListenersBound) return;
+  if (typeof window === "undefined") return;
+  _networkListenersBound = true;
+  window.addEventListener("online", notifyStatusChange);
+  window.addEventListener("offline", notifyStatusChange);
 }
 
 async function handleUserChanged(
