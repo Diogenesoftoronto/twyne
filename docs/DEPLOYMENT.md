@@ -10,9 +10,17 @@ The repo is configured for [Railway](https://railway.com) via `railway.json`
 (`builder: RAILPACK`) and [`railpack.json`](https://railpack.com) — Railpack is
 Railway's successor to Nixpacks:
 
-- **Build** (Bun): `bun install --frozen-lockfile` → `bun run build.client && bun run build.server`
+- **Install** (Bun): `bun install --frozen-lockfile`
+- **Build** (Bun): `npx convex deploy --cmd 'bun run build.client && bun run build.server'`
+  — deploys the Convex backend, then builds the frontend. If `CONVEX_DEPLOY_KEY`
+  is unset, the step degrades to a frontend-only build (backend left untouched).
 - **Start** (Node): `node server.js`
 - **Healthcheck**: `GET /`
+
+> The `install` and `build` steps declare explicit `local` layer inputs in
+> `railpack.json` so the source (`package.json` + lockfile, then the full tree)
+> is mounted into each step — without them newer Railpack versions run
+> `bun install` in an empty context and fail with "could not find a package.json".
 
 `railpack.json` pins `node: 20` + `bun: 1` so the runtime image has `node`
 available for the start command (`server.js` uses `node:http`), while Bun does
@@ -34,6 +42,7 @@ the install and Vite build.
 
    ```bash
    railway variables \
+     --set "CONVEX_DEPLOY_KEY=prod:your-deployment|..." \
      --set "VITE_CONVEX_URL=https://your-deployment.convex.cloud" \
      --set "VITE_CONVEX_SITE_URL=https://your-deployment.convex.site" \
      --set "BETTER_AUTH_SECRET=..." \
@@ -41,7 +50,10 @@ the install and Vite build.
      --set "SITE_URL=https://twyne.love"
    ```
 
-   `PORT` is injected by Railway automatically — do not set it.
+   `CONVEX_DEPLOY_KEY` is the production **deploy key** from the Convex
+   dashboard (Settings → Deploy keys). The build step uses it to push the
+   backend; without it the build only ships the frontend. `PORT` is injected by
+   Railway automatically — do not set it.
 
 3. **Custom domain**: in the Railway service → Settings → Networking, add
    `twyne.love` and point the DNS `CNAME` at the generated Railway target.
@@ -52,8 +64,21 @@ the install and Vite build.
 ### Convex in production
 
 `VITE_CONVEX_URL` should point at a **production** Convex deployment, not a dev
-one. Create/promote it with `npx convex deploy`, then update the Railway
-variables. Convex functions deploy independently of the Railway frontend.
+one. The Railway build now runs `npx convex deploy` (gated on `CONVEX_DEPLOY_KEY`)
+as part of the build step, so the backend deploys on every push alongside the
+frontend — no separate manual deploy needed.
+
+Server-side Convex secrets (`CREEM_API_KEY`, `CREEM_WEBHOOK_SECRET`,
+`CREEM_SUCCESS_URL`, `POSTHOG_PROJECT_API_KEY`, `RESEND_API_KEY`, …) live in the
+Convex deployment's own environment, not Railway. Set them against production
+from the CLI:
+
+```bash
+npx convex env set CREEM_API_KEY creem_xxx --prod
+npx convex env set POSTHOG_PROJECT_API_KEY phc_xxx --prod
+# list / verify:
+npx convex env list --prod
+```
 
 ## Feature flags
 

@@ -7,11 +7,17 @@
   },
   "steps": {
     "install": {
+      "inputs": [{ "local": true, "include": ["package.json", "bun.lock"] }],
       "commands": ["bun install --frozen-lockfile"]
     },
     "build": {
-      "inputs": [{ "step": "install" }],
-      "commands": ["bun run build.client && bun run build.server"]
+      "inputs": [
+        { "step": "install" },
+        { "local": true, "include": ["."], "exclude": ["node_modules"] }
+      ],
+      "commands": [
+        "if [ -n \"$CONVEX_DEPLOY_KEY\" ]; then npx convex deploy --cmd 'bun run build.client && bun run build.server'; else echo 'CONVEX_DEPLOY_KEY not set — building frontend only, skipping convex deploy'; bun run build.client && bun run build.server; fi"
+      ]
     }
   },
   "deploy": {
