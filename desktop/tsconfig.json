@@ -1,0 +1,15 @@
+{
+  "comment": "Desktop (Electrobun) sources are built by Bun via the electrobun CLI, not by the app's Vite/tsc build. Kept out of the root tsconfig because the electrobun package ships .ts exports the app build does not resolve.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "Preserve",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM"],
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "types": ["node"],
+    "allowImportingTsExtensions": true
+  },
+  "include": ["main.ts", "../electrobun.config.ts"]
+}

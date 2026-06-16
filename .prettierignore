@@ -1,5 +1,7 @@
 **/*.log
 **/.DS_Store
+.dagger/sdk
+build-output
 *.
 .vscode/settings.json
 .history

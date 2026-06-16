@@ -293,7 +293,10 @@ export type AiProviderType =
   | "openai"
   | "anthropic"
   | "google"
-  | "openai-compatible";
+  | "openai-compatible"
+  // Desktop-only: native LiteRT (Gemma 4 E4B) served on loopback by the
+  // Electrobun shell. Auto-registered, never added by hand — see desktop-bridge.
+  | "litert";
 
 export interface AiProviderConfig {
   id: string;
@@ -380,6 +383,12 @@ export const PROVIDER_METAS: ProviderMeta[] = [
     type: "openai-compatible",
     label: "OpenAI-compatible",
     defaultModels: ["anthropic/claude-sonnet-4-5"],
+    needsBaseUrl: true,
+  },
+  {
+    type: "litert",
+    label: "Local — Gemma 4 E4B",
+    defaultModels: ["gemma-4-e4b"],
     needsBaseUrl: true,
   },
 ];

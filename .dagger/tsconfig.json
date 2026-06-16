@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "target": "ES2022",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "paths": {
+      "@dagger.io/dagger": ["./sdk/src"],
+      "@dagger.io/dagger/telemetry": ["./sdk/src/telemetry"]
+    }
+  },
+  "include": ["src", "sdk"]
+}

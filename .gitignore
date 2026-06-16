@@ -5,6 +5,10 @@
 /release
 /server
 
+# Electrobun desktop build output
+/build
+/artifacts
+
 # Scratch / agent state
 /tmp
 .agents/
@@ -49,3 +53,7 @@ lerna-debug.log*
 # Tool state (Entire / .zero)
 .entire/
 .zero/
+
+# Dagger CI — generated SDK + exported artifacts
+.dagger/sdk/
+/build-output/

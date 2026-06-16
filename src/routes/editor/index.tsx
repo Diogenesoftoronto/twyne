@@ -31,7 +31,6 @@ import {
   kickBackgroundResearch,
   onDraftChanged,
 } from "../../utils/background-research";
-import { useFeatureFlags } from "../../utils/posthog-context";
 
 type RightPanel = "personas" | "rubric" | "comments" | "citations";
 
@@ -117,7 +116,6 @@ function editorialDateline(now = new Date()): string {
  * single-draft key into Folio I on first load.
  */
 export default component$(() => {
-  const featureFlags = useFeatureFlags();
   const nav = useNavigate();
   const clientSig = useConvexClient();
   const auth = useAuth();
@@ -603,16 +601,14 @@ export default component$(() => {
                 Research + bibliography
               </Link>
 
-              {featureFlags.value.flags.pricing && (
-                <Link
-                  href="/pricing/"
-                  class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
-                  style="font-family: var(--font-display); border-radius: 2px;"
-                >
-                  <span class="dept-label block">Subscription</span>
-                  Pricing + Pro checkout
-                </Link>
-              )}
+              <Link
+                href="/pricing/"
+                class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
+                style="font-family: var(--font-display); border-radius: 2px;"
+              >
+                <span class="dept-label block">Subscription</span>
+                Pricing + Pro checkout
+              </Link>
 
               <div
                 class="ornament-divider"
@@ -627,8 +623,8 @@ export default component$(() => {
                     class="text-xs text-[var(--color-ink-light)]"
                     style="font-family: var(--font-serif);"
                   >
-                    Start a brand new piece? Your current draft, dossier,
-                    and any pending margin notes will all be cleared.
+                    Start a brand new piece? Your current draft, dossier, and
+                    any pending margin notes will all be cleared.
                   </p>
                   <div class="flex gap-2">
                     <button

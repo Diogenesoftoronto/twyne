@@ -58,7 +58,10 @@ export default component$(() => {
   return (
     <main class="paper-fade-in">
       {store.checked && !store.hasBrief && (
-        <LandingPage onStartBrief$={startBrief} onSkipToEditor$={skipToEditor} />
+        <LandingPage
+          onStartBrief$={startBrief}
+          onSkipToEditor$={skipToEditor}
+        />
       )}
       {store.checked && store.hasBrief && (
         <div class="min-h-screen flex items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">

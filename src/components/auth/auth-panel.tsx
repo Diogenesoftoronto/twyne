@@ -1,151 +1,215 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
+import {
+  $,
+  component$,
+  Slot,
+  useStore,
+  useVisibleTask$,
+  type PropFunction,
+} from "@builder.io/qwik";
 import { useAuth } from "../../utils/auth-context";
 import { signInWithBluesky, signOutBluesky } from "../../utils/atproto";
+import { signOut, emailOtp, authClient } from "../../utils/auth-client";
 import {
-  signIn,
-  signUp,
-  signOut,
-  passkeyApi,
-  emailOtp,
-  authClient,
-} from "../../utils/auth-client";
+  getPreferredMethod,
+  setPreferredMethod,
+  type SignInMethod,
+} from "../../utils/auth-preference";
 
-type AuthView = "login" | "register" | "email-otp";
-
-const VIEW_COPY: Record<AuthView, { title: string; subtitle: string }> = {
-  login: {
-    title: "Sign the register",
-    subtitle: "Sign in to keep the dossier with you across desks.",
-  },
-  register: {
-    title: "Join the masthead",
-    subtitle: "Open an account so the room can hold your work.",
-  },
-  "email-otp": {
-    title: "Wire confirmation",
-    subtitle: "We cabled a code to your address. Enter it below.",
-  },
-};
-
+/**
+ * The Editor's Office sign-in panel.
+ *
+ * Two-step dossier flow, like the onboarding interview:
+ *
+ *   I.   The Email  — the writer types their address.
+ *   II.  The Key    — passkey or one-time code. The passkey is the default
+ *                     when the account already has one; OTP is sent
+ *                     automatically on first-time sign-up and on every
+ *                     sign-in for accounts that haven't set up a passkey.
+ *
+ * Bluesky sign-in sits in step 1 as a tertiary option — it carries its own
+ * handle, so it doesn't need the email step.
+ */
 export const AuthPanel = component$(() => {
   const auth = useAuth();
-  const view = useSignal<AuthView>("login");
-  const email = useSignal("");
-  const password = useSignal("");
-  const name = useSignal("");
-  const otpCode = useSignal("");
-  const otpEmail = useSignal("");
-  const blueskyHandle = useSignal("");
-  const error = useSignal<string | null>(null);
-  const loading = useSignal(false);
 
-  const handleEmailSignIn = $(async () => {
-    error.value = null;
-    loading.value = true;
+  const store = useStore({
+    step: 1 as 1 | 2,
+    email: "",
+    /** Which key the user is on. `null` means "decide based on memory". */
+    chosen: null as SignInMethod | null,
+    /** Whether we've already sent an OTP for this email in this session. */
+    otpSent: false,
+    otpCode: "",
+    sendingOtp: false,
+    verifyingOtp: false,
+    usingPasskey: false,
+    /** Once we've completed sign-in, surface a one-time prompt to add a passkey. */
+    offerPasskey: false,
+    addingPasskey: false,
+    error: null as string | null,
+  });
+
+  // Auto-send the OTP the first time we land on step 2 in OTP mode, so
+  // a first-time visitor never has to click "send me a code" separately.
+  // Runs only on the client (visible task) so SSR never hits the auth API.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    const step = track(() => store.step);
+    const email = track(() => store.email);
+    const chosen = track(() => store.chosen);
+    const sent = track(() => store.otpSent);
+    const sending = track(() => store.sendingOtp);
+    const user = track(() => auth.value.user);
+
+    if (step !== 2 || chosen !== "otp" || sent || sending) return;
+    if (!email || !email.includes("@")) return;
+    if (user) return; // already signed in
+    void sendOtp(email);
+  });
+
+  const sendOtp = $(async (email: string) => {
+    store.sendingOtp = true;
+    store.error = null;
     try {
-      const result = await signIn.email({
-        email: email.value,
-        password: password.value,
+      const result = await emailOtp.sendVerificationOtp({
+        email,
+        type: "sign-in",
       });
-      if (result.error) {
-        error.value = result.error.message ?? "Sign in failed";
+      if (result?.error) {
+        store.error = result.error.message ?? "Failed to send the code";
+        return;
       }
+      store.otpSent = true;
     } catch (e: any) {
-      error.value = e?.message ?? "Sign in failed";
+      store.error = e?.message ?? "Failed to send the code";
     } finally {
-      loading.value = false;
+      store.sendingOtp = false;
     }
   });
 
-  const handleRegister = $(async () => {
-    error.value = null;
-    loading.value = true;
-    try {
-      const result = await signUp.email({
-        email: email.value,
-        password: password.value,
-        name: name.value,
-      });
-      if (result.error) {
-        error.value = result.error.message ?? "Registration failed";
-      }
-    } catch (e: any) {
-      error.value = e?.message ?? "Registration failed";
-    } finally {
-      loading.value = false;
+  const handleStepOne = $(() => {
+    const trimmed = store.email.trim();
+    if (!trimmed || !trimmed.includes("@")) {
+      store.error = "Add an email address so we know where to send the code.";
+      return;
     }
+    store.error = null;
+    // Look up the per-email preference, falling back to OTP for first-timers
+    // (we'll auto-detect passkey availability when they click that button).
+    const remembered = getPreferredMethod(trimmed);
+    store.chosen = remembered ?? "otp";
+    store.otpSent = false;
+    store.otpCode = "";
+    store.offerPasskey = false;
+    store.step = 2;
   });
 
   const handlePasskeySignIn = $(async () => {
-    error.value = null;
-    loading.value = true;
+    store.usingPasskey = true;
+    store.error = null;
     try {
-      await (authClient.signIn as any).passkey();
-    } catch (e: any) {
-      error.value = e?.message ?? "Passkey sign in failed";
-    } finally {
-      loading.value = false;
-    }
-  });
-
-  const handlePasskeyRegister = $(async () => {
-    error.value = null;
-    loading.value = true;
-    try {
-      await (passkeyApi as any).addPasskey();
-    } catch (e: any) {
-      error.value = e?.message ?? "Passkey registration failed";
-    } finally {
-      loading.value = false;
-    }
-  });
-
-  const handleEmailOtpRequest = $(async () => {
-    error.value = null;
-    loading.value = true;
-    try {
-      const result = await emailOtp.sendVerificationOtp({
-        email: otpEmail.value,
-        type: "sign-in",
+      const result = await (authClient.signIn as any).passkey({
+        autoFill: true,
       });
-      if (result.error) {
-        error.value = result.error.message ?? "Failed to send the code";
+      if (result?.error) {
+        const msg = result.error.message ?? "";
+        // If no passkey is registered for the account, fall through to OTP.
+        if (
+          /no passkey|passkey not found|credential/i.test(msg) ||
+          result.error.code === "AUTH_CANCELLED"
+        ) {
+          store.error = null;
+          store.chosen = "otp";
+          return;
+        }
+        store.error = msg || "Passkey sign in failed";
+      } else {
+        setPreferredMethod(store.email, "passkey");
       }
     } catch (e: any) {
-      error.value = e?.message ?? "Failed to send the code";
+      store.error = e?.message ?? "Passkey sign in failed";
     } finally {
-      loading.value = false;
+      store.usingPasskey = false;
     }
   });
 
-  const handleEmailOtpVerify = $(async () => {
-    error.value = null;
-    loading.value = true;
+  const handleResendOtp = $(async () => {
+    store.otpSent = false;
+    store.otpCode = "";
+    await sendOtp(store.email);
+  });
+
+  const handleVerifyOtp = $(async () => {
+    if (!store.otpCode.trim()) {
+      store.error = "Type the code we just cabled you.";
+      return;
+    }
+    store.verifyingOtp = true;
+    store.error = null;
     try {
       const result = await emailOtp.verifyEmail({
-        email: otpEmail.value,
-        otp: otpCode.value,
+        email: store.email,
+        otp: store.otpCode,
       });
-      if (result.error) {
-        error.value = result.error.message ?? "Verification failed";
+      if (result?.error) {
+        store.error = result.error.message ?? "Verification failed";
+        return;
       }
+      setPreferredMethod(store.email, "otp");
+      // Persist the email so the post-sign-in passkey prompt has it.
+      store.offerPasskey = true;
     } catch (e: any) {
-      error.value = e?.message ?? "Verification failed";
+      store.error = e?.message ?? "Verification failed";
     } finally {
-      loading.value = false;
+      store.verifyingOtp = false;
     }
+  });
+
+  const handleAddPasskey = $(async () => {
+    store.addingPasskey = true;
+    store.error = null;
+    try {
+      const result = await (authClient.passkey as any).addPasskey({
+        name: "This device",
+      });
+      if (result?.error) {
+        // Cancelling the WebAuthn prompt is the most common "error" — quietly
+        // dismiss the offer without nagging the writer.
+        if (result.error.code === "AUTH_CANCELLED") {
+          store.offerPasskey = false;
+          return;
+        }
+        store.error = result.error.message ?? "Couldn't add a passkey";
+        return;
+      }
+      setPreferredMethod(store.email, "passkey");
+      store.offerPasskey = false;
+    } catch (e: any) {
+      store.error = e?.message ?? "Couldn't add a passkey";
+    } finally {
+      store.addingPasskey = false;
+    }
+  });
+
+  const handleSkipPasskey = $(() => {
+    store.offerPasskey = false;
+  });
+
+  const handleBack = $(() => {
+    store.step = 1;
+    store.error = null;
+    store.otpCode = "";
+    store.otpSent = false;
+    store.offerPasskey = false;
   });
 
   const handleBlueskySignIn = $(async () => {
-    error.value = null;
-    loading.value = true;
+    store.error = null;
     try {
-      // Redirects to the Bluesky consent screen and never returns here;
-      // the session is completed on the redirect back into AuthProvider.
-      await signInWithBluesky(blueskyHandle.value || undefined);
+      // Redirects to the Bluesky consent screen and completes on return.
+      await signInWithBluesky();
     } catch (e: any) {
-      error.value = e?.message ?? "Bluesky sign in failed";
-      loading.value = false;
+      store.error = e?.message ?? "Bluesky sign in failed";
     }
   });
 
@@ -158,110 +222,191 @@ export const AuthPanel = component$(() => {
     await signOut();
   });
 
+  // Surface the post-OTP passkey offer only after the session actually
+  // settles on a real user. The convex context provider updates `auth.value`
+  // once the cookie lands.
+  useVisibleTask$(({ track }) => {
+    const offer = track(() => store.offerPasskey);
+    const user = track(() => auth.value.user);
+    if (offer && user) {
+      // The session is live — keep the offer visible until the user
+      // accepts or skips.
+    } else if (!user) {
+      // Signed out — make sure we don't carry the offer forward.
+      store.offerPasskey = false;
+    }
+  });
+
   if (auth.value.loading) {
-    return (
-      <div class="px-5 py-6 text-center" role="status">
-        <p
-          class="text-2xl"
-          style="font-family: var(--font-display); color: var(--color-ink-muted);"
-        >
-          ❧
-        </p>
-        <p
-          class="mt-2 text-[11px] tracking-[0.2em] uppercase text-[var(--color-ink-muted)]"
-          style="font-family: var(--font-typewriter);"
-        >
-          Checking the register…
-        </p>
-      </div>
-    );
+    return <AuthShellFrame header="The Editor's Office">…loading…</AuthShellFrame>;
   }
 
   if (auth.value.user) {
-    return (
-      <div class="px-4 py-3">
-        <p class="dept-label">On the masthead</p>
-        <div class="mt-2 flex items-center gap-3">
-          {auth.value.user.image && (
-            <img
-              src={auth.value.user.image}
-              alt=""
-              width={36}
-              height={36}
-              class="flex-shrink-0 rounded-full border border-[var(--color-paper-3)]"
-              style="width: 36px; height: 36px; object-fit: cover;"
-            />
+    if (store.offerPasskey) {
+      return (
+        <AuthShellFrame
+          header="Add a passkey?"
+          step={2}
+          progress="One more thing"
+        >
+          <SignedInHeader email={auth.value.user.email} onSignOut$={handleSignOut} />
+          <p
+            class="mt-3 text-[13px] leading-5 text-[var(--color-ink-light)]"
+            style="font-family: var(--font-serif); font-style: italic;"
+          >
+            A passkey lets you sign back in with a tap — no email code to
+            wait for. We'll register this device; you can add more from
+            Settings later.
+          </p>
+          {store.error && (
+            <p class="error-slip mt-4" role="alert">
+              {store.error}
+            </p>
           )}
-          <div class="flex-1 min-w-0">
-            <p
-              class="text-sm text-[var(--color-ink)] truncate"
-              style="font-family: var(--font-display); font-weight: 600;"
-            >
-              {auth.value.user.name || auth.value.user.email}
-            </p>
-            <p
-              class="text-[11px] text-[var(--color-ink-muted)] truncate"
-              style="font-family: var(--font-typewriter); letter-spacing: 0.08em;"
-            >
-              {auth.value.user.email}
-            </p>
-          </div>
-          <button onClick$={handleSignOut} class="btn-paper flex-shrink-0">
-            Sign out
+          <button
+            type="button"
+            onClick$={handleAddPasskey}
+            disabled={store.addingPasskey}
+            class="btn-press mt-5 w-full"
+          >
+            {store.addingPasskey ? "Registering…" : "Register this device"}
           </button>
-        </div>
-      </div>
+          <button
+            type="button"
+            onClick$={handleSkipPasskey}
+            disabled={store.addingPasskey}
+            class="mt-2 w-full text-center text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)] focus-ring"
+            style="font-family: var(--font-typewriter);"
+          >
+            Not now
+          </button>
+        </AuthShellFrame>
+      );
+    }
+    return (
+      <AuthShellFrame header="The Editor's Office">
+        <SignedInHeader email={auth.value.user.email} onSignOut$={handleSignOut} />
+      </AuthShellFrame>
     );
   }
 
-  const copy = VIEW_COPY[view.value];
-
-  return (
-    <div class="p-5 space-y-4">
-      <div>
-        <p class="dept-label">The Editor's Office</p>
-        <h2
-          class="mt-0.5 text-lg text-[var(--color-ink)]"
-          style="font-family: var(--font-display); font-weight: 600;"
-        >
-          {copy.title}
-        </h2>
-        <p
-          class="mt-1 text-[13px] leading-5 text-[var(--color-ink-light)]"
-          style="font-family: var(--font-serif); font-style: italic;"
-        >
-          {copy.subtitle}
-        </p>
-      </div>
-
-      {error.value && (
-        <p class="error-slip" role="alert">
-          {error.value}
-        </p>
-      )}
-
-      {view.value === "email-otp" ? (
+  // ── Step I — The Email ──────────────────────────────────────
+  if (store.step === 1) {
+    return (
+      <AuthShellFrame
+        header="The Editor's Office"
+        step={1}
+        progress="Step 1 of 2"
+        department="Dept. of the Byline"
+        question="What's your email?"
+        hint="We'll send a one-time code or call up your passkey — whichever fits."
+      >
+        {store.error && (
+          <p class="error-slip" role="alert">
+            {store.error}
+          </p>
+        )}
         <form
           preventdefault:submit
-          onSubmit$={handleEmailOtpVerify}
-          class="space-y-3"
+          onSubmit$={handleStepOne}
+          class="mt-4 space-y-3"
         >
           <div>
-            <label class="field-label" for="auth-otp-email">
+            <label class="field-label" for="auth-step-email">
               Email address
             </label>
             <input
-              id="auth-otp-email"
+              id="auth-step-email"
               type="email"
               autoComplete="email"
-              value={otpEmail.value}
+              autoFocus
+              value={store.email}
               onInput$={(e) => {
-                otpEmail.value = (e.target as HTMLInputElement).value;
+                store.email = (e.target as HTMLInputElement).value;
               }}
               placeholder="byline@example.com"
               class="field-input"
+              style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 500;"
             />
           </div>
+          <button
+            type="submit"
+            disabled={!store.email.trim()}
+            class="btn-press w-full"
+          >
+            Continue →
+          </button>
+        </form>
+
+        <div class="ornament-divider mt-5">
+          <span style="font-family: var(--font-display);">❦</span>
+        </div>
+
+        <p
+          class="mt-4 text-center text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]"
+          style="font-family: var(--font-typewriter);"
+        >
+          or bring your own byline
+        </p>
+        <button
+          type="button"
+          onClick$={handleBlueskySignIn}
+          class="btn-paper mt-2 w-full"
+          title="Sign in with your Bluesky / ATProto account"
+        >
+          Continue with Bluesky
+        </button>
+      </AuthShellFrame>
+    );
+  }
+
+  // ── Step II — The Key ───────────────────────────────────────
+  const prefersOtp = store.chosen !== "passkey";
+  return (
+    <AuthShellFrame
+      header="The Editor's Office"
+      step={2}
+      progress="Step 2 of 2"
+      department="Dept. of the Key"
+      question={
+        prefersOtp
+          ? "We'll cable you a one-time code."
+          : "Use your passkey to sign in."
+      }
+      hint={
+        prefersOtp
+          ? store.otpSent
+            ? `Sent to ${store.email}. Enter the six figures below.`
+            : "Setting the wheels in motion…"
+          : "Tap the prompt on this device, or use a hardware key."
+      }
+    >
+      <p
+        class="mb-4 inline-flex items-center gap-2 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2.5 py-1 text-[11px] tracking-[0.12em] text-[var(--color-ink-muted)]"
+        style="font-family: var(--font-typewriter); text-transform: uppercase;"
+      >
+        <span>For</span>
+        <span class="text-[var(--color-ink)]" style="font-weight: 600;">
+          {store.email}
+        </span>
+        <button
+          type="button"
+          onClick$={handleBack}
+          class="text-[var(--color-vermilion)] underline underline-offset-2 hover:text-[var(--color-vermilion-2)]"
+          style="font-family: var(--font-typewriter);"
+        >
+          change
+        </button>
+      </p>
+
+      {store.error && (
+        <p class="error-slip" role="alert">
+          {store.error}
+        </p>
+      )}
+
+      {prefersOtp ? (
+        <div class="space-y-4">
           <div>
             <label class="field-label" for="auth-otp-code">
               Verification code
@@ -271,174 +416,207 @@ export const AuthPanel = component$(() => {
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
-              value={otpCode.value}
+              autoFocus={store.otpSent}
+              value={store.otpCode}
               onInput$={(e) => {
-                otpCode.value = (e.target as HTMLInputElement).value;
+                store.otpCode = (e.target as HTMLInputElement).value;
+              }}
+              onKeyDown$={(e) => {
+                if (e.key === "Enter") void handleVerifyOtp();
               }}
               placeholder="six figures, as cabled"
               class="field-input"
+              style="font-family: var(--font-display); font-size: 1.2rem; letter-spacing: 0.4em; text-align: center; font-weight: 500;"
             />
           </div>
           <button
             type="button"
-            onClick$={handleEmailOtpRequest}
-            disabled={loading.value || !otpEmail.value}
+            onClick$={handleVerifyOtp}
+            disabled={store.verifyingOtp || store.sendingOtp || !store.otpCode}
+            class="btn-press w-full"
+          >
+            {store.verifyingOtp ? "Verifying…" : "Verify & sign in"}
+          </button>
+          <button
+            type="button"
+            onClick$={handleResendOtp}
+            disabled={store.sendingOtp}
+            class="w-full text-center text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)] focus-ring disabled:opacity-40"
+            style="font-family: var(--font-typewriter);"
+          >
+            {store.sendingOtp ? "Sending…" : "Re-send the code"}
+          </button>
+
+          <div class="ornament-divider mt-3">
+            <span style="font-family: var(--font-display);">❦</span>
+          </div>
+
+          <button
+            type="button"
+            onClick$={handlePasskeySignIn}
+            disabled={store.usingPasskey}
             class="btn-paper w-full"
           >
-            {loading.value ? "Cabling…" : "Cable the code"}
+            {store.usingPasskey ? "Checking…" : "Use a passkey instead"}
           </button>
-          <button
-            type="submit"
-            disabled={loading.value || !otpCode.value}
-            class="btn-press w-full"
-          >
-            Verify &amp; sign in
-          </button>
-        </form>
+        </div>
       ) : (
-        <form
-          preventdefault:submit
-          onSubmit$={
-            view.value === "login" ? handleEmailSignIn : handleRegister
-          }
-          class="space-y-3"
-        >
-          {view.value === "register" && (
-            <div>
-              <label class="field-label" for="auth-name">
-                Name
-              </label>
-              <input
-                id="auth-name"
-                type="text"
-                autoComplete="name"
-                value={name.value}
-                onInput$={(e) => {
-                  name.value = (e.target as HTMLInputElement).value;
-                }}
-                placeholder="As it should read on the byline"
-                class="field-input"
-              />
-            </div>
-          )}
-          <div>
-            <label class="field-label" for="auth-email">
-              Email
-            </label>
-            <input
-              id="auth-email"
-              type="email"
-              autoComplete="email"
-              value={email.value}
-              onInput$={(e) => {
-                email.value = (e.target as HTMLInputElement).value;
-              }}
-              placeholder="byline@example.com"
-              class="field-input"
-            />
-          </div>
-          <div>
-            <label class="field-label" for="auth-password">
-              Password
-            </label>
-            <input
-              id="auth-password"
-              type="password"
-              autoComplete={
-                view.value === "login" ? "current-password" : "new-password"
-              }
-              value={password.value}
-              onInput$={(e) => {
-                password.value = (e.target as HTMLInputElement).value;
-              }}
-              placeholder="••••••••"
-              class="field-input"
-            />
-          </div>
-
+        <div class="space-y-4">
           <button
-            type="submit"
-            disabled={loading.value || !email.value || !password.value}
+            type="button"
+            onClick$={handlePasskeySignIn}
+            disabled={store.usingPasskey}
             class="btn-press w-full"
           >
-            {loading.value
-              ? "Setting the type…"
-              : view.value === "login"
-                ? "Sign in with email"
-                : "Create account"}
+            {store.usingPasskey ? "Checking…" : "Continue with passkey"}
           </button>
-
-          <div class="flex gap-2">
-            <button
-              type="button"
-              onClick$={
-                view.value === "login"
-                  ? handlePasskeySignIn
-                  : handlePasskeyRegister
-              }
-              disabled={loading.value}
-              class="btn-paper flex-1"
-            >
-              {view.value === "login" ? "Use a passkey" : "Add a passkey"}
-            </button>
+          <p
+            class="text-center text-[12px] text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-serif); font-style: italic;"
+          >
+            No passkey on this device?{" "}
             <button
               type="button"
               onClick$={() => {
-                error.value = null;
-                view.value = "email-otp";
+                store.chosen = "otp";
+                store.otpSent = false;
               }}
-              class="btn-paper flex-1"
+              class="text-[var(--color-vermilion)] underline underline-offset-2 hover:text-[var(--color-vermilion-2)]"
+              style="font-family: var(--font-serif); font-style: italic;"
             >
-              Email a code
+              Email me a code instead
             </button>
-          </div>
-        </form>
+            .
+          </p>
+        </div>
       )}
 
-      <div class="pt-1 border-t border-dashed border-[var(--color-paper-3)]">
-        <p
-          class="mt-3 text-[11px] tracking-[0.16em] uppercase text-center text-[var(--color-ink-muted)]"
-          style="font-family: var(--font-typewriter);"
-        >
-          or bring your own byline
-        </p>
-        <div class="mt-2 flex gap-2">
-          <input
-            type="text"
-            autoComplete="username"
-            value={blueskyHandle.value}
-            onInput$={(e) => {
-              blueskyHandle.value = (e.target as HTMLInputElement).value;
-            }}
-            placeholder="handle.bsky.social (optional)"
-            class="field-input flex-1 text-[12px]"
-          />
-          <button
-            type="button"
-            onClick$={handleBlueskySignIn}
-            disabled={loading.value}
-            class="btn-paper flex-shrink-0"
-            title="Sign in with your Bluesky / ATProto account"
-          >
-            Bluesky
-          </button>
-        </div>
-      </div>
-
-      <div class="pt-1 text-center border-t border-dashed border-[var(--color-paper-3)]">
+      <div class="mt-5 flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
         <button
-          onClick$={() => {
-            error.value = null;
-            view.value = view.value === "login" ? "register" : "login";
-          }}
-          class="mt-3 text-[11px] tracking-[0.16em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)] focus-ring"
+          type="button"
+          onClick$={handleBack}
+          class="hover:text-[var(--color-ink)] focus-ring"
           style="font-family: var(--font-typewriter);"
         >
-          {view.value === "login"
-            ? "Need an account? Join the masthead"
-            : "Already on the masthead? Sign in"}
+          ← Back
         </button>
+        <span style="font-family: var(--font-typewriter);">
+          {prefersOtp ? "One-time code" : "Passkey"}
+        </span>
       </div>
-    </div>
+    </AuthShellFrame>
   );
 });
+
+/* ── Sub-components ──────────────────────────────────────────── */
+
+interface AuthShellFrameProps {
+  header: string;
+  step?: 1 | 2;
+  progress?: string;
+  department?: string;
+  question?: string;
+  hint?: string;
+}
+
+const AuthShellFrame = component$<AuthShellFrameProps>(
+  ({ header, step, progress, department, question, hint }) => {
+    const roman = step ? ["", "I", "II"][step] : "";
+    return (
+      <div class="p-5">
+        <p class="dept-label">{header}</p>
+        {progress && (
+          <p
+            class="mt-0.5 text-[10px] tracking-[0.18em] text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-typewriter); text-transform: uppercase;"
+          >
+            {progress}
+          </p>
+        )}
+        {step && (
+          <div
+            class="mt-3 mb-4 h-[3px] w-full overflow-hidden bg-[var(--color-paper-2)]"
+            role="progressbar"
+            aria-valuemin={1}
+            aria-valuemax={2}
+            aria-valuenow={step}
+            aria-label="Sign-in progress"
+          >
+            <div
+              class="h-full transition-[width] duration-300"
+              style={{
+                width: `${(step / 2) * 100}%`,
+                background:
+                  "linear-gradient(90deg, var(--color-vermilion) 0%, var(--color-mustard) 100%)",
+              }}
+            />
+          </div>
+        )}
+        {question && (
+          <div class="mt-1 flex items-baseline gap-3">
+            <span
+              class="leading-none ink-bleed"
+              style="font-family: var(--font-display); font-weight: 700; font-size: 1.8rem; color: var(--color-vermilion); font-style: italic;"
+            >
+              {roman}.
+            </span>
+            <p
+              class="text-[1.05rem] leading-snug text-[var(--color-ink)]"
+              style="font-family: var(--font-display); font-weight: 600;"
+            >
+              {question}
+            </p>
+          </div>
+        )}
+        {department && (
+          <p
+            class="mt-2 ml-9 text-[10px] tracking-[0.18em] text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-typewriter); text-transform: uppercase;"
+          >
+            {department}
+          </p>
+        )}
+        {hint && (
+          <p
+            class="mt-1 ml-9 text-[12px] leading-5 text-[var(--color-ink-light)]"
+            style="font-family: var(--font-serif); font-style: italic;"
+          >
+            {hint}
+          </p>
+        )}
+        <Slot />
+      </div>
+    );
+  },
+);
+
+interface SignedInHeaderProps {
+  email: string;
+  onSignOut$: PropFunction<() => void>;
+}
+
+const SignedInHeader = component$<SignedInHeaderProps>(
+  ({ email, onSignOut$ }) => {
+    return (
+      <div class="mt-3 flex items-center gap-3">
+        <div class="flex-1 min-w-0">
+          <p
+            class="text-sm text-[var(--color-ink)] truncate"
+            style="font-family: var(--font-display); font-weight: 600;"
+          >
+            On the masthead
+          </p>
+          <p
+            class="text-[11px] text-[var(--color-ink-muted)] truncate"
+            style="font-family: var(--font-typewriter); letter-spacing: 0.08em;"
+          >
+            {email}
+          </p>
+        </div>
+        <button onClick$={onSignOut$} class="btn-paper flex-shrink-0">
+          Sign out
+        </button>
+      </div>
+    );
+  },
+);

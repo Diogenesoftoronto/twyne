@@ -69,7 +69,7 @@ interface PersonasStore {
   /** Active note id being replied to. */
   replyNoteId: string | null;
   /** Whether the last convene was served by an LLM (false = local fallback). */
-  lastProvider: "rivet" | "anthropic" | "openai" | "local" | null;
+  lastProvider: "rivet" | "anthropic" | "openai" | "bifrost" | "local" | null;
   /** Whether sync has completed since sign-in. */
   hydrated: boolean;
   /** Cached Convex client ref (noSerialize so Qwik doesn't try to ship it). */
@@ -80,6 +80,8 @@ interface PersonasStore {
   roomSettings: RoomSettings;
   /** Whether the room-settings disclosure is open. */
   settingsOpen: boolean;
+  /** Whether the cast + controls header is collapsed to give the notes room. */
+  controlsCollapsed: boolean;
   /** Whether a proactive markup pass is running. */
   isMarkingUp: boolean;
   /** Note id whose "ask for a fix" request is in flight. */
@@ -195,6 +197,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     convenedBriefTitle: null,
     roomSettings: DEFAULT_ROOM_SETTINGS,
     settingsOpen: false,
+    controlsCollapsed: false,
     isMarkingUp: false,
     fixingNoteId: null,
     largeEditsUsed: 0,
@@ -344,7 +347,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     .provider-pill[data-provider="local"] { color: var(--color-vermilion); border-color: var(--color-vermilion); }
     .provider-pill[data-provider="anthropic"],
     .provider-pill[data-provider="openai"],
-    .provider-pill[data-provider="rivet"] { color: var(--color-accent-green); border-color: var(--color-accent-green); }
+    .provider-pill[data-provider="rivet"],
+    .provider-pill[data-provider="bifrost"] { color: var(--color-accent-green); border-color: var(--color-accent-green); }
 
     .reply-thread {
       margin-top: 0.6rem;
@@ -452,7 +456,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         personaId: string;
         text: string;
         type: PersonaFeedback["type"];
-        provider: "rivet" | "anthropic" | "openai" | "local";
+        provider: "rivet" | "anthropic" | "openai" | "bifrost" | "local";
       }> = [];
 
       // ── Try client-side AI first (BYOK) ─────────────────────────
@@ -512,7 +516,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             personaId: string;
             text: string;
             type: PersonaFeedback["type"];
-            provider: "rivet" | "anthropic" | "openai" | "local";
+            provider: "rivet" | "anthropic" | "openai" | "bifrost" | "local";
           }>;
           responses = result;
           store.lastProvider = result[0]?.provider ?? null;
@@ -676,10 +680,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
         // ── Try client-side AI first (BYOK) ─────────────────────────
         const settings2 = store.aiSettings;
-        if (
-          settings2?.advancedMode &&
-          settings2.providers.length > 0
-        ) {
+        if (settings2?.advancedMode && settings2.providers.length > 0) {
           try {
             const res = await runClientAgent(
               "persona-reply",
@@ -731,9 +732,9 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               priorMessages,
               userMessage: userReply.text,
               instruction: "elaborate",
-            })) as { text: string; type: PersonaFeedback["type"] };
+            })) as { text: string; type: PersonaFeedback["type"]; provider: string };
             responseText = result.text;
-            store.lastProvider = "anthropic"; // best-effort tag
+            store.lastProvider = (result.provider as typeof store.lastProvider) ?? "bifrost";
           } catch (err) {
             console.warn("[twyne:personas] runPersona failed:", err);
           }
@@ -835,10 +836,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
       // ── Try client-side AI first (BYOK) ─────────────────────────
       const settings = store.aiSettings;
-      if (
-        settings?.advancedMode &&
-        settings.providers.length > 0
-      ) {
+      if (settings?.advancedMode && settings.providers.length > 0) {
         try {
           const res = await runClientRewrite(
             {
@@ -1015,243 +1013,272 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         </p>
       </div>
 
-      {/* ── The Cast — portraits ────────────────────────────── */}
-      <div class="px-4 pt-4 pb-3 border-b border-[var(--color-paper-3)]">
-        <div class="flex items-center justify-between mb-2">
-          <span class="dept-label" style="margin: 0;">
-            The Cast
+      {/* ── Collapse toggle — hide the cast & controls to read notes ── */}
+      <button
+        onClick$={() => {
+          store.controlsCollapsed = !store.controlsCollapsed;
+        }}
+        class="focus-ring w-full flex items-center justify-between px-4 py-1.5 border-b border-[var(--color-paper-3)] text-[11px] text-[var(--color-ink-light)] hover:text-[var(--color-ink)]"
+        style="font-family: var(--font-typewriter);"
+        aria-expanded={!store.controlsCollapsed}
+        title={
+          store.controlsCollapsed
+            ? "Show the cast & controls"
+            : "Collapse the cast & controls for more room"
+        }
+      >
+        <span>
+          {store.controlsCollapsed
+            ? "▸ show cast & controls"
+            : "▾ hide cast & controls"}
+        </span>
+        {store.controlsCollapsed && store.feedback.length > 0 && (
+          <span class="text-[var(--color-ink-muted)]">
+            {store.feedback.length} note
+            {store.feedback.length === 1 ? "" : "s"}
           </span>
-          <a
-            href="/personas"
-            class="text-[0.7rem] tracking-[0.14em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)] focus-ring"
-            style="font-family: var(--font-typewriter);"
-          >
-            Manage the cast →
-          </a>
-        </div>
+        )}
+      </button>
 
-        <div class="grid grid-cols-2 gap-2">
-          {store.personas.map((persona) => {
-            const active = store.activePersona === persona.id;
-            return (
-              <button
-                key={persona.id}
-                onClick$={() => {
-                  store.activePersona = active ? null : persona.id;
-                }}
-                class={`portrait ${active ? "is-active" : ""}`}
-                style={{ ["--frame-color" as never]: persona.color }}
-                title={persona.description}
-                aria-pressed={active}
-              >
-                <div class="flex items-center gap-2">
-                  <span
-                    class="portrait-icon"
-                    style={{ ["--frame-color" as never]: persona.color }}
-                  >
-                    {persona.icon}
-                  </span>
-                  <div class="text-left min-w-0">
-                    <p
-                      class="text-[0.7rem] tracking-[0.12em] uppercase truncate"
-                      style={{
-                        fontFamily: "var(--font-typewriter)",
-                        color: persona.color,
-                      }}
+      {/* ── The Cast — portraits ────────────────────────────── */}
+      {!store.controlsCollapsed && (
+        <div class="px-4 pt-4 pb-3 border-b border-[var(--color-paper-3)]">
+          <div class="flex items-center justify-between mb-2">
+            <span class="dept-label" style="margin: 0;">
+              The Cast
+            </span>
+            <a
+              href="/personas"
+              class="text-[0.7rem] tracking-[0.14em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)] focus-ring"
+              style="font-family: var(--font-typewriter);"
+            >
+              Manage the cast →
+            </a>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            {store.personas.map((persona) => {
+              const active = store.activePersona === persona.id;
+              return (
+                <button
+                  key={persona.id}
+                  onClick$={() => {
+                    store.activePersona = active ? null : persona.id;
+                  }}
+                  class={`portrait ${active ? "is-active" : ""}`}
+                  style={{ ["--frame-color" as never]: persona.color }}
+                  title={persona.description}
+                  aria-pressed={active}
+                >
+                  <div class="flex items-center gap-2">
+                    <span
+                      class="portrait-icon"
+                      style={{ ["--frame-color" as never]: persona.color }}
                     >
-                      {persona.role.replace(/^The /, "")}
-                    </p>
-                    <p
-                      class="text-xs truncate text-[var(--color-ink)]"
-                      style="font-family: var(--font-display); font-weight: 600;"
-                    >
-                      {persona.name}
-                    </p>
+                      {persona.icon}
+                    </span>
+                    <div class="text-left min-w-0">
+                      <p
+                        class="text-[0.7rem] tracking-[0.12em] uppercase truncate"
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          color: persona.color,
+                        }}
+                      >
+                        {persona.role.replace(/^The /, "")}
+                      </p>
+                      <p
+                        class="text-xs truncate text-[var(--color-ink)]"
+                        style="font-family: var(--font-display); font-weight: 600;"
+                      >
+                        {persona.name}
+                      </p>
+                    </div>
                   </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        <button
-          onClick$={requestFeedback}
-          disabled={store.isGenerating}
-          class="convene-btn mt-4"
-        >
-          {store.isGenerating ? (
-            <span class="flex items-center justify-center gap-2">
-              <span class="inline-block animate-spin">✦</span>
-              The room is reading…
-            </span>
-          ) : (
-            "✦  Convene the Room"
-          )}
-        </button>
-
-        {store.feedback.length > 0 && !store.isGenerating && (
-          <div class="mt-2 flex items-center gap-2">
-            <button
-              onClick$={() => {
-                store.groupByPersona = !store.groupByPersona;
-              }}
-              class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-              style="font-family: var(--font-typewriter);"
-              aria-pressed={store.groupByPersona}
-              title={
-                store.groupByPersona
-                  ? "Showing latest note per editor — click to show all"
-                  : "Showing every note — click to group by editor"
-              }
-            >
-              {store.groupByPersona ? "▾ grouped" : "▸ all notes"}
-            </button>
-            <button
-              onClick$={() => {
-                store.compactView = !store.compactView;
-              }}
-              class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-              style="font-family: var(--font-typewriter);"
-              aria-pressed={store.compactView}
-              title={
-                store.compactView
-                  ? "Notes clamped — click to read in full"
-                  : "Showing full notes — click to clamp them"
-              }
-            >
-              {store.compactView ? "▸ compact" : "▾ full"}
-            </button>
-            <button onClick$={clearRoom} class="btn-paper flex-1 text-xs">
-              Strike the room
-            </button>
+                </button>
+              );
+            })}
           </div>
-        )}
 
-        {/* ── Mark up my draft + room settings ── */}
-        {store.roomSettings.level !== "comments" && (
           <button
-            onClick$={markUpDraft}
-            disabled={store.isMarkingUp || store.isGenerating}
-            class="btn-paper w-full mt-2 text-xs"
-            title="The room proposes edits across your draft"
+            onClick$={requestFeedback}
+            disabled={store.isGenerating}
+            class="convene-btn mt-4"
           >
-            {store.isMarkingUp
-              ? "The room is marking up…"
-              : "✎  Mark up my draft"}
+            {store.isGenerating ? (
+              <span class="flex items-center justify-center gap-2">
+                <span class="inline-block animate-spin">✦</span>
+                The room is reading…
+              </span>
+            ) : (
+              "✦  Convene the Room"
+            )}
           </button>
-        )}
 
-        <div class="mt-2 flex items-center justify-between">
-          <button
-            onClick$={() => {
-              store.settingsOpen = !store.settingsOpen;
-            }}
-            class="focus-ring text-[11px] text-[var(--color-ink-light)] hover:text-[var(--color-ink)]"
-            style="font-family: var(--font-typewriter);"
-            aria-expanded={store.settingsOpen}
-          >
-            {store.settingsOpen ? "▾" : "▸"} Room settings
-          </button>
-          {store.roomSettings.level === "paragraph" && (
-            <span
-              class="text-[10px] text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter);"
-              title="Large (paragraph) edits remaining this pass"
-            >
-              Large edits:{" "}
-              {Math.max(
-                0,
-                store.roomSettings.maxLargeEdits - store.largeEditsUsed,
-              )}{" "}
-              of {store.roomSettings.maxLargeEdits} left
-            </span>
-          )}
-        </div>
-
-        {store.settingsOpen && (
-          <div class="mt-2 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-3 space-y-3">
-            <div>
-              <p
-                class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-light)] mb-1"
+          {store.feedback.length > 0 && !store.isGenerating && (
+            <div class="mt-2 flex items-center gap-2">
+              <button
+                onClick$={() => {
+                  store.groupByPersona = !store.groupByPersona;
+                }}
+                class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
                 style="font-family: var(--font-typewriter);"
+                aria-pressed={store.groupByPersona}
+                title={
+                  store.groupByPersona
+                    ? "Showing latest note per editor — click to show all"
+                    : "Showing every note — click to group by editor"
+                }
               >
-                How much the room edits
-              </p>
-              <div class="flex gap-1">
-                {(
-                  ["comments", "sentence", "paragraph"] as AssistanceLevel[]
-                ).map((lvl) => (
-                  <button
-                    key={lvl}
-                    onClick$={() =>
-                      persistSettings({ ...store.roomSettings, level: lvl })
-                    }
-                    class={`flex-1 rounded-sm border px-1 py-1 text-[11px] capitalize ${
-                      store.roomSettings.level === lvl
-                        ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]"
-                        : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"
-                    }`}
-                    style="font-family: var(--font-typewriter);"
-                  >
-                    {lvl}
-                  </button>
-                ))}
-              </div>
+                {store.groupByPersona ? "▾ grouped" : "▸ all notes"}
+              </button>
+              <button
+                onClick$={() => {
+                  store.compactView = !store.compactView;
+                }}
+                class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                style="font-family: var(--font-typewriter);"
+                aria-pressed={store.compactView}
+                title={
+                  store.compactView
+                    ? "Notes clamped — click to read in full"
+                    : "Showing full notes — click to clamp them"
+                }
+              >
+                {store.compactView ? "▸ compact" : "▾ full"}
+              </button>
+              <button onClick$={clearRoom} class="btn-paper flex-1 text-xs">
+                Strike the room
+              </button>
             </div>
-            <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
-              <span style="font-family: var(--font-typewriter);">
-                Max edits / pass
-              </span>
-              <input
-                type="number"
-                min={1}
-                max={20}
-                value={store.roomSettings.maxProposals}
-                onChange$={(_, el) =>
-                  persistSettings({
-                    ...store.roomSettings,
-                    maxProposals: Math.max(
-                      1,
-                      Math.min(20, Number(el.value) || 1),
-                    ),
-                  })
-                }
-                class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
-              />
-            </label>
-            <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
-              <span style="font-family: var(--font-typewriter);">
-                Max large edits
-              </span>
-              <input
-                type="number"
-                min={0}
-                max={10}
-                value={store.roomSettings.maxLargeEdits}
-                onChange$={(_, el) =>
-                  persistSettings({
-                    ...store.roomSettings,
-                    maxLargeEdits: Math.max(
-                      0,
-                      Math.min(10, Number(el.value) || 0),
-                    ),
-                  })
-                }
-                class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
-              />
-            </label>
-          </div>
-        )}
+          )}
 
-        {store.conveneError && (
-          <p
-            class="mt-2 text-[11px] text-[var(--color-vermilion)]"
-            style="font-family: var(--font-typewriter);"
-          >
-            ⚠ {store.conveneError} (using local fallback)
-          </p>
-        )}
-      </div>
+          {/* ── Mark up my draft + room settings ── */}
+          {store.roomSettings.level !== "comments" && (
+            <button
+              onClick$={markUpDraft}
+              disabled={store.isMarkingUp || store.isGenerating}
+              class="btn-paper w-full mt-2 text-xs"
+              title="The room proposes edits across your draft"
+            >
+              {store.isMarkingUp
+                ? "The room is marking up…"
+                : "✎  Mark up my draft"}
+            </button>
+          )}
+
+          <div class="mt-2 flex items-center justify-between">
+            <button
+              onClick$={() => {
+                store.settingsOpen = !store.settingsOpen;
+              }}
+              class="focus-ring text-[11px] text-[var(--color-ink-light)] hover:text-[var(--color-ink)]"
+              style="font-family: var(--font-typewriter);"
+              aria-expanded={store.settingsOpen}
+            >
+              {store.settingsOpen ? "▾" : "▸"} Room settings
+            </button>
+            {store.roomSettings.level === "paragraph" && (
+              <span
+                class="text-[10px] text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-typewriter);"
+                title="Large (paragraph) edits remaining this pass"
+              >
+                Large edits:{" "}
+                {Math.max(
+                  0,
+                  store.roomSettings.maxLargeEdits - store.largeEditsUsed,
+                )}{" "}
+                of {store.roomSettings.maxLargeEdits} left
+              </span>
+            )}
+          </div>
+
+          {store.settingsOpen && (
+            <div class="mt-2 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-3 space-y-3">
+              <div>
+                <p
+                  class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-light)] mb-1"
+                  style="font-family: var(--font-typewriter);"
+                >
+                  How much the room edits
+                </p>
+                <div class="flex gap-1">
+                  {(
+                    ["comments", "sentence", "paragraph"] as AssistanceLevel[]
+                  ).map((lvl) => (
+                    <button
+                      key={lvl}
+                      onClick$={() =>
+                        persistSettings({ ...store.roomSettings, level: lvl })
+                      }
+                      class={`flex-1 rounded-sm border px-1 py-1 text-[11px] capitalize ${
+                        store.roomSettings.level === lvl
+                          ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]"
+                          : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"
+                      }`}
+                      style="font-family: var(--font-typewriter);"
+                    >
+                      {lvl}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
+                <span style="font-family: var(--font-typewriter);">
+                  Max edits / pass
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={store.roomSettings.maxProposals}
+                  onChange$={(_, el) =>
+                    persistSettings({
+                      ...store.roomSettings,
+                      maxProposals: Math.max(
+                        1,
+                        Math.min(20, Number(el.value) || 1),
+                      ),
+                    })
+                  }
+                  class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
+                />
+              </label>
+              <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
+                <span style="font-family: var(--font-typewriter);">
+                  Max large edits
+                </span>
+                <input
+                  type="number"
+                  min={0}
+                  max={10}
+                  value={store.roomSettings.maxLargeEdits}
+                  onChange$={(_, el) =>
+                    persistSettings({
+                      ...store.roomSettings,
+                      maxLargeEdits: Math.max(
+                        0,
+                        Math.min(10, Number(el.value) || 0),
+                      ),
+                    })
+                  }
+                  class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
+                />
+              </label>
+            </div>
+          )}
+
+          {store.conveneError && (
+            <p
+              class="mt-2 text-[11px] text-[var(--color-vermilion)]"
+              style="font-family: var(--font-typewriter);"
+            >
+              ⚠ {store.conveneError} (using local fallback)
+            </p>
+          )}
+        </div>
+      )}
 
       {/* ── Marginalia — feedback feed ──────────────────────── */}
       <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
@@ -1311,8 +1338,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             const replyOpen = store.replyingTo === feedback.noteId;
             const personaColor = feedback.personaColor;
             const noteKey =
-              feedback.noteId ??
-              `${feedback.personaId}-${feedback.timestamp}`;
+              feedback.noteId ?? `${feedback.personaId}-${feedback.timestamp}`;
             const bodyClamped =
               store.compactView && !store.expandedFeedback.has(noteKey);
             return (
@@ -1378,7 +1404,9 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                       ? "font-family: var(--font-serif); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;"
                       : "font-family: var(--font-serif);"
                   }
-                  title={bodyClamped ? "Click to read the full note" : undefined}
+                  title={
+                    bodyClamped ? "Click to read the full note" : undefined
+                  }
                   onClick$={
                     store.compactView
                       ? () => {

@@ -55,9 +55,22 @@ The server listens on `PORT`, defaulting to `3000`.
 ## Deployment
 
 Twyne deploys to **Railway** (Bun build, Node runtime) via `railway.json` and
-`nixpacks.toml`. Custom domain: **twyne.love**. See
+`railpack.json`. Custom domain: **twyne.love**. See
 [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for service setup, environment
 variables, and the custom-domain steps.
+
+## Desktop app
+
+A native desktop build wraps the hosted app via
+[Electrobun](https://www.electrobun.dev):
+
+```bash
+bun run desktop         # dev build + launch
+bun run desktop.build   # production bundle into ./build
+```
+
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md#desktop-app-electrobun) for config,
+the `TWYNE_DESKTOP_URL` dev override, and platform caveats.
 
 ## Releases
 

@@ -33,12 +33,13 @@ import {
   type FeedbackType,
 } from "./agentPrompts";
 import type { Persona, ProjectBrief } from "../src/types";
+import { captureServerAiGeneration } from "./posthog";
 
 /* ── Provider selection ─────────────────────────────────────────── */
 
 interface ProviderConfig {
   model: LanguageModel;
-  label: "rivet" | "anthropic" | "openai";
+  label: "rivet" | "anthropic" | "openai" | "bifrost";
   /** Default model id used by this provider. */
   modelId: string;
 }
@@ -55,6 +56,26 @@ function pickProvider(): ProviderConfig | null {
     return {
       model: rivet.chat(modelId),
       label: "rivet",
+      modelId,
+    };
+  }
+
+  const bifrostUrl = process.env.BIFROST_BASE_URL;
+  if (bifrostUrl) {
+    const modelId =
+      process.env.BIFROST_DEFAULT_MODEL ??
+      "neuralwatt/qwen3.5-397b-fast";
+    const bifrostKey = process.env.BIFROST_API_KEY;
+    const bifrost = createOpenAI({
+      baseURL: bifrostUrl.replace(/\/$/, ""),
+      apiKey: "bifrost-dummy",
+      headers: bifrostKey
+        ? { "x-bifrost-api-key": bifrostKey }
+        : undefined,
+    });
+    return {
+      model: bifrost.chat(modelId),
+      label: "bifrost",
       modelId,
     };
   }
@@ -83,8 +104,10 @@ function pickProvider(): ProviderConfig | null {
 const typeKeywords: Record<FeedbackType, RegExp> = {
   encouragement: /\b(protect|strength|alive|good|works|love|keep)\b/i,
   suggestion: /\b(try|consider|suggest|add|cut|move|compress|split|drop)\b/i,
-  critique: /\b(weak|fail|missing|wrong|load[- ]bearing|unstated|evade|counterpoint|reject)\b/i,
-  perspective: /\b(as a|reader|audience|expect|signal|outcome|trust|confused|won over)\b/i,
+  critique:
+    /\b(weak|fail|missing|wrong|load[- ]bearing|unstated|evade|counterpoint|reject)\b/i,
+  perspective:
+    /\b(as a|reader|audience|expect|signal|outcome|trust|confused|won over)\b/i,
 };
 
 const typeOrder: FeedbackType[] = [
@@ -109,25 +132,55 @@ function classifyType(text: string, fallback: FeedbackType): FeedbackType {
 async function runLlm(
   provider: ProviderConfig,
   req: AgentRequest,
+  feature: "persona-feedback" | "persona-reply" = "persona-feedback",
 ): Promise<AgentResponse> {
   const system = buildSystemPrompt(req.persona);
   const user = buildUserPrompt(req);
   const fallbackType: FeedbackType = defaultTypeForPersona(req.persona);
+  const temperature = provider.label === "openai" ? 0.6 : 0.4;
+  const maxTokens = 380;
+  const start = Date.now();
 
-  const { text } = await generateText({
-    model: provider.model,
-    system,
-    prompt: user,
-    temperature: provider.label === "openai" ? 0.6 : 0.4,
-    maxOutputTokens: 380,
-  });
+  try {
+    const { text } = await generateText({
+      model: provider.model,
+      system,
+      prompt: user,
+      temperature,
+      maxOutputTokens: maxTokens,
+    });
+    await captureServerAiGeneration({
+      feature,
+      provider: provider.label,
+      model: provider.modelId,
+      req,
+      output: text,
+      latencyMs: Date.now() - start,
+      temperature,
+      maxTokens,
+      spanName: feature,
+    });
 
-  const cleaned = text.trim();
-  return {
-    text: cleaned || "(no response)",
-    type: classifyType(cleaned, fallbackType),
-    provider: provider.label,
-  };
+    const cleaned = text.trim();
+    return {
+      text: cleaned || "(no response)",
+      type: classifyType(cleaned, fallbackType),
+      provider: provider.label,
+    };
+  } catch (err) {
+    await captureServerAiGeneration({
+      feature,
+      provider: provider.label,
+      model: provider.modelId,
+      req,
+      latencyMs: Date.now() - start,
+      temperature,
+      maxTokens,
+      spanName: feature,
+      error: err,
+    });
+    throw err;
+  }
 }
 
 function defaultTypeForPersona(p: AgentPersona): FeedbackType {
@@ -207,11 +260,13 @@ export const runPersona = action({
 export interface RewriteResult {
   replacement: string;
   rationale: string;
-  provider: "rivet" | "anthropic" | "openai" | "local";
+  provider: "rivet" | "anthropic" | "openai" | "bifrost" | "local";
 }
 
 /** Parse the strict-JSON rewrite contract, tolerating code fences / prose. */
-function parseRewriteOutput(text: string): { replacement: string; rationale: string } | null {
+function parseRewriteOutput(
+  text: string,
+): { replacement: string; rationale: string } | null {
   const stripped = text
     .trim()
     .replace(/^```(?:json)?/i, "")
@@ -231,11 +286,16 @@ function parseRewriteOutput(text: string): { replacement: string; rationale: str
     }
     return null;
   };
-  return tryParse(stripped) ?? tryParse(stripped.match(/\{[\s\S]*\}/)?.[0] ?? "");
+  return (
+    tryParse(stripped) ?? tryParse(stripped.match(/\{[\s\S]*\}/)?.[0] ?? "")
+  );
 }
 
 /** Deterministic last-resort rewrite — tightens filler so the loop always works. */
-function localRewrite(persona: AgentPersona, original: string): { replacement: string; rationale: string } {
+function localRewrite(
+  persona: AgentPersona,
+  original: string,
+): { replacement: string; rationale: string } {
   const replacement = original
     .replace(/\b(very|really|just|quite|simply|actually|basically)\s+/gi, "")
     .replace(/\s+/g, " ")
@@ -266,7 +326,8 @@ export const suggestRewrite = action({
   handler: async (_ctx, args): Promise<RewriteResult> => {
     const persona = args.persona as AgentPersona;
     const provider = pickProvider();
-    if (!provider) return { ...localRewrite(persona, args.original), provider: "local" };
+    if (!provider)
+      return { ...localRewrite(persona, args.original), provider: "local" };
 
     const system = buildSystemPrompt(persona);
     const sizeRule =
@@ -285,16 +346,53 @@ export const suggestRewrite = action({
       `PASSAGE:\n"${args.original}"`;
 
     try {
+      const start = Date.now();
+      const temperature = 0.4;
+      const maxTokens = 320;
       const { text } = await generateText({
         model: provider.model,
         system,
         prompt: user,
-        temperature: 0.4,
-        maxOutputTokens: 320,
+        temperature,
+        maxOutputTokens: maxTokens,
+      });
+      await captureServerAiGeneration({
+        feature: "persona-rewrite",
+        provider: provider.label,
+        model: provider.modelId,
+        req: {
+          persona,
+          brief: (args.brief ?? null) as ProjectBrief | null,
+          draftText: args.draftText,
+          instruction: "rewrite-suggestion",
+        },
+        output: text,
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "persona_rewrite",
+        evalSignals: {
+          twyne_expected_format: "json_rewrite",
+          twyne_rewrite_level: args.level,
+        },
       });
       const parsed = parseRewriteOutput(text);
       if (parsed) return { ...parsed, provider: provider.label };
-    } catch {
+    } catch (err) {
+      await captureServerAiGeneration({
+        feature: "persona-rewrite",
+        provider: provider.label,
+        model: provider.modelId,
+        req: {
+          persona,
+          brief: (args.brief ?? null) as ProjectBrief | null,
+          draftText: args.draftText,
+          instruction: "rewrite-suggestion",
+        },
+        latencyMs: 0,
+        spanName: "persona_rewrite",
+        error: err,
+      });
       /* fall through to local */
     }
     return { ...localRewrite(persona, args.original), provider: "local" };
@@ -386,12 +484,32 @@ Respond as JSON, and only JSON, in this exact shape:
 {"score": <integer 1-10>, "rationale": "<one sentence, your voice>"}`;
 
     try {
+      const start = Date.now();
+      const temperature = 0.2;
+      const maxTokens = 220;
       const { text } = await generateText({
         model: provider.model,
         system,
         prompt: user,
-        temperature: 0.2,
-        maxOutputTokens: 220,
+        temperature,
+        maxOutputTokens: maxTokens,
+      });
+      await captureServerAiGeneration({
+        feature: "rubric-judge",
+        provider: provider.label,
+        model: provider.modelId,
+        req: {
+          persona,
+          brief,
+          draftText: args.draftText,
+          instruction: "feedback",
+        },
+        output: text,
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "rubric_judge",
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
       });
       const parsed = parseJudgeOutput(text);
       if (parsed) return { ...parsed, provider: provider.label };
@@ -421,7 +539,10 @@ export const judgeRoom = action({
         const persona = p as AgentPersona;
         const provider = pickProvider();
         if (!provider) {
-          return { ...localJudge(persona, brief, args.draftText), personaId: persona.id };
+          return {
+            ...localJudge(persona, brief, args.draftText),
+            personaId: persona.id,
+          };
         }
         try {
           const system = buildSystemPrompt(persona);
@@ -437,12 +558,32 @@ export const judgeRoom = action({
 JUDGE TASK: Give the draft an integer score from 1 to 10. 5 is "doing the work but with clear issues." 7 is "in good shape." 9 is "publishable as-is." Be honest.
 
 Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voice>"}`;
+          const start = Date.now();
+          const temperature = 0.2;
+          const maxTokens = 200;
           const { text } = await generateText({
             model: provider.model,
             system,
             prompt: user,
-            temperature: 0.2,
-            maxOutputTokens: 200,
+            temperature,
+            maxOutputTokens: maxTokens,
+          });
+          await captureServerAiGeneration({
+            feature: "rubric-judge",
+            provider: provider.label,
+            model: provider.modelId,
+            req: {
+              persona,
+              brief,
+              draftText: args.draftText,
+              instruction: "feedback",
+            },
+            output: text,
+            latencyMs: Date.now() - start,
+            temperature,
+            maxTokens,
+            spanName: "rubric_judge_room",
+            evalSignals: { twyne_expected_format: "json_score_rationale" },
           });
           const parsed = parseJudgeOutput(text);
           if (parsed) {
@@ -451,7 +592,10 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
         } catch (err) {
           console.error(`[twyne:agents] ${persona.id} judge call failed:`, err);
         }
-        return { ...localJudge(persona, brief, args.draftText), personaId: persona.id };
+        return {
+          ...localJudge(persona, brief, args.draftText),
+          personaId: persona.id,
+        };
       })(),
     );
 
@@ -465,7 +609,13 @@ async function runWithFallback(req: AgentRequest): Promise<AgentResponse> {
   const provider = pickProvider();
   if (provider) {
     try {
-      return await runLlm(provider, req);
+      return await runLlm(
+        provider,
+        req,
+        req.userMessage || req.priorMessages?.length
+          ? "persona-reply"
+          : "persona-feedback",
+      );
     } catch (err) {
       console.error(
         `[twyne:agents] LLM call failed for ${req.persona.id}, falling back to local:`,
@@ -528,7 +678,8 @@ function localJudge(
   // Persona-shaped adjustments — each persona reads different things.
   const id = persona.id;
   let bias = 0;
-  let rationale = "The draft is partial; the work to come is the interesting part.";
+  let rationale =
+    "The draft is partial; the work to come is the interesting part.";
   if (id === "devil") {
     bias = wc < 200 ? -1 : 0;
     rationale =

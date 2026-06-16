@@ -1,0 +1,23 @@
+# Twyne — robots.txt
+# Public, indexable pages: the landing page and informational routes.
+# Private workspace routes are disallowed (they hold per-user, local content).
+
+User-agent: *
+Allow: /$
+Allow: /docs
+Allow: /faq
+Allow: /terms
+Allow: /privacy
+Allow: /pricing
+Disallow: /editor
+Disallow: /onboarding
+Disallow: /settings
+Disallow: /apparatus
+Disallow: /refining
+Disallow: /rubric
+Disallow: /library
+Disallow: /personas
+Disallow: /landings
+Disallow: /oauth-client-metadata.json
+
+Sitemap: https://twyne.love/sitemap.xml

@@ -16,6 +16,8 @@
     "build.types": "tsc --incremental --noEmit",
     "build.server": "vite build --ssr src/entry.preview.tsx",
     "deploy": "bun run build.client && bun run build.server && bun server.js",
+    "desktop": "electrobun dev && electrobun run",
+    "desktop.build": "electrobun build",
     "dev": "concurrently --names \"CONVEX,VITE\" --prefix-colors cyan,magenta \"npx convex dev\" \"vite --mode ssr\"",
     "dev.frontend": "vite --mode ssr",
     "dev.backend": "npx convex dev",
@@ -27,7 +29,12 @@
     "start": "vite --open --mode ssr",
     "serve": "node server.js",
     "storybook": "storybook dev -p 6006",
-    "storybook.build": "storybook build"
+    "storybook.build": "storybook build",
+    "test": "bun test",
+    "ci": "dagger call all",
+    "ci.test": "dagger call test",
+    "ci.build": "dagger call build export --path ./build-output",
+    "ci.package": "dagger call package export --path ./release"
   },
   "devDependencies": {
     "@builder.io/qwik": "^1.19.2",
@@ -37,6 +44,7 @@
     "@types/node": "^25.9.3",
     "agent-browser": "^0.27.3",
     "concurrently": "^9",
+    "electrobun": "^1.18.1",
     "eslint": "9.32.0",
     "eslint-plugin-qwik": "^1.19.2",
     "globals": "16.4.0",
@@ -82,6 +90,8 @@
     "better-auth": "^1.6.9",
     "convex": "^1.36.1",
     "marked": "^18.0.5",
-    "mermaid": "^11.15.0"
+    "mermaid": "^11.15.0",
+    "posthog-js": "^1.386.6",
+    "resend": "^6.12.4"
   }
 }

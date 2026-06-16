@@ -3,6 +3,7 @@ import { QwikCityProvider, RouterOutlet } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
 import { ConvexProvider } from "./utils/convex-context";
 import { AuthProvider } from "./utils/auth-context";
+import { PostHogProvider } from "./utils/posthog-context";
 
 import "./global.css";
 
@@ -36,7 +37,9 @@ export default component$(() => {
       <body lang="en">
         <ConvexProvider url={convexUrl}>
           <AuthProvider>
-            <RouterOutlet />
+            <PostHogProvider>
+              <RouterOutlet />
+            </PostHogProvider>
           </AuthProvider>
         </ConvexProvider>
       </body>

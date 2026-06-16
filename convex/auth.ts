@@ -6,14 +6,19 @@ import { emailOTP } from "better-auth/plugins/email-otp";
 import { passkey } from "@better-auth/passkey";
 import { DataModel } from "./_generated/dataModel";
 import authConfig from "./auth.config.js";
+import { Resend } from "resend";
 
 const siteUrl = process.env.SITE_URL ?? "http://localhost:5173";
+const resendFrom = process.env.RESEND_FROM_EMAIL ?? "Twyne <support@twyne.love>";
 
 const authComponents = components as any;
 
-export const authComponent = createClient<DataModel>(authComponents.betterAuth, {
-  verbose: false,
-});
+export const authComponent = createClient<DataModel>(
+  authComponents.betterAuth,
+  {
+    verbose: false,
+  },
+);
 
 export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
   ({
@@ -22,7 +27,7 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
     trustedOrigins: [siteUrl],
     database: authComponent.adapter(ctx),
     emailAndPassword: {
-      enabled: true,
+      enabled: false,
     },
     session: {
       cookieCache: {
@@ -34,7 +39,24 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
       passkey(),
       emailOTP({
         async sendVerificationOTP({ email, otp }) {
-          console.log(`[twyne-auth] OTP for ${email}: ${otp}`);
+          const apiKey = process.env.RESEND_API_KEY;
+          if (!apiKey) {
+            console.log(`[twyne-auth] OTP for ${email}: ${otp}`);
+            return;
+          }
+
+          const resend = new Resend(apiKey);
+          const { error } = await resend.emails.send({
+            from: resendFrom,
+            to: email,
+            subject: "Your Twyne verification code",
+            text: `Your one-time verification code is: ${otp}`,
+          });
+
+          if (error) {
+            console.error("[twyne-auth] Resend error:", error);
+            throw new Error("Failed to send verification email.");
+          }
         },
       }),
       crossDomain({ siteUrl }),

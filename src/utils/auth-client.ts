@@ -33,7 +33,11 @@ export const authClient = isDev && !convexSiteUrl
       plugins: [
         passkeyClient(),
         emailOTPClient(),
-        crossDomainClient(),
+        // `crossDomainClient()` ships a `getActions` signature that
+        // drifts from the `BetterAuthClientPlugin` constraint in this
+        // better-auth version. The runtime contract is fine; suppress
+        // the structural-typing noise.
+        crossDomainClient() as any,
         convexClient(),
       ],
     });
