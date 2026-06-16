@@ -5,6 +5,7 @@ import {
   useVisibleTask$,
   $,
 } from "@builder.io/qwik";
+import ImgApprovalStamp from "../../media/approval-stamp.svg?jsx";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Image } from "@tiptap/extension-image";
 import { Table } from "@tiptap/extension-table";
@@ -42,9 +43,7 @@ import {
   collectCommentMarkIdsFromHtml,
   reconcileCommentAnchors,
 } from "../../utils/reconcile-comments";
-import {
-  bindNetworkStatusEvents,
-} from "../../utils/convex-sync";
+import { bindNetworkStatusEvents } from "../../utils/convex-sync";
 import {
   computeDocumentMeta,
   formatWordCount,
@@ -290,7 +289,9 @@ export const TwyneEditor = component$(
               const threads = await loadUserComments();
               const result = reconcileCommentAnchors(threads, markIds);
               window.dispatchEvent(
-                new CustomEvent("twyne:comments-reconciled", { detail: result }),
+                new CustomEvent("twyne:comments-reconciled", {
+                  detail: result,
+                }),
               );
             })();
           }, 400);
@@ -2175,7 +2176,7 @@ export const TwyneEditor = component$(
         {/* ── Approval stamp: thunks onto the page when an edit is accepted ── */}
         {store.stampVisible && (
           <div class="approval-stamp-overlay" aria-hidden="true">
-            <img src="/approval-stamp.svg" alt="" width="220" height="220" />
+            <ImgApprovalStamp aria-hidden="true" width="220" height="220" />
           </div>
         )}
 
