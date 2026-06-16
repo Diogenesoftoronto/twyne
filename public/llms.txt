@@ -1,35 +1,28 @@
 # Twyne
 
 > Twyne is a local-first writing desk with a "room of editors" in residence.
-> You file a short brief about what you're writing, then draft while AI personas
-> read along, leave marginalia on your sentences, and grade the draft against a
-> rubric. Your work is stored in your browser by default and only syncs when you
-> sign in. The AI is bring-your-own-key: you choose the provider and model.
+> You file a short brief about what you're writing, then draft while AI
+> personas read along, leave marginalia on your sentences, and grade the draft
+> against a rubric. Work lives in the browser by default and only syncs when
+> you sign in. The AI is bring-your-own-key: the user picks the provider and
+> model.
 
-## What Twyne does
-
-- The Dossier: a short brief interview captures what you're writing and for whom.
-- The Room of Editors: AI personas review your draft and leave inline notes.
-- The Galley Proof: a rubric grades the draft as you write.
-- The Marginalia: persona comments anchored to the sentences they're about.
-- The Apparatus: research and bibliography tools while you write.
-- Folios: drafts, notes, and outlines; export as Markdown, HTML, text, or JSON.
-
-## Key facts
-
-- Local-first: drafts live in the browser (IndexedDB); sign-in enables sync.
-- Bring-your-own-key (BYOK): API keys stay local and call the provider directly.
-- Default AI: the latest Claude models from Anthropic; other providers supported.
-- Auth: email, one-time codes, passkeys, and Bluesky / ATProto sign-in.
-- Publishing: drafts can be published to an ATProto / Bluesky PDS.
+Twyne is for writers who want editorial pushback while they draft, without
+handing their work to a hosted service. The default AI provider is Anthropic's
+Claude; OpenAI, Google, and self-hosted gateways (Bifrost, Rivet) are also
+supported. Authentication supports email + one-time codes, passkeys, and
+Bluesky / ATProto sign-in.
 
 ## Docs
 
-- The Manual (full guide): https://twyne.love/docs/
-- FAQ: https://twyne.love/faq/
-- Terms of Service: https://twyne.love/terms/
-- Privacy Policy: https://twyne.love/privacy/
+- [The Manual](https://twyne.love/docs/index.html.md): the full Twyne guide — the dossier interview, the room of editors, the rubric, folios, the apparatus.
+- [FAQ](https://twyne.love/faq/index.html.md): common questions about the room, AI, sync, and privacy.
+- [Pricing](https://twyne.love/pricing/index.html.md): Twyne's free and Pro tiers.
+- [Terms of Service](https://twyne.love/terms/index.html.md): the legal terms for using Twyne.
+- [Privacy Policy](https://twyne.love/privacy/index.html.md): what Twyne stores, where it lives, and how to delete it.
 
-## Contact
+## Optional
 
-- Source and issues: https://github.com/Diogenesoftoronto/twyne
+- [Field Notes (blog)](https://twyne.love/blog/index.html.md): updates, experiments, and editorial notes from the Twyne desk.
+- [Download Twyne](https://twyne.love/downloads/index.html.md): the desktop app for macOS, Windows, and Linux.
+- [GitHub repository](https://github.com/Diogenesoftoronto/twyne): source code, issues, and contribution guide.
