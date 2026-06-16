@@ -1,6 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import { AuthPanel } from "../../components/auth/auth-panel";
+import ImgGriffinMark from "~/media/assets/griffin-mark.svg?jsx";
 
 export default component$(() => {
   return (
@@ -15,7 +16,7 @@ export default component$(() => {
             class="flex items-center gap-3 focus-ring"
             aria-label="Twyne home"
           >
-            <img src="/assets/griffin-mark.svg" alt="" class="h-8 w-8" />
+            <ImgGriffinMark class="h-8 w-8" aria-hidden="true" />
             <span
               class="text-2xl text-[var(--color-ink)]"
               style={{
@@ -64,10 +65,10 @@ export default component$(() => {
               style={{ fontFamily: "var(--font-serif)" }}
             >
               <p>
-                Two short steps: enter your email, then sign in with a
-                passkey or a one-time code. We send a fresh code the first
-                time and every time a passkey hasn't been set up — once
-                you register one, the passkey becomes the default.
+                Two short steps: enter your email, then sign in with a passkey
+                or a one-time code. We send a fresh code the first time and
+                every time a passkey hasn't been set up — once you register one,
+                the passkey becomes the default.
               </p>
               <p>
                 Your BYOK provider keys stay in this browser, not on Twyne's

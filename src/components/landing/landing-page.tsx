@@ -1,6 +1,8 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 import { WorkspacePreview } from "./workspace-preview";
+import ImgGriffinMark from "~/media/assets/griffin-mark.svg?jsx";
+import ImgApprovalStamp from "~/media/approval-stamp.svg?jsx";
 
 interface LandingPageProps {
   onStartBrief$: PropFunction<() => void>;
@@ -85,7 +87,7 @@ export const LandingPage = component$<LandingPageProps>(
               </Link>
             </nav>
             <div class="flex items-center gap-3">
-              <img src="/assets/griffin-mark.svg" alt="" class="h-8 w-8" />
+              <ImgGriffinMark class="h-8 w-8" aria-hidden="true" />
               <span class="landing-masthead ink-bleed">TWYNE</span>
             </div>
             <div class="flex items-center justify-end gap-4">
@@ -214,18 +216,13 @@ export const LandingPage = component$<LandingPageProps>(
           <section class="mt-20 md:mt-28">
             <div class="paper-sheet paper-foxed relative overflow-hidden px-8 py-14 text-center md:px-14 md:py-20">
               <div class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                <img
-                  src="/approval-stamp.svg"
-                  alt=""
+                <ImgApprovalStamp
                   class="h-40 w-40 opacity-[0.06]"
+                  aria-hidden="true"
                 />
               </div>
               <div class="relative z-10">
-                <img
-                  src="/assets/griffin-mark.svg"
-                  alt=""
-                  class="mx-auto h-7 w-7"
-                />
+                <ImgGriffinMark class="mx-auto h-7 w-7" aria-hidden="true" />
                 <h2 class="landing-title ink-bleed mt-5 text-3xl leading-tight sm:text-4xl">
                   The room is open.
                 </h2>
@@ -267,11 +264,7 @@ export const LandingPage = component$<LandingPageProps>(
 
           {/* ── Colophon ── */}
           <footer class="mt-20 text-center md:mt-28">
-            <img
-              src="/assets/griffin-mark.svg"
-              alt=""
-              class="mx-auto h-8 w-8"
-            />
+            <ImgGriffinMark class="mx-auto h-8 w-8" aria-hidden="true" />
             <p class="landing-masthead-grand ink-bleed mt-4">TWYNE</p>
             <p
               class="mt-4 text-[0.95rem] text-[var(--color-ink-light)]"

@@ -225,6 +225,7 @@ export const AuthPanel = component$(() => {
   // Surface the post-OTP passkey offer only after the session actually
   // settles on a real user. The convex context provider updates `auth.value`
   // once the cookie lands.
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track }) => {
     const offer = track(() => store.offerPasskey);
     const user = track(() => auth.value.user);
