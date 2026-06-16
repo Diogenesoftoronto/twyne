@@ -9,6 +9,10 @@ Allow: /faq
 Allow: /terms
 Allow: /privacy
 Allow: /pricing
+Allow: /blog
+Allow: /downloads
+Allow: /download
+Allow: /signin
 Disallow: /editor
 Disallow: /onboarding
 Disallow: /settings
