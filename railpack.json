@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.railpack.com",
+  "provider": "node",
+  "packages": {
+    "node": "20",
+    "bun": "1"
+  },
+  "steps": {
+    "install": {
+      "commands": ["bun install --frozen-lockfile"]
+    },
+    "build": {
+      "inputs": [{ "step": "install" }],
+      "commands": ["bun run build.client && bun run build.server"]
+    }
+  },
+  "deploy": {
+    "startCommand": "node server.js"
+  }
+}

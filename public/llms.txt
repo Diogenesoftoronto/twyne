@@ -1,0 +1,35 @@
+# Twyne
+
+> Twyne is a local-first writing desk with a "room of editors" in residence.
+> You file a short brief about what you're writing, then draft while AI personas
+> read along, leave marginalia on your sentences, and grade the draft against a
+> rubric. Your work is stored in your browser by default and only syncs when you
+> sign in. The AI is bring-your-own-key: you choose the provider and model.
+
+## What Twyne does
+
+- The Dossier: a short brief interview captures what you're writing and for whom.
+- The Room of Editors: AI personas review your draft and leave inline notes.
+- The Galley Proof: a rubric grades the draft as you write.
+- The Marginalia: persona comments anchored to the sentences they're about.
+- The Apparatus: research and bibliography tools while you write.
+- Folios: drafts, notes, and outlines; export as Markdown, HTML, text, or JSON.
+
+## Key facts
+
+- Local-first: drafts live in the browser (IndexedDB); sign-in enables sync.
+- Bring-your-own-key (BYOK): API keys stay local and call the provider directly.
+- Default AI: the latest Claude models from Anthropic; other providers supported.
+- Auth: email, one-time codes, passkeys, and Bluesky / ATProto sign-in.
+- Publishing: drafts can be published to an ATProto / Bluesky PDS.
+
+## Docs
+
+- The Manual (full guide): https://twyne.love/docs/
+- FAQ: https://twyne.love/faq/
+- Terms of Service: https://twyne.love/terms/
+- Privacy Policy: https://twyne.love/privacy/
+
+## Contact
+
+- Source and issues: https://github.com/Diogenesoftoronto/twyne

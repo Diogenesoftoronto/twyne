@@ -26,10 +26,13 @@ import type {
   AgentResponse,
   FeedbackType,
 } from "../../convex/agentPrompts";
+import { buildSystemPrompt, buildUserPrompt } from "../../convex/agentPrompts";
 import {
-  buildSystemPrompt,
-  buildUserPrompt,
-} from "../../convex/agentPrompts";
+  localAiBaseUrl,
+  LOCAL_MODEL_ID,
+  LOCAL_PROVIDER_ID,
+} from "./desktop-bridge";
+import { captureAiGeneration } from "./ai-evals";
 
 /* ── Provider factory ───────────────────────────────────────────── */
 
@@ -52,13 +55,26 @@ async function createModel(
       }
       case "google": {
         const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
-        const googleProvider = createGoogleGenerativeAI({ apiKey: config.apiKey });
+        const googleProvider = createGoogleGenerativeAI({
+          apiKey: config.apiKey,
+        });
         return googleProvider(modelId);
       }
       case "openai-compatible": {
         const { createOpenAI } = await import("@ai-sdk/openai");
         const openai = createOpenAI({
           apiKey: config.apiKey,
+          baseURL: config.baseUrl,
+        });
+        return openai.chat(modelId);
+      }
+      case "litert": {
+        // Desktop-only native model exposed as an OpenAI-compatible server on
+        // loopback by the Electrobun shell. No real key; baseUrl is the local
+        // endpoint discovered from the desktop bridge.
+        const { createOpenAI } = await import("@ai-sdk/openai");
+        const openai = createOpenAI({
+          apiKey: config.apiKey || "local",
           baseURL: config.baseUrl,
         });
         return openai.chat(modelId);
@@ -144,6 +160,69 @@ function defaultMaxTokens(feature: AiFeature): number {
   }
 }
 
+async function generateTrackedText({
+  feature,
+  resolved,
+  model,
+  system,
+  prompt,
+  spanName,
+  evalSignals,
+}: {
+  feature: AiFeature;
+  resolved: {
+    provider: AiProviderConfig;
+    model: string;
+    temperature: number;
+    maxTokens: number;
+  };
+  model: LanguageModel;
+  system?: string;
+  prompt: string;
+  spanName?: string;
+  evalSignals?: Record<string, unknown>;
+}): Promise<string> {
+  const start = performance.now();
+  try {
+    const { text } = await generateText({
+      model,
+      system,
+      prompt,
+      temperature: resolved.temperature,
+      maxOutputTokens: resolved.maxTokens,
+    });
+    await captureAiGeneration({
+      feature,
+      provider: resolved.provider.type,
+      model: resolved.model,
+      system,
+      prompt,
+      output: text,
+      latencyMs: performance.now() - start,
+      temperature: resolved.temperature,
+      maxTokens: resolved.maxTokens,
+      spanName,
+      evalSignals,
+    });
+    return text;
+  } catch (err) {
+    await captureAiGeneration({
+      feature,
+      provider: resolved.provider.type,
+      model: resolved.model,
+      system,
+      prompt,
+      latencyMs: performance.now() - start,
+      temperature: resolved.temperature,
+      maxTokens: resolved.maxTokens,
+      spanName,
+      error: err,
+      evalSignals,
+    });
+    throw err;
+  }
+}
+
 /* ── Classification (mirrors convex/agents.ts) ──────────────────── */
 
 const typeKeywords: Record<FeedbackType, RegExp> = {
@@ -203,8 +282,7 @@ function parseRewriteOutput(
       if (o && typeof o.replacement === "string" && o.replacement.trim()) {
         return {
           replacement: o.replacement.trim(),
-          rationale:
-            typeof o.rationale === "string" ? o.rationale.trim() : "",
+          rationale: typeof o.rationale === "string" ? o.rationale.trim() : "",
         };
       }
     } catch {
@@ -213,8 +291,7 @@ function parseRewriteOutput(
     return null;
   };
   return (
-    tryParse(stripped) ??
-    tryParse(stripped.match(/\{[\s\S]*\}/)?.[0] ?? "")
+    tryParse(stripped) ?? tryParse(stripped.match(/\{[\s\S]*\}/)?.[0] ?? "")
   );
 }
 
@@ -263,12 +340,17 @@ Respond as JSON only, no prose: {"replacement": "<rewritten passage as plain tex
 PASSAGE:
 "${req.original}"`;
 
-    const { text } = await generateText({
+    const text = await generateTrackedText({
+      feature: "persona-rewrite",
+      resolved,
       model,
       system,
       prompt: user,
-      temperature: resolved.temperature,
-      maxOutputTokens: resolved.maxTokens,
+      spanName: "persona_rewrite",
+      evalSignals: {
+        twyne_persona_id: req.persona.id,
+        twyne_rewrite_level: req.level,
+      },
     });
 
     const parsed = parseRewriteOutput(text);
@@ -304,12 +386,17 @@ export async function runClientAgent(
     const user = buildUserPrompt(req);
     const fallbackType = defaultTypeForPersona(req.persona.id);
 
-    const { text } = await generateText({
+    const text = await generateTrackedText({
+      feature,
+      resolved,
       model,
       system,
       prompt: user,
-      temperature: resolved.temperature,
-      maxOutputTokens: resolved.maxTokens,
+      spanName: feature,
+      evalSignals: {
+        twyne_persona_id: req.persona.id,
+        twyne_instruction: req.instruction ?? "feedback",
+      },
     });
 
     const cleaned = text.trim();
@@ -342,9 +429,7 @@ function parseJudgeOutput(
     // fall through
   }
   const scoreMatch = stripped.match(/"?score"?\s*[:=]\s*(\d+)/i);
-  const rationaleMatch = stripped.match(
-    /"?rationale"?\s*[:=]\s*"([^"]+)"/i,
-  );
+  const rationaleMatch = stripped.match(/"?rationale"?\s*[:=]\s*"([^"]+)"/i);
   if (scoreMatch) {
     return {
       score: clampScore(parseInt(scoreMatch[1], 10)),
@@ -388,12 +473,17 @@ JUDGE TASK: Give the draft an integer score from 1 to 10. 5 is "doing the work b
 
 Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voice>"}`;
 
-    const { text } = await generateText({
+    const text = await generateTrackedText({
+      feature: "rubric-judge",
+      resolved,
       model,
       system,
       prompt: user,
-      temperature: resolved.temperature,
-      maxOutputTokens: resolved.maxTokens,
+      spanName: "rubric_judge",
+      evalSignals: {
+        twyne_persona_id: req.persona.id,
+        twyne_expected_format: "json_score_rationale",
+      },
     });
 
     const parsed = parseJudgeOutput(text);
@@ -476,12 +566,17 @@ ${req.context ? `Context from draft: ${req.context}` : ""}
 Respond with JSON only:
 {"title": "<title>", "author": "<author if known>", "year": "<year if known>", "url": "<url if known>", "doi": "<doi if known>", "publisher": "<publisher if known>", "formatted": "<full ${req.style} citation>"}`;
 
-    const { text } = await generateText({
+    const text = await generateTrackedText({
+      feature: "citation-format",
+      resolved,
       model,
       system,
       prompt: user,
-      temperature: resolved.temperature,
-      maxOutputTokens: resolved.maxTokens,
+      spanName: "citation_format",
+      evalSignals: {
+        twyne_citation_style: req.style,
+        twyne_expected_format: "json_citation",
+      },
     });
 
     const stripped = text
@@ -495,12 +590,24 @@ Respond with JSON only:
       if (typeof o.title === "string" && o.title.trim()) {
         return {
           title: o.title.trim(),
-          author: typeof o.author === "string" ? o.author.trim() || undefined : undefined,
-          year: typeof o.year === "string" ? o.year.trim() || undefined : undefined,
-          url: typeof o.url === "string" ? o.url.trim() || undefined : undefined,
-          doi: typeof o.doi === "string" ? o.doi.trim() || undefined : undefined,
-          publisher: typeof o.publisher === "string" ? o.publisher.trim() || undefined : undefined,
-          formatted: typeof o.formatted === "string" ? o.formatted.trim() : o.title.trim(),
+          author:
+            typeof o.author === "string"
+              ? o.author.trim() || undefined
+              : undefined,
+          year:
+            typeof o.year === "string" ? o.year.trim() || undefined : undefined,
+          url:
+            typeof o.url === "string" ? o.url.trim() || undefined : undefined,
+          doi:
+            typeof o.doi === "string" ? o.doi.trim() || undefined : undefined,
+          publisher:
+            typeof o.publisher === "string"
+              ? o.publisher.trim() || undefined
+              : undefined,
+          formatted:
+            typeof o.formatted === "string"
+              ? o.formatted.trim()
+              : o.title.trim(),
           provider: resolved.provider.type,
         };
       }
@@ -556,12 +663,17 @@ Based on the title${req.url ? " and domain" : ""}, provide:
 Respond with JSON only:
 {"summary": "<1-2 sentences>", "keyClaims": ["<claim 1>", "<claim 2>"], "relevanceScore": <1-10>}`;
 
-    const { text } = await generateText({
+    const text = await generateTrackedText({
+      feature: "source-summarize",
+      resolved,
       model,
       system,
       prompt: user,
-      temperature: resolved.temperature,
-      maxOutputTokens: resolved.maxTokens,
+      spanName: "source_summarize",
+      evalSignals: {
+        twyne_has_source_url: !!req.url,
+        twyne_expected_format: "json_source_summary",
+      },
     });
 
     const stripped = text
@@ -576,9 +688,10 @@ Respond with JSON only:
         const claims = Array.isArray(o.keyClaims)
           ? o.keyClaims.filter((c: unknown) => typeof c === "string")
           : [];
-        const score = typeof o.relevanceScore === "number"
-          ? Math.max(1, Math.min(10, Math.round(o.relevanceScore)))
-          : 5;
+        const score =
+          typeof o.relevanceScore === "number"
+            ? Math.max(1, Math.min(10, Math.round(o.relevanceScore)))
+            : 5;
         return {
           summary: o.summary.trim(),
           keyClaims: claims,
@@ -646,12 +759,17 @@ Identify up to 5 claims that need citations. For each:
 Respond with JSON only:
 {"claims": [{"claim": "<quoted claim>", "reason": "<why it needs citation>", "suggestedQuery": "<search query>"}]}`;
 
-    const { text } = await generateText({
+    const text = await generateTrackedText({
+      feature: "source-detect-missing",
+      resolved,
       model,
       system,
       prompt: user,
-      temperature: resolved.temperature,
-      maxOutputTokens: resolved.maxTokens,
+      spanName: "source_detect_missing",
+      evalSignals: {
+        twyne_existing_sources_count: req.existingSources.length,
+        twyne_expected_format: "json_missing_source_claims",
+      },
     });
 
     const stripped = text
@@ -665,11 +783,20 @@ Respond with JSON only:
       if (Array.isArray(o.claims) && o.claims.length > 0) {
         return {
           claims: o.claims
-            .filter((c: unknown) => c && typeof (c as Record<string, unknown>).claim === "string")
+            .filter(
+              (c: unknown) =>
+                c && typeof (c as Record<string, unknown>).claim === "string",
+            )
             .map((c: Record<string, unknown>) => ({
               claim: String(c.claim).trim(),
-              reason: typeof c.reason === "string" ? c.reason.trim() : "Needs verifiable source",
-              suggestedQuery: typeof c.suggestedQuery === "string" ? c.suggestedQuery.trim() : String(c.claim).trim(),
+              reason:
+                typeof c.reason === "string"
+                  ? c.reason.trim()
+                  : "Needs verifiable source",
+              suggestedQuery:
+                typeof c.suggestedQuery === "string"
+                  ? c.suggestedQuery.trim()
+                  : String(c.claim).trim(),
             })),
           provider: resolved.provider.type,
         };
@@ -696,12 +823,70 @@ export function normalizeAiSettings(
     perFeature: {},
     showProviderTags: false,
   };
-  if (!partial) return defaults;
+  const base: AiSettings = !partial
+    ? defaults
+    : {
+        ...defaults,
+        ...partial,
+        providers: partial.providers ?? [],
+        perFeature: partial.perFeature ?? {},
+      };
+  return withDesktopLocalProvider(stripManagedDesktopLocalProvider(base));
+}
+
+/** Remove the transient desktop-local provider before persisting settings. */
+export function stripManagedDesktopLocalProvider(
+  settings: AiSettings,
+): AiSettings {
+  const providers = settings.providers.filter(
+    (p) => p.id !== LOCAL_PROVIDER_ID,
+  );
+  const defaultProviderId =
+    settings.defaultProviderId === LOCAL_PROVIDER_ID
+      ? (providers[0]?.id ?? null)
+      : settings.defaultProviderId;
+  const perFeature = Object.fromEntries(
+    Object.entries(settings.perFeature).filter(
+      ([, override]) => override?.providerId !== LOCAL_PROVIDER_ID,
+    ),
+  ) as AiSettings["perFeature"];
+
   return {
-    ...defaults,
-    ...partial,
-    providers: partial.providers ?? [],
-    perFeature: partial.perFeature ?? {},
+    ...settings,
+    providers,
+    defaultProviderId,
+    perFeature,
+  };
+}
+
+/**
+ * When running inside the Electrobun desktop shell with the local LiteRT model
+ * available, inject a managed `litert` provider so every panel can use it
+ * without the writer configuring anything. No-op on the web (the bridge
+ * reports unavailable), so the local surface stays hidden there.
+ */
+function withDesktopLocalProvider(settings: AiSettings): AiSettings {
+  const baseUrl = localAiBaseUrl();
+  if (!baseUrl) return settings;
+
+  const local: AiProviderConfig = {
+    id: LOCAL_PROVIDER_ID,
+    name: "Local — Gemma 4 E4B",
+    type: "litert",
+    apiKey: "local",
+    baseUrl,
+    defaultModel: LOCAL_MODEL_ID,
+  };
+  const providers = settings.providers.some((p) => p.id === LOCAL_PROVIDER_ID)
+    ? settings.providers.map((p) => (p.id === LOCAL_PROVIDER_ID ? local : p))
+    : [...settings.providers, local];
+
+  return {
+    ...settings,
+    advancedMode: true,
+    providers,
+    // Only claim the default slot if the writer hasn't chosen one.
+    defaultProviderId: settings.defaultProviderId ?? LOCAL_PROVIDER_ID,
   };
 }
 
@@ -756,9 +941,9 @@ export async function runClientInterviewTurn(
   const model = await createModel(cfg.provider, cfg.model);
   if (!model) return null;
   try {
-    const lastUser = [...request.messages].reverse().find(
-      (m) => m.author === "writer",
-    );
+    const lastUser = [...request.messages]
+      .reverse()
+      .find((m) => m.author === "writer");
     const system = [
       "You are a kind, incisive editorial interviewer helping a writer build a project dossier.",
       "Ask one question at a time. Keep it short. When you have enough to draft the dossier, append a line that begins with `SYNTHESIZE:` followed by a JSON object with the fields { workingTitle, format, audience, goal, tone, constraints, successSignal } and a second JSON object with per-field confidence in { high, medium, low }.",
@@ -771,12 +956,17 @@ export async function runClientInterviewTurn(
     const transcript = request.messages
       .map((m) => `${m.author === "writer" ? "Writer" : "You"}: ${m.text}`)
       .join("\n");
-    const { text } = await generateText({
+    const text = await generateTrackedText({
+      feature: "interview-turn",
+      resolved: cfg,
       model,
       system,
       prompt: transcript,
-      temperature: cfg.temperature,
-      maxOutputTokens: cfg.maxTokens,
+      spanName: "interview_turn",
+      evalSignals: {
+        twyne_interview_mode: request.mode,
+        twyne_message_count: request.messages.length,
+      },
     });
     const synthMatch = text.match(
       /SYNTHESIZE:\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})?/,
@@ -800,7 +990,8 @@ export async function runClientInterviewTurn(
         // Malformed synthesis — fall through to a question reply.
       }
     }
-    const reply = text.trim() ||
+    const reply =
+      text.trim() ||
       (lastUser ? "Tell me more." : "What is the working title of this piece?");
     return {
       kind: "question",
@@ -852,16 +1043,22 @@ export async function runClientDossierCheck(
       "If the draft is consistent with the dossier, return { observations: [] }.",
     ].join("\n");
     const user = `Dossier: ${JSON.stringify(request.brief.answers)}\n\nDraft:\n${request.draftText ?? "(no draft yet)"}`;
-    const { text } = await generateText({
+    const text = await generateTrackedText({
+      feature: "dossier-check",
+      resolved: cfg,
       model,
       system,
       prompt: user,
-      temperature: cfg.temperature,
-      maxOutputTokens: cfg.maxTokens,
+      spanName: "dossier_check",
+      evalSignals: {
+        twyne_expected_format: "json_dossier_observations",
+      },
     });
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { observations: [] };
-    const observations = Array.isArray(parsed.observations) ? parsed.observations : [];
+    const observations = Array.isArray(parsed.observations)
+      ? parsed.observations
+      : [];
     return {
       observations: observations.filter(
         (o: { field?: string }) =>

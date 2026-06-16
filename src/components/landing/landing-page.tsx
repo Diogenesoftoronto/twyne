@@ -1,12 +1,10 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 import { WorkspacePreview } from "./workspace-preview";
-import { useFeatureFlags } from "../../utils/posthog-context";
 
 interface LandingPageProps {
   onStartBrief$: PropFunction<() => void>;
   onSkipToEditor$?: PropFunction<() => void>;
-  onSignIn$?: PropFunction<() => void>;
 }
 
 /** Where the Electrobun desktop builds are published (GitHub Releases). */
@@ -61,9 +59,7 @@ const steps = [
 ];
 
 export const LandingPage = component$<LandingPageProps>(
-  ({ onStartBrief$, onSkipToEditor$, onSignIn$ }) => {
-    const featureFlags = useFeatureFlags();
-
+  ({ onStartBrief$, onSkipToEditor$ }) => {
     return (
       <div class="landing-page">
         <div class="landing-shell pb-20">
@@ -84,26 +80,22 @@ export const LandingPage = component$<LandingPageProps>(
               >
                 Desktop app
               </a>
-              {featureFlags.value.flags.pricing && (
-                <Link class="landing-nav-link" href="/pricing">
-                  Pricing
-                </Link>
-              )}
+              <Link class="landing-nav-link" href="/pricing/">
+                Pricing
+              </Link>
             </nav>
             <div class="flex items-center gap-3">
               <img src="/assets/griffin-mark.svg" alt="" class="h-8 w-8" />
               <span class="landing-masthead ink-bleed">TWYNE</span>
             </div>
             <div class="flex items-center justify-end gap-4">
-              {onSignIn$ && (
-                <button
-                  onClick$={onSignIn$}
-                  class="text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-ink-light)] hover:text-[var(--color-ink)] focus-ring"
-                  style="font-family: var(--font-typewriter);"
-                >
-                  Sign in
-                </button>
-              )}
+              <Link
+                href="/signin/"
+                class="text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-ink-light)] hover:text-[var(--color-ink)] focus-ring"
+                style="font-family: var(--font-typewriter);"
+              >
+                Sign in
+              </Link>
               <button onClick$={onStartBrief$} class="broadsheet-cta">
                 Start writing
               </button>
@@ -301,17 +293,18 @@ export const LandingPage = component$<LandingPageProps>(
               <a href="/faq/" class="hover:text-[var(--color-ink)]">
                 FAQ
               </a>
+              <a href="/downloads/" class="hover:text-[var(--color-ink)]">
+                Downloads
+              </a>
               <a href="/terms/" class="hover:text-[var(--color-ink)]">
                 Terms
               </a>
               <a href="/privacy/" class="hover:text-[var(--color-ink)]">
                 Privacy
               </a>
-              {featureFlags.value.flags.pricing && (
-                <a href="/pricing/" class="hover:text-[var(--color-ink)]">
-                  Pricing
-                </a>
-              )}
+              <a href="/pricing/" class="hover:text-[var(--color-ink)]">
+                Pricing
+              </a>
             </nav>
           </footer>
         </div>

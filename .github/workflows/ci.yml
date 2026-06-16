@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Dagger CI (lint · typecheck · test · build · package)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Runs the same pipeline as `dagger call all` locally. The Dagger engine
+      # is provisioned by the action; results are cached across runs.
+      - name: Run CI pipeline
+        uses: dagger/dagger-for-github@8.0.0
+        with:
+          version: "0.18.17"
+          verb: call
+          module: .
+          args: all

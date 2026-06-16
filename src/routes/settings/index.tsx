@@ -1,9 +1,4 @@
-import {
-  component$,
-  useStore,
-  useVisibleTask$,
-  $,
-} from "@builder.io/qwik";
+import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import type {
   AiSettings,
@@ -11,10 +6,7 @@ import type {
   AiFeature,
   AiFeatureOverride,
 } from "../../types";
-import {
-  DEFAULT_AI_SETTINGS,
-  PROVIDER_METAS,
-} from "../../types";
+import { DEFAULT_AI_SETTINGS, PROVIDER_METAS } from "../../types";
 import {
   loadAiSettingsFromIdb,
   saveAiSettingsToIdb,
@@ -25,7 +17,10 @@ import {
   testProvider,
   resolveFeatureConfig,
   normalizeAiSettings,
+  stripManagedDesktopLocalProvider,
 } from "../../utils/ai-client";
+import { LOCAL_PROVIDER_ID } from "../../utils/desktop-bridge";
+import { useFeatureFlags } from "../../utils/posthog-context";
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
@@ -78,7 +73,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "comment-reply": "Ask an editor to weigh in on a margin note.",
   "citation-format": "Auto-format detected citations in your chosen style.",
   "source-summarize": "AI summarizes saved sources for your bibliography.",
-  "source-detect-missing": "AI detects claims in your draft that need citations.",
+  "source-detect-missing":
+    "AI detects claims in your draft that need citations.",
   "interview-turn":
     "The room interviews you, one question at a time, and synthesises a dossier from your answers.",
   "dossier-check":
@@ -88,6 +84,7 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
 /* ── Component ──────────────────────────────────────────────────── */
 
 export default component$(() => {
+  const featureFlags = useFeatureFlags();
   const store = useStore<SettingsStore>({
     settings: DEFAULT_AI_SETTINGS,
     loaded: false,
@@ -120,9 +117,19 @@ export default component$(() => {
     store.loaded = true;
   });
 
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    track(() => featureFlags.value.loaded);
+    track(() => featureFlags.value.flags.localAi);
+    if (!store.loaded) return;
+    store.settings = normalizeAiSettings(
+      stripManagedDesktopLocalProvider(store.settings),
+    );
+  });
+
   const persist = $(async () => {
     store.saving = true;
-    await saveAiSettingsToIdb(store.settings);
+    await saveAiSettingsToIdb(stripManagedDesktopLocalProvider(store.settings));
     store.saving = false;
     store.toast = "Settings saved";
     setTimeout(() => (store.toast = null), 2000);
@@ -147,8 +154,7 @@ export default component$(() => {
       ...store.settings,
       advancedMode: true,
       providers: [...store.settings.providers, config],
-      defaultProviderId:
-        store.settings.defaultProviderId ?? config.id,
+      defaultProviderId: store.settings.defaultProviderId ?? config.id,
     };
     store.showAddProvider = false;
     store.newProviderName = "";
@@ -164,7 +170,9 @@ export default component$(() => {
     store.settings = {
       ...store.settings,
       providers: next,
-      defaultProviderId: isDefault ? (next[0]?.id ?? null) : store.settings.defaultProviderId,
+      defaultProviderId: isDefault
+        ? (next[0]?.id ?? null)
+        : store.settings.defaultProviderId,
       perFeature: Object.fromEntries(
         Object.entries(store.settings.perFeature).filter(
           ([, v]) => v?.providerId !== id,
@@ -202,19 +210,26 @@ export default component$(() => {
     store.testingProvider = false;
   });
 
-  const setFeatureOverride = $((feature: AiFeature, override: AiFeatureOverride | undefined) => {
-    store.settings = {
-      ...store.settings,
-      perFeature: {
-        ...store.settings.perFeature,
-        [feature]: override,
-      },
-    };
-    void persist();
-  });
+  const setFeatureOverride = $(
+    (feature: AiFeature, override: AiFeatureOverride | undefined) => {
+      store.settings = {
+        ...store.settings,
+        perFeature: {
+          ...store.settings.perFeature,
+          [feature]: override,
+        },
+      };
+      void persist();
+    },
+  );
 
   const resetAll = $(async () => {
-    if (!confirm("Reset all AI settings to defaults? Providers and keys will be removed.")) return;
+    if (
+      !confirm(
+        "Reset all AI settings to defaults? Providers and keys will be removed.",
+      )
+    )
+      return;
     store.settings = DEFAULT_AI_SETTINGS;
     await saveAiSettingsToIdb(DEFAULT_AI_SETTINGS);
     store.toast = "Reset to defaults";
@@ -280,8 +295,8 @@ export default component$(() => {
               </h2>
               <p class="text-xs text-[var(--color-ink-light)] mt-1">
                 The dossier interview has two modes. The form is fast and
-                concrete; the conversation is slower but the room fills in
-                the dossier from your answers.
+                concrete; the conversation is slower but the room fills in the
+                dossier from your answers.
               </p>
               <div class="mt-4 grid sm:grid-cols-2 gap-3">
                 <button
@@ -435,143 +450,174 @@ export default component$(() => {
 
                 {/* Provider list */}
                 <div class="space-y-3">
-                  {store.settings.providers.map((p) => (
-                    <div
-                      key={p.id}
-                      class="p-3 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-                      style={{ borderRadius: "2px" }}
-                    >
-                      <div class="flex items-start justify-between gap-3">
-                        <div class="flex-1 min-w-0">
-                          <div class="flex items-center gap-2">
-                            <span
-                              class="text-xs font-semibold text-[var(--color-ink)]"
-                              style={{ fontFamily: "var(--font-display)" }}
-                            >
-                              {p.name}
-                            </span>
-                            <span
-                              class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
-                              style={{ fontFamily: "var(--font-typewriter)" }}
-                            >
-                              {PROVIDER_METAS.find((m) => m.type === p.type)?.label ?? p.type}
-                            </span>
-                            {store.settings.defaultProviderId === p.id && (
+                  {store.settings.providers.map((p) => {
+                    const isManagedLocal = p.id === LOCAL_PROVIDER_ID;
+                    return (
+                      <div
+                        key={p.id}
+                        class="p-3 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
+                        style={{ borderRadius: "2px" }}
+                      >
+                        <div class="flex items-start justify-between gap-3">
+                          <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
                               <span
-                                class="text-[0.6rem] tracking-[0.15em] uppercase px-1.5 py-0.5 border"
-                                style={{
-                                  fontFamily: "var(--font-typewriter)",
-                                  borderColor: "var(--color-accent-green)",
-                                  color: "var(--color-accent-green)",
-                                  borderRadius: "1px",
-                                }}
+                                class="text-xs font-semibold text-[var(--color-ink)]"
+                                style={{ fontFamily: "var(--font-display)" }}
                               >
-                                default
+                                {p.name}
                               </span>
-                            )}
-                          </div>
-                          <p
-                            class="text-[0.65rem] text-[var(--color-ink-muted)] mt-0.5"
-                            style={{ fontFamily: "var(--font-mono)" }}
-                          >
-                            {p.defaultModel}
-                          </p>
-
-                          {store.editingProviderId === p.id ? (
-                            <div class="mt-2 space-y-2">
-                              <input
-                                type="password"
-                                value={store.editKey}
-                                onInput$={(e) => {
-                                  store.editKey = (
-                                    e.target as HTMLInputElement
-                                  ).value;
-                                }}
-                                placeholder="New API key"
-                                class="w-full text-xs px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                style={{
-                                  fontFamily: "var(--font-typewriter)",
-                                  borderRadius: "2px",
-                                }}
-                              />
-                              <div class="flex gap-2">
-                                <button
-                                  onClick$={() => updateProviderKey(p.id)}
-                                  class="btn-press text-xs"
-                                >
-                                  Update key
-                                </button>
-                                <button
-                                  onClick$={() => {
-                                    store.editingProviderId = null;
-                                    store.editKey = "";
+                              <span
+                                class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                {PROVIDER_METAS.find((m) => m.type === p.type)
+                                  ?.label ?? p.type}
+                              </span>
+                              {store.settings.defaultProviderId === p.id && (
+                                <span
+                                  class="text-[0.6rem] tracking-[0.15em] uppercase px-1.5 py-0.5 border"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                    borderColor: "var(--color-accent-green)",
+                                    color: "var(--color-accent-green)",
+                                    borderRadius: "1px",
                                   }}
-                                  class="btn-paper text-xs"
                                 >
-                                  Cancel
-                                </button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div class="mt-2 flex flex-wrap items-center gap-2">
-                              <button
-                                onClick$={() => {
-                                  store.editingProviderId = p.id;
-                                  store.editKey = "";
-                                }}
-                                class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                                style={{ fontFamily: "var(--font-typewriter)" }}
-                              >
-                                Change key
-                              </button>
-                              <button
-                                onClick$={() => runTest(p)}
-                                disabled={store.testingProvider}
-                                class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent-green)] disabled:opacity-40"
-                                style={{ fontFamily: "var(--font-typewriter)" }}
-                              >
-                                {store.testingProvider
-                                  ? "Testing…"
-                                  : "Test connection"}
-                              </button>
-                              {store.settings.defaultProviderId !== p.id && (
-                                <button
-                                  onClick$={() => setDefaultProvider(p.id)}
-                                  class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                                  style={{ fontFamily: "var(--font-typewriter)" }}
-                                >
-                                  Set as default
-                                </button>
+                                  default
+                                </span>
                               )}
-                              <button
-                                onClick$={() => removeProvider(p.id)}
-                                class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                                style={{ fontFamily: "var(--font-typewriter)" }}
-                              >
-                                Remove
-                              </button>
+                              {isManagedLocal && (
+                                <span
+                                  class="text-[0.6rem] tracking-[0.15em] uppercase px-1.5 py-0.5 border"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                    borderColor: "var(--color-accent-blue)",
+                                    color: "var(--color-accent-blue)",
+                                    borderRadius: "1px",
+                                  }}
+                                >
+                                  desktop
+                                </span>
+                              )}
                             </div>
-                          )}
+                            <p
+                              class="text-[0.65rem] text-[var(--color-ink-muted)] mt-0.5"
+                              style={{ fontFamily: "var(--font-mono)" }}
+                            >
+                              {p.defaultModel}
+                            </p>
 
-                          {store.testResult &&
-                            store.testingProvider === false && (
-                              <p
-                                class={`mt-1.5 text-[0.65rem] ${
-                                  store.testResult.ok
-                                    ? "text-[var(--color-accent-green)]"
-                                    : "text-[var(--color-vermilion)]"
-                                }`}
-                                style={{ fontFamily: "var(--font-typewriter)" }}
-                              >
-                                {store.testResult.ok
-                                  ? `✓ Connected (${store.testResult.latencyMs}ms)`
-                                  : `✗ ${store.testResult.error}`}
-                              </p>
+                            {store.editingProviderId === p.id ? (
+                              <div class="mt-2 space-y-2">
+                                <input
+                                  type="password"
+                                  value={store.editKey}
+                                  onInput$={(e) => {
+                                    store.editKey = (
+                                      e.target as HTMLInputElement
+                                    ).value;
+                                  }}
+                                  placeholder="New API key"
+                                  class="w-full text-xs px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                    borderRadius: "2px",
+                                  }}
+                                />
+                                <div class="flex gap-2">
+                                  <button
+                                    onClick$={() => updateProviderKey(p.id)}
+                                    class="btn-press text-xs"
+                                  >
+                                    Update key
+                                  </button>
+                                  <button
+                                    onClick$={() => {
+                                      store.editingProviderId = null;
+                                      store.editKey = "";
+                                    }}
+                                    class="btn-paper text-xs"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div class="mt-2 flex flex-wrap items-center gap-2">
+                                {!isManagedLocal && (
+                                  <button
+                                    onClick$={() => {
+                                      store.editingProviderId = p.id;
+                                      store.editKey = "";
+                                    }}
+                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    Change key
+                                  </button>
+                                )}
+                                <button
+                                  onClick$={() => runTest(p)}
+                                  disabled={store.testingProvider}
+                                  class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent-green)] disabled:opacity-40"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
+                                >
+                                  {store.testingProvider
+                                    ? "Testing…"
+                                    : "Test connection"}
+                                </button>
+                                {store.settings.defaultProviderId !== p.id && (
+                                  <button
+                                    onClick$={() => setDefaultProvider(p.id)}
+                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    Set as default
+                                  </button>
+                                )}
+                                {!isManagedLocal && (
+                                  <button
+                                    onClick$={() => removeProvider(p.id)}
+                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    Remove
+                                  </button>
+                                )}
+                              </div>
                             )}
+
+                            {store.testResult &&
+                              store.testingProvider === false && (
+                                <p
+                                  class={`mt-1.5 text-[0.65rem] ${
+                                    store.testResult.ok
+                                      ? "text-[var(--color-accent-green)]"
+                                      : "text-[var(--color-vermilion)]"
+                                  }`}
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
+                                >
+                                  {store.testResult.ok
+                                    ? `✓ Connected (${store.testResult.latencyMs}ms)`
+                                    : `✗ ${store.testResult.error}`}
+                                </p>
+                              )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Add provider form */}
@@ -602,8 +648,7 @@ export default component$(() => {
                             const m = PROVIDER_METAS.find(
                               (meta) => meta.type === type,
                             );
-                            store.newProviderModel =
-                              m?.defaultModels[0] ?? "";
+                            store.newProviderModel = m?.defaultModels[0] ?? "";
                           }}
                           class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
                           style={{
@@ -611,7 +656,9 @@ export default component$(() => {
                             borderRadius: "2px",
                           }}
                         >
-                          {PROVIDER_METAS.map((m) => (
+                          {PROVIDER_METAS.filter(
+                            (m) => m.type !== "litert",
+                          ).map((m) => (
                             <option key={m.type} value={m.type}>
                               {m.label}
                             </option>
@@ -728,7 +775,10 @@ export default component$(() => {
                       </div>
 
                       <div class="flex gap-2 pt-1">
-                        <button onClick$={addProvider} class="btn-press text-xs">
+                        <button
+                          onClick$={addProvider}
+                          class="btn-press text-xs"
+                        >
                           Add provider
                         </button>
                         <button
@@ -859,10 +909,7 @@ export default component$(() => {
                                         Use default provider
                                       </option>
                                       {store.settings.providers.map((p) => (
-                                        <option
-                                          key={p.id}
-                                          value={p.id}
-                                        >
+                                        <option key={p.id} value={p.id}>
                                           {`${p.name} (${p.type})`}
                                         </option>
                                       ))}
@@ -897,8 +944,7 @@ export default component$(() => {
                                                 .defaultProviderId ??
                                               "",
                                             model: model || undefined,
-                                            temperature:
-                                              existing?.temperature,
+                                            temperature: existing?.temperature,
                                             maxTokens: existing?.maxTokens,
                                           });
                                         }}
@@ -989,12 +1035,9 @@ export default component$(() => {
                                                 .defaultProviderId ??
                                               "",
                                             model: existing?.model,
-                                            temperature:
-                                              existing?.temperature,
+                                            temperature: existing?.temperature,
                                             maxTokens:
-                                              tokens > 0
-                                                ? tokens
-                                                : undefined,
+                                              tokens > 0 ? tokens : undefined,
                                           });
                                         }}
                                         placeholder="auto"
