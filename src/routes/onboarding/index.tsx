@@ -1,17 +1,33 @@
-import { component$, $, useSignal } from "@builder.io/qwik";
+import {
+  component$,
+  $,
+  useSignal,
+  useStore,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 import { useNavigate } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { AntiTabulaRasa } from "../../components/onboarding/anti-tabula-rasa";
+import { ConversationalInterview } from "../../components/onboarding/conversational-interview";
 import { AuthPanel } from "../../components/auth/auth-panel";
 import { useAuth } from "../../utils/auth-context";
+import type { InterviewStyle } from "../../types";
 import type { ProjectInterviewAnswers } from "../../types";
 import {
+  buildImportedMaterialDocument,
   buildStarterDocument,
   createProjectBrief,
   loadDraftHtml,
   saveDraftHtml,
   saveProjectBrief,
 } from "../../utils/anti-tabula-rasa";
+import { loadAiSettingsFromIdb } from "../../utils/idb";
+
+interface OnboardingStore {
+  hydrated: boolean;
+  style: InterviewStyle;
+  aiReady: boolean;
+}
 
 /**
  * The first-run interview. Renders the AntiTabulaRasa component
@@ -28,21 +44,56 @@ export default component$(() => {
   const auth = useAuth();
   // Once the brief is saved we offer (but never force) sign-up.
   const briefDone = useSignal(false);
-
-  const onSubmit$ = $((answers: ProjectInterviewAnswers) => {
-    const brief = createProjectBrief(answers, null);
-    saveProjectBrief(brief);
-
-    if (!loadDraftHtml().trim()) {
-      saveDraftHtml(buildStarterDocument(answers));
-    }
-
-    briefDone.value = true;
+  const store = useStore<OnboardingStore>({
+    hydrated: false,
+    style: "form",
+    aiReady: false,
   });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    const ai = await loadAiSettingsFromIdb();
+    const aiReady = !!ai?.advancedMode && ai.providers.length > 0;
+    store.aiReady = aiReady;
+    store.style = aiReady ? "conversational" : "form";
+    store.hydrated = true;
+  });
+
+  const completeOnboarding$ = $(
+    (
+      answers: ProjectInterviewAnswers,
+      existingMaterial?: string,
+      filename?: string,
+    ) => {
+      const brief = createProjectBrief(answers, null);
+      saveProjectBrief(brief);
+
+      if (!loadDraftHtml().trim()) {
+        const material = existingMaterial?.trim();
+        saveDraftHtml(
+          material
+            ? buildImportedMaterialDocument(answers, material, filename)
+            : buildStarterDocument(answers),
+        );
+      }
+
+      briefDone.value = true;
+    },
+  );
 
   const onCancel$ = $(() => {
     void nav("/");
   });
+
+  if (!store.hydrated) {
+    return (
+      <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
+        <div class="rounded-[3px] border border-[var(--color-paper-3)] bg-[var(--color-paper-2)] px-5 py-4 shadow-sm">
+          Loading the room…
+        </div>
+      </div>
+    );
+  }
 
   if (briefDone.value) {
     // Already signed in by the time the brief lands → straight to the desk.
@@ -93,11 +144,24 @@ export default component$(() => {
     );
   }
 
+  if (store.style === "conversational") {
+    return (
+      <ConversationalInterview
+        mode="first-run"
+        onComplete$={completeOnboarding$}
+        onCancel$={$(() => {
+          store.style = "form";
+        })}
+        cancelLabel="Use form"
+      />
+    );
+  }
+
   return (
     <AntiTabulaRasa
       mode="first-run"
       initialAnswers={null}
-      onSubmit$={onSubmit$}
+      onSubmit$={completeOnboarding$}
       onCancel$={onCancel$}
     />
   );

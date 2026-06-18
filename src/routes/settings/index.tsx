@@ -57,6 +57,7 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "persona-reply": "Reply Thread",
   "persona-rewrite": "Mark Up Draft",
   "rubric-judge": "Galley Proof",
+  "voice-narration": "Voice Narration",
   "comment-reply": "Ask Editor (Notes)",
   "citation-format": "Citation Format",
   "source-summarize": "Source Summarize",
@@ -70,6 +71,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "persona-reply": "A single editor responds in a threaded conversation.",
   "persona-rewrite": "Editors propose specific text replacements.",
   "rubric-judge": "Five judges score the draft, then the rubric combines.",
+  "voice-narration":
+    "Turns selected prose into spoken audio. BYOK uses your speech-capable provider; Pro can use Twyne-hosted voice.",
   "comment-reply": "Ask an editor to weigh in on a margin note.",
   "citation-format": "Auto-format detected citations in your chosen style.",
   "source-summarize": "AI summarizes saved sources for your bibliography.",
@@ -1049,6 +1052,246 @@ export default component$(() => {
                                       />
                                     </div>
                                   </div>
+
+                                  {feature === "voice-narration" && (
+                                    <div class="grid gap-3 border-t border-dashed border-[var(--color-paper-3)] pt-3 sm:grid-cols-3">
+                                      <div>
+                                        <label
+                                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                          }}
+                                        >
+                                          Voice
+                                        </label>
+                                        <input
+                                          value={
+                                            store.settings.perFeature[feature]
+                                              ?.voice ?? ""
+                                          }
+                                          onInput$={(e) => {
+                                            const voice = (
+                                              e.target as HTMLInputElement
+                                            ).value;
+                                            const existing =
+                                              store.settings.perFeature[
+                                                feature
+                                              ];
+                                            setFeatureOverride(feature, {
+                                              providerId:
+                                                existing?.providerId ??
+                                                store.settings
+                                                  .defaultProviderId ??
+                                                "",
+                                              model: existing?.model,
+                                              temperature:
+                                                existing?.temperature,
+                                              maxTokens: existing?.maxTokens,
+                                              voice: voice || undefined,
+                                              speed: existing?.speed,
+                                              responseFormat:
+                                                existing?.responseFormat,
+                                              instructions:
+                                                existing?.instructions,
+                                            });
+                                          }}
+                                          placeholder="alloy"
+                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                            borderRadius: "2px",
+                                          }}
+                                        />
+                                      </div>
+                                      <div>
+                                        <label
+                                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                          }}
+                                        >
+                                          Format
+                                        </label>
+                                        <select
+                                          value={
+                                            store.settings.perFeature[feature]
+                                              ?.responseFormat ?? "mp3"
+                                          }
+                                          onChange$={(e) => {
+                                            const responseFormat = (
+                                              e.target as HTMLSelectElement
+                                            )
+                                              .value as AiFeatureOverride["responseFormat"];
+                                            const existing =
+                                              store.settings.perFeature[
+                                                feature
+                                              ];
+                                            setFeatureOverride(feature, {
+                                              providerId:
+                                                existing?.providerId ??
+                                                store.settings
+                                                  .defaultProviderId ??
+                                                "",
+                                              model: existing?.model,
+                                              temperature:
+                                                existing?.temperature,
+                                              maxTokens: existing?.maxTokens,
+                                              voice: existing?.voice,
+                                              speed: existing?.speed,
+                                              responseFormat,
+                                              instructions:
+                                                existing?.instructions,
+                                            });
+                                          }}
+                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                            borderRadius: "2px",
+                                          }}
+                                        >
+                                          {(
+                                            [
+                                              "mp3",
+                                              "opus",
+                                              "aac",
+                                              "flac",
+                                              "wav",
+                                              "pcm",
+                                            ] as const
+                                          ).map((fmt) => (
+                                            <option key={fmt} value={fmt}>
+                                              {fmt}
+                                            </option>
+                                          ))}
+                                        </select>
+                                      </div>
+                                      <div>
+                                        <label
+                                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                          }}
+                                        >
+                                          Speed
+                                        </label>
+                                        <input
+                                          type="number"
+                                          min={0.25}
+                                          max={4}
+                                          step={0.05}
+                                          value={
+                                            store.settings.perFeature[feature]
+                                              ?.speed ?? ""
+                                          }
+                                          onInput$={(e) => {
+                                            const speed = Number(
+                                              (e.target as HTMLInputElement)
+                                                .value,
+                                            );
+                                            const existing =
+                                              store.settings.perFeature[
+                                                feature
+                                              ];
+                                            setFeatureOverride(feature, {
+                                              providerId:
+                                                existing?.providerId ??
+                                                store.settings
+                                                  .defaultProviderId ??
+                                                "",
+                                              model: existing?.model,
+                                              temperature:
+                                                existing?.temperature,
+                                              maxTokens: existing?.maxTokens,
+                                              voice: existing?.voice,
+                                              speed:
+                                                speed >= 0.25 && speed <= 4
+                                                  ? speed
+                                                  : undefined,
+                                              responseFormat:
+                                                existing?.responseFormat,
+                                              instructions:
+                                                existing?.instructions,
+                                            });
+                                          }}
+                                          placeholder="1"
+                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                            borderRadius: "2px",
+                                          }}
+                                        />
+                                      </div>
+                                      <div class="sm:col-span-3">
+                                        <label
+                                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                          }}
+                                        >
+                                          Voice direction
+                                        </label>
+                                        <textarea
+                                          value={
+                                            store.settings.perFeature[feature]
+                                              ?.instructions ?? ""
+                                          }
+                                          onInput$={(e) => {
+                                            const instructions = (
+                                              e.target as HTMLTextAreaElement
+                                            ).value;
+                                            const existing =
+                                              store.settings.perFeature[
+                                                feature
+                                              ];
+                                            setFeatureOverride(feature, {
+                                              providerId:
+                                                existing?.providerId ??
+                                                store.settings
+                                                  .defaultProviderId ??
+                                                "",
+                                              model: existing?.model,
+                                              temperature:
+                                                existing?.temperature,
+                                              maxTokens: existing?.maxTokens,
+                                              voice: existing?.voice,
+                                              speed: existing?.speed,
+                                              responseFormat:
+                                                existing?.responseFormat,
+                                              instructions:
+                                                instructions || undefined,
+                                            });
+                                          }}
+                                          placeholder="A calm literary-radio read, precise but not theatrical."
+                                          class="w-full min-h-20 text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                          style={{
+                                            fontFamily: "var(--font-serif)",
+                                            borderRadius: "2px",
+                                          }}
+                                        />
+                                        <p
+                                          class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                          }}
+                                        >
+                                          Built-in voices include alloy, ash,
+                                          ballad, coral, echo, fable, onyx,
+                                          nova, sage, shimmer, verse, marin, and
+                                          cedar. Voice direction works with
+                                          modern speech models, not older tts-1
+                                          models.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
 
                                   <button
                                     onClick$={() => {

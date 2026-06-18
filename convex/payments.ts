@@ -9,7 +9,12 @@
  * The buyer is correlated across the redirect by `request_id` = the user's
  * token identifier, which Creem echoes back in the webhook payload.
  */
-import { action, query, internalMutation } from "./_generated/server";
+import {
+  action,
+  query,
+  internalMutation,
+  internalQuery,
+} from "./_generated/server";
 import { v } from "convex/values";
 
 const CREEM_API_BASE = "https://api.creem.io/v1";
@@ -69,6 +74,16 @@ export const getMySubscription = query({
       .withIndex("by_userId", (q) => q.eq("userId", identity.tokenIdentifier))
       .unique();
     return row;
+  },
+});
+
+export const getSubscriptionByUserId = internalQuery({
+  args: { userId: v.string() },
+  handler: async (ctx, { userId }) => {
+    return await ctx.db
+      .query("subscriptions")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
   },
 });
 

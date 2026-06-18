@@ -312,6 +312,7 @@ export type AiFeature =
   | "persona-reply"
   | "persona-rewrite"
   | "rubric-judge"
+  | "voice-narration"
   | "comment-reply"
   | "citation-format"
   | "source-summarize"
@@ -330,6 +331,10 @@ export interface AiFeatureOverride {
   model?: string;
   temperature?: number;
   maxTokens?: number;
+  voice?: string;
+  speed?: number;
+  responseFormat?: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm";
+  instructions?: string;
 }
 
 export interface AiSettings {

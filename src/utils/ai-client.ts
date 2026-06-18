@@ -116,16 +116,31 @@ export function resolveFeatureConfig(
 
   return {
     provider,
-    model: override?.model ?? provider.defaultModel,
+    model: override?.model ?? defaultModelForFeature(feature, provider),
     temperature: override?.temperature ?? defaultTemperature(feature),
     maxTokens: override?.maxTokens ?? defaultMaxTokens(feature),
   };
+}
+
+function defaultModelForFeature(
+  feature: AiFeature,
+  provider: AiProviderConfig,
+): string {
+  if (
+    feature === "voice-narration" &&
+    (provider.type === "openai" || provider.type === "openai-compatible")
+  ) {
+    return "gpt-4o-mini-tts";
+  }
+  return provider.defaultModel;
 }
 
 function defaultTemperature(feature: AiFeature): number {
   switch (feature) {
     case "rubric-judge":
       return 0.2;
+    case "voice-narration":
+      return 0.4;
     case "citation-format":
       return 0.1;
     case "source-summarize":
@@ -147,6 +162,8 @@ function defaultMaxTokens(feature: AiFeature): number {
       return 320;
     case "rubric-judge":
       return 220;
+    case "voice-narration":
+      return 0;
     case "comment-reply":
       return 280;
     case "citation-format":
@@ -157,6 +174,110 @@ function defaultMaxTokens(feature: AiFeature): number {
       return 350;
     default:
       return 300;
+  }
+}
+
+/* ── Public: generate speech client-side (BYOK) ─────────────────── */
+
+export interface VoiceSpeechRequest {
+  text: string;
+  voice?: string;
+  instructions?: string;
+  responseFormat?: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm";
+  speed?: number;
+}
+
+export interface VoiceSpeechResult {
+  audio: Blob;
+  provider: string;
+  model: string;
+  voice: string;
+  responseFormat: string;
+}
+
+export async function runClientVoiceSpeech(
+  req: VoiceSpeechRequest,
+  settings: AiSettings,
+): Promise<VoiceSpeechResult | null> {
+  const resolved = resolveFeatureConfig(settings, "voice-narration");
+  if (!resolved) return null;
+  if (
+    resolved.provider.type !== "openai" &&
+    resolved.provider.type !== "openai-compatible"
+  ) {
+    console.warn(
+      "[twyne:ai-client] voice narration requires an OpenAI or OpenAI-compatible provider.",
+    );
+    return null;
+  }
+
+  const input = req.text.trim().slice(0, 4096);
+  if (!input) return null;
+
+  const override = settings.perFeature["voice-narration"];
+  const voice = req.voice ?? override?.voice ?? "alloy";
+  const responseFormat =
+    req.responseFormat ?? override?.responseFormat ?? "mp3";
+  const speed = req.speed ?? override?.speed;
+  const instructions = req.instructions ?? override?.instructions;
+  const baseURL =
+    resolved.provider.type === "openai-compatible" && resolved.provider.baseUrl
+      ? resolved.provider.baseUrl.replace(/\/$/, "")
+      : "https://api.openai.com/v1";
+
+  try {
+    const res = await fetch(`${baseURL}/audio/speech`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${resolved.provider.apiKey}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: resolved.model,
+        input,
+        voice,
+        response_format: responseFormat,
+        ...(instructions ? { instructions } : {}),
+        ...(speed ? { speed } : {}),
+      }),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(
+        `Voice generation failed (${res.status}): ${detail.slice(0, 240)}`,
+      );
+    }
+    const audio = new Blob([await res.arrayBuffer()], {
+      type: audioMimeType(responseFormat),
+    });
+    return {
+      audio,
+      provider: resolved.provider.type,
+      model: resolved.model,
+      voice,
+      responseFormat,
+    };
+  } catch (err) {
+    console.warn("[twyne:ai-client] voice narration failed:", err);
+    return null;
+  }
+}
+
+function audioMimeType(format: string): string {
+  switch (format) {
+    case "opus":
+      return "audio/opus";
+    case "aac":
+      return "audio/aac";
+    case "flac":
+      return "audio/flac";
+    case "wav":
+      return "audio/wav";
+    case "pcm":
+      return "audio/L16";
+    case "mp3":
+    default:
+      return "audio/mpeg";
   }
 }
 
@@ -911,6 +1032,13 @@ export interface InterviewTurnRequest {
   currentBrief: ProjectBrief | null;
 }
 
+export interface InterviewDossierDraft {
+  brief: Partial<ProjectInterviewAnswers>;
+  confidence: Partial<
+    Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+  >;
+}
+
 /**
  * The synthesis the AI hands back when it has enough information to
  * draft a dossier. `brief` is filled best-effort from the conversation
@@ -918,7 +1046,13 @@ export interface InterviewTurnRequest {
  * `confidence` is per-field so the UI can mark the speculative ones.
  */
 export type InterviewTurnResult =
-  | { kind: "question"; text: string; provider: string; model: string }
+  | {
+      kind: "question";
+      text: string;
+      draft?: InterviewDossierDraft;
+      provider: string;
+      model: string;
+    }
   | {
       kind: "synthesis";
       brief: ProjectInterviewAnswers;
@@ -928,6 +1062,100 @@ export type InterviewTurnResult =
       provider: string;
       model: string;
     };
+
+const INTERVIEW_FIELDS = [
+  "workingTitle",
+  "format",
+  "audience",
+  "goal",
+  "tone",
+  "constraints",
+  "successSignal",
+] as const satisfies ReadonlyArray<keyof ProjectInterviewAnswers>;
+
+function extractTaggedJson(
+  text: string,
+  tag: "DOSSIER" | "SYNTHESIZE",
+): { value: unknown; start: number; end: number } | null {
+  const marker = new RegExp(`${tag}:`, "i").exec(text);
+  if (!marker) return null;
+  const open = text.indexOf("{", marker.index + marker[0].length);
+  if (open < 0) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = open; i < text.length; i += 1) {
+    const ch = text[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === "{") depth += 1;
+    if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        try {
+          return {
+            value: JSON.parse(text.slice(open, i + 1)),
+            start: marker.index,
+            end: i + 1,
+          };
+        } catch {
+          return null;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function normalizeInterviewDossierDraft(
+  value: unknown,
+): InterviewDossierDraft | null {
+  if (!value || typeof value !== "object") return null;
+  const obj = value as Record<string, unknown>;
+  const briefSource =
+    obj.brief && typeof obj.brief === "object"
+      ? (obj.brief as Record<string, unknown>)
+      : obj;
+  const confidenceSource =
+    obj.confidence && typeof obj.confidence === "object"
+      ? (obj.confidence as Record<string, unknown>)
+      : {};
+
+  const brief: Partial<ProjectInterviewAnswers> = {};
+  const confidence: Partial<
+    Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+  > = {};
+  for (const field of INTERVIEW_FIELDS) {
+    const raw = briefSource[field];
+    if (typeof raw === "string" && raw.trim()) {
+      brief[field] = raw.trim();
+    }
+    const c = confidenceSource[field];
+    if (c === "high" || c === "medium" || c === "low") {
+      confidence[field] = c;
+    }
+  }
+  return Object.keys(brief).length > 0 ? { brief, confidence } : null;
+}
+
+function stripTaggedJson(
+  text: string,
+  segment: { start: number; end: number },
+) {
+  return `${text.slice(0, segment.start)}${text.slice(segment.end)}`.trim();
+}
 
 /**
  * Run one conversational-interview turn against the writer's configured
@@ -948,7 +1176,9 @@ export async function runClientInterviewTurn(
       .find((m) => m.author === "writer");
     const system = [
       "You are a kind, incisive editorial interviewer helping a writer build a project dossier.",
-      "Ask one question at a time. Keep it short. When you have enough to draft the dossier, append a line that begins with `SYNTHESIZE:` followed by a JSON object with the fields { workingTitle, format, audience, goal, tone, constraints, successSignal } and a second JSON object with per-field confidence in { high, medium, low }.",
+      "Ask one question at a time. Keep it short. You are building a writer's room: identify the piece, reader, goal, tone, constraints, success signal, and what kind of advisors/editors the writer wants around it.",
+      'After every ordinary question, append `DOSSIER:` followed by JSON { "brief": { workingTitle, format, audience, goal, tone, constraints, successSignal }, "confidence": { field: "high" | "medium" | "low" } }. Only include fields you can reasonably infer.',
+      "When the dossier is complete enough for review, respond only with `SYNTHESIZE:` followed by the same JSON shape. Put requested advisors/editors into constraints or goal until the product has a dedicated advisor schema.",
       request.mode === "refine" && request.currentBrief
         ? `Existing dossier: ${JSON.stringify(request.currentBrief.answers)} — refine it, don't restart.`
         : "",
@@ -970,21 +1200,34 @@ export async function runClientInterviewTurn(
         twyne_message_count: request.messages.length,
       },
     });
-    const synthMatch = text.match(
-      /SYNTHESIZE:\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})?/,
-    );
-    if (synthMatch) {
-      try {
-        const brief = JSON.parse(synthMatch[1]) as ProjectInterviewAnswers;
-        const confidence = synthMatch[2]
-          ? (JSON.parse(synthMatch[2]) as Partial<
-              Record<keyof ProjectInterviewAnswers, InterviewConfidence>
-            >)
-          : {};
+    const synthSegment = extractTaggedJson(text, "SYNTHESIZE");
+    if (synthSegment) {
+      const draft = normalizeInterviewDossierDraft(synthSegment.value);
+      if (draft) {
         return {
           kind: "synthesis",
-          brief,
-          confidence,
+          brief: draft.brief as ProjectInterviewAnswers,
+          confidence: draft.confidence,
+          provider: cfg.provider.name,
+          model: cfg.model,
+        };
+      }
+    }
+
+    // Backward compatibility for the previous two-object SYNTHESIZE format.
+    const legacySynthMatch = text.match(
+      /SYNTHESIZE:\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})?/,
+    );
+    if (legacySynthMatch) {
+      try {
+        return {
+          kind: "synthesis",
+          brief: JSON.parse(legacySynthMatch[1]) as ProjectInterviewAnswers,
+          confidence: legacySynthMatch[2]
+            ? (JSON.parse(legacySynthMatch[2]) as Partial<
+                Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+              >)
+            : {},
           provider: cfg.provider.name,
           model: cfg.model,
         };
@@ -992,12 +1235,18 @@ export async function runClientInterviewTurn(
         // Malformed synthesis — fall through to a question reply.
       }
     }
+
+    const dossierSegment = extractTaggedJson(text, "DOSSIER");
+    const draft = dossierSegment
+      ? normalizeInterviewDossierDraft(dossierSegment.value)
+      : null;
     const reply =
-      text.trim() ||
+      (dossierSegment ? stripTaggedJson(text, dossierSegment) : text).trim() ||
       (lastUser ? "Tell me more." : "What is the working title of this piece?");
     return {
       kind: "question",
       text: reply,
+      draft: draft ?? undefined,
       provider: cfg.provider.name,
       model: cfg.model,
     };

@@ -20,6 +20,7 @@ import type * as published from "../published.js";
 import type * as research from "../research.js";
 import type * as sync from "../sync.js";
 import type * as userComments from "../userComments.js";
+import type * as voice from "../voice.js";
 
 import type {
   ApiFromModules,
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   research: typeof research;
   sync: typeof sync;
   userComments: typeof userComments;
+  voice: typeof voice;
 }>;
 
 /**
