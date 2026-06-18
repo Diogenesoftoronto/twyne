@@ -39,6 +39,11 @@ import {
 } from "../../utils/ai-client";
 import type { AiSettings } from "../../types";
 import { loadAiSettingsFromIdb } from "../../utils/idb";
+import {
+  draftReadiness,
+  MIN_EDITOR_WORDS,
+  MIN_MARKUP_WORDS,
+} from "../../utils/draft-thresholds";
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
@@ -69,7 +74,7 @@ interface PersonasStore {
   /** Active note id being replied to. */
   replyNoteId: string | null;
   /** Whether the last convene was served by an LLM (false = local fallback). */
-  lastProvider: "rivet" | "anthropic" | "openai" | "bifrost" | "local" | null;
+  lastProvider: string | null;
   /** Whether sync has completed since sign-in. */
   hydrated: boolean;
   /** Cached Convex client ref (noSerialize so Qwik doesn't try to ship it). */
@@ -446,6 +451,12 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     store.convenedBriefTitle = brief?.answers.workingTitle ?? null;
     try {
       const draftText = await readCurrentDraftText();
+      const readiness = draftReadiness(draftText, MIN_EDITOR_WORDS);
+      if (!readiness.ok) {
+        store.conveneError = readiness.message;
+        store.lastProvider = null;
+        return;
+      }
       const anchors = pickAnchorSentences(
         draftText,
         store.personas.map((p) => p.id),
@@ -456,7 +467,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         personaId: string;
         text: string;
         type: PersonaFeedback["type"];
-        provider: "rivet" | "anthropic" | "openai" | "bifrost" | "local";
+        provider: string;
       }> = [];
 
       // ── Try client-side AI first (BYOK) ─────────────────────────
@@ -516,7 +527,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             personaId: string;
             text: string;
             type: PersonaFeedback["type"];
-            provider: "rivet" | "anthropic" | "openai" | "bifrost" | "local";
+            provider: string;
           }>;
           responses = result;
           store.lastProvider = result[0]?.provider ?? null;
@@ -532,7 +543,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             personaId: p.id,
             text: generateLocalFallback(p, brief, draftText),
             type: defaultType(p.id),
-            provider: "local" as const,
+            provider: "local",
           }));
         }
       }
@@ -544,7 +555,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           personaId: p.id,
           text: generateLocalFallback(p, brief, draftText),
           type: defaultType(p.id),
-          provider: "local" as const,
+          provider: "local",
         }));
       }
 
@@ -732,9 +743,14 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               priorMessages,
               userMessage: userReply.text,
               instruction: "elaborate",
-            })) as { text: string; type: PersonaFeedback["type"]; provider: string };
+            })) as {
+              text: string;
+              type: PersonaFeedback["type"];
+              provider: string;
+            };
             responseText = result.text;
-            store.lastProvider = (result.provider as typeof store.lastProvider) ?? "bifrost";
+            store.lastProvider =
+              (result.provider as typeof store.lastProvider) ?? "bifrost";
           } catch (err) {
             console.warn("[twyne:personas] runPersona failed:", err);
           }
@@ -829,6 +845,11 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     ): Promise<boolean> => {
       const client = clientSig.value;
       const draftText = await readCurrentDraftText();
+      const readiness = draftReadiness(draftText, MIN_MARKUP_WORDS);
+      if (!readiness.ok) {
+        store.conveneError = readiness.message;
+        return false;
+      }
       if (!anchor.trim()) return false;
 
       let replacement = anchor;
@@ -937,6 +958,11 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     store.largeEditsUsed = 0;
     try {
       const draftText = await readCurrentDraftText();
+      const readiness = draftReadiness(draftText, MIN_MARKUP_WORDS);
+      if (!readiness.ok) {
+        store.conveneError = readiness.message;
+        return;
+      }
       const scope = store.roomSettings.personaScope;
       const inScope = store.personas.filter(
         (p) =>

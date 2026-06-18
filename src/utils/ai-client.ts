@@ -471,6 +471,8 @@ export async function runClientJudge(
 
 JUDGE TASK: Give the draft an integer score from 1 to 10. 5 is "doing the work but with clear issues." 7 is "in good shape." 9 is "publishable as-is." Be honest.
 
+Do not reward confident-sounding bullshit. Penalize generic filler, repeated paragraphs, unsupported universal claims, vibes without evidence, fake specificity, and any passage that sounds polished while dodging the stated audience/goal.
+
 Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voice>"}`;
 
     const text = await generateTrackedText({

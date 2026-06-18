@@ -49,8 +49,8 @@ the install and Vite build.
      --set "VITE_CONVEX_URL=https://your-deployment.convex.cloud" \
      --set "VITE_CONVEX_SITE_URL=https://your-deployment.convex.site" \
      --set "BETTER_AUTH_SECRET=..." \
-     --set "BETTER_AUTH_URL=https://twyne.love" \
-     --set "SITE_URL=https://twyne.love"
+     --set "BETTER_AUTH_URL=https://www.twyne.love" \
+     --set "SITE_URL=https://www.twyne.love"
    ```
 
    `CONVEX_DEPLOY_KEY` is the production **deploy key** from the Convex
@@ -59,8 +59,8 @@ the install and Vite build.
    Railway automatically — do not set it.
 
 3. **Custom domain**: in the Railway service → Settings → Networking, add
-   `twyne.love` and point the DNS `CNAME` at the generated Railway target.
-   Until the domain resolves, auth callbacks that expect `https://twyne.love`
+   `www.twyne.love` and point the DNS `CNAME` at the generated Railway target.
+   Until the domain resolves, auth callbacks that expect `https://www.twyne.love`
    will not complete — use the `*.up.railway.app` URL or temporarily set
    `BETTER_AUTH_URL`/`SITE_URL` to it while testing.
 
