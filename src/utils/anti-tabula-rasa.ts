@@ -91,6 +91,31 @@ export function buildStarterDocument(answers: ProjectInterviewAnswers): string {
   `.trim();
 }
 
+export function buildImportedMaterialDocument(
+  answers: ProjectInterviewAnswers,
+  raw: string,
+  filename?: string,
+): string {
+  const normalized = normalizeInterviewAnswers(answers);
+  const title = escapeHtml(normalized.workingTitle);
+  const sourceLabel = filename?.trim()
+    ? `Imported from ${escapeHtml(filename.trim())}`
+    : "Imported material";
+  const paragraphs = raw
+    .trim()
+    .split(/\n{2,}/)
+    .map(
+      (paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`,
+    )
+    .join("\n");
+
+  return `
+    <h1>${title}</h1>
+    <p><strong>${sourceLabel}</strong>: this material was brought into the room during onboarding.</p>
+    ${paragraphs}
+  `.trim();
+}
+
 export function summarizeBrief(brief: ProjectBrief | null): string {
   const answers = brief?.answers ?? DEFAULT_INTERVIEW_ANSWERS;
   return `${answers.format} for ${answers.audience}. Goal: ${answers.goal}`;

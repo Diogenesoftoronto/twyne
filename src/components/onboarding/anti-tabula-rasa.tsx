@@ -107,15 +107,24 @@ const STEPS: InterviewStep[] = [
 interface AntiTabulaRasaProps {
   initialAnswers?: ProjectInterviewAnswers | null;
   mode?: InterviewMode;
-  /** Obsolete — kept for compat but no longer invoked. Use the global event instead. */
+  /** Preferred submit path. Falls back to the legacy global event if omitted. */
   onSubmit$?: PropFunction<
-    (answers: ProjectInterviewAnswers, existingMaterial?: string) => void
+    (
+      answers: ProjectInterviewAnswers,
+      existingMaterial?: string,
+      filename?: string,
+    ) => void
   >;
   onCancel$?: PropFunction<() => void>;
 }
 
 export const AntiTabulaRasa = component$(
-  ({ initialAnswers, mode = "first-run", onCancel$ }: AntiTabulaRasaProps) => {
+  ({
+    initialAnswers,
+    mode = "first-run",
+    onSubmit$,
+    onCancel$,
+  }: AntiTabulaRasaProps) => {
     const store = useStore({
       step: 0,
       answers: {
@@ -132,7 +141,7 @@ export const AntiTabulaRasa = component$(
     if (!step) return null;
     const progress = Math.round(((store.step + 1) / STEPS.length) * 100);
 
-    const goNext = $(() => {
+    const goNext = $(async () => {
       // Read step from the reactive store at CALL time, not captured value
       const currentStep = store.step;
       const lastStep = currentStep === STEPS.length - 1;
@@ -141,14 +150,30 @@ export const AntiTabulaRasa = component$(
       if (lastStep) {
         store.submitting = true;
 
-        const event = new CustomEvent("twyne:submit-interview", {
-          detail: {
-            answers: store.answers,
-            existingMaterial: store.existingMaterial,
-            filename: store.importedFilename,
-          },
-        });
-        window.dispatchEvent(event);
+        if (onSubmit$) {
+          try {
+            await onSubmit$(
+              store.answers,
+              store.existingMaterial,
+              store.importedFilename,
+            );
+          } catch (err) {
+            store.submitError =
+              (err as Error).message || "The dossier could not be saved.";
+            store.submitting = false;
+          }
+          return;
+        }
+
+        window.dispatchEvent(
+          new CustomEvent("twyne:submit-interview", {
+            detail: {
+              answers: store.answers,
+              existingMaterial: store.existingMaterial,
+              filename: store.importedFilename,
+            },
+          }),
+        );
         return;
       }
       store.step = currentStep + 1;
@@ -511,8 +536,16 @@ export const AntiTabulaRasa = component$(
                     ))}
                   </div>
 
-                  <button onClick$={goNext} class="btn-press" disabled={store.submitting}>
-                    {store.submitting ? "Sending…" : store.step === STEPS.length - 1 ? "Send to press" : "Next"}
+                  <button
+                    onClick$={goNext}
+                    class="btn-press"
+                    disabled={store.submitting}
+                  >
+                    {store.submitting
+                      ? "Sending…"
+                      : store.step === STEPS.length - 1
+                        ? "Send to press"
+                        : "Next"}
                   </button>
                 </div>
               </div>

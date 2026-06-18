@@ -10,6 +10,7 @@ import {
   type InterviewMessage,
   type InterviewTurnResult,
   type InterviewConfidence,
+  type InterviewDossierDraft,
   runClientInterviewTurn,
 } from "../../utils/ai-client";
 import { loadAiSettingsFromIdb } from "../../utils/idb";
@@ -63,11 +64,14 @@ interface ConversationalInterviewProps {
   initialBrief?: ProjectBrief;
   onComplete$: PropFunction<(brief: ProjectInterviewAnswers) => void>;
   onCancel$?: PropFunction<() => void>;
+  cancelLabel?: string;
 }
 
 interface Synthesis {
   brief: ProjectInterviewAnswers;
-  confidence: Partial<Record<keyof ProjectInterviewAnswers, InterviewConfidence>>;
+  confidence: Partial<
+    Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+  >;
 }
 
 interface ComponentStore {
@@ -75,6 +79,7 @@ interface ComponentStore {
   loading: boolean;
   error: string | null;
   synthesis: Synthesis | null;
+  liveDraft: InterviewDossierDraft | null;
   /** When the writer edits a field of the synthesis before accepting. */
   editingField: keyof ProjectInterviewAnswers | null;
   draft: string;
@@ -93,6 +98,17 @@ function confidenceLabel(c: InterviewConfidence | undefined): string {
   return "inferred";
 }
 
+function mergeDossierDraft(
+  current: InterviewDossierDraft | null,
+  next: InterviewDossierDraft | undefined,
+): InterviewDossierDraft | null {
+  if (!next) return current;
+  return {
+    brief: { ...(current?.brief ?? {}), ...next.brief },
+    confidence: { ...(current?.confidence ?? {}), ...next.confidence },
+  };
+}
+
 export const ConversationalInterview = component$(
   (props: ConversationalInterviewProps) => {
     const store = useStore<ComponentStore>({
@@ -100,6 +116,9 @@ export const ConversationalInterview = component$(
       loading: false,
       error: null,
       synthesis: null,
+      liveDraft: props.initialBrief
+        ? { brief: props.initialBrief.answers, confidence: {} }
+        : null,
       editingField: null,
       draft: "",
       initialized: false,
@@ -151,7 +170,11 @@ export const ConversationalInterview = component$(
 
       try {
         const settings = await loadAiSettingsFromIdb();
-        if (!settings || !settings.advancedMode || settings.providers.length === 0) {
+        if (
+          !settings ||
+          !settings.advancedMode ||
+          settings.providers.length === 0
+        ) {
           store.error =
             "Conversational interview needs a configured provider. Add one in Settings, or use the form instead.";
           store.loading = false;
@@ -174,6 +197,7 @@ export const ConversationalInterview = component$(
         }
 
         if (result.kind === "question") {
+          store.liveDraft = mergeDossierDraft(store.liveDraft, result.draft);
           store.messages = [
             ...store.messages,
             { author: "interviewer", text: result.text },
@@ -183,15 +207,18 @@ export const ConversationalInterview = component$(
           // own current answer so the dossier is never empty.
           const current = props.initialBrief?.answers;
           const brief: ProjectInterviewAnswers = {
-            workingTitle: result.brief.workingTitle || current?.workingTitle || "",
+            workingTitle:
+              result.brief.workingTitle || current?.workingTitle || "",
             format: result.brief.format || current?.format || "",
             audience: result.brief.audience || current?.audience || "",
             goal: result.brief.goal || current?.goal || "",
             tone: result.brief.tone || current?.tone || "",
             constraints: result.brief.constraints || current?.constraints || "",
-            successSignal: result.brief.successSignal || current?.successSignal || "",
+            successSignal:
+              result.brief.successSignal || current?.successSignal || "",
           };
           store.synthesis = { brief, confidence: result.confidence };
+          store.liveDraft = { brief, confidence: result.confidence };
         }
       } catch (err) {
         store.error = (err as Error).message ?? "Something went wrong.";
@@ -213,7 +240,9 @@ export const ConversationalInterview = component$(
       // The writer can ask for the dossier at any point. We just
       // send an empty-ish nudge so the model knows to synthesise
       // rather than ask another question.
-      await runTurn("(the writer is ready to see the dossier — please synthesise now)");
+      await runTurn(
+        "(the writer is ready to see the dossier — please synthesise now)",
+      );
     });
 
     const acceptSynthesis = $(() => {
@@ -250,6 +279,10 @@ export const ConversationalInterview = component$(
       store.draft = "";
     });
 
+    const livePanel = store.synthesis
+      ? { brief: store.synthesis.brief, confidence: store.synthesis.confidence }
+      : store.liveDraft;
+
     return (
       <div
         class="min-h-screen flex flex-col bg-[var(--color-paper)] text-[var(--color-ink)]"
@@ -277,9 +310,12 @@ export const ConversationalInterview = component$(
             <button
               onClick$={props.onCancel$}
               class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-sm"
-              style={{ fontFamily: "var(--font-typewriter)", letterSpacing: "0.1em" }}
+              style={{
+                fontFamily: "var(--font-typewriter)",
+                letterSpacing: "0.1em",
+              }}
             >
-              Cancel
+              {props.cancelLabel ?? "Cancel"}
             </button>
           )}
         </header>
@@ -289,178 +325,263 @@ export const ConversationalInterview = component$(
           ref={scrollerRef}
           class="flex-1 overflow-y-auto px-4 py-6 space-y-4"
         >
-          <div class="max-w-2xl mx-auto space-y-4">
-            {store.messages.map((m, i) => (
-              <div
-                key={i}
-                class={`flex ${m.author === "writer" ? "justify-end" : "justify-start"}`}
-              >
+          <div class="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <div class="space-y-4">
+              {store.messages.map((m, i) => (
                 <div
-                  class={`max-w-[80%] rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem] ${
-                    m.author === "writer"
-                      ? "bg-[var(--color-vermilion)] text-white"
-                      : "bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)]"
-                  }`}
-                  style={{
-                    fontFamily:
-                      m.author === "writer"
-                        ? "var(--font-serif)"
-                        : "var(--font-display)",
-                  }}
+                  key={i}
+                  class={`flex ${m.author === "writer" ? "justify-end" : "justify-start"}`}
                 >
-                  {m.author === "interviewer" && (
-                    <p
-                      class="text-[0.55rem] tracking-[0.24em] uppercase mb-1 text-[var(--color-ink-muted)]"
+                  <div
+                    class={`max-w-[80%] rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem] ${
+                      m.author === "writer"
+                        ? "bg-[var(--color-vermilion)] text-white"
+                        : "bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)]"
+                    }`}
+                    style={{
+                      fontFamily:
+                        m.author === "writer"
+                          ? "var(--font-serif)"
+                          : "var(--font-display)",
+                    }}
+                  >
+                    {m.author === "interviewer" && (
+                      <p
+                        class="text-[0.55rem] tracking-[0.24em] uppercase mb-1 text-[var(--color-ink-muted)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        The room
+                      </p>
+                    )}
+                    {m.text}
+                  </div>
+                </div>
+              ))}
+
+              {store.loading && (
+                <div class="flex justify-start">
+                  <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[3px] px-4 py-2.5">
+                    <span
+                      class="text-[var(--color-ink-muted)] text-sm"
                       style={{ fontFamily: "var(--font-typewriter)" }}
                     >
-                      The room
+                      The room is reading…
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {store.synthesis && (
+                <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[2px] p-5 shadow-sm space-y-4">
+                  <div>
+                    <p
+                      class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)] mb-1"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Draft dossier
                     </p>
-                  )}
-                  {m.text}
-                </div>
-              </div>
-            ))}
+                    <p
+                      class="text-base"
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontWeight: 600,
+                      }}
+                    >
+                      The room's first pass. Edit anything before you take it to
+                      the desk.
+                    </p>
+                  </div>
 
-            {store.loading && (
-              <div class="flex justify-start">
-                <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[3px] px-4 py-2.5">
-                  <span
-                    class="text-[var(--color-ink-muted)] text-sm"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
-                  >
-                    The room is reading…
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {store.synthesis && (
-              <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[2px] p-5 shadow-sm space-y-4">
-                <div>
-                  <p
-                    class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)] mb-1"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
-                  >
-                    Draft dossier
-                  </p>
-                  <p
-                    class="text-base"
-                    style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
-                  >
-                    The room's first pass. Edit anything before you take it to the desk.
-                  </p>
-                </div>
-
-                <dl class="space-y-3">
-                  {FIELD_ORDER.map((field) => {
-                    const value = store.synthesis!.brief[field];
-                    const conf = store.synthesis!.confidence[field];
-                    const isEditing = store.editingField === field;
-                    return (
-                      <div
-                        key={field}
-                        class="border-l-2 border-[var(--color-paper-3)] pl-3 py-1"
-                      >
-                        <dt
-                          class="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] flex items-center gap-2 mb-1"
-                          style={{ fontFamily: "var(--font-typewriter)" }}
+                  <dl class="space-y-3">
+                    {FIELD_ORDER.map((field) => {
+                      const value = store.synthesis!.brief[field];
+                      const conf = store.synthesis!.confidence[field];
+                      const isEditing = store.editingField === field;
+                      return (
+                        <div
+                          key={field}
+                          class="border-l-2 border-[var(--color-paper-3)] pl-3 py-1"
                         >
-                          <span
-                            class={`inline-block w-1.5 h-1.5 rounded-full ${confidenceTone(conf)}`}
-                            aria-hidden="true"
-                          />
-                          {FIELD_LABELS[field]}
-                          <span
-                            class="text-[0.55rem] tracking-[0.1em] normal-case text-[var(--color-ink-muted)]"
+                          <dt
+                            class="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] flex items-center gap-2 mb-1"
                             style={{ fontFamily: "var(--font-typewriter)" }}
                           >
-                            ({confidenceLabel(conf)})
-                          </span>
-                        </dt>
-                        <dd
-                          class="text-[0.95rem] leading-relaxed"
-                          style={{ fontFamily: "var(--font-serif)" }}
-                        >
-                          {isEditing ? (
-                            <div class="space-y-2">
-                              <textarea
-                                ref={inputRef}
-                                value={store.draft}
-                                onInput$={(_, el) => {
-                                  store.draft = el.value;
-                                }}
-                                rows={3}
-                                class="w-full border border-[var(--color-paper-3)] rounded px-2 py-1.5 text-sm bg-[var(--color-paper-soft)] focus:outline-none focus:border-[var(--color-vermilion)]"
-                                style={{ fontFamily: "var(--font-serif)" }}
-                              />
-                              <div class="flex items-center gap-2">
-                                <button
-                                  onClick$={() => applyEdit(field)}
-                                  class="text-xs px-3 py-1 rounded bg-[var(--color-vermilion)] text-white"
-                                  style={{ fontFamily: "var(--font-typewriter)" }}
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  onClick$={() => {
-                                    store.editingField = null;
-                                    store.draft = "";
+                            <span
+                              class={`inline-block w-1.5 h-1.5 rounded-full ${confidenceTone(conf)}`}
+                              aria-hidden="true"
+                            />
+                            {FIELD_LABELS[field]}
+                            <span
+                              class="text-[0.55rem] tracking-[0.1em] normal-case text-[var(--color-ink-muted)]"
+                              style={{ fontFamily: "var(--font-typewriter)" }}
+                            >
+                              ({confidenceLabel(conf)})
+                            </span>
+                          </dt>
+                          <dd
+                            class="text-[0.95rem] leading-relaxed"
+                            style={{ fontFamily: "var(--font-serif)" }}
+                          >
+                            {isEditing ? (
+                              <div class="space-y-2">
+                                <textarea
+                                  ref={inputRef}
+                                  value={store.draft}
+                                  onInput$={(_, el) => {
+                                    store.draft = el.value;
                                   }}
-                                  class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
-                                  style={{ fontFamily: "var(--font-typewriter)" }}
+                                  rows={3}
+                                  class="w-full border border-[var(--color-paper-3)] rounded px-2 py-1.5 text-sm bg-[var(--color-paper-soft)] focus:outline-none focus:border-[var(--color-vermilion)]"
+                                  style={{ fontFamily: "var(--font-serif)" }}
+                                />
+                                <div class="flex items-center gap-2">
+                                  <button
+                                    onClick$={() => applyEdit(field)}
+                                    class="text-xs px-3 py-1 rounded bg-[var(--color-vermilion)] text-white"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    Save
+                                  </button>
+                                  <button
+                                    onClick$={() => {
+                                      store.editingField = null;
+                                      store.draft = "";
+                                    }}
+                                    class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div class="flex items-start justify-between gap-2">
+                                <span class="flex-1">
+                                  {value || (
+                                    <em class="text-[var(--color-ink-muted)] italic">
+                                      (empty — the room wasn't sure)
+                                    </em>
+                                  )}
+                                </span>
+                                <button
+                                  onClick$={() => startEditing(field)}
+                                  class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] flex-shrink-0"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
                                 >
-                                  Cancel
+                                  Edit
                                 </button>
                               </div>
-                            </div>
-                          ) : (
-                            <div class="flex items-start justify-between gap-2">
-                              <span class="flex-1">
-                                {value || (
-                                  <em class="text-[var(--color-ink-muted)] italic">
-                                    (empty — the room wasn't sure)
-                                  </em>
-                                )}
-                              </span>
-                              <button
-                                onClick$={() => startEditing(field)}
-                                class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] flex-shrink-0"
-                                style={{ fontFamily: "var(--font-typewriter)" }}
-                              >
-                                Edit
-                              </button>
-                            </div>
-                          )}
-                        </dd>
-                      </div>
-                    );
-                  })}
-                </dl>
+                            )}
+                          </dd>
+                        </div>
+                      );
+                    })}
+                  </dl>
 
-                <div class="flex items-center gap-2 pt-2 border-t border-[var(--color-paper-3)]">
-                  <button
-                    onClick$={acceptSynthesis}
-                    class="flex-1 rounded-full bg-[var(--color-vermilion)] text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity"
-                    style={{ fontFamily: "var(--font-display)" }}
-                  >
-                    Take it to the desk
-                  </button>
-                  <button
-                    onClick$={dismissSynthesis}
-                    class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-sm px-4 py-2.5"
+                  <div class="flex items-center gap-2 pt-2 border-t border-[var(--color-paper-3)]">
+                    <button
+                      onClick$={acceptSynthesis}
+                      class="flex-1 rounded-full bg-[var(--color-vermilion)] text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      Take it to the desk
+                    </button>
+                    <button
+                      onClick$={dismissSynthesis}
+                      class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-sm px-4 py-2.5"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Keep talking
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {store.error && (
+                <div class="bg-[var(--color-vermilion)]/10 border border-[var(--color-vermilion)] rounded p-3 text-sm text-[var(--color-vermilion)]">
+                  {store.error}
+                </div>
+              )}
+            </div>
+
+            <aside class="lg:sticky lg:top-4 lg:self-start border border-[var(--color-paper-3)] bg-[var(--color-paper-2)] p-4 shadow-sm">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <p
+                    class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
                     style={{ fontFamily: "var(--font-typewriter)" }}
                   >
-                    Keep talking
-                  </button>
+                    Room brief
+                  </p>
+                  <h2
+                    class="mt-1 text-base"
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    Filling as you talk
+                  </h2>
                 </div>
+                <span
+                  class={`block h-2 w-2 rounded-full ${
+                    store.synthesis
+                      ? "bg-[var(--color-accent-green)]"
+                      : "bg-[var(--color-mustard)]"
+                  }`}
+                  aria-hidden="true"
+                />
               </div>
-            )}
 
-            {store.error && (
-              <div class="bg-[var(--color-vermilion)]/10 border border-[var(--color-vermilion)] rounded p-3 text-sm text-[var(--color-vermilion)]">
-                {store.error}
-              </div>
-            )}
+              <dl class="mt-4 space-y-3">
+                {FIELD_ORDER.map((field) => {
+                  const value = livePanel?.brief[field];
+                  const conf = livePanel?.confidence[field];
+                  return (
+                    <div
+                      key={field}
+                      class="border-l-2 border-[var(--color-paper-3)] pl-3"
+                    >
+                      <dt
+                        class="flex items-center gap-2 text-[0.57rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        <span
+                          class={`inline-block h-1.5 w-1.5 rounded-full ${
+                            value
+                              ? confidenceTone(conf)
+                              : "bg-[var(--color-paper-3)]"
+                          }`}
+                          aria-hidden="true"
+                        />
+                        {FIELD_LABELS[field]}
+                      </dt>
+                      <dd class="mt-1 text-sm leading-6 text-[var(--color-ink-light)]">
+                        {value || (
+                          <span class="italic text-[var(--color-ink-muted)]">
+                            Waiting for evidence.
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  );
+                })}
+              </dl>
+
+              <p
+                class="mt-4 border-t border-[var(--color-paper-3)] pt-3 text-[0.72rem] leading-5 text-[var(--color-ink-muted)]"
+                style={{ fontFamily: "var(--font-typewriter)" }}
+              >
+                When the room has enough, it will ask you to review before
+                opening the editor.
+              </p>
+            </aside>
           </div>
         </div>
 

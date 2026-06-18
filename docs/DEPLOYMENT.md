@@ -72,13 +72,14 @@ as part of the build step, so the backend deploys on every push alongside the
 frontend — no separate manual deploy needed.
 
 Server-side Convex secrets (`CREEM_API_KEY`, `CREEM_WEBHOOK_SECRET`,
-`CREEM_SUCCESS_URL`, `POSTHOG_PROJECT_API_KEY`, `RESEND_API_KEY`, …) live in the
-Convex deployment's own environment, not Railway. Set them against production
-from the CLI:
+`CREEM_SUCCESS_URL`, `POSTHOG_PROJECT_API_KEY`, `RESEND_API_KEY`,
+`VOICE_OPENAI_API_KEY`, …) live in the Convex deployment's own environment, not
+Railway. Set them against production from the CLI:
 
 ```bash
 npx convex env set CREEM_API_KEY creem_xxx --prod
 npx convex env set POSTHOG_PROJECT_API_KEY phc_xxx --prod
+npx convex env set VOICE_OPENAI_API_KEY sk_xxx --prod
 # list / verify:
 npx convex env list --prod
 ```
@@ -111,6 +112,11 @@ PostHog evals against `$ai_generation`, then filter/break down by
 id) plus the Convex secrets `CREEM_API_KEY`, `CREEM_WEBHOOK_SECRET`, and
 `CREEM_SUCCESS_URL`. Point a Creem webhook at
 `<VITE_CONVEX_SITE_URL>/creem/webhook`.
+
+**Hosted voice** (Pro tier): set `VOICE_OPENAI_API_KEY` in Convex, optionally
+`VOICE_OPENAI_MODEL` (defaults to `gpt-4o-mini-tts`) and `VOICE_OPENAI_VOICE`
+(defaults to `alloy`). If `VOICE_OPENAI_API_KEY` is unset, hosted voice uses
+`OPENAI_API_KEY`. BYOK voice does not use server secrets.
 
 **Local model** (desktop only): the web flag just shows the UI; the model runs
 as a native LiteRT-LM server bundled into the Electrobun desktop build. Build

@@ -11,12 +11,13 @@ const PRO_PRODUCT_ID = import.meta.env.PUBLIC_CREEM_PRODUCT_PRO as
 const FREE_FEATURES = [
   "The full editorial room — personas, rubric, citations",
   "Anti-tabula-rasa project interview",
-  "Local-first drafts, BYOK AI (your own keys)",
+  "Local-first drafts, BYOK AI and voice (your own keys)",
 ];
 
 const PRO_FEATURES = [
   "Everything in Free",
   "Hosted AI — no keys to manage",
+  "Hosted voice narration for drafts and selected passages",
   "Priority sync and publishing",
   "Early access to the desktop local model",
 ];
