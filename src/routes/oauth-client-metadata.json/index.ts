@@ -13,9 +13,26 @@ import type { RequestHandler } from "@builder.io/qwik-city";
  */
 
 const SCOPE = "atproto blob:image/* include:site.standard.authFull";
+const PROD_ORIGIN = "https://www.twyne.love";
+const PROD_HOSTS = new Set(["twyne.love", "www.twyne.love"]);
+
+function canonicalOrigin(url: URL): string {
+  const configured =
+    import.meta.env.PUBLIC_SITE_URL ||
+    import.meta.env.SITE_URL ||
+    import.meta.env.BETTER_AUTH_URL;
+  if (configured) return canonicalTwyneOrigin(new URL(configured));
+  if (PROD_HOSTS.has(url.hostname)) return PROD_ORIGIN;
+  return url.origin;
+}
+
+function canonicalTwyneOrigin(url: URL): string {
+  if (PROD_HOSTS.has(url.hostname)) return PROD_ORIGIN;
+  return url.origin;
+}
 
 export const onGet: RequestHandler = ({ json, url }) => {
-  const origin = url.origin;
+  const origin = canonicalOrigin(url);
   json(200, {
     client_id: `${origin}/oauth-client-metadata.json`,
     client_name: "Twyne",

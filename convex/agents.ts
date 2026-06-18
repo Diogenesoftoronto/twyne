@@ -34,6 +34,12 @@ import {
 } from "./agentPrompts";
 import type { Persona, ProjectBrief } from "../src/types";
 import { captureServerAiGeneration } from "./posthog";
+import {
+  countWords,
+  MIN_EDITOR_WORDS,
+  MIN_MARKUP_WORDS,
+  MIN_RUBRIC_WORDS,
+} from "../src/utils/draft-thresholds";
 
 /* ── Provider selection ─────────────────────────────────────────── */
 
@@ -63,15 +69,12 @@ function pickProvider(): ProviderConfig | null {
   const bifrostUrl = process.env.BIFROST_BASE_URL;
   if (bifrostUrl) {
     const modelId =
-      process.env.BIFROST_DEFAULT_MODEL ??
-      "neuralwatt/qwen3.5-397b-fast";
+      process.env.BIFROST_DEFAULT_MODEL ?? "neuralwatt/qwen3.5-397b-fast";
     const bifrostKey = process.env.BIFROST_API_KEY;
     const bifrost = createOpenAI({
       baseURL: bifrostUrl.replace(/\/$/, ""),
       apiKey: "bifrost-dummy",
-      headers: bifrostKey
-        ? { "x-bifrost-api-key": bifrostKey }
-        : undefined,
+      headers: bifrostKey ? { "x-bifrost-api-key": bifrostKey } : undefined,
     });
     return {
       model: bifrost.chat(modelId),
@@ -251,6 +254,9 @@ export const runPersona = action({
       userMessage: args.userMessage,
       instruction: args.instruction,
     };
+    if (countWords(req.draftText) < MIN_EDITOR_WORDS) {
+      return generateLocalFeedback(req);
+    }
     return runWithFallback(req);
   },
 });
@@ -325,6 +331,9 @@ export const suggestRewrite = action({
   },
   handler: async (_ctx, args): Promise<RewriteResult> => {
     const persona = args.persona as AgentPersona;
+    if (countWords(args.draftText) < MIN_MARKUP_WORDS) {
+      return { ...localRewrite(persona, args.original), provider: "local" };
+    }
     const provider = pickProvider();
     if (!provider)
       return { ...localRewrite(persona, args.original), provider: "local" };
@@ -416,6 +425,21 @@ export const conveneRoom = action({
   handler: async (_ctx, args) => {
     const provider = pickProvider();
     const brief = (args.brief ?? null) as ProjectBrief | null;
+    if (countWords(args.draftText) < MIN_EDITOR_WORDS) {
+      return args.personas.map((pRaw) => {
+        const persona = pRaw as AgentPersona;
+        return {
+          personaId: persona.id,
+          ...generateLocalFeedback({
+            persona,
+            brief,
+            draftText: args.draftText,
+            anchor: args.anchors?.[persona.id],
+            instruction: "feedback",
+          }),
+        };
+      });
+    }
 
     const tasks = args.personas.map(async (pRaw) => {
       const persona = pRaw as AgentPersona;
@@ -463,6 +487,9 @@ export const judgeDraft = action({
     const persona = args.persona as AgentPersona;
     const brief = (args.brief ?? null) as ProjectBrief | null;
     const provider = pickProvider();
+    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+      return localJudge(persona, brief, args.draftText);
+    }
 
     if (!provider) {
       return localJudge(persona, brief, args.draftText);
@@ -479,6 +506,8 @@ export const judgeDraft = action({
       `
 
 JUDGE TASK: As ${persona.name}, give the draft a single integer score from 1 to 10. A score of 5 means "the draft is doing the work for the stated audience and goal but has clear, fixable issues." A score of 7 means "the draft is in good shape and the issues are minor." A score of 9 means "publishable as-is." Be honest; most first drafts are in the 3-5 range.
+
+Do not reward confident-sounding bullshit. Penalize generic filler, repeated paragraphs, unsupported universal claims, vibes without evidence, fake specificity, and any passage that sounds polished while dodging the stated audience/goal.
 
 Respond as JSON, and only JSON, in this exact shape:
 {"score": <integer 1-10>, "rationale": "<one sentence, your voice>"}`;
@@ -533,6 +562,15 @@ export const judgeRoom = action({
   },
   handler: async (_ctx, args) => {
     const brief = (args.brief ?? null) as ProjectBrief | null;
+    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+      return args.personas.map((p) => {
+        const persona = p as AgentPersona;
+        return {
+          ...localJudge(persona, brief, args.draftText),
+          personaId: persona.id,
+        };
+      });
+    }
 
     const judgeTasks = args.personas.map((p) =>
       (async () => {
@@ -556,6 +594,8 @@ export const judgeRoom = action({
             `
 
 JUDGE TASK: Give the draft an integer score from 1 to 10. 5 is "doing the work but with clear issues." 7 is "in good shape." 9 is "publishable as-is." Be honest.
+
+Do not reward confident-sounding bullshit. Penalize generic filler, repeated paragraphs, unsupported universal claims, vibes without evidence, fake specificity, and any passage that sounds polished while dodging the stated audience/goal.
 
 Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voice>"}`;
           const start = Date.now();

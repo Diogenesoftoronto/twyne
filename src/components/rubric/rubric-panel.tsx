@@ -16,10 +16,8 @@ import {
   loadAiSettingsFromIdb,
 } from "../../utils/idb";
 import type { AiSettings } from "../../types";
-import {
-  runClientJudge,
-  normalizeAiSettings,
-} from "../../utils/ai-client";
+import { runClientJudge, normalizeAiSettings } from "../../utils/ai-client";
+import { draftReadiness, MIN_RUBRIC_WORDS } from "../../utils/draft-thresholds";
 
 interface RubricStore {
   result: RubricResult | null;
@@ -72,6 +70,14 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
     try {
       const draftText = await loadDraftText();
       const client = clientSig.value;
+      const readiness = draftReadiness(draftText, MIN_RUBRIC_WORDS);
+      if (!readiness.ok) {
+        store.static = scoreStaticFeatures(draftText);
+        store.judges = [];
+        store.result = null;
+        store.error = readiness.message;
+        return;
+      }
 
       // 1. Run the static-feature scorer in the browser (cheap, deterministic).
       const staticScore = scoreStaticFeatures(draftText);
@@ -82,10 +88,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       let judges: JudgeResult[] = [];
 
       const settings = store.aiSettings;
-      if (
-        settings?.advancedMode &&
-        settings.providers.length > 0
-      ) {
+      if (settings?.advancedMode && settings.providers.length > 0) {
         try {
           const personas = defaultPersonas();
           const tasks = personas.map(async (p) => {
@@ -145,6 +148,10 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
 
       if (judges.length === 0) {
         judges = localJudges(draftText, brief);
+      }
+      if (judges.every((j) => j.provider === "local")) {
+        store.error =
+          "Rubric used local fallback judges. Production LLM calls are not configured or failed; set BIFROST_BASE_URL, RIVET_ENDPOINT, ANTHROPIC_API_KEY, or OPENAI_API_KEY in Convex.";
       }
       store.judges = judges;
 
@@ -235,6 +242,15 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
           <button onClick$={analyze} class="btn-press mt-5">
             Send to copyedit
           </button>
+          {store.error && (
+            <p
+              class="mt-3 max-w-sm text-xs leading-5 text-[var(--color-vermilion)]"
+              style="font-family: var(--font-typewriter);"
+              role="alert"
+            >
+              {store.error}
+            </p>
+          )}
         </div>
       )}
 
@@ -312,6 +328,15 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
             {/* Per-judge scorecard */}
             <div class="mt-4 pt-4 border-t border-dashed border-[var(--color-paper-3)]">
               <p class="dept-label">The Judges' Verdict</p>
+              {store.error && (
+                <p
+                  class="mt-1 text-[11px] leading-5 text-[var(--color-vermilion)]"
+                  style="font-family: var(--font-typewriter);"
+                  role="alert"
+                >
+                  {store.error}
+                </p>
+              )}
               <ul class="mt-2 space-y-1.5">
                 {store.result.judges.map((j) => (
                   <li
@@ -471,6 +496,8 @@ function nextMoveFor(id: string): string {
       "State the load-bearing claim in one sentence near the top, then make every section earn it.",
     evidence:
       "Pick the two weakest claims and attach a source, example, or number to each.",
+    integrity:
+      "Replace universal claims with testable claims; cut filler and add proof where the sentence asks for trust.",
     structure:
       "Add a section break or transition where the argument changes gears; cut a paragraph that repeats.",
     pacing:
@@ -589,6 +616,22 @@ function buildCriteria(
       } detected (${staticScore.features.citationDensity.toFixed(
         1,
       )} per 1,000 words). For ${audience}, evidence should earn its place.`,
+    },
+    {
+      id: "integrity",
+      label: "Bullshit Resistance",
+      description: "Unsupported certainty, filler, vagueness, and repetition",
+      score: Math.min(10, staticScore.perFeature.integrity),
+      maxScore: 10,
+      feedback: `${staticScore.features.unsupportedUniversalClaimCount} unsupported universal claim${
+        staticScore.features.unsupportedUniversalClaimCount === 1 ? "" : "s"
+      }; ${(staticScore.features.fillerWordRatio * 100).toFixed(1)}% filler; ${(
+        staticScore.features.vagueWordRatio * 100
+      ).toFixed(1)}% vague wording; ${(
+        staticScore.features.duplicateParagraphRatio * 100
+      ).toFixed(
+        0,
+      )}% duplicated paragraphs. The rubric now penalizes confident-sounding prose that does not pay rent.`,
     },
     {
       id: "structure",

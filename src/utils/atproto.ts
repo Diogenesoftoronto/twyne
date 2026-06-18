@@ -18,10 +18,11 @@ import type { Agent } from "@atproto/api";
  * is the permission set standard.site publications use; `blob:image/*` lets a
  * later version upload cover images.
  */
-export const SCOPE =
-  "atproto blob:image/* include:site.standard.authFull";
+export const SCOPE = "atproto blob:image/* include:site.standard.authFull";
 
 const HANDLE_RESOLVER = "https://bsky.social";
+const PROD_HOSTS = new Set(["twyne.love", "www.twyne.love"]);
+const PROD_ORIGIN = "https://www.twyne.love";
 
 export interface AtprotoSession {
   did: string;
@@ -39,6 +40,11 @@ function isLoopback(): boolean {
   return h === "localhost" || h === "127.0.0.1" || h === "[::1]" || h === "::1";
 }
 
+function oauthOrigin(): string {
+  if (PROD_HOSTS.has(window.location.hostname)) return PROD_ORIGIN;
+  return window.location.origin;
+}
+
 // Module-level cache: build the client once per page.
 let clientPromise: Promise<any> | null = null;
 
@@ -50,7 +56,7 @@ async function getOAuthClient(): Promise<any> {
     const { BrowserOAuthClient } = await import(
       "@atproto/oauth-client-browser"
     );
-    const origin = window.location.origin;
+    const origin = oauthOrigin();
 
     if (isLoopback()) {
       const { atprotoLoopbackClientMetadata } = await import(

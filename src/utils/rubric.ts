@@ -23,6 +23,10 @@ export interface StaticFeatures {
   uniqueWordsRatio: number; // type-token ratio
   shortParagraphRatio: number; // paragraphs with < 40 words
   longParagraphRatio: number; // paragraphs with > 220 words
+  duplicateParagraphRatio: number;
+  fillerWordRatio: number;
+  vagueWordRatio: number;
+  unsupportedUniversalClaimCount: number;
 }
 
 export interface StaticScore {
@@ -35,6 +39,7 @@ export interface StaticScore {
     evidence: number;
     vocabulary: number;
     paragraphShape: number;
+    integrity: number;
   };
   /** Weighted mean, 0-10. */
   total: number;
@@ -42,12 +47,13 @@ export interface StaticScore {
 }
 
 const FEATURE_WEIGHTS = {
-  length: 0.15,
-  structure: 0.2,
-  pacing: 0.2,
+  length: 0.1,
+  structure: 0.15,
+  pacing: 0.15,
   evidence: 0.2,
-  vocabulary: 0.15,
+  vocabulary: 0.1,
   paragraphShape: 0.1,
+  integrity: 0.2,
 } as const;
 
 export function scoreStaticFeatures(draftText: string): StaticScore {
@@ -60,6 +66,7 @@ export function scoreStaticFeatures(draftText: string): StaticScore {
     evidence: scoreEvidence(features),
     vocabulary: scoreVocabulary(features),
     paragraphShape: scoreParagraphShape(features),
+    integrity: scoreIntegrity(features),
   };
   const total =
     perFeature.length * FEATURE_WEIGHTS.length +
@@ -67,9 +74,15 @@ export function scoreStaticFeatures(draftText: string): StaticScore {
     perFeature.pacing * FEATURE_WEIGHTS.pacing +
     perFeature.evidence * FEATURE_WEIGHTS.evidence +
     perFeature.vocabulary * FEATURE_WEIGHTS.vocabulary +
-    perFeature.paragraphShape * FEATURE_WEIGHTS.paragraphShape;
+    perFeature.paragraphShape * FEATURE_WEIGHTS.paragraphShape +
+    perFeature.integrity * FEATURE_WEIGHTS.integrity;
 
-  return { features, perFeature, total, feedback: buildFeedback(features, perFeature) };
+  return {
+    features,
+    perFeature,
+    total,
+    feedback: buildFeedback(features, perFeature),
+  };
 }
 
 function computeFeatures(text: string): StaticFeatures {
@@ -86,8 +99,8 @@ function computeFeatures(text: string): StaticFeatures {
     .map((s) => s.trim())
     .filter(Boolean);
   const sentenceCount = sentences.length;
-  const sentenceLengths = sentences.map((s) =>
-    s.split(/\s+/).filter(Boolean).length,
+  const sentenceLengths = sentences.map(
+    (s) => s.split(/\s+/).filter(Boolean).length,
   );
   const avgSentenceLength =
     sentenceLengths.length > 0
@@ -96,16 +109,22 @@ function computeFeatures(text: string): StaticFeatures {
   const sentenceLengthStdDev = standardDeviation(sentenceLengths);
 
   const citationCount = detectCitations(text).length;
-  const citationDensity = wordCount > 0 ? (citationCount / wordCount) * 1000 : 0;
+  const citationDensity =
+    wordCount > 0 ? (citationCount / wordCount) * 1000 : 0;
 
   const avgWordLength =
     words.length > 0
       ? words.reduce((sum, w) => sum + w.length, 0) / words.length
       : 0;
-  const uniqueWords = new Set(words.map((w) => w.toLowerCase().replace(/[^a-z']/g, "")));
-  const uniqueWordsRatio = words.length > 0 ? uniqueWords.size / words.length : 0;
+  const uniqueWords = new Set(
+    words.map((w) => w.toLowerCase().replace(/[^a-z']/g, "")),
+  );
+  const uniqueWordsRatio =
+    words.length > 0 ? uniqueWords.size / words.length : 0;
 
-  const paragraphLengths = paragraphs.map((p) => p.split(/\s+/).filter(Boolean).length);
+  const paragraphLengths = paragraphs.map(
+    (p) => p.split(/\s+/).filter(Boolean).length,
+  );
   const shortParagraphRatio =
     paragraphLengths.length > 0
       ? paragraphLengths.filter((n) => n < 40).length / paragraphLengths.length
@@ -114,6 +133,27 @@ function computeFeatures(text: string): StaticFeatures {
     paragraphLengths.length > 0
       ? paragraphLengths.filter((n) => n > 220).length / paragraphLengths.length
       : 0;
+  const normalizedParagraphs = paragraphs
+    .map((p) =>
+      p
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim(),
+    )
+    .filter((p) => p.split(/\s+/).length >= 12);
+  const duplicateParagraphRatio =
+    normalizedParagraphs.length > 0
+      ? (normalizedParagraphs.length - new Set(normalizedParagraphs).size) /
+        normalizedParagraphs.length
+      : 0;
+  const fillerMatches = text.match(FILLER_WORDS) ?? [];
+  const vagueMatches = text.match(VAGUE_WORDS) ?? [];
+  const fillerWordRatio = wordCount > 0 ? fillerMatches.length / wordCount : 0;
+  const vagueWordRatio = wordCount > 0 ? vagueMatches.length / wordCount : 0;
+  const unsupportedUniversalClaimCount = sentences.filter(
+    (s) => UNIVERSAL_CLAIM.test(s) && !SOURCE_MARKER.test(s),
+  ).length;
 
   return {
     wordCount,
@@ -127,8 +167,21 @@ function computeFeatures(text: string): StaticFeatures {
     uniqueWordsRatio,
     shortParagraphRatio,
     longParagraphRatio,
+    duplicateParagraphRatio,
+    fillerWordRatio,
+    vagueWordRatio,
+    unsupportedUniversalClaimCount,
   };
 }
+
+const FILLER_WORDS =
+  /\b(very|really|basically|actually|literally|simply|clearly|obviously|undeniably|innovative|robust|leverage|synergy|paradigm|game[- ]changer|cutting[- ]edge|seamless|world[- ]class|transformative)\b/gi;
+const VAGUE_WORDS =
+  /\b(thing|things|stuff|various|many|some|people|society|important|interesting|significant|impactful|better|worse|good|bad|a lot|kind of|sort of)\b/gi;
+const UNIVERSAL_CLAIM =
+  /\b(always|never|everyone|no one|all (?:people|writers|readers|users)|none of|proves?|guarantees?|undeniably|obviously|clearly)\b/i;
+const SOURCE_MARKER =
+  /\b(according to|study|studies|research|data|survey|report|census|doi:|https?:\/\/|\(\s*[A-Z][A-Za-z-]+,\s*\d{4}\s*\)|\[\d+\])\b/i;
 
 function standardDeviation(values: number[]): number {
   if (values.length === 0) return 0;
@@ -198,6 +251,16 @@ function scoreParagraphShape(f: StaticFeatures): number {
   return clamp(0, 10, score);
 }
 
+function scoreIntegrity(f: StaticFeatures): number {
+  let score = 10;
+  score -= clamp(0, 4, f.duplicateParagraphRatio * 16);
+  score -= clamp(0, 2.5, f.fillerWordRatio * 90);
+  score -= clamp(0, 2.5, f.vagueWordRatio * 45);
+  score -= clamp(0, 4, f.unsupportedUniversalClaimCount * 0.8);
+  if (f.wordCount < 220) score = Math.min(score, 4);
+  return clamp(0, 10, score);
+}
+
 /* ── Helpers ──────────────────────────────────────────────────── */
 
 function gaussianFit(value: number, mean: number, sigma: number): number {
@@ -252,6 +315,17 @@ function buildFeedback(
   if (s.vocabulary < 4) {
     out.push(
       `Vocabulary repetition is high. Find a sharper synonym, or cut the repeated word.`,
+    );
+  }
+  if (s.integrity < 6) {
+    out.push(
+      `Bullshit check is low: ${f.unsupportedUniversalClaimCount} unsupported universal claim${
+        f.unsupportedUniversalClaimCount === 1 ? "" : "s"
+      }, ${(f.fillerWordRatio * 100).toFixed(1)}% filler, ${(
+        f.vagueWordRatio * 100
+      ).toFixed(
+        1,
+      )}% vague wording, ${(f.duplicateParagraphRatio * 100).toFixed(0)}% duplicated paragraphs.`,
     );
   }
   if (out.length === 0) {
