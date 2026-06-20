@@ -1,0 +1,8 @@
+I need to understand the user flow and navigation structure of a Qwik application. 
+Please explore the `src/routes/` directory thoroughly. 
+For each route file (like `.tsx` or `.mdx`), identify:
+1. The route path.
+2. Any `<Link>` components or `navigate` calls to other routes.
+3. What the page appears to be for (editor, settings, etc.).
+Also, do a broad search across the whole `src/` directory for any `cursor: default` CSS rules or classes that might remove pointer cursors.
+Return a concise summary of the navigation graph and any suspicious cursor rules.
