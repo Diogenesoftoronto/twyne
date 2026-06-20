@@ -1,0 +1,9 @@
+In the project at /home/diogenes/Projects/twyne, I need to understand how the app transitions between its different "modes" (landing, onboarding, workspace/editor, refining).
+
+Please do the following READ-ONLY searches:
+1. Grep for `mode = ` in `src/routes/index.tsx` and any other file that assigns to a mode-like state.
+2. Grep for `useNavigate` or `nav(` across `src/` to find programmatic navigation.
+3. Grep for `href="/` and `href="/personas"` and `href="/library"` and `href="/rubric"` across `src/` to find all hard links.
+4. Check `src/components/onboarding/anti-tabula-rasa.tsx` and `src/components/brief/brief-refinery.tsx` for how they communicate completion (do they emit events, call callbacks, or navigate?).
+
+Return a concise list of: every file/line where mode changes, every file/line where navigation happens, and every hardcoded route link.
