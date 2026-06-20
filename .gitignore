@@ -33,6 +33,19 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Browser test artifacts
+/playwright-report/
+/test-results/
+
+# Agent / AI tool configs (per-developer)
+.claude/
+.codex/
+.cursor/
+.factory/
+.gemini/
+.opencode/
+.pi/
+
 # Editor
 .vscode/*
 !.vscode/launch.json
