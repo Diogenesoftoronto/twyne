@@ -111,6 +111,15 @@ export const publish = mutation({
     if (!identity) throw new Error("Not signed in");
     const ownerId = identity.tokenIdentifier;
 
+    // Look up the owner's claimed handle so reader URLs use the first-class
+    // /<handle>/<slug> shape; null when the writer hasn't claimed one yet
+    // (the /p/[slug] legacy path still serves the piece).
+    const handleRow = await ctx.db
+      .query("handles")
+      .withIndex("by_userId", (q) => q.eq("userId", ownerId))
+      .unique();
+    const ownerHandle = handleRow?.handle ?? undefined;
+
     const now = Date.now();
     const cleanContent = sanitizeHtml(args.content);
     const cleanTitle = (args.title || "Untitled").trim().slice(0, 200);
@@ -144,6 +153,7 @@ export const publish = mutation({
         title: cleanTitle,
         authorName: args.authorName ?? existing.authorName,
         briefSummary: args.briefSummary ?? existing.briefSummary,
+        ownerHandle: ownerHandle ?? existing.ownerHandle,
         content: cleanContent,
         // The kind can move on re-publish (admin decides what
         // a given folio is today).
@@ -152,6 +162,7 @@ export const publish = mutation({
       });
       return {
         slug: existing.slug,
+        ownerHandle: ownerHandle ?? existing.ownerHandle ?? null,
         _id: existing._id,
         updated: true,
         kind: resolvedKind,
@@ -162,6 +173,7 @@ export const publish = mutation({
     const slug = await generateUniqueSlug(ctx, cleanTitle);
     const id = await ctx.db.insert("published", {
       ownerId,
+      ownerHandle,
       slug,
       folioId: args.folioId,
       kind: resolvedKind,
@@ -174,6 +186,7 @@ export const publish = mutation({
     });
     return {
       slug,
+      ownerHandle: ownerHandle ?? null,
       _id: id,
       updated: false,
       kind: resolvedKind,
@@ -210,6 +223,36 @@ export const getBySlug = query({
     if (!row) return null;
     return {
       slug: row.slug,
+      ownerHandle: row.ownerHandle ?? null,
+      title: row.title,
+      authorName: row.authorName ?? null,
+      briefSummary: row.briefSummary ?? null,
+      content: row.content,
+      publishedAt: row.publishedAt,
+      updatedAt: row.updatedAt,
+    };
+  },
+});
+
+/**
+ * Public read by owner's handle + slug — the canonical reader path. No auth;
+ * returns null when the handle/slug pair doesn't match a published row.
+ */
+export const getByHandleAndSlug = query({
+  args: { handle: v.string(), slug: v.string() },
+  handler: async (ctx, { handle, slug }) => {
+    const normalized = handle.toLowerCase();
+    const row = await ctx.db
+      .query("published")
+      .withIndex("by_ownerHandle_slug", (q) =>
+        q.eq("ownerHandle", normalized).eq("slug", slug),
+      )
+      .unique();
+    if (!row) return null;
+    return {
+      slug: row.slug,
+      ownerHandle: row.ownerHandle ?? null,
+      kind: row.kind,
       title: row.title,
       authorName: row.authorName ?? null,
       briefSummary: row.briefSummary ?? null,
@@ -234,12 +277,66 @@ export const listMine = query({
     return rows
       .map((r) => ({
         slug: r.slug,
+        ownerHandle: r.ownerHandle ?? null,
         folioId: r.folioId,
         title: r.title,
+        kind: r.kind,
         publishedAt: r.publishedAt,
         updatedAt: r.updatedAt,
       }))
       .sort((a, b) => b.updatedAt - a.updatedAt);
+  },
+});
+
+/**
+ * Public list of a writer's published pieces, by handle. Returns "post"
+ * pieces only — the blog feed has its own listBlog query. Reverse-chron.
+ * Used by the /<handle> profile page.
+ */
+export const listByHandle = query({
+  args: { handle: v.string() },
+  handler: async (ctx, { handle }) => {
+    const normalized = handle.toLowerCase();
+    const rows = await ctx.db
+      .query("published")
+      .withIndex(
+        "by_ownerHandle_kind_publishedAt",
+        (q) =>
+          q.eq("ownerHandle", normalized).eq("kind", "post"),
+      )
+      .collect();
+    return rows
+      .map((r) => ({
+        slug: r.slug,
+        ownerHandle: r.ownerHandle ?? null,
+        title: r.title,
+        briefSummary: r.briefSummary ?? null,
+        publishedAt: r.publishedAt,
+        updatedAt: r.updatedAt,
+      }))
+      .sort((a, b) => b.publishedAt - a.publishedAt);
+  },
+});
+
+/** Public blog feed — admin-authored "blog" pieces, reverse-chron. */
+export const listBlog = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, { limit }) => {
+    const rows = await ctx.db
+      .query("published")
+      .withIndex("by_kind_publishedAt", (q) =>
+        q.eq("kind", "blog"),
+      )
+      .order("desc")
+      .take(Math.min(Math.max(limit ?? 50, 1), 200));
+    return rows.map((r) => ({
+      slug: r.slug,
+      ownerHandle: r.ownerHandle ?? null,
+      title: r.title,
+      authorName: r.authorName ?? null,
+      briefSummary: r.briefSummary ?? null,
+      publishedAt: r.publishedAt,
+    }));
   },
 });
 
@@ -254,6 +351,7 @@ export const getMetadataBySlug = query({
     if (!row) return null;
     return {
       title: row.title,
+      ownerHandle: row.ownerHandle ?? null,
       authorName: row.authorName ?? null,
       publishedAt: row.publishedAt,
     };

@@ -1,5 +1,10 @@
 import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { useConvexClient } from "../../utils/convex-context";
+import { useAuth } from "../../utils/auth-context";
+import { signOut } from "../../utils/auth-client";
+import { clearConvexSyncContext } from "../../utils/convex-sync";
+import { api } from "../../../convex/_generated/api";
 import type {
   AiSettings,
   AiProviderConfig,
@@ -50,6 +55,27 @@ interface SettingsStore {
   defaultCitationStyle: "mla" | "apa" | "chicago";
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
+  /* account deletion (danger zone) */
+  deletingAccount: boolean;
+  accountToast: string | null;
+  accountError: string | null;
+  /* writer handle (public identity) */
+  handleLoaded: boolean;
+  handle: string | null;
+  handleDraft: string;
+  handleBusy: boolean;
+  handleError: string | null;
+  handleToast: string | null;
+  handleCheck: {
+    available: boolean;
+    normalized?: string;
+    reason?: string;
+  } | null;
+  handleCheckBusy: boolean;
+  profileDisplayName: string;
+  profileBio: string;
+  profileBusy: boolean;
+  profileToast: string | null;
 }
 
 const FEATURE_LABELS: Record<AiFeature, string> = {
@@ -88,6 +114,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
 
 export default component$(() => {
   const featureFlags = useFeatureFlags();
+  const convexClientSig = useConvexClient();
+  const auth = useAuth();
   const store = useStore<SettingsStore>({
     settings: DEFAULT_AI_SETTINGS,
     loaded: false,
@@ -109,6 +137,21 @@ export default component$(() => {
     flagMissingSources: false,
     writerStyle: "form",
     writerToast: null,
+    deletingAccount: false,
+    accountToast: null,
+    accountError: null,
+    handleLoaded: false,
+    handle: null,
+    handleDraft: "",
+    handleBusy: false,
+    handleError: null,
+    handleToast: null,
+    handleCheck: null,
+    handleCheckBusy: false,
+    profileDisplayName: "",
+    profileBio: "",
+    profileBusy: false,
+    profileToast: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -237,6 +280,165 @@ export default component$(() => {
     await saveAiSettingsToIdb(DEFAULT_AI_SETTINGS);
     store.toast = "Reset to defaults";
     setTimeout(() => (store.toast = null), 2000);
+  });
+
+  const handleDeleteAccount = $(async () => {
+    const client = convexClientSig.value;
+    if (!client) {
+      store.accountError = "Not connected. Try again in a moment.";
+      return;
+    }
+    // The substantive deletion is irreversible. Gate it behind a typed
+    // confirmation so a stray click can't wipe an account.
+    if (
+      !confirm(
+        "Permanently delete your Twyne account and all synced data? This cannot be undone. Export any folios you want to keep first.",
+      )
+    )
+      return;
+    const typed = prompt("Type DELETE to confirm:");
+    if (typed !== "DELETE") {
+      store.accountError = "Cancelled — nothing was deleted.";
+      return;
+    }
+    store.deletingAccount = true;
+    store.accountError = null;
+    try {
+      const result = await client.mutation(api.account.deleteAccount, {});
+      // Wipe the local session and any synced state, then bounce to the home
+      // page so nothing authed lingers in memory.
+      try {
+        await signOut();
+      } catch {
+        /* sign-out is best-effort; the server account is already gone */
+      }
+      clearConvexSyncContext();
+      store.accountToast = result?.identityPurged
+        ? "Your account and synced data have been deleted."
+        : "Synced data deleted. We're finishing the account teardown — if you can still sign in, contact support@twyne.love.";
+      store.deletingAccount = false;
+      window.location.href = "/";
+    } catch (e: any) {
+      store.accountError =
+        e?.message ?? "Could not delete account. Please try again.";
+      store.deletingAccount = false;
+    }
+  });
+
+  // ── Writer handle (public identity) ──────────────────────────────
+  // The handle is the writer's addressable name on Twyne — it appears in
+  // share URLs (/<handle>/<slug>) and profile pages (/<handle>). Claimed
+  // once per account; can be changed (the old handle is freed). The
+  // availability check is debounced and runs server-side via
+  // `profiles.checkHandleAvailable`.
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track }) => {
+    track(() => auth.value.user?.id);
+    track(() => convexClientSig.value);
+    const client = convexClientSig.value;
+    const user = auth.value.user;
+    if (!client || !user) {
+      store.handleLoaded = true;
+      return;
+    }
+    if (auth.value.provider !== "convex") {
+      store.handleLoaded = true;
+      return;
+    }
+    try {
+      const row = (await client.query(api.profiles.getMyHandle, {})) as {
+        handle: string;
+        displayName: string | null;
+        bio: string | null;
+      } | null;
+      store.handle = row?.handle ?? null;
+      store.handleDraft = row?.handle ?? "";
+      store.profileDisplayName = row?.displayName ?? "";
+      store.profileBio = row?.bio ?? "";
+    } catch {
+      // The Convex client may be in mid-reconnect; we'll retry on next track.
+    } finally {
+      store.handleLoaded = true;
+    }
+  });
+
+  // Debounced availability check. Re-fires whenever the draft changes; the
+  // server query is the source of truth so reserved words, length, and
+  // collisions are all checked there.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    const draft = track(() => store.handleDraft);
+    const current = track(() => store.handle);
+    const client = convexClientSig.value;
+    store.handleCheck = null;
+    if (!client) return;
+    if (!draft.trim() || draft.trim() === current) return;
+    store.handleCheckBusy = true;
+    const timer = setTimeout(async () => {
+      try {
+        const result = (await client.query(
+          api.profiles.checkHandleAvailable,
+          { handle: draft },
+        )) as
+          | { available: true; handle: string }
+          | { available: false; reason: string };
+        store.handleCheck = result;
+      } catch {
+        store.handleCheck = null;
+      } finally {
+        store.handleCheckBusy = false;
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  });
+
+  const handleClaim = $(async () => {
+    const client = convexClientSig.value;
+    if (!client) {
+      store.handleError = "Not connected. Try again in a moment.";
+      return;
+    }
+    store.handleBusy = true;
+    store.handleError = null;
+    store.handleToast = null;
+    try {
+      const result = (await client.mutation(api.profiles.claimHandle, {
+        handle: store.handleDraft,
+      })) as { handle: string; changed: boolean };
+      store.handle = result.handle;
+      store.handleDraft = result.handle;
+      store.handleCheck = null;
+      store.handleToast = result.changed
+        ? `Your handle is now @${result.handle}`
+        : "Handle unchanged.";
+      setTimeout(() => (store.handleToast = null), 4000);
+    } catch (e: any) {
+      store.handleError = e?.message ?? "Could not claim handle.";
+    } finally {
+      store.handleBusy = false;
+    }
+  });
+
+  const handleSaveProfile = $(async () => {
+    const client = convexClientSig.value;
+    if (!client) return;
+    store.profileBusy = true;
+    store.profileToast = null;
+    try {
+      await client.mutation(api.profiles.updateProfile, {
+        displayName: store.profileDisplayName,
+        bio: store.profileBio,
+      });
+      store.profileToast = "Profile saved.";
+      setTimeout(() => (store.profileToast = null), 4000);
+    } catch (e: any) {
+      store.profileToast = null;
+      // Surface via handle's error channel for visibility.
+      store.handleError = e?.message ?? "Could not save profile.";
+    } finally {
+      store.profileBusy = false;
+    }
   });
 
   return (
@@ -1511,6 +1713,269 @@ export default component$(() => {
                 </div>
               </div>
             </section>
+
+            {/* ── Writer handle (public identity) ── */}
+            {auth.value.provider === "convex" && store.handleLoaded && (
+              <section class="folio p-5 border border-[var(--color-paper-3)]">
+                <h2
+                  class="text-base font-semibold mb-1"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Writer handle
+                </h2>
+                <p class="text-xs text-[var(--color-ink-light)] mb-4">
+                  Your handle is your public address on Twyne — it appears in
+                  your share URLs (
+                  <code
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >{`/<handle>/<slug>`}</code>
+                  ) and on your profile page (
+                  <code
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >{`/<handle>`}</code>
+                  ). You can change it; the old handle is freed immediately.
+                </p>
+
+                {store.handleToast && (
+                  <p
+                    class="mb-3 text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-accent-green)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    {store.handleToast}
+                  </p>
+                )}
+                {store.handleError && (
+                  <p
+                    class="mb-3 text-[0.7rem] text-[var(--color-vermilion)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                    role="alert"
+                  >
+                    {store.handleError}
+                  </p>
+                )}
+
+                <label
+                  class="block text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-1"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                  for="writer-handle"
+                >
+                  Handle
+                </label>
+                <div class="flex items-stretch gap-2 mb-1">
+                  <span
+                    class="inline-flex items-center px-2 text-[0.7rem] text-[var(--color-ink-muted)] border border-r-0 border-[var(--color-paper-3)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    twyne.love/
+                  </span>
+                  <input
+                    id="writer-handle"
+                    type="text"
+                    value={store.handleDraft}
+                    onInput$={(e) => {
+                      store.handleDraft = (
+                        e.target as HTMLInputElement
+                      ).value;
+                      store.handleError = null;
+                      store.handleToast = null;
+                    }}
+                    placeholder="your-name"
+                    spellcheck={false}
+                    autocomplete="off"
+                    autocapitalize="off"
+                    class="flex-1 px-2 py-1.5 bg-[var(--color-paper)] text-sm text-[var(--color-ink)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-ink)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  />
+                </div>
+                <div class="text-[0.7rem] min-h-[1.2em] mb-3">
+                  {store.handleCheckBusy && (
+                    <span
+                      class="text-[var(--color-ink-muted)]"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Checking…
+                    </span>
+                  )}
+                  {!store.handleCheckBusy &&
+                    store.handleCheck?.available && (
+                      <span
+                        class="text-[var(--color-accent-green)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        @{store.handleCheck.normalized} is available.
+                      </span>
+                    )}
+                  {!store.handleCheckBusy &&
+                    store.handleCheck &&
+                    !store.handleCheck.available && (
+                      <span
+                        class="text-[var(--color-vermilion)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        {store.handleCheck.reason}
+                      </span>
+                    )}
+                  {!store.handleCheck &&
+                    !store.handleCheckBusy &&
+                    store.handleDraft.trim() === store.handle && (
+                      <span
+                        class="text-[var(--color-ink-muted)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        Current handle: @{store.handle}.
+                      </span>
+                    )}
+                </div>
+                <button
+                  onClick$={handleClaim}
+                  disabled={
+                    store.handleBusy ||
+                    !store.handleDraft.trim() ||
+                    store.handleDraft.trim() === store.handle
+                  }
+                  class="btn-press text-xs text-[var(--color-paper)] disabled:opacity-50"
+                  style={{
+                    backgroundColor: "var(--color-ink)",
+                    fontFamily: "var(--font-typewriter)",
+                  }}
+                >
+                  {store.handleBusy
+                    ? "Saving…"
+                    : store.handle
+                      ? "Change handle"
+                      : "Claim handle"}
+                </button>
+
+                {/* Optional profile metadata — shown only after a handle is claimed. */}
+                {store.handle && (
+                  <div class="mt-6 pt-5 border-t border-dashed border-[var(--color-paper-3)]">
+                    <p
+                      class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-3"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Profile (optional)
+                    </p>
+                    <label
+                      class="block text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-1"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                      for="writer-display-name"
+                    >
+                      Display name
+                    </label>
+                    <input
+                      id="writer-display-name"
+                      type="text"
+                      value={store.profileDisplayName}
+                      onInput$={(e) =>
+                        (store.profileDisplayName = (
+                          e.target as HTMLInputElement
+                        ).value)
+                      }
+                      placeholder="The name shown on your profile"
+                      class="w-full mb-3 px-2 py-1.5 bg-[var(--color-paper)] text-sm text-[var(--color-ink)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-ink)]"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                      maxLength={60}
+                    />
+                    <label
+                      class="block text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-1"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                      for="writer-bio"
+                    >
+                      Bio
+                    </label>
+                    <textarea
+                      id="writer-bio"
+                      value={store.profileBio}
+                      onInput$={(e) =>
+                        (store.profileBio = (e.target as HTMLTextAreaElement)
+                          .value)
+                      }
+                      placeholder="One short line about your writing."
+                      rows={2}
+                      class="w-full mb-3 px-2 py-1.5 bg-[var(--color-paper)] text-sm text-[var(--color-ink)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-ink)] resize-none"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                      maxLength={280}
+                    />
+                    {store.profileToast && (
+                      <p
+                        class="mb-2 text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-accent-green)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        {store.profileToast}
+                      </p>
+                    )}
+                    <div class="flex items-center gap-3">
+                      <button
+                        onClick$={handleSaveProfile}
+                        disabled={store.profileBusy}
+                        class="btn-press text-xs text-[var(--color-paper)] disabled:opacity-50"
+                        style={{
+                          backgroundColor: "var(--color-ink)",
+                          fontFamily: "var(--font-typewriter)",
+                        }}
+                      >
+                        {store.profileBusy ? "Saving…" : "Save profile"}
+                      </button>
+                      <a
+                        href={`/${store.handle}`}
+                        class="text-[0.7rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:underline"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        View your public profile →
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* ── Danger zone: account deletion ── */}
+            {auth.value.provider === "convex" && (
+              <section class="folio p-5 border border-[var(--color-vermilion)]/40">
+                <h2
+                  class="text-base font-semibold mb-1"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Delete account
+                </h2>
+                <p class="text-xs text-[var(--color-ink-light)] mb-4">
+                  Permanently deletes your account and everything you've synced
+                  — folios, briefs, persona notes, rubric, published pieces, and
+                  payment state. Local-only browser data stays until you clear
+                  it. This cannot be undone.
+                </p>
+                {store.accountToast && (
+                  <p
+                    class="mb-3 text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-accent-green)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    {store.accountToast}
+                  </p>
+                )}
+                {store.accountError && (
+                  <p
+                    class="mb-3 text-[0.7rem] text-[var(--color-vermilion)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                    role="alert"
+                  >
+                    {store.accountError}
+                  </p>
+                )}
+                <button
+                  onClick$={handleDeleteAccount}
+                  disabled={store.deletingAccount}
+                  class="btn-press text-xs text-[var(--color-paper)] disabled:opacity-60"
+                  style={{
+                    backgroundColor: "var(--color-vermilion)",
+                    fontFamily: "var(--font-typewriter)",
+                  }}
+                >
+                  {store.deletingAccount
+                    ? "Deleting…"
+                    : "Delete my account and synced data"}
+                </button>
+              </section>
+            )}
           </div>
         )}
       </div>

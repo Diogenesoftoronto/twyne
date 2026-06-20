@@ -366,28 +366,29 @@ export const PROVIDER_METAS: ProviderMeta[] = [
   {
     type: "openai",
     label: "OpenAI",
-    defaultModels: ["gpt-4o", "gpt-4o-mini", "o3-mini"],
+    defaultModels: ["gpt-5.5", "gpt-5.5-mini", "gpt-5.5-nano"],
     needsBaseUrl: false,
   },
   {
     type: "anthropic",
     label: "Anthropic",
-    defaultModels: ["claude-sonnet-4-5", "claude-haiku-4-5"],
+    defaultModels: ["claude-sonnet-4-6", "claude-haiku-4-6"],
     needsBaseUrl: false,
   },
   {
     type: "google",
     label: "Google",
     defaultModels: [
-      "gemini-2.5-flash-preview-05-20",
-      "gemini-2.5-pro-preview-06-05",
+      "gemini-3.1-pro-preview",
+      "gemini-3.5-flash",
+      "gemini-3.1-flash-lite",
     ],
     needsBaseUrl: false,
   },
   {
     type: "openai-compatible",
     label: "OpenAI-compatible",
-    defaultModels: ["anthropic/claude-sonnet-4-5"],
+    defaultModels: ["anthropic/claude-sonnet-4-6"],
     needsBaseUrl: true,
   },
   {

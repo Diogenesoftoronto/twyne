@@ -1,4 +1,4 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
@@ -27,6 +27,29 @@ export default component$(() => {
   const auth = useAuth();
   const busy = useSignal(false);
   const error = useSignal<string | null>(null);
+  const subscriptionStatus = useSignal<string | null>(null);
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    const client = track(clientSig);
+    const user = track(auth).user;
+    if (!client || !user) {
+      subscriptionStatus.value = null;
+      return;
+    }
+    void client
+      .query(api.payments.getMySubscription, {})
+      .then((subscription) => {
+        subscriptionStatus.value = subscription?.status ?? null;
+      })
+      .catch(() => {
+        subscriptionStatus.value = null;
+      });
+  });
+
+  const hasPro = ["active", "trialing", "paid"].includes(
+    subscriptionStatus.value ?? "",
+  );
 
   const subscribe = $(async () => {
     error.value = null;
@@ -128,11 +151,23 @@ export default component$(() => {
           </ul>
           <button
             onClick$={subscribe}
-            disabled={busy.value}
+            disabled={busy.value || hasPro}
             class="btn-press mt-8 inline-block rounded bg-[var(--color-vermilion)] px-5 py-2 text-sm text-[var(--color-paper)] disabled:opacity-60"
           >
-            {busy.value ? "Starting checkout…" : "Subscribe to Pro"}
+            {hasPro
+              ? "Pro is active"
+              : busy.value
+                ? "Starting checkout…"
+                : "Subscribe to Pro"}
           </button>
+          {hasPro && (
+            <p
+              class="mt-3 text-sm font-semibold text-[var(--color-accent-green)]"
+              role="status"
+            >
+              Pro subscription active
+            </p>
+          )}
           {error.value && (
             <p class="mt-3 text-sm text-[var(--color-accent-red)]">
               {error.value}

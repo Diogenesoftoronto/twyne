@@ -103,7 +103,7 @@ export default component$(() => {
     newRole: "",
     newDescription: "",
     newFocus: "",
-    newIcon: "👤",
+    newIcon: "❧",
     newColor: COLOR_SWATCHES[0].value,
     showResetConfirm: false,
     showVoicePreviewId: null,
@@ -285,7 +285,7 @@ export default component$(() => {
       name: store.newName.trim(),
       role: store.newRole.trim() || "The Editor",
       color: store.newColor,
-      icon: store.newIcon.trim() || "👤",
+      icon: store.newIcon.trim() || "❧",
       description:
         store.newDescription.trim() || "A sharp, insightful editorial voice.",
       focus: store.newFocus.trim() || "General editing",
@@ -294,7 +294,7 @@ export default component$(() => {
     store.newRole = "";
     store.newDescription = "";
     store.newFocus = "";
-    store.newIcon = "👤";
+    store.newIcon = "❧";
     store.newColor = COLOR_SWATCHES[0].value;
     store.adding = false;
     await persistPersonas([...store.personas, p]);
@@ -412,7 +412,7 @@ export default component$(() => {
                 }}
                 class="room-input w-12 text-center text-lg"
                 maxLength={2}
-                placeholder="👤"
+                placeholder="❧"
               />
               <div class="space-y-2">
                 <input

@@ -1,15 +1,21 @@
-import { component$, isDev } from "@builder.io/qwik";
+import { component$, isDev, useVisibleTask$ } from "@builder.io/qwik";
 import { QwikCityProvider, RouterOutlet } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
 import { ConvexProvider } from "./utils/convex-context";
 import { AuthProvider } from "./utils/auth-context";
 import { PostHogProvider } from "./utils/posthog-context";
+import { installLixAuthInterceptor } from "./utils/lix-auth";
 
 import "./global.css";
 
 export default component$(() => {
   const convexUrl = (import.meta.env.PUBLIC_CONVEX_URL ??
     import.meta.env.VITE_CONVEX_URL) as string | undefined;
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(() => {
+    installLixAuthInterceptor();
+  });
 
   return (
     <QwikCityProvider>

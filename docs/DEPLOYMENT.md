@@ -72,8 +72,8 @@ as part of the build step, so the backend deploys on every push alongside the
 frontend — no separate manual deploy needed.
 
 Server-side Convex secrets (`CREEM_API_KEY`, `CREEM_WEBHOOK_SECRET`,
-`CREEM_SUCCESS_URL`, `POSTHOG_PROJECT_API_KEY`, `RESEND_API_KEY`,
-`VOICE_OPENAI_API_KEY`, …) live in the Convex deployment's own environment, not
+`CREEM_SUCCESS_URL`, `CREEM_PRO_PRODUCT_IDS`, `POSTHOG_PROJECT_API_KEY`,
+`RESEND_API_KEY`, `VOICE_OPENAI_API_KEY`, …) live in the Convex deployment's own environment, not
 Railway. Set them against production from the CLI:
 
 ```bash
@@ -111,7 +111,10 @@ PostHog evals against `$ai_generation`, then filter/break down by
 **Creem** (when pricing is on): set `PUBLIC_CREEM_PRODUCT_PRO` (public product
 id) plus the Convex secrets `CREEM_API_KEY`, `CREEM_WEBHOOK_SECRET`, and
 `CREEM_SUCCESS_URL`. Point a Creem webhook at
-`<VITE_CONVEX_SITE_URL>/creem/webhook`.
+`<VITE_CONVEX_SITE_URL>/creem/webhook`. Also set `CREEM_PRO_PRODUCT_IDS` in
+Convex (comma-separated) to the product id(s) that grant Pro — this is the
+server-side allowlist: checkout rejects any product not in it, and a webhook
+event for a non-allowlisted product can never grant Pro.
 
 **Hosted voice** (Pro tier): set `VOICE_OPENAI_API_KEY` in Convex, optionally
 `VOICE_OPENAI_MODEL` (defaults to `gpt-4o-mini-tts`) and `VOICE_OPENAI_VOICE`

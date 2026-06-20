@@ -31,9 +31,8 @@ export interface AuthState {
   provider?: "convex" | "atproto";
 }
 
-export const AuthContext = createContextId<Signal<AuthState>>(
-  "twyne.auth-context",
-);
+export const AuthContext =
+  createContextId<Signal<AuthState>>("twyne.auth-context");
 
 export function useAuth(): Signal<AuthState> {
   return useContext(AuthContext);
@@ -78,7 +77,7 @@ export const AuthProvider = component$(() => {
       return;
     }
 
-    function syncFromAtom() {
+    async function syncFromAtom() {
       const val = sessionAtom.get?.() ?? sessionAtom;
       const sessionData = val?.data;
 
@@ -89,23 +88,38 @@ export const AuthProvider = component$(() => {
           name: sessionData.user.name ?? undefined,
           image: sessionData.user.image ?? undefined,
         };
-        authState.value = { user, loading: false, provider: "convex" };
         if (convexClient.value) {
+          try {
+            const tokenResult = await (authClient as any).convex.token({
+              fetchOptions: { throw: false },
+            });
+            const token = tokenResult?.data?.token as string | undefined;
+            if (token) convexClient.value.setAuth(async () => token);
+            else convexClient.value.setAuth(async () => null);
+          } catch {
+            convexClient.value.setAuth(async () => null);
+          }
           setConvexSyncContext(convexClient.value, user.id);
         } else {
           clearConvexSyncContext();
         }
+        authState.value = { user, loading: false, provider: "convex" };
       } else {
         authState.value = { user: null, loading: val?.isPending ?? false };
+        try {
+          convexClient.value?.setAuth(async () => null);
+        } catch {
+          // The client may not have installed an auth token yet.
+        }
         clearConvexSyncContext();
       }
     }
 
-    syncFromAtom();
+    void syncFromAtom();
 
     if (typeof sessionAtom.subscribe === "function") {
       const unsub = sessionAtom.subscribe(() => {
-        syncFromAtom();
+        void syncFromAtom();
       });
       cleanup(() => {
         unsub();

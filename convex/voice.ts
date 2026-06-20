@@ -3,6 +3,8 @@
 import { action } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
+import { isProSubscription } from "./lib/entitlement";
 
 const OPENAI_AUDIO_BASE = "https://api.openai.com/v1";
 const MAX_SPEECH_CHARS = 4096;
@@ -28,6 +30,15 @@ export const synthesizeSpeech = action({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
+
+    // Rate limit: each synthesis is a paid OpenAI call. 20 per minute per
+    // user is well above any real reading flow, and stops abuse of the
+    // hosted key.
+    await consumeRateLimit(ctx, {
+      action: "voice:synthesize",
+      identifier: identity.tokenIdentifier,
+      ...RATE_LIMITS.voiceSynthesize,
+    });
 
     const subscription = await ctx.runQuery(
       internal.payments.getSubscriptionByUserId,
@@ -81,10 +92,6 @@ export const synthesizeSpeech = action({
     };
   },
 });
-
-function isProSubscription(row: { status?: string } | null): boolean {
-  return row?.status === "active" || row?.status === "trialing";
-}
 
 function clampSpeed(speed: number): number {
   if (!Number.isFinite(speed)) return 1;
