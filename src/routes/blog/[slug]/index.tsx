@@ -1,10 +1,9 @@
 /**
  * The blog post reader. Public — anyone with a URL can read.
- * Mirrors `/p/[slug]` (the share view) but is scoped to admin
- * "blog" pieces. Non-admin pieces are still readable at
- * `/p/[slug]`; the blog reader 404s for non-blog kinds, so a
- * writer's personal share link never accidentally surfaces on
- * `/blog`.
+ * Scoped to admin "blog" pieces. Non-admin pieces are readable at the
+ * writer's own /<handle>/<slug> URL; the blog reader 404s for non-blog
+ * kinds, so a writer's personal share link never accidentally surfaces
+ * on /blog.
  */
 
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";

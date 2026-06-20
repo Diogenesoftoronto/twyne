@@ -34,7 +34,11 @@ export const AuthPanel = component$(() => {
 
   const store = useStore({
     step: 1 as 1 | 2,
+    /** "signin" for returning visitors (default), "signup" for new accounts. */
+    mode: "signin" as "signin" | "signup",
     email: "",
+    /** Bluesky handle (e.g. `alice.bsky.social`) for the atproto sign-in path. */
+    bskyHandle: "",
     /** Which key the user is on. `null` means "decide based on memory". */
     chosen: null as SignInMethod | null,
     /** Whether we've already sent an OTP for this email in this session. */
@@ -43,6 +47,7 @@ export const AuthPanel = component$(() => {
     sendingOtp: false,
     verifyingOtp: false,
     usingPasskey: false,
+    usingBluesky: false,
     /** Once we've completed sign-in, surface a one-time prompt to add a passkey. */
     offerPasskey: false,
     addingPasskey: false,
@@ -147,7 +152,7 @@ export const AuthPanel = component$(() => {
     store.verifyingOtp = true;
     store.error = null;
     try {
-      const result = await emailOtp.verifyEmail({
+      const result = await (authClient.signIn as any).emailOtp({
         email: store.email,
         otp: store.otpCode,
       });
@@ -205,11 +210,61 @@ export const AuthPanel = component$(() => {
 
   const handleBlueskySignIn = $(async () => {
     store.error = null;
+    const handle = store.bskyHandle.trim();
+    if (!handle) {
+      store.error = "Add your Bluesky handle (e.g. alice.bsky.social) first.";
+      return;
+    }
+    store.usingBluesky = true;
     try {
       // Redirects to the Bluesky consent screen and completes on return.
-      await signInWithBluesky();
+      await signInWithBluesky(handle);
     } catch (e: any) {
       store.error = e?.message ?? "Bluesky sign in failed";
+      store.usingBluesky = false;
+    }
+  });
+
+  /**
+   * Passkey sign-up: we verify the email with a one-time code first, then
+   * register a passkey against the resulting authenticated session.
+   *
+   * Passkey registration is bound to the signed-in user (the server requires
+   * a session before `addPasskey` — see `registration.requireSession` in
+   * convex/auth.ts). So we never hand the passkey plugin a bare email to
+   * resolve into an existing account; the email is OTP-verified up front,
+   * which both creates the account and opens the session, and the post-verify
+   * "Add a passkey?" offer does the actual WebAuthn registration.
+   */
+  const handlePasskeySignUp = $(async () => {
+    store.error = null;
+    const email = store.email.trim();
+    if (!email || !email.includes("@")) {
+      store.error =
+        "Add an email first — we'll verify it, then register this device as a passkey.";
+      return;
+    }
+    store.usingPasskey = true;
+    try {
+      const result = await emailOtp.sendVerificationOtp({
+        email,
+        type: "sign-in",
+      });
+      if (result?.error) {
+        store.error = result.error.message ?? "Failed to send the code";
+        return;
+      }
+      // Hand off to the OTP step. On successful verification the existing
+      // machinery surfaces the "Add a passkey?" offer (session-bound, safe).
+      store.chosen = "otp";
+      store.otpSent = true;
+      store.otpCode = "";
+      store.offerPasskey = false;
+      store.step = 2;
+    } catch (e: any) {
+      store.error = e?.message ?? "Could not start passkey sign-up";
+    } finally {
+      store.usingPasskey = false;
     }
   });
 
@@ -239,7 +294,9 @@ export const AuthPanel = component$(() => {
   });
 
   if (auth.value.loading) {
-    return <AuthShellFrame header="The Editor's Office">…loading…</AuthShellFrame>;
+    return (
+      <AuthShellFrame header="The Editor's Office">…loading…</AuthShellFrame>
+    );
   }
 
   if (auth.value.user) {
@@ -250,14 +307,17 @@ export const AuthPanel = component$(() => {
           step={2}
           progress="One more thing"
         >
-          <SignedInHeader email={auth.value.user.email} onSignOut$={handleSignOut} />
+          <SignedInHeader
+            email={auth.value.user.email}
+            onSignOut$={handleSignOut}
+          />
           <p
             class="mt-3 text-[13px] leading-5 text-[var(--color-ink-light)]"
             style="font-family: var(--font-serif); font-style: italic;"
           >
-            A passkey lets you sign back in with a tap — no email code to
-            wait for. We'll register this device; you can add more from
-            Settings later.
+            A passkey lets you sign back in with a tap — no email code to wait
+            for. We'll register this device; you can add more from Settings
+            later.
           </p>
           {store.error && (
             <p class="error-slip mt-4" role="alert">
@@ -286,21 +346,29 @@ export const AuthPanel = component$(() => {
     }
     return (
       <AuthShellFrame header="The Editor's Office">
-        <SignedInHeader email={auth.value.user.email} onSignOut$={handleSignOut} />
+        <SignedInHeader
+          email={auth.value.user.email}
+          onSignOut$={handleSignOut}
+        />
       </AuthShellFrame>
     );
   }
 
   // ── Step I — The Email ──────────────────────────────────────
   if (store.step === 1) {
+    const isSignUp = store.mode === "signup";
     return (
       <AuthShellFrame
         header="The Editor's Office"
         step={1}
         progress="Step 1 of 2"
         department="Dept. of the Byline"
-        question="What's your email?"
-        hint="We'll send a one-time code or call up your passkey — whichever fits."
+        question={isSignUp ? "Let's open your account." : "What's your email?"}
+        hint={
+          isSignUp
+            ? "Pick a method below — you can add others later from Settings."
+            : "We'll send a one-time code or call up your passkey — whichever fits."
+        }
       >
         {store.error && (
           <p class="error-slip" role="alert">
@@ -314,7 +382,9 @@ export const AuthPanel = component$(() => {
         >
           <div>
             <label class="field-label" for="auth-step-email">
-              Email address
+              {isSignUp
+                ? "Email address (optional but recommended)"
+                : "Email address"}
             </label>
             <input
               id="auth-step-email"
@@ -332,31 +402,152 @@ export const AuthPanel = component$(() => {
           </div>
           <button
             type="submit"
-            disabled={!store.email.trim()}
+            disabled={!store.email.trim() || store.sendingOtp}
             class="btn-press w-full"
           >
-            Continue →
+            {isSignUp ? "Create account →" : "Continue →"}
           </button>
         </form>
 
-        <div class="ornament-divider mt-5">
-          <span style="font-family: var(--font-display);">❦</span>
-        </div>
+        {isSignUp ? (
+          <>
+            <div class="ornament-divider mt-5">
+              <span style="font-family: var(--font-display);">❦</span>
+            </div>
 
-        <p
-          class="mt-4 text-center text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]"
-          style="font-family: var(--font-typewriter);"
-        >
-          or bring your own byline
-        </p>
-        <button
-          type="button"
-          onClick$={handleBlueskySignIn}
-          class="btn-paper mt-2 w-full"
-          title="Sign in with your Bluesky / ATProto account"
-        >
-          Continue with Bluesky
-        </button>
+            <p
+              class="mt-4 text-center text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]"
+              style="font-family: var(--font-typewriter);"
+            >
+              or skip the code
+            </p>
+            <div class="mt-2 space-y-2">
+              <button
+                type="button"
+                onClick$={handlePasskeySignUp}
+                disabled={store.usingPasskey}
+                class="btn-paper w-full"
+                title="Create an account using a passkey on this device"
+              >
+                {store.usingPasskey
+                  ? "Setting up your passkey…"
+                  : "Create account with passkey"}
+              </button>
+
+              <label class="field-label sr-only" for="auth-bsky-handle">
+                Bluesky handle
+              </label>
+              <input
+                id="auth-bsky-handle"
+                type="text"
+                inputMode="text"
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellcheck={false}
+                value={store.bskyHandle}
+                onInput$={(e) => {
+                  store.bskyHandle = (e.target as HTMLInputElement).value;
+                }}
+                placeholder="alice.bsky.social"
+                class="field-input"
+                style="font-family: var(--font-display); font-size: 1rem; font-weight: 500;"
+              />
+              <button
+                type="button"
+                onClick$={handleBlueskySignIn}
+                disabled={!store.bskyHandle.trim() || store.usingBluesky}
+                class="btn-paper w-full"
+                title="Create an account with your Bluesky / ATProto identity"
+              >
+                {store.usingBluesky
+                  ? "Redirecting…"
+                  : "Create account with Bluesky"}
+              </button>
+            </div>
+
+            <p
+              class="mt-4 text-center text-[12px] text-[var(--color-ink-muted)]"
+              style="font-family: var(--font-serif); font-style: italic;"
+            >
+              Already have an account?{" "}
+              <button
+                type="button"
+                onClick$={() => {
+                  store.mode = "signin";
+                  store.error = null;
+                }}
+                class="text-[var(--color-vermilion)] underline underline-offset-2 hover:text-[var(--color-vermilion-2)]"
+                style="font-family: var(--font-serif); font-style: italic;"
+              >
+                Sign in instead
+              </button>
+              .
+            </p>
+          </>
+        ) : (
+          <>
+            <div class="ornament-divider mt-5">
+              <span style="font-family: var(--font-display);">❦</span>
+            </div>
+
+            <p
+              class="mt-4 text-center text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]"
+              style="font-family: var(--font-typewriter);"
+            >
+              or bring your own byline
+            </p>
+            <div class="mt-2 space-y-2">
+              <label class="field-label sr-only" for="auth-bsky-handle">
+                Bluesky handle
+              </label>
+              <input
+                id="auth-bsky-handle"
+                type="text"
+                inputMode="text"
+                autoComplete="off"
+                autoCapitalize="off"
+                autoCorrect="off"
+                spellcheck={false}
+                value={store.bskyHandle}
+                onInput$={(e) => {
+                  store.bskyHandle = (e.target as HTMLInputElement).value;
+                }}
+                placeholder="alice.bsky.social"
+                class="field-input"
+                style="font-family: var(--font-display); font-size: 1rem; font-weight: 500;"
+              />
+              <button
+                type="button"
+                onClick$={handleBlueskySignIn}
+                disabled={!store.bskyHandle.trim() || store.usingBluesky}
+                class="btn-paper w-full"
+                title="Sign in with your Bluesky / ATProto account"
+              >
+                {store.usingBluesky ? "Redirecting…" : "Continue with Bluesky"}
+              </button>
+            </div>
+
+            <p
+              class="mt-4 text-center text-[12px] text-[var(--color-ink-muted)]"
+              style="font-family: var(--font-serif); font-style: italic;"
+            >
+              New to Twyne?{" "}
+              <button
+                type="button"
+                onClick$={() => {
+                  store.mode = "signup";
+                  store.error = null;
+                }}
+                class="text-[var(--color-vermilion)] underline underline-offset-2 hover:text-[var(--color-vermilion-2)]"
+                style="font-family: var(--font-serif); font-style: italic;"
+              >
+                Create an account
+              </button>
+              .
+            </p>
+          </>
+        )}
       </AuthShellFrame>
     );
   }

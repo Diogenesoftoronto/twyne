@@ -20,11 +20,13 @@ import {
 import { useAuth } from "../../utils/auth-context";
 import { clearUserComments } from "../../utils/user-comments";
 import { TwyneEditor } from "../../components/editor/twyne-editor";
+import { ShareDialog } from "../../components/collaboration/share-dialog";
 import { PersonasPanel } from "../../components/personas/personas-panel";
 import { RubricPanel } from "../../components/rubric/rubric-panel";
 import { CommentsPanel } from "../../components/comments/comments-panel";
 import { CitationsPanel } from "../../components/citations/citations-panel";
 import { useConvexClient } from "../../utils/convex-context";
+import { api } from "../../../convex/_generated/api";
 import {
   startBackgroundResearch,
   stopBackgroundResearch,
@@ -63,6 +65,12 @@ interface LayoutStore {
   confirmNukeOpen: boolean;
   /** Whether the "you're working locally" sign-in nudge has been dismissed. */
   signInToastDismissed: boolean;
+  /** When set, the editor joins a multiplayer session. */
+  sharedLixId: string | null;
+  /** True while joining a shared document is in progress. */
+  joiningShared: boolean;
+  /** Error message if joining failed. */
+  joinError: string | null;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -135,6 +143,9 @@ export default component$(() => {
     confirmNukeOpen: false,
     // Default true to avoid a flash before the meta flag loads.
     signInToastDismissed: true,
+    sharedLixId: null,
+    joiningShared: false,
+    joinError: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -185,6 +196,42 @@ export default component$(() => {
       // Arriving from the landing "Sign in" link → open the auth panel.
       if (new URLSearchParams(window.location.search).get("auth") === "1") {
         store.authOpen = true;
+      }
+
+      // Arriving via a shared-document invite link (?shared=<lixId>).
+      const sharedId = new URLSearchParams(window.location.search).get(
+        "shared",
+      );
+      if (sharedId && clientSig.value && auth.value.user) {
+        store.joiningShared = true;
+        store.joinError = null;
+        try {
+          const client = clientSig.value;
+          // Accept pending invitation for this lixId (no-op if none).
+          try {
+            await client.mutation(api.collaboration.acceptInvitation, {
+              lixId: sharedId,
+            });
+          } catch {
+            // May have already accepted, or no pending invite — that's fine.
+          }
+          const meta = await client.query(api.collaboration.getSharedLixMeta, {
+            lixId: sharedId,
+          });
+          if (meta) {
+            const { joinSharedLix } = await import("../../utils/collaboration");
+            await joinSharedLix(client, sharedId);
+            store.sharedLixId = sharedId;
+            store.activeFolioId = meta.folioId;
+            store.editorSeed = "";
+          } else {
+            store.joinError = "You don't have access to this document.";
+          }
+        } catch (e: any) {
+          store.joinError = e?.message ?? "Could not join the shared document.";
+        } finally {
+          store.joiningShared = false;
+        }
       }
     })();
 
@@ -746,6 +793,18 @@ export default component$(() => {
                       ?.footer
                   }
                 />
+                {store.activeFolioId && auth.value.user && (
+                  <ShareDialog
+                    folioId={store.activeFolioId}
+                    folioName={
+                      store.folios.find((f) => f.id === store.activeFolioId)
+                        ?.name ?? "Untitled"
+                    }
+                    onShared$={$((lixId: string) => {
+                      store.sharedLixId = lixId;
+                    })}
+                  />
+                )}
                 <div class="relative">
                   <button
                     onClick$={() => {
@@ -792,7 +851,7 @@ export default component$(() => {
                             store.authOpen = false;
                           }}
                         >
-                          📖 The Manual
+                          ❦ The Manual
                         </Link>
                       </div>
                       <AuthPanel />
@@ -836,6 +895,7 @@ export default component$(() => {
               <TwyneEditor
                 initialContent={store.editorSeed}
                 activeFolioId={store.activeFolioId ?? undefined}
+                sharedLixId={store.sharedLixId ?? undefined}
               />
             </div>
 

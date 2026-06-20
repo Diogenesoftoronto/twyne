@@ -40,6 +40,8 @@ import {
   MIN_MARKUP_WORDS,
   MIN_RUBRIC_WORDS,
 } from "../src/utils/draft-thresholds";
+import { userIsPro } from "./lib/entitlement";
+import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 
 /* ── Provider selection ─────────────────────────────────────────── */
 
@@ -54,7 +56,7 @@ function pickProvider(): ProviderConfig | null {
   const rivetUrl = process.env.RIVET_ENDPOINT;
   const rivetToken = process.env.RIVET_TOKEN;
   if (rivetUrl) {
-    const modelId = process.env.RIVET_MODEL ?? "anthropic/claude-sonnet-4-5";
+    const modelId = process.env.RIVET_MODEL ?? "anthropic/claude-sonnet-4-6";
     const rivet = createOpenAI({
       baseURL: rivetUrl.replace(/\/$/, "") + "/v1",
       apiKey: rivetToken ?? "rivet-anonymous",
@@ -84,7 +86,7 @@ function pickProvider(): ProviderConfig | null {
   }
 
   if (process.env.ANTHROPIC_API_KEY) {
-    const modelId = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-5";
+    const modelId = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
     return {
       model: anthropic(modelId),
       label: "anthropic",
@@ -93,7 +95,7 @@ function pickProvider(): ProviderConfig | null {
   }
 
   if (process.env.OPENAI_API_KEY) {
-    const modelId = process.env.OPENAI_MODEL ?? "gpt-4o";
+    const modelId = process.env.OPENAI_MODEL ?? "gpt-5.5";
     return {
       model: openai(modelId),
       label: "openai",
@@ -219,6 +221,10 @@ const briefValidator = v.union(v.null(), v.any());
  * Run a single persona agent. Returns the agent's note and metadata.
  * Falls back to the local generator if no provider is configured or the
  * remote call fails — the room never breaks entirely.
+ *
+ * Security: the hosted LLM (the part that spends provider keys) is gated on
+ * a signed-in Pro subscriber. Anonymous and free callers get the local
+ * generator so the endpoint can't be used to consume keys without an account.
  */
 export const runPersona = action({
   args: {
@@ -244,7 +250,19 @@ export const runPersona = action({
       ),
     ),
   },
-  handler: async (_ctx, args): Promise<AgentResponse> => {
+  handler: async (ctx, args): Promise<AgentResponse> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+
+    // Rate limit on the host-provider path only — the local generator is
+    // free, but we gate all calls so a noisy client can't bypass with a
+    // draft that's just above MIN_EDITOR_WORDS.
+    await consumeRateLimit(ctx, {
+      action: "agent:feedback",
+      identifier: identity.tokenIdentifier,
+      ...RATE_LIMITS.agentFeedback,
+    });
+
     const req: AgentRequest = {
       persona: args.persona as AgentPersona,
       brief: (args.brief ?? null) as ProjectBrief | null,
@@ -257,7 +275,9 @@ export const runPersona = action({
     if (countWords(req.draftText) < MIN_EDITOR_WORDS) {
       return generateLocalFeedback(req);
     }
-    return runWithFallback(req);
+    const canHost =
+      !!pickProvider() && (await userIsPro(ctx, identity.tokenIdentifier));
+    return runWithFallback(req, canHost);
   },
 });
 
@@ -329,13 +349,24 @@ export const suggestRewrite = action({
     original: v.string(),
     level: v.union(v.literal("sentence"), v.literal("paragraph")),
   },
-  handler: async (_ctx, args): Promise<RewriteResult> => {
+  handler: async (ctx, args): Promise<RewriteResult> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+
+    // Rate limit: the markup pass fans this out once per target span, so
+    // we allow a higher budget than the single-shot feedback path.
+    await consumeRateLimit(ctx, {
+      action: "agent:rewrite",
+      identifier: identity.tokenIdentifier,
+      ...RATE_LIMITS.agentRewrite,
+    });
+
     const persona = args.persona as AgentPersona;
     if (countWords(args.draftText) < MIN_MARKUP_WORDS) {
       return { ...localRewrite(persona, args.original), provider: "local" };
     }
     const provider = pickProvider();
-    if (!provider)
+    if (!provider || !(await userIsPro(ctx, identity.tokenIdentifier)))
       return { ...localRewrite(persona, args.original), provider: "local" };
 
     const system = buildSystemPrompt(persona);
@@ -422,10 +453,24 @@ export const conveneRoom = action({
     draftText: v.string(),
     anchors: v.optional(v.record(v.string(), v.string())),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+    // Rate limit: convene fans out to one LLM call per persona, making it
+    // one of the most expensive endpoints.
+    await consumeRateLimit(ctx, {
+      action: "agent:room",
+      identifier: identity.tokenIdentifier,
+      ...RATE_LIMITS.agentRoom,
+    });
     const provider = pickProvider();
     const brief = (args.brief ?? null) as ProjectBrief | null;
-    if (countWords(args.draftText) < MIN_EDITOR_WORDS) {
+    const short = countWords(args.draftText) < MIN_EDITOR_WORDS;
+    // Hosted LLM (key-consuming) only for Pro subscribers; otherwise every
+    // persona falls back to the local generator, but the room still runs.
+    const canHost =
+      !short && !!provider && (await userIsPro(ctx, identity.tokenIdentifier));
+    if (short) {
       return args.personas.map((pRaw) => {
         const persona = pRaw as AgentPersona;
         return {
@@ -452,8 +497,8 @@ export const conveneRoom = action({
         instruction: "feedback",
       };
       try {
-        if (provider) {
-          return await runLlm(provider, req);
+        if (canHost) {
+          return await runLlm(provider!, req);
         }
       } catch (err) {
         console.error(
@@ -483,7 +528,9 @@ export const judgeDraft = action({
     brief: briefValidator,
     draftText: v.string(),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
     const persona = args.persona as AgentPersona;
     const brief = (args.brief ?? null) as ProjectBrief | null;
     const provider = pickProvider();
@@ -491,7 +538,7 @@ export const judgeDraft = action({
       return localJudge(persona, brief, args.draftText);
     }
 
-    if (!provider) {
+    if (!provider || !(await userIsPro(ctx, identity.tokenIdentifier))) {
       return localJudge(persona, brief, args.draftText);
     }
 
@@ -560,9 +607,15 @@ export const judgeRoom = action({
     brief: briefValidator,
     draftText: v.string(),
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
     const brief = (args.brief ?? null) as ProjectBrief | null;
-    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+    const canHost =
+      countWords(args.draftText) >= MIN_RUBRIC_WORDS &&
+      !!pickProvider() &&
+      (await userIsPro(ctx, identity.tokenIdentifier));
+    if (!canHost) {
       return args.personas.map((p) => {
         const persona = p as AgentPersona;
         return {
@@ -645,9 +698,12 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
-async function runWithFallback(req: AgentRequest): Promise<AgentResponse> {
+async function runWithFallback(
+  req: AgentRequest,
+  canUseHosted: boolean,
+): Promise<AgentResponse> {
   const provider = pickProvider();
-  if (provider) {
+  if (provider && canUseHosted) {
     try {
       return await runLlm(
         provider,

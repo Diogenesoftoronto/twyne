@@ -92,6 +92,21 @@ async function readActiveFolioHtml(
   return "";
 }
 
+/**
+ * Compose the public reader URL for a published piece. Uses the first-class
+ * /<handle>/<slug> shape. Returns null when the writer hasn't claimed a
+ * handle yet — the caller surfaces a "claim a handle" prompt in that case.
+ */
+function shareUrlFor(
+  ownerHandle: string | null | undefined,
+  slug: string,
+): string | null {
+  if (!ownerHandle) return null;
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "";
+  return `${origin}/${ownerHandle}/${slug}`;
+}
+
 export const FolioMenu = component$<FolioMenuProps>((props) => {
   const auth = useAuth();
   const clientSig = useConvexClient();
@@ -151,12 +166,13 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     try {
       const mine = (await client.query(api.published.listMine, {})) as Array<{
         slug: string;
+        ownerHandle: string | null;
         folioId: string;
       }>;
       const existing = mine.find((m) => m.folioId === props.activeFolioId);
       if (existing) {
         shareSlug.value = existing.slug;
-        shareUrl.value = `${window.location.origin}/p/${existing.slug}`;
+        shareUrl.value = shareUrlFor(existing.ownerHandle, existing.slug);
       } else {
         shareSlug.value = null;
         shareUrl.value = null;
@@ -265,15 +281,24 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         kind: isAdmin ? "blog" : "post",
       })) as {
         slug: string;
+        ownerHandle: string | null;
         kind: "post" | "blog";
         requestedBlog: boolean;
       };
       shareSlug.value = result.slug;
-      // Admin publishes point at the blog; everyone else's
-      // private share URL keeps its existing form.
+      // Admin publishes land on the blog feed; everyone else gets a
+      // share URL using their claimed handle. A writer without a
+      // claimed handle is prompted to claim one in Settings — the
+      // piece is still published and readable at the handle-less URL
+      // once they claim one (the server denormalizes ownerHandle on
+      // the next publish or via claimHandle's backfill).
       shareUrl.value = isAdmin
         ? `${window.location.origin}/blog/${result.slug}`
-        : `${window.location.origin}/p/${result.slug}`;
+        : shareUrlFor(result.ownerHandle, result.slug);
+      if (!isAdmin && !result.ownerHandle) {
+        shareError.value =
+          "Published — claim a writer handle in Settings to get your share URL.";
+      }
       if (result.requestedBlog && !isAdmin) {
         shareError.value =
           "You're not in the blog roster — published as a private share instead.";

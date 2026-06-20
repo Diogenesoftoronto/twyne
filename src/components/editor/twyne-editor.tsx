@@ -53,7 +53,16 @@ import { CommentMark } from "./extensions/comment-mark";
 import { PersonaNoteMark } from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
 import { MermaidDiagram } from "./extensions/mermaid-node";
+import { RemoteCursors } from "./extensions/remote-cursors";
+import { type RemoteCursor } from "./extensions/remote-cursors";
 import { SyncDot, LastSavedLine } from "./sync-indicator";
+import {
+  startPresence,
+  stopPresence,
+  updateCursor,
+  watchRemoteChanges,
+  stopWatchingRemote,
+} from "../../utils/collaboration";
 import mermaid from "mermaid";
 import {
   syncDraftToLix,
@@ -160,6 +169,8 @@ interface TwyneEditorProps {
   activeFolio?: Folio | null;
   /** The current project brief — used to derive running-header metadata. */
   brief?: import("../../types").ProjectBrief | null;
+  /** When set, the editor joins a multiplayer session (presence + remote cursors + sync). */
+  sharedLixId?: string;
 }
 
 export const TwyneEditor = component$(
@@ -168,6 +179,7 @@ export const TwyneEditor = component$(
     activeFolioId,
     activeFolio,
     brief,
+    sharedLixId,
   }: TwyneEditorProps) => {
     const clientSig = useConvexClient();
     const store = useStore<EditorStore>({
@@ -331,6 +343,7 @@ export const TwyneEditor = component$(
             PersonaNoteMark,
             SuggestionMark,
             MermaidDiagram,
+            RemoteCursors.configure({ cursors: [] }),
           ],
           content: initialContent,
           editorProps: {
@@ -451,6 +464,51 @@ export const TwyneEditor = component$(
         };
         renderMermaid();
         editor.on("update", renderMermaid);
+
+        // ── Multiplayer: presence + remote cursors + remote content sync ──
+        if (sharedLixId && clientSig.value) {
+          const mpClient = clientSig.value;
+          const folioForSync = activeFolioId ?? "";
+
+          startPresence(mpClient, sharedLixId);
+          watchRemoteChanges(editor, folioForSync);
+
+          // Report local cursor + selection to the presence layer.
+          const reportCursor = () => {
+            const { from, to } = editor.state.selection;
+            updateCursor(
+              mpClient,
+              from,
+              from !== to ? from : undefined,
+              from !== to ? to : undefined,
+            );
+          };
+          editor.on("selectionUpdate", reportCursor);
+
+          // Poll presence → update remote cursor decorations.
+          const pollPresence = async () => {
+            try {
+              const presence = (await mpClient.query(
+                api.collaboration.getPresence,
+                { lixId: sharedLixId },
+              )) as RemoteCursor[];
+              editor.commands.setRemoteCursors(presence);
+            } catch {
+              // best-effort
+            }
+          };
+          void pollPresence();
+          const presenceTimer = setInterval(pollPresence, 3000);
+
+          // Cleanup
+          const origDestroy = editor.destroy.bind(editor);
+          editor.destroy = () => {
+            clearInterval(presenceTimer);
+            stopPresence();
+            stopWatchingRemote();
+            origDestroy();
+          };
+        }
 
         // Build a persona-note popover, anchored near its sentence but always
         // kept fully inside the viewport (it prefers below, flips above when

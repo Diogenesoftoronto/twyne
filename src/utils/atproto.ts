@@ -108,10 +108,19 @@ export async function initSession(): Promise<AtprotoSession | null> {
   }
 }
 
-/** Redirects the browser to the Bluesky consent screen. Never returns. */
-export async function signInWithBluesky(handle?: string): Promise<void> {
+/**
+ * Redirects the browser to the Bluesky consent screen. Never returns.
+ * @param handle  The user's full Bluesky handle (e.g. `alice.bsky.social`)
+ *                or a DID. Required — the public PDS host (`bsky.social`)
+ *                is not a valid identifier and will fail to resolve.
+ */
+export async function signInWithBluesky(handle: string): Promise<void> {
+  const trimmed = handle?.trim();
+  if (!trimmed) {
+    throw new Error("Add your Bluesky handle (e.g. alice.bsky.social) first.");
+  }
   const client = await getOAuthClient();
-  await client.signIn(handle?.trim() || "bsky.social");
+  await client.signIn(trimmed);
 }
 
 /** Revoke the active session and clear local state. */
