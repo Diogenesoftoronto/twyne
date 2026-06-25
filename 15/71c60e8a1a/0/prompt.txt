@@ -1,9 +1,1 @@
-Hey two thingsm, i should be able to go to either twyne.love, or www.twyne.love and get the same sign in, so for those two domains enable sign in make sure convex is configured with those in mind. also second things and this is even more important I think, the thing that  i want is that when you  sign in with a a bluesky account it just redirected me to the main page, but i don't see any signed in state at all, so I need some sort of UI to show the user A.  that the sign in happened succesfully if it did, and B. that the application home page should reflect that, redirecting me to the main page makes little sense after the sign in, it should send me to the rest of the onboarding flow, that is either into a document if i was already finished onboarding dossier, or into the dossier interview if i was not. remember this is flow  that i have for signing in with atproto.
-
----
-
-does this support any pds? or just the ones in bsky?
-
----
-
-add a little tool tip for other pdses or subtext to show that those are supported
+git commit and push changes
