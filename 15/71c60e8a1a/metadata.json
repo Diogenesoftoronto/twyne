@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "1571c60e8a1a",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "convex/auth.ts",
+    "src/components/auth/auth-panel.tsx",
+    "src/routes/auth/callback/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/index.tsx",
+    "src/routes/oauth-client-metadata.json/index.ts",
+    "src/utils/atproto.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/15/71c60e8a1a/0/metadata.json",
+      "transcript": "/15/71c60e8a1a/0/full.jsonl",
+      "content_hash": "/15/71c60e8a1a/0/content_hash.txt",
+      "prompt": "/15/71c60e8a1a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 574358,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 8163200,
+    "output_tokens": 29690,
+    "api_call_count": 57
+  }
+}
