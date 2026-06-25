@@ -19,10 +19,9 @@ import type { Agent } from "@atproto/api";
  * later version upload cover images.
  */
 export const SCOPE = "atproto blob:image/* include:site.standard.authFull";
+export const AUTH_CALLBACK_PATH = "/auth/callback/";
 
 const HANDLE_RESOLVER = "https://bsky.social";
-const PROD_HOSTS = new Set(["twyne.love", "www.twyne.love"]);
-const PROD_ORIGIN = "https://www.twyne.love";
 
 export interface AtprotoSession {
   did: string;
@@ -41,8 +40,11 @@ function isLoopback(): boolean {
 }
 
 function oauthOrigin(): string {
-  if (PROD_HOSTS.has(window.location.hostname)) return PROD_ORIGIN;
   return window.location.origin;
+}
+
+function oauthCallbackUrl(): string {
+  return `${oauthOrigin()}${AUTH_CALLBACK_PATH}`;
 }
 
 // Module-level cache: build the client once per page.
@@ -64,7 +66,7 @@ async function getOAuthClient(): Promise<any> {
       );
       // The loopback client id encodes the redirect + scope in its query.
       const clientId = `http://localhost?redirect_uri=${encodeURIComponent(
-        `${origin}/`,
+        oauthCallbackUrl(),
       )}&scope=${encodeURIComponent(SCOPE)}`;
       return new BrowserOAuthClient({
         handleResolver: HANDLE_RESOLVER,
@@ -120,7 +122,7 @@ export async function signInWithBluesky(handle: string): Promise<void> {
     throw new Error("Add your Bluesky handle (e.g. alice.bsky.social) first.");
   }
   const client = await getOAuthClient();
-  await client.signIn(trimmed);
+  await client.signIn(trimmed, { redirect_uri: oauthCallbackUrl() });
 }
 
 /** Revoke the active session and clear local state. */

@@ -4,6 +4,7 @@ import { useNavigate } from "@builder.io/qwik-city";
 import { LandingPage } from "../components/landing/landing-page";
 import type { Folio } from "../types";
 import { loadProjectBrief } from "../utils/anti-tabula-rasa";
+import { useAuth } from "../utils/auth-context";
 import {
   loadFoliosFromIdb,
   saveFoliosToIdb,
@@ -18,18 +19,24 @@ import {
  */
 export default component$(() => {
   const nav = useNavigate();
+  const auth = useAuth();
   const store = useStore<{ checked: boolean; hasBrief: boolean }>({
     checked: false,
     hasBrief: false,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
+  useVisibleTask$(({ track }) => {
+    const loading = track(() => auth.value.loading);
+    const userId = track(() => auth.value.user?.id);
+
+    if (loading) return;
+
     const brief = loadProjectBrief();
     store.hasBrief = brief !== null;
     store.checked = true;
-    if (brief) {
-      window.location.replace("/editor/");
+    if (brief || userId) {
+      window.location.replace(brief ? "/editor/" : "/onboarding/");
     }
   });
 
