@@ -13,6 +13,10 @@ const siteUrl = normalizeOrigin(
     process.env.BETTER_AUTH_URL ??
     "http://localhost:5173",
 );
+const TWYNE_PRODUCTION_ORIGINS = [
+  "https://twyne.love",
+  "https://www.twyne.love",
+] as const;
 const resendFrom =
   process.env.RESEND_FROM_EMAIL ?? "Twyne <support@twyne.love>";
 
@@ -159,11 +163,34 @@ function isLoopbackOrigin(value: string): boolean {
 
 function trustedOrigins(origin: string): string[] {
   const origins = new Set<string>([origin]);
+  if (isTwyneProductionOrigin(origin)) {
+    for (const prodOrigin of TWYNE_PRODUCTION_ORIGINS) {
+      origins.add(prodOrigin);
+    }
+  }
   for (const raw of (process.env.TRUSTED_ORIGINS ?? "").split(",")) {
     const trimmed = raw.trim();
-    if (trimmed) origins.add(normalizeOrigin(trimmed));
+    if (!trimmed) continue;
+    const normalized = normalizeOrigin(trimmed);
+    origins.add(normalized);
+    if (
+      isTwyneProductionOrigin(trimmed) ||
+      isTwyneProductionOrigin(normalized)
+    ) {
+      for (const prodOrigin of TWYNE_PRODUCTION_ORIGINS) {
+        origins.add(prodOrigin);
+      }
+    }
   }
-  if (origin === "https://twyne.love") origins.add("https://www.twyne.love");
-  if (origin === "https://www.twyne.love") origins.add("https://twyne.love");
   return [...origins];
+}
+
+function isTwyneProductionOrigin(value: string): boolean {
+  try {
+    return TWYNE_PRODUCTION_ORIGINS.includes(
+      new URL(value).origin as (typeof TWYNE_PRODUCTION_ORIGINS)[number],
+    );
+  } catch {
+    return false;
+  }
 }

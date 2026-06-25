@@ -37,7 +37,7 @@ export const AuthPanel = component$(() => {
     /** "signin" for returning visitors (default), "signup" for new accounts. */
     mode: "signin" as "signin" | "signup",
     email: "",
-    /** Bluesky handle (e.g. `alice.bsky.social`) for the atproto sign-in path. */
+    /** ATProto identifier, such as a Bluesky handle, DID, or PDS URL. */
     bskyHandle: "",
     /** Which key the user is on. `null` means "decide based on memory". */
     chosen: null as SignInMethod | null,
@@ -212,7 +212,7 @@ export const AuthPanel = component$(() => {
     store.error = null;
     const handle = store.bskyHandle.trim();
     if (!handle) {
-      store.error = "Add your Bluesky handle (e.g. alice.bsky.social) first.";
+      store.error = "Add your Bluesky handle, DID, or PDS URL first.";
       return;
     }
     store.usingBluesky = true;
@@ -434,8 +434,8 @@ export const AuthPanel = component$(() => {
                   : "Create account with passkey"}
               </button>
 
-              <label class="field-label sr-only" for="auth-bsky-handle">
-                Bluesky handle
+              <label class="field-label" for="auth-bsky-handle">
+                Bluesky or PDS identity
               </label>
               <input
                 id="auth-bsky-handle"
@@ -445,24 +445,33 @@ export const AuthPanel = component$(() => {
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellcheck={false}
+                aria-describedby="auth-bsky-help"
                 value={store.bskyHandle}
                 onInput$={(e) => {
                   store.bskyHandle = (e.target as HTMLInputElement).value;
                 }}
-                placeholder="alice.bsky.social"
+                placeholder="alice.bsky.social or https://pds.example.com"
                 class="field-input"
                 style="font-family: var(--font-display); font-size: 1rem; font-weight: 500;"
               />
+              <p
+                id="auth-bsky-help"
+                class="mt-1 text-[12px] leading-5 text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-serif); font-style: italic;"
+              >
+                Self-hosted PDSes work too when they support ATProto OAuth. Use
+                a handle, DID, or PDS URL.
+              </p>
               <button
                 type="button"
                 onClick$={handleBlueskySignIn}
                 disabled={!store.bskyHandle.trim() || store.usingBluesky}
                 class="btn-paper w-full"
-                title="Create an account with your Bluesky / ATProto identity"
+                title="Create an account with your Bluesky or ATProto PDS identity"
               >
                 {store.usingBluesky
                   ? "Redirecting…"
-                  : "Create account with Bluesky"}
+                  : "Create account with ATProto"}
               </button>
             </div>
 
@@ -498,8 +507,8 @@ export const AuthPanel = component$(() => {
               or bring your own byline
             </p>
             <div class="mt-2 space-y-2">
-              <label class="field-label sr-only" for="auth-bsky-handle">
-                Bluesky handle
+              <label class="field-label" for="auth-bsky-handle">
+                Bluesky or PDS identity
               </label>
               <input
                 id="auth-bsky-handle"
@@ -509,22 +518,31 @@ export const AuthPanel = component$(() => {
                 autoCapitalize="off"
                 autoCorrect="off"
                 spellcheck={false}
+                aria-describedby="auth-bsky-help"
                 value={store.bskyHandle}
                 onInput$={(e) => {
                   store.bskyHandle = (e.target as HTMLInputElement).value;
                 }}
-                placeholder="alice.bsky.social"
+                placeholder="alice.bsky.social or https://pds.example.com"
                 class="field-input"
                 style="font-family: var(--font-display); font-size: 1rem; font-weight: 500;"
               />
+              <p
+                id="auth-bsky-help"
+                class="mt-1 text-[12px] leading-5 text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-serif); font-style: italic;"
+              >
+                Self-hosted PDSes work too when they support ATProto OAuth. Use
+                a handle, DID, or PDS URL.
+              </p>
               <button
                 type="button"
                 onClick$={handleBlueskySignIn}
                 disabled={!store.bskyHandle.trim() || store.usingBluesky}
                 class="btn-paper w-full"
-                title="Sign in with your Bluesky / ATProto account"
+                title="Sign in with your Bluesky or ATProto PDS identity"
               >
-                {store.usingBluesky ? "Redirecting…" : "Continue with Bluesky"}
+                {store.usingBluesky ? "Redirecting…" : "Continue with ATProto"}
               </button>
             </div>
 

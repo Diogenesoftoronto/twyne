@@ -373,6 +373,14 @@ export default component$(() => {
       accent: "var(--color-periwinkle)",
     },
   ];
+  const accountDisplay = auth.value.user
+    ? auth.value.provider === "atproto"
+      ? auth.value.user.email
+      : auth.value.user.email || auth.value.user.name || "Signed in"
+    : null;
+  const accountTitle = accountDisplay
+    ? `Signed in as ${accountDisplay}`
+    : "Editor's office";
 
   if (!store.hydrated) {
     return (
@@ -810,12 +818,27 @@ export default component$(() => {
                     onClick$={() => {
                       store.authOpen = !store.authOpen;
                     }}
-                    class="icon-btn p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
-                    title="Editor's office"
-                    aria-label="Open the editor's office (account)"
+                    class={`icon-btn ${
+                      accountDisplay
+                        ? "gap-1.5 border border-[var(--color-sage)] bg-[var(--color-paper-soft)] px-2 py-1.5 text-[var(--color-ink)] hover:text-[var(--color-vermilion)]"
+                        : "p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
+                    }`}
+                    title={accountTitle}
+                    aria-label={
+                      accountDisplay
+                        ? `Open account menu. Signed in as ${accountDisplay}`
+                        : "Open the editor's office (account)"
+                    }
                     aria-expanded={store.authOpen}
                   >
+                    {accountDisplay && (
+                      <span
+                        class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[var(--color-sage)]"
+                        aria-hidden="true"
+                      />
+                    )}
                     <svg
+                      class="flex-shrink-0"
                       width="18"
                       height="18"
                       viewBox="0 0 24 24"
@@ -826,6 +849,14 @@ export default component$(() => {
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
                       <circle cx="12" cy="7" r="4" />
                     </svg>
+                    {accountDisplay && (
+                      <span
+                        class="hidden max-w-[8.5rem] truncate text-[11px] font-semibold lg:inline"
+                        style={{ fontFamily: "var(--font-sans)" }}
+                      >
+                        {accountDisplay}
+                      </span>
+                    )}
                   </button>
                   {store.authOpen && (
                     <div
