@@ -1,0 +1,113 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "db4dffde8fc9",
+  "session_id": "019f0706-4c61-7f73-b227-5f09930c6a12",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-27T08:59:14.250770257Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    ".bumpy/_config.json",
+    ".bumpy/bumpy-release-tooling.md",
+    ".envrc",
+    ".githooks/pre-push",
+    ".github/workflows/release.yml",
+    ".gitignore",
+    "README.md",
+    "bun.lock",
+    "devenv.nix",
+    "package.json",
+    "scripts/install-git-hooks.mjs",
+    "src/components/collaboration/share-dialog.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/global.css",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/exchange.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "3d44edad9c37",
+  "token_usage": {
+    "input_tokens": 191873,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2405888,
+    "output_tokens": 29544,
+    "api_call_count": 45
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-codex-compact-2026-06-27T07:06:55.030517573Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "compact"
+      },
+      "source": {
+        "agent": "codex",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "3d44edad9c37",
+      "timestamp": "2026-06-27T07:06:55.030517573Z",
+      "native": {
+        "command": "/compact"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/compact",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-27T08:59:14.226414495Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 29,
+    "human_removed": 55,
+    "total_committed": 14,
+    "total_lines_changed": 84,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 748,
+      "user_lines_removed": 80,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".envrc": 1,
+        "devenv.nix": 9,
+        "src/components/collaboration/share-dialog.tsx": 22,
+        "src/components/editor/twyne-editor.tsx": 344,
+        "src/components/ui/themed-dialog.tsx": 127,
+        "src/global.css": 125,
+        "src/routes/settings/index.tsx": 68,
+        "src/types/index.ts": 45,
+        "src/utils/exchange.ts": 7
+      },
+      "user_removed_per_file": {
+        "src/components/collaboration/share-dialog.tsx": 3,
+        "src/components/editor/twyne-editor.tsx": 46,
+        "src/global.css": 2,
+        "src/routes/settings/index.tsx": 19,
+        "src/utils/exchange.ts": 10
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 759,
+      "agent_lines_removed": 80
+    }
+  ]
+}

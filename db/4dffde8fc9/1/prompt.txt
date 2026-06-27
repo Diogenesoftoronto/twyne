@@ -1,0 +1,9 @@
+setup the devenv and direnv to work with this repo
+
+---
+
+https://github.com/dmno-dev/bumpy
+
+---
+
+/compact the next thing that should be added is bumpy for the changelog and tagged releases as a githook
