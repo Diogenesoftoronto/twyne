@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*"
+      - "twyne@*"
   workflow_dispatch:
 
 permissions:
@@ -36,6 +37,7 @@ jobs:
       - name: Package release bundle
         run: |
           version="${GITHUB_REF_NAME:-manual}"
+          version="${version#twyne@}"
           mkdir -p release
           tar \
             --exclude="./node_modules" \

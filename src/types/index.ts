@@ -63,16 +63,61 @@ export type DocMargin = "tight" | "normal" | "roomy";
 
 export interface LayoutSettings {
   width: DocWidth;
+  /**
+   * Legacy coarse margin preset. Kept for backward compatibility and used as
+   * the fallback when the numeric margins below are absent. New documents and
+   * the layout sliders write the numeric fields instead.
+   */
   margin: DocMargin;
+  /** Side (left/right) page margin, in rem. Falls back to {@link margin} when undefined. */
+  marginX?: number;
+  /** Top (header) page margin, in rem. */
+  marginTop?: number;
+  /** Bottom (footer) page margin, in rem. */
+  marginBottom?: number;
   /** Show brief title / author / date in the running header (print + reading view). */
   runningHeader: boolean;
   /** Show page numbers in the footer of printed/exported output. */
   pageNumbers: boolean;
 }
 
+/** Side-margin rem values for the legacy coarse {@link DocMargin} presets. */
+export const MARGIN_PRESET_REM: Record<DocMargin, number> = {
+  tight: 1.5,
+  normal: 3,
+  roomy: 5,
+};
+
+/** Allowed slider range (rem) for each adjustable page margin. */
+export const MARGIN_RANGE = {
+  x: { min: 0, max: 8, step: 0.25 },
+  top: { min: 0, max: 8, step: 0.25 },
+  bottom: { min: 0, max: 8, step: 0.25 },
+} as const;
+
+/**
+ * Resolve the effective numeric page margins (in rem) for a layout, applying
+ * sensible fallbacks so documents saved before numeric margins existed still
+ * render correctly.
+ */
+export function resolveMargins(layout: LayoutSettings): {
+  x: number;
+  top: number;
+  bottom: number;
+} {
+  const presetX = MARGIN_PRESET_REM[layout.margin] ?? MARGIN_PRESET_REM.normal;
+  const x = layout.marginX ?? presetX;
+  const top = layout.marginTop ?? (layout.margin === "roomy" ? 5 : 2.5);
+  const bottom = layout.marginBottom ?? (layout.margin === "roomy" ? 5 : 4);
+  return { x, top, bottom };
+}
+
 export const DEFAULT_LAYOUT: LayoutSettings = {
   width: "normal",
   margin: "normal",
+  marginX: 3,
+  marginTop: 2.5,
+  marginBottom: 4,
   runningHeader: false,
   pageNumbers: true,
 };

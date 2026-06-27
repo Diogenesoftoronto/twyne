@@ -1,0 +1,10 @@
+{
+  "$schema": "../node_modules/@varlock/bumpy/config-schema.json",
+  "baseBranch": "main",
+  "changelog": "github",
+  "privatePackages": {
+    "version": true,
+    "tag": true
+  },
+  "versionCommitMessage": "Version Twyne"
+}
