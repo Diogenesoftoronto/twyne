@@ -1,0 +1,1943 @@
+You are analyzing a code repository for potential issues. The repository files are available in /home/diogenes/Projects/twyne.
+
+Assume that a user requested work to be done and a programmer delivered the diff below.
+The changes from the diff are present in the codebase but are not yet committed.
+
+### User request ###
+
+  commit current changes using conventional commits
+
+
+### Diff (lines starting with `-` indicate removed code, and lines starting with `+` indicate added code) ###
+
+  diff --git a/.github/workflows/release.yml b/.github/workflows/release.yml
+  index 1285b128cc5eb34f723b7e0978f00ba3c481d348..3da010849ee15d5467b97b0e14828622a84fce29 100644
+  --- a/.github/workflows/release.yml
+  +++ b/.github/workflows/release.yml
+  @@ -4,6 +4,7 @@ on:
+     push:
+       tags:
+         - "v*"
+  +      - "twyne@*"
+     workflow_dispatch:
+   
+   permissions:
+  @@ -36,6 +37,7 @@ jobs:
+         - name: Package release bundle
+           run: |
+             version="${GITHUB_REF_NAME:-manual}"
+  +          version="${version#twyne@}"
+             mkdir -p release
+             tar \
+               --exclude="./node_modules" \
+  diff --git a/.gitignore b/.gitignore
+  index af4a45e43d190d21b19c7e2bc7ce5c0c9b7c5aef..f6de76297d1c6bac3bab4cfb1a5265bf19bd9ba0 100644
+  --- a/.gitignore
+  +++ b/.gitignore
+  @@ -17,6 +17,7 @@
+   node_modules
+   .env
+   *.local
+  +.direnv/
+   
+   # Cache
+   .cache
+  diff --git a/README.md b/README.md
+  index 5d3508c4a2ba9fa24d6720db1fc5eb2e9b8d64f9..b658a20ace9216bc8f9c166c8720f1c56ddefcb4 100644
+  --- a/README.md
+  +++ b/README.md
+  @@ -74,4 +74,14 @@ the `TWYNE_DESKTOP_URL` dev override, and platform caveats.
+   
+   ## Releases
+   
+  +Releases use Bumpy bump files to generate changelog entries and version tags.
+  +The repo installs a `pre-push` hook on `bun install` that runs
+  +`bumpy check --hook pre-push`.
+  +
+  +```bash
+  +bun run release:add      # add a bump file for a change
+  +bun run release:version  # consume bump files, update CHANGELOG.md, bump version
+  +bun run release:publish  # create git tags and GitHub releases
+  +```
+  +
+   Tagged releases are built by GitHub Actions. Each release uploads a `twyne-<version>.tar.gz` bundle containing the source, lockfile, production build output, and server entry point so people can download and run that version.
+  diff --git a/bun.lock b/bun.lock
+  index 82e5ca38f35fc742221d75413a625660fd5a6caa..526a354c4791d77ce710d735d91cc47659f85af9 100644
+  --- a/bun.lock
+  +++ b/bun.lock
+  @@ -46,6 +46,7 @@
+           "@playwright/test": "^1.61.0",
+           "@tailwindcss/vite": "^4.2.4",
+           "@types/node": "^25.9.3",
+  +        "@varlock/bumpy": "^1.18.0",
+           "agent-browser": "^0.27.3",
+           "concurrently": "^9",
+           "electrobun": "^1.18.1",
+  @@ -823,6 +824,8 @@
+   
+       "@upsetjs/venn.js": ["@upsetjs/venn.js@2.0.0", "", { "optionalDependencies": { "d3-selection": "^3.0.0", "d3-transition": "^3.0.1" } }, "REDACTED"],
+   
+  +    "@varlock/bumpy": ["@varlock/bumpy@1.18.0", "", { "bin": { "bumpy": "dist/cli.mjs" } }, "sha512-0LBdmKG28V9xgg2clbxZbZG2Z94X/TEJ2sMgercYX0INj2Z84xPpk4/REDACTED"],
+  +
+       "@vercel/oidc": ["@vercel/oidc@3.2.0", "", {}, "REDACTED/REDACTED/eOxrI/l3uDLQsmcrOb4ug=="],
+   
+       "@vitest/expect": ["@vitest/expect@3.2.4", "", { "dependencies": { "@types/chai": "^5.2.2", "@vitest/spy": "3.2.4", "@vitest/utils": "3.2.4", "chai": "^5.2.0", "tinyrainbow": "^2.0.0" } }, "REDACTED/kgnCUzuHQKrSLtu/uOqqrig=="],
+  diff --git a/package.json b/package.json
+  index beec23075367bde079a4d700084e34470073852f..bae1c88fbff94bddecb218226a8a7a34f0a635dd 100644
+  --- a/package.json
+  +++ b/package.json
+  @@ -16,6 +16,13 @@
+       "build.types": "tsc --incremental --noEmit",
+       "build.server": "vite build --ssr src/entry.preview.tsx",
+       "deploy": "bun run build.client && bun run build.server && bun server.js",
+  +    "prepare": "node scripts/install-git-hooks.mjs",
+  +    "hooks:install": "node scripts/install-git-hooks.mjs",
+  +    "bumpy": "bumpy",
+  +    "release:add": "bumpy add",
+  +    "release:status": "bumpy status",
+  +    "release:version": "bumpy version",
+  +    "release:publish": "bumpy publish",
+       "desktop": "electrobun dev && electrobun run",
+       "desktop.build": "electrobun build",
+       "dev": "concurrently --names \"CONVEX,VITE\" --prefix-colors cyan,magenta \"npx convex dev\" \"vite --mode ssr\"",
+  @@ -47,6 +54,7 @@
+       "@playwright/test": "^1.61.0",
+       "@tailwindcss/vite": "^4.2.4",
+       "@types/node": "^25.9.3",
+  +    "@varlock/bumpy": "^1.18.0",
+       "agent-browser": "^0.27.3",
+       "concurrently": "^9",
+       "electrobun": "^1.18.1",
+  diff --git a/src/components/collaboration/share-dialog.tsx b/src/components/collaboration/share-dialog.tsx
+  index e115d31e827a3eef061971e96f726919188a7644..46dca615ac9955aa5fb50e37853b406aa7530719 100644
+  --- a/src/components/collaboration/share-dialog.tsx
+  +++ b/src/components/collaboration/share-dialog.tsx
+  @@ -15,6 +15,7 @@ import {
+     stopPresence,
+     stopWatchingRemote,
+   } from "../../utils/collaboration";
+  +import { ThemedDialog } from "../ui/themed-dialog";
+   
+   interface ShareState {
+     open: boolean;
+  @@ -35,6 +36,7 @@ interface ShareState {
+       invitedAt: number;
+       acceptedAt?: number;
+     }>;
+  +  confirmingUnshare: boolean;
+   }
+   
+   interface PresenceUser {
+  @@ -67,6 +69,7 @@ export const ShareDialog = component$(
+         inviting: false,
+         inviteMsg: null,
+         collaborators: [],
+  +      confirmingUnshare: false,
+       });
+   
+       const presenceSig = useSignal<PresenceUser[]>([]);
+  @@ -208,14 +211,13 @@ export const ShareDialog = component$(
+       const handleUnshare = $(async () => {
+         const client = clientSig.value;
+         if (!client || !store.lixId) return;
+  -      if (!confirm("Stop sharing? Collaborators will lose access immediately."))
+  -        return;
+         try {
+           await client.mutation(api.collaboration.unshareFolio, {
+             lixId: store.lixId,
+           });
+           stopPresence();
+           stopWatchingRemote();
+  +        store.confirmingUnshare = false;
+           store.shared = false;
+           store.lixId = null;
+           store.collaborators = [];
+  @@ -443,7 +445,10 @@ export const ShareDialog = component$(
+                         Copy invite link
+                       </button>
+                       <button
+  -                      onClick$={handleUnshare}
+  +                      onClick$={() => {
+  +                        store.confirmingUnshare = true;
+  +                        store.error = null;
+  +                      }}
+                         class="text-xs text-[var(--color-vermilion)] hover:underline"
+                         style={{ fontFamily: "var(--font-typewriter)" }}
+                       >
+  @@ -455,6 +460,20 @@ export const ShareDialog = component$(
+               </div>
+             </>
+           )}
+  +
+  +        <ThemedDialog
+  +          open={store.confirmingUnshare}
+  +          title="Stop sharing this folio?"
+  +          message="Collaborators will lose access immediately, and the live invite link will stop working."
+  +          confirmLabel="Stop sharing"
+  +          tone="danger"
+  +          error={store.error}
+  +          onCancel$={() => {
+  +            store.confirmingUnshare = false;
+  +            store.error = null;
+  +          }}
+  +          onConfirm$={handleUnshare}
+  +        />
+         </div>
+       );
+     },
+  diff --git a/src/components/editor/twyne-editor.tsx b/src/components/editor/twyne-editor.tsx
+  index 20640602e4951d14dc6d9016c4e1d32cb1a466d0..4a7a17e79a2697d7b81695b3eaa200233af14b65 100644
+  --- a/src/components/editor/twyne-editor.tsx
+  +++ b/src/components/editor/twyne-editor.tsx
+  @@ -27,7 +27,7 @@ import type {
+     LayoutSettings,
+     PersonaNotePayload,
+   } from "../../types";
+  -import { DEFAULT_LAYOUT } from "../../types";
+  +import { DEFAULT_LAYOUT, MARGIN_RANGE, resolveMargins } from "../../types";
+   import { detectCitations } from "../../utils/citations";
+   import { useConvexClient } from "../../utils/convex-context";
+   import { api } from "../../../convex/_generated/api";
+  @@ -146,6 +146,8 @@ export interface EditorStore {
+     footerText: string;
+     /** Show the layout popover? */
+     showLayout: boolean;
+  +  /** Show the table tools popover? */
+  +  showTableTools: boolean;
+   }
+   
+   /** The popover for a writer-authored inline comment, anchored to its mark. */
+  @@ -173,6 +175,35 @@ interface TwyneEditorProps {
+     sharedLixId?: string;
+   }
+   
+  +/**
+  + * Walk every table in the editor mount and ensure the first row of each
+  + * (i.e. the header row) carries a `.row-resize-handle` in every <th>.
+  + * Strips stale handles on cells that are no longer in the header row so
+  + * toggling the header row off cleans up the grip.
+  + */
+  +const refreshRowResizeHandles = (mount: HTMLElement) => {
+  +  const tables = mount.querySelectorAll("table");
+  +  tables.forEach((table) => {
+  +    const firstRow = table.querySelector("tr");
+  +    if (!firstRow) return;
+  +    const ths = firstRow.children;
+  +    if (ths.length === 0) return;
+  +    Array.from(ths).forEach((cell) => {
+  +      if (cell.tagName !== "TH") {
+  +        const stale = cell.querySelectorAll(".row-resize-handle");
+  +        stale.forEach((n) => n.remove());
+  +        return;
+  +      }
+  +      if (cell.querySelector(".row-resize-handle")) return;
+  +      const handle = document.createElement("span");
+  +      handle.className = "row-resize-handle";
+  +      handle.setAttribute("contenteditable", "false");
+  +      handle.setAttribute("aria-hidden", "true");
+  +      cell.appendChild(handle);
+  +    });
+  +  });
+  +};
+  +
+   export const TwyneEditor = component$(
+     ({
+       initialContent = "",
+  @@ -216,6 +247,7 @@ export const TwyneEditor = component$(
+         headerText: activeFolio?.header ?? "",
+         footerText: activeFolio?.footer ?? "",
+         showLayout: false,
+  +      showTableTools: false,
+       });
+   
+       useStyles$(`
+  @@ -235,29 +267,27 @@ export const TwyneEditor = component$(
+           normal: "48rem",
+           wide: "62rem",
+         };
+  -      const padMap: Record<typeof layout.margin, string> = {
+  -        tight: "1.5rem",
+  -        normal: "3rem",
+  -        roomy: "5rem",
+  -      };
+  +      const m = resolveMargins(layout);
+         root.style.setProperty("--doc-width", widthMap[layout.width]);
+  -      root.style.setProperty("--doc-pad-x", padMap[layout.margin]);
+  -      root.style.setProperty(
+  -        "--doc-pad-y",
+  -        layout.margin === "roomy" ? "5rem" : "2.5rem",
+  -      );
+  +      root.style.setProperty("--doc-pad-x", `${m.x}rem`);
+  +      root.style.setProperty("--doc-pad-y", `${m.top}rem`);
+  +      root.style.setProperty("--doc-pad-bottom", `${m.bottom}rem`);
+       });
+   
+  -    // Dismiss the layout popover on outside click.
+  +    // Dismiss the editor popovers on outside click.
+       // eslint-disable-next-line qwik/no-use-visible-task
+       useVisibleTask$(({ cleanup, track }) => {
+  -      const open = track(() => store.showLayout);
+  -      if (!open) return;
+  +      const layoutOpen = track(() => store.showLayout);
+  +      const tableOpen = track(() => store.showTableTools);
+  +      if (!layoutOpen && !tableOpen) return;
+         const onDoc = (e: MouseEvent) => {
+           const t = e.target as HTMLElement | null;
+           if (t && t.closest("[data-layout-popover]")) return;
+           if (t && t.closest('[aria-label="Page layout"]')) return;
+  +        if (t && t.closest("[data-table-popover]")) return;
+  +        if (t && t.closest('[aria-label="Table tools"]')) return;
+           store.showLayout = false;
+  +        store.showTableTools = false;
+         };
+         document.addEventListener("mousedown", onDoc);
+         cleanup(() => document.removeEventListener("mousedown", onDoc));
+  @@ -438,7 +468,12 @@ export const TwyneEditor = component$(
+               center: editor.isActive({ textAlign: "center" }),
+               right: editor.isActive({ textAlign: "right" }),
+               isInTable: editor.isActive("table"),
+  +            canMergeCells: editor.can().mergeCells(),
+  +            canSplitCell: editor.can().splitCell(),
+             };
+  +          if (!editor.isActive("table")) {
+  +            store.showTableTools = false;
+  +          }
+             // History availability — driven by the Tiptap history
+             // extension, which the StarterKit includes by default.
+             // `can().undo()` / `can().redo()` are safe on every transaction.
+  @@ -667,6 +702,48 @@ export const TwyneEditor = component$(
+   
+           store.editor = editor;
+   
+  +        // ── Vertical (row-height) resize on the header row ──
+  +        // Tiptap's Table extension only ships a column-resize handle
+  +        // (the 3px vertical strip on the right edge of each cell).
+  +        // Header rows are tall by default and the writer often wants
+  +        // them shorter — so we attach a thin horizontal grip along
+  +        // the bottom of each <th> in the first row and translate
+  +        // vertical mouse drags into row.style.height.
+  +        const REFRESH = () => refreshRowResizeHandles(el);
+  +        editor.on("update", REFRESH);
+  +        editor.on("selectionUpdate", REFRESH);
+  +        REFRESH();
+  +
+  +        el.addEventListener("mousedown", (e) => {
+  +          const handle = (e.target as HTMLElement).closest(
+  +            ".row-resize-handle",
+  +          ) as HTMLElement | null;
+  +          if (!handle) return;
+  +          e.preventDefault();
+  +          e.stopPropagation();
+  +          const th = handle.closest("th") as HTMLElement | null;
+  +          const tr = th?.closest("tr") as HTMLTableRowElement | null;
+  +          if (!tr) return;
+  +          const startY = e.clientY;
+  +          const startH = tr.getBoundingClientRect().height;
+  +          const minH = 24;
+  +          const onMove = (ev: MouseEvent) => {
+  +            const next = Math.max(minH, startH + (ev.clientY - startY));
+  +            tr.style.height = `${next}px`;
+  +            for (const cell of Array.from(tr.children)) {
+  +              (cell as HTMLElement).style.height = `${next}px`;
+  +            }
+  +          };
+  +          const onUp = () => {
+  +            document.removeEventListener("mousemove", onMove);
+  +            document.removeEventListener("mouseup", onUp);
+  +            el.classList.remove("row-resize-cursor");
+  +          };
+  +          document.addEventListener("mousemove", onMove);
+  +          document.addEventListener("mouseup", onUp);
+  +          el.classList.add("row-resize-cursor");
+  +        });
+  +
+           // ── Listen for folio switches ──
+           const onLoadFolio = (e: Event) => {
+             const content = (e as CustomEvent).detail as string;
+  @@ -1240,13 +1317,7 @@ export const TwyneEditor = component$(
+         window.dispatchEvent(new CustomEvent("twyne:layout", { detail: next }));
+       });
+   
+  -    const editChrome = $(async (kind: "header" | "footer") => {
+  -      const current = kind === "header" ? store.headerText : store.footerText;
+  -      const next = window.prompt(
+  -        kind === "header" ? "Running header" : "Running footer",
+  -        current,
+  -      );
+  -      if (next === null) return;
+  +    const updateChromeText = $((kind: "header" | "footer", next: string) => {
+         if (kind === "header") store.headerText = next;
+         else store.footerText = next;
+         window.dispatchEvent(new CustomEvent(`twyne:${kind}`, { detail: next }));
+  @@ -1315,9 +1386,41 @@ export const TwyneEditor = component$(
+             break;
+           case "insertTable":
+             chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+  +          store.showTableTools = true;
+  +          break;
+  +        case "addRowBefore":
+  +          chain.addRowBefore().run();
+  +          break;
+  +        case "addRowAfter":
+  +          chain.addRowAfter().run();
+  +          break;
+  +        case "deleteRow":
+  +          chain.deleteRow().run();
+  +          break;
+  +        case "addColumnBefore":
+  +          chain.addColumnBefore().run();
+  +          break;
+  +        case "addColumnAfter":
+  +          chain.addColumnAfter().run();
+  +          break;
+  +        case "deleteColumn":
+  +          chain.deleteColumn().run();
+  +          break;
+  +        case "toggleHeaderRow":
+  +          chain.toggleHeaderRow().run();
+  +          break;
+  +        case "toggleHeaderColumn":
+  +          chain.toggleHeaderColumn().run();
+  +          break;
+  +        case "mergeCells":
+  +          chain.mergeCells().run();
+  +          break;
+  +        case "splitCell":
+  +          chain.splitCell().run();
+             break;
+           case "deleteTable":
+             chain.deleteTable().run();
+  +          store.showTableTools = false;
+             break;
+           case "addComment": {
+             const editor = store.editor!;
+  @@ -1577,14 +1680,126 @@ export const TwyneEditor = component$(
+                 ▤ tab.
+               </button>
+               {!!store.active.isInTable && (
+  -              <button
+  -                title="Delete table"
+  -                aria-label="Delete table"
+  -                onClick$={() => runCommand("deleteTable")}
+  -                class="tool-btn text-[var(--color-vermilion)]"
+  -              >
+  -                × tab.
+  -              </button>
+  +              <div class="relative flex items-center">
+  +                <button
+  +                  title="Table tools"
+  +                  aria-label="Table tools"
+  +                  aria-expanded={store.showTableTools}
+  +                  onClick$={() => {
+  +                    store.showTableTools = !store.showTableTools;
+  +                  }}
+  +                  class="tool-btn"
+  +                >
+  +                  ≣ tab.
+  +                </button>
+  +                {store.showTableTools && (
+  +                  <div
+  +                    data-table-popover
+  +                    class="absolute left-0 top-full mt-1 z-50 w-72 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
+  +                    style="border-radius: 2px; font-family: var(--font-typewriter);"
+  +                    role="dialog"
+  +                    aria-label="Table tools"
+  +                  >
+  +                    <p class="dept-label mb-2">Table tools</p>
+  +                    <div class="space-y-3">
+  +                      <div>
+  +                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
+  +                          Rows
+  +                        </p>
+  +                        <div class="grid grid-cols-2 gap-1.5">
+  +                          <button
+  +                            onClick$={() => runCommand("addRowBefore")}
+  +                            class="btn-paper text-[0.65rem]"
+  +                          >
+  +                            Add above
+  +                          </button>
+  +                          <button
+  +                            onClick$={() => runCommand("addRowAfter")}
+  +                            class="btn-paper text-[0.65rem]"
+  +                          >
+  +                            Add below
+  +                          </button>
+  +                          <button
+  +                            onClick$={() => runCommand("deleteRow")}
+  +                            class="btn-paper text-[0.65rem]"
+  +                          >
+  +                            Delete row
+  +                          </button>
+  +                          <button
+  +                            onClick$={() => runCommand("toggleHeaderRow")}
+  +                            class="btn-paper text-[0.65rem]"
+  +                          >
+  +                            Toggle header
+  +                          </button>
+  +                        </div>
+  +                      </div>
+  +
+  +                      <div>
+  +                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
+  +                          Columns
+  +                        </p>
+  +                        <div class="grid grid-cols-2 gap-1.5">
+  +                          <button
+  +                            onClick$={() => runCommand("addColumnBefore")}
+  +                            class="btn-paper text-[0.65rem]"
+  +                          >
+  +                            Add left
+  +                          </button>
+  +                          <button
+  +                            onClick$={() => runCommand("addColumnAfter")}
+  +                            class="btn-paper text-[0.65rem]"
+  +                          >
+  +                            Add right
+  +                          </button>
+  +                          <button
+  +                            onClick$={() => runCommand("deleteColumn")}
+  +                            class="btn-paper text-[0.65rem]"
+  +                          >
+  +                            Delete column
+  +                          </button>
+  +                          <button
+  +                            onClick$={() => runCommand("toggleHeaderColumn")}
+  +                            class="btn-paper text-[0.65rem]"
+  +                          >
+  +                            Toggle header
+  +                          </button>
+  +                        </div>
+  +                      </div>
+  +
+  +                      <div>
+  +                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
+  +                          Cells
+  +                        </p>
+  +                        <div class="grid grid-cols-2 gap-1.5">
+  +                          <button
+  +                            onClick$={() => runCommand("mergeCells")}
+  +                            disabled={!store.active.canMergeCells}
+  +                            class="btn-paper text-[0.65rem] disabled:opacity-40 disabled:cursor-not-allowed"
+  +                          >
+  +                            Merge cells
+  +                          </button>
+  +                          <button
+  +                            onClick$={() => runCommand("splitCell")}
+  +                            disabled={!store.active.canSplitCell}
+  +                            class="btn-paper text-[0.65rem] disabled:opacity-40 disabled:cursor-not-allowed"
+  +                          >
+  +                            Split cell
+  +                          </button>
+  +                        </div>
+  +                      </div>
+  +
+  +                      <div class="border-t border-[var(--color-paper-3)] pt-2">
+  +                        <button
+  +                          onClick$={() => runCommand("deleteTable")}
+  +                          class="btn-paper text-[0.65rem] text-[var(--color-vermilion)]"
+  +                        >
+  +                          Delete table
+  +                        </button>
+  +                      </div>
+  +                    </div>
+  +                  </div>
+  +                )}
+  +              </div>
+               )}
+               <button
+                 title="Insert diagram (Mermaid)"
+  @@ -1662,6 +1877,7 @@ export const TwyneEditor = component$(
+               </button>
+               {store.showLayout && (
+                 <div
+  +                data-layout-popover
+                   class="absolute right-0 top-full mt-1 z-50 w-64 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
+                   style="border-radius: 2px; font-family: var(--font-typewriter);"
+                   role="dialog"
+  @@ -1681,20 +1897,48 @@ export const TwyneEditor = component$(
+                     ))}
+                   </div>
+                   <p class="dept-label mb-2">Margins</p>
+  -                <div class="flex items-center gap-1 mb-3">
+  -                  {(["tight", "normal", "roomy"] as const).map((m) => (
+  -                    <button
+  -                      key={m}
+  -                      onClick$={() =>
+  -                        emitLayout({ ...store.layout, margin: m })
+  -                      }
+  -                      class={`flex-1 text-[0.7rem] py-1 border ${store.layout.margin === m ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
+  -                      style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
+  +                {(
+  +                  [
+  +                    ["Side", "x", "marginX"],
+  +                    ["Header", "top", "marginTop"],
+  +                    ["Footer", "bottom", "marginBottom"],
+  +                  ] as const
+  +                ).map(([label, rangeKey, field]) => {
+  +                  const range = MARGIN_RANGE[rangeKey];
+  +                  const value = resolveMargins(store.layout)[rangeKey];
+  +                  return (
+  +                    <label
+  +                      key={field}
+  +                      class="block mb-2.5 text-[0.7rem] text-[var(--color-ink-light)]"
+                       >
+  -                      {m}
+  -                    </button>
+  -                  ))}
+  -                </div>
+  +                      <span class="flex items-center justify-between mb-1">
+  +                        <span>{label}</span>
+  +                        <span
+  +                          class="tabular-nums text-[var(--color-ink-muted)]"
+  +                          style="font-family: var(--font-typewriter);"
+  +                        >
+  +                          {value.toFixed(2)} rem
+  +                        </span>
+  +                      </span>
+  +                      <input
+  +                        type="range"
+  +                        class="margin-slider"
+  +                        min={range.min}
+  +                        max={range.max}
+  +                        step={range.step}
+  +                        value={value}
+  +                        onInput$={(e) =>
+  +                          emitLayout({
+  +                            ...store.layout,
+  +                            [field]: Number(
+  +                              (e.target as HTMLInputElement).value,
+  +                            ),
+  +                          })
+  +                        }
+  +                      />
+  +                    </label>
+  +                  );
+  +                })}
+                   <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] mb-1.5 cursor-pointer">
+                     <span>Running header</span>
+                     <input
+  @@ -1708,6 +1952,27 @@ export const TwyneEditor = component$(
+                       }
+                     />
+                   </label>
+  +                <div class="mb-3">
+  +                  <label
+  +                    class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
+  +                    for="layout-header-text"
+  +                  >
+  +                    Header line
+  +                  </label>
+  +                  <input
+  +                    id="layout-header-text"
+  +                    value={store.headerText}
+  +                    placeholder="Optional running header"
+  +                    class="field-input text-[0.78rem]"
+  +                    style="font-family: var(--font-typewriter);"
+  +                    onInput$={(e) =>
+  +                      updateChromeText(
+  +                        "header",
+  +                        (e.target as HTMLInputElement).value,
+  +                      )
+  +                    }
+  +                  />
+  +                </div>
+                   <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] cursor-pointer">
+                     <span>Page numbers</span>
+                     <input
+  @@ -1721,6 +1986,27 @@ export const TwyneEditor = component$(
+                       }
+                     />
+                   </label>
+  +                <div class="mt-3">
+  +                  <label
+  +                    class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
+  +                    for="layout-footer-text"
+  +                  >
+  +                    Footer line
+  +                  </label>
+  +                  <input
+  +                    id="layout-footer-text"
+  +                    value={store.footerText}
+  +                    placeholder="Optional running footer"
+  +                    class="field-input text-[0.78rem]"
+  +                    style="font-family: var(--font-typewriter);"
+  +                    onInput$={(e) =>
+  +                      updateChromeText(
+  +                        "footer",
+  +                        (e.target as HTMLInputElement).value,
+  +                      )
+  +                    }
+  +                  />
+  +                </div>
+                 </div>
+               )}
+             </div>
+  @@ -1889,7 +2175,7 @@ export const TwyneEditor = component$(
+           {/* ── Editor area (the manuscript page) ──────────── */}
+           <div
+             class="flex-1 overflow-y-auto"
+  -          style="background: var(--color-editor-bg); background-image: linear-gradient(to right, transparent 0, transparent calc(50% - 22rem), rgba(193,39,45,0.12) calc(50% - 22rem), rgba(193,39,45,0.12) calc(50% - 22rem + 1px), transparent calc(50% - 22rem + 1px));"
+  +          style="background: var(--color-editor-bg);"
+             preventdefault:dragover
+             preventdefault:dragleave
+             preventdefault:drop
+  @@ -1903,13 +2189,13 @@ export const TwyneEditor = component$(
+               </div>
+             )}
+             <div
+  -            class="mx-auto twyne-editor relative"
+  +            class="mx-auto twyne-editor page-canvas relative"
+               style={{
+                 "max-width": "var(--doc-width, 48rem)",
+                 "padding-left": "var(--doc-pad-x, 3rem)",
+                 "padding-right": "var(--doc-pad-x, 3rem)",
+                 "padding-top": "var(--doc-pad-y, 2.5rem)",
+  -              "padding-bottom": "var(--doc-pad-y, 4rem)",
+  +              "padding-bottom": "var(--doc-pad-bottom, 4rem)",
+               }}
+             >
+               {/* Manuscript running header — author-tunable, with brief-derived fallback */}
+  @@ -1930,7 +2216,9 @@ export const TwyneEditor = component$(
+                   type="button"
+                   class="text-[0.6rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                   style="letter-spacing: 0.1em;"
+  -                onClick$={() => editChrome("header")}
+  +                onClick$={() => {
+  +                  store.showLayout = true;
+  +                }}
+                 >
+                   edit
+                 </button>
+  @@ -1952,6 +2240,16 @@ export const TwyneEditor = component$(
+                 <span class="dept-label" style="color: var(--color-ink-muted);">
+                   {store.layout.pageNumbers ? "page" : ""}
+                 </span>
+  +              <button
+  +                type="button"
+  +                class="text-[0.6rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+  +                style="letter-spacing: 0.1em;"
+  +                onClick$={() => {
+  +                  store.showLayout = true;
+  +                }}
+  +              >
+  +                edit
+  +              </button>
+               </div>
+             </div>
+           </div>
+  diff --git a/src/global.css b/src/global.css
+  index 0193aa8b55837b98ea8da391c7fcc1267badeb82..ecf74a30308cdb25edaf89882d72c92d324a5b29 100644
+  --- a/src/global.css
+  +++ b/src/global.css
+  @@ -108,6 +108,64 @@ body {
+       "onum" 1;
+   }
+   
+  +/* ── Page margin guides ─────────────────────────────────────────────
+  + * Faint vermilion rules marking where the live margins sit, the way Word
+  + * and Google Docs show the header/footer and side margins. They track the
+  + * same --doc-pad-* custom properties that drive the page padding, so moving
+  + * the layout sliders moves the guides. Painted as the page's own background
+  + * so they always sit behind the text without any z-index juggling. */
+  +.page-canvas {
+  +  --guide: rgba(193, 39, 45, 0.28);
+  +  background-image:
+  +    linear-gradient(var(--guide), var(--guide)),
+  +    linear-gradient(var(--guide), var(--guide)),
+  +    linear-gradient(var(--guide), var(--guide)),
+  +    linear-gradient(var(--guide), var(--guide));
+  +  background-repeat: no-repeat;
+  +  background-size:
+  +    1px 100%,
+  +    1px 100%,
+  +    100% 1px,
+  +    100% 1px;
+  +  background-position:
+  +    left var(--doc-pad-x, 3rem) top 0,
+  +    right var(--doc-pad-x, 3rem) top 0,
+  +    left 0 top var(--doc-pad-y, 2.5rem),
+  +    left 0 bottom var(--doc-pad-bottom, 4rem);
+  +}
+  +
+  +/* ── Layout margin sliders ──────────────────────────────────────── */
+  +.margin-slider {
+  +  -webkit-appearance: none;
+  +  appearance: none;
+  +  width: 100%;
+  +  height: 2px;
+  +  background: var(--color-paper-3);
+  +  border-radius: 2px;
+  +  outline: none;
+  +  cursor: pointer;
+  +}
+  +
+  +.margin-slider::-webkit-slider-thumb {
+  +  -webkit-appearance: none;
+  +  appearance: none;
+  +  width: 12px;
+  +  height: 12px;
+  +  border-radius: 50%;
+  +  background: var(--color-vermilion);
+  +  border: none;
+  +  cursor: pointer;
+  +}
+  +
+  +.margin-slider::-moz-range-thumb {
+  +  width: 12px;
+  +  height: 12px;
+  +  border-radius: 50%;
+  +  background: var(--color-vermilion);
+  +  border: none;
+  +  cursor: pointer;
+  +}
+  +
+   /* ── Editorial chrome utilities ──────────────────────────── */
+   .masthead-rule {
+     position: relative;
+  @@ -378,10 +436,25 @@ body {
+   
+   .twyne-editor .ProseMirror table {
+     border-collapse: collapse;
+  +  /* table-layout: fixed is required for Tiptap's column-resize handles to
+  +   * actually resize columns — without it the <colgroup> widths it writes are
+  +   * ignored and dragging the handle does nothing. */
+  +  table-layout: fixed;
+     width: 100%;
+     margin: 1em 0;
+     font-family: var(--font-sans);
+     font-size: 0.95rem;
+  +  overflow: hidden;
+  +}
+  +
+  +/* Honour the per-column widths Tiptap stores in the generated <colgroup>. */
+  +.twyne-editor .ProseMirror table col {
+  +  min-width: 3rem;
+  +}
+  +
+  +.twyne-editor .tableWrapper {
+  +  margin: 1em 0;
+  +  overflow-x: auto;
+   }
+   
+   .twyne-editor .ProseMirror table td,
+  @@ -389,6 +462,9 @@ body {
+     border: 1px solid var(--color-paper-3);
+     padding: 0.55em 0.8em;
+     text-align: left;
+  +  min-width: 7rem;
+  +  position: relative;
+  +  vertical-align: top;
+   }
+   
+   .twyne-editor .ProseMirror table th {
+  @@ -400,8 +476,55 @@ body {
+     text-transform: uppercase;
+   }
+   
+  -.twyne-editor .ProseMirror .columnResizorHandle {
+  -  background-color: var(--color-vermilion);
+  +.twyne-editor .ProseMirror table .selectedCell::after {
+  +  content: "";
+  +  position: absolute;
+  +  inset: 0;
+  +  background: rgba(193, 39, 45, 0.08);
+  +  pointer-events: none;
+  +}
+  +
+  +.twyne-editor .ProseMirror table .column-resize-handle {
+  +  position: absolute;
+  +  top: 0;
+  +  right: -1px;
+  +  bottom: -1px;
+  +  width: 3px;
+  +  background: var(--color-vermilion);
+  +  opacity: 0.55;
+  +  pointer-events: none;
+  +}
+  +
+  +.twyne-editor .ProseMirror.resize-cursor {
+  +  cursor: col-resize;
+  +}
+  +
+  +.twyne-editor .ProseMirror.row-resize-cursor {
+  +  cursor: row-resize;
+  +}
+  +
+  +.twyne-editor .ProseMirror table .row-resize-handle {
+  +  position: absolute;
+  +  left: -1px;
+  +  right: -1px;
+  +  bottom: -3px;
+  +  height: 6px;
+  +  background: var(--color-vermilion);
+  +  opacity: 0;
+  +  pointer-events: auto;
+  +  cursor: row-resize;
+  +  z-index: 2;
+  +}
+  +
+  +.twyne-editor .ProseMirror table .row-resize-handle:hover,
+  +.twyne-editor .ProseMirror table .row-resize-handle:active {
+  +  opacity: 0.55;
+  +}
+  +
+  +.twyne-editor .ProseMirror table .row-resize-handle::after {
+  +  content: "";
+  +  position: absolute;
+  +  inset: -4px 0;
+   }
+   
+   .twyne-editor .ProseMirror mark {
+  diff --git a/src/routes/settings/index.tsx b/src/routes/settings/index.tsx
+  index c78dc2836b0ab6da164cdd7887abc96aeed3392e..1b6edbbe93eeeeac027198de303c019f0d034064 100644
+  --- a/src/routes/settings/index.tsx
+  +++ b/src/routes/settings/index.tsx
+  @@ -1,5 +1,6 @@
+   import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
+   import { Link, type DocumentHead } from "@builder.io/qwik-city";
+  +import { ThemedDialog } from "../../components/ui/themed-dialog";
+   import { useConvexClient } from "../../utils/convex-context";
+   import { useAuth } from "../../utils/auth-context";
+   import { signOut } from "../../utils/auth-client";
+  @@ -59,6 +60,10 @@ interface SettingsStore {
+     deletingAccount: boolean;
+     accountToast: string | null;
+     accountError: string | null;
+  +  showResetDialog: boolean;
+  +  showDeleteDialog: boolean;
+  +  deleteConfirmText: string;
+  +  deleteDialogError: string | null;
+     /* writer handle (public identity) */
+     handleLoaded: boolean;
+     handle: string | null;
+  @@ -140,6 +145,10 @@ export default component$(() => {
+       deletingAccount: false,
+       accountToast: null,
+       accountError: null,
+  +    showResetDialog: false,
+  +    showDeleteDialog: false,
+  +    deleteConfirmText: "",
+  +    deleteDialogError: null,
+       handleLoaded: false,
+       handle: null,
+       handleDraft: "",
+  @@ -270,38 +279,36 @@ export default component$(() => {
+     );
+   
+     const resetAll = $(async () => {
+  -    if (
+  -      !confirm(
+  -        "Reset all AI settings to defaults? Providers and keys will be removed.",
+  -      )
+  -    )
+  -      return;
+  +    store.showResetDialog = false;
+       store.settings = DEFAULT_AI_SETTINGS;
+       await saveAiSettingsToIdb(DEFAULT_AI_SETTINGS);
+       store.toast = "Reset to defaults";
+       setTimeout(() => (store.toast = null), 2000);
+     });
+   
+  +  const openDeleteAccountDialog = $(() => {
+  +    if (!convexClientSig.value) {
+  +      store.accountError = "Not connected. Try again in a moment.";
+  +      return;
+  +    }
+  +    store.showDeleteDialog = true;
+  +    store.deleteConfirmText = "";
+  +    store.deleteDialogError = null;
+  +    store.accountError = null;
+  +  });
+  +
+     const handleDeleteAccount = $(async () => {
+       const client = convexClientSig.value;
+       if (!client) {
+         store.accountError = "Not connected. Try again in a moment.";
+         return;
+       }
+  -    // The substantive deletion is irreversible. Gate it behind a typed
+  -    // confirmation so a stray click can't wipe an account.
+  -    if (
+  -      !confirm(
+  -        "Permanently delete your Twyne account and all synced data? This cannot be undone. Export any folios you want to keep first.",
+  -      )
+  -    )
+  -      return;
+  -    const typed = prompt("Type DELETE to confirm:");
+  -    if (typed !== "DELETE") {
+  -      store.accountError = "Cancelled — nothing was deleted.";
+  +    if (store.deleteConfirmText.trim() !== "DELETE") {
+  +      store.deleteDialogError = "Type DELETE exactly to continue.";
+         return;
+       }
+       store.deletingAccount = true;
+  +    store.deleteDialogError = null;
+       store.accountError = null;
+       try {
+         const result = await client.mutation(api.account.deleteAccount, {});
+  @@ -316,11 +323,13 @@ export default component$(() => {
+         store.accountToast = result?.identityPurged
+           ? "Your account and synced data have been deleted."
+           : "Synced data deleted. We're finishing the account teardown — if you can still sign in, contact support@twyne.love.";
+  +      store.showDeleteDialog = false;
+         store.deletingAccount = false;
+         window.location.href = "/";
+       } catch (e: any) {
+         store.accountError =
+           e?.message ?? "Could not delete account. Please try again.";
+  +      store.deleteDialogError = store.accountError;
+         store.deletingAccount = false;
+       }
+     });
+  @@ -1686,7 +1695,9 @@ export default component$(() => {
+   
+                   <div class="pt-3 border-t border-dashed border-[var(--color-paper-3)]">
+                     <button
+  -                    onClick$={resetAll}
+  +                    onClick$={() => {
+  +                      store.showResetDialog = true;
+  +                    }}
+                       class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)]"
+                       style={{ fontFamily: "var(--font-typewriter)" }}
+                     >
+  @@ -1962,7 +1973,7 @@ export default component$(() => {
+                     </p>
+                   )}
+                   <button
+  -                  onClick$={handleDeleteAccount}
+  +                  onClick$={openDeleteAccountDialog}
+                     disabled={store.deletingAccount}
+                     class="btn-press text-xs text-[var(--color-paper)] disabled:opacity-60"
+                     style={{
+  @@ -1995,6 +2006,44 @@ export default component$(() => {
+             {store.toast}
+           </div>
+         )}
+  +
+  +      <ThemedDialog
+  +        open={store.showResetDialog}
+  +        title="Reset all AI settings?"
+  +        message="This removes saved providers, models, and keys from the current browser and restores Twyne's defaults."
+  +        confirmLabel="Reset settings"
+  +        tone="danger"
+  +        onCancel$={() => {
+  +          store.showResetDialog = false;
+  +        }}
+  +        onConfirm$={resetAll}
+  +      />
+  +
+  +      <ThemedDialog
+  +        open={store.showDeleteDialog}
+  +        title="Delete your account?"
+  +        message="This permanently deletes your Twyne account and every synced folio, brief, note, rubric result, and published piece. Export anything you want to keep first."
+  +        confirmLabel={store.deletingAccount ? "Deleting…" : "Delete account"}
+  +        tone="danger"
+  +        busy={store.deletingAccount}
+  +        confirmDisabled={store.deletingAccount}
+  +        error={store.deleteDialogError}
+  +        inputLabel="Type DELETE to confirm"
+  +        inputValue={store.deleteConfirmText}
+  +        inputPlaceholder="DELETE"
+  +        inputHelp="This step is irreversible."
+  +        onInput$={(value) => {
+  +          store.deleteConfirmText = value;
+  +          store.deleteDialogError = null;
+  +        }}
+  +        onCancel$={() => {
+  +          if (store.deletingAccount) return;
+  +          store.showDeleteDialog = false;
+  +          store.deleteConfirmText = "";
+  +          store.deleteDialogError = null;
+  +        }}
+  +        onConfirm$={handleDeleteAccount}
+  +      />
+       </div>
+     );
+   });
+  diff --git a/src/types/index.ts b/src/types/index.ts
+  index d8d86661007e6997dabd308a21d4813ffcfd3626..6c2e358e7bc84563dd3005245027500c3722b841 100644
+  --- a/src/types/index.ts
+  +++ b/src/types/index.ts
+  @@ -63,16 +63,61 @@ export type DocMargin = "tight" | "normal" | "roomy";
+   
+   export interface LayoutSettings {
+     width: DocWidth;
+  +  /**
+  +   * Legacy coarse margin preset. Kept for backward compatibility and used as
+  +   * the fallback when the numeric margins below are absent. New documents and
+  +   * the layout sliders write the numeric fields instead.
+  +   */
+     margin: DocMargin;
+  +  /** Side (left/right) page margin, in rem. Falls back to {@link margin} when undefined. */
+  +  marginX?: number;
+  +  /** Top (header) page margin, in rem. */
+  +  marginTop?: number;
+  +  /** Bottom (footer) page margin, in rem. */
+  +  marginBottom?: number;
+     /** Show brief title / author / date in the running header (print + reading view). */
+     runningHeader: boolean;
+     /** Show page numbers in the footer of printed/exported output. */
+     pageNumbers: boolean;
+   }
+   
+  +/** Side-margin rem values for the legacy coarse {@link DocMargin} presets. */
+  +export const MARGIN_PRESET_REM: Record<DocMargin, number> = {
+  +  tight: 1.5,
+  +  normal: 3,
+  +  roomy: 5,
+  +};
+  +
+  +/** Allowed slider range (rem) for each adjustable page margin. */
+  +export const MARGIN_RANGE = {
+  +  x: { min: 0, max: 8, step: 0.25 },
+  +  top: { min: 0, max: 8, step: 0.25 },
+  +  bottom: { min: 0, max: 8, step: 0.25 },
+  +} as const;
+  +
+  +/**
+  + * Resolve the effective numeric page margins (in rem) for a layout, applying
+  + * sensible fallbacks so documents saved before numeric margins existed still
+  + * render correctly.
+  + */
+  +export function resolveMargins(layout: LayoutSettings): {
+  +  x: number;
+  +  top: number;
+  +  bottom: number;
+  +} {
+  +  const presetX = MARGIN_PRESET_REM[layout.margin] ?? MARGIN_PRESET_REM.normal;
+  +  const x = layout.marginX ?? presetX;
+  +  const top = layout.marginTop ?? (layout.margin === "roomy" ? 5 : 2.5);
+  +  const bottom = layout.marginBottom ?? (layout.margin === "roomy" ? 5 : 4);
+  +  return { x, top, bottom };
+  +}
+  +
+   export const DEFAULT_LAYOUT: LayoutSettings = {
+     width: "normal",
+     margin: "normal",
+  +  marginX: 3,
+  +  marginTop: 2.5,
+  +  marginBottom: 4,
+     runningHeader: false,
+     pageNumbers: true,
+   };
+  diff --git a/src/utils/exchange.ts b/src/utils/exchange.ts
+  index 1f3324d5c6d53dcd391b7ecd5ce724d3dc4232ac..4a97781a78d88ce53c943c14de4ea62a78489fc2 100644
+  --- a/src/utils/exchange.ts
+  +++ b/src/utils/exchange.ts
+  @@ -12,7 +12,7 @@
+   
+   import { marked } from "marked";
+   import type { Folio, LayoutSettings, ProjectBrief } from "../types";
+  -import { DEFAULT_LAYOUT } from "../types";
+  +import { DEFAULT_LAYOUT, resolveMargins } from "../types";
+   
+   export type ExportFormat = "markdown" | "html" | "txt" | "twyne-backup";
+   
+  @@ -94,13 +94,10 @@ function wrapStandaloneHtml(
+       normal: "48rem",
+       wide: "62rem",
+     };
+  -  const padMap: Record<LayoutSettings["margin"], string> = {
+  -    tight: "1.5rem",
+  -    normal: "3rem",
+  -    roomy: "5rem",
+  -  };
+  +  const m = resolveMargins(layout);
+     const docWidth = widthMap[layout.width];
+  -  const docPadX = padMap[layout.margin];
+  +  const docPadX = `${m.x}rem`;
+  +  const docPageMargin = `${m.top}rem ${m.x}rem ${m.bottom}rem`;
+   
+     const running = layout.runningHeader
+       ? (options.header && options.header.trim()) ||
+  @@ -119,12 +116,12 @@ function wrapStandaloneHtml(
+   <title>${escapeHtml(title)}</title>
+   <style>
+     :root { color-scheme: light; }
+  -  @page { size: auto; margin: ${docPadX}; ${layout.pageNumbers ? "@bottom-center { content: counter(page); font-family: ui-monospace, monospace; font-size: 0.75rem; color: #6a5d4a; }" : ""} }
+  +  @page { size: auto; margin: ${docPageMargin}; ${layout.pageNumbers ? "@bottom-center { content: counter(page); font-family: ui-monospace, monospace; font-size: 0.75rem; color: #6a5d4a; }" : ""} }
+     body {
+       font-family: ui-serif, Georgia, "Times New Roman", serif;
+       max-width: ${docWidth};
+  -    margin: 4rem auto;
+  -    padding: 0 1.5rem;
+  +    margin: ${m.top}rem auto ${m.bottom}rem;
+  +    padding: 0 ${docPadX};
+       line-height: 1.7;
+       color: #1a1611;
+       background: #fbf6ec;
+
+  diff --git a/.bumpy/_config.json b/.bumpy/_config.json
+  new file mode 100644
+  index 0000000..801c7e2
+  --- /dev/null
+  +++ b/.bumpy/_config.json
+  @@ -0,0 +1,10 @@
+  +{
+  +  "$schema": "../node_modules/@varlock/bumpy/config-schema.json",
+  +  "baseBranch": "main",
+  +  "changelog": "github",
+  +  "privatePackages": {
+  +    "version": true,
+  +    "tag": true
+  +  },
+  +  "versionCommitMessage": "Version Twyne"
+  +}
+
+  diff --git a/.bumpy/bumpy-release-tooling.md b/.bumpy/bumpy-release-tooling.md
+  new file mode 100644
+  index 0000000..e0b6248
+  --- /dev/null
+  +++ b/.bumpy/bumpy-release-tooling.md
+  @@ -0,0 +1,5 @@
+  +---
+  +twyne: patch
+  +---
+  +
+  +Set up Bumpy release tooling
+
+  diff --git a/.envrc b/.envrc
+  new file mode 100644
+  index 0000000..442aafb
+  --- /dev/null
+  +++ b/.envrc
+  @@ -0,0 +1,7 @@
+  +#!/usr/bin/env bash
+  +
+  +eval "$(devenv direnvrc)"
+  +use devenv
+  +
+  +watch_file .env.local
+  +dotenv_if_exists .env.local
+
+  diff --git a/.githooks/commit-msg b/.githooks/commit-msg
+  new file mode 100755
+  index 0000000..15897e7
+  --- /dev/null
+  +++ b/.githooks/commit-msg
+  @@ -0,0 +1,4 @@
+  +#!/bin/sh
+  +# Entire CLI hooks
+  +# Commit-msg hook: strip trailer if no user content (allows aborting empty commits)
+  +if command -v entire >/dev/null 2>&1; then entire hooks git commit-msg "$1" || true; else printf '%s\n' '[entire] Entire CLI is enabled but not installed or not on PATH. Skipping Entire Git hook; continuing. Installation guide: https://docs.entire.io/cli/installation#installation-methods' >&2 || :; fi
+
+  diff --git a/.githooks/post-commit b/.githooks/post-commit
+  new file mode 100755
+  index 0000000..d5396a8
+  --- /dev/null
+  +++ b/.githooks/post-commit
+  @@ -0,0 +1,4 @@
+  +#!/bin/sh
+  +# Entire CLI hooks
+  +# Post-commit hook: condense session data if commit has Entire-Checkpoint trailer
+  +if command -v entire >/dev/null 2>&1; then entire hooks git post-commit 2>/dev/null || true; else :; fi
+
+  diff --git a/.githooks/post-rewrite b/.githooks/post-rewrite
+  new file mode 100755
+  index 0000000..2c65d91
+  --- /dev/null
+  +++ b/.githooks/post-rewrite
+  @@ -0,0 +1,4 @@
+  +#!/bin/sh
+  +# Entire CLI hooks
+  +# Post-rewrite hook: remap session linkage after amend/rebase rewrites
+  +if command -v entire >/dev/null 2>&1; then entire hooks git post-rewrite "$1" 2>/dev/null || true; else :; fi
+
+  diff --git a/.githooks/pre-push b/.githooks/pre-push
+  new file mode 100755
+  index 0000000..4505584
+  --- /dev/null
+  +++ b/.githooks/pre-push
+  @@ -0,0 +1,10 @@
+  +#!/bin/sh
+  +# Entire CLI hooks
+  +# Pre-push hook: push session logs alongside user's push
+  +# $1 is the remote name (e.g., "origin")
+  +if command -v entire >/dev/null 2>&1; then entire hooks git pre-push "$1" || true; else :; fi
+  +# Chain: run pre-existing hook
+  +_entire_hook_dir="$(dirname "$0")"
+  +if [ -x "$_entire_hook_dir/pre-push.pre-entire" ]; then
+  +    "$_entire_hook_dir/pre-push.pre-entire" "$@"
+  +fi
+
+  diff --git a/.githooks/pre-push.pre-entire b/.githooks/pre-push.pre-entire
+  new file mode 100755
+  index 0000000..1a4a62c
+  --- /dev/null
+  +++ b/.githooks/pre-push.pre-entire
+  @@ -0,0 +1,4 @@
+  +#!/usr/bin/env bash
+  +set -euo pipefail
+  +
+  +bun run bumpy check --hook pre-push
+
+  diff --git a/.githooks/prepare-commit-msg b/.githooks/prepare-commit-msg
+  new file mode 100755
+  index 0000000..7fa3842
+  --- /dev/null
+  +++ b/.githooks/prepare-commit-msg
+  @@ -0,0 +1,3 @@
+  +#!/bin/sh
+  +# Entire CLI hooks
+  +if command -v entire >/dev/null 2>&1; then entire hooks git prepare-commit-msg "$1" "$2" 2>/dev/null || true; else :; fi
+
+  diff --git a/devenv.nix b/devenv.nix
+  new file mode 100644
+  index 0000000..78b0ef0
+  --- /dev/null
+  +++ b/devenv.nix
+  @@ -0,0 +1,13 @@
+  +{ pkgs, lib, config, ... }:
+  +{
+  +  # Per-project devenv config for the Twyne app shell.
+  +  # Keep the shell focused on the tools the repo actually needs.
+  +  packages = with pkgs; [
+  +    just
+  +  ];
+  +
+  +  languages.javascript = {
+  +    enable = true;
+  +    bun.enable = true;
+  +  };
+  +}
+
+  diff --git a/scripts/install-git-hooks.mjs b/scripts/install-git-hooks.mjs
+  new file mode 100755
+  index 0000000..5d0a096
+  --- /dev/null
+  +++ b/scripts/install-git-hooks.mjs
+  @@ -0,0 +1,16 @@
+  +#!/usr/bin/env node
+  +import { spawnSync } from "node:child_process";
+  +
+  +const isGitRepo = spawnSync("git", ["rev-parse", "--git-dir"], {
+  +  stdio: "ignore",
+  +});
+  +
+  +if (isGitRepo.status !== 0) {
+  +  process.exit(0);
+  +}
+  +
+  +const result = spawnSync("git", ["config", "core.hooksPath", ".githooks"], {
+  +  stdio: "inherit",
+  +});
+  +
+  +process.exit(result.status ?? 1);
+
+  diff --git a/src/components/ui/themed-dialog.tsx b/src/components/ui/themed-dialog.tsx
+  new file mode 100644
+  index 0000000..7a66cc1
+  --- /dev/null
+  +++ b/src/components/ui/themed-dialog.tsx
+  @@ -0,0 +1,127 @@
+  +import { component$, type PropFunction } from "@builder.io/qwik";
+  +
+  +interface ThemedDialogProps {
+  +  open: boolean;
+  +  title: string;
+  +  message: string;
+  +  confirmLabel: string;
+  +  cancelLabel?: string;
+  +  tone?: "default" | "danger";
+  +  confirmDisabled?: boolean;
+  +  busy?: boolean;
+  +  error?: string | null;
+  +  inputLabel?: string;
+  +  inputValue?: string;
+  +  inputPlaceholder?: string;
+  +  inputHelp?: string;
+  +  onInput$?: PropFunction<(value: string) => void>;
+  +  onCancel$?: PropFunction<() => void>;
+  +  onConfirm$?: PropFunction<() => void>;
+  +}
+  +
+  +export const ThemedDialog = component$((props: ThemedDialogProps) => {
+  +  if (!props.open) return null;
+  +
+  +  const confirmClass =
+  +    props.tone === "danger"
+  +      ? "btn-press text-xs text-[var(--color-paper)]"
+  +      : "btn-paper text-xs";
+  +
+  +  return (
+  +    <div
+  +      class="fixed inset-0 flex items-center justify-center p-4"
+  +      style={{
+  +        zIndex: "var(--z-modal)",
+  +        background: "rgba(20, 16, 10, 0.58)",
+  +      }}
+  +      onClick$={(e) => {
+  +        if (e.target === e.currentTarget) {
+  +          props.onCancel$?.();
+  +        }
+  +      }}
+  +    >
+  +      <div
+  +        class="folio w-full max-w-md p-5"
+  +        role="dialog"
+  +        aria-modal="true"
+  +        aria-labelledby="themed-dialog-title"
+  +      >
+  +        <p class="dept-label mb-2">Confirm action</p>
+  +        <h2
+  +          id="themed-dialog-title"
+  +          class="text-base font-semibold text-[var(--color-ink)]"
+  +          style={{ fontFamily: "var(--font-display)" }}
+  +        >
+  +          {props.title}
+  +        </h2>
+  +        <p class="mt-2 text-sm leading-relaxed text-[var(--color-ink-light)]">
+  +          {props.message}
+  +        </p>
+  +
+  +        {props.inputLabel && (
+  +          <div class="mt-4">
+  +            <label
+  +              class="block text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-1"
+  +              style={{ fontFamily: "var(--font-typewriter)" }}
+  +              for="themed-dialog-input"
+  +            >
+  +              {props.inputLabel}
+  +            </label>
+  +            <input
+  +              id="themed-dialog-input"
+  +              autoFocus
+  +              value={props.inputValue ?? ""}
+  +              placeholder={props.inputPlaceholder}
+  +              class="field-input"
+  +              style={{ fontFamily: "var(--font-typewriter)" }}
+  +              onInput$={(e) =>
+  +                props.onInput$?.((e.target as HTMLInputElement).value)
+  +              }
+  +              onKeyDown$={(e) => {
+  +                if (e.key === "Enter" && !props.confirmDisabled && !props.busy) {
+  +                  void props.onConfirm$?.();
+  +                }
+  +              }}
+  +            />
+  +            {props.inputHelp && (
+  +              <p
+  +                class="mt-2 text-[0.68rem] text-[var(--color-ink-muted)]"
+  +                style={{ fontFamily: "var(--font-typewriter)" }}
+  +              >
+  +                {props.inputHelp}
+  +              </p>
+  +            )}
+  +          </div>
+  +        )}
+  +
+  +        {props.error && (
+  +          <p class="error-slip mt-4" role="alert">
+  +            {props.error}
+  +          </p>
+  +        )}
+  +
+  +        <div class="mt-5 flex items-center justify-end gap-2">
+  +          <button onClick$={() => props.onCancel$?.()} class="btn-paper text-xs">
+  +            {props.cancelLabel ?? "Cancel"}
+  +          </button>
+  +          <button
+  +            onClick$={() => props.onConfirm$?.()}
+  +            disabled={props.confirmDisabled || props.busy}
+  +            class={`${confirmClass} disabled:opacity-50 disabled:cursor-not-allowed`}
+  +            style={
+  +              props.tone === "danger"
+  +                ? {
+  +                    backgroundColor: "var(--color-vermilion)",
+  +                    borderColor: "var(--color-vermilion)",
+  +                    fontFamily: "var(--font-typewriter)",
+  +                  }
+  +                : undefined
+  +            }
+  +          >
+  +            {props.confirmLabel}
+  +          </button>
+  +        </div>
+  +      </div>
+  +    </div>
+  +  );
+  +});
+
+
+###
+
+Your task is to help verify the quality of the diff.
+We care only about specific categories of important issues.
+The rubric below outlines these categories of important issues, and contains guidelines and examples to correctly identify them:
+
+---
+**type_safety_violation**:
+Guidelines:
+    - Code that violates type safety expectations or could cause type-related runtime errors.
+    - Look for: incorrect type assumptions, missing type checks before operations, unsafe type casting, attribute access on potentially None values.
+    - Check for return type violations: functions that return values inconsistent with their declared return type annotations (e.g., returning None when the type annotation specifies a non-optional type, returning wrong tuple element types).
+
+---
+**resource_leakage**:
+Guidelines:
+    - Focus on system resources that require explicit cleanup: file handles, network connections, database connections, memory allocations, and similar OS-level resources.
+    - These resources must be reliably freed even if exceptions occur.
+    - For these system resources, cleanup should use try/finally blocks, context managers (with statements), or RAII patterns.
+    - Also look for reference management issues: objects being cleaned up while still holding references elsewhere, or cleanup operations (like garbage collection) called before removing all references to the object.
+Examples:
+    - A file or socket connection is opened but not reliably closed.
+    - A database transaction is started but not committed or rolled back in all code paths.
+    - Memory is allocated but not freed (in languages with manual memory management).
+    - An object's cleanup method triggers garbage collection while the object is still referenced in a global data structure, preventing proper cleanup.
+Exceptions:
+    - Animation loops, timers, and intervals that are controlled by boolean flags or cleared by ID are not resource leaks if they have proper stop mechanisms.
+    - Event listeners that are meant to persist for the lifetime of the application.
+    - Resources that are automatically cleaned up by garbage collection (unless they hold system resources).
+
+---
+**repetitive_or_duplicate_code**:
+Guidelines:
+    Repetitive or duplicate code.
+Examples:
+    - A non-trivial calculation or piece of logic is repeated in multiple places within a file.
+    - New code is introduced by the diff to accomplish a certain functionality, but there is an existing function in the code base that already implements the same functionality, or could be easily generalized to accomplish the desired functionality.
+    - A file is duplicated (make exceptions for cases where duplication may be necessary such as test files).
+    - A significant amount of code is introduced which duplicates functionality from standard or well-known libraries.
+    - Multiple functions format or build the same string or data structure in the same way without using a shared helper function or test fixture.
+Exceptions:
+    - Do not flag duplication between legacy and new implementations when the codebase is clearly undergoing a migration or maintaining multiple versions for compatibility.
+    - Do not flag duplication across different architectural layers or modules when the duplication serves to maintain proper separation of concerns.
+
+---
+**incomplete_integration_with_existing_code**:
+Guidelines:
+    - The diff should follow existing architectural and organizational patterns in the codebase:
+        - If the codebase uses a modular structure with separate files for classes/components, new classes should follow the same pattern
+        - If the codebase organizes code in specific directories (e.g., src/, components/, utils/), new code should be placed accordingly
+        - If the codebase uses specific import/export patterns (e.g., relative vs. absolute imports), new code should use the same patterns
+    - The diff should integrate functionally with existing code by adding invocations, updating invocations, replacing code with newly defined functions or variables, removing duplicate code when a new piece replaces it, etc.
+    - Prefer using existing library/dependency APIs over custom implementations when the library provides (or will provide) the needed functionality.
+Examples:
+    - The codebase uses absolute Python imports from the project root, but a new file uses relative imports.
+    - The codebase places classes into separate files under a source directory, but new classes are all added to an existing file.
+    - The diff implements a new function, but doesn't add any callsites for it
+    - A new optional parameter is added to a function to implement a requested feature, but existing callsites are not updated to make use of this parameter
+    - A named constant is introduced to replace a hard-coded inline literal, but existing code is not updated to make use of the new constant everywhere
+    - Custom code is added to implement functionality that an existing external library already provides or will provide in newer versions.
+
+---
+**commit_message_mismatch**:
+Guidelines:
+    - The diff must completely fulfill the user's request.
+    - Look for incomplete implementations:
+       - When the user asks for changes 'throughout', 'everywhere', or 'all', verify ALL instances are modified
+       - If multiple changes are requested, ensure each one is fully implemented
+       - Check that fixes are applied to all occurrences of a pattern, not just some
+    - Look for scope mismatches:
+       - Changes only in initialization when they should apply during execution
+       - Modifications to only one file when multiple files need updates
+       - Partial refactoring that leaves related code unchanged
+    - Look for unauthorized changes:
+       - Configuration changes (linting, build, test settings) not requested
+       - New features or options beyond the request
+       - Changes to unrelated code
+       - Binaries, compiled files, dependencies, or build artifacts that should not be in version control
+    - Look for unintended removals:
+       - Removal of project-specific configuration or settings that should be preserved
+       - Deletion of functionality that is still needed
+       - Loss of necessary entries when replacing configuration files
+    - Look for unintended side effects:
+       - Changes that affect code paths or functionality beyond what was requested
+       - Modifications that impact how existing features work in ways not mentioned in the request
+Exceptions:
+    - Minor refactors directly related to requested changes are acceptable.
+
+---
+**dependency_management**:
+Guidelines:
+    - Check all import statements in new or modified files. If new code imports a library or package that is not part of the language's standard library, verify that the dependency is listed in the repository's dependency/requirement files (e.g., requirements.txt, pyproject.toml, package.json, Gemfile, etc.).
+    - If the diff removes the last remaining use of an external library or package, the dependency and/or requirement files in the repository should be updated to no longer include the library.
+    - If the codebase uses a dependency for some functionality, the diff should avoid introducing other packages that provide the same functionality, unless there is a good reason to do so (e.g. the new package is significantly better maintained, has better performance, or is more secure).
+Exceptions:
+    - Do not raise issues related to package versions or pinning unless it is a critical issue.
+
+---
+**runtime_error_risk**:
+Guidelines:
+    - Code patterns that are very likely to cause runtime errors during execution.
+    - Check for version compatibility issues: usage of function parameters, APIs, or language features that are only available in specific versions of the language, standard library, or external dependencies (e.g., a keyword argument added in Python 3.10 will cause TypeError on Python 3.8/3.9).
+    - Look for: potential null/None pointer dereferences, array/list access with potentially invalid indices, division by zero possibilities, file operations without existence checks, network/IO operations without timeout or error handling, infinite loop conditions, memory allocation issues.
+    - Check string encoding/decoding operations: calls to .encode() or .decode() without error handling (try/except or 'errors' parameter) that could raise UnicodeEncodeError or UnicodeDecodeError, especially when processing untrusted or streamed data.
+    - Look for operations with global side effects that could cause problems: os.chdir() without proper restoration, modifying global state in ways that affect other code, operations that are not thread-safe when concurrency is present.
+    - Only flag issues where there is clear evidence the code will fail or cause serious problems. Avoid speculating about potential issues in well-established language patterns or standard library usage.
+
+---
+**abstraction_violation**:
+Guidelines:
+    - Code that breaks established abstraction boundaries within the codebase.
+    - Look for:
+        - Direct access to internal data structures of classes/modules that should be encapsulated
+        - Bypassing public APIs to manipulate state or access internal functionality
+        - Mixing of concerns that should be separated by layers or modules
+        - Violating private vs. public interfaces (e.g., accessing private attributes or methods from outside their defining class/module)
+Examples:
+    - A Python function directly accesses a private attribute, variable or function (prefixed with an underscore) from a different class or file.
+    - A module modifies the internal state of another module directly instead of using and/or adding public API functions.
+Exceptions:
+    - Unit tests that need to access internal state for verification purposes.
+
+---
+**fails_silently**:
+Guidelines:
+    Code that fails silently is code that ignores errors without reporting them.
+Examples:
+    - Overly broad exception handlers (e.g. bare 'except' or 'except Exception') that catch errors and continue execution without handling, logging, or re-raising them.
+    - The return value of a function that returns an error value in case of a failure is not checked by the caller.
+Exceptions:
+    - There are certain cases where broad exception handlers are acceptable, such as in an executor class or in a main loop that iterates over several tasks. Such cases should still properly log and report the errors.
+    - Do not raise issues related to potential program crashes.
+
+---
+**insecure_code**:
+Guidelines:
+    - Look for hard-coded secrets such as API keys, passwords, tokens, or credentials in the diff.
+    - Check for variable names containing: 'token', 'key', 'secret', 'password', 'credential', 'auth'
+    - Look for string literals that appear to be:
+        - API keys or tokens (long alphanumeric strings, often 20+ characters)
+        - Hexadecimal strings that could be tokens or keys
+        - URLs with embedded credentials (e.g., 'REDACTED')
+        - Connection strings with passwords
+    - Flag any credentials or secrets that should be loaded from environment variables or configuration files instead.
+Examples:
+    - A variable named `api_key` or `auth_token` is assigned a hard-coded string value.
+    - A connection string contains a hard-coded password.
+    - A long hexadecimal string is assigned to a variable with 'token' in its name.
+    - An API request includes a hard-coded authentication header value.
+
+---
+**instruction_file_disobeyed**:
+Guidelines:
+    Explicit instructions in files such as .claude.md, CLAUDE.md, and AGENTS.md MUST be obeyed.
+Examples:
+    - CLAUDE.md requests the use of single quotes only, but double quotes are used.
+    - AGENTS.md requests that new versions be created on every database update, but a database entry is modified directly.
+    - .claude.md says to always run the tests after making changes, but the agent did not run the tests.
+Exceptions:
+    - Instructions in the closest file _above_ a location take precedence. For example, when considering a file foo/bar.py, foo/CLAUDE.md takes precedence over CLAUDE.md.
+    - Instructions only apply to the subtree below the file. For example, when considering a file foo/bar.py, foo/baz/CLAUDE.md does not apply.
+    - Applicable instructions should ONLY be contravened in the case of explicit user request--but if the user does explicitly request something counter to the instruction files, this should not be reported as a disobeyed instruction file.
+
+---
+**incorrect_algorithm**:
+Guidelines:
+    - Code that implements an algorithm incorrectly for its stated purpose.
+    - Look for: sorting algorithms with wrong comparison logic, search algorithms with incorrect termination, mathematical calculations with wrong formulas, data structure operations that don't maintain invariants, algorithms that don't handle edge cases (empty inputs, single elements).
+    - Only flag issues that are clearly incorrect for the stated purpose of the algorithm, and describe the problem and correction in detail.
+
+---
+**documentation_implementation_mismatch**:
+Guidelines:
+    - The implementation should follow, in this priority order: 1. the user's request, 2. documentation existing in the code base, 3. existing code around it, 4. general best practices and common sense
+    - If the user's request conflicts with the state of documentation in the code base, the documentation in the code base should be updated to reflect the new user request.
+Examples:
+    - The docstring of a class or function does not match what the class or function implements.
+    - The repository contains a README.md file with instructions that are not adhered to by the code.
+    - The diff implements significant new functionality, but existing documentation within the repository is not updated.
+    - Inline comments are not updated even though functionality was changed by the diff.
+    - Documentation contains outdated code snippets or commands that need to be updated because of the changes made by the diff.
+Exceptions:
+    - TODOs/FIXMEs that are not implemented yet are not considered a documentation mismatch.
+
+---
+**user_request_artifacts_left_in_code**:
+Guidelines:
+    - Comments should describe what the code does, not how it was changed.
+    - Flag comments that reference the change process: '# Changed from X to Y', '# Updated to print less'
+    - Flag comments that mention fixing or addressing issues: '# Fixed bug where...', '# This addresses...'
+    - Flag documentation written in past tense about modifications
+    - Acceptable comments explain current behavior without referencing changes:
+        - Acceptable: '# Multiply by 3x' instead of '# Reduced factor from 5x to 3x'
+        - Acceptable: '# Handle edge case' instead of '# Fixed edge case bug'
+
+---
+**error_handling_missing**:
+Guidelines:
+    - Missing error handling for operations that could reasonably fail.
+    - Look for: file I/O without exception handling, network requests without timeout/retry logic, user input processing without validation, external API calls without error checking, database operations without transaction handling.
+    - Only flag issues that are clearly incorrect, and avoid flagging issues where it is not a big problem (e.g. file I/O in a script may not need flagging while missing error handling for file I/O in a long running or production systems should have error handling).
+
+---
+**refactoring_needed**:
+Guidelines:
+    - Functions that have gotten long (> 50 lines) and are mixing multiple concerns and/or combining several different steps should be broken up. (Typically by using helper functions and/or separate classes to encapsulate individual concerns.)
+    - Classes or files that are combining different concerns should be broken up, such that each class / file only deals with one primary concern.
+        - Note: we don't impose any minimal or maximal length on a class or file. Classes and files are ok to be long, as long as they only deal with a single concern.
+Examples:
+    - New functionality that is orthogonal to the existing functionality in a function is inserted into the existing function's body instead of being separated out into its own function.
+    - A class mixes two different use cases that could be separated into two classes.
+
+---
+**async_correctness**:
+Guidelines:
+    - Issues specific to asynchronous or concurrent code correctness.
+    - Look for: missing await keywords on functions that are clearly async (defined with 'async def' or returning coroutines/Promises), improper async context manager usage, race conditions in async code, deadlock potential, shared state access without proper synchronization.
+    - For threading issues: threads or background tasks that are created but never started, joins without corresponding starts.
+    - Be careful not to flag decorators or wrappers as requiring await unless you can verify they actually make the function async. Only flag clear cases where an async function is called without await or a thread/task is created but never started.
+
+---
+**test_coverage**:
+Guidelines:
+    - If the diff introduces significant new functionality, and the code base has existing unit and/or integration tests, new tests should be added to cover the new functionality.
+    - If the diff changes the behavior of existing functionality that is covered by automated tests, those tests should be updated to reflect the new behavior.
+    - If the diff contains a bug fix, and the code base has existing unit and/or integration tests, a regression test should be added for the bug.
+Exceptions:
+    - Syntactical or logical issues in tests will be raised in other issue types and do not belong in this category.
+
+---
+**logic_error**:
+Guidelines:
+    - Logic errors are flaws in the reasoning or flow of the code that would cause incorrect behavior.
+    - Look for: off-by-one errors in loops or array indexing, incorrect conditional logic (wrong operators, inverted conditions), variable assignments that overwrite needed values, incorrect order of operations, missing or incorrect loop termination conditions, algorithms that don't match their intended purpose.
+    - Look for missing, incorrect, or incomplete parameters to function/API calls that will cause the function to behave differently than intended (e.g., missing event masks, wrong flags, omitted required options).
+    - Pay special attention to control flow issues: early returns or breaks that prevent intended functionality from executing, functions that exit before completing their stated purpose, conditions that prevent code paths from being reached when they should be.
+    - Do not flag issues that are not clearly incorrect, for example it's possible code is implemented in a suboptimal way, this is not an issue unless it is explicitly stated that the code should be optimal or implemented in a certain way.
+
+---
+**poor_naming**:
+Guidelines:
+    - File, class, function, function parameter, and constant names should follow the format and naming standards that are currently dominant in the code base (especially within the same file or folder), or the style guide if one exists.
+    - In the absence of existing code, common naming standards for the given programming language should be used.
+    - Function names should be descriptive of what the function does. A person reading the function name without seeing its implementation should be able to get a sense of its purpose.
+    - If any function parameter is being mutated by the function, that fact should be made clear in the name of the parameter (e.g. by appending `_out` / `Out` to the name), unless it is clear that such name-based annotations would be against the existing naming style in the code base.
+    - Note that we don't impose any specific criteria on the length of names. If the existing code base uses many abbreviated names, new code should follow that. Or if it uses a lot of long, verbose names, this similarly should be followed.
+    - If a component's functionality is significantly changed, the name of the component should be updated to reflect the new functionality, if it is not already clear from the context.
+Exceptions:
+    - Short names for local variables are usually okay.
+
+---
+**correctness_syntax_issues**:
+Guidelines:
+    - The diff should not contain any syntax errors that would prevent the code from running.
+    - CAREFULLY CHECK INDENTATION: In Python and other indentation-sensitive languages, verify that all function definitions, class definitions, and code blocks maintain proper indentation levels. Dedenting a function body to the module level or similar indentation errors are critical syntax issues.
+    - Look for: broken indentation that would cause syntax errors, missing or mismatched brackets/braces/parentheses, references to files/classes/functions that don't exist, removal of code that is still being referenced elsewhere.
+    - Check function signatures match their usage: if a function is modified to return different values (e.g., a single value vs. a tuple), all call sites must be updated accordingly.
+Examples:
+    - The diff breaks the indentation of a Python function or class, dedenting it incorrectly.
+    - Code references a file, class or function that does not exist, or removes a file, class or function that is definitely still being referenced.
+    - A function is changed to return a tuple of two values, but existing callers still expect only a single return value.
+    - A function's return statement is removed but callers still expect a return value.
+
+---
+
+Use your standard tools to explore the repository and analyze the code thoroughly.
+Look at the additional guidance section below for more details on how to find issues.
+
+After your analysis, provide your response in JSON format matching this schema:
+
+{
+  "$defs": {
+    "GeneratedIssueSchema": {
+      "additionalProperties": true,
+      "description": "Individual issue from LLM response.",
+      "properties": {
+        "codePart": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Specific code snippet that has the issue",
+          "title": "Codepart"
+        },
+        "confidence": {
+          "description": "Confidence in this assessment",
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "description": {
+          "description": "Specific explanation of what\u0027s wrong and why it\u0027s incorrect",
+          "title": "Description",
+          "type": "string"
+        },
+        "issueCode": {
+          "description": "Category of the issue",
+          "title": "Issuecode",
+          "type": "string"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "File path where the issue occurs",
+          "title": "Location"
+        },
+        "severity": {
+          "description": "Integer 1-5 (1=minor issue, 5=critical bug)",
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Severity",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "issueCode",
+        "description",
+        "severity",
+        "confidence"
+      ],
+      "title": "GeneratedIssueSchema",
+      "type": "object"
+    }
+  },
+  "additionalProperties": true,
+  "description": "Complete response structure for issue identification.",
+  "properties": {
+    "issues": {
+      "description": "List of identified issues",
+      "items": {
+        "$ref": "#/$defs/GeneratedIssueSchema"
+      },
+      "title": "Issues",
+      "type": "array"
+    }
+  },
+  "title": "GeneratedResponseSchema",
+  "type": "object"
+}
+
+For each issue found, provide:
+- issue_code: Category from the rubric above
+- description: Specific explanation of the issue
+- (if applicable) location: File path where the issue occurs (relative to /home/diogenes/Projects/twyne)
+- (if applicable) code_part: Specific code snippet that has the issue. Your code snippet should be the exact same as the original code including whitespace.
+- severity: Integer 1-5 (1=minor, 5=critical)
+- confidence: Float 0.0-1.0 indicating your confidence
+
+Your response should look like:
+```json
+{
+    "issues": [
+        <list of issues>
+    ]
+}
+```
+
+If no issues are found, return: ```json{"issues": []}```
+
+Focus on real issues that impact code quality, correctness, or maintainability.
+You must not return issues that were already present in the code or issues that are fixed by the diff.
+You must only return issues that were introduced by the diff.
+Do not report duplicate issues with the same or equivalent descriptions.
+
+### Additional Guidance for Finding Issues ###
+You should use a Task tool to create a parallel task for each issue type in the rubric.
+You should pass along the exact issue type definition with all details to the task.
+Once all the Tasks have completed you can collate their results.
+You should pass along any relevant information from the guidance below to the task.
+Here is a non-exhaustive list of things that you can do using your tools within the task to find issues:
+
+---
+**type_safety_violation**:
+None
+
+---
+**resource_leakage**:
+Carefully examine the diff or code affected by newly added code.
+
+---
+**repetitive_or_duplicate_code**:
+- Look at repetition in the diff or duplication between the diff and existing code in the codebase.
+- Look at incomplete usage of new code
+- Understand existing codebase patterns.
+
+---
+**incomplete_integration_with_existing_code**:
+- Look at the existing code organization and architectural patterns
+- Check if new code follows the same structural patterns as existing code
+- Trace the links or identify the lack of them between the diff and existing code
+- Look at incomplete usage of new code
+
+---
+**commit_message_mismatch**:
+Compare the uncommitted diff and the request to ensure they match.
+
+---
+**dependency_management**:
+- Look at the diff and dependency management files for issues.
+- Understand existing codebase patterns.
+- Carefully check import statements at the top of new or modified files.
+
+---
+**runtime_error_risk**:
+None
+
+---
+**abstraction_violation**:
+None
+
+---
+**fails_silently**:
+Carefully examine the diff.
+
+---
+**insecure_code**:
+Carefully examine the diff for any string literals that might be secrets, especially those assigned to variables with security-related names.
+
+---
+**instruction_file_disobeyed**:
+Cross-check ALL instructions in ALL instruction files against the diff contents.
+
+---
+**incorrect_algorithm**:
+None
+
+---
+**documentation_implementation_mismatch**:
+Look at code comments and READMEs in the diff or in existing code related to the diff.
+
+---
+**user_request_artifacts_left_in_code**:
+Look at code comments and added documentation in the diff.
+
+---
+**error_handling_missing**:
+None
+
+---
+**refactoring_needed**:
+- Look at the scope and length of components of the diff or code affected by the diff.
+- Look at incomplete usage of new code.
+- Understand existing codebase patterns.
+
+---
+**async_correctness**:
+None
+
+---
+**test_coverage**:
+- Look at the diff and tests for it or tests affected by it or missing tests.
+- Understand existing codebase patterns.
+- Run code but this may not always be a viable option or may surface irrelevant issues.
+
+---
+**logic_error**:
+None
+
+---
+**poor_naming**:
+- Look at names that were added or names corresponding to updated code.
+- Understand existing codebase patterns.
+
+---
+**correctness_syntax_issues**:
+None
+
+---
+Note that this is just guidance on how to find issues, please refer to the rubric for the types of issues to find.
