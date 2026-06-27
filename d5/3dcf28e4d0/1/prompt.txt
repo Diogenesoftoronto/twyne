@@ -1,5 +1,1 @@
-I want you to try to commit the current changes using conventional commits
-
----
-
 okay so that commit is not nearly detailed enough and envrc should not be committed please fix this
