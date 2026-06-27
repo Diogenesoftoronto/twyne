@@ -1,0 +1,39 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "d53dcf28e4d0",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/_config.json",
+    ".bumpy/bumpy-release-tooling.md",
+    ".githooks/commit-msg",
+    ".githooks/post-commit",
+    ".githooks/post-rewrite",
+    ".githooks/pre-push",
+    ".githooks/pre-push.pre-entire",
+    ".githooks/prepare-commit-msg",
+    ".github/workflows/release.yml",
+    ".gitignore",
+    "README.md",
+    "bun.lock",
+    "devenv.nix",
+    "package.json",
+    "scripts/install-git-hooks.mjs",
+    "src/components/collaboration/share-dialog.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/ui/themed-dialog.tsx",
+    "src/global.css",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/exchange.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/d5/3dcf28e4d0/0/metadata.json",
+      "transcript": "/d5/3dcf28e4d0/0/full.jsonl",
+      "content_hash": "/d5/3dcf28e4d0/0/content_hash.txt",
+      "prompt": "/d5/3dcf28e4d0/0/prompt.txt"
+    }
+  ]
+}

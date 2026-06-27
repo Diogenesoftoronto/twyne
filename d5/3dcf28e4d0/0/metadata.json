@@ -1,0 +1,72 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "d53dcf28e4d0",
+  "session_id": "019f06b7-a21a-7f10-b1fe-d034ac06fca4",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-27T09:08:15.249423517Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/_config.json",
+    ".bumpy/bumpy-release-tooling.md",
+    ".githooks/commit-msg",
+    ".githooks/post-commit",
+    ".githooks/post-rewrite",
+    ".githooks/pre-push",
+    ".githooks/pre-push.pre-entire",
+    ".githooks/prepare-commit-msg",
+    ".github/workflows/release.yml",
+    ".gitignore",
+    "README.md",
+    "bun.lock",
+    "devenv.nix",
+    "package.json",
+    "scripts/install-git-hooks.mjs",
+    "src/components/collaboration/share-dialog.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/ui/themed-dialog.tsx",
+    "src/global.css",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/exchange.ts"
+  ],
+  "agent": "Codex",
+  "model": "fugu-ultra",
+  "turn_id": "0000cf1a6171",
+  "initial_attribution": {
+    "calculated_at": "2026-06-27T09:08:15.243196331Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 43,
+    "total_committed": 0,
+    "total_lines_changed": 43,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 480,
+      "user_lines_removed": 43,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".envrc": 1,
+        "devenv.nix": 9,
+        "src/components/collaboration/share-dialog.tsx": 22,
+        "src/components/editor/twyne-editor.tsx": 224,
+        "src/components/ui/themed-dialog.tsx": 127,
+        "src/global.css": 29,
+        "src/routes/settings/index.tsx": 68
+      },
+      "user_removed_per_file": {
+        "src/components/collaboration/share-dialog.tsx": 3,
+        "src/components/editor/twyne-editor.tsx": 19,
+        "src/global.css": 2,
+        "src/routes/settings/index.tsx": 19
+      }
+    }
+  ]
+}
