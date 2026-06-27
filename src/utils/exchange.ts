@@ -12,7 +12,7 @@
 
 import { marked } from "marked";
 import type { Folio, LayoutSettings, ProjectBrief } from "../types";
-import { DEFAULT_LAYOUT } from "../types";
+import { DEFAULT_LAYOUT, resolveMargins } from "../types";
 
 export type ExportFormat = "markdown" | "html" | "txt" | "twyne-backup";
 
@@ -94,13 +94,10 @@ function wrapStandaloneHtml(
     normal: "48rem",
     wide: "62rem",
   };
-  const padMap: Record<LayoutSettings["margin"], string> = {
-    tight: "1.5rem",
-    normal: "3rem",
-    roomy: "5rem",
-  };
+  const m = resolveMargins(layout);
   const docWidth = widthMap[layout.width];
-  const docPadX = padMap[layout.margin];
+  const docPadX = `${m.x}rem`;
+  const docPageMargin = `${m.top}rem ${m.x}rem ${m.bottom}rem`;
 
   const running = layout.runningHeader
     ? (options.header && options.header.trim()) ||
@@ -119,12 +116,12 @@ function wrapStandaloneHtml(
 <title>${escapeHtml(title)}</title>
 <style>
   :root { color-scheme: light; }
-  @page { size: auto; margin: ${docPadX}; ${layout.pageNumbers ? "@bottom-center { content: counter(page); font-family: ui-monospace, monospace; font-size: 0.75rem; color: #6a5d4a; }" : ""} }
+  @page { size: auto; margin: ${docPageMargin}; ${layout.pageNumbers ? "@bottom-center { content: counter(page); font-family: ui-monospace, monospace; font-size: 0.75rem; color: #6a5d4a; }" : ""} }
   body {
     font-family: ui-serif, Georgia, "Times New Roman", serif;
     max-width: ${docWidth};
-    margin: 4rem auto;
-    padding: 0 1.5rem;
+    margin: ${m.top}rem auto ${m.bottom}rem;
+    padding: 0 ${docPadX};
     line-height: 1.7;
     color: #1a1611;
     background: #fbf6ec;

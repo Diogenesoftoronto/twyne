@@ -46,6 +46,7 @@
         "@playwright/test": "^1.61.0",
         "@tailwindcss/vite": "^4.2.4",
         "@types/node": "^25.9.3",
+        "@varlock/bumpy": "^1.18.0",
         "agent-browser": "^0.27.3",
         "concurrently": "^9",
         "electrobun": "^1.18.1",
@@ -822,6 +823,8 @@
     "@ungap/structured-clone": ["@ungap/structured-clone@1.3.0", "", {}, "sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g=="],
 
     "@upsetjs/venn.js": ["@upsetjs/venn.js@2.0.0", "", { "optionalDependencies": { "d3-selection": "^3.0.0", "d3-transition": "^3.0.1" } }, "sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw=="],
+
+    "@varlock/bumpy": ["@varlock/bumpy@1.18.0", "", { "bin": { "bumpy": "dist/cli.mjs" } }, "sha512-0LBdmKG28V9xgg2clbxZbZG2Z94X/TEJ2sMgercYX0INj2Z84xPpk4/vy83i2+xA0kDxvafqDI7DetRnPGPIzw=="],
 
     "@vercel/oidc": ["@vercel/oidc@3.2.0", "", {}, "sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug=="],
 

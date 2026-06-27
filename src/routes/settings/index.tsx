@@ -1,5 +1,6 @@
 import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { ThemedDialog } from "../../components/ui/themed-dialog";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
 import { signOut } from "../../utils/auth-client";
@@ -59,6 +60,10 @@ interface SettingsStore {
   deletingAccount: boolean;
   accountToast: string | null;
   accountError: string | null;
+  showResetDialog: boolean;
+  showDeleteDialog: boolean;
+  deleteConfirmText: string;
+  deleteDialogError: string | null;
   /* writer handle (public identity) */
   handleLoaded: boolean;
   handle: string | null;
@@ -140,6 +145,10 @@ export default component$(() => {
     deletingAccount: false,
     accountToast: null,
     accountError: null,
+    showResetDialog: false,
+    showDeleteDialog: false,
+    deleteConfirmText: "",
+    deleteDialogError: null,
     handleLoaded: false,
     handle: null,
     handleDraft: "",
@@ -270,16 +279,22 @@ export default component$(() => {
   );
 
   const resetAll = $(async () => {
-    if (
-      !confirm(
-        "Reset all AI settings to defaults? Providers and keys will be removed.",
-      )
-    )
-      return;
+    store.showResetDialog = false;
     store.settings = DEFAULT_AI_SETTINGS;
     await saveAiSettingsToIdb(DEFAULT_AI_SETTINGS);
     store.toast = "Reset to defaults";
     setTimeout(() => (store.toast = null), 2000);
+  });
+
+  const openDeleteAccountDialog = $(() => {
+    if (!convexClientSig.value) {
+      store.accountError = "Not connected. Try again in a moment.";
+      return;
+    }
+    store.showDeleteDialog = true;
+    store.deleteConfirmText = "";
+    store.deleteDialogError = null;
+    store.accountError = null;
   });
 
   const handleDeleteAccount = $(async () => {
@@ -288,20 +303,12 @@ export default component$(() => {
       store.accountError = "Not connected. Try again in a moment.";
       return;
     }
-    // The substantive deletion is irreversible. Gate it behind a typed
-    // confirmation so a stray click can't wipe an account.
-    if (
-      !confirm(
-        "Permanently delete your Twyne account and all synced data? This cannot be undone. Export any folios you want to keep first.",
-      )
-    )
-      return;
-    const typed = prompt("Type DELETE to confirm:");
-    if (typed !== "DELETE") {
-      store.accountError = "Cancelled — nothing was deleted.";
+    if (store.deleteConfirmText.trim() !== "DELETE") {
+      store.deleteDialogError = "Type DELETE exactly to continue.";
       return;
     }
     store.deletingAccount = true;
+    store.deleteDialogError = null;
     store.accountError = null;
     try {
       const result = await client.mutation(api.account.deleteAccount, {});
@@ -316,11 +323,13 @@ export default component$(() => {
       store.accountToast = result?.identityPurged
         ? "Your account and synced data have been deleted."
         : "Synced data deleted. We're finishing the account teardown — if you can still sign in, contact support@twyne.love.";
+      store.showDeleteDialog = false;
       store.deletingAccount = false;
       window.location.href = "/";
     } catch (e: any) {
       store.accountError =
         e?.message ?? "Could not delete account. Please try again.";
+      store.deleteDialogError = store.accountError;
       store.deletingAccount = false;
     }
   });
@@ -1686,7 +1695,9 @@ export default component$(() => {
 
                 <div class="pt-3 border-t border-dashed border-[var(--color-paper-3)]">
                   <button
-                    onClick$={resetAll}
+                    onClick$={() => {
+                      store.showResetDialog = true;
+                    }}
                     class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)]"
                     style={{ fontFamily: "var(--font-typewriter)" }}
                   >
@@ -1962,7 +1973,7 @@ export default component$(() => {
                   </p>
                 )}
                 <button
-                  onClick$={handleDeleteAccount}
+                  onClick$={openDeleteAccountDialog}
                   disabled={store.deletingAccount}
                   class="btn-press text-xs text-[var(--color-paper)] disabled:opacity-60"
                   style={{
@@ -1995,6 +2006,44 @@ export default component$(() => {
           {store.toast}
         </div>
       )}
+
+      <ThemedDialog
+        open={store.showResetDialog}
+        title="Reset all AI settings?"
+        message="This removes saved providers, models, and keys from the current browser and restores Twyne's defaults."
+        confirmLabel="Reset settings"
+        tone="danger"
+        onCancel$={() => {
+          store.showResetDialog = false;
+        }}
+        onConfirm$={resetAll}
+      />
+
+      <ThemedDialog
+        open={store.showDeleteDialog}
+        title="Delete your account?"
+        message="This permanently deletes your Twyne account and every synced folio, brief, note, rubric result, and published piece. Export anything you want to keep first."
+        confirmLabel={store.deletingAccount ? "Deleting…" : "Delete account"}
+        tone="danger"
+        busy={store.deletingAccount}
+        confirmDisabled={store.deletingAccount}
+        error={store.deleteDialogError}
+        inputLabel="Type DELETE to confirm"
+        inputValue={store.deleteConfirmText}
+        inputPlaceholder="DELETE"
+        inputHelp="This step is irreversible."
+        onInput$={(value) => {
+          store.deleteConfirmText = value;
+          store.deleteDialogError = null;
+        }}
+        onCancel$={() => {
+          if (store.deletingAccount) return;
+          store.showDeleteDialog = false;
+          store.deleteConfirmText = "";
+          store.deleteDialogError = null;
+        }}
+        onConfirm$={handleDeleteAccount}
+      />
     </div>
   );
 });

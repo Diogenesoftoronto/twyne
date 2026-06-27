@@ -108,6 +108,64 @@ body {
     "onum" 1;
 }
 
+/* ── Page margin guides ─────────────────────────────────────────────
+ * Faint vermilion rules marking where the live margins sit, the way Word
+ * and Google Docs show the header/footer and side margins. They track the
+ * same --doc-pad-* custom properties that drive the page padding, so moving
+ * the layout sliders moves the guides. Painted as the page's own background
+ * so they always sit behind the text without any z-index juggling. */
+.page-canvas {
+  --guide: rgba(193, 39, 45, 0.28);
+  background-image:
+    linear-gradient(var(--guide), var(--guide)),
+    linear-gradient(var(--guide), var(--guide)),
+    linear-gradient(var(--guide), var(--guide)),
+    linear-gradient(var(--guide), var(--guide));
+  background-repeat: no-repeat;
+  background-size:
+    1px 100%,
+    1px 100%,
+    100% 1px,
+    100% 1px;
+  background-position:
+    left var(--doc-pad-x, 3rem) top 0,
+    right var(--doc-pad-x, 3rem) top 0,
+    left 0 top var(--doc-pad-y, 2.5rem),
+    left 0 bottom var(--doc-pad-bottom, 4rem);
+}
+
+/* ── Layout margin sliders ──────────────────────────────────────── */
+.margin-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--color-paper-3);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.margin-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-vermilion);
+  border: none;
+  cursor: pointer;
+}
+
+.margin-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-vermilion);
+  border: none;
+  cursor: pointer;
+}
+
 /* ── Editorial chrome utilities ──────────────────────────── */
 .masthead-rule {
   position: relative;
@@ -378,10 +436,25 @@ body {
 
 .twyne-editor .ProseMirror table {
   border-collapse: collapse;
+  /* table-layout: fixed is required for Tiptap's column-resize handles to
+   * actually resize columns — without it the <colgroup> widths it writes are
+   * ignored and dragging the handle does nothing. */
+  table-layout: fixed;
   width: 100%;
   margin: 1em 0;
   font-family: var(--font-sans);
   font-size: 0.95rem;
+  overflow: hidden;
+}
+
+/* Honour the per-column widths Tiptap stores in the generated <colgroup>. */
+.twyne-editor .ProseMirror table col {
+  min-width: 3rem;
+}
+
+.twyne-editor .tableWrapper {
+  margin: 1em 0;
+  overflow-x: auto;
 }
 
 .twyne-editor .ProseMirror table td,
@@ -389,6 +462,9 @@ body {
   border: 1px solid var(--color-paper-3);
   padding: 0.55em 0.8em;
   text-align: left;
+  min-width: 7rem;
+  position: relative;
+  vertical-align: top;
 }
 
 .twyne-editor .ProseMirror table th {
@@ -400,8 +476,55 @@ body {
   text-transform: uppercase;
 }
 
-.twyne-editor .ProseMirror .columnResizorHandle {
-  background-color: var(--color-vermilion);
+.twyne-editor .ProseMirror table .selectedCell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(193, 39, 45, 0.08);
+  pointer-events: none;
+}
+
+.twyne-editor .ProseMirror table .column-resize-handle {
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: -1px;
+  width: 3px;
+  background: var(--color-vermilion);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.twyne-editor .ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+.twyne-editor .ProseMirror.row-resize-cursor {
+  cursor: row-resize;
+}
+
+.twyne-editor .ProseMirror table .row-resize-handle {
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: -3px;
+  height: 6px;
+  background: var(--color-vermilion);
+  opacity: 0;
+  pointer-events: auto;
+  cursor: row-resize;
+  z-index: 2;
+}
+
+.twyne-editor .ProseMirror table .row-resize-handle:hover,
+.twyne-editor .ProseMirror table .row-resize-handle:active {
+  opacity: 0.55;
+}
+
+.twyne-editor .ProseMirror table .row-resize-handle::after {
+  content: "";
+  position: absolute;
+  inset: -4px 0;
 }
 
 .twyne-editor .ProseMirror mark {

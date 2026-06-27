@@ -27,7 +27,7 @@ import type {
   LayoutSettings,
   PersonaNotePayload,
 } from "../../types";
-import { DEFAULT_LAYOUT } from "../../types";
+import { DEFAULT_LAYOUT, MARGIN_RANGE, resolveMargins } from "../../types";
 import { detectCitations } from "../../utils/citations";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
@@ -146,6 +146,8 @@ export interface EditorStore {
   footerText: string;
   /** Show the layout popover? */
   showLayout: boolean;
+  /** Show the table tools popover? */
+  showTableTools: boolean;
 }
 
 /** The popover for a writer-authored inline comment, anchored to its mark. */
@@ -172,6 +174,35 @@ interface TwyneEditorProps {
   /** When set, the editor joins a multiplayer session (presence + remote cursors + sync). */
   sharedLixId?: string;
 }
+
+/**
+ * Walk every table in the editor mount and ensure the first row of each
+ * (i.e. the header row) carries a `.row-resize-handle` in every <th>.
+ * Strips stale handles on cells that are no longer in the header row so
+ * toggling the header row off cleans up the grip.
+ */
+const refreshRowResizeHandles = (mount: HTMLElement) => {
+  const tables = mount.querySelectorAll("table");
+  tables.forEach((table) => {
+    const firstRow = table.querySelector("tr");
+    if (!firstRow) return;
+    const ths = firstRow.children;
+    if (ths.length === 0) return;
+    Array.from(ths).forEach((cell) => {
+      if (cell.tagName !== "TH") {
+        const stale = cell.querySelectorAll(".row-resize-handle");
+        stale.forEach((n) => n.remove());
+        return;
+      }
+      if (cell.querySelector(".row-resize-handle")) return;
+      const handle = document.createElement("span");
+      handle.className = "row-resize-handle";
+      handle.setAttribute("contenteditable", "false");
+      handle.setAttribute("aria-hidden", "true");
+      cell.appendChild(handle);
+    });
+  });
+};
 
 export const TwyneEditor = component$(
   ({
@@ -216,6 +247,7 @@ export const TwyneEditor = component$(
       headerText: activeFolio?.header ?? "",
       footerText: activeFolio?.footer ?? "",
       showLayout: false,
+      showTableTools: false,
     });
 
     useStyles$(`
@@ -235,29 +267,27 @@ export const TwyneEditor = component$(
         normal: "48rem",
         wide: "62rem",
       };
-      const padMap: Record<typeof layout.margin, string> = {
-        tight: "1.5rem",
-        normal: "3rem",
-        roomy: "5rem",
-      };
+      const m = resolveMargins(layout);
       root.style.setProperty("--doc-width", widthMap[layout.width]);
-      root.style.setProperty("--doc-pad-x", padMap[layout.margin]);
-      root.style.setProperty(
-        "--doc-pad-y",
-        layout.margin === "roomy" ? "5rem" : "2.5rem",
-      );
+      root.style.setProperty("--doc-pad-x", `${m.x}rem`);
+      root.style.setProperty("--doc-pad-y", `${m.top}rem`);
+      root.style.setProperty("--doc-pad-bottom", `${m.bottom}rem`);
     });
 
-    // Dismiss the layout popover on outside click.
+    // Dismiss the editor popovers on outside click.
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(({ cleanup, track }) => {
-      const open = track(() => store.showLayout);
-      if (!open) return;
+      const layoutOpen = track(() => store.showLayout);
+      const tableOpen = track(() => store.showTableTools);
+      if (!layoutOpen && !tableOpen) return;
       const onDoc = (e: MouseEvent) => {
         const t = e.target as HTMLElement | null;
         if (t && t.closest("[data-layout-popover]")) return;
         if (t && t.closest('[aria-label="Page layout"]')) return;
+        if (t && t.closest("[data-table-popover]")) return;
+        if (t && t.closest('[aria-label="Table tools"]')) return;
         store.showLayout = false;
+        store.showTableTools = false;
       };
       document.addEventListener("mousedown", onDoc);
       cleanup(() => document.removeEventListener("mousedown", onDoc));
@@ -438,7 +468,12 @@ export const TwyneEditor = component$(
             center: editor.isActive({ textAlign: "center" }),
             right: editor.isActive({ textAlign: "right" }),
             isInTable: editor.isActive("table"),
+            canMergeCells: editor.can().mergeCells(),
+            canSplitCell: editor.can().splitCell(),
           };
+          if (!editor.isActive("table")) {
+            store.showTableTools = false;
+          }
           // History availability — driven by the Tiptap history
           // extension, which the StarterKit includes by default.
           // `can().undo()` / `can().redo()` are safe on every transaction.
@@ -666,6 +701,48 @@ export const TwyneEditor = component$(
         });
 
         store.editor = editor;
+
+        // ── Vertical (row-height) resize on the header row ──
+        // Tiptap's Table extension only ships a column-resize handle
+        // (the 3px vertical strip on the right edge of each cell).
+        // Header rows are tall by default and the writer often wants
+        // them shorter — so we attach a thin horizontal grip along
+        // the bottom of each <th> in the first row and translate
+        // vertical mouse drags into row.style.height.
+        const REFRESH = () => refreshRowResizeHandles(el);
+        editor.on("update", REFRESH);
+        editor.on("selectionUpdate", REFRESH);
+        REFRESH();
+
+        el.addEventListener("mousedown", (e) => {
+          const handle = (e.target as HTMLElement).closest(
+            ".row-resize-handle",
+          ) as HTMLElement | null;
+          if (!handle) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const th = handle.closest("th") as HTMLElement | null;
+          const tr = th?.closest("tr") as HTMLTableRowElement | null;
+          if (!tr) return;
+          const startY = e.clientY;
+          const startH = tr.getBoundingClientRect().height;
+          const minH = 24;
+          const onMove = (ev: MouseEvent) => {
+            const next = Math.max(minH, startH + (ev.clientY - startY));
+            tr.style.height = `${next}px`;
+            for (const cell of Array.from(tr.children)) {
+              (cell as HTMLElement).style.height = `${next}px`;
+            }
+          };
+          const onUp = () => {
+            document.removeEventListener("mousemove", onMove);
+            document.removeEventListener("mouseup", onUp);
+            el.classList.remove("row-resize-cursor");
+          };
+          document.addEventListener("mousemove", onMove);
+          document.addEventListener("mouseup", onUp);
+          el.classList.add("row-resize-cursor");
+        });
 
         // ── Listen for folio switches ──
         const onLoadFolio = (e: Event) => {
@@ -1240,13 +1317,7 @@ export const TwyneEditor = component$(
       window.dispatchEvent(new CustomEvent("twyne:layout", { detail: next }));
     });
 
-    const editChrome = $(async (kind: "header" | "footer") => {
-      const current = kind === "header" ? store.headerText : store.footerText;
-      const next = window.prompt(
-        kind === "header" ? "Running header" : "Running footer",
-        current,
-      );
-      if (next === null) return;
+    const updateChromeText = $((kind: "header" | "footer", next: string) => {
       if (kind === "header") store.headerText = next;
       else store.footerText = next;
       window.dispatchEvent(new CustomEvent(`twyne:${kind}`, { detail: next }));
@@ -1315,9 +1386,41 @@ export const TwyneEditor = component$(
           break;
         case "insertTable":
           chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+          store.showTableTools = true;
+          break;
+        case "addRowBefore":
+          chain.addRowBefore().run();
+          break;
+        case "addRowAfter":
+          chain.addRowAfter().run();
+          break;
+        case "deleteRow":
+          chain.deleteRow().run();
+          break;
+        case "addColumnBefore":
+          chain.addColumnBefore().run();
+          break;
+        case "addColumnAfter":
+          chain.addColumnAfter().run();
+          break;
+        case "deleteColumn":
+          chain.deleteColumn().run();
+          break;
+        case "toggleHeaderRow":
+          chain.toggleHeaderRow().run();
+          break;
+        case "toggleHeaderColumn":
+          chain.toggleHeaderColumn().run();
+          break;
+        case "mergeCells":
+          chain.mergeCells().run();
+          break;
+        case "splitCell":
+          chain.splitCell().run();
           break;
         case "deleteTable":
           chain.deleteTable().run();
+          store.showTableTools = false;
           break;
         case "addComment": {
           const editor = store.editor!;
@@ -1577,14 +1680,126 @@ export const TwyneEditor = component$(
               ▤ tab.
             </button>
             {!!store.active.isInTable && (
-              <button
-                title="Delete table"
-                aria-label="Delete table"
-                onClick$={() => runCommand("deleteTable")}
-                class="tool-btn text-[var(--color-vermilion)]"
-              >
-                × tab.
-              </button>
+              <div class="relative flex items-center">
+                <button
+                  title="Table tools"
+                  aria-label="Table tools"
+                  aria-expanded={store.showTableTools}
+                  onClick$={() => {
+                    store.showTableTools = !store.showTableTools;
+                  }}
+                  class="tool-btn"
+                >
+                  ≣ tab.
+                </button>
+                {store.showTableTools && (
+                  <div
+                    data-table-popover
+                    class="absolute left-0 top-full mt-1 z-50 w-72 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
+                    style="border-radius: 2px; font-family: var(--font-typewriter);"
+                    role="dialog"
+                    aria-label="Table tools"
+                  >
+                    <p class="dept-label mb-2">Table tools</p>
+                    <div class="space-y-3">
+                      <div>
+                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
+                          Rows
+                        </p>
+                        <div class="grid grid-cols-2 gap-1.5">
+                          <button
+                            onClick$={() => runCommand("addRowBefore")}
+                            class="btn-paper text-[0.65rem]"
+                          >
+                            Add above
+                          </button>
+                          <button
+                            onClick$={() => runCommand("addRowAfter")}
+                            class="btn-paper text-[0.65rem]"
+                          >
+                            Add below
+                          </button>
+                          <button
+                            onClick$={() => runCommand("deleteRow")}
+                            class="btn-paper text-[0.65rem]"
+                          >
+                            Delete row
+                          </button>
+                          <button
+                            onClick$={() => runCommand("toggleHeaderRow")}
+                            class="btn-paper text-[0.65rem]"
+                          >
+                            Toggle header
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
+                          Columns
+                        </p>
+                        <div class="grid grid-cols-2 gap-1.5">
+                          <button
+                            onClick$={() => runCommand("addColumnBefore")}
+                            class="btn-paper text-[0.65rem]"
+                          >
+                            Add left
+                          </button>
+                          <button
+                            onClick$={() => runCommand("addColumnAfter")}
+                            class="btn-paper text-[0.65rem]"
+                          >
+                            Add right
+                          </button>
+                          <button
+                            onClick$={() => runCommand("deleteColumn")}
+                            class="btn-paper text-[0.65rem]"
+                          >
+                            Delete column
+                          </button>
+                          <button
+                            onClick$={() => runCommand("toggleHeaderColumn")}
+                            class="btn-paper text-[0.65rem]"
+                          >
+                            Toggle header
+                          </button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
+                          Cells
+                        </p>
+                        <div class="grid grid-cols-2 gap-1.5">
+                          <button
+                            onClick$={() => runCommand("mergeCells")}
+                            disabled={!store.active.canMergeCells}
+                            class="btn-paper text-[0.65rem] disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Merge cells
+                          </button>
+                          <button
+                            onClick$={() => runCommand("splitCell")}
+                            disabled={!store.active.canSplitCell}
+                            class="btn-paper text-[0.65rem] disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            Split cell
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="border-t border-[var(--color-paper-3)] pt-2">
+                        <button
+                          onClick$={() => runCommand("deleteTable")}
+                          class="btn-paper text-[0.65rem] text-[var(--color-vermilion)]"
+                        >
+                          Delete table
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
             <button
               title="Insert diagram (Mermaid)"
@@ -1662,6 +1877,7 @@ export const TwyneEditor = component$(
             </button>
             {store.showLayout && (
               <div
+                data-layout-popover
                 class="absolute right-0 top-full mt-1 z-50 w-64 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
                 style="border-radius: 2px; font-family: var(--font-typewriter);"
                 role="dialog"
@@ -1681,20 +1897,48 @@ export const TwyneEditor = component$(
                   ))}
                 </div>
                 <p class="dept-label mb-2">Margins</p>
-                <div class="flex items-center gap-1 mb-3">
-                  {(["tight", "normal", "roomy"] as const).map((m) => (
-                    <button
-                      key={m}
-                      onClick$={() =>
-                        emitLayout({ ...store.layout, margin: m })
-                      }
-                      class={`flex-1 text-[0.7rem] py-1 border ${store.layout.margin === m ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
-                      style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
+                {(
+                  [
+                    ["Side", "x", "marginX"],
+                    ["Header", "top", "marginTop"],
+                    ["Footer", "bottom", "marginBottom"],
+                  ] as const
+                ).map(([label, rangeKey, field]) => {
+                  const range = MARGIN_RANGE[rangeKey];
+                  const value = resolveMargins(store.layout)[rangeKey];
+                  return (
+                    <label
+                      key={field}
+                      class="block mb-2.5 text-[0.7rem] text-[var(--color-ink-light)]"
                     >
-                      {m}
-                    </button>
-                  ))}
-                </div>
+                      <span class="flex items-center justify-between mb-1">
+                        <span>{label}</span>
+                        <span
+                          class="tabular-nums text-[var(--color-ink-muted)]"
+                          style="font-family: var(--font-typewriter);"
+                        >
+                          {value.toFixed(2)} rem
+                        </span>
+                      </span>
+                      <input
+                        type="range"
+                        class="margin-slider"
+                        min={range.min}
+                        max={range.max}
+                        step={range.step}
+                        value={value}
+                        onInput$={(e) =>
+                          emitLayout({
+                            ...store.layout,
+                            [field]: Number(
+                              (e.target as HTMLInputElement).value,
+                            ),
+                          })
+                        }
+                      />
+                    </label>
+                  );
+                })}
                 <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] mb-1.5 cursor-pointer">
                   <span>Running header</span>
                   <input
@@ -1708,6 +1952,27 @@ export const TwyneEditor = component$(
                     }
                   />
                 </label>
+                <div class="mb-3">
+                  <label
+                    class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
+                    for="layout-header-text"
+                  >
+                    Header line
+                  </label>
+                  <input
+                    id="layout-header-text"
+                    value={store.headerText}
+                    placeholder="Optional running header"
+                    class="field-input text-[0.78rem]"
+                    style="font-family: var(--font-typewriter);"
+                    onInput$={(e) =>
+                      updateChromeText(
+                        "header",
+                        (e.target as HTMLInputElement).value,
+                      )
+                    }
+                  />
+                </div>
                 <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] cursor-pointer">
                   <span>Page numbers</span>
                   <input
@@ -1721,6 +1986,27 @@ export const TwyneEditor = component$(
                     }
                   />
                 </label>
+                <div class="mt-3">
+                  <label
+                    class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
+                    for="layout-footer-text"
+                  >
+                    Footer line
+                  </label>
+                  <input
+                    id="layout-footer-text"
+                    value={store.footerText}
+                    placeholder="Optional running footer"
+                    class="field-input text-[0.78rem]"
+                    style="font-family: var(--font-typewriter);"
+                    onInput$={(e) =>
+                      updateChromeText(
+                        "footer",
+                        (e.target as HTMLInputElement).value,
+                      )
+                    }
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -1889,7 +2175,7 @@ export const TwyneEditor = component$(
         {/* ── Editor area (the manuscript page) ──────────── */}
         <div
           class="flex-1 overflow-y-auto"
-          style="background: var(--color-editor-bg); background-image: linear-gradient(to right, transparent 0, transparent calc(50% - 22rem), rgba(193,39,45,0.12) calc(50% - 22rem), rgba(193,39,45,0.12) calc(50% - 22rem + 1px), transparent calc(50% - 22rem + 1px));"
+          style="background: var(--color-editor-bg);"
           preventdefault:dragover
           preventdefault:dragleave
           preventdefault:drop
@@ -1903,13 +2189,13 @@ export const TwyneEditor = component$(
             </div>
           )}
           <div
-            class="mx-auto twyne-editor relative"
+            class="mx-auto twyne-editor page-canvas relative"
             style={{
               "max-width": "var(--doc-width, 48rem)",
               "padding-left": "var(--doc-pad-x, 3rem)",
               "padding-right": "var(--doc-pad-x, 3rem)",
               "padding-top": "var(--doc-pad-y, 2.5rem)",
-              "padding-bottom": "var(--doc-pad-y, 4rem)",
+              "padding-bottom": "var(--doc-pad-bottom, 4rem)",
             }}
           >
             {/* Manuscript running header — author-tunable, with brief-derived fallback */}
@@ -1930,7 +2216,9 @@ export const TwyneEditor = component$(
                 type="button"
                 class="text-[0.6rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
                 style="letter-spacing: 0.1em;"
-                onClick$={() => editChrome("header")}
+                onClick$={() => {
+                  store.showLayout = true;
+                }}
               >
                 edit
               </button>
@@ -1952,6 +2240,16 @@ export const TwyneEditor = component$(
               <span class="dept-label" style="color: var(--color-ink-muted);">
                 {store.layout.pageNumbers ? "page" : ""}
               </span>
+              <button
+                type="button"
+                class="text-[0.6rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                style="letter-spacing: 0.1em;"
+                onClick$={() => {
+                  store.showLayout = true;
+                }}
+              >
+                edit
+              </button>
             </div>
           </div>
         </div>

@@ -16,7 +16,9 @@
 # Development
 node_modules
 .env
+.envrc
 *.local
+.direnv/
 
 # Cache
 .cache

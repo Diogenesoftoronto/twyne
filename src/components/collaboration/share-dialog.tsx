@@ -15,6 +15,7 @@ import {
   stopPresence,
   stopWatchingRemote,
 } from "../../utils/collaboration";
+import { ThemedDialog } from "../ui/themed-dialog";
 
 interface ShareState {
   open: boolean;
@@ -35,6 +36,7 @@ interface ShareState {
     invitedAt: number;
     acceptedAt?: number;
   }>;
+  confirmingUnshare: boolean;
 }
 
 interface PresenceUser {
@@ -67,6 +69,7 @@ export const ShareDialog = component$(
       inviting: false,
       inviteMsg: null,
       collaborators: [],
+      confirmingUnshare: false,
     });
 
     const presenceSig = useSignal<PresenceUser[]>([]);
@@ -208,14 +211,13 @@ export const ShareDialog = component$(
     const handleUnshare = $(async () => {
       const client = clientSig.value;
       if (!client || !store.lixId) return;
-      if (!confirm("Stop sharing? Collaborators will lose access immediately."))
-        return;
       try {
         await client.mutation(api.collaboration.unshareFolio, {
           lixId: store.lixId,
         });
         stopPresence();
         stopWatchingRemote();
+        store.confirmingUnshare = false;
         store.shared = false;
         store.lixId = null;
         store.collaborators = [];
@@ -443,7 +445,10 @@ export const ShareDialog = component$(
                       Copy invite link
                     </button>
                     <button
-                      onClick$={handleUnshare}
+                      onClick$={() => {
+                        store.confirmingUnshare = true;
+                        store.error = null;
+                      }}
                       class="text-xs text-[var(--color-vermilion)] hover:underline"
                       style={{ fontFamily: "var(--font-typewriter)" }}
                     >
@@ -455,6 +460,20 @@ export const ShareDialog = component$(
             </div>
           </>
         )}
+
+        <ThemedDialog
+          open={store.confirmingUnshare}
+          title="Stop sharing this folio?"
+          message="Collaborators will lose access immediately, and the live invite link will stop working."
+          confirmLabel="Stop sharing"
+          tone="danger"
+          error={store.error}
+          onCancel$={() => {
+            store.confirmingUnshare = false;
+            store.error = null;
+          }}
+          onConfirm$={handleUnshare}
+        />
       </div>
     );
   },
