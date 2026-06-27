@@ -1,0 +1,67 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "db4dffde8fc9",
+  "session_id": "4604795b-13cd-47f0-b3d5-b2d5e2158d9b",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-27T08:59:14.595460796Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "src/components/collaboration/share-dialog.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/global.css",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/exchange.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-4-8",
+  "turn_id": "6c4ddb970e59",
+  "token_usage": {
+    "input_tokens": 4118,
+    "cache_creation_tokens": 243099,
+    "cache_read_tokens": 2824002,
+    "output_tokens": 20579,
+    "api_call_count": 40
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-27T08:59:14.547853218Z",
+    "agent_lines": 126,
+    "agent_removed": 37,
+    "human_added": 41,
+    "human_modified": 43,
+    "human_removed": 0,
+    "total_committed": 210,
+    "total_lines_changed": 247,
+    "agent_percentage": 65.9919028340081,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 579,
+      "user_lines_removed": 43,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".envrc": 1,
+        "devenv.nix": 9,
+        "src/components/collaboration/share-dialog.tsx": 22,
+        "src/components/editor/twyne-editor.tsx": 295,
+        "src/components/ui/themed-dialog.tsx": 127,
+        "src/global.css": 57,
+        "src/routes/settings/index.tsx": 68
+      },
+      "user_removed_per_file": {
+        "src/components/collaboration/share-dialog.tsx": 3,
+        "src/components/editor/twyne-editor.tsx": 19,
+        "src/global.css": 2,
+        "src/routes/settings/index.tsx": 19
+      }
+    }
+  ]
+}
