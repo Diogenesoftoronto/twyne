@@ -1,0 +1,5 @@
+hey i would like you to make the table more editable in the editor. the table has a fixed size and i would like for the tables and rows to be editable. secondly alerts are used where i would prefer a themed modal or popover that suites the theme of the application
+
+---
+
+-  =

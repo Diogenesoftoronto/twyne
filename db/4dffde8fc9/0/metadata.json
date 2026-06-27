@@ -1,0 +1,62 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "db4dffde8fc9",
+  "session_id": "019f0255-8780-7dd3-8b78-24aba1042243",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-27T08:59:13.654470783Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "src/components/collaboration/share-dialog.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/ui/themed-dialog.tsx",
+    "src/global.css",
+    "src/routes/settings/index.tsx"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.4",
+  "turn_id": "8858036b0983",
+  "token_usage": {
+    "input_tokens": 335229,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 5178240,
+    "output_tokens": 32329,
+    "api_call_count": 58
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-27T08:59:13.60631033Z",
+    "agent_lines": 686,
+    "agent_removed": 70,
+    "human_added": 136,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 822,
+    "total_lines_changed": 902,
+    "agent_percentage": 83.81374722838137,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 10,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".envrc": 1,
+        "devenv.nix": 9
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 480,
+      "agent_lines_removed": 43
+    }
+  ]
+}
