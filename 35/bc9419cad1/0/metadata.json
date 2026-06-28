@@ -3,10 +3,11 @@
   "checkpoint_id": "35bc9419cad1",
   "session_id": "019f084b-2a3c-70b1-a284-b1a797301c5c",
   "strategy": "manual-commit",
-  "created_at": "2026-06-28T07:20:54.89979445Z",
+  "created_at": "2026-06-28T07:21:28.679040925Z",
   "branch": "main",
   "checkpoints_count": 1,
   "files_touched": [
+    ".bumpy/copper-glad-newt.md",
     "src/routes/oauth-client-metadata.json/index.ts"
   ],
   "agent": "Codex",
@@ -15,14 +16,14 @@
   "checkpoint_transcript_start": 102,
   "transcript_lines_at_start": 102,
   "initial_attribution": {
-    "calculated_at": "2026-06-28T07:20:54.870241076Z",
-    "agent_lines": 35,
-    "agent_removed": 10,
+    "calculated_at": "2026-06-28T07:21:28.661654327Z",
+    "agent_lines": 5,
+    "agent_removed": 0,
     "human_added": 0,
     "human_modified": 0,
     "human_removed": 0,
-    "total_committed": 35,
-    "total_lines_changed": 45,
+    "total_committed": 5,
+    "total_lines_changed": 5,
     "agent_percentage": 100,
     "metric_version": 2
   }

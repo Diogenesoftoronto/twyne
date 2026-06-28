@@ -5,6 +5,7 @@
   "branch": "main",
   "checkpoints_count": 1,
   "files_touched": [
+    ".bumpy/copper-glad-newt.md",
     "src/routes/oauth-client-metadata.json/index.ts"
   ],
   "sessions": [
