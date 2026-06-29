@@ -1,0 +1,61 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "0abdd2ca6ad9",
+  "session_id": "019f1107-979c-7703-92b6-05f819df35b1",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-29T04:53:38.961924553Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/bold-editors-room.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.4",
+  "turn_id": "7046edf6f1b0",
+  "token_usage": {
+    "input_tokens": 27357,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 4992,
+    "output_tokens": 468,
+    "api_call_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-29T04:53:38.904360792Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 5,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 5,
+    "total_lines_changed": 5,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 334,
+      "user_lines_removed": 62,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "convex/agents.ts": 245,
+        "src/components/auth/auth-panel.tsx": 36,
+        "src/components/onboarding/conversational-interview.tsx": 23,
+        "src/components/personas/personas-panel.tsx": 11,
+        "src/routes/editor/index.tsx": 10,
+        "src/routes/onboarding/index.tsx": 3,
+        "src/routes/refining/index.tsx": 6
+      },
+      "user_removed_per_file": {
+        "convex/agents.ts": 1,
+        "src/components/auth/auth-panel.tsx": 19,
+        "src/components/onboarding/conversational-interview.tsx": 17,
+        "src/components/personas/personas-panel.tsx": 6,
+        "src/routes/editor/index.tsx": 8,
+        "src/routes/onboarding/index.tsx": 7,
+        "src/routes/refining/index.tsx": 4
+      }
+    }
+  ]
+}
