@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "5fa1e78ab7aa",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 13,
+  "files_touched": [
+    "convex/agents.ts",
+    "src/components/auth/auth-panel.tsx",
+    "src/components/comments/comments-panel.tsx",
+    "src/components/onboarding/conversational-interview.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/components/rubric/rubric-panel.tsx",
+    "src/routes/apparatus/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/onboarding/index.tsx",
+    "src/routes/refining/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.test.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/ai-orchestrator.test.ts",
+    "src/utils/ai-orchestrator.ts",
+    "src/utils/anti-tabula-rasa.ts",
+    "src/utils/byok-feature-coverage.test.ts",
+    "src/utils/idb.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/5f/a1e78ab7aa/0/metadata.json",
+      "transcript": "/5f/a1e78ab7aa/0/full.jsonl",
+      "content_hash": "/5f/a1e78ab7aa/0/content_hash.txt",
+      "prompt": "/5f/a1e78ab7aa/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 1015681,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 22818432,
+    "output_tokens": 102400,
+    "api_call_count": 204
+  }
+}

@@ -1,0 +1,120 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "5fa1e78ab7aa",
+  "session_id": "019f10d6-1042-7ea3-ad51-2db35db8b722",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-29T04:51:47.892396408Z",
+  "branch": "main",
+  "checkpoints_count": 13,
+  "save_step_count": 8,
+  "files_touched": [
+    "convex/agents.ts",
+    "src/components/auth/auth-panel.tsx",
+    "src/components/comments/comments-panel.tsx",
+    "src/components/onboarding/conversational-interview.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/components/rubric/rubric-panel.tsx",
+    "src/routes/apparatus/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/onboarding/index.tsx",
+    "src/routes/refining/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.test.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/ai-orchestrator.test.ts",
+    "src/utils/ai-orchestrator.ts",
+    "src/utils/anti-tabula-rasa.ts",
+    "src/utils/byok-feature-coverage.test.ts",
+    "src/utils/idb.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.4",
+  "turn_id": "7cc868d73de1",
+  "token_usage": {
+    "input_tokens": 1015681,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 22818432,
+    "output_tokens": 102400,
+    "api_call_count": 204
+  },
+  "session_metrics": {
+    "turn_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-29T04:51:47.729911096Z",
+    "agent_lines": 2713,
+    "agent_removed": 532,
+    "human_added": 738,
+    "human_modified": 23,
+    "human_removed": 0,
+    "total_committed": 3470,
+    "total_lines_changed": 4026,
+    "agent_percentage": 80.60109289617486,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 36,
+      "user_lines_removed": 19,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "src/components/auth/auth-panel.tsx": 36
+      },
+      "user_removed_per_file": {
+        "src/components/auth/auth-panel.tsx": 19
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 36,
+      "agent_lines_removed": 19
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 334,
+      "agent_lines_removed": 62
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 381,
+      "agent_lines_removed": 89
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 399,
+      "agent_lines_removed": 90
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 414,
+      "agent_lines_removed": 90
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 544,
+      "agent_lines_removed": 193
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1040,
+      "agent_lines_removed": 292
+    }
+  ]
+}

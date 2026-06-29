@@ -1,0 +1,100 @@
+try sending an email to diogenesoftoronto@protonmail.com with the convex resend key.
+
+---
+
+the result doesn't even appear in the resend logs
+
+---
+
+I'm debugging a Resend API request that returned an error.
+Please help me understand what went wrong and how to fix it.
+
+## Request
+
+- Method: POST
+- Endpoint: https://api.resend.com/emails
+- User-Agent: resend-node:6.12.4
+
+### Request Body
+
+```json
+{
+  "to": [
+    "diogenesoftoronto@protomail.com"
+  ],
+  "from": "Twyne <support@twyne.love>",
+  "html": "<p>Your one-time Twyne verification code is:</p><p style=\"font-size:24px;letter-spacing:0.18em\"><strong>536094</strong></p><p>This code expires soon. If you did not request it, you can ignore this email.</p>",
+  "text": "Your one-time Twyne verification code is: 536094This code expires soon. If you did not request it, you can ignore this email.",
+  "subject": "Your Twyne verification code"
+}
+```
+
+try this
+
+---
+
+well sent t he email
+
+---
+
+use the convex env
+
+---
+
+diogenesoft@protonmail.com try this one
+
+---
+
+try sending an email to kmannoel@gmail.com as well
+
+---
+
+okay this works now the only thing is that i am not sure the sign in flow tries to send the otp email as soon as you put in your email which it should.
+
+---
+
+hey i don't see the interview with ai flow when i signed in why? i just see the  non ai onboarding
+
+---
+
+okay so the interview should not need advanced mode to be on, [CONVEX]
+[CONVEX] 6/28/2026, 9:29:16 PM [CONVEX M(sync:putPersonaNote)] Uncaught Error: Not signed in
+[CONVEX]     at requireIdentity (../convex/sync.ts:31:12)
+[CONVEX]     at async handler (../convex/sync.ts:232:17)
+[CONVEX] als get this error even when it should be fine since i worked with bring your own key, the other things is that preferences link in the editor along with the link for the manual these do not send me to  those pages even though they should instead i need to control click to open these.
+
+---
+
+replies aren't showing up
+
+---
+
+and i do not see the correct llm output when i run convene the room with bring your own key and it might also be a problem in general
+
+---
+
+the provider should be saved locallly  i think they disappear or something because i am constantly replacing them in the preferences form
+
+---
+
+add anthropic compatible as well
+
+---
+
+[CONVEX A(agents:runInterviewTurn)] [Request ID: 2c5f6720895e3474] Server Error Uncaught AI_APICallError: provider API error (status 401) at <anonymous> (../node_modules/@ai-sdk/provider-utils/src/response-handler.ts:56:10) at async postToApi (../node_modules/@ai-sdk/provider-utils/src/post-to-api.ts:118:10) at async doGenerate [as doGenerate] (../node_modules/@ai-sdk/openai/src/chat/openai-chat-language-model.ts:325:6) at async fn (../node_modules/ai/src/generate-text/generate-text.ts:820:23) at async <anonymous> (../node_modules/ai/src/telemetry/record-span.ts:33:12) at async _retryWithExponentialBackoff (../node_modules/ai/src/util/retry-with-exponential-backoff.ts:101:11) at async fn (../node_modules/ai/src/generate-text/generate-text.ts:774:50) at async <anonymous> (../node_modules/ai/src/telemetry/record-span.ts:33:12) at async generateText (../node_modules/ai/src/generate-text/generate-text.ts:539:12) Called by client i get this error and when ever i convene the room everything is reset and sent to the fallback. for now i think you should disable the fallback and i want real sync with the document which doesn't seem to be happening
+
+---
+
+[Image #1]
+
+---
+
+this should be using the byok without the sign in
+
+---
+
+in the settings, model options should be separate from provider, the models should ideally be autodetected from the /models endpoint on the base url
+
+---
+
+i also want to make sure that byok and providers are actually used i want you to try making sure this works and add a test for this, it should be working  across our features
