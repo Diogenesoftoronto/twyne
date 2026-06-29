@@ -3,7 +3,7 @@
   "checkpoint_id": "0abdd2ca6ad9",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     ".bumpy/bold-editors-room.md"
   ],
@@ -19,13 +19,19 @@
       "transcript": "/0a/bdd2ca6ad9/1/full.jsonl",
       "content_hash": "/0a/bdd2ca6ad9/1/content_hash.txt",
       "prompt": "/0a/bdd2ca6ad9/1/prompt.txt"
+    },
+    {
+      "metadata": "/0a/bdd2ca6ad9/2/metadata.json",
+      "transcript": "/0a/bdd2ca6ad9/2/full.jsonl",
+      "content_hash": "/0a/bdd2ca6ad9/2/content_hash.txt",
+      "prompt": "/0a/bdd2ca6ad9/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 46300,
+    "input_tokens": 94142,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 13056,
-    "output_tokens": 1138,
-    "api_call_count": 4
+    "cache_read_tokens": 101248,
+    "output_tokens": 2735,
+    "api_call_count": 8
   }
 }
