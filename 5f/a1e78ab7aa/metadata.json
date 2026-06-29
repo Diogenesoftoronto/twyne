@@ -3,9 +3,12 @@
   "checkpoint_id": "5fa1e78ab7aa",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 17,
+  "checkpoints_count": 19,
   "files_touched": [
+    "convex/_generated/api.d.ts",
     "convex/agentPrompts.ts",
+    "convex/agentTools.test.ts",
+    "convex/agentTools.ts",
     "convex/agents.ts",
     "public/manifest.json",
     "src/components/auth/auth-panel.tsx",
@@ -19,7 +22,9 @@
     "src/routes/apparatus/index.tsx",
     "src/routes/editor/index.tsx",
     "src/routes/onboarding/index.tsx",
+    "src/routes/personas/index.tsx",
     "src/routes/refining/index.tsx",
+    "src/routes/rubric/index.tsx",
     "src/routes/settings/index.tsx",
     "src/types/index.ts",
     "src/utils/ai-client.test.ts",
@@ -30,6 +35,8 @@
     "src/utils/byok-feature-coverage.test.ts",
     "src/utils/idb-preferences.test.ts",
     "src/utils/idb.ts",
+    "src/utils/persona-voices.test.ts",
+    "src/utils/personas.ts",
     "src/utils/provider-presets.test.ts",
     "src/utils/reasoning-tags.test.ts",
     "src/utils/reasoning-tags.ts",
@@ -47,13 +54,19 @@
       "transcript": "/5f/a1e78ab7aa/1/full.jsonl",
       "content_hash": "/5f/a1e78ab7aa/1/content_hash.txt",
       "prompt": "/5f/a1e78ab7aa/1/prompt.txt"
+    },
+    {
+      "metadata": "/5f/a1e78ab7aa/2/metadata.json",
+      "transcript": "/5f/a1e78ab7aa/2/full.jsonl",
+      "content_hash": "/5f/a1e78ab7aa/2/content_hash.txt",
+      "prompt": "/5f/a1e78ab7aa/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2152640,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 40950400,
-    "output_tokens": 190581,
-    "api_call_count": 375
+    "input_tokens": 2176919,
+    "cache_creation_tokens": 661668,
+    "cache_read_tokens": 81690545,
+    "output_tokens": 305373,
+    "api_call_count": 609
   }
 }
