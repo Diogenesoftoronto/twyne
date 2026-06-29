@@ -11,15 +11,24 @@ import type {
   AiProviderConfig,
   AiFeature,
   AiFeatureOverride,
+  ApparatusSettings,
+  WriterSettings,
 } from "../../types";
-import { DEFAULT_AI_SETTINGS, PROVIDER_METAS } from "../../types";
+import {
+  DEFAULT_AI_SETTINGS,
+  DEFAULT_APPARATUS_SETTINGS,
+  PROVIDER_METAS,
+} from "../../types";
 import {
   loadAiSettingsFromIdb,
   saveAiSettingsToIdb,
   loadWriterSettingsFromIdb,
   saveWriterSettingsToIdb,
+  loadApparatusSettingsFromIdb,
+  saveApparatusSettingsToIdb,
 } from "../../utils/idb";
 import {
+  discoverProviderModels,
   testProvider,
   resolveFeatureConfig,
   normalizeAiSettings,
@@ -41,19 +50,23 @@ interface SettingsStore {
   newProviderName: string;
   newProviderKey: string;
   newProviderBaseUrl: string;
-  newProviderModel: string;
-  testingProvider: boolean;
-  testResult: { ok: boolean; latencyMs: number; error?: string } | null;
+  testingProviderId: string | null;
+  testResults: Record<
+    string,
+    { ok: boolean; latencyMs: number; error?: string } | undefined
+  >;
+  discoveringProviderId: string | null;
+  providerModelErrors: Record<string, string | undefined>;
   /* editing */
   editingProviderId: string | null;
   editKey: string;
   /* per-feature overrides open */
   openFeature: AiFeature | null;
   /* writer preferences */
-  writerStyle: "form" | "conversational";
+  writerStyle: WriterSettings["interviewStyle"];
   writerToast: string | null;
   /* apparatus */
-  defaultCitationStyle: "mla" | "apa" | "chicago";
+  defaultCitationStyle: ApparatusSettings["defaultCitationStyle"];
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
   /* account deletion (danger zone) */
@@ -87,7 +100,10 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "persona-feedback": "Convene the Room",
   "persona-reply": "Reply Thread",
   "persona-rewrite": "Mark Up Draft",
+  "persona-analysis": "Full Analysis (per editor)",
+  "room-synthesis": "Room Synthesis",
   "rubric-judge": "Galley Proof",
+  "rubric-review": "Full Review (narrative)",
   "voice-narration": "Voice Narration",
   "comment-reply": "Ask Editor (Notes)",
   "citation-format": "Citation Format",
@@ -101,7 +117,13 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "persona-feedback": "All five editors read your draft at once.",
   "persona-reply": "A single editor responds in a threaded conversation.",
   "persona-rewrite": "Editors propose specific text replacements.",
+  "persona-analysis":
+    "Each editor writes a full-page analysis of the whole document, in their own voice.",
+  "room-synthesis":
+    "The room combines the five analyses into a single editorial verdict.",
   "rubric-judge": "Five judges score the draft, then the rubric combines.",
+  "rubric-review":
+    "A full-page narrative review that explains the grade and a revision plan.",
   "voice-narration":
     "Turns selected prose into spoken audio. BYOK uses your speech-capable provider; Pro can use Twyne-hosted voice.",
   "comment-reply": "Ask an editor to weigh in on a margin note.",
@@ -114,6 +136,26 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "dossier-check":
     "Cross-references the dossier against the current draft and surfaces where the draft has outgrown the brief.",
 };
+
+function providerMetaFor(type: AiProviderConfig["type"]) {
+  return PROVIDER_METAS.find((m) => m.type === type);
+}
+
+function providerMetaForForm(type: string) {
+  return PROVIDER_METAS.find((m) => m.type === type);
+}
+
+function providerModelOptions(provider: AiProviderConfig): string[] {
+  return Array.from(
+    new Set(
+      [
+        ...(provider.availableModels ?? []),
+        provider.defaultModel,
+        ...(providerMetaFor(provider.type)?.defaultModels ?? []),
+      ].filter(Boolean),
+    ),
+  );
+}
 
 /* ── Component ──────────────────────────────────────────────────── */
 
@@ -131,15 +173,16 @@ export default component$(() => {
     newProviderName: "",
     newProviderKey: "",
     newProviderBaseUrl: "",
-    newProviderModel: "",
-    testingProvider: false,
-    testResult: null,
+    testingProviderId: null,
+    testResults: {},
+    discoveringProviderId: null,
+    providerModelErrors: {},
     editingProviderId: null,
     editKey: "",
     openFeature: null,
-    defaultCitationStyle: "mla",
-    aiEnhanceCitations: false,
-    flagMissingSources: false,
+    defaultCitationStyle: DEFAULT_APPARATUS_SETTINGS.defaultCitationStyle,
+    aiEnhanceCitations: DEFAULT_APPARATUS_SETTINGS.aiEnhanceCitations,
+    flagMissingSources: DEFAULT_APPARATUS_SETTINGS.flagMissingSources,
     writerStyle: "form",
     writerToast: null,
     deletingAccount: false,
@@ -165,10 +208,23 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const raw = await loadAiSettingsFromIdb();
-    store.settings = normalizeAiSettings(raw);
-    const writer = await loadWriterSettingsFromIdb();
+    const [raw, writer, apparatus] = await Promise.all([
+      loadAiSettingsFromIdb(),
+      loadWriterSettingsFromIdb(),
+      loadApparatusSettingsFromIdb(),
+    ]);
+    const normalized = normalizeAiSettings(raw);
+    store.settings = {
+      ...normalized,
+      providers: normalized.providers.map((provider) => ({
+        ...provider,
+        availableModels: providerModelOptions(provider),
+      })),
+    };
     store.writerStyle = writer.interviewStyle;
+    store.defaultCitationStyle = apparatus.defaultCitationStyle;
+    store.aiEnhanceCitations = apparatus.aiEnhanceCitations;
+    store.flagMissingSources = apparatus.flagMissingSources;
     store.loaded = true;
   });
 
@@ -190,19 +246,83 @@ export default component$(() => {
     setTimeout(() => (store.toast = null), 2000);
   });
 
+  const setWriterStyle = $(
+    async (interviewStyle: WriterSettings["interviewStyle"]) => {
+      store.writerStyle = interviewStyle;
+      await saveWriterSettingsToIdb({ interviewStyle });
+      store.writerToast =
+        interviewStyle === "conversational"
+          ? "Conversation mode set"
+          : "Form mode set";
+      setTimeout(() => (store.writerToast = null), 1800);
+    },
+  );
+
+  const persistApparatusSettings = $(async (settings: ApparatusSettings) => {
+    store.defaultCitationStyle = settings.defaultCitationStyle;
+    store.aiEnhanceCitations = settings.aiEnhanceCitations;
+    store.flagMissingSources = settings.flagMissingSources;
+    await saveApparatusSettingsToIdb(settings);
+    store.toast = "Preferences saved";
+    setTimeout(() => (store.toast = null), 1800);
+  });
+
+  const refreshProviderModels = $(async (id: string) => {
+    const provider = store.settings.providers.find((p) => p.id === id);
+    if (!provider) return;
+    store.discoveringProviderId = id;
+    store.providerModelErrors = {
+      ...store.providerModelErrors,
+      [id]: undefined,
+    };
+    try {
+      const result = await discoverProviderModels(provider);
+      const models = result.models;
+      store.settings = {
+        ...store.settings,
+        providers: store.settings.providers.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                availableModels: models,
+                defaultModel:
+                  models.includes(p.defaultModel) && p.defaultModel
+                    ? p.defaultModel
+                    : (models[0] ?? p.defaultModel),
+              }
+            : p,
+        ),
+      };
+      await persist();
+    } catch (err) {
+      store.providerModelErrors = {
+        ...store.providerModelErrors,
+        [id]: (err as Error).message ?? "Could not load models.",
+      };
+    } finally {
+      store.discoveringProviderId = null;
+    }
+  });
+
   const addProvider = $(async () => {
     const meta = PROVIDER_METAS.find((m) => m.type === store.newProviderType);
     if (!meta) return;
-    if (!store.newProviderName.trim() || !store.newProviderKey.trim()) return;
+    const name = store.newProviderName.trim();
+    const apiKey =
+      store.newProviderKey.trim() ||
+      (meta.apiKeyOptional ? meta.defaultApiKey : "");
+    const baseUrl =
+      store.newProviderBaseUrl.trim() || meta.defaultBaseUrl?.trim() || "";
+    if (!name || !apiKey || (meta.needsBaseUrl && !baseUrl)) return;
 
     const config: AiProviderConfig = {
       id: `pv-${Date.now()}`,
-      name: store.newProviderName.trim(),
+      name,
       type: store.newProviderType as AiProviderConfig["type"],
-      apiKey: store.newProviderKey.trim(),
-      baseUrl: store.newProviderBaseUrl.trim() || undefined,
-      defaultModel:
-        store.newProviderModel.trim() || meta.defaultModels[0] || "",
+      apiKey,
+      baseUrl: baseUrl || undefined,
+      defaultModel: "",
+      availableModels: [],
     };
 
     store.settings = {
@@ -215,8 +335,8 @@ export default component$(() => {
     store.newProviderName = "";
     store.newProviderKey = "";
     store.newProviderBaseUrl = "";
-    store.newProviderModel = "";
     await persist();
+    await refreshProviderModels(config.id);
   });
 
   const removeProvider = $((id: string) => {
@@ -258,20 +378,48 @@ export default component$(() => {
     void persist();
   });
 
+  const updateProviderDefaultModel = $((id: string, model: string) => {
+    const nextModel = model.trim();
+    if (!nextModel) return;
+    store.settings = {
+      ...store.settings,
+      providers: store.settings.providers.map((p) =>
+        p.id === id ? { ...p, defaultModel: nextModel } : p,
+      ),
+    };
+    void persist();
+  });
+
   const runTest = $(async (config: AiProviderConfig) => {
-    store.testingProvider = true;
-    store.testResult = null;
-    store.testResult = await testProvider(config);
-    store.testingProvider = false;
+    store.testingProviderId = config.id;
+    store.testResults = { ...store.testResults, [config.id]: undefined };
+    const result = await testProvider(config);
+    store.testResults = { ...store.testResults, [config.id]: result };
+    store.testingProviderId = null;
+    if (result.ok) {
+      await refreshProviderModels(config.id);
+    }
   });
 
   const setFeatureOverride = $(
     (feature: AiFeature, override: AiFeatureOverride | undefined) => {
+      const cleaned =
+        override &&
+        (override.providerId ||
+          override.model ||
+          override.temperature !== undefined ||
+          override.maxTokens !== undefined ||
+          override.voice ||
+          override.speed !== undefined ||
+          override.responseFormat ||
+          override.instructions)
+          ? override
+          : undefined;
       store.settings = {
         ...store.settings,
         perFeature: {
           ...store.settings.perFeature,
-          [feature]: override,
+          [feature]: cleaned,
         },
       };
       void persist();
@@ -386,10 +534,9 @@ export default component$(() => {
     store.handleCheckBusy = true;
     const timer = setTimeout(async () => {
       try {
-        const result = (await client.query(
-          api.profiles.checkHandleAvailable,
-          { handle: draft },
-        )) as
+        const result = (await client.query(api.profiles.checkHandleAvailable, {
+          handle: draft,
+        })) as
           | { available: true; handle: string }
           | { available: false; reason: string };
         store.handleCheck = result;
@@ -514,16 +661,9 @@ export default component$(() => {
               </p>
               <div class="mt-4 grid sm:grid-cols-2 gap-3">
                 <button
-                  onClick$={$(async () => {
-                    const cur = await loadWriterSettingsFromIdb();
-                    await saveWriterSettingsToIdb({
-                      ...cur,
-                      interviewStyle: "form",
-                    });
-                    store.writerStyle = "form";
-                    store.writerToast = "Form mode set";
-                    setTimeout(() => (store.writerToast = null), 1800);
-                  })}
+                  onClick$={() => {
+                    void setWriterStyle("form");
+                  }}
                   class={`text-left rounded-lg border p-3 transition-colors ${
                     store.writerStyle === "form"
                       ? "border-[var(--color-vermilion)] bg-[var(--color-vermilion)]/5"
@@ -544,16 +684,9 @@ export default component$(() => {
                   </p>
                 </button>
                 <button
-                  onClick$={$(async () => {
-                    const cur = await loadWriterSettingsFromIdb();
-                    await saveWriterSettingsToIdb({
-                      ...cur,
-                      interviewStyle: "conversational",
-                    });
-                    store.writerStyle = "conversational";
-                    store.writerToast = "Conversation mode set";
-                    setTimeout(() => (store.writerToast = null), 1800);
-                  })}
+                  onClick$={() => {
+                    void setWriterStyle("conversational");
+                  }}
                   class={`text-left rounded-lg border p-3 transition-colors ${
                     store.writerStyle === "conversational"
                       ? "border-[var(--color-vermilion)] bg-[var(--color-vermilion)]/5"
@@ -652,9 +785,6 @@ export default component$(() => {
                     onClick$={() => {
                       store.showAddProvider = true;
                       store.newProviderType = "openai";
-                      store.newProviderModel =
-                        PROVIDER_METAS.find((m) => m.type === "openai")
-                          ?.defaultModels[0] ?? "";
                     }}
                     class="btn-press text-xs"
                   >
@@ -715,12 +845,24 @@ export default component$(() => {
                                 </span>
                               )}
                             </div>
-                            <p
-                              class="text-[0.65rem] text-[var(--color-ink-muted)] mt-0.5"
-                              style={{ fontFamily: "var(--font-mono)" }}
-                            >
-                              {p.defaultModel}
-                            </p>
+                            <div class="mt-1.5 space-y-1">
+                              {p.baseUrl && (
+                                <p
+                                  class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                                  style={{ fontFamily: "var(--font-mono)" }}
+                                >
+                                  {p.baseUrl}
+                                </p>
+                              )}
+                              <p
+                                class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                {providerModelOptions(p).length > 0
+                                  ? `${providerModelOptions(p).length} model options available`
+                                  : "No model catalog loaded yet"}
+                              </p>
+                            </div>
 
                             {store.editingProviderId === p.id ? (
                               <div class="mt-2 space-y-2">
@@ -731,6 +873,9 @@ export default component$(() => {
                                     store.editKey = (
                                       e.target as HTMLInputElement
                                     ).value;
+                                  }}
+                                  onBlur$={() => {
+                                    updateProviderKey(p.id);
                                   }}
                                   placeholder="New API key"
                                   class="w-full text-xs px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
@@ -775,15 +920,29 @@ export default component$(() => {
                                 )}
                                 <button
                                   onClick$={() => runTest(p)}
-                                  disabled={store.testingProvider}
+                                  disabled={store.testingProviderId === p.id}
                                   class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent-green)] disabled:opacity-40"
                                   style={{
                                     fontFamily: "var(--font-typewriter)",
                                   }}
                                 >
-                                  {store.testingProvider
+                                  {store.testingProviderId === p.id
                                     ? "Testing…"
                                     : "Test connection"}
+                                </button>
+                                <button
+                                  onClick$={() => refreshProviderModels(p.id)}
+                                  disabled={
+                                    store.discoveringProviderId === p.id
+                                  }
+                                  class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] disabled:opacity-40"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
+                                >
+                                  {store.discoveringProviderId === p.id
+                                    ? "Loading models…"
+                                    : "Refresh models"}
                                 </button>
                                 {store.settings.defaultProviderId !== p.id && (
                                   <button
@@ -810,23 +969,30 @@ export default component$(() => {
                               </div>
                             )}
 
-                            {store.testResult &&
-                              store.testingProvider === false && (
-                                <p
-                                  class={`mt-1.5 text-[0.65rem] ${
-                                    store.testResult.ok
-                                      ? "text-[var(--color-accent-green)]"
-                                      : "text-[var(--color-vermilion)]"
-                                  }`}
-                                  style={{
-                                    fontFamily: "var(--font-typewriter)",
-                                  }}
-                                >
-                                  {store.testResult.ok
-                                    ? `✓ Connected (${store.testResult.latencyMs}ms)`
-                                    : `✗ ${store.testResult.error}`}
-                                </p>
-                              )}
+                            {store.testResults[p.id] && (
+                              <p
+                                class={`mt-1.5 text-[0.65rem] ${
+                                  store.testResults[p.id]?.ok
+                                    ? "text-[var(--color-accent-green)]"
+                                    : "text-[var(--color-vermilion)]"
+                                }`}
+                                style={{
+                                  fontFamily: "var(--font-typewriter)",
+                                }}
+                              >
+                                {store.testResults[p.id]?.ok
+                                  ? `✓ Connected (${store.testResults[p.id]?.latencyMs}ms)`
+                                  : `✗ ${store.testResults[p.id]?.error}`}
+                              </p>
+                            )}
+                            {store.providerModelErrors[p.id] && (
+                              <p
+                                class="mt-1 text-[0.65rem] text-[var(--color-vermilion)]"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                {store.providerModelErrors[p.id]}
+                              </p>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -858,11 +1024,19 @@ export default component$(() => {
                           value={store.newProviderType}
                           onChange$={(e) => {
                             const type = (e.target as HTMLSelectElement).value;
+                            const meta = providerMetaForForm(type);
                             store.newProviderType = type;
-                            const m = PROVIDER_METAS.find(
-                              (meta) => meta.type === type,
-                            );
-                            store.newProviderModel = m?.defaultModels[0] ?? "";
+                            store.newProviderBaseUrl =
+                              meta?.defaultBaseUrl ?? "";
+                            if (!store.newProviderName.trim() && meta) {
+                              store.newProviderName = meta.label;
+                            }
+                            if (
+                              meta?.apiKeyOptional &&
+                              !store.newProviderKey.trim()
+                            ) {
+                              store.newProviderKey = meta.defaultApiKey ?? "";
+                            }
                           }}
                           class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
                           style={{
@@ -894,6 +1068,9 @@ export default component$(() => {
                               e.target as HTMLInputElement
                             ).value;
                           }}
+                          onBlur$={() => {
+                            void addProvider();
+                          }}
                           placeholder="e.g. My OpenAI"
                           class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
                           style={{
@@ -918,7 +1095,15 @@ export default component$(() => {
                               e.target as HTMLInputElement
                             ).value;
                           }}
-                          placeholder="sk-..."
+                          onBlur$={() => {
+                            void addProvider();
+                          }}
+                          placeholder={
+                            providerMetaForForm(store.newProviderType)
+                              ?.apiKeyOptional
+                              ? "Optional"
+                              : "sk-..."
+                          }
                           class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
                           style={{
                             fontFamily: "var(--font-typewriter)",
@@ -951,7 +1136,13 @@ export default component$(() => {
                                 e.target as HTMLInputElement
                               ).value;
                             }}
-                            placeholder="https://api.example.com/v1"
+                            onBlur$={() => {
+                              void addProvider();
+                            }}
+                            placeholder={
+                              providerMetaForForm(store.newProviderType)
+                                ?.defaultBaseUrl ?? "https://api.example.com/v1"
+                            }
                             class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
                             style={{
                               fontFamily: "var(--font-typewriter)",
@@ -961,32 +1152,13 @@ export default component$(() => {
                         </div>
                       )}
 
-                      <div>
-                        <label
-                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
-                          style={{ fontFamily: "var(--font-typewriter)" }}
-                        >
-                          Model
-                        </label>
-                        <input
-                          value={store.newProviderModel}
-                          onInput$={(e) => {
-                            store.newProviderModel = (
-                              e.target as HTMLInputElement
-                            ).value;
-                          }}
-                          placeholder={
-                            PROVIDER_METAS.find(
-                              (m) => m.type === store.newProviderType,
-                            )?.defaultModels[0] ?? ""
-                          }
-                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            borderRadius: "2px",
-                          }}
-                        />
-                      </div>
+                      <p
+                        class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        Add the provider first. Model choices live below and can
+                        be auto-discovered from the provider's model endpoint.
+                      </p>
 
                       <div class="flex gap-2 pt-1">
                         <button
@@ -1009,6 +1181,129 @@ export default component$(() => {
                 )}
               </section>
             )}
+
+            {/* ── Default Models ── */}
+            {store.settings.advancedMode &&
+              store.settings.providers.length > 0 && (
+                <section class="folio p-5">
+                  <h2
+                    class="text-base font-semibold mb-1"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Default Models
+                  </h2>
+                  <p class="text-xs text-[var(--color-ink-light)] mb-4">
+                    Connection details live with the provider. Model choice
+                    lives here.
+                  </p>
+
+                  <div class="space-y-3">
+                    {store.settings.providers.map((provider) => {
+                      const models = providerModelOptions(provider);
+                      const canSelect = models.length > 0;
+                      return (
+                        <div
+                          key={`model-${provider.id}`}
+                          class="border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-3"
+                          style={{ borderRadius: "2px" }}
+                        >
+                          <div class="flex items-center justify-between gap-3">
+                            <div>
+                              <p
+                                class="text-sm text-[var(--color-ink)]"
+                                style={{
+                                  fontFamily: "var(--font-display)",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {provider.name}
+                              </p>
+                              <p
+                                class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                {providerMetaFor(provider.type)?.label ??
+                                  provider.type}
+                              </p>
+                            </div>
+                            <button
+                              onClick$={() =>
+                                refreshProviderModels(provider.id)
+                              }
+                              disabled={
+                                store.discoveringProviderId === provider.id
+                              }
+                              class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] disabled:opacity-40"
+                              style={{
+                                fontFamily: "var(--font-typewriter)",
+                              }}
+                            >
+                              {store.discoveringProviderId === provider.id
+                                ? "Loading models…"
+                                : "Refresh models"}
+                            </button>
+                          </div>
+
+                          <div class="mt-3">
+                            <label
+                              class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                              style={{ fontFamily: "var(--font-typewriter)" }}
+                            >
+                              Default model
+                            </label>
+                            {canSelect ? (
+                              <select
+                                value={provider.defaultModel}
+                                onChange$={(e) => {
+                                  updateProviderDefaultModel(
+                                    provider.id,
+                                    (e.target as HTMLSelectElement).value,
+                                  );
+                                }}
+                                class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                style={{
+                                  fontFamily: "var(--font-typewriter)",
+                                  borderRadius: "2px",
+                                }}
+                              >
+                                {models.map((model) => (
+                                  <option key={model} value={model}>
+                                    {model}
+                                  </option>
+                                ))}
+                              </select>
+                            ) : (
+                              <input
+                                value={provider.defaultModel}
+                                onInput$={(e) => {
+                                  updateProviderDefaultModel(
+                                    provider.id,
+                                    (e.target as HTMLInputElement).value,
+                                  );
+                                }}
+                                placeholder="model-id"
+                                class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                style={{
+                                  fontFamily: "var(--font-typewriter)",
+                                  borderRadius: "2px",
+                                }}
+                              />
+                            )}
+                            <p
+                              class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                              style={{ fontFamily: "var(--font-typewriter)" }}
+                            >
+                              {canSelect
+                                ? `${models.length} models available.`
+                                : "No catalog available yet. Refresh models or enter a model id manually."}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
 
             {/* ── Per-Feature Models ── */}
             {store.settings.advancedMode &&
@@ -1033,6 +1328,16 @@ export default component$(() => {
                           feature,
                         );
                         const isOpen = store.openFeature === feature;
+                        const selectedProviderId =
+                          store.settings.perFeature[feature]?.providerId ??
+                          store.settings.defaultProviderId ??
+                          "";
+                        const selectedProvider = store.settings.providers.find(
+                          (p) => p.id === selectedProviderId,
+                        );
+                        const selectedProviderModels = selectedProvider
+                          ? providerModelOptions(selectedProvider)
+                          : [];
                         return (
                           <div
                             key={feature}
@@ -1094,12 +1399,7 @@ export default component$(() => {
                                       Provider
                                     </label>
                                     <select
-                                      value={
-                                        store.settings.perFeature[feature]
-                                          ?.providerId ??
-                                        store.settings.defaultProviderId ??
-                                        ""
-                                      }
+                                      value={selectedProviderId}
                                       onChange$={(e) => {
                                         const providerId = (
                                           e.target as HTMLSelectElement
@@ -1107,7 +1407,7 @@ export default component$(() => {
                                         const existing =
                                           store.settings.perFeature[feature];
                                         setFeatureOverride(feature, {
-                                          providerId,
+                                          providerId: providerId || undefined,
                                           model: existing?.model,
                                           temperature: existing?.temperature,
                                           maxTokens: existing?.maxTokens,
@@ -1138,37 +1438,104 @@ export default component$(() => {
                                           fontFamily: "var(--font-typewriter)",
                                         }}
                                       >
-                                        Model override
+                                        Model
                                       </label>
-                                      <input
-                                        value={
-                                          store.settings.perFeature[feature]
-                                            ?.model ?? ""
-                                        }
-                                        onInput$={(e) => {
-                                          const model = (
-                                            e.target as HTMLInputElement
-                                          ).value;
-                                          const existing =
-                                            store.settings.perFeature[feature];
-                                          setFeatureOverride(feature, {
-                                            providerId:
-                                              existing?.providerId ??
-                                              store.settings
-                                                .defaultProviderId ??
-                                              "",
-                                            model: model || undefined,
-                                            temperature: existing?.temperature,
-                                            maxTokens: existing?.maxTokens,
-                                          });
-                                        }}
-                                        placeholder="default"
-                                        class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                        style={{
-                                          fontFamily: "var(--font-typewriter)",
-                                          borderRadius: "2px",
-                                        }}
-                                      />
+                                      {selectedProviderModels.length > 0 ? (
+                                        <select
+                                          value={
+                                            store.settings.perFeature[feature]
+                                              ?.model ??
+                                            selectedProvider?.defaultModel ??
+                                            ""
+                                          }
+                                          onChange$={(e) => {
+                                            const model = (
+                                              e.target as HTMLSelectElement
+                                            ).value;
+                                            const existing =
+                                              store.settings.perFeature[
+                                                feature
+                                              ];
+                                            setFeatureOverride(feature, {
+                                              providerId:
+                                                existing?.providerId ??
+                                                store.settings
+                                                  .defaultProviderId ??
+                                                "",
+                                              model:
+                                                selectedProvider &&
+                                                model ===
+                                                  selectedProvider.defaultModel
+                                                  ? undefined
+                                                  : model || undefined,
+                                              temperature:
+                                                existing?.temperature,
+                                              maxTokens: existing?.maxTokens,
+                                            });
+                                          }}
+                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                            borderRadius: "2px",
+                                          }}
+                                        >
+                                          {selectedProvider?.defaultModel && (
+                                            <option
+                                              value={
+                                                selectedProvider.defaultModel
+                                              }
+                                            >
+                                              {`${selectedProvider.defaultModel} (provider default)`}
+                                            </option>
+                                          )}
+                                          {selectedProviderModels
+                                            .filter(
+                                              (model) =>
+                                                model !==
+                                                selectedProvider?.defaultModel,
+                                            )
+                                            .map((model) => (
+                                              <option key={model} value={model}>
+                                                {model}
+                                              </option>
+                                            ))}
+                                        </select>
+                                      ) : (
+                                        <input
+                                          value={
+                                            store.settings.perFeature[feature]
+                                              ?.model ?? ""
+                                          }
+                                          onInput$={(e) => {
+                                            const model = (
+                                              e.target as HTMLInputElement
+                                            ).value;
+                                            const existing =
+                                              store.settings.perFeature[
+                                                feature
+                                              ];
+                                            setFeatureOverride(feature, {
+                                              providerId:
+                                                existing?.providerId ??
+                                                store.settings
+                                                  .defaultProviderId ??
+                                                "",
+                                              model: model || undefined,
+                                              temperature:
+                                                existing?.temperature,
+                                              maxTokens: existing?.maxTokens,
+                                            });
+                                          }}
+                                          placeholder="provider default"
+                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                                          style={{
+                                            fontFamily:
+                                              "var(--font-typewriter)",
+                                            borderRadius: "2px",
+                                          }}
+                                        />
+                                      )}
                                     </div>
                                     <div>
                                       <label
@@ -1548,7 +1915,11 @@ export default component$(() => {
                       <button
                         key={s}
                         onClick$={() => {
-                          store.defaultCitationStyle = s;
+                          void persistApparatusSettings({
+                            defaultCitationStyle: s,
+                            aiEnhanceCitations: store.aiEnhanceCitations,
+                            flagMissingSources: store.flagMissingSources,
+                          });
                         }}
                         class={`flex-1 text-sm py-1.5 border ${
                           store.defaultCitationStyle === s
@@ -1580,9 +1951,12 @@ export default component$(() => {
                     type="checkbox"
                     checked={store.aiEnhanceCitations}
                     onChange$={(e) => {
-                      store.aiEnhanceCitations = (
-                        e.target as HTMLInputElement
-                      ).checked;
+                      void persistApparatusSettings({
+                        defaultCitationStyle: store.defaultCitationStyle,
+                        aiEnhanceCitations: (e.target as HTMLInputElement)
+                          .checked,
+                        flagMissingSources: store.flagMissingSources,
+                      });
                     }}
                     class="sr-only"
                   />
@@ -1614,9 +1988,12 @@ export default component$(() => {
                     type="checkbox"
                     checked={store.flagMissingSources}
                     onChange$={(e) => {
-                      store.flagMissingSources = (
-                        e.target as HTMLInputElement
-                      ).checked;
+                      void persistApparatusSettings({
+                        defaultCitationStyle: store.defaultCitationStyle,
+                        aiEnhanceCitations: store.aiEnhanceCitations,
+                        flagMissingSources: (e.target as HTMLInputElement)
+                          .checked,
+                      });
                     }}
                     class="sr-only"
                   />
@@ -1784,9 +2161,7 @@ export default component$(() => {
                     type="text"
                     value={store.handleDraft}
                     onInput$={(e) => {
-                      store.handleDraft = (
-                        e.target as HTMLInputElement
-                      ).value;
+                      store.handleDraft = (e.target as HTMLInputElement).value;
                       store.handleError = null;
                       store.handleToast = null;
                     }}
@@ -1807,15 +2182,14 @@ export default component$(() => {
                       Checking…
                     </span>
                   )}
-                  {!store.handleCheckBusy &&
-                    store.handleCheck?.available && (
-                      <span
-                        class="text-[var(--color-accent-green)]"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        @{store.handleCheck.normalized} is available.
-                      </span>
-                    )}
+                  {!store.handleCheckBusy && store.handleCheck?.available && (
+                    <span
+                      class="text-[var(--color-accent-green)]"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      @{store.handleCheck.normalized} is available.
+                    </span>
+                  )}
                   {!store.handleCheckBusy &&
                     store.handleCheck &&
                     !store.handleCheck.available && (
@@ -1898,8 +2272,9 @@ export default component$(() => {
                       id="writer-bio"
                       value={store.profileBio}
                       onInput$={(e) =>
-                        (store.profileBio = (e.target as HTMLTextAreaElement)
-                          .value)
+                        (store.profileBio = (
+                          e.target as HTMLTextAreaElement
+                        ).value)
                       }
                       placeholder="One short line about your writing."
                       rows={2}

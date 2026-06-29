@@ -298,6 +298,19 @@ export default component$(() => {
               </div>
             </section>
 
+            {/* Full narrative review */}
+            {store.result.review && (
+              <section class="card p-6">
+                <p class="dept-label">The Critic's Full Review</p>
+                <div
+                  class="mt-3 text-[15px] leading-7 text-[var(--color-ink)] whitespace-pre-wrap"
+                  style={{ fontFamily: "var(--font-serif)" }}
+                >
+                  {store.result.review}
+                </div>
+              </section>
+            )}
+
             {/* Per-persona judges */}
             {store.result.judges && store.result.judges.length > 0 && (
               <section class="card p-6">

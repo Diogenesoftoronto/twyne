@@ -114,7 +114,7 @@ body {
  * same --doc-pad-* custom properties that drive the page padding, so moving
  * the layout sliders moves the guides. Painted as the page's own background
  * so they always sit behind the text without any z-index juggling. */
-.page-canvas {
+.page-canvas.show-margin-guides {
   --guide: rgba(193, 39, 45, 0.28);
   background-image:
     linear-gradient(var(--guide), var(--guide)),
@@ -364,7 +364,12 @@ body {
   margin-top: 0.28em;
   user-select: none;
 }
-.twyne-editor .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+.twyne-editor
+  .ProseMirror
+  ul[data-type="taskList"]
+  li
+  > label
+  input[type="checkbox"] {
   appearance: none;
   width: 1.05em;
   height: 1.05em;
@@ -373,13 +378,25 @@ body {
   background: var(--color-paper);
   cursor: pointer;
   position: relative;
-  transition: background 0.12s ease, border-color 0.12s ease;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease;
 }
-.twyne-editor .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked {
+.twyne-editor
+  .ProseMirror
+  ul[data-type="taskList"]
+  li
+  > label
+  input[type="checkbox"]:checked {
   background: var(--color-vermilion);
   border-color: var(--color-vermilion);
 }
-.twyne-editor .ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"]:checked::after {
+.twyne-editor
+  .ProseMirror
+  ul[data-type="taskList"]
+  li
+  > label
+  input[type="checkbox"]:checked::after {
   content: "✓";
   position: absolute;
   inset: 0;
@@ -392,7 +409,11 @@ body {
 .twyne-editor .ProseMirror ul[data-type="taskList"] li > div {
   flex: 1;
 }
-.twyne-editor .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div {
+.twyne-editor
+  .ProseMirror
+  ul[data-type="taskList"]
+  li[data-checked="true"]
+  > div {
   color: var(--color-ink-muted);
   text-decoration: line-through;
 }
@@ -1017,7 +1038,8 @@ body {
   width: min(20.5rem, calc(100vw - 1rem));
   padding: 0.85rem 1rem 1rem;
   background: var(--color-paper-soft);
-  border: 1px solid color-mix(in srgb, var(--note-color) 45%, var(--color-paper-3));
+  border: 1px solid
+    color-mix(in srgb, var(--note-color) 45%, var(--color-paper-3));
   border-radius: 2px;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.7) inset,

@@ -1,4 +1,6 @@
 import type { ProjectBrief, ProjectInterviewAnswers } from "../types";
+import { markDirty as markSyncDirty } from "./convex-sync";
+import { BRIEF_PATH, writeFileAsJson } from "./lix";
 
 export const BRIEF_STORAGE_KEY = "twyne-project-brief";
 export const DRAFT_STORAGE_KEY = "twyne-document";
@@ -40,6 +42,9 @@ export function saveProjectBrief(brief: ProjectBrief): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(BRIEF_STORAGE_KEY, JSON.stringify(brief));
+    void writeFileAsJson(BRIEF_PATH, brief).then(() => {
+      markSyncDirty();
+    });
   } catch {
     // storage unavailable
   }

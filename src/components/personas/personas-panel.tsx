@@ -18,10 +18,13 @@ import type {
   RoomSettings,
   AssistanceLevel,
   SuggestionKind,
+  RoomAnalysis,
+  PersonaMemo,
 } from "../../types";
 import { DEFAULT_ROOM_SETTINGS } from "../../types";
 import { loadDraftText, summarizeBrief } from "../../utils/anti-tabula-rasa";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
+import { toAgentPersona } from "../../../convex/agentPrompts";
 import { loadPersonasFromIdb } from "../../utils/idb";
 import {
   savePersonaNoteLocally,
@@ -35,10 +38,17 @@ import {
 import {
   runClientAgent,
   runClientRewrite,
+  runClientRoomSynthesis,
   normalizeAiSettings,
+  hasConfiguredAiProvider,
 } from "../../utils/ai-client";
 import type { AiSettings } from "../../types";
-import { loadAiSettingsFromIdb } from "../../utils/idb";
+import {
+  loadAiSettingsFromIdb,
+  loadRoomAnalysisFromIdb,
+  saveRoomAnalysisToIdb,
+} from "../../utils/idb";
+import { useAuth } from "../../utils/auth-context";
 import {
   draftReadiness,
   MIN_EDITOR_WORDS,
@@ -97,6 +107,10 @@ interface PersonasStore {
   proposalsUsed: number;
   /** Loaded BYOK settings (null until hydrated). */
   aiSettings: AiSettings | null;
+  /** The expanded full-page cast analysis, when generated. */
+  analysis: RoomAnalysis | null;
+  /** Whether the full-analysis pass is in flight. */
+  isAnalyzing: boolean;
 }
 
 interface PersonasPanelProps {
@@ -111,7 +125,7 @@ function effectiveLevel(
   return settings.perPersona?.[personaId] ?? settings.level;
 }
 
-/* ── Anchor selection (kept from the original — deterministic) ─── */
+/* ── Rewrite anchor selection (deterministic edit targets) ─────── */
 
 function pickAnchorSentences(
   text: string,
@@ -180,6 +194,7 @@ function pickAnchorSentences(
 
 export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
   const clientSig = useConvexClient();
+  const auth = useAuth();
   const store = useStore<PersonasStore>({
     activePersona: null,
     feedback: [],
@@ -208,6 +223,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     largeEditsUsed: 0,
     proposalsUsed: 0,
     aiSettings: null,
+    analysis: null,
+    isAnalyzing: false,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -233,6 +250,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     // Load BYOK settings (client-side only, keys never touch the server).
     const aiRaw = await loadAiSettingsFromIdb();
     store.aiSettings = normalizeAiSettings(aiRaw);
+    const savedAnalysis = await loadRoomAnalysisFromIdb();
+    if (savedAnalysis && !store.analysis) store.analysis = savedAnalysis;
 
     // Capture the live Convex client (noSerialize keeps Qwik happy).
     if (clientSig.value) {
@@ -457,106 +476,98 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         store.lastProvider = null;
         return;
       }
-      const anchors = pickAnchorSentences(
-        draftText,
-        store.personas.map((p) => p.id),
-      );
-
-      const client = clientSig.value;
+      const client =
+        auth.value.provider === "convex" && auth.value.user
+          ? clientSig.value
+          : null;
       let responses: Array<{
         personaId: string;
         text: string;
         type: PersonaFeedback["type"];
         provider: string;
+        anchor?: string;
       }> = [];
 
       // ── Try client-side AI first (BYOK) ─────────────────────────
       const settings = store.aiSettings;
-      if (settings?.advancedMode && settings.providers.length > 0) {
+      const hasByok = hasConfiguredAiProvider(settings);
+      if (hasByok && settings) {
         try {
-          const tasks = store.personas.map(async (p) => {
-            const req = {
-              persona: {
-                id: p.id,
-                name: p.name,
-                role: p.role,
-                description: p.description,
-                focus: p.focus,
-                color: p.color,
-                icon: p.icon,
-              },
-              brief: brief ?? null,
-              draftText,
-              anchor: anchors[p.id],
-              instruction: "feedback" as const,
-            };
-            const res = await runClientAgent("persona-feedback", req, settings);
-            return {
-              personaId: p.id,
-              text: res?.text ?? generateLocalFallback(p, brief, draftText),
-              type: res?.type ?? defaultType(p.id),
-              provider: (res?.provider ??
-                "local") as (typeof responses)[0]["provider"],
-            };
-          });
-          responses = await Promise.all(tasks);
-          store.lastProvider = `client` as any;
+          const clientResults = await Promise.all(
+            store.personas.map(async (p) => {
+              const req = {
+                persona: toAgentPersona(p),
+                brief: brief ?? null,
+                draftText,
+                instruction: "feedback" as const,
+              };
+              const res = await runClientAgent(
+                "persona-feedback",
+                req,
+                settings,
+              );
+              return res
+                ? {
+                    personaId: p.id,
+                    text: res.text,
+                    type: res.type,
+                    provider: res.provider as (typeof responses)[0]["provider"],
+                    anchor: res.anchor,
+                  }
+                : null;
+            }),
+          );
+          if (clientResults.every(Boolean)) {
+            responses = clientResults as typeof responses;
+            store.lastProvider =
+              `client-${responses[0]?.provider ?? "local"}` as any;
+          } else {
+            store.lastProvider = null;
+            store.conveneError =
+              "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+            return;
+          }
         } catch (err) {
-          console.warn("[twyne:personas] client AI failed, falling back:", err);
+          console.warn("[twyne:personas] client AI failed:", err);
+          store.lastProvider = null;
+          store.conveneError =
+            "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+          return;
         }
       }
 
-      // ── Fallback to Convex server action ────────────────────────
-      if (responses.length === 0 && client) {
+      // ── Server action only when no local provider is configured ──────────
+      if (responses.length === 0 && !hasByok && client) {
         try {
-          const personasForServer = store.personas.map((p) => ({
-            id: p.id,
-            name: p.name,
-            role: p.role,
-            description: p.description,
-            focus: p.focus,
-            color: p.color,
-            icon: p.icon,
-          }));
+          const personasForServer = store.personas.map(toAgentPersona);
           const result = (await client.action(api.agents.conveneRoom, {
             personas: personasForServer,
             brief: brief ?? null,
             draftText,
-            anchors,
           })) as Array<{
             personaId: string;
             text: string;
             type: PersonaFeedback["type"];
             provider: string;
+            anchor?: string;
           }>;
           responses = result;
           store.lastProvider = result[0]?.provider ?? null;
         } catch (err) {
-          console.warn(
-            "[twyne:personas] conveneRoom failed, using local fallback:",
-            err,
-          );
+          console.warn("[twyne:personas] conveneRoom failed:", err);
           store.conveneError =
-            (err as Error).message ?? "Remote convene failed.";
-          store.lastProvider = "local";
-          responses = store.personas.map((p) => ({
-            personaId: p.id,
-            text: generateLocalFallback(p, brief, draftText),
-            type: defaultType(p.id),
-            provider: "local",
-          }));
+            "The shared server could not convene the room. Sign in again or use your own provider in Preferences.";
+          store.lastProvider = null;
+          return;
         }
       }
 
-      // No Convex client — local fallback.
       if (responses.length === 0) {
-        store.lastProvider = "local";
-        responses = store.personas.map((p) => ({
-          personaId: p.id,
-          text: generateLocalFallback(p, brief, draftText),
-          type: defaultType(p.id),
-          provider: "local",
-        }));
+        store.lastProvider = null;
+        store.conveneError = hasByok
+          ? "Your configured provider did not answer. Check the API key, model, and base URL in Preferences."
+          : "Add a provider in Preferences or sign in to convene the room.";
+        return;
       }
 
       // Build PersonaFeedback[] from the responses, persisting each as we go.
@@ -565,7 +576,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       for (const r of responses) {
         const persona = store.personas.find((p) => p.id === r.personaId);
         if (!persona) continue;
-        const anchor = anchors[r.personaId];
+        const anchor = r.anchor;
         const noteId = `pn-${r.personaId}-${timestamp}`;
         const fb: PersonaFeedback = {
           personaId: r.personaId,
@@ -581,7 +592,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         await savePersonaNoteLocally(fb, brief);
 
         // Server-side push (best-effort, no-op if not signed in).
-        const c = clientSig.value;
+        const c =
+          auth.value.provider === "convex" && auth.value.user
+            ? clientSig.value
+            : null;
         if (c) {
           try {
             await c.mutation(api.sync.putPersonaNote, {
@@ -624,6 +638,114 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     }
   });
 
+  /* ── Full-page cast analysis (per-persona memos + synthesis) ── */
+
+  const expandAnalysis = $(async () => {
+    if (store.isAnalyzing) return;
+    store.isAnalyzing = true;
+    store.conveneError = null;
+    try {
+      const draftText = await loadDraftText();
+      const client = store.clientRef ?? clientSig.value;
+      const settings = store.aiSettings;
+      const hasByok = hasConfiguredAiProvider(settings);
+      const briefTitle = brief?.answers.workingTitle;
+
+      let memos: PersonaMemo[] = [];
+      let synthesis = "";
+      let synthesisProvider = "local";
+
+      if (hasByok && settings) {
+        // Each editor writes a full memo on the BYOK path, honoring their
+        // own model/temperature; then synthesise the five.
+        memos = await Promise.all(
+          store.personas.map(async (p) => {
+            const res = await runClientAgent(
+              "persona-analysis",
+              {
+                persona: toAgentPersona(p),
+                brief: brief ?? null,
+                draftText,
+                instruction: "analyze",
+              },
+              settings,
+            );
+            return {
+              personaId: p.id,
+              personaName: p.name,
+              personaColor: p.color,
+              text: res?.text ?? "(no response)",
+              anchor: res?.anchor,
+              provider: res ? `client-${res.provider}` : "local",
+            } as PersonaMemo;
+          }),
+        );
+        const synth = await runClientRoomSynthesis(
+          memos.map((m) => {
+            const persona = store.personas.find((p) => p.id === m.personaId);
+            return {
+              personaName: m.personaName,
+              role: persona?.role ?? "",
+              text: m.text,
+            };
+          }),
+          brief ?? null,
+          settings,
+        );
+        if (synth) {
+          synthesis = synth.text;
+          synthesisProvider = `client-${synth.provider}`;
+        }
+      } else if (client) {
+        const result = (await client.action(api.agents.analyzeRoom, {
+          personas: store.personas.map(toAgentPersona),
+          brief: brief ?? null,
+          draftText,
+        })) as {
+          memos: Array<{
+            personaId: string;
+            text: string;
+            anchor?: string;
+            provider: string;
+          }>;
+          synthesis: string;
+          synthesisProvider: string;
+        };
+        memos = result.memos.map((m) => {
+          const persona = store.personas.find((p) => p.id === m.personaId);
+          return {
+            personaId: m.personaId,
+            personaName: persona?.name ?? m.personaId,
+            personaColor: persona?.color ?? "var(--color-ink)",
+            text: m.text,
+            anchor: m.anchor,
+            provider: m.provider,
+          };
+        });
+        synthesis = result.synthesis;
+        synthesisProvider = result.synthesisProvider;
+      } else {
+        store.conveneError =
+          "Full analysis needs a configured provider (BYOK) or a signed-in Pro plan.";
+        return;
+      }
+
+      const analysis: RoomAnalysis = {
+        memos,
+        synthesis,
+        synthesisProvider,
+        briefTitle,
+        timestamp: Date.now(),
+      };
+      store.analysis = analysis;
+      void saveRoomAnalysisToIdb(analysis);
+    } catch (err) {
+      store.conveneError = (err as Error).message ?? "Full analysis failed.";
+    } finally {
+      store.isAnalyzing = false;
+    }
+  });
+
   /* ── Reply flow ────────────────────────────────────────────── */
 
   const openReply = $((noteId: string) => {
@@ -641,6 +763,17 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
   const submitReply = $(async (noteId: string, askPersona: boolean) => {
     const text = store.replyDraft.trim();
     if (!text) return;
+    if (store.groupByPersona) {
+      const note = store.feedback.find((f) => f.noteId === noteId);
+      const latestForPersona = note
+        ? store.feedback
+            .filter((f) => f.personaId === note.personaId)
+            .sort((a, b) => b.timestamp - a.timestamp)[0]
+        : null;
+      if (note && latestForPersona?.noteId !== noteId) {
+        store.groupByPersona = false;
+      }
+    }
     const userReply: PersonaReply = {
       id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       noteId,
@@ -652,7 +785,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     const updated = [...(store.repliesByNote[noteId] ?? []), userReply];
     store.repliesByNote = { ...store.repliesByNote, [noteId]: updated };
     await addPersonaReplyLocally(userReply);
-    const client = clientSig.value;
+    const client =
+      auth.value.provider === "convex" && auth.value.user
+        ? clientSig.value
+        : null;
     if (client) {
       try {
         await client.mutation(api.sync.addPersonaReply, {
@@ -691,7 +827,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
         // ── Try client-side AI first (BYOK) ─────────────────────────
         const settings2 = store.aiSettings;
-        if (settings2?.advancedMode && settings2.providers.length > 0) {
+        const hasByok = hasConfiguredAiProvider(settings2);
+        if (hasByok && settings2) {
           try {
             const res = await runClientAgent(
               "persona-reply",
@@ -717,15 +854,24 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             if (res) {
               responseText = res.text;
               store.lastProvider = `client-${res.provider}` as any;
+            } else {
+              store.conveneError =
+                "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+              return;
             }
           } catch (err) {
             console.warn("[twyne:personas] client reply failed:", err);
+            store.conveneError =
+              "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+            return;
           }
         }
 
-        // ── Fallback to Convex server action ────────────────────────
-        const c = clientSig.value;
-        if (!responseText && c) {
+        const c =
+          auth.value.provider === "convex" && auth.value.user
+            ? clientSig.value
+            : null;
+        if (!responseText && !hasByok && c) {
           try {
             const result = (await c.action(api.agents.runPersona, {
               persona: {
@@ -753,10 +899,16 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               (result.provider as typeof store.lastProvider) ?? "bifrost";
           } catch (err) {
             console.warn("[twyne:personas] runPersona failed:", err);
+            store.conveneError =
+              "The shared server could not answer. Sign in again or use your own provider in Preferences.";
+            return;
           }
         }
         if (!responseText) {
-          responseText = `I stand by the note I left you. The line "${note.anchor ?? "—"}" is still where the work is. ${userReply.text ? "Your question is fair; " : ""}My honest answer is to revise the paragraph, then bring it back to the room.`;
+          store.conveneError = hasByok
+            ? "Your configured provider did not answer. Check the API key, model, and base URL in Preferences."
+            : "Add a provider in Preferences or sign in to keep the conversation going.";
+          return;
         }
 
         const personaReply: PersonaReply = {
@@ -822,7 +974,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
   const persistSettings = $(async (next: RoomSettings) => {
     store.roomSettings = next;
     await saveRoomSettingsLocally(next);
-    const client = clientSig.value;
+    const client =
+      auth.value.provider === "convex" && auth.value.user
+        ? clientSig.value
+        : null;
     if (client) {
       try {
         await client.mutation(api.sync.putRoomSettings, { settings: next });
@@ -843,7 +998,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       anchor: string,
       kind: SuggestionKind,
     ): Promise<boolean> => {
-      const client = clientSig.value;
+      const client =
+        auth.value.provider === "convex" && auth.value.user
+          ? clientSig.value
+          : null;
       const draftText = await readCurrentDraftText();
       const readiness = draftReadiness(draftText, MIN_MARKUP_WORDS);
       if (!readiness.ok) {
@@ -857,7 +1015,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
       // ── Try client-side AI first (BYOK) ─────────────────────────
       const settings = store.aiSettings;
-      if (settings?.advancedMode && settings.providers.length > 0) {
+      const hasByok = hasConfiguredAiProvider(settings);
+      if (hasByok && settings) {
         try {
           const res = await runClientRewrite(
             {
@@ -880,14 +1039,21 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           if (res) {
             replacement = res.replacement || anchor;
             rationale = res.rationale ?? "";
+          } else {
+            store.conveneError =
+              "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+            return false;
           }
         } catch (err) {
           console.warn("[twyne:personas] client rewrite failed:", err);
+          store.conveneError =
+            "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+          return false;
         }
       }
 
-      // ── Fallback to Convex server action ────────────────────────
-      if (replacement.trim() === anchor.trim() && client) {
+      // ── Server action only when no local provider is configured ──────────
+      if (replacement.trim() === anchor.trim() && !hasByok && client) {
         try {
           const r = (await client.action(api.agents.suggestRewrite, {
             persona: {
@@ -908,8 +1074,15 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           rationale = r.rationale ?? "";
         } catch (err) {
           console.warn("[twyne:personas] suggestRewrite failed:", err);
+          store.conveneError =
+            "The shared server could not propose an edit. Sign in again or use your own provider in Preferences.";
           return false;
         }
+      }
+      if (replacement.trim() === anchor.trim() && !hasByok && !client) {
+        store.conveneError =
+          "Add a provider in Preferences or sign in before asking for a fix.";
+        return false;
       }
       if (replacement.trim() === anchor.trim()) return false;
 
@@ -1141,6 +1314,18 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             )}
           </button>
 
+          <button
+            onClick$={expandAnalysis}
+            disabled={store.isAnalyzing}
+            class="mt-2 w-full text-[11px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] border border-dashed border-[var(--color-paper-3)] rounded py-2 disabled:opacity-50"
+            style="font-family: var(--font-typewriter);"
+            title="Each editor writes a full-page analysis, then the room synthesises them."
+          >
+            {store.isAnalyzing
+              ? "✦ The room is writing the full analysis…"
+              : "❡ Expand to full analysis"}
+          </button>
+
           {store.feedback.length > 0 && !store.isGenerating && (
             <div class="mt-2 flex items-center gap-2">
               <button
@@ -1177,6 +1362,63 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 Strike the room
               </button>
             </div>
+          )}
+
+          {/* ── Full-page cast analysis ── */}
+          {store.analysis && (
+            <section class="mt-4 border-t-2 border-double border-[var(--color-paper-3)] pt-4">
+              <div class="flex items-baseline justify-between">
+                <p class="dept-label">The Full Analysis</p>
+                <button
+                  onClick$={() => {
+                    store.analysis = null;
+                  }}
+                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                  style="font-family: var(--font-typewriter);"
+                  title="Clear the full analysis"
+                >
+                  ✕ clear
+                </button>
+              </div>
+
+              {store.analysis.synthesis && (
+                <div class="mt-3 mb-4 p-3 bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] rounded">
+                  <p class="dept-label">The Room's Verdict</p>
+                  <div
+                    class="mt-2 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
+                    style="font-family: var(--font-serif);"
+                  >
+                    {store.analysis.synthesis}
+                  </div>
+                </div>
+              )}
+
+              <div class="space-y-4">
+                {store.analysis.memos.map((memo) => (
+                  <article
+                    key={memo.personaId}
+                    class="pl-3"
+                    style={{ borderLeft: `3px solid ${memo.personaColor}` }}
+                  >
+                    <p
+                      class="text-[11px] tracking-[0.15em] uppercase"
+                      style={{
+                        fontFamily: "var(--font-typewriter)",
+                        color: memo.personaColor,
+                      }}
+                    >
+                      {memo.personaName}
+                    </p>
+                    <div
+                      class="mt-1 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
+                      style="font-family: var(--font-serif);"
+                    >
+                      {memo.text}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
           )}
 
           {/* ── Mark up my draft + room settings ── */}
@@ -1300,7 +1542,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               class="mt-2 text-[11px] text-[var(--color-vermilion)]"
               style="font-family: var(--font-typewriter);"
             >
-              ⚠ {store.conveneError} (using local fallback)
+              ⚠ {store.conveneError}
             </p>
           )}
         </div>
@@ -1608,59 +1850,6 @@ async function readCurrentDraftText(): Promise<string> {
   window.dispatchEvent(new CustomEvent("twyne:request-draft"));
   window.removeEventListener("twyne:draft-text", receive);
   return draftText || (await loadDraftText());
-}
-
-/* ── Local fallback (no LLM) ────────────────────────────────── */
-
-function defaultType(id: string): PersonaFeedback["type"] {
-  switch (id) {
-    case "devil":
-      return "critique";
-    case "angel":
-      return "encouragement";
-    case "scholar":
-    case "editor":
-      return "suggestion";
-    case "reader":
-    default:
-      return "perspective";
-  }
-}
-
-function generateLocalFallback(
-  persona: Persona,
-  brief: ProjectBrief | null,
-  draftText: string,
-): string {
-  const answers = brief?.answers;
-  const wc = draftText.split(/\s+/).filter(Boolean).length;
-  const hasBody = wc > 80;
-  const audience = answers?.audience || "your intended reader";
-  const goal = answers?.goal || "the central purpose of the piece";
-  const tone = answers?.tone || "the chosen tone";
-  const constraints = answers?.constraints || "the project constraints";
-  const successSignal = answers?.successSignal || "the intended reader outcome";
-  const map: Record<string, string> = {
-    devil: hasBody
-      ? `I am testing this against the stated goal: ${goal}. The draft needs sharper proof of why that goal follows from the argument on the page. Find one claim that ${audience} could reject, then add the strongest counterpoint before you answer it. The constraints are only useful if they are visible: ${constraints}.`
-      : `The brief gives us a useful target, but the draft is still mostly setup. Write the risky version of the argument: what would make ${audience} disagree, and what evidence would force them to keep reading?`,
-    angel: hasBody
-      ? `The strongest thing here is that the piece already has a declared destination: ${goal}. Keep using that as the spine. When a paragraph directly helps ${audience}, protect it; that is where the draft starts feeling authored rather than assembled.`
-      : `The context is doing useful work already. You have a reader, a goal, and a success signal before the first real paragraph. The next move can be specific: write toward ${successSignal}.`,
-    scholar: hasBody
-      ? `For ${audience}, evidence should be chosen for credibility, not decoration. Scan each major claim and mark whether it needs a source, an example, or a definition. The constraint to protect is: ${constraints}.`
-      : `The research plan should follow the brief. Collect sources that help prove ${goal}, then keep a separate note for facts that are interesting but do not move ${audience} toward the success signal.`,
-    editor: hasBody
-      ? `Edit for the requested tone: ${tone}. If a sentence does not advance ${goal}, compress it or move it into notes. The current priority is not elegance in isolation; it is making every paragraph serve the reader outcome.`
-      : `Use the brief as a style guide. Start with one paragraph in the target tone: ${tone}. Then revise the first sentence until it makes the piece's promise concrete.`,
-    reader: hasBody
-      ? `Reading as ${audience}, I need the opening to tell me why this matters now and what I will understand by the end. The success test is clear: ${successSignal}. Make that promise visible early.`
-      : `As ${audience}, I would rather see a rough, direct opening than more setup. Tell me what problem I am walking into, then give me one reason to trust you.`,
-  };
-  return (
-    map[persona.id] ||
-    "I read it, and I want to come back to you on one thing in particular."
-  );
 }
 
 /* ── Display helpers ────────────────────────────────────────── */

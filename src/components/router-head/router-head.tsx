@@ -56,10 +56,14 @@ export const RouterHead = component$(() => {
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
       {/* Favicons / app icons */}
-      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+      <link rel="icon" type="image/svg+xml" href="/assets/griffin-mark.svg" />
       <link rel="icon" type="image/png" sizes="32x32" href="/icon-192.png" />
       <link rel="alternate icon" href="/favicon.ico" sizes="48x48" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+      <link
+        rel="apple-touch-icon"
+        sizes="180x180"
+        href="/apple-touch-icon.png"
+      />
       <meta name="theme-color" content="#9c1a1f" />
 
       {/* Site-wide social defaults (routes may override any key) */}

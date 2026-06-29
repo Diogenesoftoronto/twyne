@@ -16,9 +16,15 @@ import {
   formatCitation,
   upsertBibEntry,
 } from "../../utils/bibliography";
-import { loadFoliosFromIdb, loadFolioContentFromIdb } from "../../utils/idb";
+import {
+  loadApparatusSettingsFromIdb,
+  loadFoliosFromIdb,
+  loadFolioContentFromIdb,
+  saveApparatusSettingsToIdb,
+} from "../../utils/idb";
 import { snapshot as researchSnapshot } from "../../utils/background-research";
 import {
+  hasConfiguredAiProvider,
   runClientCitationFormat,
   runClientSourceSummarize,
   runClientMissingSourceDetect,
@@ -50,6 +56,8 @@ interface ApparatusStore {
   aiSettings: AiSettings | null;
   aiLoading: Record<string, boolean>;
   aiSummaries: Record<string, SourceSummarizeResult>;
+  aiEnhanceCitations: boolean;
+  flagMissingSources: boolean;
   aiMissingSources: {
     claims: Array<{
       claim: string;
@@ -90,12 +98,18 @@ export default component$(() => {
     aiSettings: null,
     aiLoading: {},
     aiSummaries: {},
+    aiEnhanceCitations: false,
+    flagMissingSources: false,
     aiMissingSources: null,
     aiScanningMissing: false,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
+    const apparatusSettings = await loadApparatusSettingsFromIdb();
+    store.style = apparatusSettings.defaultCitationStyle;
+    store.aiEnhanceCitations = apparatusSettings.aiEnhanceCitations;
+    store.flagMissingSources = apparatusSettings.flagMissingSources;
     store.bibliography = await loadBibliography();
     const folios = await loadFoliosFromIdb();
     store.activeFolio = folios[0] ?? null;
@@ -195,6 +209,11 @@ export default component$(() => {
 
   const setStyle = $((s: CitationStyle) => {
     store.style = s;
+    void saveApparatusSettingsToIdb({
+      defaultCitationStyle: s,
+      aiEnhanceCitations: store.aiEnhanceCitations,
+      flagMissingSources: store.flagMissingSources,
+    });
   });
 
   const dropEntry = $(async (id: string) => {
@@ -236,15 +255,21 @@ export default component$(() => {
 
   /* ── AI-enhanced apparatus actions ────────────────────────────── */
 
-  const hasAi = store.aiSettings?.advancedMode && store.aiSettings.providers.length > 0;
+  const hasAi = hasConfiguredAiProvider(store.aiSettings);
+  const canEnhanceCitations = hasAi && store.aiEnhanceCitations;
+  const canFlagMissingSources = hasAi && store.flagMissingSources;
 
   const formatCitationAi = $(async (citation: DetectedCitation) => {
-    if (!hasAi || !store.aiSettings) return;
+    if (!canEnhanceCitations || !store.aiSettings) return;
     const key = `fmt-${citation.id}`;
     store.aiLoading = { ...store.aiLoading, [key]: true };
     try {
       const result = await runClientCitationFormat(
-        { rawText: citation.text, style: store.style, context: store.activeFolio?.name },
+        {
+          rawText: citation.text,
+          style: store.style,
+          context: store.activeFolio?.name,
+        },
         store.aiSettings,
       );
       if (result) {
@@ -288,7 +313,8 @@ export default component$(() => {
   });
 
   const detectMissingSourcesAi = $(async () => {
-    if (!hasAi || !store.aiSettings || !store.activeFolio) return;
+    if (!canFlagMissingSources || !store.aiSettings || !store.activeFolio)
+      return;
     store.aiScanningMissing = true;
     store.aiMissingSources = null;
     try {
@@ -343,8 +369,8 @@ export default component$(() => {
               The Apparatus
             </h1>
             <p class="text-sm text-[var(--color-ink-light)] mt-1">
-              Background agents are reading your draft. Sources they
-              discover land here automatically.
+              Background agents are reading your draft. Sources they discover
+              land here automatically.
             </p>
           </div>
           <Link
@@ -371,7 +397,8 @@ export default component$(() => {
                         ? "var(--color-vermilion)"
                         : "var(--color-accent-green)",
                 animation:
-                  store.research.status === "running" || store.research.status === "saving"
+                  store.research.status === "running" ||
+                  store.research.status === "saving"
                     ? "pulse 1.6s ease-in-out infinite"
                     : "none",
               }}
@@ -382,8 +409,10 @@ export default component$(() => {
                 class="text-sm text-[var(--color-ink)]"
                 style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
               >
-                {store.research.status === "running" && "Apparatus is searching…"}
-                {store.research.status === "saving" && "Saving discovered sources…"}
+                {store.research.status === "running" &&
+                  "Apparatus is searching…"}
+                {store.research.status === "saving" &&
+                  "Saving discovered sources…"}
                 {store.research.status === "error" &&
                   "Apparatus is offline — sources will resume when the connection is back."}
                 {store.research.status === "idle" &&
@@ -462,9 +491,7 @@ export default component$(() => {
                 </div>
               ) : (
                 backgroundEntries.map((entry) => {
-                  const isCited = citedUrls.has(
-                    entry.url.replace(/\/+$/, ""),
-                  );
+                  const isCited = citedUrls.has(entry.url.replace(/\/+$/, ""));
                   return (
                     <div key={entry.id} class="row">
                       <div class="flex items-start justify-between gap-2">
@@ -540,7 +567,11 @@ export default component$(() => {
                 Your bibliography
               </h2>
               <div class="flex items-center gap-3">
-                <div class="style-toggle" role="group" aria-label="Citation style">
+                <div
+                  class="style-toggle"
+                  role="group"
+                  aria-label="Citation style"
+                >
                   {STYLE_OPTIONS.map((s) => (
                     <button
                       key={s.value}
@@ -579,9 +610,7 @@ export default component$(() => {
                 </div>
               ) : (
                 writerEntries.map((entry) => {
-                  const isCited = citedUrls.has(
-                    entry.url.replace(/\/+$/, ""),
-                  );
+                  const isCited = citedUrls.has(entry.url.replace(/\/+$/, ""));
                   const sumKey = `sum-${entry.id}`;
                   const isSummarizing = !!store.aiLoading[sumKey];
                   const summary = store.aiSummaries[entry.id];
@@ -635,7 +664,9 @@ export default component$(() => {
                                     <li
                                       key={i}
                                       class="text-[0.7rem] text-[var(--color-ink-light)] pl-3 relative before:content-['·'] before:absolute before:left-0 before:text-[var(--color-mustard)]"
-                                      style={{ fontFamily: "var(--font-serif)" }}
+                                      style={{
+                                        fontFamily: "var(--font-serif)",
+                                      }}
                                     >
                                       {claim}
                                     </li>
@@ -717,7 +748,7 @@ export default component$(() => {
                             </a>
                           </>
                         ) : null}
-                        {hasAi && (
+                        {canEnhanceCitations && (
                           <button
                             onClick$={() => formatCitationAi(c)}
                             disabled={isFormatting}
@@ -738,93 +769,96 @@ export default component$(() => {
         </div>
 
         {/* Missing citations — AI scans the draft for claims that need sourcing. */}
-        <section class="mt-6">
-          <div class="flex items-center justify-between mb-2 gap-3 flex-wrap">
-            <div>
-              <h2
-                class="text-base font-semibold"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                Missing citations
-              </h2>
-              <p
-                class="text-[0.7rem] text-[var(--color-ink-muted)] mt-0.5"
-                style={{ fontFamily: "var(--font-typewriter)" }}
-              >
-                Ask the configured AI to flag claims in the draft that need a
-                source.
-              </p>
-            </div>
-            {hasAi && (
-              <button
-                onClick$={detectMissingSourcesAi}
-                disabled={store.aiScanningMissing || !store.activeFolio}
-                class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-mustard)] hover:text-[var(--color-ink)] disabled:opacity-40"
-                style="font-family: var(--font-typewriter);"
-                title="Scan the active draft for claims that need a source."
-              >
-                {store.aiScanningMissing
-                  ? "scanning…"
-                  : store.aiMissingSources
-                    ? "✦ re-scan"
-                    : "✦ scan for missing citations"}
-              </button>
-            )}
-          </div>
-          {!hasAi && (
-            <p
-              class="text-xs text-[var(--color-ink-muted)] italic"
-              style={{ fontFamily: "var(--font-serif)" }}
-            >
-              Configure an AI provider in Settings to enable claim scanning.
-            </p>
-          )}
-          {hasAi && store.aiMissingSources && (
-            <div class="card">
-              {store.aiMissingSources.claims.length === 0 ? (
-                <div class="empty">
-                  <p class="text-sm italic">
-                    No unsourced claims detected. The draft looks well-attested.
-                  </p>
-                </div>
-              ) : (
-                store.aiMissingSources.claims.map((claim, i) => (
-                  <div key={i} class="row">
-                    <p
-                      class="text-[0.6rem] tracking-[0.18em] uppercase text-[var(--color-mustard)] mb-1"
-                      style={{ fontFamily: "var(--font-typewriter)" }}
-                    >
-                      claim
-                    </p>
-                    <p
-                      class="text-sm text-[var(--color-ink)] leading-6"
-                      style={{ fontFamily: "var(--font-serif)" }}
-                    >
-                      {claim.claim}
-                    </p>
-                    <p
-                      class="text-[0.7rem] text-[var(--color-ink-light)] mt-1.5"
-                      style={{ fontFamily: "var(--font-serif)" }}
-                    >
-                      {claim.reason}
-                    </p>
-                    {claim.suggestedQuery && (
-                      <p
-                        class="text-[0.6rem] text-[var(--color-ink-muted)] mt-1.5 italic"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        try searching:{" "}
-                        <span class="text-[var(--color-ink)]">
-                          {claim.suggestedQuery}
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                ))
+        {store.flagMissingSources && (
+          <section class="mt-6">
+            <div class="flex items-center justify-between mb-2 gap-3 flex-wrap">
+              <div>
+                <h2
+                  class="text-base font-semibold"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Missing citations
+                </h2>
+                <p
+                  class="text-[0.7rem] text-[var(--color-ink-muted)] mt-0.5"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  Ask the configured AI to flag claims in the draft that need a
+                  source.
+                </p>
+              </div>
+              {canFlagMissingSources && (
+                <button
+                  onClick$={detectMissingSourcesAi}
+                  disabled={store.aiScanningMissing || !store.activeFolio}
+                  class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-mustard)] hover:text-[var(--color-ink)] disabled:opacity-40"
+                  style="font-family: var(--font-typewriter);"
+                  title="Scan the active draft for claims that need a source."
+                >
+                  {store.aiScanningMissing
+                    ? "scanning…"
+                    : store.aiMissingSources
+                      ? "✦ re-scan"
+                      : "✦ scan for missing citations"}
+                </button>
               )}
             </div>
-          )}
-        </section>
+            {!canFlagMissingSources && (
+              <p
+                class="text-xs text-[var(--color-ink-muted)] italic"
+                style={{ fontFamily: "var(--font-serif)" }}
+              >
+                Configure an AI provider in Settings to enable claim scanning.
+              </p>
+            )}
+            {canFlagMissingSources && store.aiMissingSources && (
+              <div class="card">
+                {store.aiMissingSources.claims.length === 0 ? (
+                  <div class="empty">
+                    <p class="text-sm italic">
+                      No unsourced claims detected. The draft looks
+                      well-attested.
+                    </p>
+                  </div>
+                ) : (
+                  store.aiMissingSources.claims.map((claim, i) => (
+                    <div key={i} class="row">
+                      <p
+                        class="text-[0.6rem] tracking-[0.18em] uppercase text-[var(--color-mustard)] mb-1"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        claim
+                      </p>
+                      <p
+                        class="text-sm text-[var(--color-ink)] leading-6"
+                        style={{ fontFamily: "var(--font-serif)" }}
+                      >
+                        {claim.claim}
+                      </p>
+                      <p
+                        class="text-[0.7rem] text-[var(--color-ink-light)] mt-1.5"
+                        style={{ fontFamily: "var(--font-serif)" }}
+                      >
+                        {claim.reason}
+                      </p>
+                      {claim.suggestedQuery && (
+                        <p
+                          class="text-[0.6rem] text-[var(--color-ink-muted)] mt-1.5 italic"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          try searching:{" "}
+                          <span class="text-[var(--color-ink)]">
+                            {claim.suggestedQuery}
+                          </span>
+                        </p>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </section>
+        )}
 
         {/* Embed overlay */}
         {store.embedUrl && (
@@ -844,7 +878,10 @@ export default component$(() => {
                 <div class="min-w-0">
                   <p
                     class="text-sm text-[var(--color-ink)] truncate"
-                    style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+                    style={{
+                      fontFamily: "var(--font-display)",
+                      fontWeight: 600,
+                    }}
                   >
                     {store.embedTitle}
                   </p>

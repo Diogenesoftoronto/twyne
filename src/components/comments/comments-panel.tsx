@@ -15,6 +15,7 @@ import { loadPersonasFromIdb, loadAiSettingsFromIdb } from "../../utils/idb";
 import { api } from "../../../convex/_generated/api";
 import type { AiSettings } from "../../types";
 import {
+  hasConfiguredAiProvider,
   runClientAgent,
   normalizeAiSettings,
 } from "../../utils/ai-client";
@@ -182,10 +183,7 @@ export const CommentsPanel = component$(
 
         // ── Try client-side AI first (BYOK) ─────────────────────────
         const settings = store.aiSettings;
-        if (
-          settings?.advancedMode &&
-          settings.providers.length > 0
-        ) {
+        if (hasConfiguredAiProvider(settings) && settings) {
           try {
             const res = await runClientAgent(
               "comment-reply",

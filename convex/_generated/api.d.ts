@@ -11,6 +11,7 @@
 import type * as account from "../account.js";
 import type * as admins from "../admins.js";
 import type * as agentPrompts from "../agentPrompts.js";
+import type * as agentTools from "../agentTools.js";
 import type * as agents from "../agents.js";
 import type * as auth from "../auth.js";
 import type * as collaboration from "../collaboration.js";
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   account: typeof account;
   admins: typeof admins;
   agentPrompts: typeof agentPrompts;
+  agentTools: typeof agentTools;
   agents: typeof agents;
   auth: typeof auth;
   collaboration: typeof collaboration;

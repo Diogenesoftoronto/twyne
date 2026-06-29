@@ -29,6 +29,10 @@ import {
  * Bluesky sign-in sits in step 1 as a tertiary option — it carries its own
  * handle, so it doesn't need the email step.
  */
+const normalizeEmail = (email: string) => email.trim().toLowerCase();
+const looksLikeEmail = (email: string) =>
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+
 export const AuthPanel = component$(() => {
   const auth = useAuth();
 
@@ -43,6 +47,8 @@ export const AuthPanel = component$(() => {
     chosen: null as SignInMethod | null,
     /** Whether we've already sent an OTP for this email in this session. */
     otpSent: false,
+    /** Normalized email address that the current OTP belongs to. */
+    otpSentFor: "",
     otpCode: "",
     sendingOtp: false,
     verifyingOtp: false,
@@ -54,39 +60,49 @@ export const AuthPanel = component$(() => {
     error: null as string | null,
   });
 
-  // Auto-send the OTP the first time we land on step 2 in OTP mode, so
-  // a first-time visitor never has to click "send me a code" separately.
+  // Auto-send OTP as soon as we have a valid email in sign-in mode, and keep
+  // the existing step-2 OTP fallback for sign-up / method switching.
   // Runs only on the client (visible task) so SSR never hits the auth API.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track }) => {
     const step = track(() => store.step);
+    const mode = track(() => store.mode);
     const email = track(() => store.email);
     const chosen = track(() => store.chosen);
     const sent = track(() => store.otpSent);
+    const sentFor = track(() => store.otpSentFor);
     const sending = track(() => store.sendingOtp);
     const user = track(() => auth.value.user);
 
-    if (step !== 2 || chosen !== "otp" || sent || sending) return;
-    if (!email || !email.includes("@")) return;
+    const normalized = normalizeEmail(email);
+    const shouldAutoSend =
+      (step === 1 && mode === "signin") || (step === 2 && chosen === "otp");
+
+    if (!shouldAutoSend || sent || sending) return;
+    if (!looksLikeEmail(normalized) || sentFor === normalized) return;
     if (user) return; // already signed in
-    void sendOtp(email);
+    void sendOtp(normalized);
   });
 
   const sendOtp = $(async (email: string) => {
+    const normalized = normalizeEmail(email);
     store.sendingOtp = true;
     store.error = null;
     try {
       const result = await emailOtp.sendVerificationOtp({
-        email,
+        email: normalized,
         type: "sign-in",
       });
       if (result?.error) {
         store.error = result.error.message ?? "Failed to send the code";
-        return;
+        return false;
       }
       store.otpSent = true;
+      store.otpSentFor = normalized;
+      return true;
     } catch (e: any) {
       store.error = e?.message ?? "Failed to send the code";
+      return false;
     } finally {
       store.sendingOtp = false;
     }
@@ -94,16 +110,16 @@ export const AuthPanel = component$(() => {
 
   const handleStepOne = $(() => {
     const trimmed = store.email.trim();
-    if (!trimmed || !trimmed.includes("@")) {
+    if (!looksLikeEmail(trimmed)) {
       store.error = "Add an email address so we know where to send the code.";
       return;
     }
+    store.email = trimmed;
     store.error = null;
     // Look up the per-email preference, falling back to OTP for first-timers
     // (we'll auto-detect passkey availability when they click that button).
     const remembered = getPreferredMethod(trimmed);
     store.chosen = remembered ?? "otp";
-    store.otpSent = false;
     store.otpCode = "";
     store.offerPasskey = false;
     store.step = 2;
@@ -140,6 +156,7 @@ export const AuthPanel = component$(() => {
 
   const handleResendOtp = $(async () => {
     store.otpSent = false;
+    store.otpSentFor = "";
     store.otpCode = "";
     await sendOtp(store.email);
   });
@@ -204,7 +221,6 @@ export const AuthPanel = component$(() => {
     store.step = 1;
     store.error = null;
     store.otpCode = "";
-    store.otpSent = false;
     store.offerPasskey = false;
   });
 
@@ -239,25 +255,21 @@ export const AuthPanel = component$(() => {
   const handlePasskeySignUp = $(async () => {
     store.error = null;
     const email = store.email.trim();
-    if (!email || !email.includes("@")) {
+    if (!looksLikeEmail(email)) {
       store.error =
         "Add an email first — we'll verify it, then register this device as a passkey.";
       return;
     }
+    store.email = email;
     store.usingPasskey = true;
     try {
-      const result = await emailOtp.sendVerificationOtp({
-        email,
-        type: "sign-in",
-      });
-      if (result?.error) {
-        store.error = result.error.message ?? "Failed to send the code";
+      const sent = await sendOtp(email);
+      if (!sent) {
         return;
       }
       // Hand off to the OTP step. On successful verification the existing
       // machinery surfaces the "Add a passkey?" offer (session-bound, safe).
       store.chosen = "otp";
-      store.otpSent = true;
       store.otpCode = "";
       store.offerPasskey = false;
       store.step = 2;
@@ -393,7 +405,12 @@ export const AuthPanel = component$(() => {
               autoFocus
               value={store.email}
               onInput$={(e) => {
-                store.email = (e.target as HTMLInputElement).value;
+                const next = (e.target as HTMLInputElement).value;
+                store.email = next;
+                if (normalizeEmail(next) !== store.otpSentFor) {
+                  store.otpSent = false;
+                  store.otpCode = "";
+                }
               }}
               placeholder="byline@example.com"
               class="field-input"

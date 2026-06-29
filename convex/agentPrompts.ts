@@ -12,6 +12,7 @@
  * `convex/agents.ts`, which is the only file that needs it.
  */
 import type { Persona, ProjectBrief } from "../src/types";
+import { firstSubstantiveSentence } from "./agentTools";
 
 export type FeedbackType =
   | "encouragement"
@@ -25,6 +26,14 @@ export interface AgentPersona {
   role: string;
   description: string;
   focus: string;
+  /** Rich voice spec — distinct diction/rhythm/signature for this editor. */
+  voice?: string;
+  /** A few sample lines in this persona's voice, used as light few-shot. */
+  sampleLines?: string[];
+  /** Optional per-persona generation prefs (honored on the BYOK client path). */
+  providerId?: string;
+  model?: string;
+  temperature?: number;
   /** Optional colour from the persona object; not used by the LLM prompt. */
   color?: string;
   icon?: string;
@@ -41,7 +50,12 @@ export interface AgentRequest {
   /** The user's follow-up question, if this is a reply. */
   userMessage?: string;
   /** Direct instruction the user is asking the persona to act on. */
-  instruction?: "feedback" | "elaborate" | "riff" | "rewrite-suggestion";
+  instruction?:
+    | "feedback"
+    | "elaborate"
+    | "riff"
+    | "rewrite-suggestion"
+    | "analyze";
 }
 
 export interface AgentResponse {
@@ -50,6 +64,12 @@ export interface AgentResponse {
   provider: "rivet" | "anthropic" | "openai" | "bifrost" | "local";
   /** Soft signal of how confident the model is in the answer (0-1). */
   confidence?: number;
+  /**
+   * Exact draft passage the note pins to. Populated from the `quote_passage`
+   * tool call (or deterministically for the local fallback) rather than
+   * scraped from the reply text.
+   */
+  anchor?: string;
 }
 
 /* ── Prompt construction ────────────────────────────────────────── */
@@ -60,6 +80,37 @@ export interface AgentResponse {
  * what the piece is for; the draft is summarised with a token budget so
  * large manuscripts don't blow past context windows.
  */
+/**
+ * The per-persona "how you write" block. This is what makes the five editors
+ * sound like genuinely different people rather than one writer in five hats.
+ * Falls back to nothing when a persona has no voice spec (older saved casts).
+ */
+function buildVoiceBlock(persona: AgentPersona): string {
+  if (!persona.voice && (!persona.sampleLines || persona.sampleLines.length === 0)) {
+    return "\nSpeak in your own voice. Do not sound like the other editors.\n";
+  }
+  const lines: string[] = [
+    "\nWHO YOU ARE (your history and how you write — stay in this voice at all times; you are a specific person, not the other editors):",
+  ];
+  if (persona.voice) lines.push(persona.voice);
+  if (persona.sampleLines && persona.sampleLines.length > 0) {
+    lines.push(
+      `Lines in your register, for calibration (do not reuse them verbatim):\n${persona.sampleLines
+        .map((l) => `  — ${l}`)
+        .join("\n")}`,
+    );
+  }
+  return `${lines.join("\n")}\n`;
+}
+
+/**
+ * The full system prompt a writer can preview on the /personas page. Shared so
+ * the preview never drifts from what the editor is actually told.
+ */
+export function buildVoicePreview(persona: AgentPersona): string {
+  return buildSystemPrompt(persona);
+}
+
 export function buildSystemPrompt(persona: AgentPersona): string {
   return `You are ${persona.name}, the ${persona.role} on the editorial board of "Twyne," a 1955-style magazine bullpen.
 
@@ -67,14 +118,16 @@ Voice and remit:
 ${persona.description}
 
 You focus your reading on: ${persona.focus}.
+${buildVoiceBlock(persona)}
+You are one of five editors in residence. You will be given a project brief (the dossier the writer filed at the start) and a draft. Read the draft as a colleague would: do not flatter, do not pad, do not hedge. Speak in your own voice. Be willing to say "this is not yet working" if it is not. Keep replies between 60 and 220 words unless the writer asks for more.
 
-You are one of five editors in residence. You will be given a project brief (the dossier the writer filed at the start) and a draft. Read the draft as a colleague would: do not flatter, do not pad, do not hedge. Speak in your own voice. Quote specific sentences when you have a claim. Be willing to say "this is not yet working" if it is not. Keep replies between 60 and 220 words unless the writer asks for more.
+You have a tool, \`quote_passage\`, that returns the exact text of a passage from the writer's draft. Use it instead of retyping passages from memory.
 
 When you are asked to give feedback, you should:
-- Open with the single most important observation (no throat-clearing).
-- Quote a specific sentence or short passage when you are making a claim.
-- Distinguish between what is working and what is not.
-- End with one concrete next move the writer can take.
+- First call \`quote_passage\` with the sentence you are responding to, so your note pins to the real passage. If an anchor sentence is provided, quote that exact anchor.
+- Do not make a claim about the draft unless you have first quoted the relevant passage with \`quote_passage\`.
+- Then write your note as plain visible text: open with the single most important observation (no throat-clearing), distinguish what is working from what is not, and end with one concrete next move the writer can take.
+- Always produce the note text itself — a tool call alone is not an answer.
 
 When you are asked to elaborate on a previous note, stay grounded in the original claim and expand without contradicting yourself.
 
@@ -110,18 +163,26 @@ ${clampForContext(req.draftText, 4500)}
     : `DRAFT: empty. The writer has not yet written. Respond as if to a blank page and suggest the first move.\n\n`;
 
   const anchorBlock = req.anchor
-    ? `ANCHOR SENTENCE (your note should pin to this — quote it if you reference it):\n"${req.anchor}"\n\n`
+    ? `ANCHOR SENTENCE (your note must pin to this exact sentence unless the writer asks a different question):\n"${req.anchor}"\n\n`
     : "";
 
   const instruction = req.instruction ?? "feedback";
   const instructionBlock =
     instruction === "feedback"
-      ? `TASK: Give the writer a single focused note, in your voice, on this draft.`
+      ? `TASK: Give the writer a single focused note, in your voice, on this draft. First call quote_passage with the sentence you are responding to, then write the note.`
       : instruction === "elaborate"
-        ? `TASK: The writer wants you to go deeper on a previous note. Stay in your voice, expand your reasoning, and end with a concrete next move.`
+        ? `TASK: The writer wants you to go deeper on a previous note. Call quote_passage for the passage under discussion, stay in your voice, expand your reasoning, and end with a concrete next move.`
         : instruction === "riff"
-          ? `TASK: The writer wants a free-association riff. Read the draft, follow the strongest thread, and write a short parallel passage in your voice that the writer can use as a counterweight.`
-          : `TASK: The writer has asked for a specific rewrite. Give the replacement sentence verbatim, then explain the choice.`;
+          ? `TASK: The writer wants a free-association riff. Call quote_passage for the passage that starts the riff, then write a short parallel passage in your voice that the writer can use as a counterweight.`
+          : instruction === "analyze"
+            ? `TASK: Write a FULL-PAGE analysis of the whole document, entirely in your voice. Stay strictly within your remit — do not do the other editors' jobs. Use quote_passage to ground every claim in an exact passage. Structure it as a flowing critique, not a checklist:
+1. Your overall read of where the piece stands.
+2. The single strongest passage, quoted, and why it works.
+3. The load-bearing weakness, quoted, and what it costs the piece.
+4. A walk through the draft in order, noting the moments that matter to you specifically.
+5. One decisive next move the writer should make.
+Write 400–700 words. This is a considered editorial memo, not a margin note.`
+            : `TASK: The writer has asked for a specific rewrite. Give the replacement sentence verbatim, then explain the choice.`;
 
   const convoBlock =
     req.priorMessages && req.priorMessages.length > 0
@@ -164,8 +225,7 @@ export function generateLocalFeedback(req: AgentRequest): AgentResponse {
   const goal = answers?.goal || "the central purpose of the piece";
   const tone = answers?.tone || "the chosen tone";
   const constraints = answers?.constraints || "the project constraints";
-  const successSignal =
-    answers?.successSignal || "the intended reader outcome";
+  const successSignal = answers?.successSignal || "the intended reader outcome";
 
   const map: Record<string, string> = {
     devil: hasBody
@@ -193,12 +253,88 @@ export function generateLocalFeedback(req: AgentRequest): AgentResponse {
     reader: "perspective",
   };
 
+  const text =
+    map[req.persona.id] ||
+    "I read it, and I want to come back to you on one thing in particular.";
+
   return {
-    text: map[req.persona.id] || "I read it, and I want to come back to you on one thing in particular.",
+    text,
     type: typeMap[req.persona.id] || "perspective",
     provider: "local",
     confidence: 0.2,
+    anchor: req.anchor ?? firstSubstantiveSentence(req.draftText),
   };
+}
+
+/* ── Synthesis + narrative review prompts ───────────────────────── */
+
+export interface MemoForSynthesis {
+  personaName: string;
+  role: string;
+  text: string;
+}
+
+/**
+ * System prompt for the room's synthesis: a managing editor who has read all
+ * five memos and must hand the writer a single verdict. Not one of the five
+ * personas — a neutral chair who weighs them.
+ */
+export function buildSynthesisSystemPrompt(): string {
+  return `You are the Managing Editor of "Twyne," a 1955-style magazine bullpen. Five editors have each filed a full analysis of the same draft. Your job is to synthesise their memos into one editorial verdict for the writer: where the room agrees, where it sharply disagrees, and what the writer should do first. You are even-handed and decisive. Do not impersonate the five editors; speak as the chair who weighs them. Quote an editor by name when their point is the crux.`;
+}
+
+export function buildSynthesisPrompt(
+  memos: MemoForSynthesis[],
+  brief: ProjectBrief | null,
+): string {
+  const briefBlock = brief
+    ? `PROJECT BRIEF\n- Title: ${brief.answers.workingTitle}\n- Audience: ${brief.answers.audience}\n- Goal: ${brief.answers.goal}\n- Success signal: ${brief.answers.successSignal}\n\n`
+    : "";
+  const memoBlock = memos
+    .map((m) => `### ${m.personaName} (${m.role})\n${m.text}`)
+    .join("\n\n");
+  return `${briefBlock}THE ROOM'S MEMOS:\n\n${memoBlock}\n\nWrite the synthesis (300–500 words): open with the room's overall verdict, name the strongest point of agreement, surface the sharpest disagreement and adjudicate it, and end with a prioritised list of the next two or three moves for the writer.`;
+}
+
+/**
+ * Narrative review for the rubric. Explains the grade the judges + static
+ * features already produced; does not re-score.
+ */
+export function buildRubricReviewSystemPrompt(): string {
+  return `You are the Chief Critic of "Twyne." The galley-proof rubric has already scored this draft — judges' scores and a static-feature breakdown are given. Your job is to write the full-page narrative review that explains the grade in plain, honest prose and gives the writer a concrete revision plan. Do not invent new scores; interpret the ones you are given. Be candid; this is editorial pressure, not a self-esteem mirror.`;
+}
+
+export function buildRubricReviewPrompt(input: {
+  combined: number;
+  grade: string;
+  judgeMean: number;
+  staticTotal: number;
+  judges: Array<{ personaId: string; score: number; rationale: string }>;
+  staticFeedback: string[];
+  brief: ProjectBrief | null;
+  draftText: string;
+}): string {
+  const briefBlock = input.brief
+    ? `PROJECT BRIEF\n- Audience: ${input.brief.answers.audience}\n- Goal: ${input.brief.answers.goal}\n- Success signal: ${input.brief.answers.successSignal}\n\n`
+    : "";
+  const judgeBlock = input.judges
+    .map((j) => `- ${j.personaId}: ${j.score}/10 — ${j.rationale}`)
+    .join("\n");
+  const staticBlock = input.staticFeedback.map((f) => `- ${f}`).join("\n");
+  return `${briefBlock}GRADE: ${input.combined}/100 (${input.grade}). Judge mean ${input.judgeMean.toFixed(1)}/10, static features ${input.staticTotal.toFixed(1)}/10.
+
+JUDGES' VERDICTS:
+${judgeBlock}
+
+STATIC-FEATURE NOTES:
+${staticBlock}
+
+DRAFT (for reference):
+"""
+${clampForContext(input.draftText, 4000)}
+"""
+
+Write the review (400–600 words): explain what the grade means for a piece like this, walk through the weakest dimension and the strongest, reconcile any split between the judges and the static score, and close with a prioritised revision plan of three concrete steps.`;
 }
 
 /** Convert a Persona (UI) to an AgentPersona (LLM) shape. */
@@ -209,6 +345,11 @@ export function toAgentPersona(p: Persona): AgentPersona {
     role: p.role,
     description: p.description,
     focus: p.focus,
+    voice: p.voice,
+    sampleLines: p.sampleLines,
+    providerId: p.providerId,
+    model: p.model,
+    temperature: p.temperature,
     color: p.color,
     icon: p.icon,
   };

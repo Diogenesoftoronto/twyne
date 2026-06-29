@@ -16,12 +16,18 @@ import {
   loadAiSettingsFromIdb,
 } from "../../utils/idb";
 import type { AiSettings } from "../../types";
-import { runClientJudge, normalizeAiSettings } from "../../utils/ai-client";
+import {
+  hasConfiguredAiProvider,
+  runClientJudge,
+  runClientRubricReview,
+  normalizeAiSettings,
+} from "../../utils/ai-client";
 import { draftReadiness, MIN_RUBRIC_WORDS } from "../../utils/draft-thresholds";
 
 interface RubricStore {
   result: RubricResult | null;
   isAnalyzing: boolean;
+  isReviewing: boolean;
   error: string | null;
   judges: JudgeResult[];
   static: StaticScore | null;
@@ -46,6 +52,8 @@ interface RubricResult {
   timestamp: number;
   judges: JudgeResult[];
   staticScore: StaticScore;
+  review?: string;
+  reviewProvider?: string;
 }
 
 interface RubricPanelProps {
@@ -57,6 +65,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
   const store = useStore<RubricStore>({
     result: null,
     isAnalyzing: false,
+    isReviewing: false,
     error: null,
     judges: [],
     static: null,
@@ -88,7 +97,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       let judges: JudgeResult[] = [];
 
       const settings = store.aiSettings;
-      if (settings?.advancedMode && settings.providers.length > 0) {
+      if (hasConfiguredAiProvider(settings) && settings) {
         try {
           const personas = defaultPersonas();
           const tasks = personas.map(async (p) => {
@@ -177,6 +186,69 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       void saveRubricResultToIdb(result);
     } finally {
       store.isAnalyzing = false;
+    }
+  });
+
+  const generateReview = $(async () => {
+    const result = store.result;
+    if (!result || store.isReviewing) return;
+    store.isReviewing = true;
+    store.error = null;
+    try {
+      const draftText = await loadDraftText();
+      const combined = combineJudgesAndStatic(
+        result.judges,
+        result.staticScore,
+        brief ?? null,
+      );
+      const payload = {
+        combined: result.overallScore,
+        grade: result.overallGrade,
+        judgeMean: combined.judgeMean,
+        staticTotal: combined.staticTotal,
+        judges: result.judges.map((j) => ({
+          personaId: j.personaId,
+          score: j.score,
+          rationale: j.rationale,
+        })),
+        staticFeedback: result.staticScore.feedback,
+      };
+
+      let review = "";
+      let reviewProvider = "local";
+      const settings = store.aiSettings;
+      if (hasConfiguredAiProvider(settings) && settings) {
+        const res = await runClientRubricReview(
+          { ...payload, brief: brief ?? null, draftText },
+          settings,
+        );
+        if (res) {
+          review = res.text;
+          reviewProvider = `client-${res.provider}`;
+        }
+      }
+      if (!review && clientSig.value) {
+        const res = (await clientSig.value.action(api.agents.reviewRubric, {
+          ...payload,
+          brief: brief ?? null,
+          draftText,
+        })) as { review: string; provider: string };
+        review = res.review;
+        reviewProvider = res.provider;
+      }
+
+      if (review) {
+        const updated: RubricResult = { ...result, review, reviewProvider };
+        store.result = updated;
+        void saveRubricResultToIdb(updated);
+      } else {
+        store.error =
+          "Full review is unavailable. Configure a provider (BYOK) or a Pro plan.";
+      }
+    } catch (err) {
+      store.error = (err as Error).message ?? "Review failed.";
+    } finally {
+      store.isReviewing = false;
     }
   });
 
@@ -383,6 +455,29 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
                 scoreColor={getScoreColor(criterion.score, criterion.maxScore)}
               />
             ))}
+          </div>
+
+          {/* Full narrative review */}
+          <div class="px-4 py-4 border-t border-dashed border-[var(--color-paper-3)]">
+            <p class="dept-label">The Critic's Full Review</p>
+            {store.result.review ? (
+              <div
+                class="mt-2 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
+                style="font-family: var(--font-serif);"
+              >
+                {store.result.review}
+              </div>
+            ) : (
+              <button
+                onClick$={generateReview}
+                disabled={store.isReviewing}
+                class="btn-paper w-full mt-2"
+              >
+                {store.isReviewing
+                  ? "✍ Writing the full review…"
+                  : "✍ Expand to a full-page review"}
+              </button>
+            )}
           </div>
 
           <div class="px-4 py-3 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] space-y-2">
