@@ -1,0 +1,178 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "5fa1e78ab7aa",
+  "session_id": "019f114c-d4db-75a1-bc66-8792358cf0e6",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-29T04:51:50.137038823Z",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "save_step_count": 4,
+  "files_touched": [
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "public/manifest.json",
+    "src/components/auth/auth-panel.tsx",
+    "src/components/comments/comments-panel.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/onboarding/conversational-interview.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/components/router-head/router-head.tsx",
+    "src/components/rubric/rubric-panel.tsx",
+    "src/global.css",
+    "src/routes/apparatus/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/onboarding/index.tsx",
+    "src/routes/refining/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.test.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/ai-orchestrator.ts",
+    "src/utils/anti-tabula-rasa.ts",
+    "src/utils/idb-preferences.test.ts",
+    "src/utils/idb.ts",
+    "src/utils/provider-presets.test.ts",
+    "src/utils/reasoning-tags.test.ts",
+    "src/utils/reasoning-tags.ts",
+    "src/utils/ui-defaults.test.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "69986d6158a2",
+  "token_usage": {
+    "input_tokens": 1136959,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 18131968,
+    "output_tokens": 88181,
+    "api_call_count": 171
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-29T04:51:49.949059221Z",
+    "agent_lines": 834,
+    "agent_removed": 172,
+    "human_added": 680,
+    "human_modified": 408,
+    "human_removed": 0,
+    "total_committed": 1918,
+    "total_lines_changed": 2103,
+    "agent_percentage": 47.83642415596766,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1358,
+      "user_lines_removed": 292,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "convex/agents.ts": 245,
+        "src/components/auth/auth-panel.tsx": 36,
+        "src/components/comments/comments-panel.tsx": 2,
+        "src/components/onboarding/conversational-interview.tsx": 43,
+        "src/components/personas/personas-panel.tsx": 116,
+        "src/components/rubric/rubric-panel.tsx": 6,
+        "src/routes/apparatus/index.tsx": 2,
+        "src/routes/editor/index.tsx": 18,
+        "src/routes/onboarding/index.tsx": 3,
+        "src/routes/refining/index.tsx": 18,
+        "src/routes/settings/index.tsx": 392,
+        "src/types/index.ts": 9,
+        "src/utils/ai-client.test.ts": 102,
+        "src/utils/ai-client.ts": 125,
+        "src/utils/ai-orchestrator.test.ts": 159,
+        "src/utils/ai-orchestrator.ts": 2,
+        "src/utils/anti-tabula-rasa.ts": 5,
+        "src/utils/byok-feature-coverage.test.ts": 57,
+        "src/utils/idb.ts": 18
+      },
+      "user_removed_per_file": {
+        "convex/agents.ts": 1,
+        "src/components/auth/auth-panel.tsx": 19,
+        "src/components/comments/comments-panel.tsx": 4,
+        "src/components/onboarding/conversational-interview.tsx": 20,
+        "src/components/personas/personas-panel.tsx": 118,
+        "src/components/rubric/rubric-panel.tsx": 2,
+        "src/routes/apparatus/index.tsx": 1,
+        "src/routes/editor/index.tsx": 8,
+        "src/routes/onboarding/index.tsx": 7,
+        "src/routes/refining/index.tsx": 7,
+        "src/routes/settings/index.tsx": 97,
+        "src/types/index.ts": 1,
+        "src/utils/ai-client.ts": 5,
+        "src/utils/ai-orchestrator.ts": 1,
+        "src/utils/idb.ts": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 56,
+      "user_lines_removed": 41,
+      "agent_lines_added": 1890,
+      "agent_lines_removed": 497,
+      "user_added_per_file": {
+        "src/routes/settings/index.tsx": 56
+      },
+      "user_removed_per_file": {
+        "src/routes/settings/index.tsx": 41
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 293,
+      "user_lines_removed": 36,
+      "agent_lines_added": 1909,
+      "agent_lines_removed": 501,
+      "user_added_per_file": {
+        "public/manifest.json": 1,
+        "src/components/editor/twyne-editor.tsx": 15,
+        "src/components/router-head/router-head.tsx": 1,
+        "src/global.css": 29,
+        "src/routes/settings/index.tsx": 33,
+        "src/types/index.ts": 49,
+        "src/utils/ai-client.test.ts": 84,
+        "src/utils/ai-client.ts": 43,
+        "src/utils/provider-presets.test.ts": 20,
+        "src/utils/ui-defaults.test.ts": 18
+      },
+      "user_removed_per_file": {
+        "public/manifest.json": 1,
+        "src/components/editor/twyne-editor.tsx": 1,
+        "src/components/router-head/router-head.tsx": 1,
+        "src/global.css": 7,
+        "src/routes/settings/index.tsx": 6,
+        "src/types/index.ts": 1,
+        "src/utils/ai-client.test.ts": 3,
+        "src/utils/ai-client.ts": 16
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 352,
+      "user_lines_removed": 35,
+      "agent_lines_added": 2132,
+      "agent_lines_removed": 518,
+      "user_added_per_file": {
+        "convex/agentPrompts.ts": 49,
+        "convex/agents.ts": 25,
+        "src/routes/editor/index.tsx": 11,
+        "src/utils/ai-client.test.ts": 84,
+        "src/utils/ai-client.ts": 15,
+        "src/utils/provider-presets.test.ts": 20,
+        "src/utils/reasoning-tags.test.ts": 88,
+        "src/utils/reasoning-tags.ts": 42,
+        "src/utils/ui-defaults.test.ts": 18
+      },
+      "user_removed_per_file": {
+        "convex/agentPrompts.ts": 6,
+        "convex/agents.ts": 16,
+        "src/routes/editor/index.tsx": 1,
+        "src/utils/ai-client.test.ts": 3,
+        "src/utils/ai-client.ts": 9
+      }
+    }
+  ]
+}

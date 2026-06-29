@@ -1,0 +1,260 @@
+I keep running into a weird error and i have only checked it when i am not signed in, but preferences all get reset and removed as soon as i click the back to desk button, i don't  think prefernces are actually being saved in local storage at all, all of this should be auto saved after defocusing from the form fix this
+
+---
+
+Layout was forced before the page was fully loaded. If stylesheets are not yet loaded this may cause a flash of unstyled content. contentscript.js:14083:433874
+Window.fullScreen attribute is deprecated and will be removed in the future. contentscript.js:14083:433874
+InstallTrigger is deprecated and will be removed in the future. contentscript.js:14083:433874
+onmozfullscreenchange is deprecated. contentscript.js:14083:433874
+onmozfullscreenerror is deprecated. contentscript.js:14083:433874
+MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added. Use emitter.setMaxListeners() to increase limit
+    u moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    addListener moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    on moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14082
+    once moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    pipe moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    B moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    D moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    P moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    M moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    I moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+contentscript.js:14083:34218
+MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added. Use emitter.setMaxListeners() to increase limit
+    u moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    addListener moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    on moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14082
+    O moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    B moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    D moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    P moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    M moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    I moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+contentscript.js:14083:34218
+Error in parsing value for ‘-webkit-text-size-adjust’.  Declaration dropped. global.css:94:31
+Unknown property ‘twyne’.  Declaration dropped. global.css:1706:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1709:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1712:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1715:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1718:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1721:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1724:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1727:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1730:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1733:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1736:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1739:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1742:11
+⭐️ Qwik Dev SSR Mode App is running in SSR development mode!
+ - Additional JS is loaded by Vite for debugging and live reloading
+ - Rendering performance might not be optimal
+ - Delayed interactivity because prefetching is disabled
+ - Vite dev bundles do not represent production output
+
+Production build can be tested running 'npm run preview' localhost:5173:775:13
+Ignoring unsupported entryTypes: layout-shift. localhost:5173:1262:20
+🔍 Qwik Click-To-Source Hold-press the 'Alt' key and click a component to jump directly to the source code in your IDE! localhost:5173:1331:13
+ObjectMultiplex - orphaned data for stream "background-liveness" 2 contentscript.js:14083:435350
+[vite] connecting... client:733:9
+[vite] connected. client:827:12
+GET
+http://localhost:5173/favicon.svg
+[HTTP/1.1 404 Not Found 0ms]
+
+[atproto] initSession failed TypeError: Invalid loopback client ID: Invalid "redirect_uri" query parameter: Use of "localhost" hostname is not allowed (RFC 8252), use a loopback IP such as "127.0.0.1" instead
+    parseOAuthLoopbackClientId oauth-client-id-loopback.ts:58
+    parseAtprotoLoopbackClientId atproto-loopback-client-id.ts:68
+    atprotoLoopbackClientMetadata atproto-loopback-client-metadata.ts:21
+    clientPromise atproto.ts:73
+    getOAuthClient atproto.ts:81
+    initSession atproto.ts:97
+    REDACTED auth-context.tsx:55
+    wrapFn core.prod.mjs:5478
+    invokeApply core.prod.mjs:2710
+    invoke core.prod.mjs:2703
+    invokeFn core.prod.mjs:5519
+    maybeThen core.prod.mjs:257
+    invokeFn core.prod.mjs:5511
+    runTask core.prod.mjs:2423
+    safeCall core.prod.mjs:250
+    runTask core.prod.mjs:2423
+    runSubscriber core.prod.mjs:2338
+    executeTasksAfter core.prod.mjs:2219
+    postRendering core.prod.mjs:2142
+    renderMarked core.prod.mjs:2127
+    async*scheduleFrame/containerState.$renderPromise$< core.prod.mjs:2085
+    nextTick core.prod.mjs:213
+    setTimeout handler*createPlatform/nextTick/< core.prod.mjs:212
+    nextTick core.prod.mjs:211
+    scheduleFrame core.prod.mjs:2085
+    notifyTask core.prod.mjs:2082
+    _hW core.prod.mjs:2090
+    dispatch (index):129
+    observer (index):177
+    processReadyStateChange (index):173
+    <anonymous> (index):224
+atproto.ts:75:17
+Error restoring session o: Transport request timed out
+    i moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:4
+    o moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:4
+    request moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:1
+    s moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:7
+    setTimeout handler*675768/u/< moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:7
+    u moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:7
+    request moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:1
+    s moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:1
+    l moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:7
+    r moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:1
+    s moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:1
+    getSession moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:1
+    W moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:4
+    W moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:4
+    o moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:17
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:18
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:18
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:18
+Caused by: undefined
+inpage.js;:4:10741
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues. chunk-M6XETPRC.js:2389:13
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues. chunk-M6XETPRC.js:2389:13
+Unknown pseudo-class or pseudo-element ‘-webkit-scrollbar’.  Ruleset ignored due to bad selector. menu-list.css:1:399017
+Uncaught (in promise) ReferenceError: refreshProviderModels is not defined
+    settings_component_addProvider_iFQ0woS1bP4 index.tsx:283
+    wrapFn core.prod.mjs:5478
+    invokeApply core.prod.mjs:2710
+    invoke core.prod.mjs:2703
+    invokeFn core.prod.mjs:5519
+    promise callback*maybeThen core.prod.mjs:257
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+    addEventListener (index):186
+    processEventOrNode (index):193
+    processEventOrNode (index):192
+    registerQwikEvent core.prod.mjs:3581
+    addQwikEvent core.prod.mjs:3574
+    createElm core.prod.mjs:3377
+    nodes core.prod.mjs:3389
+    createElm core.prod.mjs:3389
+    nodes core.prod.mjs:3389
+    createElm core.prod.mjs:3389
+    nodes core.prod.mjs:3389
+    createElm core.prod.mjs:3389
+    nodes core.prod.mjs:3389
+    createElm core.prod.mjs:3389
+    addChildren core.prod.mjs:3233
+    smartUpdateChildren core.prod.mjs:2991
+    renderComponent core.prod.mjs:1655
+    maybeThen core.prod.mjs:257
+    renderComponent core.prod.mjs:1652
+    promise callback*maybeThen core.prod.mjs:257
+    renderComponent core.prod.mjs:1641
+    createElm core.prod.mjs:3324
+    diffChildren core.prod.mjs:3039
+    smartUpdateChildren core.prod.mjs:2991
+    diffVnode core.prod.mjs:3172
+index.tsx_settings_component_addProvider_iFQ0woS1bP4.js:33:5
+SES_UNHANDLED_REJECTION: ReferenceError: refreshProviderModels is not defined
+    settings_component_addProvider_iFQ0woS1bP4 index.tsx:283
+    wrapFn core.prod.mjs:5478
+    invokeApply core.prod.mjs:2710
+    invoke core.prod.mjs:2703
+    invokeFn core.prod.mjs:5519
+    promise callback*maybeThen core.prod.mjs:257
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+    addEventListener (index):186
+    processEventOrNode (index):193
+    processEventOrNode (index):192
+    registerQwikEvent core.prod.mjs:3581
+    addQwikEvent core.prod.mjs:3574
+    createElm core.prod.mjs:3377
+    nodes core.prod.mjs:3389
+    createElm core.prod.mjs:3389
+    nodes core.prod.mjs:3389
+    createElm core.prod.mjs:3389
+    nodes core.prod.mjs:3389
+    createElm core.prod.mjs:3389
+    nodes core.prod.mjs:3389
+    createElm core.prod.mjs:3389
+    addChildren core.prod.mjs:3233
+    smartUpdateChildren core.prod.mjs:2991
+    renderComponent core.prod.mjs:1655
+    maybeThen core.prod.mjs:257
+    renderComponent core.prod.mjs:1652
+    promise callback*maybeThen core.prod.mjs:257
+    renderComponent core.prod.mjs:1641
+    createElm core.prod.mjs:3324
+    diffChildren core.prod.mjs:3039
+    smartUpdateChildren core.prod.mjs:2991
+    diffVnode core.prod.mjs:3172
+contentscript.js:9717:18
+ so still when i click that button none of the api keys seem to work in the rest of the app not sure what is happening butu things still seem they are getting reset. VITE] 11:08:11 PM [vite] (ssr) hmr update /src/global.css
+[CONVEX] 6/28/2026, 11:11:35 PM [CONVEX A(agents:runInterviewTurn)] Uncaught AI_APICallError: provider API error (status 401)
+[CONVEX]     at <anonymous> (../node_modules/@ai-sdk/provider-utils/src/response-handler.ts:56:10)
+[CONVEX]     at async postToApi (../node_modules/@ai-sdk/provider-utils/src/post-to-api.ts:118:10)
+[CONVEX]     at async doGenerate [as doGenerate] (../node_modules/@ai-sdk/openai/src/chat/openai-chat-language-model.ts:325:6)
+[CONVEX]     at async fn (../node_modules/ai/src/generate-text/generate-text.ts:820:23)
+[CONVEX]     at async <anonymous> (../node_modules/ai/src/telemetry/record-span.ts:33:12)
+[CONVEX]     at async _retryWithExponentialBackoff (../node_modules/ai/src/util/retry-with-exponential-backoff.ts:101:11)
+[CONVEX]     at async fn (../node_modules/ai/src/generate-text/generate-text.ts:774:50)
+[CONVEX]     at async <anonymous> (../node_modules/ai/src/telemetry/record-span.ts:33:12)
+[CONVEX]     at async generateText (../node_modules/ai/src/generate-text/generate-text.ts:539:12)
+[CONVEX]
+[VITE] not SSR rendering http://localhost:5173/ because Qwik City Env data did not populate
+
+---
+
+.
+
+---
+
+add more providers by default, minimax, deepseek, openrouter, ollama
+
+---
+
+z.ai etc
+
+---
+
+don't bother with the models, because i don't want to hardcode those instead just have those auto requested from the base url
+
+---
+
+btw, can you toggle the layout margins to be  off by default the red lines are kind of ugly
+
+---
+
+make sure the griffin is the favicon
+
+---
+
+useStore should be used for the updates for the provider everytime i think that the state is  getting  refreshed nothing is sticking around in the preferences page
+
+---
+
+parse the think tags properly
+
+---
+
+some models have <think> <think/> tags that still appear, remove what is in  these
+
+---
+
+models should have to reference the exact line or passage they are  responding to for each of the personas and thata needs to be made explicit
+
+---
+
+the rubric doesn't seem to be working even though i have over the reported word count that has been stated when attempting to send to the copy  edit
+
+---
+
+I  think the quotes are hardcoded as a line somewhere and i want that behaviour removed the persona's should dynamically choose what to quote

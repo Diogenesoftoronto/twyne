@@ -3,14 +3,19 @@
   "checkpoint_id": "5fa1e78ab7aa",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 13,
+  "checkpoints_count": 17,
   "files_touched": [
+    "convex/agentPrompts.ts",
     "convex/agents.ts",
+    "public/manifest.json",
     "src/components/auth/auth-panel.tsx",
     "src/components/comments/comments-panel.tsx",
+    "src/components/editor/twyne-editor.tsx",
     "src/components/onboarding/conversational-interview.tsx",
     "src/components/personas/personas-panel.tsx",
+    "src/components/router-head/router-head.tsx",
     "src/components/rubric/rubric-panel.tsx",
+    "src/global.css",
     "src/routes/apparatus/index.tsx",
     "src/routes/editor/index.tsx",
     "src/routes/onboarding/index.tsx",
@@ -23,7 +28,12 @@
     "src/utils/ai-orchestrator.ts",
     "src/utils/anti-tabula-rasa.ts",
     "src/utils/byok-feature-coverage.test.ts",
-    "src/utils/idb.ts"
+    "src/utils/idb-preferences.test.ts",
+    "src/utils/idb.ts",
+    "src/utils/provider-presets.test.ts",
+    "src/utils/reasoning-tags.test.ts",
+    "src/utils/reasoning-tags.ts",
+    "src/utils/ui-defaults.test.ts"
   ],
   "sessions": [
     {
@@ -31,13 +41,19 @@
       "transcript": "/5f/a1e78ab7aa/0/full.jsonl",
       "content_hash": "/5f/a1e78ab7aa/0/content_hash.txt",
       "prompt": "/5f/a1e78ab7aa/0/prompt.txt"
+    },
+    {
+      "metadata": "/5f/a1e78ab7aa/1/metadata.json",
+      "transcript": "/5f/a1e78ab7aa/1/full.jsonl",
+      "content_hash": "/5f/a1e78ab7aa/1/content_hash.txt",
+      "prompt": "/5f/a1e78ab7aa/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1015681,
+    "input_tokens": 2152640,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 22818432,
-    "output_tokens": 102400,
-    "api_call_count": 204
+    "cache_read_tokens": 40950400,
+    "output_tokens": 190581,
+    "api_call_count": 375
   }
 }
