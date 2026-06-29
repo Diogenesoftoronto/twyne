@@ -6,6 +6,19 @@ export interface Persona {
   icon: string;
   description: string;
   focus: string;
+  /**
+   * Rich voice specification — diction, sentence rhythm, signature moves, and
+   * what this editor never does. Injected into the system prompt so the five
+   * personas read as genuinely different writers. Optional and backward
+   * compatible: when absent, the generic shared wording is used.
+   */
+  voice?: string;
+  /** One or two few-shot lines written in this persona's voice. */
+  sampleLines?: string[];
+  /** Optional per-persona generation prefs (honored on the BYOK client path). */
+  providerId?: string;
+  model?: string;
+  temperature?: number;
 }
 
 export interface PersonaFeedback {
@@ -54,6 +67,29 @@ export interface RubricResult {
   judges: import("../utils/rubric").JudgeResult[];
   /** Static-feature breakdown (length, pacing, evidence, …). */
   staticScore: import("../utils/rubric").StaticScore;
+  /** Optional full-page narrative review, generated on demand. */
+  review?: string;
+  /** Provider tag for the narrative review. */
+  reviewProvider?: string;
+}
+
+/** One editor's full-page memo on the whole document. */
+export interface PersonaMemo {
+  personaId: string;
+  personaName: string;
+  personaColor: string;
+  text: string;
+  anchor?: string;
+  provider: string;
+}
+
+/** The expanded cast analysis: per-persona memos plus a combined synthesis. */
+export interface RoomAnalysis {
+  memos: PersonaMemo[];
+  synthesis: string;
+  synthesisProvider: string;
+  briefTitle?: string;
+  timestamp: number;
 }
 
 /* ── Document chrome — page layout, header, footer, running metadata ── */
@@ -79,6 +115,8 @@ export interface LayoutSettings {
   runningHeader: boolean;
   /** Show page numbers in the footer of printed/exported output. */
   pageNumbers: boolean;
+  /** Show live margin/header/footer guide rules in the editor page. */
+  showMarginGuides?: boolean;
 }
 
 /** Side-margin rem values for the legacy coarse {@link DocMargin} presets. */
@@ -120,6 +158,7 @@ export const DEFAULT_LAYOUT: LayoutSettings = {
   marginBottom: 4,
   runningHeader: false,
   pageNumbers: true,
+  showMarginGuides: false,
 };
 
 export interface Comment {
@@ -338,7 +377,13 @@ export type AiProviderType =
   | "openai"
   | "anthropic"
   | "google"
+  | "anthropic-compatible"
   | "openai-compatible"
+  | "deepseek"
+  | "openrouter"
+  | "ollama"
+  | "zai"
+  | "minimax"
   // Desktop-only: native LiteRT (Gemma 4 E4B) served on loopback by the
   // Electrobun shell. Auto-registered, never added by hand — see desktop-bridge.
   | "litert";
@@ -350,13 +395,17 @@ export interface AiProviderConfig {
   apiKey: string;
   baseUrl?: string;
   defaultModel: string;
+  availableModels?: string[];
 }
 
 export type AiFeature =
   | "persona-feedback"
   | "persona-reply"
   | "persona-rewrite"
+  | "persona-analysis"
+  | "room-synthesis"
   | "rubric-judge"
+  | "rubric-review"
   | "voice-narration"
   | "comment-reply"
   | "citation-format"
@@ -371,8 +420,26 @@ export interface WriterSettings {
   interviewStyle: "form" | "conversational";
 }
 
+export const DEFAULT_WRITER_SETTINGS: WriterSettings = {
+  interviewStyle: "form",
+};
+
+export type ApparatusCitationStyle = "mla" | "apa" | "chicago";
+
+export interface ApparatusSettings {
+  defaultCitationStyle: ApparatusCitationStyle;
+  aiEnhanceCitations: boolean;
+  flagMissingSources: boolean;
+}
+
+export const DEFAULT_APPARATUS_SETTINGS: ApparatusSettings = {
+  defaultCitationStyle: "mla",
+  aiEnhanceCitations: false,
+  flagMissingSources: false,
+};
+
 export interface AiFeatureOverride {
-  providerId: string;
+  providerId?: string;
   model?: string;
   temperature?: number;
   maxTokens?: number;
@@ -405,6 +472,9 @@ export interface ProviderMeta {
   label: string;
   defaultModels: string[];
   needsBaseUrl: boolean;
+  defaultBaseUrl?: string;
+  apiKeyOptional?: boolean;
+  defaultApiKey?: string;
 }
 
 export const PROVIDER_METAS: ProviderMeta[] = [
@@ -421,6 +491,12 @@ export const PROVIDER_METAS: ProviderMeta[] = [
     needsBaseUrl: false,
   },
   {
+    type: "anthropic-compatible",
+    label: "Anthropic-compatible",
+    defaultModels: ["claude-sonnet-4-6"],
+    needsBaseUrl: true,
+  },
+  {
     type: "google",
     label: "Google",
     defaultModels: [
@@ -433,8 +509,45 @@ export const PROVIDER_METAS: ProviderMeta[] = [
   {
     type: "openai-compatible",
     label: "OpenAI-compatible",
-    defaultModels: ["anthropic/claude-sonnet-4-6"],
+    defaultModels: [],
     needsBaseUrl: true,
+  },
+  {
+    type: "deepseek",
+    label: "DeepSeek",
+    defaultModels: [],
+    needsBaseUrl: true,
+    defaultBaseUrl: "https://api.deepseek.com",
+  },
+  {
+    type: "openrouter",
+    label: "OpenRouter",
+    defaultModels: [],
+    needsBaseUrl: true,
+    defaultBaseUrl: "https://openrouter.ai/api/v1",
+  },
+  {
+    type: "ollama",
+    label: "Ollama",
+    defaultModels: [],
+    needsBaseUrl: true,
+    defaultBaseUrl: "http://127.0.0.1:11434/v1",
+    apiKeyOptional: true,
+    defaultApiKey: "ollama",
+  },
+  {
+    type: "zai",
+    label: "Z.ai / GLM",
+    defaultModels: [],
+    needsBaseUrl: true,
+    defaultBaseUrl: "https://api.z.ai/api/paas/v4",
+  },
+  {
+    type: "minimax",
+    label: "MiniMax",
+    defaultModels: [],
+    needsBaseUrl: true,
+    defaultBaseUrl: "https://api.minimax.io/v1",
   },
   {
     type: "litert",

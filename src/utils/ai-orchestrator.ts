@@ -12,6 +12,7 @@
 import type { AiSettings, AiFeature } from "../types";
 import { loadAiSettingsFromIdb } from "./idb";
 import {
+  hasConfiguredAiProvider,
   runClientAgent,
   normalizeAiSettings,
 } from "./ai-client";
@@ -51,7 +52,7 @@ export async function runAiWithFallback(
 ): Promise<AgentResponse> {
   // 1. Try client-side AI
   const settings = await getCachedAiSettings();
-  if (settings.advancedMode && settings.providers.length > 0) {
+  if (hasConfiguredAiProvider(settings)) {
     const clientResult = await runClientAgent(opts.feature, opts.req, settings);
     if (clientResult) {
       // Tag with "client" prefix so UI can distinguish

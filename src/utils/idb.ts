@@ -20,12 +20,20 @@ import type {
   Folio,
   AiSettings,
   WriterSettings,
+  ApparatusSettings,
   Persona,
   RubricResult,
+  RoomAnalysis,
 } from "../types";
+import { DEFAULT_APPARATUS_SETTINGS, DEFAULT_WRITER_SETTINGS } from "../types";
 
 const DB_NAME = "twyne";
 const DB_VERSION = 1;
+const AI_SETTINGS_STORAGE_KEY = "twyne.ai-settings.current";
+const WRITER_SETTINGS_STORAGE_KEY = "twyne.writer-settings.current";
+const APPARATUS_SETTINGS_STORAGE_KEY = "twyne.apparatus-settings.current";
+const WRITER_SETTINGS_META_KEY = "writer-settings";
+const APPARATUS_SETTINGS_META_KEY = "apparatus-settings";
 
 interface FolioContent {
   folioId: string;
@@ -98,7 +106,62 @@ function openDb(): Promise<IDBDatabase> {
 }
 
 function isBrowser(): boolean {
-  return typeof window !== "undefined" && typeof indexedDB !== "undefined";
+  return hasWindow() && hasIndexedDb();
+}
+
+function hasWindow(): boolean {
+  return typeof window !== "undefined";
+}
+
+function hasIndexedDb(): boolean {
+  return typeof indexedDB !== "undefined";
+}
+
+function readLocalStorageJson<T>(key: string): T | null {
+  if (!hasWindow()) return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as T) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLocalStorageJson(key: string, value: unknown): void {
+  if (!hasWindow()) return;
+  try {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    /* ignore */
+  }
+}
+
+function normalizeWriterSettings(value: unknown): WriterSettings {
+  if (!value || typeof value !== "object") {
+    return { ...DEFAULT_WRITER_SETTINGS };
+  }
+  const v = value as Partial<WriterSettings>;
+  return {
+    interviewStyle:
+      v.interviewStyle === "conversational" ? "conversational" : "form",
+  };
+}
+
+function normalizeApparatusSettings(value: unknown): ApparatusSettings {
+  if (!value || typeof value !== "object") {
+    return { ...DEFAULT_APPARATUS_SETTINGS };
+  }
+  const v = value as Partial<ApparatusSettings>;
+  return {
+    defaultCitationStyle:
+      v.defaultCitationStyle === "apa" ||
+      v.defaultCitationStyle === "chicago" ||
+      v.defaultCitationStyle === "mla"
+        ? v.defaultCitationStyle
+        : DEFAULT_APPARATUS_SETTINGS.defaultCitationStyle,
+    aiEnhanceCitations: v.aiEnhanceCitations === true,
+    flagMissingSources: v.flagMissingSources === true,
+  };
 }
 
 async function tx<T>(
@@ -132,7 +195,9 @@ export async function loadFoliosFromIdb(): Promise<Folio[]> {
   if (!isBrowser()) return [];
   try {
     const db = await openDb();
-    return reqAsPromise<Folio[]>(db.transaction("folios").objectStore("folios").getAll());
+    return reqAsPromise<Folio[]>(
+      db.transaction("folios").objectStore("folios").getAll(),
+    );
   } catch {
     return [];
   }
@@ -170,9 +235,13 @@ export async function loadFolioContentFromIdb(
   if (!isBrowser()) return "";
   try {
     const db = await openDb();
-    const rec = (await reqAsPromise<FolioContent | undefined>(
-      db.transaction("folio-content").objectStore("folio-content").get(folioId),
-    )) ?? null;
+    const rec =
+      (await reqAsPromise<FolioContent | undefined>(
+        db
+          .transaction("folio-content")
+          .objectStore("folio-content")
+          .get(folioId),
+      )) ?? null;
     return rec?.html ?? "";
   } catch {
     return "";
@@ -216,9 +285,10 @@ export async function loadBriefFromIdb(
   if (!isBrowser()) return null;
   try {
     const db = await openDb();
-    const rec = (await reqAsPromise<BriefRecord | undefined>(
-      db.transaction("brief").objectStore("brief").get(folioId),
-    )) ?? null;
+    const rec =
+      (await reqAsPromise<BriefRecord | undefined>(
+        db.transaction("brief").objectStore("brief").get(folioId),
+      )) ?? null;
     return rec?.brief ?? null;
   } catch {
     return null;
@@ -249,9 +319,10 @@ export async function loadActiveFolioIdFromIdb(): Promise<string | null> {
   if (!isBrowser()) return null;
   try {
     const db = await openDb();
-    const rec = (await reqAsPromise<MetaRecord | undefined>(
-      db.transaction("meta").objectStore("meta").get("active-folio-id"),
-    )) ?? null;
+    const rec =
+      (await reqAsPromise<MetaRecord | undefined>(
+        db.transaction("meta").objectStore("meta").get("active-folio-id"),
+      )) ?? null;
     return typeof rec?.value === "string" ? rec.value : null;
   } catch {
     return null;
@@ -309,33 +380,88 @@ export async function savePersonasToIdb(personas: Persona[]): Promise<void> {
 /* ── Writer settings (single record, key="current") ───────────── */
 
 export async function loadWriterSettingsFromIdb(): Promise<WriterSettings> {
-  if (!isBrowser()) return { interviewStyle: "form" };
-  try {
-    const db = await openDb();
-    const rec = (await reqAsPromise<MetaRecord | undefined>(
-      db.transaction("meta").objectStore("meta").get("writer-settings"),
-    )) ?? null;
-    if (!rec?.value || typeof rec.value !== "object") {
-      return { interviewStyle: "form" };
+  if (!hasWindow()) return { ...DEFAULT_WRITER_SETTINGS };
+  const local = readLocalStorageJson<unknown>(WRITER_SETTINGS_STORAGE_KEY);
+  if (local) return normalizeWriterSettings(local);
+  if (hasIndexedDb()) {
+    try {
+      const db = await openDb();
+      const rec =
+        (await reqAsPromise<MetaRecord | undefined>(
+          db
+            .transaction("meta")
+            .objectStore("meta")
+            .get(WRITER_SETTINGS_META_KEY),
+        )) ?? null;
+      if (rec?.value) {
+        return normalizeWriterSettings(rec.value);
+      }
+    } catch {
+      /* fall through to localStorage */
     }
-    const v = rec.value as Partial<WriterSettings>;
-    return {
-      interviewStyle:
-        v.interviewStyle === "conversational" ? "conversational" : "form",
-    };
-  } catch {
-    return { interviewStyle: "form" };
   }
+  return { ...DEFAULT_WRITER_SETTINGS };
 }
 
 export async function saveWriterSettingsToIdb(
   settings: WriterSettings,
 ): Promise<void> {
-  if (!isBrowser()) return;
+  if (!hasWindow()) return;
+  const normalized = normalizeWriterSettings(settings);
+  writeLocalStorageJson(WRITER_SETTINGS_STORAGE_KEY, normalized);
+  if (!hasIndexedDb()) return;
   try {
     const rec: MetaRecord = {
-      key: "writer-settings",
-      value: settings,
+      key: WRITER_SETTINGS_META_KEY,
+      value: normalized,
+      updatedAt: Date.now(),
+    };
+    await reqAsPromise(
+      (await openDb())
+        .transaction("meta", "readwrite")
+        .objectStore("meta")
+        .put(rec),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function loadApparatusSettingsFromIdb(): Promise<ApparatusSettings> {
+  if (!hasWindow()) return { ...DEFAULT_APPARATUS_SETTINGS };
+  const local = readLocalStorageJson<unknown>(APPARATUS_SETTINGS_STORAGE_KEY);
+  if (local) return normalizeApparatusSettings(local);
+  if (hasIndexedDb()) {
+    try {
+      const db = await openDb();
+      const rec =
+        (await reqAsPromise<MetaRecord | undefined>(
+          db
+            .transaction("meta")
+            .objectStore("meta")
+            .get(APPARATUS_SETTINGS_META_KEY),
+        )) ?? null;
+      if (rec?.value) {
+        return normalizeApparatusSettings(rec.value);
+      }
+    } catch {
+      /* fall through to localStorage */
+    }
+  }
+  return { ...DEFAULT_APPARATUS_SETTINGS };
+}
+
+export async function saveApparatusSettingsToIdb(
+  settings: ApparatusSettings,
+): Promise<void> {
+  if (!hasWindow()) return;
+  const normalized = normalizeApparatusSettings(settings);
+  writeLocalStorageJson(APPARATUS_SETTINGS_STORAGE_KEY, normalized);
+  if (!hasIndexedDb()) return;
+  try {
+    const rec: MetaRecord = {
+      key: APPARATUS_SETTINGS_META_KEY,
+      value: normalized,
       updatedAt: Date.now(),
     };
     await reqAsPromise(
@@ -387,6 +513,42 @@ export async function saveRubricResultToIdb(
   }
 }
 
+export async function loadRoomAnalysisFromIdb(): Promise<RoomAnalysis | null> {
+  if (!isBrowser()) return null;
+  try {
+    const db = await openDb();
+    const rec =
+      (await reqAsPromise<MetaRecord | undefined>(
+        db.transaction("meta").objectStore("meta").get("room-analysis"),
+      )) ?? null;
+    if (!rec?.value || typeof rec.value !== "object") return null;
+    return rec.value as RoomAnalysis;
+  } catch {
+    return null;
+  }
+}
+
+export async function saveRoomAnalysisToIdb(
+  analysis: RoomAnalysis,
+): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    const rec: MetaRecord = {
+      key: "room-analysis",
+      value: analysis,
+      updatedAt: Date.now(),
+    };
+    await reqAsPromise(
+      (await openDb())
+        .transaction("meta", "readwrite")
+        .objectStore("meta")
+        .put(rec),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
 /* ── Generic meta access (arbitrary key/value in `meta`) ──────── */
 
 /** Read any value previously stored in the `meta` store, or null. */
@@ -408,7 +570,10 @@ export async function loadMetaFromIdb<T = unknown>(
 }
 
 /** Write any JSON-serialisable value into the `meta` store under `key`. */
-export async function saveMetaToIdb(key: string, value: unknown): Promise<void> {
+export async function saveMetaToIdb(
+  key: string,
+  value: unknown,
+): Promise<void> {
   if (!isBrowser()) return;
   try {
     const rec: MetaRecord = { key, value, updatedAt: Date.now() };
@@ -426,20 +591,32 @@ export async function saveMetaToIdb(key: string, value: unknown): Promise<void> 
 /* ── AI settings (single record, key="current") ──────────────── */
 
 export async function loadAiSettingsFromIdb(): Promise<AiSettings | null> {
-  if (!isBrowser()) return null;
-  try {
-    const db = await openDb();
-    const rec = (await reqAsPromise<MetaRecord | undefined>(
-      db.transaction("ai-settings").objectStore("ai-settings").get("current"),
-    )) ?? null;
-    return (rec?.value as AiSettings | undefined) ?? null;
-  } catch {
-    return null;
+  if (!hasWindow()) return null;
+  const local = readLocalStorageJson<AiSettings>(AI_SETTINGS_STORAGE_KEY);
+  if (local) return local;
+  if (hasIndexedDb()) {
+    try {
+      const db = await openDb();
+      const rec =
+        (await reqAsPromise<MetaRecord | undefined>(
+          db
+            .transaction("ai-settings")
+            .objectStore("ai-settings")
+            .get("current"),
+        )) ?? null;
+      const value = (rec?.value as AiSettings | undefined) ?? null;
+      if (value) return value;
+    } catch {
+      // Fall through to localStorage.
+    }
   }
+  return null;
 }
 
 export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
-  if (!isBrowser()) return;
+  if (!hasWindow()) return;
+  writeLocalStorageJson(AI_SETTINGS_STORAGE_KEY, settings);
+  if (!hasIndexedDb()) return;
   try {
     const rec: MetaRecord = {
       key: "current",
@@ -463,9 +640,10 @@ export async function loadLixBlobFromIdb(): Promise<Blob | null> {
   if (!isBrowser()) return null;
   try {
     const db = await openDb();
-    const rec = (await reqAsPromise<MetaRecord | undefined>(
-      db.transaction("lix-blob").objectStore("lix-blob").get("current"),
-    )) ?? null;
+    const rec =
+      (await reqAsPromise<MetaRecord | undefined>(
+        db.transaction("lix-blob").objectStore("lix-blob").get("current"),
+      )) ?? null;
     const v = rec?.value;
     if (v instanceof Blob) return v;
     if (v instanceof ArrayBuffer) return new Blob([v]);

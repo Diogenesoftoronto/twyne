@@ -5,7 +5,11 @@ import { ProjectBriefCard } from "../../components/brief/project-brief-card";
 import { AuthPanel } from "../../components/auth/auth-panel";
 import { FolioMenu } from "../../components/folio/folio-menu";
 import type { ProjectBrief, Folio } from "../../types";
-import { loadDraftHtml, loadProjectBrief } from "../../utils/anti-tabula-rasa";
+import {
+  loadDraftHtml,
+  loadProjectBrief,
+  saveDraftHtml,
+} from "../../utils/anti-tabula-rasa";
 import {
   clearIdbStore,
   loadFoliosFromIdb,
@@ -27,6 +31,7 @@ import { CommentsPanel } from "../../components/comments/comments-panel";
 import { CitationsPanel } from "../../components/citations/citations-panel";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
+import { markDirty } from "../../utils/convex-sync";
 import {
   startBackgroundResearch,
   stopBackgroundResearch,
@@ -175,13 +180,16 @@ export default component$(() => {
         await saveFoliosToIdb([draftFolio]);
         await saveFolioContentToIdb(draftFolio.id, legacyDraft);
         await saveActiveFolioIdToIdb(draftFolio.id);
+        saveDraftHtml(legacyDraft);
         store.folios = [draftFolio];
         store.activeFolioId = draftFolio.id;
         store.editorSeed = legacyDraft;
+        markDirty();
       } else if (folios.length > 0) {
         store.folios = folios;
         store.activeFolioId = activeFolioId ?? folios[0].id;
         store.editorSeed = await loadFolioContentFromIdb(store.activeFolioId);
+        saveDraftHtml(store.editorSeed);
       }
 
       store.brief = brief;
@@ -238,6 +246,7 @@ export default component$(() => {
     // ── Save editor content to the active folio ──
     const contentHandler = (e: Event) => {
       const html = (e as CustomEvent).detail as string;
+      saveDraftHtml(html);
       if (store.activeFolioId) {
         void saveFolioContentToIdb(store.activeFolioId, html);
         const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
@@ -245,6 +254,7 @@ export default component$(() => {
           store.folios[idx].updatedAt = Date.now();
           void saveFoliosToIdb(store.folios);
         }
+        markDirty();
       }
     };
     window.addEventListener("twyne:content", contentHandler);
@@ -262,6 +272,7 @@ export default component$(() => {
         updatedAt: Date.now(),
       };
       void saveFoliosToIdb(store.folios);
+      markDirty();
     };
     window.addEventListener("twyne:layout", layoutHandler);
     cleanup(() => window.removeEventListener("twyne:layout", layoutHandler));
@@ -278,6 +289,7 @@ export default component$(() => {
         updatedAt: Date.now(),
       };
       void saveFoliosToIdb(store.folios);
+      markDirty();
     };
     const footerHandler = (e: Event) => {
       const text = (e as CustomEvent).detail as string;
@@ -290,6 +302,7 @@ export default component$(() => {
         updatedAt: Date.now(),
       };
       void saveFoliosToIdb(store.folios);
+      markDirty();
     };
     window.addEventListener("twyne:header", headerHandler);
     window.addEventListener("twyne:footer", footerHandler);
@@ -502,6 +515,7 @@ export default component$(() => {
                         store.activeFolioId = folio.id;
                         store.editorSeed = content;
                         store.folioKey += 1;
+                        saveDraftHtml(content);
                         void saveActiveFolioIdToIdb(folio.id);
                         window.dispatchEvent(
                           new CustomEvent("twyne:load-folio", {
@@ -552,10 +566,12 @@ export default component$(() => {
                           store.activeFolioId = newFolio.id;
                           store.editorSeed = "";
                           store.folioKey += 1;
+                          saveDraftHtml("");
                           store.newFolioFormOpen = false;
                           void saveFoliosToIdb(store.folios);
                           void saveFolioContentToIdb(newFolio.id, "");
                           void saveActiveFolioIdToIdb(newFolio.id);
+                          markDirty();
                         }
                         if (e.key === "Escape") {
                           store.newFolioFormOpen = false;
@@ -580,10 +596,12 @@ export default component$(() => {
                           store.activeFolioId = newFolio.id;
                           store.editorSeed = "";
                           store.folioKey += 1;
+                          saveDraftHtml("");
                           store.newFolioFormOpen = false;
                           void saveFoliosToIdb(store.folios);
                           void saveFolioContentToIdb(newFolio.id, "");
                           void saveActiveFolioIdToIdb(newFolio.id);
+                          markDirty();
                         })}
                         class="btn-press flex-1 text-xs"
                       >
@@ -864,26 +882,28 @@ export default component$(() => {
                       style="z-index: var(--z-dropdown);"
                     >
                       <div class="flex flex-col gap-1 pb-2 border-b border-[var(--color-paper-3)]">
-                        <Link
-                          href="/settings/"
-                          class="text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+                        <button
+                          type="button"
+                          class="w-full text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
                           style={{ fontFamily: "var(--font-display)" }}
                           onClick$={() => {
                             store.authOpen = false;
+                            void nav("/settings/");
                           }}
                         >
                           ⚙ Preferences
-                        </Link>
-                        <Link
-                          href="/docs/"
-                          class="text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+                        </button>
+                        <button
+                          type="button"
+                          class="w-full text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
                           style={{ fontFamily: "var(--font-display)" }}
                           onClick$={() => {
                             store.authOpen = false;
+                            void nav("/docs/");
                           }}
                         >
                           ❦ The Manual
-                        </Link>
+                        </button>
                       </div>
                       <AuthPanel />
                     </div>

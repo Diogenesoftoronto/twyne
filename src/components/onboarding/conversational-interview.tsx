@@ -11,10 +11,13 @@ import {
   type InterviewTurnResult,
   type InterviewConfidence,
   type InterviewDossierDraft,
+  hasConfiguredAiProvider,
   runClientInterviewTurn,
 } from "../../utils/ai-client";
 import { loadAiSettingsFromIdb } from "../../utils/idb";
 import type { ProjectBrief, ProjectInterviewAnswers } from "../../types";
+import { useConvexClient } from "../../utils/convex-context";
+import { api } from "../../../convex/_generated/api";
 
 /**
  * The conversational interview. A chat-style replacement for the
@@ -125,6 +128,7 @@ export const ConversationalInterview = component$(
     });
     const inputRef = useSignal<HTMLTextAreaElement>();
     const scrollerRef = useSignal<HTMLDivElement>();
+    const clientSig = useConvexClient();
 
     /**
      * Kick the conversation off with the AI's opening question.
@@ -170,29 +174,46 @@ export const ConversationalInterview = component$(
 
       try {
         const settings = await loadAiSettingsFromIdb();
-        if (
-          !settings ||
-          !settings.advancedMode ||
-          settings.providers.length === 0
-        ) {
-          store.error =
-            "Conversational interview needs a configured provider. Add one in Settings, or use the form instead.";
-          store.loading = false;
-          return;
+        let result: InterviewTurnResult | null = null;
+        const hasByok = hasConfiguredAiProvider(settings);
+
+        if (hasByok && settings) {
+          result = await runClientInterviewTurn(
+            {
+              messages: store.messages,
+              mode: props.mode,
+              currentBrief: props.initialBrief ?? null,
+            },
+            settings,
+          );
+          if (!result) {
+            store.error =
+              "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+            return;
+          }
         }
 
-        const result: InterviewTurnResult | null = await runClientInterviewTurn(
-          {
-            messages: store.messages,
-            mode: props.mode,
-            currentBrief: props.initialBrief ?? null,
-          },
-          settings,
-        );
+        if (!result && !hasByok && clientSig.value) {
+          try {
+            result = (await clientSig.value.action(
+              (api as any).agents.runInterviewTurn,
+              {
+                messages: store.messages,
+                mode: props.mode,
+                currentBrief: props.initialBrief ?? null,
+              },
+            )) as InterviewTurnResult | null;
+          } catch {
+            store.error =
+              "The shared server could not answer. Sign in again or use your own provider in Preferences.";
+            return;
+          }
+        }
 
         if (!result) {
-          store.error = "The room is quiet. Try again in a moment.";
-          store.loading = false;
+          store.error = hasByok
+            ? "Your configured provider did not answer. Check the API key, model, and base URL in Preferences."
+            : "Add a provider in Preferences or sign in to use the interview.";
           return;
         }
 
@@ -221,7 +242,9 @@ export const ConversationalInterview = component$(
           store.liveDraft = { brief, confidence: result.confidence };
         }
       } catch (err) {
-        store.error = (err as Error).message ?? "Something went wrong.";
+        store.error =
+          (err as Error).message ??
+          "The interview could not continue. Check your provider settings and try again.";
       } finally {
         store.loading = false;
       }

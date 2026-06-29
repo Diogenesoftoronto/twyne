@@ -21,12 +21,11 @@ import {
   saveDraftHtml,
   saveProjectBrief,
 } from "../../utils/anti-tabula-rasa";
-import { loadAiSettingsFromIdb } from "../../utils/idb";
+import { loadWriterSettingsFromIdb } from "../../utils/idb";
 
 interface OnboardingStore {
   hydrated: boolean;
   style: InterviewStyle;
-  aiReady: boolean;
 }
 
 /**
@@ -47,15 +46,12 @@ export default component$(() => {
   const store = useStore<OnboardingStore>({
     hydrated: false,
     style: "form",
-    aiReady: false,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const ai = await loadAiSettingsFromIdb();
-    const aiReady = !!ai?.advancedMode && ai.providers.length > 0;
-    store.aiReady = aiReady;
-    store.style = aiReady ? "conversational" : "form";
+    const writer = await loadWriterSettingsFromIdb();
+    store.style = writer.interviewStyle;
     store.hydrated = true;
   });
 

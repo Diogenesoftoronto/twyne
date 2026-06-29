@@ -19,20 +19,26 @@
 
 import { action } from "./_generated/server";
 import { v } from "convex/values";
-import { generateText, type LanguageModel } from "ai";
+import { generateText, stepCountIs, type LanguageModel } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { createOpenAI, openai } from "@ai-sdk/openai";
 import {
   buildSystemPrompt,
   buildUserPrompt,
   generateLocalFeedback,
-  toAgentPersona,
+  buildSynthesisSystemPrompt,
+  buildSynthesisPrompt,
+  buildRubricReviewSystemPrompt,
+  buildRubricReviewPrompt,
   type AgentPersona,
   type AgentRequest,
   type AgentResponse,
   type FeedbackType,
+  type MemoForSynthesis,
 } from "./agentPrompts";
-import type { Persona, ProjectBrief } from "../src/types";
+import { buildQuoteTools } from "./agentTools";
+import type { ProjectBrief, ProjectInterviewAnswers } from "../src/types";
+import { stripReasoningTags } from "../src/utils/reasoning-tags";
 import { captureServerAiGeneration } from "./posthog";
 import {
   countWords,
@@ -137,14 +143,18 @@ function classifyType(text: string, fallback: FeedbackType): FeedbackType {
 async function runLlm(
   provider: ProviderConfig,
   req: AgentRequest,
-  feature: "persona-feedback" | "persona-reply" = "persona-feedback",
+  feature:
+    | "persona-feedback"
+    | "persona-reply"
+    | "persona-analysis" = "persona-feedback",
+  maxTokens = 380,
 ): Promise<AgentResponse> {
   const system = buildSystemPrompt(req.persona);
   const user = buildUserPrompt(req);
   const fallbackType: FeedbackType = defaultTypeForPersona(req.persona);
   const temperature = provider.label === "openai" ? 0.6 : 0.4;
-  const maxTokens = 380;
   const start = Date.now();
+  const { tools, getAnchor } = buildQuoteTools(req.draftText);
 
   try {
     const { text } = await generateText({
@@ -153,24 +163,42 @@ async function runLlm(
       prompt: user,
       temperature,
       maxOutputTokens: maxTokens,
+      tools,
+      stopWhen: stepCountIs(3),
     });
+    let visibleText = stripReasoningTags(text);
+    // Reasoning models can wrap the whole reply in <think>; regenerate once
+    // so the note is never blank, then fall back to the raw text.
+    if (!visibleText) {
+      const retry = await generateText({
+        model: provider.model,
+        system,
+        prompt: `${user}\n\nRespond with your note as plain visible text. Do not place your whole answer inside <think> tags.`,
+        temperature,
+        maxOutputTokens: maxTokens,
+        tools,
+        stopWhen: stepCountIs(3),
+      });
+      visibleText = stripReasoningTags(retry.text) || retry.text.trim();
+    }
     await captureServerAiGeneration({
       feature,
       provider: provider.label,
       model: provider.modelId,
       req,
-      output: text,
+      output: visibleText,
       latencyMs: Date.now() - start,
       temperature,
       maxTokens,
       spanName: feature,
     });
 
-    const cleaned = text.trim();
+    const cleaned = visibleText.trim();
     return {
       text: cleaned || "(no response)",
       type: classifyType(cleaned, fallbackType),
       provider: provider.label,
+      anchor: getAnchor() ?? req.anchor,
     };
   } catch (err) {
     await captureServerAiGeneration({
@@ -186,6 +214,36 @@ async function runLlm(
     });
     throw err;
   }
+}
+
+/**
+ * Generate plain long-form text from a system + user prompt, with the same
+ * empty-after-strip retry as {@link runLlm}. Used for the room synthesis and
+ * the narrative rubric review, neither of which speaks as a single persona.
+ */
+async function runPlainLlm(
+  provider: ProviderConfig,
+  system: string,
+  user: string,
+  maxTokens: number,
+): Promise<string> {
+  const gen = async (prompt: string) =>
+    generateText({
+      model: provider.model,
+      system,
+      prompt,
+      temperature: 0.4,
+      maxOutputTokens: maxTokens,
+    });
+  const { text } = await gen(user);
+  let visible = stripReasoningTags(text);
+  if (!visible) {
+    const retry = await gen(
+      `${user}\n\nRespond with plain visible text. Do not place your whole answer inside <think> tags.`,
+    );
+    visible = stripReasoningTags(retry.text) || retry.text.trim();
+  }
+  return visible.trim();
 }
 
 function defaultTypeForPersona(p: AgentPersona): FeedbackType {
@@ -211,11 +269,264 @@ const personaValidator = v.object({
   role: v.string(),
   description: v.string(),
   focus: v.string(),
+  voice: v.optional(v.string()),
+  sampleLines: v.optional(v.array(v.string())),
+  providerId: v.optional(v.string()),
+  model: v.optional(v.string()),
+  temperature: v.optional(v.number()),
   color: v.optional(v.string()),
   icon: v.optional(v.string()),
 });
 
 const briefValidator = v.union(v.null(), v.any());
+
+type InterviewMessage = {
+  author: "writer" | "interviewer";
+  text: string;
+};
+
+type InterviewConfidence = "high" | "medium" | "low";
+
+type InterviewTurnResult =
+  | {
+      kind: "question";
+      text: string;
+      draft?: {
+        brief: Partial<ProjectInterviewAnswers>;
+        confidence: Partial<
+          Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+        >;
+      };
+      provider: string;
+      model: string;
+    }
+  | {
+      kind: "synthesis";
+      brief: ProjectInterviewAnswers;
+      confidence: Partial<
+        Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+      >;
+      provider: string;
+      model: string;
+    };
+
+const INTERVIEW_FIELDS = [
+  "workingTitle",
+  "format",
+  "audience",
+  "goal",
+  "tone",
+  "constraints",
+  "successSignal",
+] as const satisfies ReadonlyArray<keyof ProjectInterviewAnswers>;
+
+function interviewSystemPrompt(
+  mode: "first-run" | "refine",
+  currentBrief: ProjectBrief | null,
+): string {
+  return [
+    "You are a kind, incisive editorial interviewer helping a writer build a project dossier.",
+    "Ask one question at a time. Keep it short. You are building a writer's room: identify the piece, reader, goal, tone, constraints, success signal, and what kind of advisors/editors the writer wants around it.",
+    'After every ordinary question, append `DOSSIER:` followed by JSON { "brief": { workingTitle, format, audience, goal, tone, constraints, successSignal }, "confidence": { field: "high" | "medium" | "low" } }. Only include fields you can reasonably infer.',
+    "When the dossier is complete enough for review, respond only with `SYNTHESIZE:` followed by the same JSON shape. Put requested advisors/editors into constraints or goal until the product has a dedicated advisor schema.",
+    mode === "refine" && currentBrief
+      ? `Existing dossier: ${JSON.stringify(currentBrief.answers)} — refine it, don't restart.`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function extractTaggedJson(
+  text: string,
+  tag: "DOSSIER" | "SYNTHESIZE",
+): { value: unknown; start: number; end: number } | null {
+  const marker = new RegExp(`${tag}:`, "i").exec(text);
+  if (!marker) return null;
+  const open = text.indexOf("{", marker.index + marker[0].length);
+  if (open < 0) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let i = open; i < text.length; i += 1) {
+    const ch = text[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === "{") depth += 1;
+    if (ch === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        try {
+          return {
+            value: JSON.parse(text.slice(open, i + 1)),
+            start: marker.index,
+            end: i + 1,
+          };
+        } catch {
+          return null;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function normalizeInterviewDossierDraft(value: unknown) {
+  if (!value || typeof value !== "object") return null;
+  const obj = value as Record<string, unknown>;
+  const briefSource =
+    obj.brief && typeof obj.brief === "object"
+      ? (obj.brief as Record<string, unknown>)
+      : obj;
+  const confidenceSource =
+    obj.confidence && typeof obj.confidence === "object"
+      ? (obj.confidence as Record<string, unknown>)
+      : {};
+
+  const brief: Partial<ProjectInterviewAnswers> = {};
+  const confidence: Partial<
+    Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+  > = {};
+  for (const field of INTERVIEW_FIELDS) {
+    const raw = briefSource[field];
+    if (typeof raw === "string" && raw.trim()) {
+      brief[field] = raw.trim();
+    }
+    const c = confidenceSource[field];
+    if (c === "high" || c === "medium" || c === "low") {
+      confidence[field] = c;
+    }
+  }
+  return Object.keys(brief).length > 0 ? { brief, confidence } : null;
+}
+
+function stripTaggedJson(
+  text: string,
+  segment: { start: number; end: number },
+) {
+  return `${text.slice(0, segment.start)}${text.slice(segment.end)}`.trim();
+}
+
+function parseInterviewTurnResult(
+  text: string,
+  provider: string,
+  model: string,
+  messages: InterviewMessage[],
+): InterviewTurnResult {
+  const visibleText = stripReasoningTags(text);
+  const lastUser = [...messages].reverse().find((m) => m.author === "writer");
+  const synthSegment = extractTaggedJson(visibleText, "SYNTHESIZE");
+  if (synthSegment) {
+    const draft = normalizeInterviewDossierDraft(synthSegment.value);
+    if (draft) {
+      return {
+        kind: "synthesis",
+        brief: draft.brief as ProjectInterviewAnswers,
+        confidence: draft.confidence,
+        provider,
+        model,
+      };
+    }
+  }
+
+  const legacySynthMatch = visibleText.match(
+    /SYNTHESIZE:\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})?/,
+  );
+  if (legacySynthMatch) {
+    try {
+      return {
+        kind: "synthesis",
+        brief: JSON.parse(legacySynthMatch[1]) as ProjectInterviewAnswers,
+        confidence: legacySynthMatch[2]
+          ? (JSON.parse(legacySynthMatch[2]) as Partial<
+              Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+            >)
+          : {},
+        provider,
+        model,
+      };
+    } catch {
+      // Fall through to question parsing.
+    }
+  }
+
+  const dossierSegment = extractTaggedJson(visibleText, "DOSSIER");
+  const draft = dossierSegment
+    ? normalizeInterviewDossierDraft(dossierSegment.value)
+    : null;
+  const reply =
+    (dossierSegment
+      ? stripTaggedJson(visibleText, dossierSegment)
+      : visibleText
+    ).trim() ||
+    (lastUser ? "Tell me more." : "What is the working title of this piece?");
+
+  return {
+    kind: "question",
+    text: reply,
+    draft: draft ?? undefined,
+    provider,
+    model,
+  };
+}
+
+export const runInterviewTurn = action({
+  args: {
+    messages: v.array(
+      v.object({
+        author: v.union(v.literal("writer"), v.literal("interviewer")),
+        text: v.string(),
+      }),
+    ),
+    mode: v.union(v.literal("first-run"), v.literal("refine")),
+    currentBrief: briefValidator,
+  },
+  handler: async (_ctx, args): Promise<InterviewTurnResult> => {
+    const provider = pickProvider();
+    if (!provider) {
+      return {
+        kind: "question",
+        text: "Tell me a little more about the piece, the reader, and what success looks like.",
+        provider: "local",
+        model: "local",
+      };
+    }
+
+    const transcript = (args.messages as InterviewMessage[])
+      .map((m) => `${m.author === "writer" ? "Writer" : "You"}: ${m.text}`)
+      .join("\n");
+    const temperature = provider.label === "openai" ? 0.6 : 0.4;
+    const maxTokens = 420;
+    const { text } = await generateText({
+      model: provider.model,
+      system: interviewSystemPrompt(
+        args.mode,
+        (args.currentBrief ?? null) as ProjectBrief | null,
+      ),
+      prompt: transcript,
+      temperature,
+      maxOutputTokens: maxTokens,
+    });
+    return parseInterviewTurnResult(
+      text,
+      provider.label,
+      provider.modelId,
+      args.messages as InterviewMessage[],
+    );
+  },
+});
 
 /**
  * Run a single persona agent. Returns the agent's note and metadata.
@@ -293,7 +604,7 @@ export interface RewriteResult {
 function parseRewriteOutput(
   text: string,
 ): { replacement: string; rationale: string } | null {
-  const stripped = text
+  const stripped = stripReasoningTags(text)
     .trim()
     .replace(/^```(?:json)?/i, "")
     .replace(/```$/, "")
@@ -396,6 +707,7 @@ export const suggestRewrite = action({
         temperature,
         maxOutputTokens: maxTokens,
       });
+      const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
         feature: "persona-rewrite",
         provider: provider.label,
@@ -406,7 +718,7 @@ export const suggestRewrite = action({
           draftText: args.draftText,
           instruction: "rewrite-suggestion",
         },
-        output: text,
+        output: visibleText,
         latencyMs: Date.now() - start,
         temperature,
         maxTokens,
@@ -416,7 +728,7 @@ export const suggestRewrite = action({
           twyne_rewrite_level: args.level,
         },
       });
-      const parsed = parseRewriteOutput(text);
+      const parsed = parseRewriteOutput(visibleText);
       if (parsed) return { ...parsed, provider: provider.label };
     } catch (err) {
       await captureServerAiGeneration({
@@ -518,6 +830,143 @@ export const conveneRoom = action({
 });
 
 /**
+ * The expanded cast analysis: each editor writes a full-page memo on the whole
+ * document, then the room synthesises them. Pro-gated and rate-limited like
+ * {@link conveneRoom}; falls back to the local generator per persona on error.
+ */
+export const analyzeRoom = action({
+  args: {
+    personas: v.array(personaValidator),
+    brief: briefValidator,
+    draftText: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+    await consumeRateLimit(ctx, {
+      action: "agent:room",
+      identifier: identity.tokenIdentifier,
+      ...RATE_LIMITS.agentRoom,
+    });
+    const provider = pickProvider();
+    const brief = (args.brief ?? null) as ProjectBrief | null;
+    const canHost =
+      !!provider &&
+      countWords(args.draftText) >= MIN_EDITOR_WORDS &&
+      (await userIsPro(ctx, identity.tokenIdentifier));
+
+    const memos = await Promise.all(
+      args.personas.map(async (pRaw) => {
+        const persona = pRaw as AgentPersona;
+        const req: AgentRequest = {
+          persona,
+          brief,
+          draftText: args.draftText,
+          instruction: "analyze",
+        };
+        try {
+          if (canHost) {
+            const r = await runLlm(provider!, req, "persona-analysis", 1600);
+            return { personaId: persona.id, ...r };
+          }
+        } catch (err) {
+          console.error(
+            `[twyne:agents] ${persona.id} analysis failed, falling back to local:`,
+            err,
+          );
+        }
+        return { personaId: persona.id, ...generateLocalFeedback(req) };
+      }),
+    );
+
+    let synthesis = "";
+    let synthesisProvider = "local";
+    if (canHost && provider) {
+      try {
+        const memoInput: MemoForSynthesis[] = args.personas.map((pRaw, i) => {
+          const persona = pRaw as AgentPersona;
+          return {
+            personaName: persona.name,
+            role: persona.role,
+            text: memos[i].text,
+          };
+        });
+        synthesis = await runPlainLlm(
+          provider,
+          buildSynthesisSystemPrompt(),
+          buildSynthesisPrompt(memoInput, brief),
+          1400,
+        );
+        synthesisProvider = provider.label;
+      } catch (err) {
+        console.error("[twyne:agents] room synthesis failed:", err);
+      }
+    }
+
+    return { memos, synthesis, synthesisProvider };
+  },
+});
+
+/**
+ * The full-page narrative review for the rubric. Given the already-computed
+ * judge scores and static-feature notes, write the prose that explains the
+ * grade. Pro-gated; returns an empty review when hosting is unavailable.
+ */
+export const reviewRubric = action({
+  args: {
+    brief: briefValidator,
+    draftText: v.string(),
+    combined: v.number(),
+    grade: v.string(),
+    judgeMean: v.number(),
+    staticTotal: v.number(),
+    judges: v.array(
+      v.object({
+        personaId: v.string(),
+        score: v.number(),
+        rationale: v.string(),
+      }),
+    ),
+    staticFeedback: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+    await consumeRateLimit(ctx, {
+      action: "agent:feedback",
+      identifier: identity.tokenIdentifier,
+      ...RATE_LIMITS.agentFeedback,
+    });
+    const provider = pickProvider();
+    if (!provider || !(await userIsPro(ctx, identity.tokenIdentifier))) {
+      return { review: "", provider: "local" };
+    }
+    const brief = (args.brief ?? null) as ProjectBrief | null;
+    try {
+      const review = await runPlainLlm(
+        provider,
+        buildRubricReviewSystemPrompt(),
+        buildRubricReviewPrompt({
+          combined: args.combined,
+          grade: args.grade,
+          judgeMean: args.judgeMean,
+          staticTotal: args.staticTotal,
+          judges: args.judges,
+          staticFeedback: args.staticFeedback,
+          brief,
+          draftText: args.draftText,
+        }),
+        1400,
+      );
+      return { review, provider: provider.label };
+    } catch (err) {
+      console.error("[twyne:agents] rubric review failed:", err);
+      return { review: "", provider: "local" };
+    }
+  },
+});
+
+/**
  * Judge the draft as a given persona would. Used by the multi-judge
  * rubric. Returns a single integer score 1-10 and a one-sentence
  * rationale. Falls back to a deterministic heuristic if no provider.
@@ -570,6 +1019,7 @@ Respond as JSON, and only JSON, in this exact shape:
         temperature,
         maxOutputTokens: maxTokens,
       });
+      const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
         feature: "rubric-judge",
         provider: provider.label,
@@ -580,14 +1030,14 @@ Respond as JSON, and only JSON, in this exact shape:
           draftText: args.draftText,
           instruction: "feedback",
         },
-        output: text,
+        output: visibleText,
         latencyMs: Date.now() - start,
         temperature,
         maxTokens,
         spanName: "rubric_judge",
         evalSignals: { twyne_expected_format: "json_score_rationale" },
       });
-      const parsed = parseJudgeOutput(text);
+      const parsed = parseJudgeOutput(visibleText);
       if (parsed) return { ...parsed, provider: provider.label };
     } catch (err) {
       console.error(`[twyne:agents] ${persona.id} judge call failed:`, err);
@@ -661,6 +1111,7 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
             temperature,
             maxOutputTokens: maxTokens,
           });
+          const visibleText = stripReasoningTags(text);
           await captureServerAiGeneration({
             feature: "rubric-judge",
             provider: provider.label,
@@ -671,14 +1122,14 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
               draftText: args.draftText,
               instruction: "feedback",
             },
-            output: text,
+            output: visibleText,
             latencyMs: Date.now() - start,
             temperature,
             maxTokens,
             spanName: "rubric_judge_room",
             evalSignals: { twyne_expected_format: "json_score_rationale" },
           });
-          const parsed = parseJudgeOutput(text);
+          const parsed = parseJudgeOutput(visibleText);
           if (parsed) {
             return { ...parsed, personaId: persona.id };
           }
@@ -726,7 +1177,7 @@ function parseJudgeOutput(
   text: string,
 ): { score: number; rationale: string } | null {
   // The model sometimes wraps JSON in ```json ... ```. Strip fences.
-  const stripped = text
+  const stripped = stripReasoningTags(text)
     .replace(/```(?:json)?/gi, "")
     .replace(/```/g, "")
     .trim();

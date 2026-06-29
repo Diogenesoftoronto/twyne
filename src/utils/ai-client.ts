@@ -14,7 +14,7 @@
  *   if (result) { use it } else { fallback to Convex action }
  */
 
-import { generateText, type LanguageModel } from "ai";
+import { generateText, stepCountIs, type LanguageModel, type ToolSet } from "ai";
 import type {
   AiSettings,
   AiFeature,
@@ -26,22 +26,47 @@ import type {
   AgentResponse,
   FeedbackType,
 } from "../../convex/agentPrompts";
-import { buildSystemPrompt, buildUserPrompt } from "../../convex/agentPrompts";
+import {
+  buildSystemPrompt,
+  buildUserPrompt,
+  generateLocalFeedback,
+  buildSynthesisSystemPrompt,
+  buildSynthesisPrompt,
+  buildRubricReviewSystemPrompt,
+  buildRubricReviewPrompt,
+  type MemoForSynthesis,
+} from "../../convex/agentPrompts";
+import { buildQuoteTools } from "../../convex/agentTools";
+import type { ProjectBrief as ProjectBriefType } from "../types";
 import {
   localAiBaseUrl,
   LOCAL_MODEL_ID,
   LOCAL_PROVIDER_ID,
 } from "./desktop-bridge";
 import { captureAiGeneration } from "./ai-evals";
+import { stripReasoningTags } from "./reasoning-tags";
 
 /* ── Provider factory ───────────────────────────────────────────── */
+
+function isOpenAiCompatibleProvider(type: AiProviderConfig["type"]): boolean {
+  return (
+    type === "openai-compatible" ||
+    type === "deepseek" ||
+    type === "openrouter" ||
+    type === "ollama" ||
+    type === "zai" ||
+    type === "minimax"
+  );
+}
 
 async function createModel(
   config: AiProviderConfig,
   modelOverride?: string,
 ): Promise<LanguageModel | null> {
   try {
-    const modelId = modelOverride || config.defaultModel;
+    const modelId =
+      modelOverride || config.defaultModel || config.availableModels?.[0] || "";
+    if (!modelId) return null;
     switch (config.type) {
       case "openai": {
         const { createOpenAI } = await import("@ai-sdk/openai");
@@ -51,6 +76,14 @@ async function createModel(
       case "anthropic": {
         const { createAnthropic } = await import("@ai-sdk/anthropic");
         const anthropicProvider = createAnthropic({ apiKey: config.apiKey });
+        return anthropicProvider.chat(modelId);
+      }
+      case "anthropic-compatible": {
+        const { createAnthropic } = await import("@ai-sdk/anthropic");
+        const anthropicProvider = createAnthropic({
+          apiKey: config.apiKey,
+          baseURL: config.baseUrl,
+        });
         return anthropicProvider.chat(modelId);
       }
       case "google": {
@@ -64,6 +97,18 @@ async function createModel(
         const { createOpenAI } = await import("@ai-sdk/openai");
         const openai = createOpenAI({
           apiKey: config.apiKey,
+          baseURL: config.baseUrl,
+        });
+        return openai.chat(modelId);
+      }
+      case "deepseek":
+      case "openrouter":
+      case "ollama":
+      case "zai":
+      case "minimax": {
+        const { createOpenAI } = await import("@ai-sdk/openai");
+        const openai = createOpenAI({
+          apiKey: config.apiKey || "local",
           baseURL: config.baseUrl,
         });
         return openai.chat(modelId);
@@ -103,15 +148,20 @@ export function resolveFeatureConfig(
   temperature: number;
   maxTokens: number;
 } | null {
-  if (!settings.advancedMode || settings.providers.length === 0) {
+  const normalized = normalizeAiSettings(settings);
+  if (normalized.providers.length === 0) {
     return null;
   }
 
-  const override: AiFeatureOverride | undefined = settings.perFeature[feature];
-  const providerId = override?.providerId ?? settings.defaultProviderId;
+  const override: AiFeatureOverride | undefined =
+    normalized.perFeature[feature];
+  const providerId =
+    override?.providerId ??
+    normalized.defaultProviderId ??
+    normalized.providers[0]?.id;
   if (!providerId) return null;
 
-  const provider = settings.providers.find((p) => p.id === providerId);
+  const provider = normalized.providers.find((p) => p.id === providerId);
   if (!provider) return null;
 
   return {
@@ -122,13 +172,48 @@ export function resolveFeatureConfig(
   };
 }
 
+/**
+ * Like {@link resolveFeatureConfig}, but lets a persona override the provider,
+ * model, and temperature. This is what lets each editor run on its own model
+ * so the voices differ at the generation level, not just in the prompt.
+ * BYOK/client path only — the Convex hosted path uses one picked provider.
+ */
+export function resolveFeatureConfigForPersona(
+  settings: AiSettings,
+  feature: AiFeature,
+  persona: { providerId?: string; model?: string; temperature?: number },
+): ReturnType<typeof resolveFeatureConfig> {
+  const base = resolveFeatureConfig(settings, feature);
+  if (!base) return null;
+
+  const normalized = normalizeAiSettings(settings);
+  const personaProvider = persona.providerId
+    ? normalized.providers.find((p) => p.id === persona.providerId)
+    : undefined;
+  const provider = personaProvider ?? base.provider;
+
+  return {
+    provider,
+    model: persona.model ?? (personaProvider ? provider.defaultModel : base.model),
+    temperature: persona.temperature ?? base.temperature,
+    maxTokens: base.maxTokens,
+  };
+}
+
+export function hasConfiguredAiProvider(
+  settings: Partial<AiSettings> | AiSettings | null | undefined,
+): boolean {
+  if (!settings) return false;
+  return normalizeAiSettings(settings).providers.length > 0;
+}
+
 function defaultModelForFeature(
   feature: AiFeature,
   provider: AiProviderConfig,
 ): string {
   if (
     feature === "voice-narration" &&
-    (provider.type === "openai" || provider.type === "openai-compatible")
+    (provider.type === "openai" || isOpenAiCompatibleProvider(provider.type))
   ) {
     return "gpt-4o-mini-tts";
   }
@@ -139,6 +224,12 @@ function defaultTemperature(feature: AiFeature): number {
   switch (feature) {
     case "rubric-judge":
       return 0.2;
+    case "rubric-review":
+      return 0.3;
+    case "persona-analysis":
+      return 0.5;
+    case "room-synthesis":
+      return 0.4;
     case "voice-narration":
       return 0.4;
     case "citation-format":
@@ -160,8 +251,14 @@ function defaultMaxTokens(feature: AiFeature): number {
       return 320;
     case "persona-rewrite":
       return 320;
+    case "persona-analysis":
+      return 1400;
+    case "room-synthesis":
+      return 1200;
     case "rubric-judge":
       return 220;
+    case "rubric-review":
+      return 1200;
     case "voice-narration":
       return 0;
     case "comment-reply":
@@ -203,7 +300,7 @@ export async function runClientVoiceSpeech(
   if (!resolved) return null;
   if (
     resolved.provider.type !== "openai" &&
-    resolved.provider.type !== "openai-compatible"
+    !isOpenAiCompatibleProvider(resolved.provider.type)
   ) {
     console.warn(
       "[twyne:ai-client] voice narration requires an OpenAI or OpenAI-compatible provider.",
@@ -221,7 +318,8 @@ export async function runClientVoiceSpeech(
   const speed = req.speed ?? override?.speed;
   const instructions = req.instructions ?? override?.instructions;
   const baseURL =
-    resolved.provider.type === "openai-compatible" && resolved.provider.baseUrl
+    isOpenAiCompatibleProvider(resolved.provider.type) &&
+    resolved.provider.baseUrl
       ? resolved.provider.baseUrl.replace(/\/$/, "")
       : "https://api.openai.com/v1";
 
@@ -289,6 +387,7 @@ async function generateTrackedText({
   prompt,
   spanName,
   evalSignals,
+  tools,
 }: {
   feature: AiFeature;
   resolved: {
@@ -302,8 +401,13 @@ async function generateTrackedText({
   prompt: string;
   spanName?: string;
   evalSignals?: Record<string, unknown>;
+  /** Tools the model may call (e.g. quote_passage). */
+  tools?: ToolSet;
 }): Promise<string> {
   const start = performance.now();
+  // When tools are present the model needs at least one extra step after the
+  // tool result to write its visible answer.
+  const stopWhen = tools ? stepCountIs(3) : undefined;
   try {
     const { text } = await generateText({
       model,
@@ -311,21 +415,39 @@ async function generateTrackedText({
       prompt,
       temperature: resolved.temperature,
       maxOutputTokens: resolved.maxTokens,
+      ...(tools ? { tools, stopWhen } : {}),
     });
+    let cleaned = stripReasoningTags(text);
+    // Reasoning models sometimes wrap the whole reply in <think> (or never
+    // close the tag), so stripping leaves nothing. Regenerate once, nudging
+    // the model to answer outside the reasoning channel; if it still comes
+    // back empty, fall back to the raw text so the note is never blank.
+    if (!cleaned) {
+      const retryPrompt = `${prompt}\n\nRespond with your note as plain visible text. Do not place your whole answer inside <think> tags.`;
+      const retry = await generateText({
+        model,
+        system,
+        prompt: retryPrompt,
+        temperature: resolved.temperature,
+        maxOutputTokens: resolved.maxTokens,
+        ...(tools ? { tools, stopWhen } : {}),
+      });
+      cleaned = stripReasoningTags(retry.text) || retry.text.trim();
+    }
     await captureAiGeneration({
       feature,
       provider: resolved.provider.type,
       model: resolved.model,
       system,
       prompt,
-      output: text,
+      output: cleaned,
       latencyMs: performance.now() - start,
       temperature: resolved.temperature,
       maxTokens: resolved.maxTokens,
       spanName,
       evalSignals,
     });
-    return text;
+    return cleaned;
   } catch (err) {
     await captureAiGeneration({
       feature,
@@ -392,7 +514,7 @@ function defaultTypeForPersona(personaId: string): FeedbackType {
 function parseRewriteOutput(
   text: string,
 ): { replacement: string; rationale: string } | null {
-  const stripped = text
+  const stripped = stripReasoningTags(text)
     .trim()
     .replace(/^```(?:json)?/i, "")
     .replace(/```$/, "")
@@ -496,7 +618,7 @@ export async function runClientAgent(
   req: AgentRequest,
   settings: AiSettings,
 ): Promise<AgentResponse | null> {
-  const resolved = resolveFeatureConfig(settings, feature);
+  const resolved = resolveFeatureConfigForPersona(settings, feature, req.persona);
   if (!resolved) return null;
 
   const model = await createModel(resolved.provider, resolved.model);
@@ -506,6 +628,7 @@ export async function runClientAgent(
     const system = buildSystemPrompt(req.persona);
     const user = buildUserPrompt(req);
     const fallbackType = defaultTypeForPersona(req.persona.id);
+    const { tools, getAnchor } = buildQuoteTools(req.draftText);
 
     const text = await generateTrackedText({
       feature,
@@ -518,16 +641,92 @@ export async function runClientAgent(
         twyne_persona_id: req.persona.id,
         twyne_instruction: req.instruction ?? "feedback",
       },
+      tools,
     });
 
     const cleaned = text.trim();
+    const anchor = getAnchor();
+    // No usable text and no anchored quote — hand off to the deterministic
+    // local generator, which carries its own anchor.
+    if (!cleaned) {
+      return generateLocalFeedback(req);
+    }
     return {
-      text: cleaned || "(no response)",
+      text: cleaned,
       type: classifyType(cleaned, fallbackType),
       provider: resolved.provider.type as AgentResponse["provider"],
+      anchor,
     };
   } catch (err) {
     console.warn("[twyne:ai-client] generateText failed:", err);
+    return null;
+  }
+}
+
+/* ── Public: room synthesis (combine the five memos) ────────────── */
+
+export async function runClientRoomSynthesis(
+  memos: MemoForSynthesis[],
+  brief: ProjectBriefType | null,
+  settings: AiSettings,
+): Promise<{ text: string; provider: string } | null> {
+  const resolved = resolveFeatureConfig(settings, "room-synthesis");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  try {
+    const text = await generateTrackedText({
+      feature: "room-synthesis",
+      resolved,
+      model,
+      system: buildSynthesisSystemPrompt(),
+      prompt: buildSynthesisPrompt(memos, brief),
+      spanName: "room_synthesis",
+      evalSignals: { twyne_memo_count: memos.length },
+    });
+    const cleaned = text.trim();
+    return cleaned ? { text: cleaned, provider: resolved.provider.type } : null;
+  } catch (err) {
+    console.warn("[twyne:ai-client] room synthesis failed:", err);
+    return null;
+  }
+}
+
+/* ── Public: full narrative rubric review ───────────────────────── */
+
+export interface RubricReviewRequest {
+  combined: number;
+  grade: string;
+  judgeMean: number;
+  staticTotal: number;
+  judges: Array<{ personaId: string; score: number; rationale: string }>;
+  staticFeedback: string[];
+  brief: ProjectBriefType | null;
+  draftText: string;
+}
+
+export async function runClientRubricReview(
+  req: RubricReviewRequest,
+  settings: AiSettings,
+): Promise<{ text: string; provider: string } | null> {
+  const resolved = resolveFeatureConfig(settings, "rubric-review");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  try {
+    const text = await generateTrackedText({
+      feature: "rubric-review",
+      resolved,
+      model,
+      system: buildRubricReviewSystemPrompt(),
+      prompt: buildRubricReviewPrompt(req),
+      spanName: "rubric_review",
+      evalSignals: { twyne_combined_score: req.combined },
+    });
+    const cleaned = text.trim();
+    return cleaned ? { text: cleaned, provider: resolved.provider.type } : null;
+  } catch (err) {
+    console.warn("[twyne:ai-client] rubric review failed:", err);
     return null;
   }
 }
@@ -537,7 +736,7 @@ export async function runClientAgent(
 function parseJudgeOutput(
   text: string,
 ): { score: number; rationale: string } | null {
-  const stripped = text
+  const stripped = stripReasoningTags(text)
     .replace(/```(?:json)?/gi, "")
     .replace(/```/g, "")
     .trim();
@@ -649,6 +848,106 @@ export async function testProvider(
   }
 }
 
+export interface ProviderModelDiscoveryResult {
+  models: string[];
+  source: "remote" | "fallback";
+}
+
+function normalizeApiBaseUrl(
+  baseUrl: string | undefined,
+  fallback: string,
+): string {
+  const raw = baseUrl?.trim() || fallback;
+  return raw.replace(/\/+$/, "");
+}
+
+function dedupeModels(models: Array<string | null | undefined>): string[] {
+  return Array.from(
+    new Set(
+      models.map((m) => m?.trim()).filter((m): m is string => Boolean(m)),
+    ),
+  );
+}
+
+function fallbackModelsForProvider(config: AiProviderConfig): string[] {
+  return dedupeModels([config.defaultModel, ...(config.availableModels ?? [])]);
+}
+
+export async function discoverProviderModels(
+  config: AiProviderConfig,
+): Promise<ProviderModelDiscoveryResult> {
+  const fallback = fallbackModelsForProvider(config);
+
+  try {
+    if (config.type === "google") {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(config.apiKey)}`,
+      );
+      if (!res.ok) {
+        throw new Error(`Model discovery failed (${res.status})`);
+      }
+      const body = (await res.json()) as {
+        models?: Array<{ name?: string; displayName?: string }>;
+      };
+      const models = dedupeModels(
+        (body.models ?? []).flatMap((m) => [
+          m.name?.replace(/^models\//, ""),
+          m.displayName,
+        ]),
+      );
+      return {
+        models: models.length > 0 ? models : fallback,
+        source: models.length > 0 ? "remote" : "fallback",
+      };
+    }
+
+    const isAnthropicStyle =
+      config.type === "anthropic" || config.type === "anthropic-compatible";
+    const baseUrl = normalizeApiBaseUrl(
+      config.baseUrl,
+      isAnthropicStyle
+        ? "https://api.anthropic.com/v1"
+        : "https://api.openai.com/v1",
+    );
+    const headers: Record<string, string> = isAnthropicStyle
+      ? {
+          "x-api-key": config.apiKey,
+          "anthropic-version": "2023-06-01",
+        }
+      : config.apiKey && config.type !== "ollama"
+        ? {
+            authorization: `Bearer ${config.apiKey}`,
+          }
+        : {};
+
+    const res = await fetch(`${baseUrl}/models`, { headers });
+    if (!res.ok) {
+      throw new Error(`Model discovery failed (${res.status})`);
+    }
+
+    const body = (await res.json()) as {
+      data?: Array<{ id?: string; name?: string }>;
+      models?: Array<{ id?: string; name?: string; displayName?: string }>;
+    };
+
+    const models = dedupeModels([
+      ...(body.data ?? []).flatMap((m) => [m.id, m.name]),
+      ...(body.models ?? []).flatMap((m) => [m.id, m.name, m.displayName]),
+    ]);
+
+    return {
+      models: models.length > 0 ? models : fallback,
+      source: models.length > 0 ? "remote" : "fallback",
+    };
+  } catch (err) {
+    const message = (err as Error)?.message ?? "Model discovery failed";
+    if (fallback.length > 0) {
+      return { models: fallback, source: "fallback" };
+    }
+    throw new Error(message);
+  }
+}
+
 /* ── Public: format a raw citation into structured bibliographic data ─ */
 
 export interface CitationFormatRequest {
@@ -702,7 +1001,7 @@ Respond with JSON only:
       },
     });
 
-    const stripped = text
+    const stripped = stripReasoningTags(text)
       .trim()
       .replace(/^```(?:json)?/i, "")
       .replace(/```$/, "")
@@ -799,7 +1098,7 @@ Respond with JSON only:
       },
     });
 
-    const stripped = text
+    const stripped = stripReasoningTags(text)
       .trim()
       .replace(/^```(?:json)?/i, "")
       .replace(/```$/, "")
@@ -895,7 +1194,7 @@ Respond with JSON only:
       },
     });
 
-    const stripped = text
+    const stripped = stripReasoningTags(text)
       .trim()
       .replace(/^```(?:json)?/i, "")
       .replace(/```$/, "")
@@ -999,6 +1298,7 @@ function withDesktopLocalProvider(settings: AiSettings): AiSettings {
     apiKey: "local",
     baseUrl,
     defaultModel: LOCAL_MODEL_ID,
+    availableModels: [LOCAL_MODEL_ID],
   };
   const providers = settings.providers.some((p) => p.id === LOCAL_PROVIDER_ID)
     ? settings.providers.map((p) => (p.id === LOCAL_PROVIDER_ID ? local : p))

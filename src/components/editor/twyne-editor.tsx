@@ -1986,6 +1986,20 @@ export const TwyneEditor = component$(
                     }
                   />
                 </label>
+                <label class="mt-1.5 flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] cursor-pointer">
+                  <span>Margin guides</span>
+                  <input
+                    type="checkbox"
+                    checked={store.layout.showMarginGuides === true}
+                    onChange$={(e) =>
+                      emitLayout({
+                        ...store.layout,
+                        showMarginGuides: (e.target as HTMLInputElement)
+                          .checked,
+                      })
+                    }
+                  />
+                </label>
                 <div class="mt-3">
                   <label
                     class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
@@ -2189,7 +2203,7 @@ export const TwyneEditor = component$(
             </div>
           )}
           <div
-            class="mx-auto twyne-editor page-canvas relative"
+            class={`mx-auto twyne-editor page-canvas relative ${store.layout.showMarginGuides ? "show-margin-guides" : ""}`}
             style={{
               "max-width": "var(--doc-width, 48rem)",
               "padding-left": "var(--doc-pad-x, 3rem)",

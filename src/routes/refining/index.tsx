@@ -10,8 +10,14 @@ import type {
   ProjectBrief,
   ProjectInterviewAnswers,
 } from "../../types";
-import { runClientDossierCheck } from "../../utils/ai-client";
-import { loadAiSettingsFromIdb } from "../../utils/idb";
+import {
+  hasConfiguredAiProvider,
+  runClientDossierCheck,
+} from "../../utils/ai-client";
+import {
+  loadAiSettingsFromIdb,
+  loadWriterSettingsFromIdb,
+} from "../../utils/idb";
 import { loadDraftHtml } from "../../utils/anti-tabula-rasa";
 import {
   createProjectBrief,
@@ -55,9 +61,8 @@ export default component$(() => {
   useVisibleTask$(async () => {
     store.brief = loadProjectBrief();
     store.draftText = loadDraftHtml();
-    const raw = await loadAiSettingsFromIdb();
-    const settings = raw ?? { advancedMode: false, providers: [], defaultProviderId: null, perFeature: {}, showProviderTags: false };
-    store.style = settings.advancedMode ? "conversational" : "form";
+    const writer = await loadWriterSettingsFromIdb();
+    store.style = writer.interviewStyle;
     store.hydrated = true;
   });
 
@@ -82,8 +87,14 @@ export default component$(() => {
     store.showDossierCheck = true;
     try {
       const raw = await loadAiSettingsFromIdb();
-      const settings = raw ?? { advancedMode: false, providers: [], defaultProviderId: null, perFeature: {}, showProviderTags: false };
-      if (!settings.advancedMode || settings.providers.length === 0) {
+      const settings = raw ?? {
+        advancedMode: false,
+        providers: [],
+        defaultProviderId: null,
+        perFeature: {},
+        showProviderTags: false,
+      };
+      if (!hasConfiguredAiProvider(settings)) {
         store.dossierCheckError =
           "Reading the draft needs a configured AI provider. Add one in Settings.";
         store.dossierCheckLoading = false;

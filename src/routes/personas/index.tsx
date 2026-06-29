@@ -11,22 +11,22 @@ import { api } from "../../../convex/_generated/api";
 import type { Persona, RoomSettings, AssistanceLevel } from "../../types";
 import { DEFAULT_ROOM_SETTINGS } from "../../types";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
+import {
+  buildVoicePreview as sharedVoicePreview,
+  toAgentPersona,
+} from "../../../convex/agentPrompts";
 import { loadPersonasFromIdb, savePersonasToIdb } from "../../utils/idb";
 import {
   loadRoomSettingsLocally,
   saveRoomSettingsLocally,
 } from "../../utils/convex-sync";
 
-/** Inline, read-only voice preview. Mirrors `convex/agentPrompts.ts:buildSystemPrompt` so a writer can see exactly what the editor will be told. */
+/**
+ * Inline, read-only voice preview — the exact system prompt the editor will be
+ * given. Shared with `convex/agentPrompts.ts` so it never drifts.
+ */
 function buildVoicePreview(p: Persona): string {
-  return `You are ${p.name}, the ${p.role} on the editorial board of "Twyne," a 1955-style magazine bullpen.
-
-Voice and remit:
-${p.description}
-
-You focus your reading on: ${p.focus}.
-
-You are one of five editors in residence. Speak in your own voice. Quote specific sentences when you have a claim. Be willing to say "this is not yet working" if it is not. Keep replies between 60 and 220 words.`;
+  return sharedVoicePreview(toAgentPersona(p));
 }
 
 const COLOR_SWATCHES: ReadonlyArray<{ label: string; value: string }> = [
