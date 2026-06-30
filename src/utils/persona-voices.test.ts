@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  buildUserPrompt,
   buildSystemPrompt,
   buildSynthesisPrompt,
   buildRubricReviewPrompt,
@@ -56,6 +57,49 @@ describe("synthesis + review prompts", () => {
     expect(out).toContain("A (critic)");
     expect(out).toContain("memo-a");
     expect(out).toContain("memo-b");
+  });
+
+  test("brief attachments are serialized into prompt context", () => {
+    const out = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]),
+      brief: {
+        answers: {
+          workingTitle: "Libraries as Civic Infrastructure",
+          format: "Essay",
+          audience: "City officials",
+          goal: "Defend funding",
+          tone: "Calm",
+          constraints: "Use public evidence",
+          successSignal: "Budget survives",
+        },
+        attachments: [
+          {
+            id: "att-doc",
+            kind: "document",
+            title: "Budget notes",
+            text: "Libraries improve access to jobs and public services.",
+            why: "Ground the case in measurable outcomes.",
+            addedAt: 1,
+          },
+          {
+            id: "att-link",
+            kind: "link",
+            title: "City audit",
+            url: "https://example.com/audit",
+            why: "Use the published numbers.",
+            addedAt: 2,
+          },
+        ],
+        completedAt: 1,
+        updatedAt: 2,
+      },
+      draftText: "A draft.",
+      instruction: "feedback",
+    });
+    expect(out).toContain("REFERENCE MATERIAL");
+    expect(out).toContain('"Budget notes"');
+    expect(out).toContain("Ground the case in measurable outcomes.");
+    expect(out).toContain('"City audit"');
   });
 
   test("rubric review prompt carries the grade and judge verdicts", () => {

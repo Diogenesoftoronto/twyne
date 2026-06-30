@@ -5,7 +5,7 @@ import { useAuth } from "../../../utils/auth-context";
 
 interface CallbackStore {
   status: "checking" | "success" | "error";
-  destination: "/editor/" | "/onboarding/";
+  destination: "/editor/" | "/dossier/create/";
   destinationLabel: string;
 }
 
@@ -14,7 +14,7 @@ export default component$(() => {
   const nav = useNavigate();
   const store = useStore<CallbackStore>({
     status: "checking",
-    destination: "/onboarding/",
+    destination: "/dossier/create/",
     destinationLabel: "the dossier interview",
   });
 
@@ -31,7 +31,7 @@ export default component$(() => {
     }
 
     const hasDossier = loadProjectBrief() !== null;
-    const destination = hasDossier ? "/editor/" : "/onboarding/";
+    const destination = hasDossier ? "/editor/" : "/dossier/create/";
     store.status = "success";
     store.destination = destination;
     store.destinationLabel = hasDossier
@@ -127,7 +127,7 @@ export const head: DocumentHead = {
     {
       name: "description",
       content:
-        "Completes Bluesky sign-in and routes the writer to onboarding or the editor.",
+        "Completes Bluesky sign-in and routes the writer to the dossier interview or the editor.",
     },
   ],
 };

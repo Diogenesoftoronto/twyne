@@ -15,7 +15,7 @@ import {
  * The landing page. Twyne-style: a magazine broadsheet the writer
  * unfolds before the first interview. Returning writers (already
  * filed a brief) skip past it to the desk; first-time writers
- * unfold the page and "Open a Dossier" sends them to /onboarding.
+ * unfold the page and "Open a Dossier" sends them to /dossier/create.
  */
 export default component$(() => {
   const nav = useNavigate();
@@ -36,12 +36,12 @@ export default component$(() => {
     store.hasBrief = brief !== null;
     store.checked = true;
     if (brief || userId) {
-      window.location.replace(brief ? "/editor/" : "/onboarding/");
+      window.location.replace(brief ? "/editor/" : "/dossier/create/");
     }
   });
 
   const startBrief = $(() => {
-    void nav("/onboarding/");
+    void nav("/dossier/create/");
   });
 
   const skipToEditor = $(async () => {

@@ -231,8 +231,22 @@ export interface ProjectInterviewAnswers {
   successSignal: string;
 }
 
+export interface DossierAttachment {
+  id: string;
+  kind: "document" | "link";
+  title: string;
+  /** kind === "link" (or an optional source URL for a document). */
+  url?: string;
+  /** kind === "document": pasted/uploaded text, capped ~2000 chars. */
+  text?: string;
+  /** Required one-line note on why this matters to the piece. */
+  why: string;
+  addedAt: number;
+}
+
 export interface ProjectBrief {
   answers: ProjectInterviewAnswers;
+  attachments: DossierAttachment[];
   completedAt: number;
   updatedAt: number;
 }
@@ -411,6 +425,7 @@ export type AiFeature =
   | "citation-format"
   | "source-summarize"
   | "source-detect-missing"
+  | "research-web-search"
   | "interview-turn"
   | "dossier-check";
 
@@ -425,17 +440,34 @@ export const DEFAULT_WRITER_SETTINGS: WriterSettings = {
 };
 
 export type ApparatusCitationStyle = "mla" | "apa" | "chicago";
+export type ApparatusResearchProvider =
+  | "hosted"
+  | "tinyfish"
+  | "model-web-search"
+  | "web-mcp";
 
 export interface ApparatusSettings {
   defaultCitationStyle: ApparatusCitationStyle;
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
+  researchProvider: ApparatusResearchProvider;
+  tinyFishApiKey: string;
+  tinyFishMaxResults: number;
+  mcpEndpointUrl: string;
+  mcpToolName: string;
+  mcpBearerToken: string;
 }
 
 export const DEFAULT_APPARATUS_SETTINGS: ApparatusSettings = {
   defaultCitationStyle: "mla",
   aiEnhanceCitations: false,
   flagMissingSources: false,
+  researchProvider: "hosted",
+  tinyFishApiKey: "",
+  tinyFishMaxResults: 8,
+  mcpEndpointUrl: "",
+  mcpToolName: "search",
+  mcpBearerToken: "",
 };
 
 export interface AiFeatureOverride {

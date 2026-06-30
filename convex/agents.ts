@@ -39,6 +39,14 @@ import {
 import { buildQuoteTools } from "./agentTools";
 import type { ProjectBrief, ProjectInterviewAnswers } from "../src/types";
 import { stripReasoningTags } from "../src/utils/reasoning-tags";
+import {
+  clampScore,
+  extractTaggedJson,
+  parseJudgeOutput,
+  stripTaggedJson,
+} from "../src/utils/llm-parsing";
+import "./arizeTracing";
+import { tracingEnabled, flushArize } from "./arizeTracing";
 import { captureServerAiGeneration } from "./posthog";
 import {
   countWords,
@@ -46,7 +54,6 @@ import {
   MIN_MARKUP_WORDS,
   MIN_RUBRIC_WORDS,
 } from "../src/utils/draft-thresholds";
-import { userIsPro } from "./lib/entitlement";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 
 /* ── Provider selection ─────────────────────────────────────────── */
@@ -83,6 +90,16 @@ function pickProvider(): ProviderConfig | null {
       baseURL: bifrostUrl.replace(/\/$/, ""),
       apiKey: "bifrost-dummy",
       headers: bifrostKey ? { "x-bifrost-api-key": bifrostKey } : undefined,
+      // Bifrost authenticates via the x-bifrost-api-key header and calls the
+      // upstream provider with its own stored credential. The OpenAI provider
+      // always injects `Authorization: Bearer <apiKey>`, which Bifrost forwards
+      // upstream — the dummy bearer then makes the real provider (e.g.
+      // neuralwatt) return 401. Strip it so only x-bifrost-api-key is sent.
+      fetch: (async (input, init) => {
+        const headers = new Headers(init?.headers);
+        headers.delete("authorization");
+        return fetch(input, { ...init, headers });
+      }) as typeof fetch,
     });
     return {
       model: bifrost.chat(modelId),
@@ -165,6 +182,16 @@ async function runLlm(
       maxOutputTokens: maxTokens,
       tools,
       stopWhen: stepCountIs(3),
+      experimental_telemetry: {
+        isEnabled: tracingEnabled,
+        functionId: feature,
+        metadata: {
+          feature,
+          persona: req.persona.id,
+          provider: provider.label,
+          model: provider.modelId,
+        },
+      },
     });
     let visibleText = stripReasoningTags(text);
     // Reasoning models can wrap the whole reply in <think>; regenerate once
@@ -178,6 +205,16 @@ async function runLlm(
         maxOutputTokens: maxTokens,
         tools,
         stopWhen: stepCountIs(3),
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: `${feature}:retry`,
+          metadata: {
+            feature,
+            persona: req.persona.id,
+            provider: provider.label,
+            model: provider.modelId,
+          },
+        },
       });
       visibleText = stripReasoningTags(retry.text) || retry.text.trim();
     }
@@ -194,6 +231,7 @@ async function runLlm(
     });
 
     const cleaned = visibleText.trim();
+    await flushArize();
     return {
       text: cleaned || "(no response)",
       type: classifyType(cleaned, fallbackType),
@@ -212,6 +250,7 @@ async function runLlm(
       spanName: feature,
       error: err,
     });
+    await flushArize();
     throw err;
   }
 }
@@ -226,23 +265,35 @@ async function runPlainLlm(
   system: string,
   user: string,
   maxTokens: number,
+  feature: string,
 ): Promise<string> {
-  const gen = async (prompt: string) =>
+  const gen = async (prompt: string, suffix?: string) =>
     generateText({
       model: provider.model,
       system,
       prompt,
       temperature: 0.4,
       maxOutputTokens: maxTokens,
+      experimental_telemetry: {
+        isEnabled: tracingEnabled,
+        functionId: suffix ? `${feature}:${suffix}` : feature,
+        metadata: {
+          feature,
+          provider: provider.label,
+          model: provider.modelId,
+        },
+      },
     });
   const { text } = await gen(user);
   let visible = stripReasoningTags(text);
   if (!visible) {
     const retry = await gen(
       `${user}\n\nRespond with plain visible text. Do not place your whole answer inside <think> tags.`,
+      "retry",
     );
     visible = stripReasoningTags(retry.text) || retry.text.trim();
   }
+  await flushArize();
   return visible.trim();
 }
 
@@ -278,7 +329,35 @@ const personaValidator = v.object({
   icon: v.optional(v.string()),
 });
 
-const briefValidator = v.union(v.null(), v.any());
+const attachmentValidator = v.object({
+  id: v.string(),
+  kind: v.union(v.literal("document"), v.literal("link")),
+  title: v.string(),
+  url: v.optional(v.string()),
+  text: v.optional(v.string()),
+  why: v.string(),
+  addedAt: v.number(),
+});
+
+const projectInterviewAnswersValidator = v.object({
+  workingTitle: v.string(),
+  format: v.string(),
+  audience: v.string(),
+  goal: v.string(),
+  tone: v.string(),
+  constraints: v.string(),
+  successSignal: v.string(),
+});
+
+const briefValidator = v.union(
+  v.null(),
+  v.object({
+    answers: projectInterviewAnswersValidator,
+    attachments: v.array(attachmentValidator),
+    completedAt: v.number(),
+    updatedAt: v.number(),
+  }),
+);
 
 type InterviewMessage = {
   author: "writer" | "interviewer";
@@ -337,52 +416,6 @@ function interviewSystemPrompt(
     .join("\n");
 }
 
-function extractTaggedJson(
-  text: string,
-  tag: "DOSSIER" | "SYNTHESIZE",
-): { value: unknown; start: number; end: number } | null {
-  const marker = new RegExp(`${tag}:`, "i").exec(text);
-  if (!marker) return null;
-  const open = text.indexOf("{", marker.index + marker[0].length);
-  if (open < 0) return null;
-
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = open; i < text.length; i += 1) {
-    const ch = text[i];
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    if (ch === "\\") {
-      escaped = true;
-      continue;
-    }
-    if (ch === '"') {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (ch === "{") depth += 1;
-    if (ch === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        try {
-          return {
-            value: JSON.parse(text.slice(open, i + 1)),
-            start: marker.index,
-            end: i + 1,
-          };
-        } catch {
-          return null;
-        }
-      }
-    }
-  }
-  return null;
-}
-
 function normalizeInterviewDossierDraft(value: unknown) {
   if (!value || typeof value !== "object") return null;
   const obj = value as Record<string, unknown>;
@@ -410,13 +443,6 @@ function normalizeInterviewDossierDraft(value: unknown) {
     }
   }
   return Object.keys(brief).length > 0 ? { brief, confidence } : null;
-}
-
-function stripTaggedJson(
-  text: string,
-  segment: { start: number; end: number },
-) {
-  return `${text.slice(0, segment.start)}${text.slice(segment.end)}`.trim();
 }
 
 function parseInterviewTurnResult(
@@ -518,7 +544,18 @@ export const runInterviewTurn = action({
       prompt: transcript,
       temperature,
       maxOutputTokens: maxTokens,
+      experimental_telemetry: {
+        isEnabled: tracingEnabled,
+        functionId: "interview-turn",
+        metadata: {
+          feature: "interview-turn",
+          provider: provider.label,
+          model: provider.modelId,
+          mode: args.mode,
+        },
+      },
     });
+    await flushArize();
     return parseInterviewTurnResult(
       text,
       provider.label,
@@ -533,9 +570,9 @@ export const runInterviewTurn = action({
  * Falls back to the local generator if no provider is configured or the
  * remote call fails — the room never breaks entirely.
  *
- * Security: the hosted LLM (the part that spends provider keys) is gated on
- * a signed-in Pro subscriber. Anonymous and free callers get the local
- * generator so the endpoint can't be used to consume keys without an account.
+ * Security: the hosted LLM (the part that spends provider keys) requires a
+ * signed-in account and is rate-limited. Anonymous callers are rejected; signed
+ * in free accounts use the real configured provider when one exists.
  */
 export const runPersona = action({
   args: {
@@ -586,8 +623,7 @@ export const runPersona = action({
     if (countWords(req.draftText) < MIN_EDITOR_WORDS) {
       return generateLocalFeedback(req);
     }
-    const canHost =
-      !!pickProvider() && (await userIsPro(ctx, identity.tokenIdentifier));
+    const canHost = !!pickProvider();
     return runWithFallback(req, canHost);
   },
 });
@@ -677,7 +713,7 @@ export const suggestRewrite = action({
       return { ...localRewrite(persona, args.original), provider: "local" };
     }
     const provider = pickProvider();
-    if (!provider || !(await userIsPro(ctx, identity.tokenIdentifier)))
+    if (!provider)
       return { ...localRewrite(persona, args.original), provider: "local" };
 
     const system = buildSystemPrompt(persona);
@@ -706,6 +742,17 @@ export const suggestRewrite = action({
         prompt: user,
         temperature,
         maxOutputTokens: maxTokens,
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: "persona_rewrite",
+          metadata: {
+            feature: "persona-rewrite",
+            persona: persona.id,
+            provider: provider.label,
+            model: provider.modelId,
+            level: args.level,
+          },
+        },
       });
       const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
@@ -729,7 +776,10 @@ export const suggestRewrite = action({
         },
       });
       const parsed = parseRewriteOutput(visibleText);
-      if (parsed) return { ...parsed, provider: provider.label };
+      if (parsed) {
+        await flushArize();
+        return { ...parsed, provider: provider.label };
+      }
     } catch (err) {
       await captureServerAiGeneration({
         feature: "persona-rewrite",
@@ -747,6 +797,7 @@ export const suggestRewrite = action({
       });
       /* fall through to local */
     }
+    await flushArize();
     return { ...localRewrite(persona, args.original), provider: "local" };
   },
 });
@@ -778,10 +829,9 @@ export const conveneRoom = action({
     const provider = pickProvider();
     const brief = (args.brief ?? null) as ProjectBrief | null;
     const short = countWords(args.draftText) < MIN_EDITOR_WORDS;
-    // Hosted LLM (key-consuming) only for Pro subscribers; otherwise every
-    // persona falls back to the local generator, but the room still runs.
-    const canHost =
-      !short && !!provider && (await userIsPro(ctx, identity.tokenIdentifier));
+    // Hosted LLM calls are key-consuming, so the action requires sign-in and
+    // rate limits the fan-out. Free signed-in accounts still use the provider.
+    const canHost = !short && !!provider;
     if (short) {
       return args.personas.map((pRaw) => {
         const persona = pRaw as AgentPersona;
@@ -831,7 +881,7 @@ export const conveneRoom = action({
 
 /**
  * The expanded cast analysis: each editor writes a full-page memo on the whole
- * document, then the room synthesises them. Pro-gated and rate-limited like
+ * document, then the room synthesises them. Sign-in gated and rate-limited like
  * {@link conveneRoom}; falls back to the local generator per persona on error.
  */
 export const analyzeRoom = action({
@@ -850,10 +900,7 @@ export const analyzeRoom = action({
     });
     const provider = pickProvider();
     const brief = (args.brief ?? null) as ProjectBrief | null;
-    const canHost =
-      !!provider &&
-      countWords(args.draftText) >= MIN_EDITOR_WORDS &&
-      (await userIsPro(ctx, identity.tokenIdentifier));
+    const canHost = !!provider && countWords(args.draftText) >= MIN_EDITOR_WORDS;
 
     const memos = await Promise.all(
       args.personas.map(async (pRaw) => {
@@ -896,6 +943,7 @@ export const analyzeRoom = action({
           buildSynthesisSystemPrompt(),
           buildSynthesisPrompt(memoInput, brief),
           1400,
+          "persona-analysis:synthesis",
         );
         synthesisProvider = provider.label;
       } catch (err) {
@@ -910,7 +958,7 @@ export const analyzeRoom = action({
 /**
  * The full-page narrative review for the rubric. Given the already-computed
  * judge scores and static-feature notes, write the prose that explains the
- * grade. Pro-gated; returns an empty review when hosting is unavailable.
+ * grade. Returns an empty review when hosting is unavailable.
  */
 export const reviewRubric = action({
   args: {
@@ -938,7 +986,7 @@ export const reviewRubric = action({
       ...RATE_LIMITS.agentFeedback,
     });
     const provider = pickProvider();
-    if (!provider || !(await userIsPro(ctx, identity.tokenIdentifier))) {
+    if (!provider) {
       return { review: "", provider: "local" };
     }
     const brief = (args.brief ?? null) as ProjectBrief | null;
@@ -957,6 +1005,7 @@ export const reviewRubric = action({
           draftText: args.draftText,
         }),
         1400,
+        "rubric-review",
       );
       return { review, provider: provider.label };
     } catch (err) {
@@ -987,7 +1036,7 @@ export const judgeDraft = action({
       return localJudge(persona, brief, args.draftText);
     }
 
-    if (!provider || !(await userIsPro(ctx, identity.tokenIdentifier))) {
+    if (!provider) {
       return localJudge(persona, brief, args.draftText);
     }
 
@@ -1018,6 +1067,16 @@ Respond as JSON, and only JSON, in this exact shape:
         prompt: user,
         temperature,
         maxOutputTokens: maxTokens,
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: "rubric_judge",
+          metadata: {
+            feature: "rubric-judge",
+            persona: persona.id,
+            provider: provider.label,
+            model: provider.modelId,
+          },
+        },
       });
       const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
@@ -1038,10 +1097,14 @@ Respond as JSON, and only JSON, in this exact shape:
         evalSignals: { twyne_expected_format: "json_score_rationale" },
       });
       const parsed = parseJudgeOutput(visibleText);
-      if (parsed) return { ...parsed, provider: provider.label };
+      if (parsed) {
+        await flushArize();
+        return { ...parsed, provider: provider.label };
+      }
     } catch (err) {
       console.error(`[twyne:agents] ${persona.id} judge call failed:`, err);
     }
+    await flushArize();
     return localJudge(persona, brief, args.draftText);
   },
 });
@@ -1063,8 +1126,7 @@ export const judgeRoom = action({
     const brief = (args.brief ?? null) as ProjectBrief | null;
     const canHost =
       countWords(args.draftText) >= MIN_RUBRIC_WORDS &&
-      !!pickProvider() &&
-      (await userIsPro(ctx, identity.tokenIdentifier));
+      !!pickProvider();
     if (!canHost) {
       return args.personas.map((p) => {
         const persona = p as AgentPersona;
@@ -1110,6 +1172,16 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
             prompt: user,
             temperature,
             maxOutputTokens: maxTokens,
+            experimental_telemetry: {
+              isEnabled: tracingEnabled,
+              functionId: "rubric_judge_room",
+              metadata: {
+                feature: "rubric-judge",
+                persona: persona.id,
+                provider: provider.label,
+                model: provider.modelId,
+              },
+            },
           });
           const visibleText = stripReasoningTags(text);
           await captureServerAiGeneration({
@@ -1131,11 +1203,13 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
           });
           const parsed = parseJudgeOutput(visibleText);
           if (parsed) {
+            await flushArize();
             return { ...parsed, personaId: persona.id };
           }
         } catch (err) {
           console.error(`[twyne:agents] ${persona.id} judge call failed:`, err);
         }
+        await flushArize();
         return {
           ...localJudge(persona, brief, args.draftText),
           personaId: persona.id,
@@ -1171,41 +1245,6 @@ async function runWithFallback(
     }
   }
   return generateLocalFeedback(req);
-}
-
-function parseJudgeOutput(
-  text: string,
-): { score: number; rationale: string } | null {
-  // The model sometimes wraps JSON in ```json ... ```. Strip fences.
-  const stripped = stripReasoningTags(text)
-    .replace(/```(?:json)?/gi, "")
-    .replace(/```/g, "")
-    .trim();
-  // Try strict JSON, then a looser "score: N" parse.
-  try {
-    const obj = JSON.parse(stripped);
-    if (typeof obj.score === "number" && typeof obj.rationale === "string") {
-      return { score: clampScore(obj.score), rationale: obj.rationale };
-    }
-  } catch {
-    // fall through
-  }
-  const scoreMatch = stripped.match(/"?score"?\s*[:=]\s*(\d+)/i);
-  const rationaleMatch = stripped.match(/"?rationale"?\s*[:=]\s*"([^"]+)"/i);
-  if (scoreMatch) {
-    return {
-      score: clampScore(parseInt(scoreMatch[1], 10)),
-      rationale:
-        rationaleMatch?.[1] ??
-        "The draft does part of the work and leaves the rest to the writer.",
-    };
-  }
-  return null;
-}
-
-function clampScore(score: number): number {
-  if (!Number.isFinite(score)) return 5;
-  return Math.max(1, Math.min(10, Math.round(score)));
 }
 
 function localJudge(

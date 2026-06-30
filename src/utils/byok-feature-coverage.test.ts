@@ -27,7 +27,7 @@ const CASES = [
     ],
   },
   {
-    path: "src/routes/refining/index.tsx",
+    path: "src/routes/dossier/refine/index.tsx",
     mustInclude: ["hasConfiguredAiProvider", "runClientDossierCheck"],
   },
   {

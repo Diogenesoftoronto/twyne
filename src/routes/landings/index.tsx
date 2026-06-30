@@ -23,7 +23,7 @@ export default component$(() => {
   const nav = useNavigate();
   const store = useStore<{ active: Variant }>({ active: "page" });
 
-  const startBrief = $(() => void nav("/onboarding/"));
+  const startBrief = $(() => void nav("/dossier/create/"));
   const skipToEditor = $(() => void nav("/editor/"));
 
   return (
