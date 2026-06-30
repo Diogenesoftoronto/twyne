@@ -1,0 +1,98 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "5e87105686e2",
+  "session_id": "019f166a-6c50-78b1-b5bf-1534f84e5ff0",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-30T20:10:55.527867044Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "convex/agents.ts",
+    "src/types/index.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "53b2045057eb",
+  "token_usage": {
+    "input_tokens": 268785,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1593600,
+    "output_tokens": 15541,
+    "api_call_count": 37
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-30T20:10:55.511614816Z",
+    "agent_lines": 0,
+    "agent_removed": 22,
+    "human_added": 1086,
+    "human_modified": 91,
+    "human_removed": 0,
+    "total_committed": 1143,
+    "total_lines_changed": 1772,
+    "agent_percentage": 1.2415349887133182,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 4749,
+      "user_lines_removed": 230,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".env.example": 22,
+        ".gitignore": 10,
+        "bun.lock": 377,
+        "convex/agents.ts": 109,
+        "convex/arizeTracing.ts": 71,
+        "evals/apparatus.jsonl": 4,
+        "evals/dataset.jsonl": 7,
+        "evals/judge.ts": 218,
+        "evals/rubric.jsonl": 8,
+        "evals/run-apparatus.ts": 379,
+        "evals/run-experiment.ts": 170,
+        "evals/run-robustness.ts": 1435,
+        "evals/run-rubric.ts": 657,
+        "package.json": 14,
+        "skills-lock.json": 77,
+        "src/components/editor/twyne-editor.tsx": 233,
+        "src/components/personas/personas-panel.tsx": 64,
+        "src/routes/apparatus/index.tsx": 14,
+        "src/routes/settings/index.tsx": 255,
+        "src/types/index.ts": 18,
+        "src/utils/ai-client.ts": 128,
+        "src/utils/background-research.ts": 204,
+        "src/utils/idb-preferences.test.ts": 54,
+        "src/utils/idb.ts": 22,
+        "src/utils/llm-parsing.test.ts": 37,
+        "src/utils/llm-parsing.ts": 111,
+        "stryker.config.json": 51
+      },
+      "user_removed_per_file": {
+        "bun.lock": 14,
+        "convex/agents.ts": 91,
+        "package.json": 1,
+        "src/components/editor/twyne-editor.tsx": 6,
+        "src/components/personas/personas-panel.tsx": 5,
+        "src/routes/apparatus/index.tsx": 4,
+        "src/routes/settings/index.tsx": 6,
+        "src/utils/ai-client.ts": 91,
+        "src/utils/background-research.ts": 12
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 118,
+      "user_lines_removed": 0,
+      "agent_lines_added": 4749,
+      "agent_lines_removed": 230,
+      "user_added_per_file": {
+        "src/utils/published-metadata.ts": 118
+      }
+    }
+  ]
+}

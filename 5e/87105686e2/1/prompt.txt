@@ -1,0 +1,21 @@
+I  want to have per article embeds via open graph when sharing. so that people can get a short desc of the article that is being shared.
+
+---
+
+continue
+
+---
+
+what is thhe status of this work
+
+---
+
+okaky go on to next stseps
+
+---
+
+go on
+
+---
+
+skip vet
