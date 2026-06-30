@@ -1,0 +1,34 @@
+Can you determine if the endpoint works for using the bifrost neuralwatt models to do review or other actions?
+
+---
+
+I want to add evaluations via arize to this project. # Install skill
+npx skills add Arize-ai/arize-skills
+
+---
+
+i am in canada region
+
+---
+
+can you double check the  bifrost key honestly i thhink it should have worked
+
+---
+
+yes i want b
+
+---
+
+one second llm evaluators are not gated at all so there must be another reson check theh arise does
+
+---
+
+i add the end point
+
+---
+
+i fixed it
+
+---
+
+.
