@@ -3,10 +3,29 @@
   "checkpoint_id": "5e87105686e2",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
+    "convex/agentPrompts.ts",
     "convex/agents.ts",
-    "src/types/index.ts"
+    "convex/profiles.ts",
+    "e2e/journey.e2e.ts",
+    "public/robots.txt",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/conversational-interview.tsx",
+    "src/components/onboarding/dossier-attachments-editor.tsx",
+    "src/routes/auth/callback/index.tsx",
+    "src/routes/dossier/create/index.tsx",
+    "src/routes/dossier/refine/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/index.tsx",
+    "src/routes/landings/index.tsx",
+    "src/routes/onboarding/index.tsx",
+    "src/routes/refining/index.tsx",
+    "src/routes/signin/index.tsx",
+    "src/types/index.ts",
+    "src/utils/anti-tabula-rasa.ts",
+    "src/utils/byok-feature-coverage.test.ts",
+    "src/utils/persona-voices.test.ts"
   ],
   "sessions": [
     {
@@ -26,13 +45,19 @@
       "transcript": "/5e/87105686e2/2/full.jsonl",
       "content_hash": "/5e/87105686e2/2/content_hash.txt",
       "prompt": "/5e/87105686e2/2/prompt.txt"
+    },
+    {
+      "metadata": "/5e/87105686e2/3/metadata.json",
+      "transcript": "/5e/87105686e2/3/full.jsonl",
+      "content_hash": "/5e/87105686e2/3/content_hash.txt",
+      "prompt": "/5e/87105686e2/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 630586,
+    "input_tokens": 864997,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 7371520,
-    "output_tokens": 52989,
-    "api_call_count": 112
+    "cache_read_tokens": 10651648,
+    "output_tokens": 67439,
+    "api_call_count": 150
   }
 }
