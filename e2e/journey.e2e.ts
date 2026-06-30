@@ -28,7 +28,7 @@ test("landing to onboarding to signup to subscription to rubric", async ({
       .getByRole("button", { name: /start your brief/i })
       .first()
       .click();
-    await expect(page).toHaveURL(/\/onboarding\//);
+    await expect(page).toHaveURL(/\/dossier\/create\//);
 
     const interview = [
       ["What are we calling it, for now?", "Libraries as Civic Infrastructure"],

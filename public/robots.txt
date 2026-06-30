@@ -14,10 +14,10 @@ Allow: /downloads
 Allow: /download
 Allow: /signin
 Disallow: /editor
-Disallow: /onboarding
+Disallow: /dossier/create
 Disallow: /settings
 Disallow: /apparatus
-Disallow: /refining
+Disallow: /dossier/refine
 Disallow: /rubric
 Disallow: /library
 Disallow: /personas

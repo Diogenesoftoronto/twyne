@@ -161,6 +161,7 @@ ${clampForContext(req.draftText, 4500)}
 
 `
     : `DRAFT: empty. The writer has not yet written. Respond as if to a blank page and suggest the first move.\n\n`;
+  const referencesBlock = attachmentsBlock(brief);
 
   const anchorBlock = req.anchor
     ? `ANCHOR SENTENCE (your note must pin to this exact sentence unless the writer asks a different question):\n"${req.anchor}"\n\n`
@@ -195,7 +196,31 @@ Write 400–700 words. This is a considered editorial memo, not a margin note.`
     ? `\nWRITER'S NEW MESSAGE:\n"${req.userMessage}"\n\nAddress the message directly.\n`
     : "";
 
-  return `${briefBlock}${draftBlock}${anchorBlock}${instructionBlock}${convoBlock}${userMessageBlock}`;
+  return `${briefBlock}${referencesBlock}${draftBlock}${anchorBlock}${instructionBlock}${convoBlock}${userMessageBlock}`;
+}
+
+function attachmentsBlock(brief: ProjectBrief | null): string {
+  if (!brief?.attachments?.length) return "";
+
+  let remainingTotal = 2000;
+  const lines = brief.attachments.map((attachment) => {
+    const header = `- [${attachment.kind === "link" ? "link" : "doc"}] "${attachment.title}" — ${attachment.why}`;
+    if (attachment.kind !== "document" || !attachment.text?.trim()) {
+      return header;
+    }
+    if (remainingTotal <= 0) {
+      return `${header}\n  Excerpt omitted to keep prompt size bounded.`;
+    }
+    const excerpt = attachment.text.trim().slice(0, Math.min(500, remainingTotal));
+    remainingTotal -= excerpt.length;
+    const suffix =
+      attachment.text.trim().length > excerpt.length
+        ? "\n  [excerpt truncated]"
+        : "";
+    return `${header}\n  Excerpt:\n  """\n  ${excerpt.replace(/\n/g, "\n  ")}\n  """${suffix}`;
+  });
+
+  return `REFERENCE MATERIAL (writer-supplied, use to ground feedback; do not treat it as the draft itself)\n${lines.join("\n")}\n\n`;
 }
 
 function wordCount(text: string): number {
@@ -219,6 +244,7 @@ function clampForContext(text: string, maxChars: number): string {
  */
 export function generateLocalFeedback(req: AgentRequest): AgentResponse {
   const answers = req.brief?.answers;
+  const attachments = req.brief?.attachments ?? [];
   const wordCountValue = wordCount(req.draftText);
   const hasBody = wordCountValue > 80;
   const audience = answers?.audience || "your intended reader";
@@ -256,9 +282,16 @@ export function generateLocalFeedback(req: AgentRequest): AgentResponse {
   const text =
     map[req.persona.id] ||
     "I read it, and I want to come back to you on one thing in particular.";
+  const referenceNote =
+    attachments.length > 0
+      ? ` Reference material on file: ${attachments
+          .slice(0, 3)
+          .map((attachment) => attachment.title)
+          .join(", ")}.`
+      : "";
 
   return {
-    text,
+    text: `${text}${referenceNote}`,
     type: typeMap[req.persona.id] || "perspective",
     provider: "local",
     confidence: 0.2,
@@ -293,7 +326,7 @@ export function buildSynthesisPrompt(
   const memoBlock = memos
     .map((m) => `### ${m.personaName} (${m.role})\n${m.text}`)
     .join("\n\n");
-  return `${briefBlock}THE ROOM'S MEMOS:\n\n${memoBlock}\n\nWrite the synthesis (300–500 words): open with the room's overall verdict, name the strongest point of agreement, surface the sharpest disagreement and adjudicate it, and end with a prioritised list of the next two or three moves for the writer.`;
+  return `${briefBlock}${attachmentsBlock(brief)}THE ROOM'S MEMOS:\n\n${memoBlock}\n\nWrite the synthesis (300–500 words): open with the room's overall verdict, name the strongest point of agreement, surface the sharpest disagreement and adjudicate it, and end with a prioritised list of the next two or three moves for the writer.`;
 }
 
 /**
@@ -321,7 +354,7 @@ export function buildRubricReviewPrompt(input: {
     .map((j) => `- ${j.personaId}: ${j.score}/10 — ${j.rationale}`)
     .join("\n");
   const staticBlock = input.staticFeedback.map((f) => `- ${f}`).join("\n");
-  return `${briefBlock}GRADE: ${input.combined}/100 (${input.grade}). Judge mean ${input.judgeMean.toFixed(1)}/10, static features ${input.staticTotal.toFixed(1)}/10.
+  return `${briefBlock}${attachmentsBlock(input.brief)}GRADE: ${input.combined}/100 (${input.grade}). Judge mean ${input.judgeMean.toFixed(1)}/10, static features ${input.staticTotal.toFixed(1)}/10.
 
 JUDGES' VERDICTS:
 ${judgeBlock}

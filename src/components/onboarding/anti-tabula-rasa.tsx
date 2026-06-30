@@ -1,10 +1,11 @@
 import { component$, $, useStore, type PropFunction } from "@builder.io/qwik";
-import type { ProjectInterviewAnswers } from "../../types";
+import type { DossierAttachment, ProjectInterviewAnswers } from "../../types";
 import { DEFAULT_INTERVIEW_ANSWERS } from "../../utils/anti-tabula-rasa";
+import { DossierAttachmentsEditor } from "./dossier-attachments-editor";
 
 type InterviewMode = "first-run" | "refine";
 
-type StepKind = "input" | "textarea" | "import";
+type StepKind = "input" | "textarea" | "import" | "attachments";
 
 interface InterviewStep {
   /** Only set for answer-bearing steps (input/textarea). */
@@ -102,10 +103,19 @@ const STEPS: InterviewStep[] = [
     rows: 12,
     kind: "import",
   },
+  {
+    numeral: "IX",
+    department: "Dept. of References",
+    question: "Anything else the room should know about, and why?",
+    hint: "Add as many documents or links as you like, each with a one-line note on why it matters. Skip if there's nothing yet.",
+    placeholder: "",
+    kind: "attachments",
+  },
 ];
 
 interface AntiTabulaRasaProps {
   initialAnswers?: ProjectInterviewAnswers | null;
+  initialAttachments?: DossierAttachment[];
   mode?: InterviewMode;
   /** Preferred submit path. Falls back to the legacy global event if omitted. */
   onSubmit$?: PropFunction<
@@ -113,6 +123,7 @@ interface AntiTabulaRasaProps {
       answers: ProjectInterviewAnswers,
       existingMaterial?: string,
       filename?: string,
+      attachments?: DossierAttachment[],
     ) => void
   >;
   onCancel$?: PropFunction<() => void>;
@@ -121,16 +132,26 @@ interface AntiTabulaRasaProps {
 export const AntiTabulaRasa = component$(
   ({
     initialAnswers,
+    initialAttachments,
     mode = "first-run",
     onSubmit$,
     onCancel$,
   }: AntiTabulaRasaProps) => {
-    const store = useStore({
+    const store = useStore<{
+      step: number;
+      answers: ProjectInterviewAnswers;
+      attachments: DossierAttachment[];
+      existingMaterial: string;
+      importedFilename: string;
+      submitting: boolean;
+      submitError: string;
+    }>({
       step: 0,
       answers: {
         ...DEFAULT_INTERVIEW_ANSWERS,
         ...initialAnswers,
       } as ProjectInterviewAnswers,
+      attachments: initialAttachments ?? [],
       existingMaterial: "",
       importedFilename: "",
       submitting: false,
@@ -156,6 +177,7 @@ export const AntiTabulaRasa = component$(
               store.answers,
               store.existingMaterial,
               store.importedFilename,
+              store.attachments,
             );
           } catch (err) {
             store.submitError =
@@ -171,6 +193,7 @@ export const AntiTabulaRasa = component$(
               answers: store.answers,
               existingMaterial: store.existingMaterial,
               filename: store.importedFilename,
+              attachments: store.attachments,
             },
           }),
         );
@@ -490,6 +513,14 @@ export const AntiTabulaRasa = component$(
                           )}
                         </div>
                       </div>
+                    )}
+                    {step.kind === "attachments" && (
+                      <DossierAttachmentsEditor
+                        attachments={store.attachments}
+                        onChange$={(next) => {
+                          store.attachments = next;
+                        }}
+                      />
                     )}
                   </div>
 

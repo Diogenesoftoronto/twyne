@@ -1,4 +1,8 @@
-import type { ProjectBrief, ProjectInterviewAnswers } from "../types";
+import type {
+  DossierAttachment,
+  ProjectBrief,
+  ProjectInterviewAnswers,
+} from "../types";
 import { markDirty as markSyncDirty } from "./convex-sync";
 import { BRIEF_PATH, writeFileAsJson } from "./lix";
 
@@ -19,10 +23,12 @@ export const DEFAULT_INTERVIEW_ANSWERS: ProjectInterviewAnswers = {
 export function createProjectBrief(
   answers: ProjectInterviewAnswers,
   previous?: ProjectBrief | null,
+  attachments?: DossierAttachment[],
 ): ProjectBrief {
   const now = Date.now();
   return {
     answers: normalizeInterviewAnswers(answers),
+    attachments: attachments ?? previous?.attachments ?? [],
     completedAt: previous?.completedAt ?? now,
     updatedAt: now,
   };
@@ -32,7 +38,19 @@ export function loadProjectBrief(): ProjectBrief | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = localStorage.getItem(BRIEF_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as ProjectBrief) : null;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<ProjectBrief> & {
+      answers?: ProjectInterviewAnswers;
+    };
+    if (!parsed.answers) return null;
+    return {
+      answers: normalizeInterviewAnswers(parsed.answers),
+      attachments: Array.isArray(parsed.attachments) ? parsed.attachments : [],
+      completedAt:
+        typeof parsed.completedAt === "number" ? parsed.completedAt : Date.now(),
+      updatedAt:
+        typeof parsed.updatedAt === "number" ? parsed.updatedAt : Date.now(),
+    };
   } catch {
     return null;
   }

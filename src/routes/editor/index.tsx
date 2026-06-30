@@ -124,8 +124,8 @@ function editorialDateline(now = new Date()): string {
  * Rubric, Marginalia, Apparatus) on the right. The Apparatus runs research
  * agents in the background, debounced on the draft.
  *
- * First-run onboarding lives at /onboarding; dossier refinement at
- * /refining. This route owns the workspace and migrates the legacy
+ * First-run onboarding lives at /dossier/create; dossier refinement at
+ * /dossier/refine. This route owns the workspace and migrates the legacy
  * single-draft key into Folio I on first load.
  */
 export default component$(() => {
@@ -162,7 +162,7 @@ export default component$(() => {
 
       // No dossier yet → the writer belongs in onboarding first.
       if (!brief && folios.length === 0) {
-        void nav("/onboarding/");
+        void nav("/dossier/create/");
         return;
       }
 
@@ -486,7 +486,7 @@ export default component$(() => {
               <ProjectBriefCard
                 brief={store.brief}
                 onStartInterview$={$(() => {
-                  void nav("/refining/");
+                  void nav("/dossier/refine/");
                 })}
               />
 
@@ -715,7 +715,7 @@ export default component$(() => {
                         store.activeFolioId = null;
                         store.editorSeed = "";
                         store.confirmNukeOpen = false;
-                        void nav("/onboarding/");
+                        void nav("/dossier/create/");
                       })}
                       class="btn-press flex-1 text-xs"
                     >
@@ -791,7 +791,7 @@ export default component$(() => {
               <div class="flex items-center gap-2">
                 <button
                   onClick$={$(() => {
-                    void nav("/refining/");
+                    void nav("/dossier/refine/");
                   })}
                   class="btn-paper hidden sm:inline-flex"
                   title="Refine the dossier"

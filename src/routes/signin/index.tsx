@@ -1,9 +1,26 @@
-import { component$ } from "@builder.io/qwik";
-import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { $, component$, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import { Link, type DocumentHead, useNavigate } from "@builder.io/qwik-city";
 import { AuthPanel } from "../../components/auth/auth-panel";
+import { useAuth } from "../../utils/auth-context";
+import { loadProjectBrief } from "../../utils/anti-tabula-rasa";
 import ImgGriffinMark from "~/media/assets/griffin-mark.svg?jsx";
 
+interface SignedInNextStepStore {
+  hasBrief: boolean;
+}
+
 export default component$(() => {
+  const auth = useAuth();
+  const nav = useNavigate();
+  const store = useStore<SignedInNextStepStore>({ hasBrief: false });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    const userId = track(() => auth.value.user?.id);
+    if (!userId) return;
+    store.hasBrief = loadProjectBrief() !== null;
+  });
+
   return (
     <main
       class="min-h-screen bg-[var(--color-paper-soft)] text-[var(--color-ink)]"
@@ -88,7 +105,49 @@ export default component$(() => {
           </div>
 
           <aside class="folio bg-[var(--color-paper-soft)]">
-            <AuthPanel />
+            {auth.value.user ? (
+              <div class="p-6 sm:p-8 text-center">
+                <p
+                  class="dept-label text-[var(--color-ink-light)]"
+                  style="font-family: var(--font-typewriter);"
+                >
+                  You're in
+                </p>
+                <h2
+                  class="mt-2 text-[1.3rem] text-[var(--color-ink)]"
+                  style="font-family: var(--font-display);"
+                >
+                  What's next?
+                </h2>
+                <p
+                  class="mt-2 text-[0.9rem] text-[var(--color-ink-light)]"
+                  style="font-family: var(--font-serif);"
+                >
+                  {store.hasBrief
+                    ? "Your dossier is already on file."
+                    : "Start a dossier so the room knows what you're writing."}
+                </p>
+                <div class="mt-5 flex flex-col gap-3">
+                  <button
+                    onClick$={$(() => void nav("/dossier/create/"))}
+                    class="btn-press w-full"
+                  >
+                    Start your dossier
+                  </button>
+                  {store.hasBrief && (
+                    <button
+                      onClick$={$(() => void nav("/editor/"))}
+                      class="text-[0.85rem] text-[var(--color-ink-light)] underline decoration-[var(--color-vermilion)] decoration-1 underline-offset-4 hover:text-[var(--color-ink)] focus-ring"
+                      style="font-family: var(--font-typewriter);"
+                    >
+                      Go to your desk →
+                    </button>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <AuthPanel />
+            )}
           </aside>
         </section>
       </div>

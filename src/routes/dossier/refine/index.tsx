@@ -1,29 +1,30 @@
 import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
 import { useNavigate, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { AntiTabulaRasa } from "../../components/onboarding/anti-tabula-rasa";
-import { ConversationalInterview } from "../../components/onboarding/conversational-interview";
+import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
+import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
 import type {
+  DossierAttachment,
   DossierCheckResult,
   DossierObservation,
   InterviewStyle,
   ProjectBrief,
   ProjectInterviewAnswers,
-} from "../../types";
+} from "../../../types";
 import {
   hasConfiguredAiProvider,
   runClientDossierCheck,
-} from "../../utils/ai-client";
+} from "../../../utils/ai-client";
 import {
   loadAiSettingsFromIdb,
   loadWriterSettingsFromIdb,
-} from "../../utils/idb";
-import { loadDraftHtml } from "../../utils/anti-tabula-rasa";
+} from "../../../utils/idb";
+import { loadDraftHtml } from "../../../utils/anti-tabula-rasa";
 import {
   createProjectBrief,
   loadProjectBrief,
   saveProjectBrief,
-} from "../../utils/anti-tabula-rasa";
+} from "../../../utils/anti-tabula-rasa";
 
 interface RefiningStore {
   brief: ProjectBrief | null;
@@ -66,16 +67,21 @@ export default component$(() => {
     store.hydrated = true;
   });
 
-  const onFormSubmit = $((answers: ProjectInterviewAnswers) => {
+  const onFormSubmit = $(
+    (answers: ProjectInterviewAnswers, _existing?: string, _filename?: string, attachments?: DossierAttachment[]) => {
     if (!store.brief) return;
-    const next = createProjectBrief(answers, store.brief);
+    const next = createProjectBrief(answers, store.brief, attachments);
     saveProjectBrief(next);
     void nav("/editor/");
-  });
+    },
+  );
 
-  const onConversationComplete = $((answers: ProjectInterviewAnswers) => {
+  const onConversationComplete = $(({ answers, attachments }: {
+    answers: ProjectInterviewAnswers;
+    attachments: DossierAttachment[];
+  }) => {
     if (!store.brief) return;
-    const next = createProjectBrief(answers, store.brief);
+    const next = createProjectBrief(answers, store.brief, attachments);
     saveProjectBrief(next);
     void nav("/editor/");
   });
@@ -169,7 +175,7 @@ export default component$(() => {
             The refinery needs a brief to refine. Start a fresh one.
           </p>
           <Link
-            href="/onboarding/"
+            href="/dossier/create/"
             class="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-vermilion)] text-white px-5 py-2.5 text-sm"
             style={{ fontFamily: "var(--font-display)" }}
           >
@@ -340,6 +346,7 @@ export default component$(() => {
         <AntiTabulaRasa
           mode="refine"
           initialAnswers={store.brief.answers}
+          initialAttachments={store.brief.attachments}
           onSubmit$={onFormSubmit}
           onCancel$={$(() => void nav("/editor/"))}
         />
@@ -347,6 +354,7 @@ export default component$(() => {
         <ConversationalInterview
           mode="refine"
           initialBrief={store.brief}
+          initialAttachments={store.brief.attachments}
           onComplete$={onConversationComplete}
           onCancel$={$(() => void nav("/editor/"))}
         />

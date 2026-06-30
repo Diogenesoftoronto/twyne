@@ -15,9 +15,14 @@ import {
   runClientInterviewTurn,
 } from "../../utils/ai-client";
 import { loadAiSettingsFromIdb } from "../../utils/idb";
-import type { ProjectBrief, ProjectInterviewAnswers } from "../../types";
+import type {
+  DossierAttachment,
+  ProjectBrief,
+  ProjectInterviewAnswers,
+} from "../../types";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
+import { DossierAttachmentsEditor } from "./dossier-attachments-editor";
 
 /**
  * The conversational interview. A chat-style replacement for the
@@ -65,7 +70,13 @@ const REFINE_OPENING_QUESTION =
 interface ConversationalInterviewProps {
   mode: "first-run" | "refine";
   initialBrief?: ProjectBrief;
-  onComplete$: PropFunction<(brief: ProjectInterviewAnswers) => void>;
+  initialAttachments?: DossierAttachment[];
+  onComplete$: PropFunction<
+    (payload: {
+      answers: ProjectInterviewAnswers;
+      attachments: DossierAttachment[];
+    }) => void
+  >;
   onCancel$?: PropFunction<() => void>;
   cancelLabel?: string;
 }
@@ -87,6 +98,7 @@ interface ComponentStore {
   editingField: keyof ProjectInterviewAnswers | null;
   draft: string;
   initialized: boolean;
+  attachments: DossierAttachment[];
 }
 
 function confidenceTone(c: InterviewConfidence | undefined): string {
@@ -125,6 +137,7 @@ export const ConversationalInterview = component$(
       editingField: null,
       draft: "",
       initialized: false,
+      attachments: props.initialAttachments ?? [],
     });
     const inputRef = useSignal<HTMLTextAreaElement>();
     const scrollerRef = useSignal<HTMLDivElement>();
@@ -270,7 +283,10 @@ export const ConversationalInterview = component$(
 
     const acceptSynthesis = $(() => {
       if (!store.synthesis) return;
-      void props.onComplete$(store.synthesis.brief);
+      void props.onComplete$({
+        answers: store.synthesis.brief,
+        attachments: store.attachments,
+      });
     });
 
     const applyEdit = $((field: keyof ProjectInterviewAnswers) => {
@@ -506,6 +522,21 @@ export const ConversationalInterview = component$(
                       );
                     })}
                   </dl>
+
+                  <div class="border-t border-[var(--color-paper-3)] pt-4">
+                    <p
+                      class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)] mb-2"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Reference material
+                    </p>
+                    <DossierAttachmentsEditor
+                      attachments={store.attachments}
+                      onChange$={(next) => {
+                        store.attachments = next;
+                      }}
+                    />
+                  </div>
 
                   <div class="flex items-center gap-2 pt-2 border-t border-[var(--color-paper-3)]">
                     <button
