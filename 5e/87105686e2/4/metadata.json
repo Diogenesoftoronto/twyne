@@ -1,0 +1,180 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "5e87105686e2",
+  "session_id": "5b5ecdb5-e278-4c74-ba19-03c5a7edcde4",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-30T20:10:57.917035246Z",
+  "branch": "main",
+  "checkpoints_count": 7,
+  "save_step_count": 7,
+  "files_touched": [
+    "convex/agents.ts",
+    "src/types/index.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5[1m]",
+  "turn_id": "78966b56c65d",
+  "token_usage": {
+    "input_tokens": 26518,
+    "cache_creation_tokens": 1622294,
+    "cache_read_tokens": 22965924,
+    "output_tokens": 59152,
+    "api_call_count": 140
+  },
+  "session_metrics": {
+    "turn_count": 7
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-30T20:10:57.878299188Z",
+    "agent_lines": 0,
+    "agent_removed": 1,
+    "human_added": 511,
+    "human_modified": 680,
+    "human_removed": 0,
+    "total_committed": 540,
+    "total_lines_changed": 1765,
+    "agent_percentage": 0.05665722379603399,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 5138,
+      "user_lines_removed": 298,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".env.example": 22,
+        ".gitignore": 10,
+        "bun.lock": 377,
+        "convex/agents.ts": 123,
+        "convex/arizeTracing.ts": 71,
+        "evals/apparatus.jsonl": 4,
+        "evals/dataset.jsonl": 7,
+        "evals/judge.ts": 218,
+        "evals/rubric.jsonl": 8,
+        "evals/run-apparatus.ts": 379,
+        "evals/run-experiment.ts": 170,
+        "evals/run-robustness.ts": 1435,
+        "evals/run-rubric.ts": 657,
+        "package.json": 14,
+        "skills-lock.json": 77,
+        "src/components/editor/twyne-editor.tsx": 233,
+        "src/components/personas/personas-panel.tsx": 65,
+        "src/routes/[handle]/[slug]/index.tsx": 58,
+        "src/routes/apparatus/index.tsx": 14,
+        "src/routes/blog/[slug]/index.tsx": 50,
+        "src/routes/settings/index.tsx": 255,
+        "src/types/index.ts": 18,
+        "src/utils/ai-client.ts": 128,
+        "src/utils/ai-orchestrator.test.ts": 5,
+        "src/utils/background-research.ts": 204,
+        "src/utils/convex-sync.test.ts": 142,
+        "src/utils/desktop-bridge.ts": 1,
+        "src/utils/idb-preferences.test.ts": 54,
+        "src/utils/idb.ts": 22,
+        "src/utils/llm-parsing.test.ts": 37,
+        "src/utils/llm-parsing.ts": 111,
+        "src/utils/published-metadata.ts": 118,
+        "stryker.config.json": 51
+      },
+      "user_removed_per_file": {
+        "bun.lock": 14,
+        "convex/agents.ts": 112,
+        "package.json": 1,
+        "src/components/editor/twyne-editor.tsx": 6,
+        "src/components/personas/personas-panel.tsx": 6,
+        "src/routes/[handle]/[slug]/index.tsx": 12,
+        "src/routes/apparatus/index.tsx": 4,
+        "src/routes/blog/[slug]/index.tsx": 11,
+        "src/routes/settings/index.tsx": 6,
+        "src/utils/ai-client.ts": 91,
+        "src/utils/ai-orchestrator.test.ts": 1,
+        "src/utils/background-research.ts": 12,
+        "src/utils/convex-sync.test.ts": 21,
+        "src/utils/desktop-bridge.ts": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5138,
+      "agent_lines_removed": 298
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5138,
+      "agent_lines_removed": 298
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5138,
+      "agent_lines_removed": 298
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5155,
+      "agent_lines_removed": 312
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5155,
+      "agent_lines_removed": 312
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 5155,
+      "agent_lines_removed": 312
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 1067,
+      "user_lines_removed": 568,
+      "agent_lines_added": 5155,
+      "agent_lines_removed": 312,
+      "user_added_per_file": {
+        "e2e/journey.e2e.ts": 1,
+        "public/robots.txt": 2,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 34,
+        "src/components/onboarding/conversational-interview.tsx": 6,
+        "src/components/onboarding/dossier-attachments-editor.tsx": 197,
+        "src/routes/auth/callback/index.tsx": 4,
+        "src/routes/dossier/create/index.tsx": 362,
+        "src/routes/dossier/refine/index.tsx": 367,
+        "src/routes/editor/index.tsx": 6,
+        "src/routes/index.tsx": 3,
+        "src/routes/landings/index.tsx": 1,
+        "src/routes/signin/index.tsx": 62,
+        "src/types/index.ts": 14,
+        "src/utils/anti-tabula-rasa.ts": 7,
+        "src/utils/byok-feature-coverage.test.ts": 1
+      },
+      "user_removed_per_file": {
+        "e2e/journey.e2e.ts": 1,
+        "public/robots.txt": 2,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 3,
+        "src/components/onboarding/conversational-interview.tsx": 1,
+        "src/routes/auth/callback/index.tsx": 4,
+        "src/routes/editor/index.tsx": 6,
+        "src/routes/index.tsx": 3,
+        "src/routes/landings/index.tsx": 1,
+        "src/routes/onboarding/index.tsx": 175,
+        "src/routes/refining/index.tsx": 367,
+        "src/routes/signin/index.tsx": 3,
+        "src/utils/anti-tabula-rasa.ts": 1,
+        "src/utils/byok-feature-coverage.test.ts": 1
+      }
+    }
+  ]
+}
