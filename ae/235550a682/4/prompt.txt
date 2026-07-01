@@ -1,0 +1,72 @@
+hi
+
+---
+
+currently the onboarding flow shows no write by that handle when i am unauthenticated and press the start your brief which should not happen instead it should begin the onboarding route but for local users. offering them the option to sign up or sign in but also continue to creating a brief. something like want to make an account or just check things out? with this flow then that sends them to the flow where we get the settings setup up for them and everything.
+
+---
+
+the landing page is just home (/ <- route) it might have a signed in user or not
+
+---
+
+I don't know whhat you are doing skip vet please you need to actually go and edit thhese files you have just been building but thhat isn't what needs to be done
+
+---
+
+okay one second why did you delete those onboarding routes
+what the actual fuck
+
+---
+
+restore thata shit dumbass
+
+---
+
+why would ever do this
+
+---
+
+yes continue
+
+---
+
+create a plan to resolve the issues i mentioned before please
+
+---
+
+begin
+
+---
+
+onboarding has some of the settings as an optional pathh but it should not just sen you to settings unless you click the buttton that needs to givve you  more detail the basic settings should only be the bring your own key settings  part which should only show up if you are not an authenticated usser that is local first  for other ussers no need to shhow bring your own key
+
+---
+
+okay i am confused why are you editing files in a really weird way
+
+---
+
+actually continue work on this -> 
+• One gap I see: / still auto-redirects any signed-in user with no brief to /dossier/create/, which means the home landing page doesn’t actually support “might have a signed-in user or not.” I’m going to remove that auto-
+  redirect and leave the CTA to branch by auth state.
+
+• Edited src/routes/index.tsx (+2 -3)
+    30      const loading = track(() => auth.value.loading);
+    31 -    const userId = track(() => auth.value.user?.id);
+    31
+       ⋮
+    36      store.checked = true;
+    38 -    if (brief || userId) {
+    39 -      window.location.replace(brief ? "/editor/" : "/dossier/create/");
+    37 +    if (brief) {
+    38 +      window.location.replace("/editor/");
+    39      }
+
+---
+
+if the user is signed does the page at / respect that and appear different to the user? because things like the sign in button should not appear instead things like the user should have a thing similar to the editor's office button in the editor, infact i think the exact same thing. Also the settings should add profile picture, handle claim and other options for the user to customize like description.
+
+---
+
+when i click the continue button on the signin page, that should automatically send the email otp. right now that does not happen. instead i am forced to click the resend key button. passkey should not be an option if that was not setup when signed up. though there should be an option to add a passkey. currently that button doesn't do anything
