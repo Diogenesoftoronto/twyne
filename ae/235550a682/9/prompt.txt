@@ -1,0 +1,522 @@
+hi
+
+---
+
+i want you to summarize the current work
+
+---
+
+diff those in detail
+
+---
+
+wait but if you are  signed in this should be a feature in tiny fish should use theh key that is supplied
+
+---
+
+continue
+
+---
+
+when the user signs in there is currently no direction as to what to do next. signing in should offer the option to head to the onboarding flow, users should also configure their settings here and everything during the onboarding. The current onboarding route should be moved to a different route called dossier-create as opposed to the dossier-refine and page that exists.
+
+---
+
+when the user signs in there is currently no direction as to what to do next. signing in should offer the option to head to the onboarding flow, users should also configure their settings here and everything during the onboarding. The current onboarding route should be moved to a different route called dossier-create as opposed to the dossier-refine and page that exists. if you have better suggestions for those route names that would be more canonical with qwik use those
+
+---
+
+<task-notification>
+<task-id>a2631d516f726e6f4</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/0860cce5-720f-4c0a-b42a-6e69302dae63/tasks/a2631d516f726e6f4.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore onboarding, auth, and dossier routes" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Now I have a complete picture. Here is the research report.
+
+## 1. Onboarding flow
+
+**Route:** `/home/diogenes/Projects/twyne/src/routes/onboarding/index.tsx` → URL `/onboarding/`
+
+What it renders (lines 41–164):
+- While writer settings are loading from IndexedDB, a "Loading the room…" placeholder.
+- Once hydrated, if `store.style === "conversational"` it renders `&lt;ConversationalInterview mode="first-run" ... /&gt;` (`src/components/onboarding/conversational-interview.tsx`); otherwise it renders `&lt;AntiTabulaRasa mode="first-run" initialAnswers={null} ... /&gt;` (`src/components/onboarding/anti-tabula-rasa.tsx`).
+- On completion (`completeOnboarding$`, lines 58–78) it builds a `ProjectBrief` via `createProjectBrief`, saves it (`saveProjectBrief`), seeds a starter/imported draft document if none exists, and sets `briefDone.value = true`.
+- If `briefDone` and the user is already authenticated (`auth.value.user`), it immediately redirects to `/editor/` (line 96–99).
+- If `briefDone` and **not** authenticated, it shows a "Keep your work across devices" panel embedding `&lt;AuthPanel /&gt;` (from `src/components/auth/auth-panel.tsx`), with a manual "Continue to the editor →" button that also goes to `/editor/`.
+- Cancel goes to `/`.
+
+**How users get there (all links/redirects to `/onboarding/`):**
+- `src/routes/index.tsx` (landing root) — lines ~38–44: `useVisibleTask$` checks auth + `loadProjectBrief()`; if a returning user has no brief it does `window.location.replace(brief ? "/editor/" : "/onboarding/")`; the in-page "Open a Dossier" CTA also calls `nav("/onboarding/")`.
+- `src/routes/landings/index.tsx:26` — `const startBrief = $(() =&gt; void nav("/onboarding/"));`
+- `src/routes/editor/index.tsx:165` and `:718` — `void nav("/onboarding/")` (e.g. when there's no brief / from a menu action).
+- `src/routes/refining/index.tsx:172` — `&lt;Link href="/onboarding/"&gt;Begin the dossier&lt;/Link&gt;` shown when there's no existing brief to refine.
+- `src/routes/auth/callback/index.tsx` — default/fallback `destination` is `/onboarding/` when the signed-in user has no dossier yet (see §3).
+
+## 2. "Dossier-refine" route
+
+There is no route literally named `dossier-refine`; the existing refine page is:
+
+**Route:** `/home/diogenes/Projects/twyne/src/routes/refining/index.tsx` → URL `/refining/`
+
+What it does (lines 47–356):
+- Loads the existing `ProjectBrief` (`loadProjectBrief()`) and the current draft HTML (`loadDraftHtml()`), plus writer's preferred interview style.
+- If there is **no** brief, shows a "No dossier on file." empty state with a `Link href="/onboarding/"` ("Begin the dossier") — i.e., refining redirects users back to onboarding when there's nothing to refine.
+- Otherwise renders either:
+  - `&lt;AntiTabulaRasa mode="refine" initialAnswers={store.brief.answers} ... /&gt;` (form mode), or
+  - `&lt;ConversationalInterview mode="refine" initialBrief={store.brief} ... /&gt;` (conversational mode),
+  toggled by buttons in a header bar (lines 196–222).
+- Adds a "sideways lift" feature: a "Read my draft" button (`runDossierCheck`, lines 83–113) that calls `runClientDossierCheck` (in `src/utils/ai-client.ts`) to cross-reference the draft against the dossier, surfacing `DossierObservation`s the user can "Apply" or "Dismiss" (lines 115–144), updating the saved brief in place.
+- On submit (form or conversational), rebuilds the brief via `createProjectBrief(answers, store.brief)`, saves it, and navigates to `/editor/`.
+- Linked from `src/routes/editor/index.tsx:489` and `:794` via `nav("/refining/")`.
+
+So today's naming convention is `/onboarding/` (create) vs `/refining/` (refine) — both single-word route folders, no "dossier" prefix in the route name itself (the word "dossier" is only used in copy/labels).
+
+## 3. Sign-in / auth completion flow
+
+**`src/components/auth/auth-panel.tsx`** itself contains **no post-sign-in navigation**. It only manages the two-step sign-in UI (email → passkey/OTP) and Bluesky/ATProto sign-in (`handleBlueskySignIn`, line 227, which calls `signInWithBluesky(handle)` from `src/utils/atproto.ts` and redirects to the Bluesky consent screen). Once `auth.value.user` becomes truthy, the component just swaps to a "signed in" header (lines 314–367, `SignedInHeader`) and, if `store.offerPasskey` is set (after OTP-based sign-up), shows a "register a passkey" prompt (lines 315–357) — there is no `nav()`/redirect call anywhere in this file. So when `AuthPanel` is embedded directly on `/signin/` or inside `/onboarding/`'s post-brief panel, the page itself doesn't move the user anywhere; the user simply now sees "On the masthead" in place of the form, with no explicit next-step CTA besides whatever the *hosting route* provides (e.g., onboarding's "Continue to the editor →" button, line 129–137).
+
+**`/signin/index.tsx`** (`src/routes/signin/index.tsx`) renders `&lt;AuthPanel /&gt;` with no completion handling of its own — after sign-in succeeds there, the user is left on the same `/signin/` page seeing the signed-in header, with no automatic redirect and no explicit "what's next" link besides the nav bar going to `/pricing/` or `/docs/`. This matches the user's concern: signing in from `/signin/` leaves the user stranded with no clear next step.
+
+**ATProto OAuth callback route — `src/routes/auth/callback/index.tsx`** (URL `/auth/callback`) is the one place that *does* have real post-auth redirect logic:
+```
+8   destination: "/editor/" | "/onboarding/";
+...
+22  useVisibleTask$(({ cleanup, track }) =&gt; {
+26    if (loading) return;
+28    if (!userId) { store.status = "error"; return; }
+33    const hasDossier = loadProjectBrief() !== null;
+34    const destination = hasDossier ? "/editor/" : "/onboarding/";
+35    store.status = "success";
+36    store.destination = destination;
+...
+41    const timeout = window.setTimeout(() =&gt; { void nav(destination); }, 1100);
+```
+It checks `loadProjectBrief()` (a **local IndexedDB/localStorage** check, not server-side) to decide whether to send the user to `/editor/` or `/onboarding/`, auto-navigating after a 1.1s delay (with a manual "Continue now" `Link` too). On failure (no user/session), it shows an error state with a `Link href="/signin/"`.
+
+Note: there is **no equivalent callback route for the better-auth / email-OTP / passkey flow** — those all resolve synchronously inside `AuthPanel` (no full-page redirect via a callback route), so OTP/passkey sign-ins on `/signin/` get no automatic redirect at all; only the ATProto/Bluesky OAuth path goes through `/auth/callback` and gets the editor-vs-onboarding redirect logic.
+
+## 4. Settings route — `/home/diogenes/Projects/twyne/src/routes/settings/index.tsx` (URL `/settings/`)
+
+Sections present (in render order), each a `&lt;section class="folio p-5"&gt;`:
+
+| Line | Section header | Contents |
+|---|---|---|
+| 691 | **Interview style** | Toggle between "Form" (8 fixed fields) and "Conversation" interview modes for the dossier interview; persists via `saveWriterSettingsToIdb({ interviewStyle })` (`setWriterStyle`, lines 284–294). This is the writer-settings/interview-style block the user wants folded into onboarding. |
+| 762 | **Bring Your Own Key** | Toggle for `advancedMode` (BYOK vs shared server). |
+| 817 | **AI Providers** (shown only if `advancedMode`) | Add/remove/test/configure AI provider credentials, default-model selection. |
+| 1229 | **Default Models** | Per-provider default model pickers. |
+| 1352 | **Per-Feature Models** | Per-`AiFeature` provider/model/temperature/maxTokens overrides (includes `"interview-turn"` and `"dossier-check"` as features — see `FEATURE_LABELS`/`FEATURE_DESCRIPTIONS`, lines 105–147). |
+| 1939 | **The Apparatus** | `ApparatusSettings`: default citation style (MLA/APA/Chicago), AI-enhance citations, flag missing sources, research provider (TinyFish API key/max results, or MCP endpoint/tool/bearer token) — persisted via `persistApparatusSettings`/`saveApparatusSettingsToIdb`. |
+| 2269 | **Advanced** | "Show provider tags" toggle, "Reset all AI settings" button, privacy note. |
+| 2356 | **Writer handle** (shown only for `auth.value.provider === "convex"` users) | Claim/change public handle (`/&lt;handle&gt;/&lt;slug&gt;` URLs), display name, bio (`profiles.claimHandle`, `profiles.updateProfile` Convex mutations). |
+| 2569 | **Danger zone** (border-vermilion) | Account deletion flow (`handleDeleteAccount`, lines 489–524) — types "DELETE" to confirm, calls `api.account.deleteAccount`, signs out, redirects to `/`. |
+
+The "Interview style" section (line 691–759) is the writer-settings/apparatus piece most directly relevant to folding into onboarding — it's currently a standalone toggle on `/settings/`, separate from the onboarding route itself, even though onboarding (`onboarding/index.tsx:52-56`) reads this same `interviewStyle` value via `loadWriterSettingsFromIdb()` to decide form vs conversational rendering.
+
+## 5. `src/routes/` directory tree
+
+```
+src/routes/
+├── apparatus/index.tsx
+├── auth/
+│   └── callback/index.tsx
+├── blog/
+│   ├── index.tsx
+│   └── [slug]/index.tsx
+├── docs/index.tsx
+├── download/
+│   └── [platform]/index.ts
+├── downloads/index.tsx
+├── editor/index.tsx
+├── faq/index.tsx
+├── [handle]/
+│   ├── index.tsx
+│   └── [slug]/index.tsx
+├── index.tsx
+├── landings/index.tsx
+├── library/index.tsx
+├── oauth-client-metadata.json/index.ts
+├── onboarding/index.tsx
+├── personas/index.tsx
+├── pricing/index.tsx
+├── privacy/index.tsx
+├── refining/index.tsx
+├── rubric/index.tsx
+├── settings/index.tsx
+├── signin/index.tsx
+└── terms/index.tsx
+```
+
+**Naming convention observed:**
+- All static route folders are single lower-case words (or kebab-case if multi-word, though none currently are: `onboarding`, `refining`, `settings`, `signin`, `library`, `downloads`, `pricing`, `personas`, `rubric`, `apparatus`, `faq`, `docs`, `terms`, `privacy`).
+- Most are present-participle/gerund or noun forms naming the *activity*, not the object: `onboarding` (verb-ish, "the onboarding process"), `refining` (gerund, "the refining process") rather than e.g. `dossier` or `dossier-refine`.
+- Dynamic segments use `[param]` square-bracket folders (`[slug]`, `[platform]`, `[handle]`, and nested `[handle]/[slug]`).
+- Nested static segments use plain subfolders (`auth/callback`, `blog/[slug]`, `download/[platform]`).
+- `index.tsx` (Qwik component route) vs `index.ts` (endpoint-only route, e.g. `download/[platform]/index.ts`, `oauth-client-metadata.json/index.ts`).
+
+Given this, the existing pattern pairs a bare gerund for "create" (`onboarding`) against a bare gerund for "modify" (`refining`) rather than a `dossier-...` prefix. A canonical name for "create a new dossier" consistent with current conventions would most likely just continue to be `onboarding` (already in use) or, if renaming/clarifying is desired, something like `routes/dossier/new/index.tsx` (nested static segment, mirroring `auth/callback`) versus `routes/dossier/refine/index.tsx` for refining — or, staying flattest like the current `onboarding`/`refining` pair, simply `routes/dossier-new/` vs `routes/dossier-refine/` (kebab-case, since neither is currently used but kebab-case would be the multi-word fallback implied by the rest of the file/route naming, e.g. `oauth-client-metadata.json`).</result>
+<usage><subagent_tokens>102324</subagent_tokens><tool_uses>16</tool_uses><duration_ms>78702</duration_ms></usage>
+</task-notification>
+
+---
+
+and I also want to make sure that the dossier is context that is being used in the agent responses as context.
+
+---
+
+<task-notification>
+<task-id>aa30f5126d8d38dff</task-id>
+<tool-use-id>toolu_01VAXMybt7xh7zhcUZAzLbsn</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/0860cce5-720f-4c0a-b42a-6e69302dae63/tasks/aa30f5126d8d38dff.output</output-file>
+<status>completed</status>
+<summary>Agent "Deep-dive onboarding components and auth-panel" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>Now I have everything needed. Here is the full report.
+
+---
+
+## A) `conversational-interview.tsx` and `anti-tabula-rasa.tsx`
+
+**File:** `/home/diogenes/Projects/twyne/src/components/onboarding/conversational-interview.tsx`
+
+Props interface (lines 65–71):
+```ts
+interface ConversationalInterviewProps {
+  mode: "first-run" | "refine";
+  initialBrief?: ProjectBrief;
+  onComplete$: PropFunction&lt;(brief: ProjectInterviewAnswers) =&gt; void&gt;;
+  onCancel$?: PropFunction&lt;() =&gt; void&gt;;
+  cancelLabel?: string;
+}
+```
+- No `initialAnswers` prop here — only `initialBrief?: ProjectBrief` (whole brief, not raw answers).
+- Internal `ComponentStore` (lines 80–90): `messages`, `loading`, `error`, `synthesis: Synthesis | null`, `liveDraft: InterviewDossierDraft | null`, `editingField`, `draft`, `initialized`.
+- Structure: chat thread driven by `runTurn$` (line 167) which calls `loadAiSettingsFromIdb()` (line 176) then either `runClientInterviewTurn` (BYOK path, line 181) or a Convex action `api.agents.runInterviewTurn` (server fallback, line 198–205). On `result.kind === "question"` it appends a chat message; on synthesis it sets `store.synthesis`. `onComplete$` fires only when the writer clicks "Take it to the desk" (`acceptSynthesis`, line 271–274), passing `store.synthesis.brief` (a `ProjectInterviewAnswers`).
+- No existing inline "settings" step. The only settings touchpoint is reading AI settings via `loadAiSettingsFromIdb` at the top of `runTurn` to decide BYOK vs server — this is a natural point to also check/prompt for AI provider configuration before letting the first turn run, since `hasConfiguredAiProvider(settings)` is already computed at line 178.
+
+**File:** `/home/diogenes/Projects/twyne/src/components/onboarding/anti-tabula-rasa.tsx`
+
+Props interface (lines 107–119):
+```ts
+interface AntiTabulaRasaProps {
+  initialAnswers?: ProjectInterviewAnswers | null;
+  mode?: InterviewMode; // "first-run" | "refine", default "first-run"
+  onSubmit$?: PropFunction&lt;
+    (
+      answers: ProjectInterviewAnswers,
+      existingMaterial?: string,
+      filename?: string,
+    ) =&gt; void
+  &gt;;
+  onCancel$?: PropFunction&lt;() =&gt; void&gt;;
+}
+```
+- Internal structure: a fixed array `STEPS: InterviewStep[]` (lines 23–105) — 8 steps (`workingTitle`, `format`, `audience`, `goal`, `tone`, `constraints`, `successSignal`, plus a final `kind: "import"` step with no `field` for pasting/uploading prior material).
+- `store.answers` seeded from `DEFAULT_INTERVIEW_ANSWERS` merged with `initialAnswers` (lines 128–138, imported from `../../utils/anti-tabula-rasa`).
+- `goNext$` (line 144) advances `store.step`; on the last step it calls `onSubmit$(store.answers, store.existingMaterial, store.importedFilename)` if provided, else falls back to a legacy `window.dispatchEvent(new CustomEvent("twyne:submit-interview", ...))` (lines 153–177).
+- The `import` step (`STEPS[7]`, kind `"import"`) is the only non-answer step today — a textarea plus a hidden `&lt;input type="file"&gt;` (lines 423–493) for `.txt/.md/.html`. **This is the natural slot pattern to copy for a new "configure your AI provider / interview style" step**: add a new `StepKind` (e.g. `"settings"`) and a `InterviewStep` entry, since the component already supports non-field steps that don't write into `store.answers`.
+- No settings (interview style, BYOK provider, apparatus) are configured inside either component today — both are pure dossier-content collectors.
+
+`ProjectInterviewAnswers` (from `/home/diogenes/Projects/twyne/src/types/index.ts:224-232`):
+```ts
+export interface ProjectInterviewAnswers {
+  workingTitle: string;
+  format: string;
+  audience: string;
+  goal: string;
+  tone: string;
+  constraints: string;
+  successSignal: string;
+}
+```
+`ProjectBrief` (`src/types/index.ts:234-238`):
+```ts
+export interface ProjectBrief {
+  answers: ProjectInterviewAnswers;
+  completedAt: number;
+  updatedAt: number;
+}
+```
+
+---
+
+## B) `auth-panel.tsx` and `signin/index.tsx`
+
+**File:** `/home/diogenes/Projects/twyne/src/components/auth/auth-panel.tsx` (full file read, 850 lines).
+
+- `AuthPanel` takes **no props at all** (`component$(() =&gt; {...})`, line 36) — no `onSuccess`/`onSignedIn` callback, and it does not emit any custom event on successful sign-in (unlike `AntiTabulaRasa`'s legacy `twyne:submit-interview` event). It is purely self-contained: it reads `useAuth()` and renders based on `auth.value`.
+- `auth.value.user` becomes truthy via the `AuthContext`/`AuthProvider` in `/home/diogenes/Projects/twyne/src/utils/auth-context.tsx`. `AuthProvider` (lines 41–80+) runs a `useVisibleTask$` that: (1) tries ATProto session restore via `initSession()` from `./atproto` — if present, sets `authState.value = { user: {...}, loading: false, provider: "atproto" }` (lines 56–66); else (2) falls back to `authClient.useSession` (better-auth) and syncs from that atom (`syncFromAtom`, starting line 80). `AuthPanel`'s own internal OTP/passkey flows just call `authClient.signIn...`/`emailOtp...`; the actual `auth.value.user` flip happens reactively once the auth-client session settles (the `useVisibleTask$` in `AuthPanel` at lines 296–306 watches `auth.value.user` to trigger the post-OTP "Add a passkey?" offer, confirming `auth.value` is the single source of truth observed externally).
+- Because there is no callback prop, any caller that wants to react to "just signed in" must do so the same way `auth/callback/index.tsx` and `routes/onboarding/index.tsx` already do: wrap `&lt;AuthPanel /&gt;` in a parent that itself calls `useAuth()` and runs a `useVisibleTask$({ track })` on `auth.value.user`/`auth.value.loading` (see `auth/callback/index.tsx` lines 22–46, and `onboarding/index.tsx` lines 94–99 which checks `auth.value.user` after `briefDone.value` flips). This is the pattern to replicate for "post-sign-in next step" UI.
+
+**File:** `/home/diogenes/Projects/twyne/src/routes/signin/index.tsx` (98 lines, full file read).
+- It does **not** read or react to auth state at all. It's a static layout (`component$`) that renders header/hero copy and `&lt;AuthPanel /&gt;` inside an `&lt;aside&gt;` (line 91). No `useAuth()` import, no `useVisibleTask$`, no redirect-on-success logic. Whatever "offer next step after sign-in" behavior is wanted will need to be added to this route (or into `AuthPanel` itself via a new prop) since today sign-in success on `/signin/` produces no navigation or follow-up UI — the writer is just left looking at the signed-in `AuthPanel` state (`SignedInHeader`, lines 825–849 of auth-panel.tsx).
+
+---
+
+## C) `src/utils/idb.ts` exported load*/save* functions relevant to settings
+
+All in `/home/diogenes/Projects/twyne/src/utils/idb.ts`:
+
+```ts
+// Writer settings (interview style) — meta store, key via WRITER_SETTINGS_META_KEY, mirrored to localStorage
+export async function loadWriterSettingsFromIdb(): Promise&lt;WriterSettings&gt;      // line 404
+export async function saveWriterSettingsToIdb(settings: WriterSettings): Promise&lt;void&gt;  // line 428
+
+// Apparatus settings (citation style, research provider, BYOK research keys)
+export async function loadApparatusSettingsFromIdb(): Promise&lt;ApparatusSettings&gt;  // line 452
+export async function saveApparatusSettingsToIdb(settings: ApparatusSettings): Promise&lt;void&gt;  // line 476
+
+// AI / BYOK provider settings — separate "ai-settings" IDB store, also mirrored to localStorage
+export async function loadAiSettingsFromIdb(): Promise&lt;AiSettings | null&gt;  // line 615
+export async function saveAiSettingsToIdb(settings: AiSettings): Promise&lt;void&gt;  // line 638
+
+// Generic meta key/value (usable for anything else, e.g. a new attachments/onboarding-state record)
+export async function loadMetaFromIdb&lt;T = unknown&gt;(key: string): Promise&lt;T | null&gt;  // line 577
+export async function saveMetaToIdb(key: string, value: unknown): Promise&lt;void&gt;  // line 595
+```
+
+Relevant types (`src/types/index.ts`):
+```ts
+// line 419-422
+export interface WriterSettings {
+  interviewStyle: "form" | "conversational";
+}
+export const DEFAULT_WRITER_SETTINGS: WriterSettings = { interviewStyle: "form" };
+
+// line 435-457
+export interface ApparatusSettings {
+  defaultCitationStyle: ApparatusCitationStyle;
+  aiEnhanceCitations: boolean;
+  flagMissingSources: boolean;
+  researchProvider: ApparatusResearchProvider; // "hosted" | "tinyfish" | "model-web-search" | "web-mcp"
+  tinyFishApiKey: string;
+  tinyFishMaxResults: number;
+  mcpEndpointUrl: string;
+  mcpToolName: string;
+  mcpBearerToken: string;
+}
+
+// line 470-476
+export interface AiSettings {
+  advancedMode: boolean;
+  providers: AiProviderConfig[];
+  defaultProviderId: string | null;
+  perFeature: Partial&lt;Record&lt;AiFeature, AiFeatureOverride&gt;&gt;;
+  showProviderTags: boolean;
+}
+```
+`loadWriterSettingsFromIdb`/`loadApparatusSettingsFromIdb`/`loadAiSettingsFromIdb` are exactly the calls needed to read/write interview style and BYOK/apparatus provider config inline from the new dossier-create route — `routes/onboarding/index.tsx` already calls `loadWriterSettingsFromIdb()` at line 53, and `conversational-interview.tsx` already calls `loadAiSettingsFromIdb()` at line 176, so both are already in scope/imported in the code that's moving.
+
+---
+
+## D) `loadProjectBrief` — definition and call sites
+
+**Definition:** `/home/diogenes/Projects/twyne/src/utils/anti-tabula-rasa.ts:31-39`
+```ts
+export function loadProjectBrief(): ProjectBrief | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(BRIEF_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as ProjectBrief) : null;
+  } catch {
+    return null;
+  }
+}
+```
+Synchronous, reads `localStorage["twyne-project-brief"]` (`BRIEF_STORAGE_KEY`, line 5). Companion: `saveProjectBrief(brief: ProjectBrief): void` (lines 41–51) writes to localStorage and also persists to the Lix file store (`writeFileAsJson(BRIEF_PATH, brief)`) then calls `markSyncDirty()`.
+
+Call sites (`grep -rln loadProjectBrief`):
+- `src/routes/refining/index.tsx:24,62` — `store.brief = loadProjectBrief();` inside `useVisibleTask$`.
+- `src/routes/index.tsx:6,35` — `const brief = loadProjectBrief(); store.hasBrief = brief !== null;` then redirects based on it.
+- `src/routes/editor/index.tsx` (imports it, used at line 159) — `const brief = loadProjectBrief();` to decide whether to redirect to `/onboarding/`.
+- `src/routes/auth/callback/index.tsx:3,33` — `const hasDossier = loadProjectBrief() !== null;` decides `/editor/` vs `/onboarding/`.
+- `src/utils/anti-tabula-rasa.ts` — definition itself, also used internally by `summarizeBrief` (line 124-127).
+
+---
+
+## E) Every `/onboarding` and `/refining` string occurrence (exact call sites)
+
+```
+src/routes/landings/index.tsx:26:  const startBrief = $(() =&gt; void nav("/onboarding/"));
+
+src/routes/editor/index.tsx:127: * First-run onboarding lives at /onboarding; dossier refinement at
+src/routes/editor/index.tsx:128: * /refining. This route owns the workspace and migrates the legacy
+src/routes/editor/index.tsx:165:        void nav("/onboarding/");
+src/routes/editor/index.tsx:489:                  void nav("/refining/");
+src/routes/editor/index.tsx:718:                        void nav("/onboarding/");
+src/routes/editor/index.tsx:794:                    void nav("/refining/");
+
+src/routes/refining/index.tsx:4:import { AntiTabulaRasa } from "../../components/onboarding/anti-tabula-rasa";
+src/routes/refining/index.tsx:5:import { ConversationalInterview } from "../../components/onboarding/conversational-interview";
+src/routes/refining/index.tsx:172:            href="/onboarding/"   // &lt;Link&gt; to onboarding when no brief exists in refine
+
+src/routes/index.tsx:18: * unfold the page and "Open a Dossier" sends them to /onboarding.
+src/routes/index.tsx:39:      window.location.replace(brief ? "/editor/" : "/onboarding/");
+src/routes/index.tsx:44:    void nav("/onboarding/");
+
+src/routes/onboarding/index.tsx:10:import { AntiTabulaRasa } from "../../components/onboarding/anti-tabula-rasa";
+src/routes/onboarding/index.tsx:11:import { ConversationalInterview } from "../../components/onboarding/conversational-interview";
+  (note: the component directory itself is named "onboarding" but is not being moved per the user's plan — only the routes move)
+
+src/routes/auth/callback/index.tsx:8:  destination: "/editor/" | "/onboarding/";
+src/routes/auth/callback/index.tsx:17:    destination: "/onboarding/",
+src/routes/auth/callback/index.tsx:34:    const destination = hasDossier ? "/editor/" : "/onboarding/";
+
+src/utils/byok-feature-coverage.test.ts:5:    path: "src/components/onboarding/conversational-interview.tsx",  // component path, not a route — unaffected by route move
+src/utils/byok-feature-coverage.test.ts:30:    path: "src/routes/refining/index.tsx",  // route-coverage test — needs updating to new path
+
+e2e/journey.e2e.ts:31:    await expect(page).toHaveURL(/\/onboarding\//);  // Playwright assertion on URL
+
+public/robots.txt:17:Disallow: /onboarding
+public/robots.txt:20:Disallow: /refining
+```
+
+Summary of route-string call sites that need updating when the routes move to `/dossier/create/` and `/dossier/refine/`:
+1. `src/routes/landings/index.tsx:26`
+2. `src/routes/editor/index.tsx:127-128` (comment), `165`, `489`, `718`, `794`
+3. `src/routes/refining/index.tsx:172` (the `&lt;Link href="/onboarding/"&gt;`) — this whole file is itself being moved/renamed
+4. `src/routes/index.tsx:18` (comment), `39`, `44`
+5. `src/routes/onboarding/index.tsx` — file being moved/renamed itself (component imports at lines 10–11 reference the still-unmoved `src/components/onboarding/*` directory — fine to leave as-is unless that directory is also renamed)
+6. `src/routes/auth/callback/index.tsx:8`, `17`, `34`
+7. `src/utils/byok-feature-coverage.test.ts:30` (path string used to locate/read the file — must be updated to `src/routes/dossier/refine/index.tsx`)
+8. `e2e/journey.e2e.ts:31` (URL regex assertion)
+9. `public/robots.txt:17`, `20` (Disallow rules)
+
+No hits in any sitemap.xml, vercel/server config, or other JSON/markdown files outside what's listed above.
+
+---
+
+## F) Multi-attachment / link-with-note support for dossier creation
+
+**How the starter/imported draft is seeded today** — `src/routes/onboarding/index.tsx`, function `completeOnboarding$` (lines 58–78):
+```ts
+const completeOnboarding$ = $(
+  (answers: ProjectInterviewAnswers, existingMaterial?: string, filename?: string) =&gt; {
+    const brief = createProjectBrief(answers, null);
+    saveProjectBrief(brief);
+
+    if (!loadDraftHtml().trim()) {
+      const material = existingMaterial?.trim();
+      saveDraftHtml(
+        material
+          ? buildImportedMaterialDocument(answers, material, filename)
+          : buildStarterDocument(answers),
+      );
+    }
+    briefDone.value = true;
+  },
+);
+```
+- `existingMaterial`/`filename` come from `AntiTabulaRasa`'s single `kind: "import"` step (the last `STEPS` entry, `anti-tabula-rasa.tsx` lines 95–104, 423–493) — one big textarea plus one hidden `&lt;input type="file" accept=".txt,.md,.markdown,.html,.htm,..."&gt;` whose `onChange$` (`handleFile`, lines 182–190) reads `file.text()` into `store.existingMaterial`. **It is a single document, mutually exclusive with manual paste (uploading replaces the textarea content), no links, no per-item notes, no list of multiple items.**
+- `buildImportedMaterialDocument(answers, raw, filename)` (`src/utils/anti-tabula-rasa.ts:99-122`) just stitches the raw text into HTML paragraphs and writes it via `saveDraftHtml` directly into the single draft document (`DRAFT_STORAGE_KEY = "twyne-document"`, `localStorage`). There is **no persisted record of "what was imported"** beyond it being baked into the draft prose — no `ProjectBrief` field, no separate attachments array.
+
+**`ProjectBrief`/`ProjectInterviewAnswers`** (`src/types/index.ts:224-238`, shown in full in section A) — confirmed: **no field for source documents, references, links, or attachments**. `ProjectBrief` only has `answers`, `completedAt`, `updatedAt`.
+
+**Bibliography / Apparatus system** — `/home/diogenes/Projects/twyne/src/utils/bibliography.ts`:
+```ts
+// lines 16-48
+export interface BibEntry {
+  id: string;
+  folioId: string;
+  title: string;
+  author?: string;
+  publisher?: string;
+  date?: string;
+  year?: string;
+  doi?: string;
+  url: string;
+  accessedAt: number;
+  note?: string;            // "Writer's working note — never formatted into the citation."
+  citationKey?: string;
+  style?: CitationStyle;
+  snippet?: string;
+  why?: string;              // "Why this source is relevant to the draft."
+  pageHint?: string;
+  provenance?: BibProvenance; // "writer" | "background"
+  backgroundQuery?: string;
+  accepted?: boolean;
+  createdAt?: number;
+}
+export async function loadBibliography(): Promise&lt;BibEntry[]&gt;   // line 50
+export async function saveBibliography(bib: BibEntry[]): Promise&lt;void&gt;  // line 60
+```
+- `BibEntry` already has both `url` and `why?: string` — exactly the "link + a one-liner of why it matters" shape requested. It also has `note` (separate free-text working note) and `snippet` for pasted/quoted content. This strongly matches what's being asked for in section F.
+- **Persistence is different from settings**: `loadBibliography`/`saveBibliography` are *not* in `src/utils/idb.ts` (no `bibliography` hits there). They read/write `/bibliography.json` inside the **Lix versioned file store** (`readFileAsJson`/`writeFileAsJson` from `./lix`, `bibliography.ts:8`), keyed by `folioId`, scoped per-folio — i.e., it lives alongside the active draft/folio, not in a flat IDB "meta" record. This means bibliography entries are currently **per-folio**, while `ProjectBrief` is a single global localStorage record — a structural mismatch to consider if reusing `BibEntry` for dossier-time attachments (there may be no folio yet at dossier-create time, since folios are typically created during/after onboarding in `editor/index.tsx`).
+- Confirmed (section G investigation): bibliography data is **never read by any agent/prompt code** — `grep` of `convex/agents.ts` and `convex/agentPrompts.ts` for `bibliography|BibEntry|Source` returns no real usages (only an unrelated string `"the bibliography is thin"` at `convex/agents.ts:1254`, part of rubric rationale text, not an actual data read). It is purely client-side Apparatus-panel/Citations-panel UI today (`src/routes/apparatus/index.tsx`, `src/components/citations/citations-panel.tsx`, `src/utils/background-research.ts`).
+- `convex/research.ts:22` also defines its own `Source` interface (for the research-provider results, separate from `BibEntry`) — worth checking its exact shape if reusing rather than `BibEntry`, but `BibEntry` is the one actually persisted client-side and is the better fit to extend/reuse.
+
+**Existing file-upload UI pattern** — three hits for `type="file"`/`FileReader` in the whole `src/` tree:
+- `src/components/onboarding/anti-tabula-rasa.tsx` (the import step described above, lines 449–454 — hidden `&lt;input type="file" accept=".txt,.md,.markdown,.html,.htm,..."&gt;` + `handleFile` reading `file.text()`).
+- `src/components/folio/folio-menu.tsx` — also has a file input (likely for folio import/export — not inspected in detail, but confirms the codebase pattern of hidden `&lt;input type="file"&gt;` + `onChange$` reading `.text()`).
+- `src/components/editor/twyne-editor.tsx` — also has a `type="file"` input (likely drag/drop or paste-import into the editor).
+
+All three use the same idiom: hidden `&lt;input type="file"&gt;` styled as a button via a `&lt;label&gt;` wrapper, `onChange$` handler reads `input.files?.[0]`, calls `file.text()`, and resets `input.value = ""`. **This is the pattern to reuse for a new "attach a document" control** — no `FileReader` API is used anywhere (they use the simpler `File.text()` promise method), and there's no drag-and-drop zone pattern currently present.
+
+**No `seedStarterDraft`/`importedDraft`-named functions exist.** The relevant functions are `buildStarterDocument` and `buildImportedMaterialDocument` (`src/utils/anti-tabula-rasa.ts:75-97` and `99-122`, shown above) — both pure string-builders that produce the seed HTML; neither stores attachment metadata, they only ever bake content into one draft HTML blob.
+
+**Implication for the new multi-attachment feature**: there is no existing multi-item attachment data model anywhere in the app. The closest reusable shape is `BibEntry` (has `url`, `why`, `note`, `provenance`), but it's currently scoped to per-folio Lix storage rather than the dossier/brief. Building the new feature will likely require either (a) extending `BibEntry`/the bibliography file with a new `provenance: "dossier"` value and writing entries before a folio exists (needs a design decision on what `folioId` to use, or relaxing that requirement), or (b) introducing a new `dossierAttachments` array on `ProjectBrief` itself, mirroring `BibEntry`'s `{ kind: "document"|"link", title, url?, text?, why }` shape but stored alongside `answers`/`completedAt`/`updatedAt`.
+
+---
+
+## G) Wiring the dossier (and new attachments) into agent prompts
+
+**How `ProjectBrief` flows into prompts today** — `/home/diogenes/Projects/twyne/convex/agentPrompts.ts`:
+
+- `AgentRequest` interface (lines 42–59):
+```ts
+export interface AgentRequest {
+  persona: AgentPersona;
+  brief: ProjectBrief | null;
+  draftText: string;
+  anchor?: string;
+  priorMessages?: Array&lt;{ author: "user" | "persona"; text: string }&gt;;
+  userMessage?: string;
+  instruction?: "feedback" | "elaborate" | "riff" | "rewrite-suggestion" | "analyze";
+}
+```
+No attachments/sources field exists today.
+
+- `buildUserPrompt(req: AgentRequest)` (lines 141–199) is the main per-persona feedback prompt builder. It reads `req.brief` and serializes it verbatim into a `PROJECT BRIEF (verbatim, do not invent new facts)` block (lines 142–154):
+```ts
+const brief = req.brief;
+const briefBlock = brief
+  ? `PROJECT BRIEF (verbatim, do not invent new facts)
+- Title: ${brief.answers.workingTitle}
+- Format: ${brief.answers.format}
+- Audience: ${brief.answers.audience}
+- Goal: ${brief.answers.goal}
+- Tone: ${brief.answers.tone}
+- Constraints: ${brief.answers.constraints}
+- Success signal: ${brief.answers.successSignal}\n\n`
+  : `PROJECT BRIEF: none filed — the writer is working without a dossier...`;
+```
+Only `answers` fields are serialized — never anything from bibliography/sources. This is the function to extend with a new "REFERENCE MATERIAL" or "ATTACHMENTS" block.
+
+- `generateLocalFeedback(req: AgentRequest)` (line 220) — the deterministic local fallback — also reads `req.brief?.answers` (line 221) the same way, no bibliography.
+
+- `buildSynthesisPrompt(memos, brief: ProjectBrief | null)` (lines 286–297) — the room-synthesis prompt — serializes a smaller brief subset (`workingTitle`, `audience`, `goal`, `successSignal`, lines 290–291). Same pattern, same gap.
+
+- `buildRubricReviewPrompt(input: {... brief: ProjectBrief | null; draftText: string })` (lines 307–329) — the rubric narrative-review prompt — serializes `audience`, `goal`, `successSignal` only (lines 317–318). Same pattern, same gap.
+
+**Bibliography/Source data is never passed to any agent call** — confirmed by grep across `convex/agents.ts` and `convex/agentPrompts.ts` for `bibliography|BibEntry|Source`: zero real data-flow hits (only an unrelated literal string mentioning "the bibliography is thin" in rubric rationale copy, `convex/agents.ts:1254`). It is purely a client-side Apparatus-panel/Citations-panel feature with no connection to persona/room/rubric prompts today.
+
+**`AgentRequest` call sites that build/pass it** — confirmed both client panels construct `AgentRequest`-shaped payloads with `brief: brief ?? null` and `draftText`, but no attachments:
+- `src/components/personas/personas-panel.tsx` — `PersonasPanelProps { brief: ProjectBrief | null }` (line 117); builds request objects with `brief: brief ?? null` at lines 500, 545, 667, 702, 862, 915, 1091, 1127.
+- `src/components/rubric/rubric-panel.tsx` — similarly typed with `brief: ProjectBrief | null` (lines 34, 60), constructs requests with `brief: brief ?? null` at lines 115, 149, 222, 233, and standalone prompt-builder calls at 629, 683 (matching `buildRubricReviewPrompt`/synthesis signatures above).
+- `src/utils/ai-client.ts`, `runClientAgent(feature: AiFeature, req: AgentRequest, settings: AiSettings)` (line 632) — the BYOK client path. It calls `buildSystemPrompt(req.persona)` and `buildUserPrompt(req)` (lines 648–649) directly from `agentPrompts.ts`, then `generateTrackedText(...)`. This is the single client-side chokepoint through which any new `req.attachments` field would need to flow to reach `buildUserPrompt`.
+- `convex/agents.ts` — server-side action handlers construct `AgentRequest` objects at lines 586, 826, 880 (each `const req: AgentRequest = {...}`), and `buildUserPrompt`/`generateLocalFeedback` are called from inside the function starting at line 162 (`req: AgentRequest` param) and line 1199 (`req: AgentRequest` param, likely the rubric/judge path).
+
+**To thread a new "attachments" field through to actual prompt context**, the chain to modify (in order) is:
+1. `src/types/index.ts` — extend `ProjectBrief` (or add a sibling `DossierAttachment[]`) with the new attachment shape (mirroring `BibEntry`'s `{url, why, note}` idea per section F).
+2. `convex/agentPrompts.ts` — `AgentRequest` interface (line 42) needs a new optional field (e.g. `attachments?: DossierAttachment[]`), and `buildUserPrompt` (line 141), `buildSynthesisPrompt` (line 286), `buildRubricReviewPrompt` (line 307), and `generateLocalFeedback` (line 220) all need a new serialization block analogous to `briefBlock`.
+3. `src/utils/ai-client.ts` `runClientAgent` (line 632) — already forwards the whole `req` into `buildUserPrompt(req)`, so once `AgentRequest` carries attachments no client-path change is needed beyond callers populating the field.
+4. `src/components/personas/personas-panel.tsx` and `src/components/rubric/rubric-panel.tsx` — every request-construction site listed above (8 in personas-panel, ~6 in rubric-panel) needs `attachments: dossierAttachments ?? []` added alongside the existing `brief: brief ?? null`, and both panels' prop interfaces (`PersonasPanelProps`/equivalent in rubric-panel) need a new `attachments` prop threaded down from wherever the parent (`editor/index.tsx`) loads the brief.
+5. `convex/agents.ts` — the three `const req: AgentRequest = {...}` construction sites (586, 826, 880) need the new field passed through from the action's `args`, plus the action's Convex validator (`v.object({...})`) needs the new arg added so the client call actually carries it over the wire.</result>
+<usage><subagent_tokens>127049</subagent_tokens><tool_uses>46</tool_uses><duration_ms>175756</duration_ms></usage>
+</task-notification>
+
+---
+
+summarize what needs to be done next and send it to crush
