@@ -3,7 +3,7 @@
   "checkpoint_id": "ae235550a682",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 36,
+  "checkpoints_count": 37,
   "files_touched": [
     ".bumpy/glad-coral-jade.md",
     ".env.example",
@@ -145,14 +145,20 @@
       "transcript": "/ae/235550a682/12/full.jsonl",
       "content_hash": "/ae/235550a682/12/content_hash.txt",
       "prompt": "/ae/235550a682/12/prompt.txt"
+    },
+    {
+      "metadata": "/ae/235550a682/13/metadata.json",
+      "transcript": "/ae/235550a682/13/full.jsonl",
+      "content_hash": "/ae/235550a682/13/content_hash.txt",
+      "prompt": "/ae/235550a682/13/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 3776600,
+    "input_tokens": 4014236,
     "cache_creation_tokens": 6774115,
-    "cache_read_tokens": 189570291,
-    "output_tokens": 799100,
-    "api_call_count": 1193
+    "cache_read_tokens": 192462707,
+    "output_tokens": 807472,
+    "api_call_count": 1208
   },
   "combined_attribution": {
     "calculated_at": "2026-07-01T00:43:09.273973765Z",
