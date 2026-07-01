@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "ae235550a682",
+  "session_id": "019f166a-6c50-78b1-b5bf-1534f84e5ff0",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-01T00:42:39.935977079Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 1,
+  "files_touched": [
+    ".env.example",
+    ".gitignore",
+    "bun.lock",
+    "package.json",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/routes/[handle]/[slug]/index.tsx",
+    "src/routes/apparatus/index.tsx",
+    "src/routes/blog/[slug]/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/background-research.ts",
+    "src/utils/idb-preferences.test.ts",
+    "src/utils/idb.ts",
+    "src/utils/published-metadata.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "53b2045057eb",
+  "token_usage": {
+    "input_tokens": 268785,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1593600,
+    "output_tokens": 15541,
+    "api_call_count": 37
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-01T00:42:39.897436444Z",
+    "agent_lines": 2062,
+    "agent_removed": 296,
+    "human_added": 4364,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 6426,
+    "total_lines_changed": 7180,
+    "agent_percentage": 32.84122562674095,
+    "metric_version": 2
+  }
+}
