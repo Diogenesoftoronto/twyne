@@ -1,0 +1,23 @@
+› twyne has a list of issues that I would like fto resolve. 1. the application forces you to control enter to send a reply to the model. The reply button doesn't reply at all which needs to be fixed. Twyne also would do
+  well to be able to tag in the marginalia, it would be  nice if you could tag different people or different personas there and your comments would show up there as well.
+
+
+• SessionStart hook (completed)
+  warning: Entire CLI will link this conversation to your next commit. 6 other active conversation(s) in this workspace will also be included. Use 'entire status' for more information.
+
+■ You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 8:28 PM.
+
+
+› The other thing that I noticed that is huge missing functionality is that the expanded full room doesn't seem to actually expand into a different view at all
+
+---
+
+wire in additional components in the storybook so that i can see them and make sure thata you improve reuable code also make it easy to add collaborators in the future to the tagging flow.
+
+---
+
+one thing that happens is the comments are annoying if you are trying to edit the text so some toggle in the editor for turning off the comments and stuff would be nice. something like a zen mode. I also think that i would love to see the layout not go off screen for the editor part of that model is not visible when one of t he side panels is open
+
+---
+
+create a report for different ways you would improve and promote the product who to target what would they like, competitors gaps those competitors have etc.
