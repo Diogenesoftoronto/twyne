@@ -3,7 +3,7 @@
   "checkpoint_id": "ae235550a682",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     ".env.example",
     ".gitignore",
@@ -17,7 +17,10 @@
     "src/routes/blog/[slug]/index.tsx",
     "src/routes/settings/index.tsx",
     "src/utils/ai-client.ts",
+    "src/utils/ai-orchestrator.test.ts",
     "src/utils/background-research.ts",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/desktop-bridge.ts",
     "src/utils/idb-preferences.test.ts",
     "src/utils/idb.ts",
     "src/utils/llm-parsing.test.ts",
@@ -36,13 +39,19 @@
       "transcript": "/ae/235550a682/1/full.jsonl",
       "content_hash": "/ae/235550a682/1/content_hash.txt",
       "prompt": "/ae/235550a682/1/prompt.txt"
+    },
+    {
+      "metadata": "/ae/235550a682/2/metadata.json",
+      "transcript": "/ae/235550a682/2/full.jsonl",
+      "content_hash": "/ae/235550a682/2/content_hash.txt",
+      "prompt": "/ae/235550a682/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 399684,
+    "input_tokens": 630586,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 5643520,
-    "output_tokens": 39557,
-    "api_call_count": 81
+    "cache_read_tokens": 7371520,
+    "output_tokens": 52989,
+    "api_call_count": 112
   }
 }

@@ -1,0 +1,13 @@
+get started with getting this fixed
+
+---
+
+continue
+
+---
+
+I want the real ai models to be used in production for t he free accounts and it just seems like they are not being ussed and instead there is a fallback
+
+---
+
+it could this is because of early code that hasn't been push to prod yet though
