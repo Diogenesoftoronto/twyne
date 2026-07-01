@@ -3,18 +3,27 @@
   "checkpoint_id": "ae235550a682",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
     ".env.example",
     ".gitignore",
     "bun.lock",
+    "convex/_generated/api.d.ts",
+    "convex/lib/rateLimit.ts",
+    "convex/profiles.ts",
+    "convex/research.ts",
     "evals/run-rubric.ts",
     "package.json",
+    "public/robots.txt",
     "src/components/editor/twyne-editor.tsx",
     "src/components/personas/personas-panel.tsx",
+    "src/global.css",
     "src/routes/[handle]/[slug]/index.tsx",
     "src/routes/apparatus/index.tsx",
     "src/routes/blog/[slug]/index.tsx",
+    "src/routes/dossier/create/index.tsx",
+    "src/routes/index.tsx",
+    "src/routes/onboarding/index.tsx",
     "src/routes/settings/index.tsx",
     "src/utils/ai-client.ts",
     "src/utils/ai-orchestrator.test.ts",
@@ -45,13 +54,19 @@
       "transcript": "/ae/235550a682/2/full.jsonl",
       "content_hash": "/ae/235550a682/2/content_hash.txt",
       "prompt": "/ae/235550a682/2/prompt.txt"
+    },
+    {
+      "metadata": "/ae/235550a682/3/metadata.json",
+      "transcript": "/ae/235550a682/3/full.jsonl",
+      "content_hash": "/ae/235550a682/3/content_hash.txt",
+      "prompt": "/ae/235550a682/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 630586,
+    "input_tokens": 1046531,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 7371520,
-    "output_tokens": 52989,
-    "api_call_count": 112
+    "cache_read_tokens": 12240256,
+    "output_tokens": 78683,
+    "api_call_count": 164
   }
 }

@@ -1,0 +1,89 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "ae235550a682",
+  "session_id": "019f1a01-5194-73d3-a49a-fe4e3469f9fe",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-01T00:42:41.953491771Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 2,
+  "files_touched": [
+    ".env.example",
+    ".gitignore",
+    "bun.lock",
+    "convex/_generated/api.d.ts",
+    "convex/lib/rateLimit.ts",
+    "convex/profiles.ts",
+    "convex/research.ts",
+    "package.json",
+    "public/robots.txt",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/global.css",
+    "src/routes/[handle]/[slug]/index.tsx",
+    "src/routes/apparatus/index.tsx",
+    "src/routes/blog/[slug]/index.tsx",
+    "src/routes/dossier/create/index.tsx",
+    "src/routes/index.tsx",
+    "src/routes/onboarding/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/ai-orchestrator.test.ts",
+    "src/utils/background-research.ts",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/desktop-bridge.ts",
+    "src/utils/idb-preferences.test.ts",
+    "src/utils/idb.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.4",
+  "turn_id": "7b4401a48c1a",
+  "token_usage": {
+    "input_tokens": 415945,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 4868736,
+    "output_tokens": 25694,
+    "api_call_count": 52
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-01T00:42:41.882569826Z",
+    "agent_lines": 2226,
+    "agent_removed": 348,
+    "human_added": 3812,
+    "human_modified": 194,
+    "human_removed": 0,
+    "total_committed": 6232,
+    "total_lines_changed": 6792,
+    "agent_percentage": 37.897526501766784,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 2132,
+      "user_lines_removed": 194,
+      "agent_lines_added": 3137,
+      "agent_lines_removed": 200,
+      "user_added_per_file": {
+        "convex/_generated/api.d.ts": 2,
+        "convex/profiles.ts": 1,
+        "evals/apparatus.jsonl": 4,
+        "evals/rubric.jsonl": 8,
+        "evals/run-apparatus.ts": 379,
+        "evals/run-robustness.ts": 1435,
+        "public/robots.txt": 1,
+        "src/routes/dossier/create/index.tsx": 4,
+        "src/routes/index.tsx": 1,
+        "src/routes/onboarding/index.tsx": 246,
+        "stryker.config.json": 51
+      },
+      "user_removed_per_file": {
+        "src/routes/dossier/create/index.tsx": 193,
+        "src/routes/index.tsx": 1
+      }
+    }
+  ]
+}

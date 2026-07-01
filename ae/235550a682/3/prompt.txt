@@ -1,0 +1,100 @@
+Dossier onboarding: route rename, post-signin direction, inline settings, multi-attachment references, prompt wiring
+
+Context
+
+Today, sign-in leaves the writer with no next step (/signin/ just shows a "signed in" header with nothing to click), the create-vs-refine route naming is asymmetric (/onboarding/ vs /refining/), settings the writer actually cares about at dossier-creation time (interview style, AI provider, citation defaults) live only on a separate /settings/ page, the dossier can only absorb a single pasted/uploaded starter document, and none of the agent prompts (persona room, rubric, synthesis) ever see anything beyond the 7 brief-interview answers — bibliography/reference material is invisible to the AI. This plan fixes all four in one pass since they touch the same files (the onboarding route and ProjectBrief).
+
+1. Route rename: /onboarding/ → /dossier/create/, /refining/ → /dossier/refine/
+
+Nested Qwik City routes (mirrors the existing src/routes/auth/callback/ pattern), confirmed with the user.
+
+- git mv src/routes/onboarding/index.tsx src/routes/dossier/create/index.tsx
+- git mv src/routes/refining/index.tsx src/routes/dossier/refine/index.tsx
+- Leave src/components/onboarding/* (the component directory) where it is — only routes move, not components.
+- Update every call site found by research (exact strings to replace /onboarding/ → /dossier/create/, /refining/ → /dossier/refine/):
+  - src/routes/landings/index.tsx:26
+  - src/routes/editor/index.tsx:127-128 (comment), 165, 489, 718, 794
+  - src/routes/index.tsx:18 (comment), 39, 44
+  - src/routes/dossier/refine/index.tsx (post-move path) — the <Link href="/onboarding/"> at old line 172
+  - src/routes/auth/callback/index.tsx:8, 17, 34 (also see §2 — this destination logic changes anyway)
+  - src/utils/byok-feature-coverage.test.ts:30 — path string must become src/routes/dossier/refine/index.tsx
+  - e2e/journey.e2e.ts:31 — URL regex /\/onboarding\// → /\/dossier\/create\//
+  - public/robots.txt:17,20 — Disallow: /onboarding / Disallow: /refining → /dossier/create / /dossier/refine
+
+2. Post-signin direction
+
+auth-panel.tsx has no callback/event on success and /signin/index.tsx never reads auth state — that's the actual bug. Fix at the route level, not inside AuthPanel (keep it a dumb, reusable component):
+
+- src/routes/signin/index.tsx: add useAuth() + a useVisibleTask$({ track }) on auth.value.user/auth.value.loading, following the exact pattern already used in src/routes/dossier/create/index.tsx (ex-onboarding/index.tsx lines 94-99) and src/routes/auth/callback/index.tsx (lines 22-46). Once signed in, replace the <AuthPanel/> panel with a "You're in — what's next?" card offering two explicit CTAs (no silent auto-redirect, since this is a deliberate landing, not a transient OAuth callback):
+  - "Start your dossier" → /dossier/create/ (always shown)
+  - "Go to your desk" → /editor/ (only shown if loadProjectBrief() !== null, via the existing sync helper in src/utils/anti-tabula-rasa.ts)
+- src/routes/auth/callback/index.tsx: change destination fallback from /onboarding/ to /dossier/create/ (line 8, 17, 34) — this route's existing short-delay auto-redirect logic is fine as-is, just the URL changes.
+
+3. Lightweight settings inline in dossier-create, link out for the rest
+
+Per your call: inline only what matters at creation time, link to /settings/ for full provider credential management.
+
+- In src/routes/dossier/create/index.tsx, add a store.phase: "setup" | "interview" | "done" state machine. New "setup" phase (shown first, before either AntiTabulaRasa/ConversationalInterview renders) is a small card with:
+  - Interview style toggle (Form / Conversation) — reuses loadWriterSettingsFromIdb/saveWriterSettingsToIdb (src/utils/idb.ts:404,428), the exact same persistence the route already does today.
+  - Default citation style (MLA/APA/Chicago) dropdown — reuses loadApparatusSettingsFromIdb/saveApparatusSettingsToIdb (src/utils/idb.ts:452,476).
+  - BYOK on/off toggle — reuses loadAiSettingsFromIdb/saveAiSettingsToIdb (src/utils/idb.ts:615,638), just flips advancedMode; no per-provider credential form inline.
+  - A <Link href="/settings/">Configure AI providers & Apparatus in full →</Link> for anything deeper.
+  - "Begin" button moves store.phase = "interview", which renders the existing conditional (AntiTabulaRasa vs ConversationalInterview) exactly as today.
+- This is new markup local to the route file — no changes needed to settings/index.tsx itself, no shared-component extraction (avoids the duplication risk of the "full inline" option).
+
+4. Multi-document/link attachments with a one-line "why"
+
+No existing data model fits (BibEntry is per-folio Lix storage, mismatched with the global, pre-folio ProjectBrief). Add attachments directly to the brief.
+
+- src/types/index.ts: add
+export interface DossierAttachment {
+  id: string;
+  kind: "document" | "link";
+  title: string;
+  url?: string;      // kind === "link" (or optional source URL for a document)
+  text?: string;      // kind === "document", capped ~2000 chars
+  why: string;        // required one-liner
+  addedAt: number;
+}
+- Extend ProjectBrief with attachments: DossierAttachment[] (default [] everywhere it's constructed).
+- src/utils/anti-tabula-rasa.ts: update createProjectBrief(answers, existing) to accept/merge an attachments param; loadProjectBrief/saveProjectBrief need no signature change (they round-trip the whole object).
+- New component src/components/onboarding/dossier-attachments-editor.tsx: add/list/remove attachments. Each add-row: kind toggle (Document / Link), title field, conditionally a textarea + the existing hidden-<input type="file"> pattern (copy the idiom from anti-tabula-rasa.tsx's current import step — hidden input + label, onChange$ reads file.text(), no FileReader) for "Document", or a URL field for "Link", plus the required one-line "why" field. List shows added items with a remove (×) button. Cap document text client-side at ~2000 chars (truncate with a note, same spirit as the prompt-side cap in §5).
+- Wire into both interview components:
+  - AntiTabulaRasa (src/components/onboarding/anti-tabula-rasa.tsx): add a new step to STEPS (new kind: "attachments", alongside the existing kind: "import" step) rendering <DossierAttachmentsEditor>; thread attachments into the existing onSubmit$ signature ((answers, existingMaterial, filename, attachments)).
+  - ConversationalInterview (src/components/onboarding/conversational-interview.tsx): render <DossierAttachmentsEditor> inline on the synthesis-review screen (next to the "Take it to the desk" button), pass the collected attachments into onComplete$ alongside the synthesized ProjectInterviewAnswers — easiest is to widen onComplete$'s payload to { answers, attachments } or add a second store-level field the parent route reads after acceptSynthesis.
+  - src/routes/dossier/create/index.tsx completeOnboarding$ and src/routes/dossier/refine/index.tsx's submit handler both pass attachments into createProjectBrief/saveProjectBrief so refine mode can also edit existing attachments (initialBrief/initialAnswers already flow into both components — attachments should flow the same way via a new initialAttachments prop sourced from store.brief.attachments).
+
+5. Wire the dossier (incl. attachments) into agent prompts
+
+ProjectBrief already flows everywhere (AgentRequest.brief: ProjectBrief | null in convex/agentPrompts.ts:42-59, populated at every call site in personas-panel.tsx, rubric-panel.tsx, and convex/agents.ts). Since attachments now live on ProjectBrief, no AgentRequest shape change, no new Convex action args, no client call-site changes needed — only the prompt builders need to serialize the new field.
+
+- convex/agentPrompts.ts: add a attachmentsBlock(brief) helper and splice it into:
+  - buildUserPrompt (line 141) — append after the existing briefBlock, e.g. REFERENCE MATERIAL (writer-supplied, use to ground feedback — do not treat as the draft itself), one bullet per attachment: - [link|doc] "{title}" — {why} plus (for documents) a fenced excerpt capped at ~500 chars per item, ~2000 chars total across all attachments (separate, tighter cap than the editor's storage cap — keep prompt token cost bounded even if a future caller stores more).
+  - generateLocalFeedback (line 220) — same data available locally, can skip elaborate serialization (it's the deterministic fallback) but should at least count/name attachments if present, matching the existing brief-fallback tone.
+  - buildSynthesisPrompt (line 286) and buildRubricReviewPrompt (line 307) — same attachmentsBlock helper, since both already take brief: ProjectBrief | null.
+- Convex schema/validator check: grep convex/agents.ts for the v.object(...) validator(s) that shape the brief arg on the action endpoints (the three const req: AgentRequest = {...} sites at lines 586, 826, 880 imply matching args: v.object({ brief: v.object({...}) }) declarations) and add the attachments field there too — Convex strictly validates args, so this is required even though no TS call site changes are needed otherwise.
+- No changes needed in personas-panel.tsx/rubric-panel.tsx beyond what already exists (brief: brief ?? null already carries the new field once ProjectBrief itself is widened upstream).
+
+Verification
+
+- bun run typecheck (or tsc --noEmit) across src/ and convex/ after the type/route changes.
+- bun test src/utils/anti-tabula-rasa.test.ts src/utils/byok-feature-coverage.test.ts (update the latter's path assertion first) plus any existing onboarding/refine-adjacent unit tests.
+- Run the dev server (/run skill) and manually walk: sign in fresh on /signin/ → confirm the "what's next" CTAs appear and route correctly both when a brief exists and doesn't → /dossier/create/ → setup phase persists interview-style/citation/BYOK choices (verify via /settings/ afterward) → add 2-3 attachments (one document paste, one link) in both Form and Conversational modes → complete → confirm /dossier/refine/ shows the saved attachments for editing.
+- Trigger a persona reply or rubric review after completing a dossier with attachments and confirm (via the new Arize tracing, or just by content) the model's response references the attached material/why-notes, not just the 7 brief fields.
+- e2e/journey.e2e.ts — update and rerun the Playwright URL assertion for the new /dossier/create/ path.
+
+---
+
+you can check out entire to see what is currently complete as well
+
+---
+
+cocmmit and p ushh changes to prod
+
+---
+
+can you fix the toggle in the dossier create, also the dossier create should not include the settings here that should be in the onboarding route which is separate and should run iff the user is signingup for the first time and the user not signed in but pressed the start your brief button at the landing page  [Image #1][Image #2]
+
+---
+
+the editor should visibly show when links are posted in the editor and work otherwise it is not clear what clicking them does.
