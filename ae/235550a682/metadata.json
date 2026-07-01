@@ -3,25 +3,41 @@
   "checkpoint_id": "ae235550a682",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 13,
+  "checkpoints_count": 14,
   "files_touched": [
     ".env.example",
     ".gitignore",
+    ".storybook/main.ts",
+    ".storybook/preview.ts",
     "bun.lock",
     "convex/_generated/api.d.ts",
+    "convex/arizeTracing.ts",
     "convex/lib/rateLimit.ts",
     "convex/profiles.ts",
     "convex/research.ts",
     "convex/schema.ts",
+    "docs/growth-strategy.md",
     "e2e/journey.e2e.ts",
+    "evals/apparatus.jsonl",
+    "evals/dataset.jsonl",
+    "evals/judge.ts",
+    "evals/rubric.jsonl",
+    "evals/run-apparatus.ts",
+    "evals/run-experiment.ts",
+    "evals/run-robustness.ts",
     "evals/run-rubric.ts",
     "package.json",
     "public/robots.txt",
+    "skills-lock.json",
     "src/components/auth/account-menu.tsx",
     "src/components/auth/auth-panel.tsx",
+    "src/components/comments/comments-panel.tsx",
     "src/components/editor/twyne-editor.tsx",
     "src/components/landing/landing-page.tsx",
     "src/components/personas/personas-panel.tsx",
+    "src/components/ui/mention-dropdown.stories.tsx",
+    "src/components/ui/mention-dropdown.tsx",
+    "src/components/ui/themed-dialog.stories.tsx",
     "src/global.css",
     "src/routes/[handle]/[slug]/index.tsx",
     "src/routes/[handle]/index.tsx",
@@ -37,12 +53,18 @@
     "src/utils/auth-preference.test.ts",
     "src/utils/background-research.ts",
     "src/utils/convex-sync.test.ts",
+    "src/utils/desktop-bridge.test.ts",
     "src/utils/desktop-bridge.ts",
     "src/utils/idb-preferences.test.ts",
     "src/utils/idb.ts",
     "src/utils/llm-parsing.test.ts",
     "src/utils/llm-parsing.ts",
-    "src/utils/published-metadata.ts"
+    "src/utils/mentions.test.ts",
+    "src/utils/mentions.ts",
+    "src/utils/published-metadata.ts",
+    "src/utils/test-browser-globals-lock.ts",
+    "src/utils/user-comments.test.ts",
+    "stryker.config.json"
   ],
   "sessions": [
     {
@@ -74,13 +96,19 @@
       "transcript": "/ae/235550a682/4/full.jsonl",
       "content_hash": "/ae/235550a682/4/content_hash.txt",
       "prompt": "/ae/235550a682/4/prompt.txt"
+    },
+    {
+      "metadata": "/ae/235550a682/5/metadata.json",
+      "transcript": "/ae/235550a682/5/full.jsonl",
+      "content_hash": "/ae/235550a682/5/content_hash.txt",
+      "prompt": "/ae/235550a682/5/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2287994,
+    "input_tokens": 2498428,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 56400669,
-    "output_tokens": 319090,
-    "api_call_count": 418
+    "cache_read_tokens": 60308637,
+    "output_tokens": 344689,
+    "api_call_count": 463
   }
 }
