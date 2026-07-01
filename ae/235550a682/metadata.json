@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "ae235550a682",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "evals/run-rubric.ts",
+    "src/routes/apparatus/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/background-research.ts",
+    "src/utils/idb-preferences.test.ts",
+    "src/utils/idb.ts",
+    "src/utils/llm-parsing.test.ts",
+    "src/utils/llm-parsing.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ae/235550a682/0/metadata.json",
+      "transcript": "/ae/235550a682/0/full.jsonl",
+      "content_hash": "/ae/235550a682/0/content_hash.txt",
+      "prompt": "/ae/235550a682/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 130899,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 4049920,
+    "output_tokens": 24016,
+    "api_call_count": 44
+  }
+}

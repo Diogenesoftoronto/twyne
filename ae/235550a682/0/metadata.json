@@ -1,0 +1,43 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "ae235550a682",
+  "session_id": "019f153f-7a8e-7ee3-a3b1-67bb54e67836",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-01T00:42:39.42751031Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "evals/run-rubric.ts",
+    "src/routes/apparatus/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/background-research.ts",
+    "src/utils/idb-preferences.test.ts",
+    "src/utils/idb.ts",
+    "src/utils/llm-parsing.test.ts",
+    "src/utils/llm-parsing.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "22a684297ed9",
+  "token_usage": {
+    "input_tokens": 130899,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 4049920,
+    "output_tokens": 24016,
+    "api_call_count": 44
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-01T00:42:39.326857018Z",
+    "agent_lines": 1742,
+    "agent_removed": 176,
+    "human_added": 5128,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 6870,
+    "total_lines_changed": 7549,
+    "agent_percentage": 25.40733872036031,
+    "metric_version": 2
+  }
+}
