@@ -14,6 +14,7 @@ Allow: /downloads
 Allow: /download
 Allow: /signin
 Disallow: /editor
+Disallow: /onboarding
 Disallow: /dossier/create
 Disallow: /settings
 Disallow: /apparatus

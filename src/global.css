@@ -348,6 +348,42 @@ body {
   line-height: 1.55;
 }
 
+.twyne-editor .ProseMirror a,
+.twyne-editor .ProseMirror a.editor-link {
+  color: var(--color-cobalt);
+  text-decoration-line: underline;
+  text-decoration-style: solid;
+  text-decoration-thickness: 2px;
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--color-cobalt) 55%,
+    transparent
+  );
+  text-underline-offset: 0.14em;
+  text-decoration-skip-ink: none;
+  background: linear-gradient(
+    transparent 68%,
+    rgba(44, 74, 124, 0.12) 68%
+  );
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    text-decoration-color 120ms ease,
+    background 120ms ease;
+}
+
+.twyne-editor .ProseMirror a:hover,
+.twyne-editor .ProseMirror a.editor-link:hover,
+.twyne-editor .ProseMirror a:focus-visible,
+.twyne-editor .ProseMirror a.editor-link:focus-visible {
+  color: var(--color-vermilion);
+  text-decoration-color: var(--color-vermilion);
+  background: linear-gradient(
+    transparent 58%,
+    rgba(193, 39, 45, 0.16) 58%
+  );
+}
+
 /* Checklists — task list with editorial checkboxes */
 .twyne-editor .ProseMirror ul.twyne-task-list,
 .twyne-editor .ProseMirror ul[data-type="taskList"] {

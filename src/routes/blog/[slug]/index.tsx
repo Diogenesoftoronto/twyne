@@ -7,10 +7,20 @@
  */
 
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { type DocumentHead, useLocation, Link } from "@builder.io/qwik-city";
+import {
+  type DocumentHead,
+  useLocation,
+  Link,
+  routeLoader$,
+} from "@builder.io/qwik-city";
 import { useConvexClient } from "../../../utils/convex-context";
 import { api } from "../../../../convex/_generated/api";
 import { BlogPost } from "../../../components/blog/blog-post";
+import {
+  blogDescription,
+  loadBlogPieceBySlug,
+  type PublishedPieceLoaderData,
+} from "../../../utils/published-metadata";
 
 interface BlogPostData {
   slug: string;
@@ -22,16 +32,33 @@ interface BlogPostData {
   updatedAt: number;
 }
 
+export const useBlogPost = routeLoader$(
+  async ({ params }): Promise<PublishedPieceLoaderData> => {
+    const slug = params.slug ?? "";
+    if (!slug) return { piece: null, status: "loaded" };
+    return loadBlogPieceBySlug(slug);
+  },
+);
+
 export default component$(() => {
   const loc = useLocation();
   const clientSig = useConvexClient();
-  const post = useSignal<BlogPostData | null>(null);
-  const missing = useSignal(false);
-  const isLoading = useSignal(true);
+  const loadedPost = useBlogPost();
+  const post = useSignal<BlogPostData | null>(
+    loadedPost.value.piece as BlogPostData | null,
+  );
+  const missing = useSignal(
+    loadedPost.value.status === "loaded" && !loadedPost.value.piece,
+  );
+  const isLoading = useSignal(loadedPost.value.status === "unavailable");
   const errored = useSignal<string | null>(null);
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
+    if (post.value || missing.value) {
+      return;
+    }
+
     const slug = loc.params.slug;
     const client = clientSig.value;
     if (!client || !slug) {
@@ -86,13 +113,25 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = ({ params }) => ({
-  title: `Twyne · ${params.slug ?? "Field Notes"}`,
-  meta: [
-    { name: "description", content: "A Twyne field note." },
-    { property: "og:title", content: "Twyne · Field Notes" },
-  ],
-});
+export const head: DocumentHead = ({ params, resolveValue }) => {
+  const { piece } = resolveValue(useBlogPost);
+  const title = piece?.title ?? params.slug ?? "Field Notes";
+  const description = blogDescription(piece);
+  const author = piece?.authorName ?? piece?.ownerHandle ?? null;
+
+  return {
+    title: `Twyne · ${title}`,
+    meta: [
+      { name: "description", content: description },
+      { property: "og:type", content: "article" },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+      ...(author ? [{ name: "author", content: author }] : []),
+    ],
+  };
+};
 
 // `Link` is imported above because the post template includes
 // a "back to the index" link; the import silences the unused

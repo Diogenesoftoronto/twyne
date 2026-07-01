@@ -13,9 +13,19 @@
  */
 
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { type DocumentHead, useLocation, Link } from "@builder.io/qwik-city";
+import {
+  type DocumentHead,
+  useLocation,
+  Link,
+  routeLoader$,
+} from "@builder.io/qwik-city";
 import { useConvexClient } from "../../../utils/convex-context";
 import { api } from "../../../../convex/_generated/api";
+import {
+  articleDescription,
+  loadPublishedPieceByHandleAndSlug,
+  type PublishedPieceLoaderData,
+} from "../../../utils/published-metadata";
 
 interface PublishedPiece {
   slug: string;
@@ -29,17 +39,39 @@ interface PublishedPiece {
   updatedAt: number;
 }
 
+export const usePublishedPiece = routeLoader$(
+  async ({ params }): Promise<PublishedPieceLoaderData> => {
+    const handle = (params.handle ?? "").toLowerCase();
+    const slug = params.slug ?? "";
+    if (!handle || !slug) return { piece: null, status: "loaded" };
+    return loadPublishedPieceByHandleAndSlug(handle, slug);
+  },
+);
+
 export default component$(() => {
   const loc = useLocation();
   const clientSig = useConvexClient();
-  const piece = useSignal<PublishedPiece | null>(null);
-  const ownerHandle = useSignal<string | null>(null);
-  const missing = useSignal(false);
-  const isLoading = useSignal(true);
+  const loadedPiece = usePublishedPiece();
+  const piece = useSignal<PublishedPiece | null>(
+    loadedPiece.value.piece as PublishedPiece | null,
+  );
+  const ownerHandle = useSignal<string | null>(
+    loadedPiece.value.piece
+      ? (loadedPiece.value.piece.ownerHandle ?? loc.params.handle ?? null)
+      : null,
+  );
+  const missing = useSignal(
+    loadedPiece.value.status === "loaded" && !loadedPiece.value.piece,
+  );
+  const isLoading = useSignal(loadedPiece.value.status === "unavailable");
   const errored = useSignal<string | null>(null);
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
+    if (piece.value || missing.value) {
+      return;
+    }
+
     const handle = (loc.params.handle ?? "").toLowerCase();
     const slug = loc.params.slug;
     const client = clientSig.value;
@@ -191,10 +223,24 @@ function formatDate(timestamp: number): string {
   });
 }
 
-export const head: DocumentHead = ({ params }) => ({
-  title: `Twyne · ${params.slug ?? "Read"}`,
-  meta: [
-    { name: "description", content: "A piece published on Twyne." },
-    { property: "og:title", content: "Twyne · Read" },
-  ],
-});
+export const head: DocumentHead = ({ params, resolveValue }) => {
+  const { piece } = resolveValue(usePublishedPiece);
+  const title = piece?.title ?? params.slug ?? "Read";
+  const description = articleDescription(piece);
+  const author = piece
+    ? (piece.authorName ?? piece.ownerHandle ?? params.handle ?? null)
+    : null;
+
+  return {
+    title: `Twyne · ${title}`,
+    meta: [
+      { name: "description", content: description },
+      { property: "og:type", content: "article" },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+      ...(author ? [{ name: "author", content: author }] : []),
+    ],
+  };
+};

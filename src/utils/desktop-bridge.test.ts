@@ -1,12 +1,14 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, describe, expect, test } from "bun:test";
 import {
   isDesktopLocalAiAvailable,
   localAiBaseUrl,
   resetDesktopContextForTests,
 } from "./desktop-bridge";
 import { FALLBACK_FEATURES, setRuntimeFeatures } from "./feature-flags";
+import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
 const originalWindow = globalThis.window;
+const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 
 function setWindowSearch(search: string): void {
   Object.defineProperty(globalThis, "window", {
@@ -31,6 +33,10 @@ afterEach(() => {
       value: originalWindow,
     });
   }
+});
+
+afterAll(() => {
+  releaseBrowserGlobalsLock();
 });
 
 describe("desktop bridge", () => {

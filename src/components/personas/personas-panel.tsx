@@ -111,6 +111,8 @@ interface PersonasStore {
   analysis: RoomAnalysis | null;
   /** Whether the full-analysis pass is in flight. */
   isAnalyzing: boolean;
+  /** Whether the full-screen analysis modal is open. */
+  analysisOpen: boolean;
 }
 
 interface PersonasPanelProps {
@@ -225,6 +227,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     aiSettings: null,
     analysis: null,
     isAnalyzing: false,
+    analysisOpen: false,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -726,7 +729,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         synthesisProvider = result.synthesisProvider;
       } else {
         store.conveneError =
-          "Full analysis needs a configured provider (BYOK) or a signed-in Pro plan.";
+          "Full analysis needs a configured provider (BYOK) or a signed-in Twyne account.";
         return;
       }
 
@@ -738,6 +741,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         timestamp: Date.now(),
       };
       store.analysis = analysis;
+      store.analysisOpen = true;
       void saveRoomAnalysisToIdb(analysis);
     } catch (err) {
       store.conveneError = (err as Error).message ?? "Full analysis failed.";
@@ -760,7 +764,18 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     store.replyDraft = "";
   });
 
-  const submitReply = $(async (noteId: string, askPersona: boolean) => {
+  const emitReplyThread = $((noteId: string) => {
+    window.dispatchEvent(
+      new CustomEvent("twyne:persona-reply-thread", {
+        detail: {
+          noteId,
+          replies: store.repliesByNote[noteId] ?? [],
+        },
+      }),
+    );
+  });
+
+  const submitReply = $(async (noteId: string, askPersona: boolean, authorHint?: string) => {
     const text = store.replyDraft.trim();
     if (!text) return;
     if (store.groupByPersona) {
@@ -784,6 +799,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     };
     const updated = [...(store.repliesByNote[noteId] ?? []), userReply];
     store.repliesByNote = { ...store.repliesByNote, [noteId]: updated };
+    void emitReplyThread(noteId);
     await addPersonaReplyLocally(userReply);
     const client =
       auth.value.provider === "convex" && auth.value.user
@@ -808,11 +824,33 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
     if (askPersona) {
       const note = store.feedback.find((f) => f.noteId === noteId);
-      if (!note) return;
+      // The note may not be in this session's feedback list (e.g. it was
+      // restored from a saved draft before the room re-convened). Fall
+      // back to matching the persona by the name shown on the popover so
+      // replying still works instead of silently doing nothing.
+      const persona =
+        (note && store.personas.find((p) => p.id === note.personaId)) ||
+        (authorHint
+          ? store.personas.find((p) => p.name === authorHint)
+          : undefined);
+      if (!persona) {
+        const message =
+          "Couldn't find that editor anymore — try re-convening the room.";
+        store.conveneError = message;
+        window.dispatchEvent(
+          new CustomEvent("twyne:persona-reply-error", {
+            detail: { noteId, message },
+          }),
+        );
+        return;
+      }
       store.isReplying = true;
+      window.dispatchEvent(
+        new CustomEvent("twyne:persona-replying", {
+          detail: { noteId, replying: true },
+        }),
+      );
       try {
-        const persona = store.personas.find((p) => p.id === note.personaId);
-        if (!persona) return;
         const draftText = await readCurrentDraftText();
         const priorMessages = [
           ...updated
@@ -844,7 +882,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 },
                 brief: brief ?? null,
                 draftText,
-                anchor: note.anchor,
+                anchor: note?.anchor,
                 priorMessages,
                 userMessage: userReply.text,
                 instruction: "elaborate",
@@ -855,14 +893,26 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               responseText = res.text;
               store.lastProvider = `client-${res.provider}` as any;
             } else {
-              store.conveneError =
+              const message =
                 "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+              store.conveneError = message;
+              window.dispatchEvent(
+                new CustomEvent("twyne:persona-reply-error", {
+                  detail: { noteId, message },
+                }),
+              );
               return;
             }
           } catch (err) {
             console.warn("[twyne:personas] client reply failed:", err);
-            store.conveneError =
+            const message =
               "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+            store.conveneError = message;
+            window.dispatchEvent(
+              new CustomEvent("twyne:persona-reply-error", {
+                detail: { noteId, message },
+              }),
+            );
             return;
           }
         }
@@ -885,7 +935,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               },
               brief: brief ?? null,
               draftText,
-              anchor: note.anchor,
+              anchor: note?.anchor,
               priorMessages,
               userMessage: userReply.text,
               instruction: "elaborate",
@@ -899,15 +949,27 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               (result.provider as typeof store.lastProvider) ?? "bifrost";
           } catch (err) {
             console.warn("[twyne:personas] runPersona failed:", err);
-            store.conveneError =
+            const message =
               "The shared server could not answer. Sign in again or use your own provider in Preferences.";
+            store.conveneError = message;
+            window.dispatchEvent(
+              new CustomEvent("twyne:persona-reply-error", {
+                detail: { noteId, message },
+              }),
+            );
             return;
           }
         }
         if (!responseText) {
-          store.conveneError = hasByok
+          const message = hasByok
             ? "Your configured provider did not answer. Check the API key, model, and base URL in Preferences."
             : "Add a provider in Preferences or sign in to keep the conversation going.";
+          store.conveneError = message;
+          window.dispatchEvent(
+            new CustomEvent("twyne:persona-reply-error", {
+              detail: { noteId, message },
+            }),
+          );
           return;
         }
 
@@ -925,6 +987,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           personaReply,
         ];
         store.repliesByNote = { ...store.repliesByNote, [noteId]: nextReplies };
+        void emitReplyThread(noteId);
         await addPersonaReplyLocally(personaReply);
 
         if (c) {
@@ -946,6 +1009,11 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         }
       } finally {
         store.isReplying = false;
+        window.dispatchEvent(
+          new CustomEvent("twyne:persona-replying", {
+            detail: { noteId, replying: false },
+          }),
+        );
       }
     }
   });
@@ -960,13 +1028,26 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       const detail = (e as CustomEvent).detail as {
         noteId?: string;
         text?: string;
+        author?: string;
       };
       if (!detail?.noteId || !detail.text?.trim()) return;
       store.replyDraft = detail.text;
-      void submitReply(detail.noteId, true);
+      void submitReply(detail.noteId, true, detail.author);
     };
     window.addEventListener("twyne:persona-reply", onReply);
-    cleanup(() => window.removeEventListener("twyne:persona-reply", onReply));
+    const onRequestThread = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { noteId?: string };
+      if (!detail?.noteId) return;
+      void emitReplyThread(detail.noteId);
+    };
+    window.addEventListener("twyne:request-persona-thread", onRequestThread);
+    cleanup(() => {
+      window.removeEventListener("twyne:persona-reply", onReply);
+      window.removeEventListener(
+        "twyne:request-persona-thread",
+        onRequestThread,
+      );
+    });
   });
 
   /* ── Tunable assistance: settings + propose edits ──────────── */
@@ -1179,7 +1260,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
   });
 
   return (
-    <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
+    <>
+      <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
       {/* ── Header ─────────────────────────────────────────── */}
       <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
         <div class="flex items-center justify-between gap-2">
@@ -1315,15 +1397,23 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           </button>
 
           <button
-            onClick$={expandAnalysis}
+            onClick$={() => {
+              if (store.analysis && !store.isAnalyzing) {
+                store.analysisOpen = true;
+                return;
+              }
+              void expandAnalysis();
+            }}
             disabled={store.isAnalyzing}
             class="mt-2 w-full text-[11px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] border border-dashed border-[var(--color-paper-3)] rounded py-2 disabled:opacity-50"
             style="font-family: var(--font-typewriter);"
-            title="Each editor writes a full-page analysis, then the room synthesises them."
+            title="Each editor writes a full-page analysis, then the room synthesises them — opens in a full-screen view."
           >
             {store.isAnalyzing
               ? "✦ The room is writing the full analysis…"
-              : "❡ Expand to full analysis"}
+              : store.analysis
+                ? "❡ Open the full analysis"
+                : "❡ Expand to full analysis"}
           </button>
 
           {store.feedback.length > 0 && !store.isGenerating && (
@@ -1362,63 +1452,6 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 Strike the room
               </button>
             </div>
-          )}
-
-          {/* ── Full-page cast analysis ── */}
-          {store.analysis && (
-            <section class="mt-4 border-t-2 border-double border-[var(--color-paper-3)] pt-4">
-              <div class="flex items-baseline justify-between">
-                <p class="dept-label">The Full Analysis</p>
-                <button
-                  onClick$={() => {
-                    store.analysis = null;
-                  }}
-                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                  style="font-family: var(--font-typewriter);"
-                  title="Clear the full analysis"
-                >
-                  ✕ clear
-                </button>
-              </div>
-
-              {store.analysis.synthesis && (
-                <div class="mt-3 mb-4 p-3 bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] rounded">
-                  <p class="dept-label">The Room's Verdict</p>
-                  <div
-                    class="mt-2 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
-                    style="font-family: var(--font-serif);"
-                  >
-                    {store.analysis.synthesis}
-                  </div>
-                </div>
-              )}
-
-              <div class="space-y-4">
-                {store.analysis.memos.map((memo) => (
-                  <article
-                    key={memo.personaId}
-                    class="pl-3"
-                    style={{ borderLeft: `3px solid ${memo.personaColor}` }}
-                  >
-                    <p
-                      class="text-[11px] tracking-[0.15em] uppercase"
-                      style={{
-                        fontFamily: "var(--font-typewriter)",
-                        color: memo.personaColor,
-                      }}
-                    >
-                      {memo.personaName}
-                    </p>
-                    <div
-                      class="mt-1 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
-                      style="font-family: var(--font-serif);"
-                    >
-                      {memo.text}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
           )}
 
           {/* ── Mark up my draft + room settings ── */}
@@ -1835,7 +1868,90 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           });
         })()}
       </div>
-    </div>
+      </div>
+
+      {/* ── Full-page cast analysis: a real expanded view, not a sidebar inset ── */}
+      {store.analysis && store.analysisOpen && (
+        <div
+          class="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 px-4 py-8"
+          onClick$={() => {
+            store.analysisOpen = false;
+          }}
+        >
+          <div
+            class="w-full max-w-3xl bg-[var(--color-paper)] border border-[var(--color-paper-3)] rounded shadow-xl"
+            onClick$={(e) => e.stopPropagation()}
+          >
+            <div class="sticky top-0 flex items-center justify-between border-b border-[var(--color-paper-3)] bg-[var(--color-paper)] px-6 py-4 rounded-t">
+              <p class="dept-label">The Full Analysis</p>
+              <div class="flex items-center gap-4">
+                <button
+                  onClick$={() => {
+                    store.analysis = null;
+                    store.analysisOpen = false;
+                  }}
+                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                  style="font-family: var(--font-typewriter);"
+                  title="Clear the full analysis"
+                >
+                  ✕ clear
+                </button>
+                <button
+                  onClick$={() => {
+                    store.analysisOpen = false;
+                  }}
+                  class="icon-btn text-sm"
+                  aria-label="Close full analysis"
+                  title="Close"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div class="px-6 py-5">
+              {store.analysis.synthesis && (
+                <div class="mb-5 p-3 bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] rounded">
+                  <p class="dept-label">The Room's Verdict</p>
+                  <div
+                    class="mt-2 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
+                    style="font-family: var(--font-serif);"
+                  >
+                    {store.analysis.synthesis}
+                  </div>
+                </div>
+              )}
+
+              <div class="space-y-5">
+                {store.analysis.memos.map((memo) => (
+                  <article
+                    key={memo.personaId}
+                    class="pl-3"
+                    style={{ borderLeft: `3px solid ${memo.personaColor}` }}
+                  >
+                    <p
+                      class="text-[11px] tracking-[0.15em] uppercase"
+                      style={{
+                        fontFamily: "var(--font-typewriter)",
+                        color: memo.personaColor,
+                      }}
+                    >
+                      {memo.personaName}
+                    </p>
+                    <div
+                      class="mt-1 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
+                      style="font-family: var(--font-serif);"
+                    >
+                      {memo.text}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 });
 

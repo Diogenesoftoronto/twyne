@@ -19,6 +19,17 @@ import {
   runClientAgent,
   normalizeAiSettings,
 } from "../../utils/ai-client";
+import {
+  activeMentionQuery,
+  applyMention,
+  mentionedIn,
+  type Mentionable,
+} from "../../utils/mentions";
+import { MentionDropdown } from "../ui/mention-dropdown";
+
+function personaToMentionable(p: Persona): Mentionable {
+  return { id: p.id, name: p.name, kind: "persona", icon: p.icon, color: p.color };
+}
 
 interface CommentsStore {
   comments: UserComment[];
@@ -36,6 +47,10 @@ interface CommentsStore {
   ghostIds: Set<string>;
   /** Show only ghosts? Off by default; the chip flips it. */
   ghostsOnly: boolean;
+  /** Which textarea is showing an @-mention dropdown ("new" or a comment id). */
+  mentionTarget: "new" | string | null;
+  /** The partial name typed after "@". */
+  mentionQuery: string;
 }
 
 interface CommentsPanelProps {
@@ -43,10 +58,22 @@ interface CommentsPanelProps {
   activeFolioId: string | null;
   /** Seed notes, for tests and isolated previews. Skips persisted storage when set. */
   initialComments?: UserComment[];
+  /**
+   * Human collaborators taggable alongside personas. Not wired to a data
+   * source yet — pass the result of `api.collaboration.getCollaborators`
+   * (mapped to `Mentionable`s with `kind: "collaborator"`) once a folio is
+   * shared, and the @-mention flow picks them up with no further changes.
+   */
+  collaborators?: Mentionable[];
 }
 
 export const CommentsPanel = component$(
-  ({ brief, activeFolioId, initialComments }: CommentsPanelProps) => {
+  ({
+    brief,
+    activeFolioId,
+    initialComments,
+    collaborators,
+  }: CommentsPanelProps) => {
     const clientSig = useConvexClient();
     const store = useStore<CommentsStore>({
       comments: initialComments ?? [],
@@ -61,6 +88,8 @@ export const CommentsPanel = component$(
       aiSettings: null,
       ghostIds: new Set<string>(),
       ghostsOnly: false,
+      mentionTarget: null,
+      mentionQuery: "",
     });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -97,6 +126,27 @@ export const CommentsPanel = component$(
       };
     });
 
+    const triggerMentions = $((commentId: string, text: string) => {
+      // Personas + (eventually) collaborators. Computed inline rather than
+      // via a shared helper because Qwik's $() boundaries can't close over
+      // local functions — only serializable values.
+      const mentionables: Mentionable[] = [
+        ...store.personas.map(personaToMentionable),
+        ...(collaborators ?? []),
+      ];
+      for (const m of mentionedIn(text, mentionables)) {
+        switch (m.kind) {
+          case "persona":
+            void askEditor(commentId, m.id);
+            break;
+          case "collaborator":
+            // No-op for now: tagging a collaborator just highlights them in
+            // the thread. Wire a notification here once one exists.
+            break;
+        }
+      }
+    });
+
     const addComment = $(async () => {
       if (!store.newCommentText.trim()) return;
       const comment: UserComment = {
@@ -113,6 +163,7 @@ export const CommentsPanel = component$(
       store.comments = all;
       store.newCommentText = "";
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+      void triggerMentions(comment.id, comment.text);
     });
 
     const addReply = $(async (commentId: string, text: string) => {
@@ -128,6 +179,7 @@ export const CommentsPanel = component$(
       store.comments = all;
       store.replyingTo = null;
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+      void triggerMentions(commentId, text);
     });
 
     const resolveComment = $(async (commentId: string) => {
@@ -148,8 +200,8 @@ export const CommentsPanel = component$(
      * response as a persona-kind reply so the editor's colour + voice are
      * preserved.
      */
-    const askEditor = $(async (commentId: string) => {
-      const personaId = store.askPersonaId;
+    const askEditor = $(async (commentId: string, personaIdOverride?: string) => {
+      const personaId = personaIdOverride ?? store.askPersonaId;
       if (!personaId) return;
       const comment = store.comments.find((c) => c.id === commentId);
       if (!comment) return;
@@ -266,6 +318,10 @@ export const CommentsPanel = component$(
       return true;
     });
     const resolved = store.comments.filter((c) => c.resolved);
+    const mentionables: Mentionable[] = [
+      ...store.personas.map(personaToMentionable),
+      ...(collaborators ?? []),
+    ];
 
     return (
       <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
@@ -319,22 +375,59 @@ export const CommentsPanel = component$(
         </div>
 
         <div class="px-4 py-4 border-b border-[var(--color-paper-3)]">
-          <textarea
-            value={store.newCommentText}
-            aria-label="New margin note"
-            onInput$={(e) => {
-              store.newCommentText = (e.target as HTMLTextAreaElement).value;
-            }}
-            onKeyDown$={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                addComment();
-              }
-            }}
-            placeholder={getCommentPlaceholder(brief)}
-            class="w-full px-3 py-2 text-sm bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)] text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic"
-            style="font-family: var(--font-serif); border-radius: 2px;"
-            rows={2}
-          />
+          <div class="relative">
+            <textarea
+              value={store.newCommentText}
+              aria-label="New margin note"
+              onInput$={(e) => {
+                const value = (e.target as HTMLTextAreaElement).value;
+                store.newCommentText = value;
+                const q = activeMentionQuery(value);
+                if (q !== null) {
+                  store.mentionTarget = "new";
+                  store.mentionQuery = q;
+                } else if (store.mentionTarget === "new") {
+                  store.mentionTarget = null;
+                }
+              }}
+              onKeyDown$={(e) => {
+                if (e.key === "Escape" && store.mentionTarget === "new") {
+                  store.mentionTarget = null;
+                  return;
+                }
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  addComment();
+                }
+              }}
+              onBlur$={() => {
+                if (store.mentionTarget === "new") store.mentionTarget = null;
+              }}
+              placeholder={getCommentPlaceholder(brief)}
+              class="w-full px-3 py-2 text-sm bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)] text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic"
+              style="font-family: var(--font-serif); border-radius: 2px;"
+              rows={2}
+            />
+            {store.mentionTarget === "new" && (
+              <MentionDropdown
+                items={mentionables}
+                query={store.mentionQuery}
+                size="md"
+                onSelect$={$((item: Mentionable) => {
+                  store.newCommentText = applyMention(
+                    store.newCommentText,
+                    item.name,
+                  );
+                  store.mentionTarget = null;
+                })}
+              />
+            )}
+          </div>
+          <p
+            class="mt-1.5 text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-typewriter);"
+          >
+            Type @ to tag an editor — they'll weigh in automatically.
+          </p>
           <button
             onClick$={addComment}
             disabled={!store.newCommentText.trim()}
@@ -546,27 +639,61 @@ export const CommentsPanel = component$(
                   </div>
                 ) : isReplying ? (
                   <div class="mt-2 space-y-2">
-                    <textarea
-                      value={store.replyDrafts[comment.id] ?? ""}
-                      aria-label="Reply to note"
-                      onInput$={(e) => {
-                        store.replyDrafts[comment.id] = (
-                          e.target as HTMLTextAreaElement
-                        ).value;
-                      }}
-                      onKeyDown$={(e) => {
-                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                          void addReply(
-                            comment.id,
-                            store.replyDrafts[comment.id] ?? "",
-                          );
-                        }
-                      }}
-                      placeholder="Annotate…"
-                      class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
-                      style="font-family: var(--font-serif); border-radius: 2px;"
-                      rows={2}
-                    />
+                    <div class="relative">
+                      <textarea
+                        value={store.replyDrafts[comment.id] ?? ""}
+                        aria-label="Reply to note"
+                        onInput$={(e) => {
+                          const value = (e.target as HTMLTextAreaElement)
+                            .value;
+                          store.replyDrafts[comment.id] = value;
+                          const q = activeMentionQuery(value);
+                          if (q !== null) {
+                            store.mentionTarget = comment.id;
+                            store.mentionQuery = q;
+                          } else if (store.mentionTarget === comment.id) {
+                            store.mentionTarget = null;
+                          }
+                        }}
+                        onKeyDown$={(e) => {
+                          if (
+                            e.key === "Escape" &&
+                            store.mentionTarget === comment.id
+                          ) {
+                            store.mentionTarget = null;
+                            return;
+                          }
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                            void addReply(
+                              comment.id,
+                              store.replyDrafts[comment.id] ?? "",
+                            );
+                          }
+                        }}
+                        onBlur$={() => {
+                          if (store.mentionTarget === comment.id)
+                            store.mentionTarget = null;
+                        }}
+                        placeholder="Annotate… (@ to tag an editor)"
+                        class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
+                        style="font-family: var(--font-serif); border-radius: 2px;"
+                        rows={2}
+                      />
+                      {store.mentionTarget === comment.id && (
+                        <MentionDropdown
+                          items={mentionables}
+                          query={store.mentionQuery}
+                          size="sm"
+                          onSelect$={$((item: Mentionable) => {
+                            store.replyDrafts[comment.id] = applyMention(
+                              store.replyDrafts[comment.id] ?? "",
+                              item.name,
+                            );
+                            store.mentionTarget = null;
+                          })}
+                        />
+                      )}
+                    </div>
                     <div class="flex gap-3">
                       <button
                         onClick$={() =>
@@ -701,6 +828,7 @@ function truncate(s: string, n: number): string {
   if (s.length <= n) return s;
   return s.slice(0, n - 1) + "…";
 }
+
 
 /** Last-resort reply if the agent call fails. */
 function fallbackReply(persona: Persona, c: UserComment): string {

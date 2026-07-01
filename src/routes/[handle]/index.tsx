@@ -20,6 +20,7 @@ interface Profile {
   handle: string;
   displayName: string | null;
   bio: string | null;
+  avatarUrl: string | null;
 }
 
 interface PublishedSummary {
@@ -113,12 +114,23 @@ export default component$(() => {
           )}
           {profile.value && (
             <>
-              <h1
-                class="text-3xl text-[var(--color-ink)]"
-                style="font-family: var(--font-display); font-weight: 700;"
-              >
-                {profile.value.displayName || `@${profile.value.handle}`}
-              </h1>
+              <div class="flex items-center gap-4">
+                {profile.value.avatarUrl && (
+                  <img
+                    src={profile.value.avatarUrl}
+                    alt={`${profile.value.displayName || profile.value.handle}'s profile picture`}
+                    width="64"
+                    height="64"
+                    class="h-16 w-16 flex-shrink-0 rounded-full border border-[var(--color-paper-3)] object-cover"
+                  />
+                )}
+                <h1
+                  class="text-3xl text-[var(--color-ink)]"
+                  style="font-family: var(--font-display); font-weight: 700;"
+                >
+                  {profile.value.displayName || `@${profile.value.handle}`}
+                </h1>
+              </div>
               <p
                 class="mt-1 text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
                 style="font-family: var(--font-typewriter);"

@@ -21,7 +21,7 @@ let _ctx: DesktopContext | null = null;
 
 function read(): DesktopContext {
   if (_ctx) return _ctx;
-  if (typeof window === "undefined") {
+  if (typeof window === "undefined" || !window.location) {
     return { isDesktop: false, localAi: false, localPort: null };
   }
   const params = new URLSearchParams(window.location.search);

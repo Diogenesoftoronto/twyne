@@ -12,6 +12,7 @@ import { signOut, emailOtp, authClient } from "../../utils/auth-client";
 import {
   getPreferredMethod,
   setPreferredMethod,
+  clearPreferredMethod,
   type SignInMethod,
 } from "../../utils/auth-preference";
 
@@ -45,6 +46,13 @@ export const AuthPanel = component$(() => {
     bskyHandle: "",
     /** Which key the user is on. `null` means "decide based on memory". */
     chosen: null as SignInMethod | null,
+    /**
+     * Whether this email/device is known to have a passkey (from the local
+     * preference). We can't list a stranger's passkeys before a session
+     * exists, so this preference is the only safe pre-sign-in signal — we use
+     * it to decide whether to offer passkey sign-in at all.
+     */
+    knownPasskey: false,
     /** Whether we've already sent an OTP for this email in this session. */
     otpSent: false,
     /** Normalized email address that the current OTP belongs to. */
@@ -57,31 +65,9 @@ export const AuthPanel = component$(() => {
     /** Once we've completed sign-in, surface a one-time prompt to add a passkey. */
     offerPasskey: false,
     addingPasskey: false,
+    /** Confirmation shown after a passkey is registered from the signed-in view. */
+    passkeyToast: null as string | null,
     error: null as string | null,
-  });
-
-  // Auto-send OTP as soon as we have a valid email in sign-in mode, and keep
-  // the existing step-2 OTP fallback for sign-up / method switching.
-  // Runs only on the client (visible task) so SSR never hits the auth API.
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track }) => {
-    const step = track(() => store.step);
-    const mode = track(() => store.mode);
-    const email = track(() => store.email);
-    const chosen = track(() => store.chosen);
-    const sent = track(() => store.otpSent);
-    const sentFor = track(() => store.otpSentFor);
-    const sending = track(() => store.sendingOtp);
-    const user = track(() => auth.value.user);
-
-    const normalized = normalizeEmail(email);
-    const shouldAutoSend =
-      (step === 1 && mode === "signin") || (step === 2 && chosen === "otp");
-
-    if (!shouldAutoSend || sent || sending) return;
-    if (!looksLikeEmail(normalized) || sentFor === normalized) return;
-    if (user) return; // already signed in
-    void sendOtp(normalized);
   });
 
   const sendOtp = $(async (email: string) => {
@@ -108,38 +94,52 @@ export const AuthPanel = component$(() => {
     }
   });
 
-  const handleStepOne = $(() => {
-    const trimmed = store.email.trim();
+  const handleStepOne = $(async () => {
+    const trimmed = normalizeEmail(store.email);
     if (!looksLikeEmail(trimmed)) {
       store.error = "Add an email address so we know where to send the code.";
       return;
     }
     store.email = trimmed;
     store.error = null;
-    // Look up the per-email preference, falling back to OTP for first-timers
-    // (we'll auto-detect passkey availability when they click that button).
+    // Look up the per-email preference. Passkey is the default only for
+    // accounts known (on this device) to have one; everyone else gets OTP.
     const remembered = getPreferredMethod(trimmed);
+    store.knownPasskey = remembered === "passkey";
     store.chosen = remembered ?? "otp";
     store.otpCode = "";
     store.offerPasskey = false;
     store.step = 2;
+    // Continue is the explicit trigger: when the key is a one-time code, send
+    // it now instead of waiting for the user to hit "Re-send". For passkey
+    // accounts we skip this — the WebAuthn prompt carries the sign-in.
+    if (store.chosen === "otp" && trimmed !== store.otpSentFor) {
+      await sendOtp(trimmed);
+    }
   });
 
   const handlePasskeySignIn = $(async () => {
     store.usingPasskey = true;
     store.error = null;
     try {
-      const result = await (authClient.signIn as any).passkey({
-        autoFill: true,
-      });
+      // No `autoFill` here: this is the explicit "use a passkey" button, so we
+      // want the modal WebAuthn prompt to open immediately. `autoFill: true`
+      // arms browser conditional UI (autofill suggestions) instead, which made
+      // the button appear to do nothing.
+      const result = await (authClient.signIn as any).passkey();
       if (result?.error) {
         const msg = result.error.message ?? "";
         // If no passkey is registered for the account, fall through to OTP.
         if (
           /no passkey|passkey not found|credential/i.test(msg) ||
+          result.error.code === "PASSKEY_NOT_FOUND" ||
           result.error.code === "AUTH_CANCELLED"
         ) {
           store.error = null;
+          // Our local "passkey" hint was wrong for this device — forget it so
+          // we stop offering passkey-first next time.
+          store.knownPasskey = false;
+          clearPreferredMethod(store.email);
           store.chosen = "otp";
           return;
         }
@@ -155,6 +155,14 @@ export const AuthPanel = component$(() => {
   });
 
   const handleResendOtp = $(async () => {
+    store.otpSent = false;
+    store.otpSentFor = "";
+    store.otpCode = "";
+    await sendOtp(store.email);
+  });
+
+  const switchToOtp$ = $(async () => {
+    store.chosen = "otp";
     store.otpSent = false;
     store.otpSentFor = "";
     store.otpCode = "";
@@ -190,6 +198,7 @@ export const AuthPanel = component$(() => {
   const handleAddPasskey = $(async () => {
     store.addingPasskey = true;
     store.error = null;
+    store.passkeyToast = null;
     try {
       const result = await (authClient.passkey as any).addPasskey({
         name: "This device",
@@ -197,15 +206,21 @@ export const AuthPanel = component$(() => {
       if (result?.error) {
         // Cancelling the WebAuthn prompt is the most common "error" — quietly
         // dismiss the offer without nagging the writer.
-        if (result.error.code === "AUTH_CANCELLED") {
+        if (
+          result.error.code === "AUTH_CANCELLED" ||
+          result.error.code === "REGISTRATION_CANCELLED"
+        ) {
           store.offerPasskey = false;
           return;
         }
         store.error = result.error.message ?? "Couldn't add a passkey";
         return;
       }
-      setPreferredMethod(store.email, "passkey");
+      const rememberEmail = store.email || auth.value.user?.email || "";
+      if (rememberEmail) setPreferredMethod(rememberEmail, "passkey");
+      store.knownPasskey = true;
       store.offerPasskey = false;
+      store.passkeyToast = "Passkey registered for this device.";
     } catch (e: any) {
       store.error = e?.message ?? "Couldn't add a passkey";
     } finally {
@@ -362,6 +377,42 @@ export const AuthPanel = component$(() => {
           email={auth.value.user.email}
           onSignOut$={handleSignOut}
         />
+        {auth.value.provider === "convex" && (
+          <div class="mt-4 border-t border-[var(--color-paper-3)] pt-4">
+            {store.passkeyToast ? (
+              <p
+                class="text-[12px] text-[var(--color-sage)]"
+                style="font-family: var(--font-typewriter);"
+                role="status"
+              >
+                {store.passkeyToast}
+              </p>
+            ) : (
+              <>
+                <p
+                  class="text-[12px] leading-5 text-[var(--color-ink-light)]"
+                  style="font-family: var(--font-serif); font-style: italic;"
+                >
+                  Add a passkey to sign in with a tap next time — no email code
+                  to wait for.
+                </p>
+                {store.error && (
+                  <p class="error-slip mt-3" role="alert">
+                    {store.error}
+                  </p>
+                )}
+                <button
+                  type="button"
+                  onClick$={handleAddPasskey}
+                  disabled={store.addingPasskey}
+                  class="btn-paper mt-3 w-full"
+                >
+                  {store.addingPasskey ? "Registering…" : "Add a passkey"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </AuthShellFrame>
     );
   }
@@ -674,18 +725,22 @@ export const AuthPanel = component$(() => {
             {store.sendingOtp ? "Sending…" : "Re-send the code"}
           </button>
 
-          <div class="ornament-divider mt-3">
-            <span style="font-family: var(--font-display);">❦</span>
-          </div>
+          {store.knownPasskey && (
+            <>
+              <div class="ornament-divider mt-3">
+                <span style="font-family: var(--font-display);">❦</span>
+              </div>
 
-          <button
-            type="button"
-            onClick$={handlePasskeySignIn}
-            disabled={store.usingPasskey}
-            class="btn-paper w-full"
-          >
-            {store.usingPasskey ? "Checking…" : "Use a passkey instead"}
-          </button>
+              <button
+                type="button"
+                onClick$={handlePasskeySignIn}
+                disabled={store.usingPasskey}
+                class="btn-paper w-full"
+              >
+                {store.usingPasskey ? "Checking…" : "Use a passkey instead"}
+              </button>
+            </>
+          )}
         </div>
       ) : (
         <div class="space-y-4">
@@ -704,10 +759,7 @@ export const AuthPanel = component$(() => {
             No passkey on this device?{" "}
             <button
               type="button"
-              onClick$={() => {
-                store.chosen = "otp";
-                store.otpSent = false;
-              }}
+              onClick$={switchToOtp$}
               class="text-[var(--color-vermilion)] underline underline-offset-2 hover:text-[var(--color-vermilion-2)]"
               style="font-family: var(--font-serif); font-style: italic;"
             >

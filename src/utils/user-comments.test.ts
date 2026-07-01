@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterAll, afterEach, describe, expect, mock, test } from "bun:test";
+import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
 /**
  * Writer comments live in the Lix file `/user-comments.json` and survive
@@ -8,6 +9,7 @@ import { afterEach, describe, expect, mock, test } from "bun:test";
 
 // Minimal browser global so the local-first guards (`typeof window`)
 // inside user-comments.ts pass and writes actually fire.
+const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 (globalThis as { window?: unknown }).window = {
   localStorage: {
     getItem: () => null,
@@ -42,6 +44,10 @@ const {
 
 afterEach(() => {
   files.length = 0;
+});
+
+afterAll(() => {
+  releaseBrowserGlobalsLock();
 });
 
 describe("user-comments persistence", () => {

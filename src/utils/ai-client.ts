@@ -14,7 +14,12 @@
  *   if (result) { use it } else { fallback to Convex action }
  */
 
-import { generateText, stepCountIs, type LanguageModel, type ToolSet } from "ai";
+import {
+  generateText,
+  stepCountIs,
+  type LanguageModel,
+  type ToolSet,
+} from "ai";
 import type {
   AiSettings,
   AiFeature,
@@ -45,6 +50,12 @@ import {
 } from "./desktop-bridge";
 import { captureAiGeneration } from "./ai-evals";
 import { stripReasoningTags } from "./reasoning-tags";
+import {
+  extractFirstJsonObject,
+  extractTaggedJson,
+  parseJudgeOutput,
+  stripTaggedJson,
+} from "./llm-parsing";
 
 /* ── Provider factory ───────────────────────────────────────────── */
 
@@ -194,7 +205,8 @@ export function resolveFeatureConfigForPersona(
 
   return {
     provider,
-    model: persona.model ?? (personaProvider ? provider.defaultModel : base.model),
+    model:
+      persona.model ?? (personaProvider ? provider.defaultModel : base.model),
     temperature: persona.temperature ?? base.temperature,
     maxTokens: base.maxTokens,
   };
@@ -238,6 +250,8 @@ function defaultTemperature(feature: AiFeature): number {
       return 0.3;
     case "source-detect-missing":
       return 0.2;
+    case "research-web-search":
+      return 0.2;
     default:
       return 0.4;
   }
@@ -269,6 +283,8 @@ function defaultMaxTokens(feature: AiFeature): number {
       return 200;
     case "source-detect-missing":
       return 350;
+    case "research-web-search":
+      return 900;
     default:
       return 300;
   }
@@ -618,7 +634,11 @@ export async function runClientAgent(
   req: AgentRequest,
   settings: AiSettings,
 ): Promise<AgentResponse | null> {
-  const resolved = resolveFeatureConfigForPersona(settings, feature, req.persona);
+  const resolved = resolveFeatureConfigForPersona(
+    settings,
+    feature,
+    req.persona,
+  );
   if (!resolved) return null;
 
   const model = await createModel(resolved.provider, resolved.model);
@@ -729,41 +749,6 @@ export async function runClientRubricReview(
     console.warn("[twyne:ai-client] rubric review failed:", err);
     return null;
   }
-}
-
-/* ── Judge output parser (mirrors convex/agents.ts) ─────────────── */
-
-function parseJudgeOutput(
-  text: string,
-): { score: number; rationale: string } | null {
-  const stripped = stripReasoningTags(text)
-    .replace(/```(?:json)?/gi, "")
-    .replace(/```/g, "")
-    .trim();
-  try {
-    const obj = JSON.parse(stripped);
-    if (typeof obj.score === "number" && typeof obj.rationale === "string") {
-      return { score: clampScore(obj.score), rationale: obj.rationale };
-    }
-  } catch {
-    // fall through
-  }
-  const scoreMatch = stripped.match(/"?score"?\s*[:=]\s*(\d+)/i);
-  const rationaleMatch = stripped.match(/"?rationale"?\s*[:=]\s*"([^"]+)"/i);
-  if (scoreMatch) {
-    return {
-      score: clampScore(parseInt(scoreMatch[1], 10)),
-      rationale:
-        rationaleMatch?.[1] ??
-        "The draft does part of the work and leaves the rest to the writer.",
-    };
-  }
-  return null;
-}
-
-function clampScore(score: number): number {
-  if (!Number.isFinite(score)) return 5;
-  return Math.max(1, Math.min(10, Math.round(score)));
 }
 
 /* ── Public: run a single judge client-side ─────────────────────── */
@@ -1233,6 +1218,111 @@ Respond with JSON only:
   }
 }
 
+export interface ClientResearchSource {
+  title: string;
+  url: string;
+  snippet: string;
+  author?: string;
+  publisher?: string;
+  date?: string;
+  why?: string;
+}
+
+export async function runClientResearchWebSearch(
+  req: {
+    query: string;
+    context?: string;
+    maxResults: number;
+    instructions?: string;
+  },
+  settings: AiSettings,
+): Promise<{ results: ClientResearchSource[]; provider: string } | null> {
+  const resolved = resolveFeatureConfig(settings, "research-web-search");
+  if (!resolved) return null;
+
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+
+  try {
+    const system = [
+      "You are Twyne's bibliography research assistant.",
+      "Use the model endpoint's web-search capability if it is available. Return only sources you can ground in real web results.",
+      "Respond as JSON only.",
+      req.instructions?.trim() || "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+    const prompt = `Find up to ${req.maxResults} credible sources for this writing project.
+
+Query:
+${req.query}
+
+Context:
+${req.context?.trim() || "(none)"}
+
+Return JSON in this exact shape:
+{"results":[{"title":"...","url":"https://...","snippet":"1-2 sentence relevance summary","author":"optional","publisher":"optional","date":"optional","why":"why this source helps the draft"}]}`;
+
+    const text = await generateTrackedText({
+      feature: "research-web-search",
+      resolved,
+      model,
+      system,
+      prompt,
+      spanName: "research_web_search",
+      evalSignals: { twyne_expected_format: "json_research_sources" },
+    });
+    const candidate = extractFirstJsonObject(stripReasoningTags(text));
+    if (!candidate) return null;
+    const parsed = JSON.parse(candidate) as { results?: unknown };
+    const results = normalizeResearchSources(parsed.results, req.maxResults);
+    return results.length
+      ? { results, provider: `${resolved.provider.type}:web-search` }
+      : null;
+  } catch (err) {
+    console.warn("[twyne:ai-client] research web search failed:", err);
+    return null;
+  }
+}
+
+function normalizeResearchSources(
+  value: unknown,
+  maxResults: number,
+): ClientResearchSource[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const rec = item as Record<string, unknown>;
+      const url = typeof rec.url === "string" ? rec.url.trim() : "";
+      const title = typeof rec.title === "string" ? rec.title.trim() : "";
+      if (!url || !/^https?:\/\//i.test(url)) return null;
+      const source: ClientResearchSource = {
+        title: title || url,
+        url,
+        snippet:
+          typeof rec.snippet === "string" && rec.snippet.trim()
+            ? rec.snippet.trim()
+            : "Source returned by the configured web-search model endpoint.",
+      };
+      if (typeof rec.author === "string" && rec.author.trim()) {
+        source.author = rec.author.trim();
+      }
+      if (typeof rec.publisher === "string" && rec.publisher.trim()) {
+        source.publisher = rec.publisher.trim();
+      }
+      if (typeof rec.date === "string" && rec.date.trim()) {
+        source.date = rec.date.trim();
+      }
+      if (typeof rec.why === "string" && rec.why.trim()) {
+        source.why = rec.why.trim();
+      }
+      return source;
+    })
+    .filter((source): source is ClientResearchSource => source !== null)
+    .slice(0, maxResults);
+}
+
 /* ── Public: build full settings from partial ───────────────────── */
 
 export function normalizeAiSettings(
@@ -1373,52 +1463,6 @@ const INTERVIEW_FIELDS = [
   "successSignal",
 ] as const satisfies ReadonlyArray<keyof ProjectInterviewAnswers>;
 
-function extractTaggedJson(
-  text: string,
-  tag: "DOSSIER" | "SYNTHESIZE",
-): { value: unknown; start: number; end: number } | null {
-  const marker = new RegExp(`${tag}:`, "i").exec(text);
-  if (!marker) return null;
-  const open = text.indexOf("{", marker.index + marker[0].length);
-  if (open < 0) return null;
-
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-  for (let i = open; i < text.length; i += 1) {
-    const ch = text[i];
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-    if (ch === "\\") {
-      escaped = true;
-      continue;
-    }
-    if (ch === '"') {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (ch === "{") depth += 1;
-    if (ch === "}") {
-      depth -= 1;
-      if (depth === 0) {
-        try {
-          return {
-            value: JSON.parse(text.slice(open, i + 1)),
-            start: marker.index,
-            end: i + 1,
-          };
-        } catch {
-          return null;
-        }
-      }
-    }
-  }
-  return null;
-}
-
 function normalizeInterviewDossierDraft(
   value: unknown,
 ): InterviewDossierDraft | null {
@@ -1448,13 +1492,6 @@ function normalizeInterviewDossierDraft(
     }
   }
   return Object.keys(brief).length > 0 ? { brief, confidence } : null;
-}
-
-function stripTaggedJson(
-  text: string,
-  segment: { start: number; end: number },
-) {
-  return `${text.slice(0, segment.start)}${text.slice(segment.end)}`.trim();
 }
 
 /**

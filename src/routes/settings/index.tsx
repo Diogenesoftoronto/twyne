@@ -69,6 +69,12 @@ interface SettingsStore {
   defaultCitationStyle: ApparatusSettings["defaultCitationStyle"];
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
+  researchProvider: ApparatusSettings["researchProvider"];
+  tinyFishApiKey: string;
+  tinyFishMaxResults: number;
+  mcpEndpointUrl: string;
+  mcpToolName: string;
+  mcpBearerToken: string;
   /* account deletion (danger zone) */
   deletingAccount: boolean;
   accountToast: string | null;
@@ -86,7 +92,7 @@ interface SettingsStore {
   handleToast: string | null;
   handleCheck: {
     available: boolean;
-    normalized?: string;
+    handle?: string;
     reason?: string;
   } | null;
   handleCheckBusy: boolean;
@@ -94,6 +100,10 @@ interface SettingsStore {
   profileBio: string;
   profileBusy: boolean;
   profileToast: string | null;
+  /** Resolved URL of the saved profile picture, or null if none. */
+  profileAvatarUrl: string | null;
+  /** True while an avatar upload/clear round-trip is in flight. */
+  profileAvatarBusy: boolean;
 }
 
 const FEATURE_LABELS: Record<AiFeature, string> = {
@@ -109,6 +119,7 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "citation-format": "Citation Format",
   "source-summarize": "Source Summarize",
   "source-detect-missing": "Missing Source Detection",
+  "research-web-search": "Apparatus Web Search",
   "interview-turn": "Conversational Interview",
   "dossier-check": "Read My Draft",
 };
@@ -131,6 +142,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "source-summarize": "AI summarizes saved sources for your bibliography.",
   "source-detect-missing":
     "AI detects claims in your draft that need citations.",
+  "research-web-search":
+    "The Apparatus asks a model endpoint with web-search support for source candidates.",
   "interview-turn":
     "The room interviews you, one question at a time, and synthesises a dossier from your answers.",
   "dossier-check":
@@ -155,6 +168,20 @@ function providerModelOptions(provider: AiProviderConfig): string[] {
       ].filter(Boolean),
     ),
   );
+}
+
+function buildApparatusSettings(store: SettingsStore): ApparatusSettings {
+  return {
+    defaultCitationStyle: store.defaultCitationStyle,
+    aiEnhanceCitations: store.aiEnhanceCitations,
+    flagMissingSources: store.flagMissingSources,
+    researchProvider: store.researchProvider,
+    tinyFishApiKey: store.tinyFishApiKey,
+    tinyFishMaxResults: store.tinyFishMaxResults,
+    mcpEndpointUrl: store.mcpEndpointUrl,
+    mcpToolName: store.mcpToolName,
+    mcpBearerToken: store.mcpBearerToken,
+  };
 }
 
 /* ── Component ──────────────────────────────────────────────────── */
@@ -183,6 +210,12 @@ export default component$(() => {
     defaultCitationStyle: DEFAULT_APPARATUS_SETTINGS.defaultCitationStyle,
     aiEnhanceCitations: DEFAULT_APPARATUS_SETTINGS.aiEnhanceCitations,
     flagMissingSources: DEFAULT_APPARATUS_SETTINGS.flagMissingSources,
+    researchProvider: DEFAULT_APPARATUS_SETTINGS.researchProvider,
+    tinyFishApiKey: DEFAULT_APPARATUS_SETTINGS.tinyFishApiKey,
+    tinyFishMaxResults: DEFAULT_APPARATUS_SETTINGS.tinyFishMaxResults,
+    mcpEndpointUrl: DEFAULT_APPARATUS_SETTINGS.mcpEndpointUrl,
+    mcpToolName: DEFAULT_APPARATUS_SETTINGS.mcpToolName,
+    mcpBearerToken: DEFAULT_APPARATUS_SETTINGS.mcpBearerToken,
     writerStyle: "form",
     writerToast: null,
     deletingAccount: false,
@@ -204,6 +237,8 @@ export default component$(() => {
     profileBio: "",
     profileBusy: false,
     profileToast: null,
+    profileAvatarUrl: null,
+    profileAvatarBusy: false,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -225,6 +260,12 @@ export default component$(() => {
     store.defaultCitationStyle = apparatus.defaultCitationStyle;
     store.aiEnhanceCitations = apparatus.aiEnhanceCitations;
     store.flagMissingSources = apparatus.flagMissingSources;
+    store.researchProvider = apparatus.researchProvider;
+    store.tinyFishApiKey = apparatus.tinyFishApiKey;
+    store.tinyFishMaxResults = apparatus.tinyFishMaxResults;
+    store.mcpEndpointUrl = apparatus.mcpEndpointUrl;
+    store.mcpToolName = apparatus.mcpToolName;
+    store.mcpBearerToken = apparatus.mcpBearerToken;
     store.loaded = true;
   });
 
@@ -262,6 +303,12 @@ export default component$(() => {
     store.defaultCitationStyle = settings.defaultCitationStyle;
     store.aiEnhanceCitations = settings.aiEnhanceCitations;
     store.flagMissingSources = settings.flagMissingSources;
+    store.researchProvider = settings.researchProvider;
+    store.tinyFishApiKey = settings.tinyFishApiKey;
+    store.tinyFishMaxResults = settings.tinyFishMaxResults;
+    store.mcpEndpointUrl = settings.mcpEndpointUrl;
+    store.mcpToolName = settings.mcpToolName;
+    store.mcpBearerToken = settings.mcpBearerToken;
     await saveApparatusSettingsToIdb(settings);
     store.toast = "Preferences saved";
     setTimeout(() => (store.toast = null), 1800);
@@ -508,11 +555,13 @@ export default component$(() => {
         handle: string;
         displayName: string | null;
         bio: string | null;
+        avatarUrl: string | null;
       } | null;
       store.handle = row?.handle ?? null;
       store.handleDraft = row?.handle ?? "";
       store.profileDisplayName = row?.displayName ?? "";
       store.profileBio = row?.bio ?? "";
+      store.profileAvatarUrl = row?.avatarUrl ?? null;
     } catch {
       // The Convex client may be in mid-reconnect; we'll retry on next track.
     } finally {
@@ -594,6 +643,72 @@ export default component$(() => {
       store.handleError = e?.message ?? "Could not save profile.";
     } finally {
       store.profileBusy = false;
+    }
+  });
+
+  const handleAvatarSelected = $(async (file: File) => {
+    const client = convexClientSig.value;
+    if (!client) return;
+    if (!file.type.startsWith("image/")) {
+      store.handleError = "Choose an image file for your profile picture.";
+      return;
+    }
+    // Keep avatars small; the bucket isn't a CDN for large media.
+    if (file.size > 5 * 1024 * 1024) {
+      store.handleError = "Profile pictures must be 5 MB or smaller.";
+      return;
+    }
+    store.profileAvatarBusy = true;
+    store.handleError = null;
+    store.profileToast = null;
+    try {
+      const uploadUrl = (await client.mutation(
+        api.profiles.generateAvatarUploadUrl,
+        {},
+      )) as string;
+      const res = await fetch(uploadUrl, {
+        method: "POST",
+        headers: { "Content-Type": file.type },
+        body: file,
+      });
+      if (!res.ok) {
+        throw new Error("Upload failed. Try again.");
+      }
+      const { storageId } = (await res.json()) as { storageId: string };
+      await client.mutation(api.profiles.updateProfile, {
+        avatarStorageId: storageId as any,
+      });
+      // Re-read the resolved URL so the preview reflects the stored blob.
+      const row = (await client.query(api.profiles.getMyHandle, {})) as {
+        avatarUrl: string | null;
+      } | null;
+      store.profileAvatarUrl = row?.avatarUrl ?? null;
+      store.profileToast = "Profile picture updated.";
+      setTimeout(() => (store.profileToast = null), 4000);
+    } catch (e: any) {
+      store.handleError = e?.message ?? "Could not update your picture.";
+    } finally {
+      store.profileAvatarBusy = false;
+    }
+  });
+
+  const handleAvatarClear = $(async () => {
+    const client = convexClientSig.value;
+    if (!client) return;
+    store.profileAvatarBusy = true;
+    store.handleError = null;
+    store.profileToast = null;
+    try {
+      await client.mutation(api.profiles.updateProfile, {
+        avatarStorageId: null,
+      });
+      store.profileAvatarUrl = null;
+      store.profileToast = "Profile picture removed.";
+      setTimeout(() => (store.profileToast = null), 4000);
+    } catch (e: any) {
+      store.handleError = e?.message ?? "Could not remove your picture.";
+    } finally {
+      store.profileAvatarBusy = false;
     }
   });
 
@@ -1916,9 +2031,8 @@ export default component$(() => {
                         key={s}
                         onClick$={() => {
                           void persistApparatusSettings({
+                            ...buildApparatusSettings(store),
                             defaultCitationStyle: s,
-                            aiEnhanceCitations: store.aiEnhanceCitations,
-                            flagMissingSources: store.flagMissingSources,
                           });
                         }}
                         class={`flex-1 text-sm py-1.5 border ${
@@ -1952,10 +2066,9 @@ export default component$(() => {
                     checked={store.aiEnhanceCitations}
                     onChange$={(e) => {
                       void persistApparatusSettings({
-                        defaultCitationStyle: store.defaultCitationStyle,
+                        ...buildApparatusSettings(store),
                         aiEnhanceCitations: (e.target as HTMLInputElement)
                           .checked,
-                        flagMissingSources: store.flagMissingSources,
                       });
                     }}
                     class="sr-only"
@@ -1989,8 +2102,7 @@ export default component$(() => {
                     checked={store.flagMissingSources}
                     onChange$={(e) => {
                       void persistApparatusSettings({
-                        defaultCitationStyle: store.defaultCitationStyle,
-                        aiEnhanceCitations: store.aiEnhanceCitations,
+                        ...buildApparatusSettings(store),
                         flagMissingSources: (e.target as HTMLInputElement)
                           .checked,
                       });
@@ -2013,6 +2125,217 @@ export default component$(() => {
                     />
                   </span>
                 </label>
+
+                <div class="pt-4 border-t border-dashed border-[var(--color-paper-3)] space-y-3">
+                  <div>
+                    <label
+                      class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Research provider
+                    </label>
+                    <select
+                      value={store.researchProvider}
+                      onChange$={(e) => {
+                        void persistApparatusSettings({
+                          ...buildApparatusSettings(store),
+                          researchProvider: (e.target as HTMLSelectElement)
+                            .value as ApparatusSettings["researchProvider"],
+                        });
+                      }}
+                      class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                      style={{
+                        fontFamily: "var(--font-typewriter)",
+                        borderRadius: "2px",
+                      }}
+                    >
+                      <option value="hosted">Hosted Twyne search</option>
+                      <option value="tinyfish">
+                        TinyFish key in this browser
+                      </option>
+                      <option value="model-web-search">
+                        Model endpoint web search
+                      </option>
+                      <option value="web-mcp">Web-search MCP endpoint</option>
+                    </select>
+                    <p
+                      class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Browser-side providers fall back to hosted search if they
+                      cannot return sources.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label
+                      class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Max sources per search
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={20}
+                      value={store.tinyFishMaxResults}
+                      onInput$={(e) => {
+                        const next = Number(
+                          (e.target as HTMLInputElement).value,
+                        );
+                        store.tinyFishMaxResults = Math.max(
+                          1,
+                          Math.min(20, Number.isFinite(next) ? next : 8),
+                        );
+                      }}
+                      onBlur$={() => {
+                        void persistApparatusSettings(
+                          buildApparatusSettings(store),
+                        );
+                      }}
+                      class="w-24 text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                      style={{
+                        fontFamily: "var(--font-typewriter)",
+                        borderRadius: "2px",
+                      }}
+                    />
+                  </div>
+
+                  {store.researchProvider === "tinyfish" && (
+                    <div>
+                      <label
+                        class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        TinyFish API key
+                      </label>
+                      <input
+                        type="password"
+                        value={store.tinyFishApiKey}
+                        onInput$={(e) => {
+                          store.tinyFishApiKey = (
+                            e.target as HTMLInputElement
+                          ).value;
+                        }}
+                        onBlur$={() => {
+                          void persistApparatusSettings(
+                            buildApparatusSettings(store),
+                          );
+                        }}
+                        placeholder="tf-..."
+                        class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          borderRadius: "2px",
+                        }}
+                      />
+                      <p
+                        class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        Stored in this browser and sent directly to TinyFish.
+                      </p>
+                    </div>
+                  )}
+
+                  {store.researchProvider === "model-web-search" && (
+                    <p
+                      class="text-[0.65rem] text-[var(--color-ink-muted)] leading-relaxed"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Uses the Apparatus Web Search feature routing above.
+                      Choose a provider/model whose endpoint has web search
+                      enabled.
+                    </p>
+                  )}
+
+                  {store.researchProvider === "web-mcp" && (
+                    <div class="space-y-3">
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          MCP endpoint URL
+                        </label>
+                        <input
+                          value={store.mcpEndpointUrl}
+                          onInput$={(e) => {
+                            store.mcpEndpointUrl = (
+                              e.target as HTMLInputElement
+                            ).value;
+                          }}
+                          onBlur$={() => {
+                            void persistApparatusSettings(
+                              buildApparatusSettings(store),
+                            );
+                          }}
+                          placeholder="http://127.0.0.1:8787/mcp"
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Tool name
+                        </label>
+                        <input
+                          value={store.mcpToolName}
+                          onInput$={(e) => {
+                            store.mcpToolName = (
+                              e.target as HTMLInputElement
+                            ).value;
+                          }}
+                          onBlur$={() => {
+                            void persistApparatusSettings(
+                              buildApparatusSettings(store),
+                            );
+                          }}
+                          placeholder="search"
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Bearer token
+                        </label>
+                        <input
+                          type="password"
+                          value={store.mcpBearerToken}
+                          onInput$={(e) => {
+                            store.mcpBearerToken = (
+                              e.target as HTMLInputElement
+                            ).value;
+                          }}
+                          onBlur$={() => {
+                            void persistApparatusSettings(
+                              buildApparatusSettings(store),
+                            );
+                          }}
+                          placeholder="Optional"
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
 
@@ -2187,7 +2510,7 @@ export default component$(() => {
                       class="text-[var(--color-accent-green)]"
                       style={{ fontFamily: "var(--font-typewriter)" }}
                     >
-                      @{store.handleCheck.normalized} is available.
+                      @{store.handleCheck.handle} is available.
                     </span>
                   )}
                   {!store.handleCheckBusy &&
@@ -2240,6 +2563,79 @@ export default component$(() => {
                     >
                       Profile (optional)
                     </p>
+                    {/* Profile picture */}
+                    <div class="mb-4 flex items-center gap-4">
+                      <div
+                        class="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--color-paper-3)] bg-[var(--color-paper)]"
+                        aria-hidden="true"
+                      >
+                        {store.profileAvatarUrl ? (
+                          <img
+                            src={store.profileAvatarUrl}
+                            alt=""
+                            width="64"
+                            height="64"
+                            class="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <svg
+                            width="28"
+                            height="28"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="var(--color-ink-muted)"
+                            stroke-width="1.5"
+                          >
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                            <circle cx="12" cy="7" r="4" />
+                          </svg>
+                        )}
+                      </div>
+                      <div class="flex-1">
+                        <label
+                          class="block text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                          for="writer-avatar"
+                        >
+                          Profile picture
+                        </label>
+                        <div class="flex flex-wrap items-center gap-2">
+                          <input
+                            id="writer-avatar"
+                            type="file"
+                            accept="image/*"
+                            disabled={store.profileAvatarBusy}
+                            onChange$={(e) => {
+                              const input = e.target as HTMLInputElement;
+                              const file = input.files?.[0];
+                              if (file) void handleAvatarSelected(file);
+                              input.value = "";
+                            }}
+                            class="block w-full text-xs text-[var(--color-ink-light)] file:mr-3 file:border file:border-[var(--color-paper-3)] file:bg-[var(--color-paper)] file:px-3 file:py-1.5 file:text-xs file:text-[var(--color-ink)] hover:file:border-[var(--color-ink)]"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          />
+                          {store.profileAvatarUrl && (
+                            <button
+                              type="button"
+                              onClick$={handleAvatarClear}
+                              disabled={store.profileAvatarBusy}
+                              class="text-[0.7rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:underline disabled:opacity-50"
+                              style={{ fontFamily: "var(--font-typewriter)" }}
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                        <p
+                          class="mt-1 text-[0.65rem] text-[var(--color-ink-muted)]"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          {store.profileAvatarBusy
+                            ? "Working…"
+                            : "PNG or JPG, up to 5 MB. Shown on your public profile."}
+                        </p>
+                      </div>
+                    </div>
                     <label
                       class="block text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-1"
                       style={{ fontFamily: "var(--font-typewriter)" }}

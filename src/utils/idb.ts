@@ -113,14 +113,30 @@ function hasWindow(): boolean {
   return typeof window !== "undefined";
 }
 
+function getLocalStorage():
+  | {
+      getItem: (key: string) => string | null;
+      setItem: (key: string, value: string) => void;
+    }
+  | null {
+  if (typeof globalThis.localStorage !== "undefined") {
+    return globalThis.localStorage;
+  }
+  if (hasWindow() && typeof window.localStorage !== "undefined") {
+    return window.localStorage;
+  }
+  return null;
+}
+
 function hasIndexedDb(): boolean {
   return typeof indexedDB !== "undefined";
 }
 
 function readLocalStorageJson<T>(key: string): T | null {
-  if (!hasWindow()) return null;
+  const storage = getLocalStorage();
+  if (!storage) return null;
   try {
-    const raw = window.localStorage.getItem(key);
+    const raw = storage.getItem(key);
     return raw ? (JSON.parse(raw) as T) : null;
   } catch {
     return null;
@@ -128,9 +144,10 @@ function readLocalStorageJson<T>(key: string): T | null {
 }
 
 function writeLocalStorageJson(key: string, value: unknown): void {
-  if (!hasWindow()) return;
+  const storage = getLocalStorage();
+  if (!storage) return;
   try {
-    window.localStorage.setItem(key, JSON.stringify(value));
+    storage.setItem(key, JSON.stringify(value));
   } catch {
     /* ignore */
   }
@@ -152,6 +169,11 @@ function normalizeApparatusSettings(value: unknown): ApparatusSettings {
     return { ...DEFAULT_APPARATUS_SETTINGS };
   }
   const v = value as Partial<ApparatusSettings>;
+  const maxResults =
+    typeof v.tinyFishMaxResults === "number" &&
+    Number.isFinite(v.tinyFishMaxResults)
+      ? Math.round(v.tinyFishMaxResults)
+      : DEFAULT_APPARATUS_SETTINGS.tinyFishMaxResults;
   return {
     defaultCitationStyle:
       v.defaultCitationStyle === "apa" ||
@@ -161,6 +183,23 @@ function normalizeApparatusSettings(value: unknown): ApparatusSettings {
         : DEFAULT_APPARATUS_SETTINGS.defaultCitationStyle,
     aiEnhanceCitations: v.aiEnhanceCitations === true,
     flagMissingSources: v.flagMissingSources === true,
+    researchProvider:
+      v.researchProvider === "tinyfish" ||
+      v.researchProvider === "model-web-search" ||
+      v.researchProvider === "web-mcp"
+        ? v.researchProvider
+        : DEFAULT_APPARATUS_SETTINGS.researchProvider,
+    tinyFishApiKey:
+      typeof v.tinyFishApiKey === "string" ? v.tinyFishApiKey : "",
+    tinyFishMaxResults: Math.max(1, Math.min(20, maxResults)),
+    mcpEndpointUrl:
+      typeof v.mcpEndpointUrl === "string" ? v.mcpEndpointUrl : "",
+    mcpToolName:
+      typeof v.mcpToolName === "string" && v.mcpToolName.trim()
+        ? v.mcpToolName
+        : DEFAULT_APPARATUS_SETTINGS.mcpToolName,
+    mcpBearerToken:
+      typeof v.mcpBearerToken === "string" ? v.mcpBearerToken : "",
   };
 }
 
@@ -380,7 +419,7 @@ export async function savePersonasToIdb(personas: Persona[]): Promise<void> {
 /* ── Writer settings (single record, key="current") ───────────── */
 
 export async function loadWriterSettingsFromIdb(): Promise<WriterSettings> {
-  if (!hasWindow()) return { ...DEFAULT_WRITER_SETTINGS };
+  if (!getLocalStorage() && !hasIndexedDb()) return { ...DEFAULT_WRITER_SETTINGS };
   const local = readLocalStorageJson<unknown>(WRITER_SETTINGS_STORAGE_KEY);
   if (local) return normalizeWriterSettings(local);
   if (hasIndexedDb()) {
@@ -406,7 +445,7 @@ export async function loadWriterSettingsFromIdb(): Promise<WriterSettings> {
 export async function saveWriterSettingsToIdb(
   settings: WriterSettings,
 ): Promise<void> {
-  if (!hasWindow()) return;
+  if (!getLocalStorage() && !hasIndexedDb()) return;
   const normalized = normalizeWriterSettings(settings);
   writeLocalStorageJson(WRITER_SETTINGS_STORAGE_KEY, normalized);
   if (!hasIndexedDb()) return;
@@ -428,7 +467,9 @@ export async function saveWriterSettingsToIdb(
 }
 
 export async function loadApparatusSettingsFromIdb(): Promise<ApparatusSettings> {
-  if (!hasWindow()) return { ...DEFAULT_APPARATUS_SETTINGS };
+  if (!getLocalStorage() && !hasIndexedDb()) {
+    return { ...DEFAULT_APPARATUS_SETTINGS };
+  }
   const local = readLocalStorageJson<unknown>(APPARATUS_SETTINGS_STORAGE_KEY);
   if (local) return normalizeApparatusSettings(local);
   if (hasIndexedDb()) {
@@ -454,7 +495,7 @@ export async function loadApparatusSettingsFromIdb(): Promise<ApparatusSettings>
 export async function saveApparatusSettingsToIdb(
   settings: ApparatusSettings,
 ): Promise<void> {
-  if (!hasWindow()) return;
+  if (!getLocalStorage() && !hasIndexedDb()) return;
   const normalized = normalizeApparatusSettings(settings);
   writeLocalStorageJson(APPARATUS_SETTINGS_STORAGE_KEY, normalized);
   if (!hasIndexedDb()) return;
@@ -591,7 +632,7 @@ export async function saveMetaToIdb(
 /* ── AI settings (single record, key="current") ──────────────── */
 
 export async function loadAiSettingsFromIdb(): Promise<AiSettings | null> {
-  if (!hasWindow()) return null;
+  if (!getLocalStorage() && !hasIndexedDb()) return null;
   const local = readLocalStorageJson<AiSettings>(AI_SETTINGS_STORAGE_KEY);
   if (local) return local;
   if (hasIndexedDb()) {
@@ -614,7 +655,7 @@ export async function loadAiSettingsFromIdb(): Promise<AiSettings | null> {
 }
 
 export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
-  if (!hasWindow()) return;
+  if (!getLocalStorage() && !hasIndexedDb()) return;
   writeLocalStorageJson(AI_SETTINGS_STORAGE_KEY, settings);
   if (!hasIndexedDb()) return;
   try {

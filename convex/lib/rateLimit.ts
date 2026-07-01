@@ -158,10 +158,14 @@ export const RATE_LIMITS = {
   agentFeedback: { limit: 30, windowMs: 60_000 },
   /** Suggested rewrite: 30 per minute per user. */
   agentRewrite: { limit: 30, windowMs: 60_000 },
-  /** Research / apparatus: 15 per minute per user. */
+  /** Research / apparatus, Pro tier: 15 per minute per user. */
   research: { limit: 15, windowMs: 60_000 },
+  /** Research / apparatus, signed-in free tier: 5 per minute per user. */
+  researchFree: { limit: 5, windowMs: 60_000 },
   /** Room convene (fans out to one LLM call per persona): 6 per minute. */
   agentRoom: { limit: 6, windowMs: 60_000 },
   /** Handle claim attempts: 5 per minute per user. */
   handleClaim: { limit: 5, windowMs: 60_000 },
+  /** Avatar upload URL requests: 10 per minute per user. */
+  avatarUpload: { limit: 10, windowMs: 60_000 },
 } as const;

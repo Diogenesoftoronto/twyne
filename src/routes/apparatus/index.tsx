@@ -49,6 +49,7 @@ interface ApparatusStore {
     lastQueryAt: number;
     savedThisSession: number;
     lastTickAt: number;
+    provider?: string;
     error?: string;
   };
   showResearchLog: boolean;
@@ -131,6 +132,7 @@ export default component$(() => {
         lastQueryAt: s.lastQueryAt,
         savedThisSession: s.savedThisSession,
         lastTickAt: s.lastTickAt,
+        provider: s.provider,
         error: s.error,
       };
     };
@@ -207,12 +209,12 @@ export default component$(() => {
     }
   `);
 
-  const setStyle = $((s: CitationStyle) => {
+  const setStyle = $(async (s: CitationStyle) => {
     store.style = s;
-    void saveApparatusSettingsToIdb({
+    const current = await loadApparatusSettingsFromIdb();
+    await saveApparatusSettingsToIdb({
+      ...current,
       defaultCitationStyle: s,
-      aiEnhanceCitations: store.aiEnhanceCitations,
-      flagMissingSources: store.flagMissingSources,
     });
   });
 
@@ -434,6 +436,14 @@ export default component$(() => {
                   style={{ fontFamily: "var(--font-typewriter)" }}
                 >
                   The query is derived from your brief and the current draft.
+                </p>
+              )}
+              {store.research.provider && (
+                <p
+                  class="text-[0.65rem] text-[var(--color-ink-muted)] mt-0.5"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  provider: {store.research.provider}
                 </p>
               )}
             </div>

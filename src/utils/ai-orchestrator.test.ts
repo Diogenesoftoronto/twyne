@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, mock, test } from "bun:test";
+import { afterAll, afterEach, describe, expect, mock, test } from "bun:test";
 import type { AiSettings } from "../types";
 
 const mockState: {
@@ -43,6 +43,10 @@ afterEach(() => {
   mockState.clientResult = null;
   mockState.runClientCalls = [];
   invalidateAiSettingsCache();
+});
+
+afterAll(() => {
+  mock.restore();
 });
 
 describe("ai-orchestrator", () => {
