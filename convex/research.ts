@@ -164,27 +164,28 @@ export const searchSources = action({
     ctx,
     args,
   ): Promise<{ results: Source[]; provider: string }> => {
-    // Live research spends the TinyFish provider key, so it requires a signed-in
-    // Pro subscriber. Signed-in free users (and local dev with no key) get the
-    // deterministic local stub so the Apparatus never breaks.
+    // Live research spends the TinyFish provider key, so it requires a
+    // signed-in user. Pro subscribers get a higher rate-limit tier; signed-out
+    // visitors (and local dev with no key) get the deterministic local stub
+    // so the Apparatus never breaks.
     const identity = await ctx.auth.getUserIdentity();
 
     // Rate limit on the host-provider path. The local stub is free and
     // unthrottled-by-design (it's what makes the Apparatus never break), but
     // the bucket is consumed first so a noisy client can't bypass via a
     // provider that happens to be configured.
+    const isPro = identity
+      ? await userIsPro(ctx, identity.tokenIdentifier)
+      : false;
     if (identity) {
       await consumeRateLimit(ctx, {
         action: "research:search",
         identifier: identity.tokenIdentifier,
-        ...RATE_LIMITS.research,
+        ...(isPro ? RATE_LIMITS.research : RATE_LIMITS.researchFree),
       });
     }
 
-    const canHost = identity
-      ? await userIsPro(ctx, identity.tokenIdentifier)
-      : false;
-    if (canHost && process.env.TINYFISH_API_KEY) {
+    if (identity && process.env.TINYFISH_API_KEY) {
       const r = await tinyfishSearch(args.query, args.context ?? "");
       if (r.length > 0) return { results: r, provider: "tinyfish" };
     }
@@ -202,17 +203,17 @@ export const fetchSource = action({
     args,
   ): Promise<FetchedSource & { provider: string }> => {
     const identity = await ctx.auth.getUserIdentity();
+    const isPro = identity
+      ? await userIsPro(ctx, identity.tokenIdentifier)
+      : false;
     if (identity) {
       await consumeRateLimit(ctx, {
         action: "research:fetch",
         identifier: identity.tokenIdentifier,
-        ...RATE_LIMITS.research,
+        ...(isPro ? RATE_LIMITS.research : RATE_LIMITS.researchFree),
       });
     }
-    const canHost = identity
-      ? await userIsPro(ctx, identity.tokenIdentifier)
-      : false;
-    if (canHost && process.env.TINYFISH_API_KEY) {
+    if (identity && process.env.TINYFISH_API_KEY) {
       const r = await tinyfishFetch(args.url);
       if (r) return { ...r, provider: "tinyfish" };
     }

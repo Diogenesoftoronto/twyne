@@ -28,6 +28,15 @@ test("landing to onboarding to signup to subscription to rubric", async ({
       .getByRole("button", { name: /start your brief/i })
       .first()
       .click();
+    // Unauthenticated writers meet the onboarding choice first: "Want to make
+    // an account, or just check things out?" Continue locally, then accept the
+    // minimal default settings to reach the interview.
+    await expect(page).toHaveURL(/\/onboarding\//);
+    await page
+      .getByRole("button", { name: /just check things out/i })
+      .first()
+      .click();
+    await page.getByRole("button", { name: "Begin" }).click();
     await expect(page).toHaveURL(/\/dossier\/create\//);
 
     const interview = [

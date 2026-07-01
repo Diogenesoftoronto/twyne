@@ -18,7 +18,9 @@
 import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import type { Source } from "../../convex/research";
-import type { ProjectBrief } from "../types";
+import type { ApparatusSettings, ProjectBrief } from "../types";
+import { loadAiSettingsFromIdb, loadApparatusSettingsFromIdb } from "./idb";
+import { runClientResearchWebSearch } from "./ai-client";
 import {
   type BibEntry,
   loadBibliography,
@@ -38,6 +40,7 @@ interface ResearchState {
   savedThisSession: number;
   /** Last "now researching" indicator. */
   lastTickAt: number;
+  lastProvider?: string;
   lastStatus: "idle" | "running" | "saving" | "error";
   lastError?: string;
 }
@@ -55,10 +58,7 @@ let activeClient: ConvexClient | null = null;
 let activeBrief: ProjectBrief | null = null;
 let activeFolioId: string | null = null;
 
-function setStatus(
-  status: ResearchState["lastStatus"],
-  error?: string,
-): void {
+function setStatus(status: ResearchState["lastStatus"], error?: string): void {
   state.lastStatus = status;
   state.lastTickAt = Date.now();
   if (error) state.lastError = error;
@@ -81,6 +81,7 @@ export function snapshot() {
     status: state.lastStatus,
     error: state.lastError,
     activeFolioId,
+    provider: state.lastProvider,
   };
 }
 
@@ -145,14 +146,13 @@ export function startBackgroundResearch(args: {
 
 /** Re-run research now (used on folio switch and on initial load). */
 export function kickBackgroundResearch(draftText: string): void {
-  if (!activeClient) return;
   if (!activeFolioId) return;
   schedule(draftText, 0);
 }
 
 /** Notify the watcher that the draft has changed. Debounced. */
 export function onDraftChanged(draftText: string): void {
-  if (!activeClient || !activeFolioId) return;
+  if (!activeFolioId) return;
   schedule(draftText, DEBOUNCE_MS);
 }
 
@@ -176,18 +176,210 @@ async function runOnce(draftText: string): Promise<void> {
   notify();
 
   try {
-    const res = (await activeClient.action(api.research.searchSources, {
+    const context = activeBrief
+      ? `${activeBrief.answers.audience ?? ""} · ${activeBrief.answers.goal ?? ""}`.trim()
+      : undefined;
+    const apparatusSettings = await loadApparatusSettingsFromIdb();
+    const configured = await searchWithConfiguredProvider(
       query,
-      context: activeBrief
-        ? `${activeBrief.answers.audience ?? ""} · ${activeBrief.answers.goal ?? ""}`.trim()
-        : undefined,
-    })) as { results: Source[]; provider: string };
+      context,
+      apparatusSettings,
+    );
+    const res =
+      configured ??
+      ((activeClient
+        ? await activeClient.action(api.research.searchSources, {
+            query,
+            context,
+          })
+        : { results: [], provider: "offline" }) as {
+        results: Source[];
+        provider: string;
+      });
+    state.lastProvider = res.provider;
     setStatus("saving");
     await persist(res.results ?? [], query);
     setStatus("idle");
   } catch (err) {
     setStatus("error", (err as Error).message);
   }
+}
+
+const TINYFISH_SEARCH_URL = "https://api.search.tinyfish.ai/v1/search";
+
+async function searchWithConfiguredProvider(
+  query: string,
+  context: string | undefined,
+  settings: ApparatusSettings,
+): Promise<{ results: Source[]; provider: string } | null> {
+  switch (settings.researchProvider) {
+    case "tinyfish":
+      return searchTinyFishInBrowser(query, context, settings);
+    case "model-web-search":
+      return searchModelEndpoint(query, context, settings);
+    case "web-mcp":
+      return searchWebMcp(query, context, settings);
+    case "hosted":
+    default:
+      return null;
+  }
+}
+
+async function searchTinyFishInBrowser(
+  query: string,
+  context: string | undefined,
+  settings: ApparatusSettings,
+): Promise<{ results: Source[]; provider: string } | null> {
+  const key = settings.tinyFishApiKey.trim();
+  if (!key) return null;
+  try {
+    const res = await fetch(TINYFISH_SEARCH_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        authorization: `Bearer ${key}`,
+      },
+      body: JSON.stringify({
+        query,
+        context: context ?? "",
+        num_results: settings.tinyFishMaxResults,
+      }),
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { results?: unknown };
+    const results = normalizeSources(data.results, settings.tinyFishMaxResults);
+    return results.length ? { results, provider: "tinyfish:byok" } : null;
+  } catch {
+    return null;
+  }
+}
+
+async function searchModelEndpoint(
+  query: string,
+  context: string | undefined,
+  settings: ApparatusSettings,
+): Promise<{ results: Source[]; provider: string } | null> {
+  const aiSettings = await loadAiSettingsFromIdb();
+  if (!aiSettings) return null;
+  return runClientResearchWebSearch(
+    {
+      query,
+      context,
+      maxResults: settings.tinyFishMaxResults,
+      instructions:
+        "If the selected provider exposes a web-search tool or model-native search mode, use it before answering.",
+    },
+    aiSettings,
+  );
+}
+
+async function searchWebMcp(
+  query: string,
+  context: string | undefined,
+  settings: ApparatusSettings,
+): Promise<{ results: Source[]; provider: string } | null> {
+  const endpoint = settings.mcpEndpointUrl.trim();
+  const toolName = settings.mcpToolName.trim() || "search";
+  if (!endpoint) return null;
+  try {
+    const headers: Record<string, string> = {
+      "content-type": "application/json",
+    };
+    const token = settings.mcpBearerToken.trim();
+    if (token) headers.authorization = `Bearer ${token}`;
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: `twyne-${Date.now()}`,
+        method: "tools/call",
+        params: {
+          name: toolName,
+          arguments: {
+            query,
+            context,
+            max_results: settings.tinyFishMaxResults,
+          },
+        },
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const results = normalizeMcpSources(data, settings.tinyFishMaxResults);
+    return results.length ? { results, provider: `mcp:${toolName}` } : null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeMcpSources(value: unknown, maxResults: number): Source[] {
+  const direct = normalizeSources(value, maxResults);
+  if (direct.length) return direct;
+  if (!value || typeof value !== "object") return [];
+  const rec = value as Record<string, unknown>;
+  for (const key of ["results", "sources", "data"]) {
+    const fromKey = normalizeSources(rec[key], maxResults);
+    if (fromKey.length) return fromKey;
+  }
+  const result = rec.result;
+  if (result && typeof result === "object") {
+    const fromResult = normalizeMcpSources(result, maxResults);
+    if (fromResult.length) return fromResult;
+    const content = (result as Record<string, unknown>).content;
+    if (Array.isArray(content)) {
+      for (const item of content) {
+        if (!item || typeof item !== "object") continue;
+        const text = (item as Record<string, unknown>).text;
+        if (typeof text !== "string") continue;
+        try {
+          const parsed = JSON.parse(text);
+          const fromText = normalizeMcpSources(parsed, maxResults);
+          if (fromText.length) return fromText;
+        } catch {
+          // Ignore non-JSON text content.
+        }
+      }
+    }
+  }
+  return [];
+}
+
+function normalizeSources(value: unknown, maxResults: number): Source[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (!item || typeof item !== "object") return null;
+      const rec = item as Record<string, unknown>;
+      const url = typeof rec.url === "string" ? rec.url.trim() : "";
+      if (!/^https?:\/\//i.test(url)) return null;
+      const title = typeof rec.title === "string" ? rec.title.trim() : "";
+      const source: Source = {
+        title: title || url,
+        url,
+        snippet:
+          typeof rec.snippet === "string" && rec.snippet.trim()
+            ? rec.snippet.trim()
+            : typeof rec.summary === "string" && rec.summary.trim()
+              ? rec.summary.trim()
+              : "Source returned by the configured research provider.",
+      };
+      if (typeof rec.author === "string" && rec.author.trim()) {
+        source.author = rec.author.trim();
+      }
+      if (typeof rec.publisher === "string" && rec.publisher.trim()) {
+        source.publisher = rec.publisher.trim();
+      }
+      if (typeof rec.date === "string" && rec.date.trim()) {
+        source.date = rec.date.trim();
+      }
+      if (typeof rec.why === "string" && rec.why.trim()) {
+        source.why = rec.why.trim();
+      }
+      return source;
+    })
+    .filter((source): source is Source => source !== null)
+    .slice(0, maxResults);
 }
 
 async function persist(results: Source[], query: string): Promise<void> {

@@ -26,6 +26,7 @@ import type {
   Folio,
   LayoutSettings,
   PersonaNotePayload,
+  PersonaReply,
 } from "../../types";
 import { DEFAULT_LAYOUT, MARGIN_RANGE, resolveMargins } from "../../types";
 import { detectCitations } from "../../utils/citations";
@@ -94,6 +95,12 @@ interface NotePopover {
   dismissed: boolean;
   /** True once the writer clicks the note: the card stays open on mouse-out. */
   pinned: boolean;
+  /** Live reply thread (mirrored from the personas panel). */
+  thread: PersonaReply[];
+  /** True while the persona is generating a reply. */
+  replying: boolean;
+  /** Inline error to surface in the popover. */
+  error: string | null;
 }
 
 /** Floating card for an editor's proposed rewrite (accept / strike). */
@@ -148,6 +155,8 @@ export interface EditorStore {
   showLayout: boolean;
   /** Show the table tools popover? */
   showTableTools: boolean;
+  /** Distraction-free mode: dims inline notes/comments and asks the route to collapse side panels. */
+  zenMode: boolean;
 }
 
 /** The popover for a writer-authored inline comment, anchored to its mark. */
@@ -248,11 +257,69 @@ export const TwyneEditor = component$(
       footerText: activeFolio?.footer ?? "",
       showLayout: false,
       showTableTools: false,
+      zenMode: false,
     });
 
     useStyles$(`
     .twyne-editor {
       min-height: 100%;
+    }
+    /* Zen mode: quiet the manuscript down to plain text while writing.
+       The marks (and their data) are untouched — only the visual
+       highlighting is suppressed, so nothing is lost on toggle-off. */
+    .twyne-editor.zen-mode .twyne-persona-note {
+      background: none;
+      border-bottom: none;
+      cursor: text;
+    }
+    .twyne-editor.zen-mode .ProseMirror .twyne-comment-mark {
+      background: none !important;
+      border-bottom: none !important;
+      cursor: text;
+    }
+    .twyne-editor.zen-mode .ProseMirror .citation-mark {
+      background: none;
+      border-bottom: none;
+      cursor: text;
+    }
+    .persona-note-thread {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .persona-note-thread > [data-author-kind="user"] > div {
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+    }
+    .persona-note-thread > [data-author-kind="persona"] > div {
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+    }
+    .persona-note-typing .typing-dots {
+      display: inline-flex;
+      gap: 2px;
+      font-weight: 700;
+    }
+    .persona-note-typing .typing-dots span {
+      animation: persona-note-bounce 1.1s infinite ease-in-out;
+    }
+    .persona-note-typing .typing-dots span:nth-child(2) {
+      animation-delay: 0.18s;
+    }
+    .persona-note-typing .typing-dots span:nth-child(3) {
+      animation-delay: 0.36s;
+    }
+    @keyframes persona-note-bounce {
+      0%, 80%, 100% {
+        transform: translateY(0);
+        opacity: 0.4;
+      }
+      40% {
+        transform: translateY(-3px);
+        opacity: 1;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .persona-note-typing .typing-dots span {
+        animation: none;
+      }
     }
   `);
 
@@ -363,6 +430,11 @@ export const TwyneEditor = component$(
             TiptapLink.configure({
               openOnClick: true,
               autolink: true,
+              HTMLAttributes: {
+                class: "editor-link",
+                target: "_blank",
+                rel: "noopener noreferrer",
+              },
             }),
             Typography,
             TaskList.configure({
@@ -590,7 +662,27 @@ export const TwyneEditor = component$(
             pinned,
             x,
             y,
+            thread: [],
+            replying: false,
+            error: null,
           };
+        };
+        // When a new popover is born, ask the personas panel for any
+        // existing reply thread for this note so the popover can
+        // render the conversation inline. The panel mirrors it back
+        // via `twyne:persona-reply-thread`.
+        const requestThreadFor = (noteId: string) => {
+          if (!noteId) return;
+          window.dispatchEvent(
+            new CustomEvent("twyne:request-persona-thread", {
+              detail: { noteId },
+            }),
+          );
+        };
+        const buildAndPin = (noteSpan: HTMLElement, pinned: boolean) => {
+          const pop = buildNotePopover(noteSpan, pinned);
+          store.notePopover = pop;
+          requestThreadFor(pop.id);
         };
 
         // ── Hover: preview a persona note below its sentence ──
@@ -601,10 +693,15 @@ export const TwyneEditor = component$(
           if (!noteSpan) return;
           // Don't clobber a pinned card the writer is interacting with.
           if (store.notePopover?.pinned) return;
-          store.notePopover = buildNotePopover(noteSpan, false);
+          buildAndPin(noteSpan, false);
         });
         el.addEventListener("mouseout", (e) => {
           if (store.notePopover?.pinned) return;
+          // Mid-conversation: keep the popover anchored to the
+          // sentence so the writer can read replies and the typing
+          // indicator. The popover will close via Strike or Esc.
+          if (store.notePopover?.replying) return;
+          if ((store.notePopover?.thread.length ?? 0) > 0) return;
           const related = e.relatedTarget as HTMLElement | null;
           // Stay open while moving onto the card or within the same note.
           if (related?.closest(".persona-note-card")) return;
@@ -662,7 +759,7 @@ export const TwyneEditor = component$(
           ) as HTMLElement | null;
           if (noteSpan) {
             // Clicking the sentence pins the card open (survives mouse-out).
-            store.notePopover = buildNotePopover(noteSpan, true);
+            buildAndPin(noteSpan, true);
           } else if (!target.closest(".persona-note-card")) {
             store.notePopover = null;
           }
@@ -833,6 +930,52 @@ export const TwyneEditor = component$(
           setTimeout(() => span.classList.remove("is-flashing"), 1600);
         };
         window.addEventListener("twyne:scroll-to-persona-note", onScrollToNote);
+
+        // ── Inline reply thread, mirrored from the personas panel ──
+        // The popover is a live conversation: the panel sends the writer's
+        // optimistic reply, the persona's response, an in-flight flag, and
+        // any error string. We patch the popover in place — but only when
+        // the open popover is for the same note — so the writer sees the
+        // thread right where they wrote it.
+        const onReplyThread = (e: Event) => {
+          const detail = (e as CustomEvent).detail as {
+            noteId?: string;
+            replies?: PersonaReply[];
+          };
+          if (!detail?.noteId || !store.notePopover) return;
+          if (detail.noteId !== store.notePopover.id) return;
+          store.notePopover = {
+            ...store.notePopover,
+            thread: detail.replies ?? [],
+          };
+        };
+        const onReplying = (e: Event) => {
+          const detail = (e as CustomEvent).detail as {
+            noteId?: string;
+            replying?: boolean;
+          };
+          if (!detail?.noteId || !store.notePopover) return;
+          if (detail.noteId !== store.notePopover.id) return;
+          store.notePopover = {
+            ...store.notePopover,
+            replying: !!detail.replying,
+          };
+        };
+        const onReplyError = (e: Event) => {
+          const detail = (e as CustomEvent).detail as {
+            noteId?: string;
+            message?: string;
+          };
+          if (!detail?.noteId || !store.notePopover) return;
+          if (detail.noteId !== store.notePopover.id) return;
+          store.notePopover = {
+            ...store.notePopover,
+            error: detail.message ?? null,
+          };
+        };
+        window.addEventListener("twyne:persona-reply-thread", onReplyThread);
+        window.addEventListener("twyne:persona-replying", onReplying);
+        window.addEventListener("twyne:persona-reply-error", onReplyError);
 
         // Phase 4: the sync dot and the "Saved Xs ago" line read
         // the browser's online/offline events. Wire them once at
@@ -1019,6 +1162,12 @@ export const TwyneEditor = component$(
             "twyne:scroll-to-persona-note",
             onScrollToNote,
           );
+          window.removeEventListener(
+            "twyne:persona-reply-thread",
+            onReplyThread,
+          );
+          window.removeEventListener("twyne:persona-replying", onReplying);
+          window.removeEventListener("twyne:persona-reply-error", onReplyError);
           window.removeEventListener("twyne:suggestions", onSuggestions);
           window.removeEventListener("twyne:propose-edit", onProposeEdit);
           window.removeEventListener(
@@ -1862,6 +2011,29 @@ export const TwyneEditor = component$(
             <SyncDot />
           </div>
 
+          {/* Zen mode — dims inline notes/comments and asks the route to
+              collapse the side panels, for distraction-free writing. */}
+          <button
+            title={
+              store.zenMode
+                ? "Exit distraction-free writing"
+                : "Distraction-free writing — hides notes, comments, and side panels"
+            }
+            aria-label="Toggle zen mode"
+            aria-pressed={store.zenMode}
+            onClick$={() => {
+              store.zenMode = !store.zenMode;
+              window.dispatchEvent(
+                new CustomEvent("twyne:zen-mode", {
+                  detail: { on: store.zenMode },
+                }),
+              );
+            }}
+            class="tool-btn"
+          >
+            {store.zenMode ? "◑ zen: on" : "◐ zen"}
+          </button>
+
           {/* Layout popover — one control for width, margin, running header, page numbers */}
           <div class="flex items-center relative">
             <button
@@ -2203,7 +2375,7 @@ export const TwyneEditor = component$(
             </div>
           )}
           <div
-            class={`mx-auto twyne-editor page-canvas relative ${store.layout.showMarginGuides ? "show-margin-guides" : ""}`}
+            class={`mx-auto twyne-editor page-canvas relative ${store.layout.showMarginGuides ? "show-margin-guides" : ""} ${store.zenMode ? "zen-mode" : ""}`}
             style={{
               "max-width": "var(--doc-width, 48rem)",
               "padding-left": "var(--doc-pad-x, 3rem)",
@@ -2302,6 +2474,10 @@ export const TwyneEditor = component$(
             onClick$={(e) => e.stopPropagation()}
             onMouseLeave$={(e) => {
               if (store.notePopover?.pinned) return;
+              // Mid-conversation: keep the live thread open even if the
+              // popover was opened by hover rather than a click.
+              if (store.notePopover?.replying) return;
+              if ((store.notePopover?.thread.length ?? 0) > 0) return;
               const related = (e as MouseEvent)
                 .relatedTarget as HTMLElement | null;
               if (related?.closest(".twyne-persona-note")) return;
@@ -2370,6 +2546,93 @@ export const TwyneEditor = component$(
                   {`filed against “${store.notePopover.briefTitle}”`}
                 </p>
               )}
+              {store.notePopover.thread.length > 0 && (
+                <div class="persona-note-thread space-y-2 pt-2">
+                  {(() => {
+                    const pop = store.notePopover!;
+                    return store.notePopover.thread.map((r) =>
+                      r.authorKind === "user" ? (
+                        <div
+                          key={r.id}
+                          class="flex justify-end"
+                          data-author-kind="user"
+                        >
+                          <div
+                            class="max-w-[85%] px-3 py-2 border border-[var(--color-paper-3)] text-[0.85rem] leading-5 text-[var(--color-ink)]"
+                            style={{
+                              "background-color": "var(--color-paper-soft)",
+                              "border-radius": "6px 6px 2px 6px",
+                              fontFamily: "var(--font-serif)",
+                            }}
+                          >
+                            <p
+                              class="text-[0.6rem] tracking-[0.14em] uppercase mb-1 text-[var(--color-ink-muted)]"
+                              style={{ fontFamily: "var(--font-typewriter)" }}
+                            >
+                              You
+                            </p>
+                            <p class="whitespace-pre-wrap">{r.text}</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div
+                          key={r.id}
+                          class="flex justify-start"
+                          data-author-kind="persona"
+                        >
+                          <div
+                            class="max-w-[85%] px-3 py-2 border text-[0.85rem] leading-5 text-[var(--color-ink)]"
+                            style={{
+                              "background-color": pop.color,
+                              "border-color": pop.color,
+                              "border-radius": "6px 6px 6px 2px",
+                              fontFamily: "var(--font-serif)",
+                            }}
+                          >
+                            <p
+                              class="text-[0.6rem] tracking-[0.14em] uppercase mb-1"
+                              style={{
+                                fontFamily: "var(--font-typewriter)",
+                                color: "var(--color-paper)",
+                                opacity: "0.9",
+                              }}
+                            >
+                              {r.author}
+                            </p>
+                            <p
+                              class="whitespace-pre-wrap"
+                              style={{ color: "var(--color-paper)" }}
+                            >
+                              {r.text}
+                            </p>
+                          </div>
+                        </div>
+                      ),
+                    );
+                  })()}
+                </div>
+              )}
+              {store.notePopover.replying && (
+                <div
+                  class="persona-note-typing flex items-center gap-2 pt-1 italic text-[0.75rem] text-[var(--color-ink-muted)]"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  <span class="typing-dots" aria-hidden="true">
+                    <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+                  </span>
+                  <span>{store.notePopover.author} is typing…</span>
+                </div>
+              )}
+              {store.notePopover.error && (
+                <p
+                  class="persona-note-error text-[0.7rem] leading-4 pt-1 text-[var(--color-vermilion)]"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  {store.notePopover.error}
+                </p>
+              )}
               <div
                 class="pt-2 border-t border-dashed"
                 style={{ "border-color": "var(--color-paper-3)" }}
@@ -2396,10 +2659,18 @@ export const TwyneEditor = component$(
                           detail: {
                             noteId: store.notePopover.id,
                             text: store.notePopover.draft,
+                            author: store.notePopover.author,
                           },
                         }),
                       );
-                      store.notePopover = null;
+                      // Keep the popover open so the writer sees the
+                      // optimistic reply, the typing indicator, and
+                      // the persona's response land in the thread.
+                      store.notePopover = {
+                        ...store.notePopover,
+                        draft: "",
+                        error: null,
+                      };
                     }
                   }}
                   placeholder={`Reply to ${store.notePopover.author}…`}
@@ -2434,12 +2705,19 @@ export const TwyneEditor = component$(
                             detail: {
                               noteId: store.notePopover.id,
                               text: store.notePopover.draft,
+                              author: store.notePopover.author,
                             },
                           }),
                         );
-                        // Close the modal so the Cast panel (which the route
-                        // reveals) shows the editor's reply landing.
-                        store.notePopover = null;
+                        // Live thread: stay open. The Cast panel and
+                        // the popover now share the same source of
+                        // truth via the `twyne:*` event bus, so the
+                        // writer can keep replying in the text.
+                        store.notePopover = {
+                          ...store.notePopover,
+                          draft: "",
+                          error: null,
+                        };
                       }}
                       disabled={!store.notePopover.draft.trim()}
                       class="btn-press text-[11px] disabled:opacity-30 disabled:cursor-not-allowed"

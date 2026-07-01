@@ -1,0 +1,51 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": "Mutation testing for Twyne. Stryker has no native bun:test runner, so we use the command runner against `bun test`. coverageAnalysis must be 'off' for the command runner (it runs the whole command per mutant). The mutate/test scope is intentionally a focused set of pure, well-tested util modules with 1:1 test files so a full run is tractable and the score is meaningful; widen `mutate` (and the test command) as more units gain bun tests. ignorePatterns keeps the sandbox copy off symlinked/heavy dirs (.claude, build outputs). See `npm run test:mutation`.",
+  "testRunner": "command",
+  "commandRunner": {
+    "command": "bun test src/utils/reasoning-tags.test.ts src/utils/feature-flags.test.ts src/utils/auth-preference.test.ts"
+  },
+  "coverageAnalysis": "off",
+  "checkers": [],
+  "_ignoreComment": "Agent tool dirs (.claude/.crush/.factory/.pi/...) hold symlinked skill folders that break Stryker's sandbox file copy (EISDIR). Ignore every root dot-dir except none-needed, plus build outputs and generated code, so the sandbox stays small and copy-safe.",
+  "ignorePatterns": [
+    ".agents",
+    ".bumpy",
+    ".claude",
+    ".codex",
+    ".convex",
+    ".convex-tmp",
+    ".crush",
+    ".cursor",
+    ".dagger",
+    ".entire",
+    ".factory",
+    ".gemini",
+    ".githooks",
+    ".github",
+    ".opencode",
+    ".pi",
+    ".stryker-tmp",
+    ".vscode",
+    ".zero",
+    "reports",
+    "build",
+    "build-output",
+    "dist",
+    "release",
+    "desktop/build",
+    "evals",
+    "convex/_generated"
+  ],
+  "mutate": [
+    "src/utils/reasoning-tags.ts",
+    "src/utils/feature-flags.ts",
+    "src/utils/auth-preference.ts"
+  ],
+  "reporters": ["clear-text", "html", "progress"],
+  "htmlReporter": { "fileName": "reports/mutation/index.html" },
+  "concurrency": 2,
+  "timeoutMS": 30000,
+  "tempDirName": ".stryker-tmp",
+  "thresholds": { "high": 80, "low": 60, "break": 0 }
+}

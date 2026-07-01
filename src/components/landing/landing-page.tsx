@@ -1,6 +1,8 @@
 import { component$, type PropFunction } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
 import { WorkspacePreview } from "./workspace-preview";
+import { AccountMenu } from "../auth/account-menu";
+import { useAuth } from "../../utils/auth-context";
 import ImgGriffinMark from "~/media/assets/griffin-mark.svg?jsx";
 import ImgApprovalStamp from "~/media/approval-stamp.svg?jsx";
 
@@ -62,6 +64,8 @@ const steps = [
 
 export const LandingPage = component$<LandingPageProps>(
   ({ onStartBrief$, onSkipToEditor$ }) => {
+    const auth = useAuth();
+    const signedIn = !!auth.value.user;
     return (
       <div class="landing-page">
         <div class="landing-shell pb-20">
@@ -91,15 +95,19 @@ export const LandingPage = component$<LandingPageProps>(
               <span class="landing-masthead ink-bleed">TWYNE</span>
             </div>
             <div class="flex items-center justify-end gap-4">
-              <Link
-                href="/signin/"
-                class="text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-ink-light)] hover:text-[var(--color-ink)] focus-ring"
-                style="font-family: var(--font-typewriter);"
-              >
-                Sign in
-              </Link>
+              {signedIn ? (
+                <AccountMenu />
+              ) : (
+                <Link
+                  href="/signin/"
+                  class="text-[0.7rem] uppercase tracking-[0.18em] text-[var(--color-ink-light)] hover:text-[var(--color-ink)] focus-ring"
+                  style="font-family: var(--font-typewriter);"
+                >
+                  Sign in
+                </Link>
+              )}
               <button onClick$={onStartBrief$} class="broadsheet-cta">
-                Start writing
+                {signedIn ? "Open the desk" : "Start writing"}
               </button>
             </div>
           </header>

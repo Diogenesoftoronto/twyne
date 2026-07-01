@@ -13,6 +13,7 @@ import type * as admins from "../admins.js";
 import type * as agentPrompts from "../agentPrompts.js";
 import type * as agentTools from "../agentTools.js";
 import type * as agents from "../agents.js";
+import type * as arizeTracing from "../arizeTracing.js";
 import type * as auth from "../auth.js";
 import type * as collaboration from "../collaboration.js";
 import type * as http from "../http.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   agentPrompts: typeof agentPrompts;
   agentTools: typeof agentTools;
   agents: typeof agents;
+  arizeTracing: typeof arizeTracing;
   auth: typeof auth;
   collaboration: typeof collaboration;
   http: typeof http;

@@ -48,6 +48,7 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   "faq",
   "library",
   "oauth-client-metadata.json",
+  "onboarding",
   "personas",
   "p",
   "pricing",
@@ -214,6 +215,11 @@ export const updateProfile = mutation({
   args: {
     displayName: v.optional(v.string()),
     bio: v.optional(v.string()),
+    /**
+     * Profile picture. Pass a freshly uploaded `_storage` id to set it, or
+     * `null` to clear the existing avatar. Omit to leave it unchanged.
+     */
+    avatarStorageId: v.optional(v.union(v.id("_storage"), v.null())),
   },
   handler: async (ctx, args) => {
     const userId = await requireIdentity(ctx);
@@ -233,8 +239,42 @@ export const updateProfile = mutation({
       const trimmed = args.bio.trim().slice(0, 280);
       patch.bio = trimmed || undefined;
     }
+    if (args.avatarStorageId !== undefined) {
+      // Clearing or replacing the avatar: delete the previous blob so we don't
+      // leak orphaned storage objects.
+      if (existing.avatarStorageId && existing.avatarStorageId !== args.avatarStorageId) {
+        await ctx.storage.delete(existing.avatarStorageId);
+      }
+      patch.avatarStorageId = args.avatarStorageId ?? undefined;
+    }
     await ctx.db.patch(existing._id, patch);
     return { ok: true };
+  },
+});
+
+/**
+ * Mint a short-lived upload URL for a profile picture. The client POSTs the
+ * image bytes to the returned URL, gets back a `_storage` id, then calls
+ * `updateProfile({ avatarStorageId })` to attach it. A handle must be claimed
+ * first, mirroring the other profile metadata.
+ */
+export const generateAvatarUploadUrl = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await requireIdentity(ctx);
+    await consumeRateLimit(ctx, {
+      action: "profile:avatarUpload",
+      identifier: userId,
+      ...RATE_LIMITS.avatarUpload,
+    });
+    const existing = await ctx.db
+      .query("handles")
+      .withIndex("by_userId", (q: any) => q.eq("userId", userId))
+      .unique();
+    if (!existing) {
+      throw new Error("Claim a handle before adding a profile picture.");
+    }
+    return await ctx.storage.generateUploadUrl();
   },
 });
 
@@ -250,7 +290,7 @@ export const getMyHandle = query({
       .query("handles")
       .withIndex("by_userId", (q: any) => q.eq("userId", identity.tokenIdentifier))
       .unique();
-    return row ? serializeHandle(row) : null;
+    return row ? await serializeHandle(ctx, row) : null;
   },
 });
 
@@ -265,7 +305,7 @@ export const getProfile = query({
       .query("handles")
       .withIndex("by_handle", (q: any) => q.eq("handle", normalized))
       .unique();
-    return row ? serializeHandle(row) : null;
+    return row ? await serializeHandle(ctx, row) : null;
   },
 });
 
@@ -297,11 +337,15 @@ export const checkHandleAvailable = query({
 
 /* ── Serialization ──────────────────────────────────────────────── */
 
-function serializeHandle(row: Doc<"handles">) {
+async function serializeHandle(ctx: { storage: any }, row: Doc<"handles">) {
+  const avatarUrl = row.avatarStorageId
+    ? await ctx.storage.getUrl(row.avatarStorageId)
+    : null;
   return {
     handle: row.handle,
     displayName: row.displayName ?? null,
     bio: row.bio ?? null,
+    avatarUrl,
     claimedAt: row.claimedAt,
     updatedAt: row.updatedAt,
   };

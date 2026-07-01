@@ -1,8 +1,8 @@
-import { component$, $, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, $, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { Link, useNavigate } from "@builder.io/qwik-city";
 import { ProjectBriefCard } from "../../components/brief/project-brief-card";
-import { AuthPanel } from "../../components/auth/auth-panel";
+import { AccountMenu } from "../../components/auth/account-menu";
 import { FolioMenu } from "../../components/folio/folio-menu";
 import type { ProjectBrief, Folio } from "../../types";
 import {
@@ -41,6 +41,15 @@ import {
 
 type RightPanel = "personas" | "rubric" | "comments" | "citations";
 
+/** Widest the right panel may be while keeping the manuscript usable. */
+const MIN_EDITOR_WIDTH = 360;
+const LEFT_SIDEBAR_WIDTH = 288;
+
+function maxRightPanelWidth(leftSidebarOpen: boolean): number {
+  const reserved = (leftSidebarOpen ? LEFT_SIDEBAR_WIDTH : 0) + MIN_EDITOR_WIDTH;
+  return Math.max(260, Math.min(560, window.innerWidth - reserved));
+}
+
 interface PanelTab {
   id: RightPanel;
   /** Section number on the masthead, e.g. "I" */
@@ -57,10 +66,11 @@ interface LayoutStore {
   rightPanel: RightPanel;
   leftSidebarOpen: boolean;
   rightPanelOpen: boolean;
+  /** Panel state to restore when zen mode is turned back off. Null when not in zen mode. */
+  panelsBeforeZen: { left: boolean; right: boolean } | null;
   hydrated: boolean;
   brief: ProjectBrief | null;
   editorSeed: string;
-  authOpen: boolean;
   folios: Folio[];
   activeFolioId: string | null;
   folioKey: number;
@@ -132,14 +142,17 @@ export default component$(() => {
   const nav = useNavigate();
   const clientSig = useConvexClient();
   const auth = useAuth();
+  // Controls the shared AccountMenu (Editor's Office); external triggers such
+  // as the ?auth=1 deep link and the local-only nudge flip this open.
+  const accountOpen = useSignal(false);
   const store = useStore<LayoutStore>({
     rightPanel: "personas",
     leftSidebarOpen: false,
     rightPanelOpen: true,
+    panelsBeforeZen: null,
     hydrated: false,
     brief: null,
     editorSeed: "",
-    authOpen: false,
     folios: [],
     activeFolioId: null,
     folioKey: 0,
@@ -203,7 +216,7 @@ export default component$(() => {
 
       // Arriving from the landing "Sign in" link → open the auth panel.
       if (new URLSearchParams(window.location.search).get("auth") === "1") {
-        store.authOpen = true;
+        accountOpen.value = true;
       }
 
       // Arriving via a shared-document invite link (?shared=<lixId>).
@@ -309,6 +322,39 @@ export default component$(() => {
     cleanup(() => window.removeEventListener("twyne:header", headerHandler));
     cleanup(() => window.removeEventListener("twyne:footer", footerHandler));
 
+    // Zen mode: collapse both side panels to give the manuscript the full
+    // width, and put them back the way they were on exit.
+    const zenModeHandler = (e: Event) => {
+      const on = !!(e as CustomEvent).detail?.on;
+      if (on) {
+        if (store.panelsBeforeZen) return;
+        store.panelsBeforeZen = {
+          left: store.leftSidebarOpen,
+          right: store.rightPanelOpen,
+        };
+        store.leftSidebarOpen = false;
+        store.rightPanelOpen = false;
+      } else if (store.panelsBeforeZen) {
+        store.leftSidebarOpen = store.panelsBeforeZen.left;
+        store.rightPanelOpen = store.panelsBeforeZen.right;
+        store.panelsBeforeZen = null;
+      }
+    };
+    window.addEventListener("twyne:zen-mode", zenModeHandler);
+    cleanup(() =>
+      window.removeEventListener("twyne:zen-mode", zenModeHandler),
+    );
+
+    // Keep the right panel from squeezing the manuscript off-screen when
+    // the browser window shrinks (e.g. a laptop that isn't maximized).
+    const onWindowResize = () => {
+      const max = maxRightPanelWidth(store.leftSidebarOpen);
+      if (store.rightPanelWidth > max) store.rightPanelWidth = max;
+    };
+    window.addEventListener("resize", onWindowResize);
+    onWindowResize();
+    cleanup(() => window.removeEventListener("resize", onWindowResize));
+
     // ── Background research: Apparatus agents run on the writer's
     //    behalf, debounced, watching the draft. ──
     const client = clientSig.value;
@@ -386,15 +432,6 @@ export default component$(() => {
       accent: "var(--color-periwinkle)",
     },
   ];
-  const accountDisplay = auth.value.user
-    ? auth.value.provider === "atproto"
-      ? auth.value.user.email
-      : auth.value.user.email || auth.value.user.name || "Signed in"
-    : null;
-  const accountTitle = accountDisplay
-    ? `Signed in as ${accountDisplay}`
-    : "Editor's office";
-
   if (!store.hydrated) {
     return (
       <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
@@ -441,7 +478,7 @@ export default component$(() => {
                 <div class="mt-2 flex items-center gap-3">
                   <button
                     onClick$={$(() => {
-                      store.authOpen = true;
+                      accountOpen.value = true;
                       store.signInToastDismissed = true;
                       void saveMetaToIdb("signin-toast-dismissed", true);
                     })}
@@ -753,6 +790,8 @@ export default component$(() => {
               <button
                 onClick$={() => {
                   store.leftSidebarOpen = !store.leftSidebarOpen;
+                  const max = maxRightPanelWidth(store.leftSidebarOpen);
+                  if (store.rightPanelWidth > max) store.rightPanelWidth = max;
                 }}
                 class="icon-btn p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
                 title="Open the drawer"
@@ -831,84 +870,7 @@ export default component$(() => {
                     })}
                   />
                 )}
-                <div class="relative">
-                  <button
-                    onClick$={() => {
-                      store.authOpen = !store.authOpen;
-                    }}
-                    class={`icon-btn ${
-                      accountDisplay
-                        ? "gap-1.5 border border-[var(--color-sage)] bg-[var(--color-paper-soft)] px-2 py-1.5 text-[var(--color-ink)] hover:text-[var(--color-vermilion)]"
-                        : "p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
-                    }`}
-                    title={accountTitle}
-                    aria-label={
-                      accountDisplay
-                        ? `Open account menu. Signed in as ${accountDisplay}`
-                        : "Open the editor's office (account)"
-                    }
-                    aria-expanded={store.authOpen}
-                  >
-                    {accountDisplay && (
-                      <span
-                        class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[var(--color-sage)]"
-                        aria-hidden="true"
-                      />
-                    )}
-                    <svg
-                      class="flex-shrink-0"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="1.6"
-                    >
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                      <circle cx="12" cy="7" r="4" />
-                    </svg>
-                    {accountDisplay && (
-                      <span
-                        class="hidden max-w-[8.5rem] truncate text-[11px] font-semibold lg:inline"
-                        style={{ fontFamily: "var(--font-sans)" }}
-                      >
-                        {accountDisplay}
-                      </span>
-                    )}
-                  </button>
-                  {store.authOpen && (
-                    <div
-                      class="absolute right-0 top-full mt-2 w-72 folio p-3 space-y-2"
-                      style="z-index: var(--z-dropdown);"
-                    >
-                      <div class="flex flex-col gap-1 pb-2 border-b border-[var(--color-paper-3)]">
-                        <button
-                          type="button"
-                          class="w-full text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
-                          style={{ fontFamily: "var(--font-display)" }}
-                          onClick$={() => {
-                            store.authOpen = false;
-                            void nav("/settings/");
-                          }}
-                        >
-                          ⚙ Preferences
-                        </button>
-                        <button
-                          type="button"
-                          class="w-full text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
-                          style={{ fontFamily: "var(--font-display)" }}
-                          onClick$={() => {
-                            store.authOpen = false;
-                            void nav("/docs/");
-                          }}
-                        >
-                          ❦ The Manual
-                        </button>
-                      </div>
-                      <AuthPanel />
-                    </div>
-                  )}
-                </div>
+                <AccountMenu open={accountOpen} />
                 <button
                   onClick$={() => {
                     store.rightPanelOpen = !store.rightPanelOpen;
@@ -963,7 +925,10 @@ export default component$(() => {
                       const delta = startX - ev.clientX;
                       store.rightPanelWidth = Math.max(
                         260,
-                        Math.min(560, startWidth + delta),
+                        Math.min(
+                          maxRightPanelWidth(store.leftSidebarOpen),
+                          startWidth + delta,
+                        ),
                       );
                     };
                     const onUp = () => {

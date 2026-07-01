@@ -14,8 +14,9 @@ import {
 /**
  * The landing page. Twyne-style: a magazine broadsheet the writer
  * unfolds before the first interview. Returning writers (already
- * filed a brief) skip past it to the desk; first-time writers
- * unfold the page and "Open a Dossier" sends them to /dossier/create.
+ * filed a brief) skip past it to the desk; first-time local writers
+ * unfold the page and "Start your brief" sends them to /onboarding,
+ * while signed-in writers can jump straight to /dossier/create.
  */
 export default component$(() => {
   const nav = useNavigate();
@@ -28,20 +29,19 @@ export default component$(() => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track }) => {
     const loading = track(() => auth.value.loading);
-    const userId = track(() => auth.value.user?.id);
 
     if (loading) return;
 
     const brief = loadProjectBrief();
     store.hasBrief = brief !== null;
     store.checked = true;
-    if (brief || userId) {
-      window.location.replace(brief ? "/editor/" : "/dossier/create/");
+    if (brief) {
+      window.location.replace("/editor/");
     }
   });
 
   const startBrief = $(() => {
-    void nav("/dossier/create/");
+    void nav(auth.value.user ? "/dossier/create/" : "/onboarding/");
   });
 
   const skipToEditor = $(async () => {

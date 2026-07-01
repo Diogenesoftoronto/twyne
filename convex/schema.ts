@@ -165,6 +165,8 @@ export default defineSchema({
     handle: v.string(),
     displayName: v.optional(v.string()),
     bio: v.optional(v.string()),
+    /** Convex storage id for the writer's profile picture, if set. */
+    avatarStorageId: v.optional(v.id("_storage")),
     claimedAt: v.number(),
     updatedAt: v.number(),
   })
