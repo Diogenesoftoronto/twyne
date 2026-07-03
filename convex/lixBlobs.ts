@@ -1,9 +1,18 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 
-export const getByUserId = query({
-  args: { userId: v.string() },
-  handler: async (ctx, { userId }) => {
+async function requireIdentity(ctx: {
+  auth: { getUserIdentity: () => Promise<{ tokenIdentifier: string } | null> };
+}): Promise<string> {
+  const id = await ctx.auth.getUserIdentity();
+  if (!id) throw new Error("Not signed in");
+  return id.tokenIdentifier;
+}
+
+export const get = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await requireIdentity(ctx);
     const entry = await ctx.db
       .query("lixBlobs")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
@@ -13,8 +22,9 @@ export const getByUserId = query({
 });
 
 export const upsert = mutation({
-  args: { userId: v.string(), blob: v.bytes() },
-  handler: async (ctx, { userId, blob }) => {
+  args: { blob: v.bytes() },
+  handler: async (ctx, { blob }) => {
+    const userId = await requireIdentity(ctx);
     const existing = await ctx.db
       .query("lixBlobs")
       .withIndex("by_userId", (q) => q.eq("userId", userId))

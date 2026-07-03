@@ -111,6 +111,13 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_userId", ["userId"]),
 
+  // ── Writer bibliographies — saved sources synced with folio state. ──
+  bibliographies: defineTable({
+    userId: v.string(),
+    entries: v.array(v.any()),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
   // ── Published pieces — public read-by-slug, owner-only writes. ──
   // Each row is a snapshot of a folio at publish time. The slug is the
   // ── Published pieces (post + blog). Same table — kind

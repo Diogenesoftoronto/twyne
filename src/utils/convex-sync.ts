@@ -11,6 +11,7 @@ import type {
   RoomSettings,
 } from "../types";
 import { DEFAULT_ROOM_SETTINGS } from "../types";
+import type { BibEntry } from "./bibliography";
 import {
   loadDraftHtmlFromIdb,
   loadFoliosFromIdb,
@@ -23,7 +24,12 @@ import {
   saveDraftHtmlToIdb,
   clearIdbStore,
 } from "./idb";
-import { persistToIdb, readFileAsJson, writeFileAsJson, BRIEF_PATH } from "./lix";
+import {
+  persistToIdb,
+  readFileAsJson,
+  writeFileAsJson,
+  BRIEF_PATH,
+} from "./lix";
 
 /**
  * Browser ↔ Convex sync for the per-user data. The local IndexedDB
@@ -76,6 +82,8 @@ interface SyncedSnapshot {
   }>;
   rubricResult: RubricResult | null;
   rubricResultUpdatedAt: number;
+  bibliography: BibEntry[];
+  bibliographyUpdatedAt: number;
 }
 
 interface SyncState {
@@ -103,6 +111,7 @@ interface LocalSnapshot {
   personaNotes: PersonaFeedback[];
   personaReplies: PersonaReply[];
   rubricResult: RubricResult | null;
+  bibliography: BibEntry[];
 }
 
 const state: SyncState = {
@@ -119,6 +128,7 @@ const state: SyncState = {
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
 const PUSH_DEBOUNCE_MS = 4_000;
 const SIGN_UP_PUSH_FLAG = "twyne:signed-up-once";
+const BIBLIOGRAPHY_PATH = "/bibliography.json";
 
 /* ── Status surface (Phase 4) ──────────────────────────────────────── */
 
@@ -243,16 +253,13 @@ export async function syncToConvex(): Promise<void> {
   if (!blob) return;
   const buffer = await blob.arrayBuffer();
   await state.client.mutation(api.lixBlobs.upsert, {
-    userId: state.userId,
     blob: buffer,
   });
 }
 
 export async function loadFromConvex(): Promise<Blob | null> {
   if (!state.client || !state.userId) return null;
-  const entry = await state.client.query(api.lixBlobs.getByUserId, {
-    userId: state.userId,
-  });
+  const entry = await state.client.query(api.lixBlobs.get, {});
   if (!entry?.blob) return null;
   return new Blob([entry.blob]);
 }
@@ -282,6 +289,8 @@ async function buildLocalSnapshot(): Promise<LocalSnapshot> {
     (await readFileAsJson<PersonaReply[]>("/persona-replies.json")) ?? [];
   const rubric =
     (await readFileAsJson<RubricResult>("/rubric-result.json")) ?? null;
+  const bibliography =
+    (await readFileAsJson<BibEntry[]>(BIBLIOGRAPHY_PATH)) ?? [];
 
   return {
     brief,
@@ -291,6 +300,7 @@ async function buildLocalSnapshot(): Promise<LocalSnapshot> {
     personaNotes: notes,
     personaReplies: replies,
     rubricResult: rubric,
+    bibliography: Array.isArray(bibliography) ? bibliography : [],
   };
 }
 
@@ -329,6 +339,7 @@ async function pushLocalSnapshot(): Promise<void> {
         createdAt: r.timestamp,
       })),
       rubricResult: snap.rubricResult ?? undefined,
+      bibliography: snap.bibliography,
     });
     // Success: clear the error and stamp the synced time.
     state.lastSyncedAt = Date.now();
@@ -400,7 +411,8 @@ async function handleUserChanged(
     remote.folioContent.length > 0 ||
     remote.customPersonas !== null ||
     remote.personaNotes.length > 0 ||
-    remote.rubricResult !== null;
+    remote.rubricResult !== null ||
+    (remote.bibliography?.length ?? 0) > 0;
 
   if (!hasRemoteData && !didSignUpHere) {
     // Empty account — push what we have to seed it.
@@ -426,7 +438,8 @@ async function mergeFromRemote(
   // Brief — newer-wins by updatedAt.
   if (
     remote.brief &&
-    (local.brief === null || remote.briefUpdatedAt > (local.brief.updatedAt ?? 0))
+    (local.brief === null ||
+      remote.briefUpdatedAt > (local.brief.updatedAt ?? 0))
   ) {
     await writeFileAsJson(BRIEF_PATH, remote.brief);
   }
@@ -451,8 +464,7 @@ async function mergeFromRemote(
   if (
     remote.customPersonas &&
     (local.customPersonas === null ||
-      remote.customPersonasUpdatedAt >
-        lastPersonasUpdate(local.customPersonas))
+      remote.customPersonasUpdatedAt > lastPersonasUpdate(local.customPersonas))
   ) {
     await savePersonasToIdb(remote.customPersonas);
   }
@@ -473,6 +485,16 @@ async function mergeFromRemote(
   ) {
     await writeFileAsJson("/rubric-result.json", remote.rubricResult);
   }
+
+  if ((remote.bibliography?.length ?? 0) > 0) {
+    const merged = mergeBibliographyEntries(
+      local.bibliography,
+      remote.bibliography,
+    );
+    if (!sameJson(merged, local.bibliography)) {
+      await writeFileAsJson(BIBLIOGRAPHY_PATH, merged);
+    }
+  }
 }
 
 function lastFoliosUpdate(folios: Folio[]): number {
@@ -482,6 +504,29 @@ function lastFoliosUpdate(folios: Folio[]): number {
 function lastPersonasUpdate(personas: Persona[]): number {
   // Personas don't have an updatedAt — fall back to file mtime via a fresh read.
   return Date.now();
+}
+
+export function mergeBibliographyEntries(
+  local: BibEntry[],
+  remote: BibEntry[],
+): BibEntry[] {
+  const byId = new Map<string, BibEntry>();
+  for (const entry of local) byId.set(entry.id, entry);
+  for (const entry of remote) {
+    const existing = byId.get(entry.id);
+    if (!existing || bibEntryTimestamp(entry) >= bibEntryTimestamp(existing)) {
+      byId.set(entry.id, entry);
+    }
+  }
+  return Array.from(byId.values());
+}
+
+function bibEntryTimestamp(entry: BibEntry): number {
+  return entry.createdAt ?? entry.accessedAt ?? 0;
+}
+
+function sameJson(a: unknown, b: unknown): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
 }
 
 /* ── Public: explicit helpers for panels to use ─────────────────── */
@@ -510,9 +555,7 @@ export async function savePersonaNoteLocally(
 
 export async function loadPersonaNotesLocally(): Promise<PersonaFeedback[]> {
   if (typeof window === "undefined") return [];
-  return (
-    (await readFileAsJson<PersonaFeedback[]>("/persona-notes.json")) ?? []
-  );
+  return (await readFileAsJson<PersonaFeedback[]>("/persona-notes.json")) ?? [];
 }
 
 export async function clearPersonaNotesLocally(): Promise<void> {
@@ -521,7 +564,9 @@ export async function clearPersonaNotesLocally(): Promise<void> {
   markDirty();
 }
 
-export async function addPersonaReplyLocally(reply: PersonaReply): Promise<void> {
+export async function addPersonaReplyLocally(
+  reply: PersonaReply,
+): Promise<void> {
   if (typeof window === "undefined") return;
   const current =
     (await readFileAsJson<PersonaReply[]>("/persona-replies.json")) ?? [];
@@ -550,7 +595,9 @@ export async function loadRubricLocally(): Promise<RubricResult | null> {
 
 const SUGGESTIONS_PATH = "/suggestions.json";
 
-export async function saveSuggestionLocally(suggestion: Suggestion): Promise<void> {
+export async function saveSuggestionLocally(
+  suggestion: Suggestion,
+): Promise<void> {
   if (typeof window === "undefined") return;
   const current = (await readFileAsJson<Suggestion[]>(SUGGESTIONS_PATH)) ?? [];
   const filtered = current.filter((s) => s.id !== suggestion.id);
@@ -579,7 +626,9 @@ export async function updateSuggestionStatusLocally(
 
 const ROOM_SETTINGS_PATH = "/room-settings.json";
 
-export async function saveRoomSettingsLocally(settings: RoomSettings): Promise<void> {
+export async function saveRoomSettingsLocally(
+  settings: RoomSettings,
+): Promise<void> {
   if (typeof window === "undefined") return;
   await writeFileAsJson(ROOM_SETTINGS_PATH, settings);
   markDirty();
@@ -588,7 +637,8 @@ export async function saveRoomSettingsLocally(settings: RoomSettings): Promise<v
 export async function loadRoomSettingsLocally(): Promise<RoomSettings> {
   if (typeof window === "undefined") return DEFAULT_ROOM_SETTINGS;
   return (
-    (await readFileAsJson<RoomSettings>(ROOM_SETTINGS_PATH)) ?? DEFAULT_ROOM_SETTINGS
+    (await readFileAsJson<RoomSettings>(ROOM_SETTINGS_PATH)) ??
+    DEFAULT_ROOM_SETTINGS
   );
 }
 
@@ -602,9 +652,8 @@ export async function strikeRoomLocally(): Promise<void> {
   await writeFileAsJson("/persona-replies.json", []);
   if (state.client && state.userId) {
     try {
-      const notes = (await readFileAsJson<PersonaFeedback[]>(
-        "/persona-notes.json",
-      )) ?? [];
+      const notes =
+        (await readFileAsJson<PersonaFeedback[]>("/persona-notes.json")) ?? [];
       for (const n of notes) {
         if (n.noteId) {
           await state.client.mutation(api.sync.removePersonaNote, {

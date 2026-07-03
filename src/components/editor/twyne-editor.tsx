@@ -54,6 +54,7 @@ import { CommentMark } from "./extensions/comment-mark";
 import { PersonaNoteMark } from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
 import { MermaidDiagram } from "./extensions/mermaid-node";
+import { EndnoteNode } from "./extensions/endnote-node";
 import { RemoteCursors } from "./extensions/remote-cursors";
 import { type RemoteCursor } from "./extensions/remote-cursors";
 import { SyncDot, LastSavedLine } from "./sync-indicator";
@@ -76,6 +77,7 @@ import {
   saveSuggestionLocally,
 } from "../../utils/convex-sync";
 import type { SuggestionPayload, Suggestion } from "../../types";
+import { renderMarkdown } from "../../utils/markdown";
 
 interface NotePopover {
   id: string;
@@ -131,6 +133,9 @@ export interface EditorStore {
   commentText: string;
   showMermaidInput: boolean;
   mermaidSource: string;
+  /** Which note input row is open, if any. */
+  noteInputKind: "endnote" | "footnote" | null;
+  noteText: string;
   hasSelection: boolean;
   notePopover: NotePopover | null;
   suggestionPopover: SuggestionPopover | null;
@@ -243,6 +248,8 @@ export const TwyneEditor = component$(
       commentText: "",
       showMermaidInput: false,
       mermaidSource: "",
+      noteInputKind: null,
+      noteText: "",
       hasSelection: false,
       notePopover: null,
       suggestionPopover: null,
@@ -266,7 +273,9 @@ export const TwyneEditor = component$(
     }
     /* Zen mode: quiet the manuscript down to plain text while writing.
        The marks (and their data) are untouched — only the visual
-       highlighting is suppressed, so nothing is lost on toggle-off. */
+       highlighting is suppressed, so nothing is lost on toggle-off.
+       The toolbar, running header/footer, and all marks fade out,
+       reappearing on hover so the writer can still reach tools. */
     .twyne-editor.zen-mode .twyne-persona-note {
       background: none;
       border-bottom: none;
@@ -281,6 +290,30 @@ export const TwyneEditor = component$(
       background: none;
       border-bottom: none;
       cursor: text;
+    }
+    .twyne-editor.zen-mode .twyne-endnote {
+      color: var(--color-ink-muted);
+      background: none;
+    }
+    /* Fade out the toolbar, running header, and footer in zen mode.
+       They reappear on hover so tools remain reachable. */
+    .twyne-editor.zen-mode .twyne-toolbar {
+      opacity: 0.15;
+      transition: opacity 0.3s ease;
+    }
+    .twyne-editor.zen-mode .twyne-toolbar:hover {
+      opacity: 1;
+    }
+    .twyne-editor.zen-mode .manuscript-header,
+    .twyne-editor.zen-mode .manuscript-footer {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+    }
+    .twyne-editor.zen-mode .manuscript-header:hover,
+    .twyne-editor.zen-mode .manuscript-footer:hover {
+      opacity: 0.5;
+      pointer-events: auto;
     }
     .persona-note-thread {
       max-height: 240px;
@@ -445,6 +478,7 @@ export const TwyneEditor = component$(
             PersonaNoteMark,
             SuggestionMark,
             MermaidDiagram,
+            EndnoteNode,
             RemoteCursors.configure({ cursors: [] }),
           ],
           content: initialContent,
@@ -865,18 +899,11 @@ export const TwyneEditor = component$(
         };
         window.addEventListener("twyne:request-draft-html", onRequestDraftHtml);
 
-        // ── Drop plain text at the cursor (e.g. a citation marker) ──
+        // ── Drop a citation at the cursor as an endnote marker ──
         const onInsertText = (e: Event) => {
           const text = (e as CustomEvent).detail as string;
           if (!text) return;
-          editor
-            .chain()
-            .focus()
-            .insertContent([
-              { type: "text", text, marks: [{ type: "code" }] },
-              { type: "text", text: " " },
-            ])
-            .run();
+          editor.chain().focus().setEndnote({ text }).insertContent(" ").run();
         };
         window.addEventListener("twyne:insert-text", onInsertText);
 
@@ -1605,6 +1632,21 @@ export const TwyneEditor = component$(
           store.showCommentInput = false;
           break;
         }
+        case "insertNote": {
+          const noteText = store.noteText.trim();
+          if (noteText) {
+            if (store.noteInputKind === "footnote") {
+              chain.setFootnote({ text: noteText }).run();
+            } else {
+              chain.setEndnote({ text: noteText }).run();
+            }
+            store.editor?.chain().insertContent(" ").run();
+          }
+          store.noteText = "";
+          store.noteInputKind = null;
+          break;
+        }
+
         case "insertMermaid": {
           if (store.mermaidSource.trim()) {
             chain
@@ -1633,7 +1675,7 @@ export const TwyneEditor = component$(
       <div class="flex flex-1 flex-col min-h-0">
         {/* ── Toolbar (compositor's stick) ───────────────── */}
         <div
-          class="flex items-center gap-1 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] sticky top-0 flex-wrap"
+          class="twyne-toolbar flex items-center gap-1 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] sticky top-0 flex-wrap"
           style="font-family: var(--font-typewriter); z-index: var(--z-sticky);"
           role="toolbar"
           aria-label="Formatting"
@@ -1979,6 +2021,32 @@ export const TwyneEditor = component$(
             >
               ☍ comment
             </button>
+            <button
+              title="Insert endnote — collected under Notes on export"
+              aria-label="Insert endnote"
+              aria-pressed={store.noteInputKind === "endnote"}
+              onClick$={() => {
+                store.noteInputKind =
+                  store.noteInputKind === "endnote" ? null : "endnote";
+                store.noteText = "";
+              }}
+              class="tool-btn"
+            >
+              ¹ endnote
+            </button>
+            <button
+              title="Insert footnote — collected under Footnotes on export"
+              aria-label="Insert footnote"
+              aria-pressed={store.noteInputKind === "footnote"}
+              onClick$={() => {
+                store.noteInputKind =
+                  store.noteInputKind === "footnote" ? null : "footnote";
+                store.noteText = "";
+              }}
+              class="tool-btn"
+            >
+              † footnote
+            </button>
           </div>
 
           <div class="flex-1" />
@@ -2254,6 +2322,59 @@ export const TwyneEditor = component$(
           </div>
         )}
 
+        {store.noteInputKind && (
+          <div
+            class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
+            style="z-index: var(--z-sticky);"
+          >
+            <span
+              class="text-xs text-[var(--color-ink-muted)]"
+              style="font-family: var(--font-typewriter);"
+            >
+              {store.noteInputKind === "footnote" ? "Footnote:" : "Endnote:"}
+            </span>
+            <input
+              autoFocus
+              value={store.noteText}
+              onInput$={(e) => {
+                store.noteText = (e.target as HTMLInputElement).value;
+              }}
+              onKeyDown$={(e) => {
+                if (e.key === "Enter" && store.noteText.trim()) {
+                  runCommand("insertNote");
+                }
+                if (e.key === "Escape") {
+                  store.noteInputKind = null;
+                  store.noteText = "";
+                }
+              }}
+              placeholder={
+                store.noteInputKind === "footnote"
+                  ? "Footnote text — appears under Footnotes on export…"
+                  : "Endnote text — appears under Notes on export…"
+              }
+              class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
+              style="font-family: var(--font-typewriter); border-radius: 2px;"
+            />
+            <button
+              onClick$={() => runCommand("insertNote")}
+              disabled={!store.noteText.trim()}
+              class="tool-btn text-xs disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              Insert
+            </button>
+            <button
+              onClick$={() => {
+                store.noteInputKind = null;
+                store.noteText = "";
+              }}
+              class="tool-btn text-xs"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+
         {store.showCommentInput && (
           <div
             class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
@@ -2386,7 +2507,7 @@ export const TwyneEditor = component$(
           >
             {/* Manuscript running header — author-tunable, with brief-derived fallback */}
             <div
-              class="mb-6 pb-2 flex items-center justify-between gap-3 border-b border-[var(--color-paper-3)]"
+              class="manuscript-header mb-6 pb-2 flex items-center justify-between gap-3 border-b border-[var(--color-paper-3)]"
               style="font-family: var(--font-typewriter); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-muted);"
             >
               <span class="dept-label">The Manuscript</span>
@@ -2414,7 +2535,7 @@ export const TwyneEditor = component$(
 
             {/* Manuscript running footer — author-tunable, page numbers on export */}
             <div
-              class="mt-6 pt-2 border-t border-[var(--color-paper-3)] flex items-center justify-between gap-3"
+              class="manuscript-footer mt-6 pt-2 border-t border-[var(--color-paper-3)] flex items-center justify-between gap-3"
               style="font-family: var(--font-typewriter); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-muted);"
             >
               <span
@@ -2532,12 +2653,11 @@ export const TwyneEditor = component$(
                   {`« ${store.notePopover.quote.length > 280 ? store.notePopover.quote.slice(0, 279) + "…" : store.notePopover.quote} »`}
                 </blockquote>
               )}
-              <p
-                class="text-[0.95rem] leading-6 text-[var(--color-ink)]"
+              <div
+                class="comment-markdown text-[0.95rem] leading-6 text-[var(--color-ink)]"
                 style={{ fontFamily: "var(--font-serif)" }}
-              >
-                {store.notePopover.note}
-              </p>
+                dangerouslySetInnerHTML={renderMarkdown(store.notePopover.note)}
+              />
               {store.notePopover.briefTitle && (
                 <p
                   class="text-[0.65rem] text-[var(--color-ink-muted)]"
@@ -2571,7 +2691,10 @@ export const TwyneEditor = component$(
                             >
                               You
                             </p>
-                            <p class="whitespace-pre-wrap">{r.text}</p>
+                            <div
+                              class="comment-markdown whitespace-pre-wrap"
+                              dangerouslySetInnerHTML={renderMarkdown(r.text)}
+                            />
                           </div>
                         </div>
                       ) : (
@@ -2599,12 +2722,11 @@ export const TwyneEditor = component$(
                             >
                               {r.author}
                             </p>
-                            <p
-                              class="whitespace-pre-wrap"
+                            <div
+                              class="comment-markdown comment-markdown-on-color whitespace-pre-wrap"
                               style={{ color: "var(--color-paper)" }}
-                            >
-                              {r.text}
-                            </p>
+                              dangerouslySetInnerHTML={renderMarkdown(r.text)}
+                            />
                           </div>
                         </div>
                       ),
@@ -2791,12 +2913,11 @@ export const TwyneEditor = component$(
                   {store.suggestionPopover.replacement}
                 </p>
                 {store.suggestionPopover.rationale && (
-                  <p
-                    class="text-[0.78rem] italic leading-5 text-[var(--color-ink-light)]"
+                  <div
+                    class="comment-markdown text-[0.78rem] italic leading-5 text-[var(--color-ink-light)]"
                     style={{ fontFamily: "var(--font-serif)" }}
-                  >
-                    {store.suggestionPopover.rationale}
-                  </p>
+                    dangerouslySetInnerHTML={renderMarkdown(store.suggestionPopover.rationale)}
+                  />
                 )}
                 <div class="pt-2 flex gap-2 justify-end">
                   <button
@@ -2878,12 +2999,11 @@ export const TwyneEditor = component$(
                 </button>
               </div>
               <div class="px-5 py-4 space-y-3">
-                <p
-                  class="text-[1rem] leading-6 text-[var(--color-ink)]"
+                <div
+                  class="comment-markdown text-[1rem] leading-6 text-[var(--color-ink)]"
                   style="font-family: var(--font-serif);"
-                >
-                  {store.userCommentPopover.text}
-                </p>
+                  dangerouslySetInnerHTML={renderMarkdown(store.userCommentPopover.text)}
+                />
                 {store.userCommentPopover.replies.length > 0 && (
                   <div
                     class="pt-2 mt-2 border-t border-dashed space-y-2"
@@ -2907,16 +3027,15 @@ export const TwyneEditor = component$(
                           )}{" "}
                           · {timeAgo(r.createdAt)}
                         </p>
-                        <p
-                          class="mt-0.5 text-[var(--color-ink-light)] leading-5"
+                        <div
+                          class="comment-markdown mt-0.5 text-[var(--color-ink-light)] leading-5"
                           style={{
                             fontFamily: "var(--font-serif)",
                             fontStyle:
                               r.authorKind === "persona" ? "italic" : "normal",
                           }}
-                        >
-                          {r.text}
-                        </p>
+                          dangerouslySetInnerHTML={renderMarkdown(r.text)}
+                        />
                       </div>
                     ))}
                   </div>

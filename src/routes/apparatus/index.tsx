@@ -14,10 +14,12 @@ import {
   loadBibliography,
   deleteBibEntry,
   formatCitation,
-  upsertBibEntry,
+  buildBibEntryFromFormattedCitation,
+  mergeBibEntry,
 } from "../../utils/bibliography";
 import {
   loadApparatusSettingsFromIdb,
+  loadActiveFolioIdFromIdb,
   loadFoliosFromIdb,
   loadFolioContentFromIdb,
   saveApparatusSettingsToIdb,
@@ -59,6 +61,8 @@ interface ApparatusStore {
   aiSummaries: Record<string, SourceSummarizeResult>;
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
+  /** Citation ids that have been added to the bibliography. */
+  addedCitationIds: Record<string, boolean>;
   aiMissingSources: {
     claims: Array<{
       claim: string;
@@ -101,6 +105,7 @@ export default component$(() => {
     aiSummaries: {},
     aiEnhanceCitations: false,
     flagMissingSources: false,
+    addedCitationIds: {},
     aiMissingSources: null,
     aiScanningMissing: false,
   });
@@ -113,13 +118,46 @@ export default component$(() => {
     store.flagMissingSources = apparatusSettings.flagMissingSources;
     store.bibliography = await loadBibliography();
     const folios = await loadFoliosFromIdb();
-    store.activeFolio = folios[0] ?? null;
+    const activeFolioId = await loadActiveFolioIdFromIdb();
+    store.activeFolio =
+      folios.find((folio) => folio.id === activeFolioId) ?? folios[0] ?? null;
     if (store.activeFolio) {
       const html = await loadFolioContentFromIdb(store.activeFolio.id);
       const text = html.replace(/<[^>]+>/g, " ");
       store.citations = detectCitations(text);
     }
     store.aiSettings = await loadAiSettingsFromIdb();
+    if (
+      store.aiEnhanceCitations &&
+      hasConfiguredAiProvider(store.aiSettings) &&
+      store.aiSettings &&
+      store.activeFolio
+    ) {
+      for (const citation of store.citations) {
+        const entryId = `ai-fmt-${store.activeFolio.id}-${citation.id}`.replace(
+          /[^a-zA-Z0-9_-]/g,
+          "-",
+        );
+        if (store.bibliography.some((entry) => entry.id === entryId)) continue;
+        const result = await runClientCitationFormat(
+          {
+            rawText: citation.text,
+            style: store.style,
+            context: store.activeFolio.name,
+          },
+          store.aiSettings,
+        );
+        if (!result) continue;
+        const all = await mergeBibEntry(
+          buildBibEntryFromFormattedCitation(
+            citation,
+            result,
+            store.activeFolio.id,
+          ),
+        );
+        store.bibliography = all;
+      }
+    }
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -258,40 +296,51 @@ export default component$(() => {
   /* ── AI-enhanced apparatus actions ────────────────────────────── */
 
   const hasAi = hasConfiguredAiProvider(store.aiSettings);
-  const canEnhanceCitations = hasAi && store.aiEnhanceCitations;
   const canFlagMissingSources = hasAi && store.flagMissingSources;
 
-  const formatCitationAi = $(async (citation: DetectedCitation) => {
-    if (!canEnhanceCitations || !store.aiSettings) return;
+  const addToBibliography = $(async (citation: DetectedCitation) => {
     const key = `fmt-${citation.id}`;
+    if (store.aiLoading[key]) return;
     store.aiLoading = { ...store.aiLoading, [key]: true };
     try {
-      const result = await runClientCitationFormat(
-        {
-          rawText: citation.text,
-          style: store.style,
-          context: store.activeFolio?.name,
-        },
-        store.aiSettings,
-      );
-      if (result) {
-        // Create a new BibEntry from the formatted result and save it
-        const newEntry: BibEntry = {
-          id: `ai-fmt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          title: result.title,
-          author: result.author,
-          year: result.year,
-          url: result.url ?? citation.lookupUrl ?? "",
-          doi: result.doi,
-          publisher: result.publisher,
-          folioId: store.activeFolio?.id ?? "",
-          provenance: "writer",
-          accessedAt: Date.now(),
-          createdAt: Date.now(),
-        };
-        const all = await upsertBibEntry(newEntry);
-        store.bibliography = all;
+      if (hasAi && store.aiSettings) {
+        const result = await runClientCitationFormat(
+          {
+            rawText: citation.text,
+            style: store.style,
+            context: store.activeFolio?.name,
+          },
+          store.aiSettings,
+        );
+        if (result) {
+          const all = await mergeBibEntry(
+            buildBibEntryFromFormattedCitation(
+              citation,
+              result,
+              store.activeFolio?.id ?? "",
+            ),
+          );
+          store.bibliography = all;
+          store.addedCitationIds = {
+            ...store.addedCitationIds,
+            [citation.id]: true,
+          };
+          return;
+        }
       }
+      // Fallback: save raw citation without AI formatting.
+      const all = await mergeBibEntry(
+        buildBibEntryFromFormattedCitation(
+          citation,
+          { title: citation.text, url: citation.lookupUrl },
+          store.activeFolio?.id ?? "",
+        ),
+      );
+      store.bibliography = all;
+      store.addedCitationIds = {
+        ...store.addedCitationIds,
+        [citation.id]: true,
+      };
     } finally {
       store.aiLoading = { ...store.aiLoading, [key]: false };
     }
@@ -340,10 +389,16 @@ export default component$(() => {
       .map((u) => u.replace(/\/+$/, "")),
   );
 
-  const backgroundEntries = store.bibliography.filter(
+  const activeBibliography = store.activeFolio
+    ? store.bibliography.filter(
+        (b) => b.folioId === store.activeFolio?.id || !b.folioId,
+      )
+    : store.bibliography;
+
+  const backgroundEntries = activeBibliography.filter(
     (b) => b.provenance === "background",
   );
-  const writerEntries = store.bibliography.filter(
+  const writerEntries = activeBibliography.filter(
     (b) => b.provenance !== "background",
   );
 
@@ -503,7 +558,7 @@ export default component$(() => {
                 backgroundEntries.map((entry) => {
                   const isCited = citedUrls.has(entry.url.replace(/\/+$/, ""));
                   return (
-                    <div key={entry.id} class="row">
+                    <div key={entry.id} class="row group slide-in transition-colors hover:bg-[var(--color-paper-soft)] page-turn">
                       <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0 flex-1">
                           <div class="flex items-center gap-2 mb-1 flex-wrap">
@@ -544,7 +599,7 @@ export default component$(() => {
                           )}
                         </div>
                       </div>
-                      <div class="mt-2 flex items-center gap-2 flex-wrap">
+                      <div class="mt-2 flex items-center gap-2 flex-wrap opacity-60 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick$={() => openEmbed(entry)}
                           class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
@@ -625,7 +680,7 @@ export default component$(() => {
                   const isSummarizing = !!store.aiLoading[sumKey];
                   const summary = store.aiSummaries[entry.id];
                   return (
-                    <div key={entry.id} class="row">
+                    <div key={entry.id} class="row group slide-in transition-colors hover:bg-[var(--color-paper-soft)] page-turn">
                       <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0 flex-1">
                           <p
@@ -687,7 +742,7 @@ export default component$(() => {
                           )}
                         </div>
                       </div>
-                      <div class="mt-2 flex items-center gap-2 flex-wrap">
+                      <div class="mt-2 flex items-center gap-2 flex-wrap opacity-60 group-hover:opacity-100 transition-opacity">
                         {hasAi && (
                           <button
                             onClick$={() => summarizeSourceAi(entry)}
@@ -732,8 +787,15 @@ export default component$(() => {
                 store.citations.map((c) => {
                   const fmtKey = `fmt-${c.id}`;
                   const isFormatting = !!store.aiLoading[fmtKey];
+                  const isAdded = !!store.addedCitationIds[c.id];
                   return (
-                    <div key={c.id} class="row">
+                    <div
+                      key={c.id}
+                      class="row group slide-in transition-colors hover:bg-[var(--color-paper-soft)] page-turn"
+                      style={{
+                        borderLeft: "3px solid var(--color-paper-3)",
+                      }}
+                    >
                       <p
                         class="text-xs text-[var(--color-ink)] break-all"
                         style={{ fontFamily: "var(--font-mono)" }}
@@ -758,17 +820,35 @@ export default component$(() => {
                             </a>
                           </>
                         ) : null}
-                        {canEnhanceCitations && (
-                          <button
-                            onClick$={() => formatCitationAi(c)}
-                            disabled={isFormatting}
-                            class="ml-auto text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-mustard)] hover:text-[var(--color-ink)] disabled:opacity-40"
-                            style="font-family: var(--font-typewriter);"
-                            title="Ask the configured AI to format this into a bibliography entry."
+                        {isAdded && (
+                          <span
+                            class="text-[0.55rem] tracking-[0.15em] uppercase px-1 py-0.5"
+                            style={{
+                              color: "var(--color-accent-green)",
+                              border: "1px solid var(--color-accent-green)",
+                              borderRadius: "1px",
+                            }}
                           >
-                            {isFormatting ? "formatting…" : "✦ format with AI"}
-                          </button>
+                            ✓ in bib
+                          </span>
                         )}
+                        <button
+                          onClick$={() => addToBibliography(c)}
+                          disabled={isFormatting || isAdded}
+                          class="ml-auto text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)] disabled:opacity-40 disabled:cursor-default"
+                          style="font-family: var(--font-typewriter);"
+                          title={hasAi
+                            ? "Format this citation with AI and add it to your bibliography."
+                            : "Add this citation to your bibliography."}
+                        >
+                          {isFormatting
+                            ? "formatting…"
+                            : isAdded
+                              ? "✓ added"
+                              : hasAi
+                                ? "✦ add to bib"
+                                : "+ add to bib"}
+                        </button>
                       </p>
                     </div>
                   );

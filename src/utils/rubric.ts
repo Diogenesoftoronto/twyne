@@ -116,11 +116,7 @@ function computeFeatures(text: string): StaticFeatures {
     words.length > 0
       ? words.reduce((sum, w) => sum + w.length, 0) / words.length
       : 0;
-  const uniqueWords = new Set(
-    words.map((w) => w.toLowerCase().replace(/[^a-z']/g, "")),
-  );
-  const uniqueWordsRatio =
-    words.length > 0 ? uniqueWords.size / words.length : 0;
+  const uniqueWordsRatio = movingTypeTokenRatio(words);
 
   const paragraphLengths = paragraphs.map(
     (p) => p.split(/\s+/).filter(Boolean).length,
@@ -152,7 +148,10 @@ function computeFeatures(text: string): StaticFeatures {
   const fillerWordRatio = wordCount > 0 ? fillerMatches.length / wordCount : 0;
   const vagueWordRatio = wordCount > 0 ? vagueMatches.length / wordCount : 0;
   const unsupportedUniversalClaimCount = sentences.filter(
-    (s) => UNIVERSAL_CLAIM.test(s) && !SOURCE_MARKER.test(s),
+    (s) =>
+      UNIVERSAL_CLAIM.test(s) &&
+      !SOURCE_MARKER.test(s) &&
+      !SOURCE_CITATION.test(s),
   ).length;
 
   return {
@@ -180,8 +179,55 @@ const VAGUE_WORDS =
   /\b(thing|things|stuff|various|many|some|people|society|important|interesting|significant|impactful|better|worse|good|bad|a lot|kind of|sort of)\b/gi;
 const UNIVERSAL_CLAIM =
   /\b(always|never|everyone|no one|all (?:people|writers|readers|users)|none of|proves?|guarantees?|undeniably|obviously|clearly)\b/i;
+// Word-boundary assertions only wrap the word alternatives — a leading
+// `\b` before `(` or `[` never matches (both are non-word characters),
+// which used to make parenthetical citations like "(Smith, 2020)" and
+// bracketed refs like "[3]" invisible to this check.
 const SOURCE_MARKER =
-  /\b(according to|study|studies|research|data|survey|report|census|doi:|https?:\/\/|\(\s*[A-Z][A-Za-z-]+,\s*\d{4}\s*\)|\[\d+\])\b/i;
+  /\b(?:according to|study|studies|research|data|survey|report|census|doi:)\b|https?:\/\//i;
+const SOURCE_CITATION =
+  /\(\s*[A-Z][A-Za-z-]+,\s*\d{4}\s*\)|\[\d+\]/;
+
+/**
+ * Moving-average type-token ratio (MATTR). A raw type-token ratio
+ * falls with document length — a 3,000-word essay always looks more
+ * "repetitive" than a 300-word note — so we average the ratio over a
+ * sliding window instead, which stays comparable across lengths.
+ * Texts shorter than the window fall back to the raw ratio.
+ */
+function movingTypeTokenRatio(words: string[], window = 110): number {
+  const norm = words
+    .map((w) => w.toLowerCase().replace(/[^a-z']/g, ""))
+    .filter(Boolean);
+  if (norm.length === 0) return 0;
+  if (norm.length <= window) return new Set(norm).size / norm.length;
+
+  const counts = new Map<string, number>();
+  let distinct = 0;
+  let sum = 0;
+  let windows = 0;
+  for (let i = 0; i < norm.length; i++) {
+    const incoming = norm[i];
+    const next = (counts.get(incoming) ?? 0) + 1;
+    counts.set(incoming, next);
+    if (next === 1) distinct++;
+    if (i >= window) {
+      const outgoing = norm[i - window];
+      const remaining = (counts.get(outgoing) ?? 1) - 1;
+      if (remaining === 0) {
+        counts.delete(outgoing);
+        distinct--;
+      } else {
+        counts.set(outgoing, remaining);
+      }
+    }
+    if (i >= window - 1) {
+      sum += distinct / window;
+      windows++;
+    }
+  }
+  return sum / windows;
+}
 
 function standardDeviation(values: number[]): number {
   if (values.length === 0) return 0;
@@ -233,13 +279,14 @@ function scoreEvidence(f: StaticFeatures): number {
 }
 
 function scoreVocabulary(f: StaticFeatures): number {
-  // Type-token ratio: 0.45-0.6 is healthy; above 0.7 means each word is
-  // used once, which is bad. Below 0.3 means repetition.
-  if (f.uniqueWordsRatio < 0.25) return 2;
-  if (f.uniqueWordsRatio < 0.35) return 4;
-  if (f.uniqueWordsRatio < 0.5) return 6.5;
-  if (f.uniqueWordsRatio < 0.6) return 8;
-  if (f.uniqueWordsRatio < 0.7) return 7;
+  // Windowed type-token ratio (MATTR, 110-word window): 0.65-0.8 is
+  // healthy prose. Below 0.5 reads as heavy repetition; approaching
+  // 0.9 every word is used once, which reads as thesaurus abuse.
+  if (f.uniqueWordsRatio < 0.45) return 2;
+  if (f.uniqueWordsRatio < 0.55) return 4;
+  if (f.uniqueWordsRatio < 0.65) return 6.5;
+  if (f.uniqueWordsRatio < 0.8) return 8;
+  if (f.uniqueWordsRatio < 0.88) return 7;
   return 5;
 }
 
@@ -403,8 +450,8 @@ function brutalCurve(rawHundred: number): number {
   //   90 raw  →  86
   //   95 raw  →  93
   //  100 raw  → 100
-  if (rawHundred <= 50) return rawHundred;
-  if (rawHundred >= 95) return 50 + (rawHundred - 50) * 1.4;
+  if (rawHundred <= 50) return Math.max(0, rawHundred);
+  if (rawHundred >= 95) return Math.min(100, 93 + (rawHundred - 95) * 1.4);
   // Linear in 50-95 band
   return 50 + (rawHundred - 50) * (43 / 45);
 }
