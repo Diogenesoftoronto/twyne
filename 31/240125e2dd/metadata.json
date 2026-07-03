@@ -3,15 +3,23 @@
   "checkpoint_id": "31240125e2dd",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
+    ".env.example",
     "convex/account.ts",
     "convex/lixBlobs.test.ts",
     "convex/lixBlobs.ts",
     "convex/schema.ts",
     "convex/sync.ts",
+    "package.json",
     "src/components/citations/citations-panel.tsx",
+    "src/components/comments/comments-panel.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/folio/folio-menu.tsx",
+    "src/global.css",
     "src/routes/apparatus/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/types/index.ts",
     "src/utils/ai-client.test.ts",
     "src/utils/ai-client.ts",
     "src/utils/bibliography.test.ts",
@@ -20,7 +28,10 @@
     "src/utils/citations.test.ts",
     "src/utils/citations.ts",
     "src/utils/convex-sync.test.ts",
-    "src/utils/convex-sync.ts"
+    "src/utils/convex-sync.ts",
+    "src/utils/exchange.ts",
+    "src/utils/idb-preferences.test.ts",
+    "src/utils/rubric.ts"
   ],
   "sessions": [
     {
@@ -28,13 +39,19 @@
       "transcript": "/31/240125e2dd/0/full.jsonl",
       "content_hash": "/31/240125e2dd/0/content_hash.txt",
       "prompt": "/31/240125e2dd/0/prompt.txt"
+    },
+    {
+      "metadata": "/31/240125e2dd/1/metadata.json",
+      "transcript": "/31/240125e2dd/1/full.jsonl",
+      "content_hash": "/31/240125e2dd/1/content_hash.txt",
+      "prompt": "/31/240125e2dd/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 55701,
+    "input_tokens": 180695,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 335488,
-    "output_tokens": 5962,
-    "api_call_count": 7
+    "cache_read_tokens": 1133440,
+    "output_tokens": 13067,
+    "api_call_count": 30
   }
 }

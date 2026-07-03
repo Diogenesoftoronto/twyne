@@ -1,0 +1,24 @@
+Review the current code changes (staged, unstaged, and untracked files) and provide prioritized findings.
+
+---
+
+send these to gpt 5.4 mini to resolve
+
+---
+
+Resolve these review comments in /home/diogenes/Projects/twyne. You are not alone in the codebase: the worktree is dirty and may include user/other-agent changes, so do not revert unrelated edits. Keep changes scoped to these review items and preserve existing patterns.
+
+Repo guidance from AGENTS.md: run shell commands with `rtk` prefix where applicable. This is a Qwik project; Qwik optimizer lexical-scope constraints matter. After your logical code-change unit, run focused verification, at least `rtk bun run lint` if available.
+
+Current review comments to resolve:
+1. [P1] src/components/citations/citations-panel.tsx: `useVisibleTask$` captures `autoFormatIfEnabled` as a plain local function; Qwik lexical-scope rule rejects it, and lint fails at calls around lines 183 and 202. Wrap helper in `$()` or inline logic inside the visible task.
+2. [P2] src/components/folio/folio-menu.tsx: `loadBibliography()` returns every entry when exporting one folio. Filter bibliography entries to the active folio plus global entries before passing into `exportAs` so folio A exports do not include folio B sources.
+3. [P2] src/utils/bibliography.ts: citations without resolved URL create entries with `url: ""`, then `mergeBibEntry` URL dedupe treats every blank URL as same source. Multiple no-URL citations must not overwrite each other. Default MLA formatting also must not display an empty accessed URL. Add/update focused tests if existing bibliography tests are present.
+4. [P3] src/utils/citations.ts: make the citation start offset a `const` to satisfy prefer-const.
+5. [P3] src/global.css: zen masthead should fade back in on hover. Do not leave a rule that sets `pointer-events: none` while collapsing the hover target so it cannot receive hover; leave a hoverable hit area or avoid disabling pointer events.
+
+Please edit files directly in your workspace and finish with changed file paths, verification commands/outcomes, and any unresolved concerns.
+
+---
+
+skip vet
