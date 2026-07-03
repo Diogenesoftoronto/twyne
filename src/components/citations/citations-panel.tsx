@@ -1,21 +1,33 @@
 import { component$, useStore, $, useVisibleTask$ } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
-import type { DetectedCitation, Folio } from "../../types";
+import type { AiSettings, DetectedCitation, Folio } from "../../types";
 import { detectCitations } from "../../utils/citations";
 import {
   type BibEntry,
+  type CitationStyle,
+  buildBibEntryFromFormattedCitation,
   loadBibliography,
   deleteBibEntry,
   formatCitation,
   footnoteCite,
+  mergeBibEntry,
 } from "../../utils/bibliography";
 import { snapshot as researchSnapshot } from "../../utils/background-research";
+import {
+  loadAiSettingsFromIdb,
+  loadApparatusSettingsFromIdb,
+} from "../../utils/idb";
+import {
+  hasConfiguredAiProvider,
+  runClientCitationFormat,
+} from "../../utils/ai-client";
 
 interface CitationsStore {
   citations: DetectedCitation[];
   expandedId: string | null;
   lastScanCount: number | null;
   bibliography: BibEntry[];
+  style: CitationStyle;
   embedUrl: string | null;
   embedMarkdown: string | null;
   embedTitle: string;
@@ -32,6 +44,13 @@ interface CitationsStore {
   };
   /** The most recent background-saved entry, used for a transient toast. */
   lastBackgroundSave: { saved: number; query: string } | null;
+  aiSettings: AiSettings | null;
+  aiEnhanceCitations: boolean;
+  autoFormatting: boolean;
+  /** Track which detected citations are being formatted/saved. */
+  formattingIds: Record<string, boolean>;
+  /** Citations already added to the bibliography (by citation id). */
+  addedIds: Record<string, boolean>;
 }
 
 interface CitationsPanelProps {
@@ -46,6 +65,7 @@ export const CitationsPanel = component$(
       expandedId: null,
       lastScanCount: null,
       bibliography: [],
+      style: "mla",
       embedUrl: null,
       embedMarkdown: null,
       embedTitle: "",
@@ -59,6 +79,97 @@ export const CitationsPanel = component$(
         lastTickAt: 0,
       },
       lastBackgroundSave: null,
+      aiSettings: null,
+      aiEnhanceCitations: false,
+      autoFormatting: false,
+      formattingIds: {},
+      addedIds: {},
+    });
+
+    const autoFormatIfEnabled = $(async (citations: DetectedCitation[]) => {
+      if (
+        store.autoFormatting ||
+        !activeFolio ||
+        !store.aiSettings ||
+        !store.aiEnhanceCitations ||
+        !hasConfiguredAiProvider(store.aiSettings)
+      ) {
+        return;
+      }
+      store.autoFormatting = true;
+      try {
+        const seen = new Set(
+          store.bibliography.map((entry) => entry.url.replace(/\/+$/, "")),
+        );
+        let all: BibEntry[] | null = null;
+        for (const citation of citations.slice(0, 5)) {
+          if (
+            citation.lookupUrl &&
+            seen.has(citation.lookupUrl.replace(/\/+$/, ""))
+          ) {
+            continue;
+          }
+          const result = await runClientCitationFormat(
+            {
+              rawText: citation.text,
+              style: store.style,
+              context: activeFolio.name,
+            },
+            store.aiSettings,
+          );
+          if (!result) continue;
+          all = await mergeBibEntry(
+            buildBibEntryFromFormattedCitation(citation, result, activeFolio.id),
+          );
+          if (citation.lookupUrl) {
+            seen.add(citation.lookupUrl.replace(/\/+$/, ""));
+          }
+        }
+        if (all) store.bibliography = all;
+      } finally {
+        store.autoFormatting = false;
+      }
+    });
+
+    const addToBibliography = $(async (citation: DetectedCitation) => {
+      if (store.formattingIds[citation.id]) return;
+      if (!activeFolio) return;
+      store.formattingIds = { ...store.formattingIds, [citation.id]: true };
+      try {
+        if (store.aiSettings && hasConfiguredAiProvider(store.aiSettings)) {
+          const result = await runClientCitationFormat(
+            {
+              rawText: citation.text,
+              style: store.style,
+              context: activeFolio.name,
+            },
+            store.aiSettings,
+          );
+          if (result) {
+            const all = await mergeBibEntry(
+              buildBibEntryFromFormattedCitation(
+                citation,
+                result,
+                activeFolio.id,
+              ),
+            );
+            store.bibliography = all;
+            store.addedIds = { ...store.addedIds, [citation.id]: true };
+            return;
+          }
+        }
+        const all = await mergeBibEntry(
+          buildBibEntryFromFormattedCitation(
+            citation,
+            { title: citation.text, url: citation.lookupUrl },
+            activeFolio.id,
+          ),
+        );
+        store.bibliography = all;
+        store.addedIds = { ...store.addedIds, [citation.id]: true };
+      } finally {
+        store.formattingIds = { ...store.formattingIds, [citation.id]: false };
+      }
     });
 
     // eslint-disable-next-line qwik/no-use-visible-task
@@ -69,6 +180,7 @@ export const CitationsPanel = component$(
         const newCitations = detail.filter((c) => !existingIds.has(c.id));
         if (newCitations.length > 0) {
           store.citations = [...store.citations, ...newCitations];
+          void autoFormatIfEnabled(newCitations);
         }
       };
       window.addEventListener("twyne:citations", handler);
@@ -77,7 +189,18 @@ export const CitationsPanel = component$(
 
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async () => {
-      store.bibliography = await loadBibliography();
+      const [bibliography, apparatusSettings, aiSettings] = await Promise.all([
+        loadBibliography(),
+        loadApparatusSettingsFromIdb(),
+        loadAiSettingsFromIdb(),
+      ]);
+      store.bibliography = bibliography;
+      store.style = apparatusSettings.defaultCitationStyle;
+      store.aiEnhanceCitations = apparatusSettings.aiEnhanceCitations;
+      store.aiSettings = aiSettings;
+      if (initialCitations?.length) {
+        await autoFormatIfEnabled(initialCitations);
+      }
     });
 
     // Background-research status — render the live state from the
@@ -144,7 +267,7 @@ export const CitationsPanel = component$(
     });
 
     const citeInDraft = $(async (entry: BibEntry) => {
-      const text = footnoteCite(entry, entry.style ?? "mla");
+      const text = footnoteCite(entry, store.style);
       try {
         await navigator.clipboard?.writeText(text);
       } catch {
@@ -385,7 +508,7 @@ export const CitationsPanel = component$(
               return (
                 <div
                   key={entry.id}
-                  class="px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)]"
+                  class="group slide-in px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] transition-all duration-200 hover:border-[var(--color-vermilion)] hover:shadow-md page-turn"
                   style="border-radius: 2px;"
                 >
                   <div class="flex items-start justify-between gap-2">
@@ -437,7 +560,7 @@ export const CitationsPanel = component$(
                         class="text-xs text-[var(--color-ink-light)] mt-1.5 leading-5"
                         style={{ fontFamily: "var(--font-serif)" }}
                       >
-                        {formatCitation(entry, entry.style ?? "mla")}
+                        {formatCitation(entry, store.style)}
                       </p>
                       {isBackground && entry.backgroundQuery && (
                         <p
@@ -450,7 +573,7 @@ export const CitationsPanel = component$(
                       )}
                     </div>
                   </div>
-                  <div class="mt-2 flex items-center gap-2 flex-wrap">
+                  <div class="mt-2 flex items-center gap-2 flex-wrap opacity-60 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick$={() => citeInDraft(entry)}
                       class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)]"
@@ -491,11 +614,18 @@ export const CitationsPanel = component$(
           )}
           {store.citations.map((citation, idx) => {
             const accent = getTypeAccent(citation.type);
+            const isFormatting = !!store.formattingIds[citation.id];
+            const isAdded = !!store.addedIds[citation.id];
+            const hasAi = store.aiSettings && hasConfiguredAiProvider(store.aiSettings);
             return (
               <div
                 key={citation.id}
-                class="px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] hover:bg-[var(--color-paper-soft)] transition-colors"
-                style="border-radius: 2px;"
+                class="citation-card group slide-in px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] transition-all duration-200 hover:border-[var(--color-vermilion)] hover:shadow-md page-turn"
+                style={{
+                  borderRadius: "2px",
+                  borderLeftColor: accent,
+                  borderLeftWidth: "3px",
+                }}
               >
                 <div class="flex items-start justify-between gap-2">
                   <div class="flex-1 min-w-0">
@@ -520,6 +650,19 @@ export const CitationsPanel = component$(
                       >
                         {getTypeLabel(citation.type)}
                       </span>
+                      {isAdded && (
+                        <span
+                          class="text-[9px] tracking-[0.15em] uppercase px-1.5 py-0.5"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            color: "var(--color-accent-green)",
+                            border: "1px solid var(--color-accent-green)",
+                            borderRadius: "1px",
+                          }}
+                        >
+                          ✓ in bib
+                        </span>
+                      )}
                     </div>
                     <p
                       class="text-xs text-[var(--color-ink)] break-all"
@@ -555,6 +698,25 @@ export const CitationsPanel = component$(
                         Look up ↗
                       </a>
                     )}
+                    <div class="mt-2 flex items-center gap-2 flex-wrap citation-actions opacity-60 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick$={() => addToBibliography(citation)}
+                        disabled={isFormatting || isAdded}
+                        class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)] disabled:opacity-40 disabled:cursor-default"
+                        style="font-family: var(--font-typewriter);"
+                        title={hasAi
+                          ? "Format this citation with AI and add it to your bibliography."
+                          : "Add this citation to your bibliography."}
+                      >
+                        {isFormatting
+                          ? "formatting…"
+                          : isAdded
+                            ? "✓ added"
+                            : hasAi
+                              ? "✦ add to bib"
+                              : "+ add to bib"}
+                      </button>
+                    </div>
                   </div>
                   <div class="flex items-center gap-1 ml-1 flex-shrink-0">
                     <button

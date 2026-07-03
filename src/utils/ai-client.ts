@@ -945,11 +945,59 @@ export interface CitationFormatResult {
   title: string;
   author?: string;
   year?: string;
+  date?: string;
   url?: string;
   doi?: string;
   publisher?: string;
   formatted: string;
+  style: "mla" | "apa" | "chicago";
   provider: string;
+}
+
+function stripJsonResponse(text: string): string {
+  return stripReasoningTags(text)
+    .trim()
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/, "")
+    .trim();
+}
+
+export function parseCitationFormatResult(
+  text: string,
+  style: CitationFormatRequest["style"],
+  provider: string,
+): CitationFormatResult | null {
+  try {
+    const stripped = stripJsonResponse(text);
+    const candidate = extractFirstJsonObject(stripped) ?? stripped;
+    const o = JSON.parse(candidate);
+    if (typeof o.title === "string" && o.title.trim()) {
+      const year =
+        typeof o.year === "string" ? o.year.trim() || undefined : undefined;
+      const date =
+        typeof o.date === "string" ? o.date.trim() || undefined : year;
+      return {
+        title: o.title.trim(),
+        author:
+          typeof o.author === "string" ? o.author.trim() || undefined : undefined,
+        year,
+        date,
+        url: typeof o.url === "string" ? o.url.trim() || undefined : undefined,
+        doi: typeof o.doi === "string" ? o.doi.trim() || undefined : undefined,
+        publisher:
+          typeof o.publisher === "string"
+            ? o.publisher.trim() || undefined
+            : undefined,
+        formatted:
+          typeof o.formatted === "string" ? o.formatted.trim() : o.title.trim(),
+        style,
+        provider,
+      };
+    }
+  } catch {
+    /* fall through */
+  }
+  return null;
 }
 
 export async function runClientCitationFormat(
@@ -971,7 +1019,7 @@ Raw citation: "${req.rawText}"
 ${req.context ? `Context from draft: ${req.context}` : ""}
 
 Respond with JSON only:
-{"title": "<title>", "author": "<author if known>", "year": "<year if known>", "url": "<url if known>", "doi": "<doi if known>", "publisher": "<publisher if known>", "formatted": "<full ${req.style} citation>"}`;
+{"title": "<title>", "author": "<author if known>", "year": "<year if known>", "date": "<publication date if known>", "url": "<url if known>", "doi": "<doi if known>", "publisher": "<publisher if known>", "formatted": "<full ${req.style} citation>"}`;
 
     const text = await generateTrackedText({
       feature: "citation-format",
@@ -986,42 +1034,7 @@ Respond with JSON only:
       },
     });
 
-    const stripped = stripReasoningTags(text)
-      .trim()
-      .replace(/^```(?:json)?/i, "")
-      .replace(/```$/, "")
-      .trim();
-
-    try {
-      const o = JSON.parse(stripped);
-      if (typeof o.title === "string" && o.title.trim()) {
-        return {
-          title: o.title.trim(),
-          author:
-            typeof o.author === "string"
-              ? o.author.trim() || undefined
-              : undefined,
-          year:
-            typeof o.year === "string" ? o.year.trim() || undefined : undefined,
-          url:
-            typeof o.url === "string" ? o.url.trim() || undefined : undefined,
-          doi:
-            typeof o.doi === "string" ? o.doi.trim() || undefined : undefined,
-          publisher:
-            typeof o.publisher === "string"
-              ? o.publisher.trim() || undefined
-              : undefined,
-          formatted:
-            typeof o.formatted === "string"
-              ? o.formatted.trim()
-              : o.title.trim(),
-          provider: resolved.provider.type,
-        };
-      }
-    } catch {
-      /* fall through */
-    }
-    return null;
+    return parseCitationFormatResult(text, req.style, resolved.provider.type);
   } catch (err) {
     console.warn("[twyne:ai-client] citation format failed:", err);
     return null;
@@ -1132,6 +1145,42 @@ export interface MissingSourceResult {
   provider: string;
 }
 
+export function parseMissingSourceResult(
+  text: string,
+  provider: string,
+): MissingSourceResult | null {
+  try {
+    const stripped = stripJsonResponse(text);
+    const candidate = extractFirstJsonObject(stripped) ?? stripped;
+    const o = JSON.parse(candidate);
+    if (Array.isArray(o.claims)) {
+      return {
+        claims: o.claims
+          .filter(
+            (c: unknown) =>
+              c && typeof (c as Record<string, unknown>).claim === "string",
+          )
+          .map((c: Record<string, unknown>) => ({
+            claim: String(c.claim).trim(),
+            reason:
+              typeof c.reason === "string"
+                ? c.reason.trim()
+                : "Needs verifiable source",
+            suggestedQuery:
+              typeof c.suggestedQuery === "string"
+                ? c.suggestedQuery.trim()
+                : String(c.claim).trim(),
+          }))
+          .filter((c: { claim: string }) => c.claim.length > 0),
+        provider,
+      };
+    }
+  } catch {
+    /* fall through */
+  }
+  return null;
+}
+
 export async function runClientMissingSourceDetect(
   req: MissingSourceRequest,
   settings: AiSettings,
@@ -1179,39 +1228,7 @@ Respond with JSON only:
       },
     });
 
-    const stripped = stripReasoningTags(text)
-      .trim()
-      .replace(/^```(?:json)?/i, "")
-      .replace(/```$/, "")
-      .trim();
-
-    try {
-      const o = JSON.parse(stripped);
-      if (Array.isArray(o.claims) && o.claims.length > 0) {
-        return {
-          claims: o.claims
-            .filter(
-              (c: unknown) =>
-                c && typeof (c as Record<string, unknown>).claim === "string",
-            )
-            .map((c: Record<string, unknown>) => ({
-              claim: String(c.claim).trim(),
-              reason:
-                typeof c.reason === "string"
-                  ? c.reason.trim()
-                  : "Needs verifiable source",
-              suggestedQuery:
-                typeof c.suggestedQuery === "string"
-                  ? c.suggestedQuery.trim()
-                  : String(c.claim).trim(),
-            })),
-          provider: resolved.provider.type,
-        };
-      }
-    } catch {
-      /* fall through */
-    }
-    return null;
+    return parseMissingSourceResult(text, resolved.provider.type);
   } catch (err) {
     console.warn("[twyne:ai-client] missing source detect failed:", err);
     return null;

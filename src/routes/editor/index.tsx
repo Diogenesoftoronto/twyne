@@ -68,6 +68,8 @@ interface LayoutStore {
   rightPanelOpen: boolean;
   /** Panel state to restore when zen mode is turned back off. Null when not in zen mode. */
   panelsBeforeZen: { left: boolean; right: boolean } | null;
+  /** True while zen mode is active — drives masthead/toolbar hiding. */
+  zenActive: boolean;
   hydrated: boolean;
   brief: ProjectBrief | null;
   editorSeed: string;
@@ -150,6 +152,7 @@ export default component$(() => {
     leftSidebarOpen: false,
     rightPanelOpen: true,
     panelsBeforeZen: null,
+    zenActive: false,
     hydrated: false,
     brief: null,
     editorSeed: "",
@@ -326,6 +329,7 @@ export default component$(() => {
     // width, and put them back the way they were on exit.
     const zenModeHandler = (e: Event) => {
       const on = !!(e as CustomEvent).detail?.on;
+      store.zenActive = on;
       if (on) {
         if (store.panelsBeforeZen) return;
         store.panelsBeforeZen = {
@@ -785,7 +789,7 @@ export default component$(() => {
         {/* ── Main area ─────────────────────────────────────── */}
         <div class="flex-1 flex flex-col min-w-0">
           {/* Masthead */}
-          <header class="border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]">
+          <header class={`border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]${store.zenActive ? " zen-masthead" : ""}`}>
             <div class="flex items-center px-5 pt-3 pb-1.5 gap-4">
               <button
                 onClick$={() => {

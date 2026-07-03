@@ -11,8 +11,13 @@
  */
 
 import { marked } from "marked";
-import type { Folio, LayoutSettings, ProjectBrief } from "../types";
+import type { Folio, LayoutSettings, ProjectBrief, PersonaFeedback } from "../types";
 import { DEFAULT_LAYOUT, resolveMargins } from "../types";
+import {
+  formatCitation,
+  type BibEntry,
+  type CitationStyle,
+} from "./bibliography";
 
 export type ExportFormat = "markdown" | "html" | "txt" | "twyne-backup";
 
@@ -147,6 +152,18 @@ function wrapStandaloneHtml(
   hr { border: none; border-top: 1px solid #c7b89c; margin: 2rem 0; }
   footer { margin-top: 3rem; font-size: 0.85rem; color: #6a5d4a; }
   a { color: #8b2f24; }
+  sup.endnote-ref { color: #b04a3a; font-size: 0.75em; }
+  sup.footnote-ref { color: #2c4a7c; font-size: 0.75em; }
+  .endnotes, .footnotes {
+    margin-top: 2.5rem; padding-top: 1rem;
+    border-top: 1px solid #c7b89c;
+    font-size: 0.9rem; color: #4a3e30;
+  }
+  .endnotes h2, .footnotes h2 { font-size: 1.05rem; margin: 0 0 0.8rem; }
+  .endnotes ol, .footnotes ol { list-style: none; padding: 0; margin: 0; }
+  .endnotes li, .footnotes li { margin: 0 0 0.55rem; }
+  .endnotes li sup, .footnotes li sup { margin-right: 0.35rem; }
+  .endnote-source { font-variant: small-caps; letter-spacing: 0.04em; }
 </style>
 </head>
 <body>
@@ -162,6 +179,180 @@ ${body}
 </html>`;
 }
 
+/* ── Endnote / footnote extraction ─────────────────────────────── */
+
+/**
+ * Regex to find inline note nodes (endnotes and footnotes) in the
+ * editor HTML. The lookahead keeps it independent of attribute order —
+ * TipTap serializes `data-endnote-text` before `data-type`.
+ */
+const NOTE_SUP_RE =
+  /<sup\b(?=[^>]*data-type="(?:endnote|footnote)")[^>]*>[\s\S]*?<\/sup>/gi;
+
+export interface InlineNote {
+  kind: "endnote" | "footnote";
+  text: string;
+}
+
+/**
+ * Extract inline notes from `<sup data-type="endnote|footnote">` nodes
+ * in the editor HTML, returning them in document order.
+ */
+export function extractInlineNotes(html: string): InlineNote[] {
+  const notes: InlineNote[] = [];
+  let m: RegExpExecArray | null;
+  NOTE_SUP_RE.lastIndex = 0;
+  while ((m = NOTE_SUP_RE.exec(html)) !== null) {
+    const tag = m[0];
+    const kind = /data-type="footnote"/i.test(tag) ? "footnote" : "endnote";
+    const text = /data-endnote-text="([^"]*)"/i.exec(tag)?.[1] ?? "";
+    notes.push({ kind, text: htmlDecode(text) });
+  }
+  return notes;
+}
+
+/** Extract endnote texts only (kept for callers that predate footnotes). */
+export function extractEndnotes(html: string): string[] {
+  return extractInlineNotes(html)
+    .filter((n) => n.kind === "endnote")
+    .map((n) => n.text);
+}
+
+/**
+ * Replace note `<sup>` nodes in the HTML with numbered superscript
+ * references (¹ ² ³ …) so the exported body reads naturally. Endnotes
+ * and footnotes number independently, matching their export sections.
+ */
+function replaceNotesWithSuperscripts(html: string): string {
+  let endnoteCount = 0;
+  let footnoteCount = 0;
+  return html.replace(NOTE_SUP_RE, (tag) => {
+    if (/data-type="footnote"/i.test(tag)) {
+      footnoteCount++;
+      return `<sup class="footnote-ref">${toSuperscript(footnoteCount)}</sup>`;
+    }
+    endnoteCount++;
+    return `<sup class="endnote-ref">${toSuperscript(endnoteCount)}</sup>`;
+  });
+}
+
+/** Convert a number to Unicode superscript digits. */
+function toSuperscript(n: number): string {
+  const map: Record<string, string> = {
+    "0": "\u2070",
+    "1": "\u00b9",
+    "2": "\u00b2",
+    "3": "\u00b3",
+    "4": "\u2074",
+    "5": "\u2075",
+    "6": "\u2076",
+    "7": "\u2077",
+    "8": "\u2078",
+    "9": "\u2079",
+  };
+  return String(n)
+    .split("")
+    .map((d) => map[d] ?? d)
+    .join("");
+}
+
+/**
+ * Strip editor-only marks (persona notes, suggestions, comments) from
+ * the HTML so the exported manuscript is clean prose. Endnote `<sup>`
+ * nodes are preserved — they are handled separately.
+ */
+function stripEditorMarks(html: string): string {
+  return html
+    // Remove persona-note spans but keep the text inside.
+    .replace(
+      /<span[^>]*class="twyne-persona-note"[^>]*>([\s\S]*?)<\/span>/gi,
+      "$1",
+    )
+    // Remove suggestion spans — keep the original text (not the replacement).
+    .replace(
+      /<span[^>]*class="twyne-suggestion"[^>]*>([\s\S]*?)<\/span>/gi,
+      "$1",
+    )
+    // Remove comment marks but keep text.
+    .replace(
+      /<span[^>]*class="twyne-comment-mark"[^>]*>([\s\S]*?)<\/span>/gi,
+      "$1",
+    );
+}
+
+/** Build the endnotes section HTML from marginalia + inline endnotes. */
+function buildEndnotesSection(
+  inlineNotes: string[],
+  marginalia: PersonaFeedback[],
+): string {
+  const entries: Array<{ source: string; text: string }> = [];
+
+  for (const text of inlineNotes) {
+    entries.push({ source: "note", text });
+  }
+
+  for (const m of marginalia) {
+    const author = m.personaName || "Editor";
+    const quote = m.anchor ? `"${m.anchor}" — ` : "";
+    entries.push({
+      source: author,
+      text: `${quote}${m.feedback}`,
+    });
+  }
+
+  if (entries.length === 0) return "";
+
+  const items = entries
+    .map(
+      (e, i) =>
+        `<li id="endnote-${i + 1}"><sup>${toSuperscript(i + 1)}</sup> ` +
+        `<span class="endnote-source">${escapeHtml(e.source)}</span>: ` +
+        `${escapeHtml(e.text)}</li>`,
+    )
+    .join("\n");
+
+  return `<section class="endnotes">\n<h2>Notes</h2>\n<ol>\n${items}\n</ol>\n</section>\n`;
+}
+
+/**
+ * Build the footnotes section HTML: inline footnotes first (matching
+ * the body's numbering), then bibliography entries continuing the count.
+ */
+function buildFootnotesSection(
+  inlineFootnotes: string[],
+  bibliography: BibEntry[],
+  style: CitationStyle,
+): string {
+  const bibEntries = bibliography.filter((b) => b.url || b.doi || b.title);
+  const lines: string[] = [];
+
+  for (const text of inlineFootnotes) {
+    lines.push(escapeHtml(text));
+  }
+  for (const e of bibEntries) {
+    lines.push(escapeHtml(formatCitation(e, style)));
+  }
+  if (lines.length === 0) return "";
+
+  const items = lines
+    .map(
+      (body, i) =>
+        `<li id="footnote-${i + 1}"><sup>${toSuperscript(i + 1)}</sup> ${body}</li>`,
+    )
+    .join("\n");
+
+  return `<section class="footnotes">\n<h2>Footnotes</h2>\n<ol>\n${items}\n</ol>\n</section>\n`;
+}
+
+function htmlDecode(s: string): string {
+  return s
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
 /* ── Public surface ────────────────────────────────────────────── */
 
 export interface ExportPayload {
@@ -174,9 +365,25 @@ export interface ExportPayload {
   /** Optional running header / footer text. */
   header?: string;
   footer?: string;
+  /** Persona marginalia — appended as endnotes in the exported document. */
+  marginalia?: PersonaFeedback[];
+  /** Bibliography entries — appended as footnotes in the exported document. */
+  bibliography?: BibEntry[];
+  /** Citation style for formatting footnotes/endnotes. */
+  citationStyle?: CitationStyle;
 }
 
 export function exportMarkdown(p: ExportPayload): string {
+  const style = p.citationStyle ?? "mla";
+  const cleaned = stripEditorMarks(p.html);
+  const allNotes = extractInlineNotes(cleaned);
+  const inlineNotes = allNotes
+    .filter((n) => n.kind === "endnote")
+    .map((n) => n.text);
+  const inlineFootnotes = allNotes
+    .filter((n) => n.kind === "footnote")
+    .map((n) => n.text);
+  const body = replaceNotesWithSuperscripts(cleaned);
   const parts: string[] = [];
   parts.push(`# ${p.title}`);
   parts.push("");
@@ -193,13 +400,72 @@ export function exportMarkdown(p: ExportPayload): string {
     parts.push("---");
     parts.push("");
   }
-  parts.push(htmlToMarkdown(p.html));
+  parts.push(htmlToMarkdown(body));
   parts.push("");
+
+  // Endnotes (inline + marginalia)
+  const endEntries: Array<{ source: string; text: string }> = [];
+  for (const text of inlineNotes) {
+    endEntries.push({ source: "note", text });
+  }
+  for (const m of p.marginalia ?? []) {
+    const author = m.personaName || "Editor";
+    const quote = m.anchor ? `"${m.anchor}" — ` : "";
+    endEntries.push({ source: author, text: `${quote}${m.feedback}` });
+  }
+  if (endEntries.length > 0) {
+    parts.push("---");
+    parts.push("");
+    parts.push("## Notes");
+    parts.push("");
+    endEntries.forEach((e, i) => {
+      parts.push(`${i + 1}. **${e.source}**: ${e.text}`);
+    });
+    parts.push("");
+  }
+
+  // Footnotes (inline footnotes first, then bibliography)
+  const bibEntries = (p.bibliography ?? []).filter(
+    (b) => b.url || b.doi || b.title,
+  );
+  const footLines = [
+    ...inlineFootnotes,
+    ...bibEntries.map((e) => formatCitation(e, style)),
+  ];
+  if (footLines.length > 0) {
+    if (endEntries.length === 0) {
+      parts.push("---");
+      parts.push("");
+    }
+    parts.push("## Footnotes");
+    parts.push("");
+    footLines.forEach((line, i) => {
+      parts.push(`${i + 1}. ${line}`);
+    });
+    parts.push("");
+  }
+
   return parts.join("\n");
 }
 
 export function exportHtml(p: ExportPayload): string {
-  return wrapStandaloneHtml(p.title, p.html, {
+  const style = p.citationStyle ?? "mla";
+  const cleaned = stripEditorMarks(p.html);
+  const allNotes = extractInlineNotes(cleaned);
+  const inlineNotes = allNotes
+    .filter((n) => n.kind === "endnote")
+    .map((n) => n.text);
+  const inlineFootnotes = allNotes
+    .filter((n) => n.kind === "footnote")
+    .map((n) => n.text);
+  const body = replaceNotesWithSuperscripts(cleaned);
+  const endnotes = buildEndnotesSection(inlineNotes, p.marginalia ?? []);
+  const footnotes = buildFootnotesSection(
+    inlineFootnotes,
+    p.bibliography ?? [],
+    style,
+  );
+  return wrapStandaloneHtml(p.title, body + endnotes + footnotes, {
     layout: p.layout,
     header: p.header,
     footer: p.footer,
@@ -208,7 +474,7 @@ export function exportHtml(p: ExportPayload): string {
 }
 
 export function exportPlainText(p: ExportPayload): string {
-  return stripHtml(p.html);
+  return stripHtml(stripEditorMarks(p.html));
 }
 
 export function exportTwyneBackup(p: ExportPayload): string {

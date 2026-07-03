@@ -4,8 +4,11 @@ import {
   DEFAULT_WRITER_SETTINGS,
   type AiSettings,
   type ApparatusSettings,
+  type ProjectBrief,
+  type RubricResult,
   type WriterSettings,
 } from "../types";
+import type { BibEntry } from "./bibliography";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
 /**
@@ -53,9 +56,23 @@ const SAMPLE_FOLIOS = [
   { id: "f1", name: "Draft", type: "draft", createdAt: 1, updatedAt: 2 },
 ];
 const SAMPLE_HTML = "<p>hello from the folio</p>";
+const SAMPLE_BIBLIOGRAPHY: BibEntry[] = [
+  {
+    id: "bib-1",
+    folioId: "f1",
+    title: "A Source Worth Keeping",
+    url: "https://example.com/source",
+    accessedAt: 10,
+    createdAt: 10,
+  },
+];
 const AI_SETTINGS_STORAGE_KEY = "twyne.ai-settings.current";
 const WRITER_SETTINGS_STORAGE_KEY = "twyne.writer-settings.current";
 const APPARATUS_SETTINGS_STORAGE_KEY = "twyne.apparatus-settings.current";
+const BIBLIOGRAPHY_PATH = "/bibliography.json";
+const lixFiles = new Map<string, unknown>();
+const writtenLixFiles: Array<{ path: string; value: unknown }> = [];
+let lixBlobFromIdb: Blob | null = null;
 
 function readLocalStorageJson<T>(key: string): T | null {
   try {
@@ -71,7 +88,8 @@ function writeLocalStorageJson(key: string, value: unknown): void {
 }
 
 function normalizeWriterSettings(value: unknown): WriterSettings {
-  if (!value || typeof value !== "object") return { ...DEFAULT_WRITER_SETTINGS };
+  if (!value || typeof value !== "object")
+    return { ...DEFAULT_WRITER_SETTINGS };
   const v = value as Partial<WriterSettings>;
   return {
     interviewStyle:
@@ -126,7 +144,7 @@ mock.module("./idb", () => ({
   loadFolioContentFromIdb: async () => SAMPLE_HTML,
   loadPersonasFromIdb: async () => [],
   loadDraftHtmlFromIdb: async () => "",
-  loadLixBlobFromIdb: async () => null,
+  loadLixBlobFromIdb: async () => lixBlobFromIdb,
   // Write paths convex-sync imports but our tests never hit — safe no-ops.
   saveFoliosToIdb: async () => {},
   saveFolioContentToIdb: async () => {},
@@ -156,29 +174,85 @@ mock.module("./idb", () => ({
 
 mock.module("./lix", () => ({
   BRIEF_PATH: "/brief.json",
-  readFileAsJson: async () => null,
-  writeFileAsJson: async () => {},
+  readFileAsJson: async (path: string) => lixFiles.get(path) ?? null,
+  writeFileAsJson: async (path: string, value: unknown) => {
+    lixFiles.set(path, value);
+    writtenLixFiles.push({ path, value });
+  },
   persistToIdb: async () => {},
 }));
 
-const { setConvexSyncContext, clearConvexSyncContext, flushNow } = await import(
-  "./convex-sync"
-);
+const {
+  setConvexSyncContext,
+  clearConvexSyncContext,
+  flushNow,
+  syncToConvex,
+  loadFromConvex,
+  mergeBibliographyEntries,
+} = await import("./convex-sync");
 
 interface RecordingClient {
-  calls: Array<Record<string, unknown>>;
+  mutationCalls: Array<Record<string, unknown>>;
+  queryCalls: Array<Record<string, unknown>>;
   query: (...args: unknown[]) => Promise<unknown>;
   mutation: (ref: unknown, args: Record<string, unknown>) => Promise<unknown>;
 }
 
-function makeClient(opts: { fail?: boolean } = {}): RecordingClient {
-  const calls: Array<Record<string, unknown>> = [];
+function emptyRemoteSnapshot(): SyncedSnapshot {
   return {
-    calls,
-    // No remote data → handleUserChanged takes the "seed the account" path.
-    query: async () => null,
+    brief: null,
+    briefUpdatedAt: 0,
+    folios: [],
+    foliosUpdatedAt: 0,
+    folioContent: [],
+    customPersonas: null,
+    customPersonasUpdatedAt: 0,
+    personaNotes: [],
+    personaReplies: [],
+    rubricResult: null,
+    rubricResultUpdatedAt: 0,
+    bibliography: [],
+    bibliographyUpdatedAt: 0,
+  };
+}
+
+interface SyncedSnapshot {
+  brief: ProjectBrief | null;
+  briefUpdatedAt: number;
+  folios: typeof SAMPLE_FOLIOS;
+  foliosUpdatedAt: number;
+  folioContent: Array<{ folioId: string; html: string; updatedAt: number }>;
+  customPersonas: unknown[] | null;
+  customPersonasUpdatedAt: number;
+  personaNotes: unknown[];
+  personaReplies: unknown[];
+  rubricResult: RubricResult | null;
+  rubricResultUpdatedAt: number;
+  bibliography: BibEntry[];
+  bibliographyUpdatedAt: number;
+}
+
+function makeClient(
+  opts: {
+    fail?: boolean;
+    queryResult?: unknown;
+    queryResults?: unknown[];
+  } = {},
+): RecordingClient {
+  const mutationCalls: Array<Record<string, unknown>> = [];
+  const queryCalls: Array<Record<string, unknown>> = [];
+  const queryResults = [...(opts.queryResults ?? [])];
+  return {
+    mutationCalls,
+    queryCalls,
+    query: async (_ref, args) => {
+      queryCalls.push((args ?? {}) as Record<string, unknown>);
+      return queryResults.length > 0
+        ? queryResults.shift()
+        : (opts.queryResult ?? null);
+    },
     mutation: async (_ref, args) => {
-      calls.push(args);
+      mutationCalls.push(args);
       if (opts.fail) throw new Error("network down");
       return null;
     },
@@ -189,6 +263,10 @@ const tick = () => new Promise((r) => setTimeout(r, 0));
 
 afterEach(() => {
   clearConvexSyncContext();
+  lixFiles.clear();
+  writtenLixFiles.length = 0;
+  localStorageShim.clear();
+  lixBlobFromIdb = null;
 });
 
 afterAll(() => {
@@ -217,12 +295,12 @@ describe("folio sync (convex-sync)", () => {
     const client = makeClient();
     setConvexSyncContext(client as never, "user-1");
     await tick(); // let the background sign-in push settle
-    client.calls.length = 0; // isolate the explicit flush below
+    client.mutationCalls.length = 0; // isolate the explicit flush below
 
     await flushNow();
 
-    expect(client.calls.length).toBe(1);
-    const payload = client.calls[0];
+    expect(client.mutationCalls.length).toBe(1);
+    const payload = client.mutationCalls[0];
     expect(payload.folios).toEqual(SAMPLE_FOLIOS);
     expect(payload.folioContent).toEqual([
       { folioId: "f1", html: SAMPLE_HTML },
@@ -244,6 +322,75 @@ describe("folio sync (convex-sync)", () => {
 
     await flushNow();
 
-    expect(client.calls.length).toBe(0);
+    expect(client.mutationCalls.length).toBe(0);
+  });
+
+  test("sends bibliography entries in the normal pushAll payload", async () => {
+    lixFiles.set(BIBLIOGRAPHY_PATH, SAMPLE_BIBLIOGRAPHY);
+    const client = makeClient();
+    setConvexSyncContext(client as never, "user-3");
+    await tick();
+    client.mutationCalls.length = 0;
+
+    await flushNow();
+
+    expect(client.mutationCalls[0].bibliography).toEqual(SAMPLE_BIBLIOGRAPHY);
+  });
+
+  test("merges pulled bibliography entries into local Lix state", async () => {
+    const local: BibEntry = {
+      ...SAMPLE_BIBLIOGRAPHY[0],
+      id: "local-only",
+      title: "Local source",
+    };
+    const remote: BibEntry = {
+      ...SAMPLE_BIBLIOGRAPHY[0],
+      id: "remote-only",
+      title: "Remote source",
+    };
+    lixFiles.set(BIBLIOGRAPHY_PATH, [local]);
+    const client = makeClient({
+      queryResult: {
+        ...emptyRemoteSnapshot(),
+        bibliography: [remote],
+        bibliographyUpdatedAt: 20,
+      },
+    });
+
+    setConvexSyncContext(client as never, "user-4");
+    await tick();
+
+    expect(lixFiles.get(BIBLIOGRAPHY_PATH)).toEqual([local, remote]);
+    expect(writtenLixFiles).toContainEqual({
+      path: BIBLIOGRAPHY_PATH,
+      value: [local, remote],
+    });
+  });
+
+  test("uses remote bibliography entries when they are newer for the same id", () => {
+    const older = { ...SAMPLE_BIBLIOGRAPHY[0], title: "Older", createdAt: 1 };
+    const newer = { ...SAMPLE_BIBLIOGRAPHY[0], title: "Newer", createdAt: 2 };
+
+    expect(mergeBibliographyEntries([older], [newer])).toEqual([newer]);
+  });
+
+  test("does not send caller-supplied user ids to lix blob functions", async () => {
+    const blob = new Blob(["lix"]);
+    lixBlobFromIdb = blob;
+    const client = makeClient({
+      queryResults: [emptyRemoteSnapshot(), { blob: await blob.arrayBuffer() }],
+    });
+    setConvexSyncContext(client as never, "user-5");
+    await tick();
+    client.mutationCalls.length = 0;
+    client.queryCalls.length = 0;
+
+    await syncToConvex();
+    await loadFromConvex();
+
+    expect(client.mutationCalls.at(-1)).toEqual({
+      blob: expect.any(ArrayBuffer),
+    });
+    expect(client.queryCalls.at(-1)).toEqual({});
   });
 });

@@ -4,6 +4,8 @@ import type { AiFeature, AiProviderConfig, AiSettings } from "../types";
 import {
   discoverProviderModels,
   hasConfiguredAiProvider,
+  parseCitationFormatResult,
+  parseMissingSourceResult,
   resolveFeatureConfig,
 } from "./ai-client";
 
@@ -179,5 +181,74 @@ describe("ai-client provider model discovery", () => {
 
     expect(headers).toEqual({});
     expect(result.models).toEqual(["llama3.2"]);
+  });
+});
+
+describe("ai-client citation parsers", () => {
+  test("preserves formatted citation metadata from fenced JSON", () => {
+    const parsed = parseCitationFormatResult(
+      '```json\n{"title":"Source Title","author":"Smith, Jo","year":"2024","date":"2024","url":"https://example.com","doi":"10.1234/example","publisher":"Example Press","formatted":"Smith, Jo. \\"Source Title.\\" Example Press, 2024."}\n```',
+      "mla",
+      "openai",
+    );
+
+    expect(parsed).toEqual({
+      title: "Source Title",
+      author: "Smith, Jo",
+      year: "2024",
+      date: "2024",
+      url: "https://example.com",
+      doi: "10.1234/example",
+      publisher: "Example Press",
+      formatted: 'Smith, Jo. "Source Title." Example Press, 2024.',
+      style: "mla",
+      provider: "openai",
+    });
+  });
+
+  test("extracts citation JSON from surrounding model text", () => {
+    const parsed = parseCitationFormatResult(
+      'Here is the cleaned citation:\n{"title":"Source Title","formatted":"Formatted citation."}\nDone.',
+      "apa",
+      "openai",
+    );
+
+    expect(parsed).toMatchObject({
+      title: "Source Title",
+      formatted: "Formatted citation.",
+      style: "apa",
+    });
+  });
+
+  test("returns an empty missing-source result instead of null", () => {
+    const parsed = parseMissingSourceResult('{"claims":[]}', "anthropic");
+
+    expect(parsed).toEqual({
+      claims: [],
+      provider: "anthropic",
+    });
+  });
+
+  test("filters blank missing-source claims after parsing", () => {
+    const parsed = parseMissingSourceResult(
+      JSON.stringify({
+        claims: [
+          { claim: "  ", reason: "empty", suggestedQuery: "empty" },
+          { claim: "Specific claim", reason: "", suggestedQuery: "" },
+        ],
+      }),
+      "openai",
+    );
+
+    expect(parsed).toEqual({
+      claims: [
+        {
+          claim: "Specific claim",
+          reason: "",
+          suggestedQuery: "",
+        },
+      ],
+      provider: "openai",
+    });
   });
 });

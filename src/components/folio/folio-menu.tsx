@@ -21,7 +21,10 @@ import {
   saveFolioContentToIdb,
   saveFoliosToIdb,
   saveActiveFolioIdToIdb,
+  loadApparatusSettingsFromIdb,
 } from "../../utils/idb";
+import { loadBibliography } from "../../utils/bibliography";
+import { loadPersonaNotesLocally } from "../../utils/convex-sync";
 import { useAuth } from "../../utils/auth-context";
 import { getAgent } from "../../utils/atproto";
 import {
@@ -184,16 +187,24 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
 
   const doExport = $(async (format: ExportFormat) => {
     menuOpen.value = false;
-    // The editor's content lives in the active folio's IDB slot, not the
-    // legacy `twyne-draft-html` key. Read from the live source first via
-    // an event handshake, then fall back to the folio's IDB content.
     const draftText = await readActiveFolioHtml(props.activeFolioId);
     const folios = await loadFoliosFromIdb();
+    const [bibliography, apparatusSettings, marginalia] = await Promise.all([
+      loadBibliography(),
+      loadApparatusSettingsFromIdb(),
+      loadPersonaNotesLocally(),
+    ]);
+    const activeBibliography = bibliography.filter(
+      (entry) => entry.folioId === props.activeFolioId || !entry.folioId,
+    );
     const payload = {
       title: props.activeFolioName || "Untitled",
       html: draftText,
       brief: props.brief,
       folios,
+      bibliography: activeBibliography,
+      marginalia,
+      citationStyle: apparatusSettings.defaultCitationStyle,
     };
     const blob = exportAs(format, payload);
     const ext =

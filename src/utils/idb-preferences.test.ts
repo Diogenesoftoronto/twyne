@@ -8,7 +8,7 @@ import {
   saveWriterSettingsToIdb,
 } from "./idb";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
-import type { AiSettings } from "../types";
+import { DEFAULT_APPARATUS_SETTINGS, type AiSettings } from "../types";
 
 type WindowLike = {
   localStorage: {
@@ -233,16 +233,10 @@ describe.serial("idb preference localStorage fallback", () => {
     expect(await loadWriterSettingsFromIdb()).toEqual({
       interviewStyle: "form",
     });
+    // Corrupt JSON must fall back to the canonical defaults, whatever
+    // they currently are.
     expect(await loadApparatusSettingsFromIdb()).toEqual({
-      defaultCitationStyle: "mla",
-      aiEnhanceCitations: false,
-      flagMissingSources: false,
-      researchProvider: "hosted",
-      tinyFishApiKey: "",
-      tinyFishMaxResults: 8,
-      mcpEndpointUrl: "",
-      mcpToolName: "search",
-      mcpBearerToken: "",
+      ...DEFAULT_APPARATUS_SETTINGS,
     });
 
     installStorage();

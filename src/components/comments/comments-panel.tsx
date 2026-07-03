@@ -25,6 +25,7 @@ import {
   mentionedIn,
   type Mentionable,
 } from "../../utils/mentions";
+import { renderMarkdown } from "../../utils/markdown";
 import { MentionDropdown } from "../ui/mention-dropdown";
 
 function personaToMentionable(p: Persona): Mentionable {
@@ -500,12 +501,11 @@ export const CommentsPanel = component$(
                         « {truncate(comment.anchor, 120)} »
                       </p>
                     )}
-                    <p
-                      class="text-sm text-[var(--color-ink-light)] leading-6"
+                    <div
+                      class="comment-markdown text-sm text-[var(--color-ink-light)] leading-6"
                       style="font-family: var(--font-serif);"
-                    >
-                      {comment.text}
-                    </p>
+                      dangerouslySetInnerHTML={renderMarkdown(comment.text)}
+                    />
                   </div>
                   <div class="flex items-center gap-1 ml-2 flex-shrink-0">
                     <button
@@ -559,8 +559,8 @@ export const CommentsPanel = component$(
                             {getTimeAgo(reply.createdAt)}
                           </span>
                         </div>
-                        <p
-                          class="text-xs text-[var(--color-ink-light)] leading-5"
+                        <div
+                          class="comment-markdown text-xs text-[var(--color-ink-light)] leading-5"
                           style={{
                             fontFamily: "var(--font-serif)",
                             fontStyle:
@@ -568,9 +568,8 @@ export const CommentsPanel = component$(
                                 ? "italic"
                                 : "normal",
                           }}
-                        >
-                          {reply.text}
-                        </p>
+                          dangerouslySetInnerHTML={renderMarkdown(reply.text)}
+                        />
                       </div>
                     ))}
                   </div>

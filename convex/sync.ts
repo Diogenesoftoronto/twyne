@@ -13,6 +13,7 @@
  *   • personaNotes   — the room's marginalia
  *   • personaReplies — threaded reply chains on each note
  *   • rubricResults  — latest galley-proof result
+ *   • bibliographies — saved citation/source entries
  *
  * For each table, a `getX` (read latest) and `putX` (upsert) is exposed.
  * `pullAll` and `pushAll` are bulk convenience wrappers used on sign-in
@@ -417,7 +418,10 @@ export const putSuggestion = mutation({
       )
       .first();
     if (existing) {
-      await ctx.db.patch(existing._id, { status: args.status, replacement: args.replacement });
+      await ctx.db.patch(existing._id, {
+        status: args.status,
+        replacement: args.replacement,
+      });
       return existing._id;
     }
     return await ctx.db.insert("suggestions", {
@@ -489,7 +493,11 @@ export const putRoomSettings = mutation({
       await ctx.db.patch(existing._id, { settings, updatedAt: now });
       return existing._id;
     }
-    return await ctx.db.insert("roomSettings", { userId, settings, updatedAt: now });
+    return await ctx.db.insert("roomSettings", {
+      userId,
+      settings,
+      updatedAt: now,
+    });
   },
 });
 
@@ -537,6 +545,7 @@ export const pushAll = mutation({
       ),
     ),
     rubricResult: v.optional(v.any()),
+    bibliography: v.optional(v.array(v.any())),
   },
   handler: async (ctx, args) => {
     const userId = await requireIdentity(ctx);
@@ -707,6 +716,25 @@ export const pushAll = mutation({
       }
     }
 
+    if (args.bibliography !== undefined) {
+      const existing = await ctx.db
+        .query("bibliographies")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .first();
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          entries: args.bibliography,
+          updatedAt: now,
+        });
+      } else {
+        await ctx.db.insert("bibliographies", {
+          userId,
+          entries: args.bibliography,
+          updatedAt: now,
+        });
+      }
+    }
+
     return { ok: true, syncedAt: now };
   },
 });
@@ -721,37 +749,49 @@ export const pullAll = query({
   handler: async (ctx) => {
     const userId = await requireIdentity(ctx);
 
-    const [brief, folios, folioContent, customPersonas, personaNotes, personaReplies, rubricResult] =
-      await Promise.all([
-        ctx.db
-          .query("briefs")
-          .withIndex("by_userId", (q) => q.eq("userId", userId))
-          .first(),
-        ctx.db
-          .query("folios")
-          .withIndex("by_userId", (q) => q.eq("userId", userId))
-          .first(),
-        ctx.db
-          .query("folioContent")
-          .withIndex("by_userId", (q) => q.eq("userId", userId))
-          .collect(),
-        ctx.db
-          .query("customPersonas")
-          .withIndex("by_userId", (q) => q.eq("userId", userId))
-          .first(),
-        ctx.db
-          .query("personaNotes")
-          .withIndex("by_userId", (q) => q.eq("userId", userId))
-          .collect(),
-        ctx.db
-          .query("personaReplies")
-          .withIndex("by_userId", (q) => q.eq("userId", userId))
-          .collect(),
-        ctx.db
-          .query("rubricResults")
-          .withIndex("by_userId", (q) => q.eq("userId", userId))
-          .first(),
-      ]);
+    const [
+      brief,
+      folios,
+      folioContent,
+      customPersonas,
+      personaNotes,
+      personaReplies,
+      rubricResult,
+      bibliography,
+    ] = await Promise.all([
+      ctx.db
+        .query("briefs")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .first(),
+      ctx.db
+        .query("folios")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .first(),
+      ctx.db
+        .query("folioContent")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("customPersonas")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .first(),
+      ctx.db
+        .query("personaNotes")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("personaReplies")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect(),
+      ctx.db
+        .query("rubricResults")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .first(),
+      ctx.db
+        .query("bibliographies")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .first(),
+    ]);
 
     return {
       brief: brief?.brief ?? null,
@@ -787,6 +827,8 @@ export const pullAll = query({
       })),
       rubricResult: rubricResult?.result ?? null,
       rubricResultUpdatedAt: rubricResult?.updatedAt ?? 0,
+      bibliography: bibliography?.entries ?? [],
+      bibliographyUpdatedAt: bibliography?.updatedAt ?? 0,
     };
   },
 });

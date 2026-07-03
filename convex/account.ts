@@ -50,6 +50,11 @@ export const deleteAccount = mutation({
     deleted.suggestions = await deleteByUserId(ctx, "suggestions", userId);
     deleted.roomSettings = await deleteByUserId(ctx, "roomSettings", userId);
     deleted.lixBlobs = await deleteByUserId(ctx, "lixBlobs", userId);
+    deleted.bibliographies = await deleteByUserId(
+      ctx,
+      "bibliographies",
+      userId,
+    );
     deleted.subscriptions = await deleteByUserId(ctx, "subscriptions", userId);
 
     // ── Published pieces + comments (keyed by ownerId). ──

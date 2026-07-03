@@ -460,7 +460,7 @@ export interface ApparatusSettings {
 
 export const DEFAULT_APPARATUS_SETTINGS: ApparatusSettings = {
   defaultCitationStyle: "mla",
-  aiEnhanceCitations: false,
+  aiEnhanceCitations: true,
   flagMissingSources: false,
   researchProvider: "hosted",
   tinyFishApiKey: "",
