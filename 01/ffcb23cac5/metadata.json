@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "01ffcb23cac5",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/editorial-apparatus-workflow.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/01/ffcb23cac5/0/metadata.json",
+      "transcript": "/01/ffcb23cac5/0/full.jsonl",
+      "content_hash": "/01/ffcb23cac5/0/content_hash.txt",
+      "prompt": "/01/ffcb23cac5/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 7921,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 415232,
+    "output_tokens": 1834,
+    "api_call_count": 8
+  }
+}
