@@ -1,0 +1,37 @@
+I want you to review the deep search functionality for issues bugs, and things that could be improved. Does the feature do as promised?
+
+---
+
+I am mainly talking about the AI citation and auto citation functionality
+
+---
+
+the convex side should be included
+
+---
+
+use subagents
+
+---
+
+In /home/diogenes/Projects/twyne, review the Convex/backend side of the AI citation and auto-citation functionality. Focus on convex actions/schema/sync/persistence, whether citations or bibliography entries travel through Convex/Lix as promised, backend coverage gaps, auth/rate-limit issues, and any bugs. Do not edit files. Use repo instructions: prefix shell commands with rtk. Return findings ordered by severity with exact file:line references and a short answer to whether the feature does what it promises.
+
+---
+
+In /home/diogenes/Projects/twyne, review the client/UI side of AI citation and auto-citation functionality. Focus on src/routes/apparatus/index.tsx, src/components/citations/citations-panel.tsx, src/utils/ai-client.ts, src/utils/citations.ts, src/utils/bibliography.ts, settings, and tests. Do not edit files. Use repo instructions: prefix shell commands with rtk. Return code-review findings ordered by severity with exact file:line references and a short answer to whether the feature does what it promises.
+
+---
+
+resolve these issues improve citation detection and add the ai paths sync etc use subagents to split this work
+
+---
+
+In /home/diogenes/Projects/twyne, implement backend/Convex fixes for AI citation/bibliography sync. Ownership: convex/lixBlobs.ts, convex/sync.ts, src/utils/convex-sync.ts, and focused tests for these files only. You are not alone in the codebase; do not revert edits by others, and adapt to any concurrent changes. Context from review: lixBlobs currently accepts caller-supplied userId without auth; bibliography at /bibliography.json is saved locally but omitted from normal Convex pushAll/pullAll sync. Goals: (1) remove caller-supplied userId auth risk from lixBlobs by deriving identity server-side, update client calls accordingly, (2) include bibliography entries in normal pushAll/pullAll sync and local merge, preserving existing behavior for other slices, (3) add focused tests where practical. Use repo instructions: prefix shell commands with rtk. Run vet immediately after logical code changes if available. Final: list changed files, tests run, and blockers.
+
+---
+
+In /home/diogenes/Projects/twyne, implement client/UI AI citation and auto-citation fixes. Ownership: src/utils/ai-client.ts, src/utils/bibliography.ts, src/utils/citations.ts, src/routes/apparatus/index.tsx, src/components/citations/citations-panel.tsx, src/routes/settings/index.tsx if needed, and focused tests for these files only. You are not alone in the codebase; do not revert edits by others, and adapt to any concurrent changes. Context from review: AI citation formatting returns formatted/year but /apparatus discards formatted/style/date; AI-enhance is manual despite auto-format copy; Apparatus scans folios[0] instead of active folio; missing citation scans return null for empty claims; right citations panel ignores default citation style. Goals: fix those issues pragmatically and improve citation detection quality with tests. Use repo instructions: prefix shell commands with rtk. Run vet immediately after logical code changes if available. Final: list changed files, tests run, and blockers.
+
+---
+
+In /home/diogenes/Projects/twyne, inspect citation detection and AI citation tests. Do not edit files. Focus on src/utils/citations.ts, src/utils/bibliography.ts, src/utils/ai-client.ts, src/routes/apparatus/index.tsx, and test files. Return a concise set of recommended regression tests and edge cases for improved citation detection and auto-citation behavior, with exact files/lines where relevant. Use repo instructions: prefix shell commands with rtk.
