@@ -3,7 +3,7 @@
   "checkpoint_id": "31240125e2dd",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     ".env.example",
     "convex/account.ts",
@@ -14,6 +14,7 @@
     "package.json",
     "src/components/citations/citations-panel.tsx",
     "src/components/comments/comments-panel.tsx",
+    "src/components/editor/extensions/endnote-node.ts",
     "src/components/editor/twyne-editor.tsx",
     "src/components/folio/folio-menu.tsx",
     "src/global.css",
@@ -29,6 +30,7 @@
     "src/utils/citations.ts",
     "src/utils/convex-sync.test.ts",
     "src/utils/convex-sync.ts",
+    "src/utils/exchange-notes.test.ts",
     "src/utils/exchange.ts",
     "src/utils/idb-preferences.test.ts",
     "src/utils/rubric.ts"
@@ -45,13 +47,19 @@
       "transcript": "/31/240125e2dd/1/full.jsonl",
       "content_hash": "/31/240125e2dd/1/content_hash.txt",
       "prompt": "/31/240125e2dd/1/prompt.txt"
+    },
+    {
+      "metadata": "/31/240125e2dd/2/metadata.json",
+      "transcript": "/31/240125e2dd/2/full.jsonl",
+      "content_hash": "/31/240125e2dd/2/content_hash.txt",
+      "prompt": "/31/240125e2dd/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 180695,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 1133440,
-    "output_tokens": 13067,
-    "api_call_count": 30
+    "input_tokens": 189702,
+    "cache_creation_tokens": 536433,
+    "cache_read_tokens": 11248364,
+    "output_tokens": 67890,
+    "api_call_count": 114
   }
 }

@@ -1,0 +1,29 @@
+I want you to check over the micro interactions see if they can be improved if possible and also i want you to add endnote and footnote buttons in the editor they don't seem  to appear and also see if you can improve the rubric. the changes i made and additions i made are here: All done. Here's what was implemented:
+
+### Endnotes in the editor
+- **New TipTap node extension** (`src/components/editor/extensions/endnote-node.ts`) — an inline atom node that renders as `<sup data-type="endnote">` with the note text stored as an attribute
+- **Registered in the editor** (`twne-editor.tsx:448`) — added `EndnoteNode` to the extension list
+- **"Cite in draft" now inserts endnote nodes** (`twne-editor.tsx:870`) — the `twyne:insert-text` handler now calls `setEndnote({ text })` instead of inserting code-marked text, so citations become proper superscript endnote markers in the manuscript
+
+### Export with endnotes and footnotes
+- **`src/utils/exchange.ts`** — added `extractEndnotes()`, `stripEditorMarks()`, `buildEndnotesSection()`, `buildFootnotesSection()`, and `replaceEndnotesWithSuperscripts()`
+  - `exportHtml` now strips persona-note/suggestion/comment marks from the body, replaces endnote `<sup>` nodes with numbered Unicode superscript references (¹ ² ³), and appends a **Notes** section (inline endnotes + marginalia) and a **Footnotes** section (bibliography entries)
+  - `exportMarkdown` does the same for markdown output
+  - `exportPlainText` strips editor marks
+  - CSS for `.endnotes`, `.footnotes`, `.endnote-ref` added to the HTML export template
+- **`src/components/folio/folio-menu.tsx`** — `doExport` now loads bibliography, apparatus settings (for citation style), and persona notes (marginalia) and passes them in the export payload
+
+### Micro-interactions
+- **`src/global.css`** — added themed micro-interaction classes:
+  - `.slide-in` — cards slide up from below on mount (cubic-bezier ease)
+  - `.fade-in` — simple opacity fade
+  - `.page-turn` — card hover lifts 2px with a paper-shadow (like lifting a page from a stack), press-down on active
+  - `.ink-bleed` — heading hover simulates ink spreading via text-shadow
+  - `.type-cursor` — blinking typewriter caret (vermilion, 1.1s step-end)
+  - `.twyne-endnote` — endnote markers in the editor with vermilion hover and tint background
+  - `.gentle-pulse` — soft 2s opacity pulse for status indicators
+  - `.dept-label` — letter-spacing grows on hover
+  - `.icon-btn` — scale(0.92) press-down feedback
+  - Global `transition: color 0.15s ease` on all buttons/links
+  - All animations have `@media (prefers-reduced-motion: reduce)` guards
+- Applied `slide-in` + `page-turn` to citation cards and bibliography entries in both the citations panel and apparatus page
