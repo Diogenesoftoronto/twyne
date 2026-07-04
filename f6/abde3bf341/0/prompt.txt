@@ -1,0 +1,5 @@
+just create a conventional commit of the current work, do not mention yourself in the commit
+
+---
+
+add the bumpy file and creatae a  new release  on github build anre erelease
