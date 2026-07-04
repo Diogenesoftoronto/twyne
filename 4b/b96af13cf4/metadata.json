@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "4bb96af13cf4",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/components/editor/popover-positioning.test.ts",
+    "src/components/editor/twyne-editor.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4b/b96af13cf4/0/metadata.json",
+      "transcript": "/4b/b96af13cf4/0/full.jsonl",
+      "content_hash": "/4b/b96af13cf4/0/content_hash.txt",
+      "prompt": "/4b/b96af13cf4/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 92,
+    "cache_creation_tokens": 258367,
+    "cache_read_tokens": 3284371,
+    "output_tokens": 9525,
+    "api_call_count": 46
+  }
+}
