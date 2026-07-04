@@ -1,0 +1,25 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "5a0d6ed55ccb",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/old-tough-oak.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/5a/0d6ed55ccb/0/metadata.json",
+      "transcript": "/5a/0d6ed55ccb/0/full.jsonl",
+      "content_hash": "/5a/0d6ed55ccb/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 27895,
+    "cache_read_tokens": 405396,
+    "output_tokens": 736,
+    "api_call_count": 5
+  }
+}
