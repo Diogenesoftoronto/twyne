@@ -1,0 +1,15 @@
+<task-notification>
+<task-id>bhn8wpe8h</task-id>
+<summary>Monitor event: "watch v0.4.0 release workflow run"</summary>
+<event>completed	failure	Release	Release	v0.4.0	push	28703495043	49s	2026-07-04T10:35:22Z</event>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bhn8wpe8h</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/ed30a3e6-71aa-48f6-8416-bf32d93726ec/tasks/bhn8wpe8h.output</output-file>
+<status>completed</status>
+<summary>Monitor "watch v0.4.0 release workflow run" stream ended</summary>
+</task-notification>
