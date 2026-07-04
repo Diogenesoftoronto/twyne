@@ -341,6 +341,7 @@ export function buildRubricReviewPrompt(input: {
   combined: number;
   grade: string;
   judgeMean: number;
+  minJudge: number;
   staticTotal: number;
   judges: Array<{ personaId: string; score: number; rationale: string }>;
   staticFeedback: string[];
@@ -354,7 +355,7 @@ export function buildRubricReviewPrompt(input: {
     .map((j) => `- ${j.personaId}: ${j.score}/10 — ${j.rationale}`)
     .join("\n");
   const staticBlock = input.staticFeedback.map((f) => `- ${f}`).join("\n");
-  return `${briefBlock}${attachmentsBlock(input.brief)}GRADE: ${input.combined}/100 (${input.grade}). Judge mean ${input.judgeMean.toFixed(1)}/10, static features ${input.staticTotal.toFixed(1)}/10.
+  return `${briefBlock}${attachmentsBlock(input.brief)}GRADE: ${input.combined}/100 (${input.grade}). Judge mean ${input.judgeMean.toFixed(1)}/10, harshest judge ${input.minJudge.toFixed(1)}/10, static features ${input.staticTotal.toFixed(1)}/10.
 
 JUDGES' VERDICTS:
 ${judgeBlock}
@@ -368,6 +369,85 @@ ${clampForContext(input.draftText, 4000)}
 """
 
 Write the review (400–600 words): explain what the grade means for a piece like this, walk through the weakest dimension and the strongest, reconcile any split between the judges and the static score, and close with a prioritised revision plan of three concrete steps.`;
+}
+
+/**
+ * Dedicated LLM judge: does the draft's evidence actually support its claims,
+ * or is it citation-shaped noise (a `[3]` here, a "studies show" there) that
+ * reads as supported without buying anything? A keyword/citation-density
+ * count can't tell a grounded claim from a padded one, so this is judged —
+ * the density heuristic only runs as the offline/local fallback.
+ */
+export function buildEvidenceJudgeSystemPrompt(): string {
+  return `You are a rigorous research editor. You judge exactly one thing: does the draft's evidence actually support the claims being made? A draft can be sprinkled with citation marks, named studies, links, and author-date tags, and still fail this: vague appeals to unnamed "studies," obviously fictional references, repeated citations where different evidence is needed, citations stuck in front of opinions, and citations attached to a claim the source clearly doesn't earn. Conversely, a draft with few citations can score well if those citations genuinely do the work. Judge the substance, not the citation decoration. Do not reward the appearance of support.`;
+}
+
+export function buildEvidenceJudgePrompt(input: {
+  goal: string;
+  audience: string;
+  draftText: string;
+  staticNote: string;
+}): string {
+  return `GOAL: ${input.goal}
+AUDIENCE: ${input.audience}
+
+STATIC SIGNALS (these are heuristics, not the verdict — they may miss padded or missing claims):
+${input.staticNote}
+
+DRAFT:
+${input.draftText}
+
+JUDGE TASK: Give an integer score from 1 to 10 for whether the draft's evidence actually supports the load-bearing claims for this audience and goal. Consider:
+- Does each named citation/study/example say what the draft claims it says, or is it vaguely invoked?
+- Are claims that need evidence actually attached to evidence, vs asserted with confidence?
+- Are there gaps where evidence is needed but missing entirely?
+- Is there citation-stuffing (many marks, no actual support)?
+
+1 means mostly unsourced assertion or fake/padded citations; 5 means partial support with notable gaps; 7 means claims are grounded where it matters; 9-10 means evidence genuinely carries the argument. Most first drafts land 3-6.
+
+Respond as JSON, and only JSON, in this exact shape:
+{"score": <integer 1-10>, "rationale": "<one sentence>"}`;
+}
+
+/**
+ * Dedicated LLM judge: how much bullshit is the draft producing? Catches
+ * the cases regex misses: sophisticated vagueness, manufactured specificity,
+ * universal claims disguised as empirical ones, emphatic-but-empty language,
+ * and the polished-but-empty passage. The filler/vague/regex scorer in
+ * `src/utils/rubric.ts` runs as the offline/local fallback only.
+ */
+export function buildIntegrityJudgeSystemPrompt(): string {
+  return `You are a strict bullshit detector. You judge exactly one thing: how much confident-sounding prose in this draft is unbacked, vague, padded, or fake-specific. You are looking for the polished, plausible-shaped sentences that say nothing a careful reader can verify, the universal claims ("everyone knows," "studies prove"), the vague filler dressed up as analysis ("various factors," "many people feel"), the fake specificity ("a 73% increase in engagement among users"), and the passages that sound insightful because they're abstract. Conversely, you do NOT penalize legitimate emphatic language, first-person stakes, opinionated claims stated as opinions, or confident argument that actually has a load-bearing claim. Judge for rent-paying, not for the absence of hedging.`;
+}
+
+export function buildIntegrityJudgePrompt(input: {
+  goal: string;
+  audience: string;
+  draftText: string;
+  staticNote: string;
+}): string {
+  return `GOAL: ${input.goal}
+AUDIENCE: ${input.audience}
+
+STATIC SIGNALS (heuristics — they miss sophisticated bullshit and false-positive on legitimate prose, so they only guide you):
+${input.staticNote}
+
+DRAFT:
+${input.draftText}
+
+JUDGE TASK: Give an integer score from 1 to 10 for how well the draft resists bullshit. Penalize hard for:
+- Universal or "everyone" claims that aren't actually universal
+- Vague filler dressed as insight ("various factors," "things have changed")
+- Fake or suspicious specificity (unnamed studies, oddly precise stats)
+- Polished-but-empty passages that sound smart and say nothing verifiable
+- Repetition that pads (same point rephrased, paragraph-2 echoes paragraph-1)
+
+Do NOT penalize: confident opinion, first-person stakes, legitimate emphasis, or claims stated as arguments rather than facts. The aim is honesty, not hedging.
+
+1 means the draft is mostly or substantially bullshit; 5 means it has real signal mixed with notable noise; 7 means mostly honest with minor issues; 9-10 means the prose earns its confidence.
+
+Respond as JSON, and only JSON, in this exact shape:
+{"score": <integer 1-10>, "rationale": "<one sentence>"}`;
 }
 
 /** Convert a Persona (UI) to an AgentPersona (LLM) shape. */

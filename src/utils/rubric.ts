@@ -308,6 +308,110 @@ function scoreIntegrity(f: StaticFeatures): number {
   return clamp(0, 10, score);
 }
 
+const SUFFICIENCY_STOPWORDS = new Set([
+  "that",
+  "this",
+  "with",
+  "from",
+  "have",
+  "will",
+  "your",
+  "their",
+  "about",
+  "into",
+  "than",
+  "then",
+  "them",
+  "they",
+  "what",
+  "when",
+  "where",
+  "which",
+  "while",
+  "should",
+  "would",
+  "could",
+  "reader",
+  "readers",
+]);
+
+function scoreLengthAdequacy(wordCount: number): number {
+  if (wordCount < 150) return 0;
+  if (wordCount < 300) return 0.4;
+  if (wordCount < 600) return 0.7;
+  return 1;
+}
+
+/**
+ * Does the draft actually develop enough material, on-topic, to justify
+ * reaching the stated thesis/goal? A short or wandering draft can look
+ * clean on every other static feature and still fail to earn its claim.
+ */
+export function scoreSufficiency(
+  draftText: string,
+  goal: string | null,
+): { score: number; feedback: string } {
+  const text = draftText.trim();
+  const wordCount = text ? text.split(/\s+/).filter(Boolean).length : 0;
+
+  if (!goal || !goal.trim()) {
+    return {
+      score: 5,
+      feedback:
+        "No stated goal in the brief to measure against — set one so this criterion can judge whether the draft actually earns it.",
+    };
+  }
+  if (wordCount === 0) {
+    return {
+      score: 0,
+      feedback: "There is no draft text yet to weigh against the goal.",
+    };
+  }
+
+  const keywords = [
+    ...new Set(
+      goal
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter((w) => w.length > 3 && !SUFFICIENCY_STOPWORDS.has(w)),
+    ),
+  ];
+  const lowerText = text.toLowerCase();
+  const coveredKeywords = keywords.filter((k) => lowerText.includes(k));
+  const coverageRatio =
+    keywords.length > 0 ? coveredKeywords.length / keywords.length : 1;
+
+  const paragraphs = text
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+  const engagedParagraphs = paragraphs.filter((p) => {
+    const lp = p.toLowerCase();
+    return coveredKeywords.some((k) => lp.includes(k));
+  }).length;
+  const engagementRatio =
+    paragraphs.length > 0 ? engagedParagraphs / paragraphs.length : 0;
+
+  const score = clamp(
+    0,
+    10,
+    coverageRatio * 4 + engagementRatio * 4 + scoreLengthAdequacy(wordCount) * 2,
+  );
+
+  const feedback = `${coveredKeywords.length}/${keywords.length} key term${
+    keywords.length === 1 ? "" : "s"
+  } from the stated goal ("${goal}") show up in the draft, developed across ${engagedParagraphs}/${
+    paragraphs.length
+  } paragraph${paragraphs.length === 1 ? "" : "s"}. ${
+    engagementRatio < 0.4
+      ? "Too much of the draft wanders away from the goal for a reader to feel it's been earned."
+      : "The draft mostly stays in service of the stated goal."
+  }`;
+
+  return { score, feedback };
+}
+
 /* ── Helpers ──────────────────────────────────────────────────── */
 
 function gaussianFit(value: number, mean: number, sigma: number): number {
@@ -394,14 +498,16 @@ export interface JudgeResult {
 
 export interface RubricCombineResult {
   judgeMean: number; // 0-10
+  minJudge: number; // 0-10, the harshest judge's score
   staticTotal: number; // 0-10
   combined: number; // 0-100
   grade: string;
   summary: string;
 }
 
-const JUDGE_WEIGHT = 0.7;
-const STATIC_WEIGHT = 0.3;
+const JUDGE_WEIGHT = 0.45;
+const MIN_JUDGE_WEIGHT = 0.35;
+const STATIC_WEIGHT = 0.2;
 
 export function combineJudgesAndStatic(
   judges: JudgeResult[],
@@ -417,17 +523,26 @@ export function combineJudgesAndStatic(
   const lowPenalty = lowJudges * 0.4; // each low judge drags the mean
   const judgeMean = clamp(1, 10, mean - lowPenalty);
 
+  // The harshest single judge, weighted heavily on its own — one persona
+  // calling the draft broken shouldn't get diluted away by an average.
+  const minJudge =
+    judges.length > 0 ? clamp(0, 10, Math.min(...judges.map((j) => j.score))) : 5;
+
   const staticTotal = staticScore.total;
 
   // Combined score on a 0-10 scale, then mapped to 0-100 with a curve
   // designed to be brutal. Most drafts should land in the 40-65 range;
   // a 90+ is reserved for genuinely excellent work.
-  const combinedTen = judgeMean * JUDGE_WEIGHT + staticTotal * STATIC_WEIGHT;
+  const combinedTen =
+    judgeMean * JUDGE_WEIGHT +
+    minJudge * MIN_JUDGE_WEIGHT +
+    staticTotal * STATIC_WEIGHT;
   const combinedHundred = brutalCurve(combinedTen * 10);
   const grade = letterGrade(combinedHundred);
 
   return {
     judgeMean,
+    minJudge,
     staticTotal,
     combined: Math.round(combinedHundred),
     grade,

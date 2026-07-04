@@ -4,6 +4,10 @@ import {
   buildSystemPrompt,
   buildSynthesisPrompt,
   buildRubricReviewPrompt,
+  buildEvidenceJudgeSystemPrompt,
+  buildEvidenceJudgePrompt,
+  buildIntegrityJudgeSystemPrompt,
+  buildIntegrityJudgePrompt,
   toAgentPersona,
 } from "../../convex/agentPrompts";
 import { PERSONAS } from "./personas";
@@ -107,6 +111,7 @@ describe("synthesis + review prompts", () => {
       combined: 72,
       grade: "B-",
       judgeMean: 7,
+      minJudge: 6,
       staticTotal: 6.5,
       judges: [{ personaId: "devil", score: 6, rationale: "thin in the middle" }],
       staticFeedback: ["Citations are sparse."],
@@ -117,5 +122,79 @@ describe("synthesis + review prompts", () => {
     expect(out).toContain("B-");
     expect(out).toContain("devil: 6/10");
     expect(out).toContain("thin in the middle");
+  });
+});
+
+describe("dedicated rubric judge prompts", () => {
+  test("evidence judge system frames the assignment and warns against citation-shaped decoration", () => {
+    const sys = buildEvidenceJudgeSystemPrompt();
+    expect(sys).toContain("research editor");
+    expect(sys.toLowerCase()).toContain("support the claims");
+    expect(sys.toLowerCase()).toContain("citation");
+    // Either as the literal hyphenated term or as "citation marks... still fail",
+    // the prompt must warn that citation-shaped noise is not the same as support.
+    const low = sys.toLowerCase();
+    const warnsAgainstDecoration =
+      low.includes("citation-stuffing") ||
+      low.includes("citation marks") ||
+      low.includes("citing the appearance of support") ||
+      low.includes("citation decoration");
+    expect(warnsAgainstDecoration).toBe(true);
+  });
+
+  test("integrity judge system frames the assignment without penalizing legitimate emphasis", () => {
+    const sys = buildIntegrityJudgeSystemPrompt();
+    expect(sys.toLowerCase()).toContain("bullshit detector");
+    expect(sys.toLowerCase()).toContain("confident");
+    expect(sys.toLowerCase()).toContain("first-person");
+  });
+
+  test("evidence judge prompt carries goal, audience, draft, and asks for a 1-10 score", () => {
+    const out = buildEvidenceJudgePrompt({
+      goal: "Defend library funding",
+      audience: "City officials",
+      draftText: "Studies show that X.",
+      staticNote: "Citation count: 3",
+    });
+    expect(out).toContain("Defend library funding");
+    expect(out).toContain("City officials");
+    expect(out).toContain("Studies show that X.");
+    expect(out).toContain("Citation count: 3");
+    expect(out).toContain("integer score from 1 to 10");
+    expect(out).toContain('"score": <integer 1-10>');
+  });
+
+  test("integrity judge prompt carries goal, audience, draft, and asks for a 1-10 score", () => {
+    const out = buildIntegrityJudgePrompt({
+      goal: "Argue honestly",
+      audience: "Newsletter readers",
+      draftText: "Everyone knows that X.",
+      staticNote: "Regex signals: filler 5",
+    });
+    expect(out).toContain("Argue honestly");
+    expect(out).toContain("Newsletter readers");
+    expect(out).toContain("Everyone knows that X.");
+    expect(out).toContain("Regex signals: filler 5");
+    expect(out).toContain("integer score from 1 to 10");
+    expect(out).toContain('"score": <integer 1-10>');
+  });
+
+  test("evidence and integrity prompts are materially different so the two roles do not collapse", () => {
+    const ev = buildEvidenceJudgePrompt({
+      goal: "g",
+      audience: "a",
+      draftText: "d",
+      staticNote: "s",
+    });
+    const it = buildIntegrityJudgePrompt({
+      goal: "g",
+      audience: "a",
+      draftText: "d",
+      staticNote: "s",
+    });
+    expect(ev).not.toBe(it);
+    // Each prompt names which one it is.
+    expect(ev.toLowerCase()).toContain("evidence actually supports");
+    expect(it.toLowerCase()).toContain("resists bullshit");
   });
 });

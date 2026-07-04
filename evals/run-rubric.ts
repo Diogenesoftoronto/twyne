@@ -2,22 +2,32 @@
  * Offline rubric eval for Twyne.
  *
  * Replays the REAL production prompts from `convex/agentPrompts.ts` through the
- * Bifrost gateway for two task types, then scores the outputs with LLM-as-judge
+ * Bifrost gateway for four task types, then scores the outputs with LLM-as-judge
  * rubrics. Mirrors the conventions of `evals/run-experiment.ts` and
  * `evals/judge.ts` (Node/TS via `tsx`, `node:fs`/`node:path` imports,
  * header-only Bifrost auth, case_id keys, main().catch() tail).
  *
  * Tasks:
- *   - rubric-judge   : production `judgeDraft` task. Generates a persona-scored
- *                      {score, rationale} using buildSystemPrompt +
- *                      buildUserPrompt + the verbatim JUDGE TASK suffix from
- *                      convex/agents.ts. Scores structural validity and
- *                      rationale-groundedness, then checks discrimination on
- *                      strong/weak pairs.
- *   - rubric-review  : production `buildRubricReviewPrompt` task. Generates the
- *                      Chief Critic narrative review given a pre-computed
- *                      grade and judges' verdicts. Scores whether the review
- *                      honours the given grade and closes with a revision plan.
+ *   - rubric-judge    : production `judgeDraft` task. Generates a persona-scored
+ *                       {score, rationale} using buildSystemPrompt +
+ *                       buildUserPrompt + the verbatim JUDGE TASK suffix from
+ *                       convex/agents.ts. Scores structural validity and
+ *                       rationale-groundedness, then checks discrimination on
+ *                       strong/weak pairs.
+ *   - rubric-review   : production `buildRubricReviewPrompt` task. Generates the
+ *                       Chief Critic narrative review given a pre-computed
+ *                       grade and judges' verdicts. Scores whether the review
+ *                       honours the given grade and closes with a revision plan.
+ *   - rubric-evidence : production `judgeEvidence` task. Replays
+ *                       buildEvidenceJudgeSystemPrompt + buildEvidenceJudgePrompt
+ *                       and checks the rationale names a specific grounding
+ *                       failure (or grounding) in the draft, and that the score
+ *                       discriminates padded vs grounded pairs.
+ *   - rubric-integrity: production `judgeIntegrity` task. Replays
+ *                       buildIntegrityJudgeSystemPrompt + buildIntegrityJudgePrompt
+ *                       and checks the rationale names a specific bullshit
+ *                       pattern (or absence) and discriminates honest vs
+ *                       polished-but-empty pairs.
  *
  * Usage:
  *   BIFROST_BASE_URL=https://... BIFROST_API_KEY=sk_bf_xxx \
@@ -34,6 +44,10 @@ import {
   buildRubricReviewSystemPrompt,
   buildSystemPrompt,
   buildUserPrompt,
+  buildEvidenceJudgeSystemPrompt,
+  buildEvidenceJudgePrompt,
+  buildIntegrityJudgeSystemPrompt,
+  buildIntegrityJudgePrompt,
   toAgentPersona,
   type AgentPersona,
   type AgentRequest,
@@ -91,7 +105,35 @@ interface RubricReviewRow {
   draftText: string;
 }
 
-type DatasetRow = RubricJudgeRow | RubricReviewRow;
+interface RubricEvidenceRow {
+  case_id: string;
+  task: "rubric-evidence";
+  /** "grounded" or "padded" — used by the discrimination check. */
+  draftQuality?: "grounded" | "padded";
+  goal: string;
+  audience: string;
+  draftText: string;
+  /** Static citation signals, verbatim from `describeEvidenceStatic`. */
+  staticNote?: string;
+}
+
+interface RubricIntegrityRow {
+  case_id: string;
+  task: "rubric-integrity";
+  /** "honest" or "bullshit" — used by the discrimination check. */
+  draftQuality?: "honest" | "bullshit";
+  goal: string;
+  audience: string;
+  draftText: string;
+  /** Static regex signals, verbatim from `describeIntegrityStatic`. */
+  staticNote?: string;
+}
+
+type DatasetRow =
+  | RubricJudgeRow
+  | RubricReviewRow
+  | RubricEvidenceRow
+  | RubricIntegrityRow;
 
 interface LlmVerdict {
   label: string;
@@ -125,10 +167,28 @@ interface ReviewScore {
   has_revision_plan: LlmVerdict;
 }
 
-type RubricScore = JudgeScore | ReviewScore;
+interface DedicatedJudgeScore {
+  case_id: string;
+  task: "rubric-evidence" | "rubric-integrity";
+  persona: "evidence" | "integrity";
+  draft_quality: string | null;
+  output_excerpt: string;
+  judge: JudgeOutput;
+  /** Catches a generic-looking rationale that does not name a specific
+   *  grounding failure (or grounding) in this draft. */
+  grounded: LlmVerdict;
+}
+
+type RubricScore = JudgeScore | ReviewScore | DedicatedJudgeScore;
 
 interface DiscriminationPair {
+  /** Either a persona id (judge task) or the dedicated judge name
+   *  (evidence / integrity). The first slot of the strong-pair must score
+   *  higher than the first slot of the weak-pair (i.e. "grounded" >
+   *  "padded", "honest" > "bullshit", persona-typed "strong" > "weak"). */
   persona: string;
+  strong_label: string;
+  weak_label: string;
   strong_case_id: string;
   weak_case_id: string;
   strong_score: number | null;
@@ -180,6 +240,23 @@ const REVISION_PLAN_TEMPLATE = (review: string): string =>
   `Answer "present" if the final section of the review lists multiple (>=2) concrete, specific revision steps the writer can take, ordered by priority. ` +
   `Answer "absent" if the review ends on a general exhortation, a vague suggestion, or no actionable plan at all.`;
 
+const EVIDENCE_RATIONALE_GROUNDED_TEMPLATE = (
+  draft: string,
+  rationale: string,
+): string =>
+  `You judge whether an AI research editor's one-sentence rationale for the Evidence & Support score genuinely engages with the SPECIFIC draft — naming a particular citation, claim, or grounding failure — versus generic advice that could apply to any text.\n\n` +
+  `Draft:\n${draft}\n\nRationale:\n${rationale}\n\n` +
+  `Answer "grounded" if the rationale names a specific citation, statistic, claim, or gap in THIS draft (e.g., "Smith 2020 says X, but the draft claims Y," "the second paragraph asserts a 73% figure with no source," "the empirical study paragraph earns the claim"). ` +
+  `Answer "generic" if the rationale is boilerplate that could apply to any draft (e.g., "could use more sources," "citations would strengthen the argument").`;
+
+const INTEGRITY_RATIONALE_GROUNDED_TEMPLATE = (
+  draft: string,
+  rationale: string,
+): string =>
+  `You judge whether an AI bullshit detector's one-sentence rationale for the Bullshit Resistance score genuinely engages with the SPECIFIC draft — naming a particular bullshit pattern — versus generic advice that could apply to any text.\n\n` +
+  `Draft:\n${draft}\n\nRationale:\n${rationale}\n\n` +
+  `Answer "grounded" if the rationale names a specific bullshit pattern in THIS draft (e.g., "the universal claim 'everyone knows' on the second paragraph has no support," "the '73% increase' in the third paragraph is suspicious specificity," "the paragraph relies on filler like 'things have changed'"). ` +
+  `Answer "generic" if the rationale is boilerplate that could apply to any draft (e.g., "the draft has filler," "could be more specific").`;
 const CHOICES = {
   grounded: { grounded: 1, generic: 0 },
   faithful: { faithful: 1, invented: 0 },
@@ -496,25 +573,171 @@ async function scoreRubricReviewRow(
   };
 }
 
+async function scoreRubricEvidenceRow(
+  row: RubricEvidenceRow,
+): Promise<DedicatedJudgeScore> {
+  const system = buildEvidenceJudgeSystemPrompt();
+  const user = buildEvidenceJudgePrompt({
+    goal: row.goal,
+    audience: row.audience,
+    draftText: row.draftText,
+    staticNote:
+      row.staticNote ??
+      "Citation count: 0 (no static note supplied by dataset); judge the draft on its own merit.",
+  });
+
+  const raw = await callBifrost(
+    system,
+    user,
+    JUDGE_MODEL,
+    0.2,
+    AbortSignal.timeout(90_000),
+    220,
+  );
+  const parsed = parseScoreRationale(raw);
+  const judgeOutput: JudgeOutput = {
+    raw: excerpt(raw),
+    score: parsed.score,
+    rationale: parsed.rationale,
+    score_in_range: parsed.score !== null && clampIntInRange(parsed.score),
+  };
+
+  let grounded: LlmVerdict;
+  if (parsed.rationale) {
+    grounded = await judgeLabel(
+      EVIDENCE_RATIONALE_GROUNDED_TEMPLATE(row.draftText, parsed.rationale),
+      CHOICES.grounded,
+      AbortSignal.timeout(90_000),
+    );
+  } else {
+    grounded = {
+      label: "?",
+      score: null,
+      explanation: "no rationale parsed from evidence judge output",
+    };
+  }
+
+  return {
+    case_id: row.case_id,
+    task: "rubric-evidence",
+    persona: "evidence",
+    draft_quality: row.draftQuality ?? null,
+    output_excerpt: excerpt(raw),
+    judge: judgeOutput,
+    grounded,
+  };
+}
+
+async function scoreRubricIntegrityRow(
+  row: RubricIntegrityRow,
+): Promise<DedicatedJudgeScore> {
+  const system = buildIntegrityJudgeSystemPrompt();
+  const user = buildIntegrityJudgePrompt({
+    goal: row.goal,
+    audience: row.audience,
+    draftText: row.draftText,
+    staticNote:
+      row.staticNote ??
+      "Regex signals unavailable for this row; judge the draft on its own merit.",
+  });
+
+  const raw = await callBifrost(
+    system,
+    user,
+    JUDGE_MODEL,
+    0.2,
+    AbortSignal.timeout(90_000),
+    220,
+  );
+  const parsed = parseScoreRationale(raw);
+  const judgeOutput: JudgeOutput = {
+    raw: excerpt(raw),
+    score: parsed.score,
+    rationale: parsed.rationale,
+    score_in_range: parsed.score !== null && clampIntInRange(parsed.score),
+  };
+
+  let grounded: LlmVerdict;
+  if (parsed.rationale) {
+    grounded = await judgeLabel(
+      INTEGRITY_RATIONALE_GROUNDED_TEMPLATE(row.draftText, parsed.rationale),
+      CHOICES.grounded,
+      AbortSignal.timeout(90_000),
+    );
+  } else {
+    grounded = {
+      label: "?",
+      score: null,
+      explanation: "no rationale parsed from integrity judge output",
+    };
+  }
+
+  return {
+    case_id: row.case_id,
+    task: "rubric-integrity",
+    persona: "integrity",
+    draft_quality: row.draftQuality ?? null,
+    output_excerpt: excerpt(raw),
+    judge: judgeOutput,
+    grounded,
+  };
+}
+
+type QualityRow =
+  | RubricJudgeRow
+  | RubricEvidenceRow
+  | RubricIntegrityRow;
+
+interface PairAxis {
+  /** Key under which the two slots are stored (persona id or "evidence" / "integrity"). */
+  persona: string;
+  /** Strong-quality label for this axis (e.g. "strong", "grounded", "honest"). */
+  strong: string;
+  /** Weak-quality label for this axis (e.g. "weak", "padded", "bullshit"). */
+  weak: string;
+}
+
+const PAIR_AXES: Record<string, PairAxis> = {
+  "rubric-judge": { persona: "_persona_", strong: "strong", weak: "weak" },
+  "rubric-evidence": { persona: "evidence", strong: "grounded", weak: "padded" },
+  "rubric-integrity": { persona: "integrity", strong: "honest", weak: "bullshit" },
+};
+
+function draftQuality(r: QualityRow): string | undefined {
+  return r.draftQuality;
+}
+
+function axisPersona(r: QualityRow): string {
+  if (r.task === "rubric-judge") return (r as RubricJudgeRow).persona;
+  return PAIR_AXES[r.task].persona;
+}
+
+/** Axis-blind dedupe for quality pairs across the three judge tasks. */
 function buildDiscriminationPairs(
-  rows: RubricJudgeRow[],
+  rows: QualityRow[],
 ): DiscriminationPair[] {
   const byQuality = new Map<
     string,
-    { strong?: RubricJudgeRow; weak?: RubricJudgeRow }
+    { strong?: QualityRow; weak?: QualityRow; axis: PairAxis }
   >();
   for (const r of rows) {
-    const q = r.draftQuality;
+    const axis = PAIR_AXES[r.task];
+    if (!axis) continue;
+    const q = draftQuality(r);
     if (!q) continue;
-    const slot = byQuality.get(r.persona) ?? {};
-    slot[q] = r;
-    byQuality.set(r.persona, slot);
+    const key = `${r.task}::${axisPersona(r)}`;
+    const slot = byQuality.get(key) ?? { axis };
+    if (q === axis.strong) slot.strong = r;
+    if (q === axis.weak) slot.weak = r;
+    byQuality.set(key, slot);
   }
   const pairs: DiscriminationPair[] = [];
-  for (const [persona, slot] of byQuality) {
+  for (const [key, slot] of byQuality) {
     if (!slot.strong || !slot.weak) continue;
     pairs.push({
-      persona,
+      persona: `${key} → ${slot.strong.task === "rubric-judge" ? axisPersona(slot.strong) : slot.axis.persona}`,
+      strong_label: slot.axis.strong,
+      weak_label: slot.axis.weak,
       strong_case_id: slot.strong.case_id,
       weak_case_id: slot.weak.case_id,
       strong_score: null,
@@ -531,22 +754,36 @@ async function main(): Promise<void> {
 
   const scores: RubricScore[] = [];
   let failures = 0;
-  const judgeRows: RubricJudgeRow[] = [];
+  const qualityRows: QualityRow[] = [];
 
   for (const row of dataset) {
     try {
       if (row.task === "rubric-judge") {
-        judgeRows.push(row);
+        qualityRows.push(row);
         const s = await scoreRubricJudgeRow(row);
         scores.push(s);
         console.log(
           `  ${row.case_id.padEnd(24)} (${row.persona.padEnd(8)}) score=${String(s.judge.score).padStart(3)} range=${String(s.judge.score_in_range).padEnd(5)} grounded=${s.grounded.label}`,
         );
-      } else {
+      } else if (row.task === "rubric-review") {
         const s = await scoreRubricReviewRow(row);
         scores.push(s);
         console.log(
           `  ${row.case_id.padEnd(24)} faithful=${s.faithful_to_grade.label.padEnd(9)} plan=${s.has_revision_plan.label}`,
+        );
+      } else if (row.task === "rubric-evidence") {
+        qualityRows.push(row);
+        const s = await scoreRubricEvidenceRow(row);
+        scores.push(s);
+        console.log(
+          `  ${row.case_id.padEnd(24)} (evidence)        score=${String(s.judge.score).padStart(3)} range=${String(s.judge.score_in_range).padEnd(5)} grounded=${s.grounded.label}`,
+        );
+      } else {
+        qualityRows.push(row);
+        const s = await scoreRubricIntegrityRow(row);
+        scores.push(s);
+        console.log(
+          `  ${row.case_id.padEnd(24)} (integrity)       score=${String(s.judge.score).padStart(3)} range=${String(s.judge.score_in_range).padEnd(5)} grounded=${s.grounded.label}`,
         );
       }
     } catch (err) {
@@ -570,7 +807,7 @@ async function main(): Promise<void> {
           },
           grounded: { label: "?", score: null, explanation: message },
         });
-      } else {
+      } else if (row.task === "rubric-review") {
         scores.push({
           case_id: row.case_id,
           task: "rubric-review",
@@ -578,27 +815,52 @@ async function main(): Promise<void> {
           faithful_to_grade: { label: "?", score: null, explanation: message },
           has_revision_plan: { label: "?", score: null, explanation: message },
         });
+      } else {
+        scores.push({
+          case_id: row.case_id,
+          task: row.task,
+          persona: row.task === "rubric-evidence" ? "evidence" : "integrity",
+          draft_quality: row.draftQuality ?? null,
+          output_excerpt: `[error] ${excerpt(message)}`,
+          judge: {
+            raw: `[error] ${excerpt(message)}`,
+            score: null,
+            rationale: null,
+            score_in_range: false,
+          },
+          grounded: { label: "?", score: null, explanation: message },
+        });
       }
     }
   }
 
-  // Discrimination: for each persona with both strong + weak, assert strong > weak.
-  const pairs = buildDiscriminationPairs(judgeRows);
+  // Discrimination: strong-quality > weak-quality on every axis.
+  const pairs = buildDiscriminationPairs(qualityRows);
   for (const pair of pairs) {
     const strong = scores.find(
       (s) =>
-        s.task === "rubric-judge" &&
-        (s as JudgeScore).case_id === pair.strong_case_id,
-    ) as JudgeScore | undefined;
+        (s.task === "rubric-judge" ||
+          s.task === "rubric-evidence" ||
+          s.task === "rubric-integrity") &&
+        s.case_id === pair.strong_case_id,
+    ) as JudgeScore | DedicatedJudgeScore | undefined;
     const weak = scores.find(
       (s) =>
-        s.task === "rubric-judge" &&
-        (s as JudgeScore).case_id === pair.weak_case_id,
-    ) as JudgeScore | undefined;
-    if (strong?.judge.score != null && weak?.judge.score != null) {
-      pair.strong_score = strong.judge.score;
-      pair.weak_score = weak.judge.score;
-      pair.passed = pair.strong_score > pair.weak_score;
+        (s.task === "rubric-judge" ||
+          s.task === "rubric-evidence" ||
+          s.task === "rubric-integrity") &&
+        s.case_id === pair.weak_case_id,
+    ) as JudgeScore | DedicatedJudgeScore | undefined;
+    const strongScore = strong ? strong.judge.score : null;
+    const weakScore = weak ? weak.judge.score : null;
+    if (strongScore != null && weakScore != null) {
+      pair.strong_score = strongScore;
+      pair.weak_score = weakScore;
+      pair.passed = strongScore > weakScore;
+    } else {
+      // Ensure the pair is still surfaced in the JSON for inspection.
+      pair.strong_score = strongScore;
+      pair.weak_score = weakScore;
     }
   }
 
@@ -614,6 +876,12 @@ async function main(): Promise<void> {
   const reviewScores = scores.filter(
     (s): s is ReviewScore => s.task === "rubric-review",
   );
+  const evidenceScores = scores.filter(
+    (s): s is DedicatedJudgeScore => s.task === "rubric-evidence",
+  );
+  const integrityScores = scores.filter(
+    (s): s is DedicatedJudgeScore => s.task === "rubric-integrity",
+  );
   const inRange = judgeScores.filter((s) => s.judge.score_in_range).length;
   const grounded = judgeScores.filter((s) => s.grounded.score === 1).length;
   const faithful = reviewScores.filter(
@@ -622,26 +890,58 @@ async function main(): Promise<void> {
   const planned = reviewScores.filter(
     (s) => s.has_revision_plan.score === 1,
   ).length;
+  const evidenceInRange = evidenceScores.filter(
+    (s) => s.judge.score_in_range,
+  ).length;
+  const evidenceGrounded = evidenceScores.filter(
+    (s) => s.grounded.score === 1,
+  ).length;
+  const integrityInRange = integrityScores.filter(
+    (s) => s.judge.score_in_range,
+  ).length;
+  const integrityGrounded = integrityScores.filter(
+    (s) => s.grounded.score === 1,
+  ).length;
+  const pairsByTask = {
+    "rubric-judge": pairs.filter((p) => p.persona.includes("rubric-judge::")),
+    "rubric-evidence": pairs.filter(
+      (p) => p.persona.includes("rubric-evidence::"),
+    ),
+    "rubric-integrity": pairs.filter(
+      (p) => p.persona.includes("rubric-integrity::"),
+    ),
+  };
   const pairsPassed = pairs.filter((p) => p.passed).length;
 
   console.log(
     `[twyne:rubric] wrote ${scores.length} rows to evals/rubric-scores.json`,
   );
   console.log(
-    `  rubric-judge:    score_in_range ${inRange}/${judgeScores.length}, ` +
+    `  rubric-judge:     score_in_range ${inRange}/${judgeScores.length}, ` +
       `rationale grounded ${grounded}/${judgeScores.length}`,
   );
   console.log(
-    `  rubric-review:   faithful-to-grade ${faithful}/${reviewScores.length}, ` +
+    `  rubric-evidence:  score_in_range ${evidenceInRange}/${evidenceScores.length}, ` +
+      `rationale grounded ${evidenceGrounded}/${evidenceScores.length}`,
+  );
+  console.log(
+    `  rubric-integrity: score_in_range ${integrityInRange}/${integrityScores.length}, ` +
+      `rationale grounded ${integrityGrounded}/${integrityScores.length}`,
+  );
+  console.log(
+    `  rubric-review:    faithful-to-grade ${faithful}/${reviewScores.length}, ` +
       `has-revision-plan ${planned}/${reviewScores.length}`,
   );
   console.log(
-    `  discrimination:  ${pairsPassed}/${pairs.length} strong>weak pairs`,
+    `  discrimination:   ${pairsPassed}/${pairs.length} strong>weak pairs` +
+      ` (judge ${pairsByTask["rubric-judge"].filter((p) => p.passed).length}/${pairsByTask["rubric-judge"].length}, ` +
+      `evidence ${pairsByTask["rubric-evidence"].filter((p) => p.passed).length}/${pairsByTask["rubric-evidence"].length}, ` +
+      `integrity ${pairsByTask["rubric-integrity"].filter((p) => p.passed).length}/${pairsByTask["rubric-integrity"].length})`,
   );
   for (const p of pairs) {
     const mark = p.passed ? "PASS" : "FAIL";
     console.log(
-      `    [${mark}] ${p.persona}: strong=${p.strong_score} > weak=${p.weak_score} ` +
+      `    [${mark}] ${p.persona}: ${p.strong_label}=${p.strong_score} > ${p.weak_label}=${p.weak_score} ` +
         `(${p.strong_case_id} vs ${p.weak_case_id})`,
     );
   }

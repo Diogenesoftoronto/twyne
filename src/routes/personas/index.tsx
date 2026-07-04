@@ -384,7 +384,7 @@ export default component$(() => {
               Reset defaults
             </button>
             <Link
-              href="/"
+              href="/editor"
               class="btn-paper text-sm"
               style={{ fontFamily: "var(--font-display)" }}
             >

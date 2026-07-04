@@ -24,6 +24,18 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_userId_folioId", ["userId", "folioId"]),
 
+  // ── Per-day writing activity, for the public "days writing" heatmap on
+  // the author profile page. Append-only-ish: one row per (userId, day),
+  // upserted as the user writes. ──
+  writingActivity: defineTable({
+    userId: v.string(),
+    day: v.string(),
+    count: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_day", ["userId", "day"]),
+
   customPersonas: defineTable({
     userId: v.string(),
     personas: v.array(v.any()),
@@ -307,6 +319,15 @@ export default defineSchema({
   })
     .index("by_lixId", ["lixId"])
     .index("by_lixId_userId", ["lixId", "userId"]),
+
+  // ── Mobile app waitlist — public, unauthenticated signups. ──
+  // One row per (email, platform); dedupe is enforced in convex/waitlist.ts
+  // via the index below rather than a unique constraint (Convex has none).
+  waitlist: defineTable({
+    email: v.string(),
+    platform: v.union(v.literal("ios"), v.literal("android")),
+    createdAt: v.number(),
+  }).index("by_email_platform", ["email", "platform"]),
 
   // ── Rate-limit buckets — one row per (action, identifier). ──
   // Identifier is usually the user's Convex tokenIdentifier; for

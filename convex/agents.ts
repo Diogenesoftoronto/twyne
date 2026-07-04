@@ -30,6 +30,10 @@ import {
   buildSynthesisPrompt,
   buildRubricReviewSystemPrompt,
   buildRubricReviewPrompt,
+  buildEvidenceJudgeSystemPrompt,
+  buildEvidenceJudgePrompt,
+  buildIntegrityJudgeSystemPrompt,
+  buildIntegrityJudgePrompt,
   type AgentPersona,
   type AgentRequest,
   type AgentResponse,
@@ -39,6 +43,7 @@ import {
 import { buildQuoteTools } from "./agentTools";
 import type { ProjectBrief, ProjectInterviewAnswers } from "../src/types";
 import { stripReasoningTags } from "../src/utils/reasoning-tags";
+import { scoreStaticFeatures, scoreSufficiency } from "../src/utils/rubric";
 import {
   clampScore,
   extractTaggedJson,
@@ -967,6 +972,7 @@ export const reviewRubric = action({
     combined: v.number(),
     grade: v.string(),
     judgeMean: v.number(),
+    minJudge: v.number(),
     staticTotal: v.number(),
     judges: v.array(
       v.object({
@@ -998,6 +1004,7 @@ export const reviewRubric = action({
           combined: args.combined,
           grade: args.grade,
           judgeMean: args.judgeMean,
+          minJudge: args.minJudge,
           staticTotal: args.staticTotal,
           judges: args.judges,
           staticFeedback: args.staticFeedback,
@@ -1106,6 +1113,363 @@ Respond as JSON, and only JSON, in this exact shape:
     }
     await flushArize();
     return localJudge(persona, brief, args.draftText);
+  },
+});
+
+function localSufficiency(
+  brief: ProjectBrief | null,
+  draftText: string,
+): { score: number; rationale: string; provider: "local" } {
+  const { score, feedback } = scoreSufficiency(
+    draftText,
+    brief?.answers.goal ?? null,
+  );
+  return { score, rationale: feedback, provider: "local" };
+}
+
+/**
+ * A dedicated LLM judge for evidence quality: does each load-bearing claim
+ * actually have support, or is the draft papered over with citation-shaped
+ * noise, vague appeals to "studies," and fake specificity that the static
+ * citation count can't tell apart from genuine grounding? The density/count
+ * heuristic in `scoreStaticFeatures` only runs as the offline/local fallback.
+ */
+export const judgeEvidence = action({
+  args: {
+    brief: briefValidator,
+    draftText: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+    const brief = (args.brief ?? null) as ProjectBrief | null;
+    const provider = pickProvider();
+    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+      return localEvidence(brief, args.draftText);
+    }
+    if (!provider) {
+      return localEvidence(brief, args.draftText);
+    }
+
+    const goal = brief?.answers.goal || "no goal stated in the brief";
+    const audience = brief?.answers.audience || "a general reader";
+    const staticNote = describeEvidenceStatic(args.draftText);
+    const system = buildEvidenceJudgeSystemPrompt();
+    const user = buildEvidenceJudgePrompt({
+      goal,
+      audience,
+      draftText: args.draftText,
+      staticNote,
+    });
+
+    try {
+      const start = Date.now();
+      const temperature = 0.2;
+      const maxTokens = 200;
+      const { text } = await generateText({
+        model: provider.model,
+        system,
+        prompt: user,
+        temperature,
+        maxOutputTokens: maxTokens,
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: "rubric_judge_evidence",
+          metadata: {
+            feature: "rubric-judge",
+            persona: "evidence",
+            provider: provider.label,
+            model: provider.modelId,
+          },
+        },
+      });
+      const visibleText = stripReasoningTags(text);
+      await captureServerAiGeneration({
+        feature: "rubric-judge",
+        provider: provider.label,
+        model: provider.modelId,
+        req: {
+          persona: {
+            id: "evidence",
+            name: "Evidence Judge",
+            role: "Research editor",
+            description:
+              "Judges whether the draft's evidence actually supports its claims.",
+            focus: "Quality of evidence and grounding of claims",
+          },
+          brief,
+          draftText: args.draftText,
+          instruction: "feedback",
+        },
+        output: visibleText,
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "rubric_judge_evidence",
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
+      });
+      const parsed = parseJudgeOutput(visibleText);
+      if (parsed) {
+        await flushArize();
+        return { ...parsed, provider: provider.label };
+      }
+    } catch (err) {
+      console.error("[twyne:agents] evidence judge call failed:", err);
+    }
+    await flushArize();
+    return localEvidence(brief, args.draftText);
+  },
+});
+
+/**
+ * A dedicated LLM judge for bullshit resistance: confident-sounding prose
+ * that doesn't pay rent — vague filler dressed as insight, universal claims,
+ * fake specificity, polished-but-empty passages. Regex-based bullshit
+ * detection misses the sophisticated forms and false-positives on legitimate
+ * emphasis, so this is judged; the regex heuristics in `scoreStaticFeatures`
+ * only run as the offline/local fallback.
+ */
+export const judgeIntegrity = action({
+  args: {
+    brief: briefValidator,
+    draftText: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+    const brief = (args.brief ?? null) as ProjectBrief | null;
+    const provider = pickProvider();
+    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+      return localIntegrity(args.draftText);
+    }
+    if (!provider) {
+      return localIntegrity(args.draftText);
+    }
+
+    const goal = brief?.answers.goal || "no goal stated in the brief";
+    const audience = brief?.answers.audience || "a general reader";
+    const staticNote = describeIntegrityStatic(args.draftText);
+    const system = buildIntegrityJudgeSystemPrompt();
+    const user = buildIntegrityJudgePrompt({
+      goal,
+      audience,
+      draftText: args.draftText,
+      staticNote,
+    });
+
+    try {
+      const start = Date.now();
+      const temperature = 0.2;
+      const maxTokens = 200;
+      const { text } = await generateText({
+        model: provider.model,
+        system,
+        prompt: user,
+        temperature,
+        maxOutputTokens: maxTokens,
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: "rubric_judge_integrity",
+          metadata: {
+            feature: "rubric-judge",
+            persona: "integrity",
+            provider: provider.label,
+            model: provider.modelId,
+          },
+        },
+      });
+      const visibleText = stripReasoningTags(text);
+      await captureServerAiGeneration({
+        feature: "rubric-judge",
+        provider: provider.label,
+        model: provider.modelId,
+        req: {
+          persona: {
+            id: "integrity",
+            name: "Integrity Judge",
+            role: "Bullshit detector",
+            description:
+              "Judges whether the draft's confident prose is actually earning its claims.",
+            focus: "Bullshit resistance: vague filler, fake specificity, universal claims, polished emptiness",
+          },
+          brief,
+          draftText: args.draftText,
+          instruction: "feedback",
+        },
+        output: visibleText,
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "rubric_judge_integrity",
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
+      });
+      const parsed = parseJudgeOutput(visibleText);
+      if (parsed) {
+        await flushArize();
+        return { ...parsed, provider: provider.label };
+      }
+    } catch (err) {
+      console.error("[twyne:agents] integrity judge call failed:", err);
+    }
+    await flushArize();
+    return localIntegrity(args.draftText);
+  },
+});
+
+/* ── Local fallbacks for the dedicated judges ──────────────────── */
+
+function localEvidence(
+  brief: ProjectBrief | null,
+  draftText: string,
+): { score: number; rationale: string; provider: "local" } {
+  const features = scoreStaticFeatures(draftText).features;
+  const density = features.citationDensity;
+  let score: number;
+  if (features.citationCount === 0) {
+    score = clampScore(features.paragraphCount > 0 ? 3 : 1);
+  } else if (density >= 1.5 && density <= 6) {
+    score = 7;
+  } else if (density < 1.5) {
+    score = 5;
+  } else {
+    score = 4;
+  }
+  const audience = brief?.answers.audience || "the intended reader";
+  const rationale = `${features.citationCount} citation-like reference${
+    features.citationCount === 1 ? "" : "s"
+  } (${density.toFixed(1)} per 1,000 words). This counts shape, not substance — judge locally only; production runs route through the LLM judge to catch padded or fake grounding. For ${audience}, evidence has to earn its claim.`;
+  return { score, rationale, provider: "local" };
+}
+
+function localIntegrity(
+  draftText: string,
+): { score: number; rationale: string; provider: "local" } {
+  const features = scoreStaticFeatures(draftText).features;
+  const deduction =
+    features.unsupportedUniversalClaimCount * 0.6 +
+    features.duplicateParagraphRatio * 60;
+  const score = clampScore(
+    deduction > 0 ? Math.max(1, 10 - Math.round(deduction)) : 7,
+  );
+  const rationale = `${features.unsupportedUniversalClaimCount} unsupported universal claim${
+    features.unsupportedUniversalClaimCount === 1 ? "" : "s"
+  }, ${(features.fillerWordRatio * 100).toFixed(1)}% filler, ${(
+    features.vagueWordRatio * 100
+  ).toFixed(1)}% vague wording, ${(features.duplicateParagraphRatio * 100).toFixed(
+    0,
+  )}% duplicated paragraphs. Regex misses sophisticated bullshit and false-positives on legitimate emphatic prose — judge locally only; production runs route through the LLM judge.`;
+  return { score, rationale, provider: "local" };
+}
+
+function describeEvidenceStatic(draftText: string): string {
+  const f = scoreStaticFeatures(draftText).features;
+  return `Citation count: ${f.citationCount}, citation density: ${f.citationDensity.toFixed(
+    1,
+  )} per 1,000 words, paragraphs: ${f.paragraphCount}.`;
+}
+
+function describeIntegrityStatic(draftText: string): string {
+  const f = scoreStaticFeatures(draftText).features;
+  return `Unsupported universal claims (regex): ${f.unsupportedUniversalClaimCount}; filler ratio: ${(
+    f.fillerWordRatio * 100
+  ).toFixed(1)}%; vague-wording ratio: ${(f.vagueWordRatio * 100).toFixed(
+    1,
+  )}%; duplicated paragraphs: ${(f.duplicateParagraphRatio * 100).toFixed(0)}%.`;
+}
+
+/**
+ * A dedicated LLM judge for one question only: does the draft develop
+ * enough on-topic material to justify reaching its stated thesis/goal?
+ * Keyword overlap can't tell a well-earned argument from a hollow one, so
+ * this is judged, not measured — the keyword heuristic in
+ * `scoreSufficiency` only runs as the offline/local fallback.
+ */
+export const judgeSufficiency = action({
+  args: {
+    brief: briefValidator,
+    draftText: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+    const brief = (args.brief ?? null) as ProjectBrief | null;
+    const provider = pickProvider();
+    if (countWords(args.draftText) < MIN_RUBRIC_WORDS) {
+      return localSufficiency(brief, args.draftText);
+    }
+    if (!provider) {
+      return localSufficiency(brief, args.draftText);
+    }
+
+    const goal = brief?.answers.goal || "no goal stated in the brief";
+    const audience = brief?.answers.audience || "a general reader";
+    const system = `You are a rigorous developmental editor. You judge exactly one thing: whether a draft develops ENOUGH on-topic material — evidence, examples, reasoning, scenes, argumentation — to actually earn its stated thesis or goal. A draft can be clean, well-organized prose and still fail this if it asserts its point without building the case, drifts off-topic, or stops short of the goal. Do not reward confident assertion in place of development.`;
+    const user = `GOAL: ${goal}
+AUDIENCE: ${audience}
+
+DRAFT:
+${args.draftText}
+
+JUDGE TASK: Give an integer score from 1 to 10 for whether the draft develops enough on-topic material to justify reaching its stated goal. 1 means mostly assertion, filler, or off-topic drift; 10 means the development fully earns the goal. Most first drafts land 3-6.
+
+Respond as JSON, and only JSON, in this exact shape:
+{"score": <integer 1-10>, "rationale": "<one sentence>"}`;
+
+    try {
+      const start = Date.now();
+      const temperature = 0.2;
+      const maxTokens = 200;
+      const { text } = await generateText({
+        model: provider.model,
+        system,
+        prompt: user,
+        temperature,
+        maxOutputTokens: maxTokens,
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: "rubric_judge_sufficiency",
+          metadata: {
+            feature: "rubric-judge",
+            persona: "sufficiency",
+            provider: provider.label,
+            model: provider.modelId,
+          },
+        },
+      });
+      const visibleText = stripReasoningTags(text);
+      await captureServerAiGeneration({
+        feature: "rubric-judge",
+        provider: provider.label,
+        model: provider.modelId,
+        req: {
+          persona: {
+            id: "sufficiency",
+            name: "Sufficiency Judge",
+            role: "Developmental editor",
+            description: "Judges whether the draft develops enough on-topic material to earn its goal.",
+            focus: "Sufficiency of development relative to the stated thesis/goal",
+          },
+          brief,
+          draftText: args.draftText,
+          instruction: "feedback",
+        },
+        output: visibleText,
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "rubric_judge_sufficiency",
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
+      });
+      const parsed = parseJudgeOutput(visibleText);
+      if (parsed) {
+        await flushArize();
+        return { ...parsed, provider: provider.label };
+      }
+    } catch (err) {
+      console.error("[twyne:agents] sufficiency judge call failed:", err);
+    }
+    await flushArize();
+    return localSufficiency(brief, args.draftText);
   },
 });
 

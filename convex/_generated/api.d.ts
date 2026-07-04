@@ -34,6 +34,8 @@ import type * as sync from "../sync.js";
 import type * as testing from "../testing.js";
 import type * as userComments from "../userComments.js";
 import type * as voice from "../voice.js";
+import type * as waitlist from "../waitlist.js";
+import type * as writingActivity from "../writingActivity.js";
 
 import type {
   ApiFromModules,
@@ -68,6 +70,8 @@ declare const fullApi: ApiFromModules<{
   testing: typeof testing;
   userComments: typeof userComments;
   voice: typeof voice;
+  waitlist: typeof waitlist;
+  writingActivity: typeof writingActivity;
 }>;
 
 /**

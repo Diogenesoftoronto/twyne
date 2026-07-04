@@ -168,4 +168,6 @@ export const RATE_LIMITS = {
   handleClaim: { limit: 5, windowMs: 60_000 },
   /** Avatar upload URL requests: 10 per minute per user. */
   avatarUpload: { limit: 10, windowMs: 60_000 },
+  /** Writing-activity heartbeat: 10 per minute per user. */
+  writingActivity: { limit: 10, windowMs: 60_000 },
 } as const;

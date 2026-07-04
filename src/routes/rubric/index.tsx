@@ -7,6 +7,7 @@ import {
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import type { RubricResult } from "../../types";
 import { loadRubricResultFromIdb } from "../../utils/idb";
+import { renderMarkdown } from "../../utils/markdown";
 
 interface RubricPageStore {
   result: RubricResult | null;
@@ -165,7 +166,7 @@ export default component$(() => {
             </p>
           </div>
           <Link
-            href="/"
+            href="/editor"
             class="btn-paper text-sm"
             style={{ fontFamily: "var(--font-display)" }}
           >
@@ -193,7 +194,7 @@ export default component$(() => {
               run
               <em> Send to copyedit</em> to start.
             </p>
-            <Link href="/" class="btn-press mt-4 inline-block text-sm">
+            <Link href="/editor" class="btn-press mt-4 inline-block text-sm">
               ← Back to desk
             </Link>
           </div>
@@ -263,9 +264,16 @@ export default component$(() => {
                 class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
                 style={{ fontFamily: "var(--font-serif)" }}
               >
-                Twyne compresses the middle of the scale and stretches the top,
-                so a 90+ is reserved for genuinely excellent work. Your raw
-                judge + static mean is curved before the grade is printed.
+                The raw score is a blend, not a plain average: the judges'
+                mean opinion counts for 45%, but the single harshest judge's
+                score also counts on its own for 35% — so one editor who
+                really isn't convinced can drag the grade down even if the
+                rest of the room liked it. Mechanical polish (structure,
+                pacing, citations) is the remaining 20%, deliberately a minor
+                share, since clean prose around a hollow argument shouldn't
+                read as a good draft. That raw blend is then curved: Twyne
+                compresses the middle of the scale and stretches the top, so
+                a 90+ is reserved for genuinely excellent work.
               </p>
               <div class="mt-4">
                 {CURVE_ANCHORS.map(([raw, final, note]) => (
@@ -303,11 +311,10 @@ export default component$(() => {
               <section class="card p-6">
                 <p class="dept-label">The Critic's Full Review</p>
                 <div
-                  class="mt-3 text-[15px] leading-7 text-[var(--color-ink)] whitespace-pre-wrap"
+                  class="comment-markdown mt-3 text-[15px] leading-7 text-[var(--color-ink)]"
                   style={{ fontFamily: "var(--font-serif)" }}
-                >
-                  {store.result.review}
-                </div>
+                  dangerouslySetInnerHTML={renderMarkdown(store.result.review)}
+                />
               </section>
             )}
 

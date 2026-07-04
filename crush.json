@@ -1,0 +1,62 @@
+{
+  "$schema": "https://charm.land/crush.json",
+  "lsp": {
+    "typescript": {
+      "command": "typescript-language-server",
+      "args": ["--stdio"],
+      "filetypes": ["typescript", "typescriptreact", "javascript", "javascriptreact"],
+      "root_markers": ["tsconfig.json", "package.json"]
+    },
+    "css": {
+      "command": "vscode-css-language-server",
+      "args": ["--stdio"],
+      "filetypes": ["css", "scss", "less"]
+    },
+    "tailwind": {
+      "command": "tailwindcss-language-server",
+      "args": ["--stdio"],
+      "filetypes": ["typescript", "typescriptreact", "javascript", "javascriptreact", "html", "css"],
+      "root_markers": ["tailwind.config.js", "tailwind.config.ts", "package.json"]
+    },
+    "json": {
+      "command": "vscode-json-language-server",
+      "args": ["--stdio"],
+      "filetypes": ["json", "jsonc"]
+    }
+  },
+  "options": {
+    "auto_lsp": true,
+    "context_paths": ["AGENTS.md", "CLAUDE.md", "PRODUCT.md", "justfile", "package.json"],
+    "disabled_skills": [
+      "crush-config",
+      "find-skills",
+      "open-prose",
+      "playwriter",
+      "prose-program-orchestrator",
+      "ax",
+      "ax-agent",
+      "ax-agent-optimize",
+      "ax-ai",
+      "ax-flow",
+      "ax-gen",
+      "ax-gepa",
+      "ax-learn",
+      "ax-signature",
+      "hivemind-search",
+      "hivemind-store",
+      "hivemind-vote",
+      "dhall-guix-nix",
+      "managing-den",
+      "managing-guix",
+      "managing-nix",
+      "using-replay",
+      "using-skate",
+      "curry",
+      "modern-llms"
+    ],
+    "tui": {
+      "compact_mode": false,
+      "diff_mode": "unified"
+    }
+  }
+}

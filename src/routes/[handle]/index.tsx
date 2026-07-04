@@ -15,6 +15,10 @@ import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
 import { type DocumentHead, useLocation, Link } from "@builder.io/qwik-city";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
+import {
+  WritingHeatmap,
+  type ActivityDay,
+} from "../../components/profile/writing-heatmap";
 
 interface Profile {
   handle: string;
@@ -31,11 +35,24 @@ interface PublishedSummary {
   publishedAt: number;
 }
 
+interface ActivityStats {
+  days: ActivityDay[];
+  folioCount: number;
+}
+
+function daysWrittenInLast(days: ActivityDay[], window: number): number {
+  const cutoff = Date.now() - window * 24 * 60 * 60 * 1000;
+  return days.filter(
+    (d) => new Date(d.day + "T00:00:00Z").getTime() >= cutoff,
+  ).length;
+}
+
 export default component$(() => {
   const loc = useLocation();
   const clientSig = useConvexClient();
   const profile = useSignal<Profile | null>(null);
   const posts = useSignal<PublishedSummary[]>([]);
+  const activity = useSignal<ActivityStats | null>(null);
   const isLoading = useSignal(true);
   const missing = useSignal(false);
 
@@ -48,13 +65,16 @@ export default component$(() => {
       return;
     }
     try {
-      const [profileData, postData] = await Promise.all([
+      const [profileData, postData, activityData] = await Promise.all([
         client.query(api.profiles.getProfile, { handle }) as Promise<
           Profile | null
         >,
         client.query(api.published.listByHandle, { handle }) as Promise<
           PublishedSummary[]
         >,
+        client.query(api.writingActivity.getPublicActivity, {
+          handle,
+        }) as Promise<ActivityStats | null>,
       ]);
       if (!profileData) {
         missing.value = true;
@@ -63,6 +83,7 @@ export default component$(() => {
       }
       profile.value = profileData;
       posts.value = postData;
+      activity.value = activityData;
     } catch {
       missing.value = true;
     } finally {
@@ -149,6 +170,31 @@ export default component$(() => {
           )}
         </div>
       </header>
+
+      {profile.value && activity.value && (
+        <div class="border-b border-[var(--color-paper-3)]">
+          <div class="mx-auto max-w-2xl px-6 py-8">
+            <p
+              class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-3"
+              style="font-family: var(--font-typewriter);"
+            >
+              Writing
+            </p>
+            <div class="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-sm text-[var(--color-ink-light)]" style="font-family: var(--font-serif);">
+              <span>
+                {activity.value.folioCount}{" "}
+                {activity.value.folioCount === 1 ? "piece" : "pieces"} on the
+                desk
+              </span>
+              <span>
+                wrote on {daysWrittenInLast(activity.value.days, 30)} of the
+                last 30 days
+              </span>
+            </div>
+            <WritingHeatmap days={activity.value.days} />
+          </div>
+        </div>
+      )}
 
       <div class="mx-auto max-w-2xl px-6 py-10">
         {profile.value && posts.value.length === 0 && (

@@ -112,7 +112,7 @@ export default component$(() => {
 
   const open = $(async (id: string) => {
     await saveActiveFolioIdToIdb(id);
-    await nav("/");
+    await nav("/editor/");
   });
 
   const sorted = [...store.cards].sort((a, b) =>
@@ -160,7 +160,7 @@ export default component$(() => {
               Sort: {store.sort === "recent" ? "Recent" : "Name"}
             </button>
             <Link
-              href="/"
+              href="/editor"
               class="btn-paper text-sm"
               style={{ fontFamily: "var(--font-display)" }}
             >
@@ -172,7 +172,7 @@ export default component$(() => {
         {store.loaded && store.cards.length === 0 && (
           <div class="text-center py-20 text-[var(--color-ink-muted)]">
             <p>No folios yet.</p>
-            <Link href="/" class="btn-press mt-4 inline-block text-sm">
+            <Link href="/editor/" class="btn-press mt-4 inline-block text-sm">
               Start writing →
             </Link>
           </div>
