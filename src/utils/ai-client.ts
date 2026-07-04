@@ -39,6 +39,10 @@ import {
   buildSynthesisPrompt,
   buildRubricReviewSystemPrompt,
   buildRubricReviewPrompt,
+  buildEvidenceJudgeSystemPrompt,
+  buildEvidenceJudgePrompt,
+  buildIntegrityJudgeSystemPrompt,
+  buildIntegrityJudgePrompt,
   type MemoForSynthesis,
 } from "../../convex/agentPrompts";
 import { buildQuoteTools } from "../../convex/agentTools";
@@ -718,6 +722,7 @@ export interface RubricReviewRequest {
   combined: number;
   grade: string;
   judgeMean: number;
+  minJudge: number;
   staticTotal: number;
   judges: Array<{ personaId: string; score: number; rationale: string }>;
   staticFeedback: string[];
@@ -803,6 +808,119 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
     return null;
   } catch (err) {
     console.warn("[twyne:ai-client] judge failed:", err);
+    return null;
+  }
+}
+
+/* ── Public: dedicated evidence & integrity judges (BYOK path) ─── */
+
+export interface EvidenceJudgeRequest {
+  brief: ProjectBriefType | null;
+  draftText: string;
+}
+
+function evidenceStaticNote(draftText: string): string {
+  const citations = (draftText.match(
+    /\(\s*[A-Z][A-Za-z-]+,\s*\d{4}\s*\)|\[\d+\]|\b(?:doi:|https?:\/\/)\S+/g,
+  ) ?? []).length;
+  const words = draftText.split(/\s+/).filter(Boolean).length;
+  const density =
+    words > 0 ? ` (${((citations / words) * 1000).toFixed(1)} per 1,000 words)` : "";
+  const paragraphs = draftText
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter(Boolean).length;
+  return `Citation count: ${citations}${density}, paragraphs: ${paragraphs}.`;
+}
+
+function integrityStaticNote(draftText: string): string {
+  const fillerCount = (
+    draftText.match(
+      /\b(very|really|basically|actually|literally|simply|clearly|obviously|undeniably|innovative|robust|leverage|synergy|paradigm|game[- ]changer|cutting[- ]edge|seamless|world[- ]class|transformative)\b/gi,
+    ) ?? []
+  ).length;
+  const vagueCount = (
+    draftText.match(
+      /\b(thing|things|stuff|various|many|some|people|society|important|interesting|significant|impactful|better|worse|good|bad|a lot|kind of|sort of)\b/gi,
+    ) ?? []
+  ).length;
+  const words = draftText.split(/\s+/).filter(Boolean).length;
+  const wpct = (n: number) =>
+    words > 0 ? ((n / words) * 100).toFixed(1) + "%" : "0%";
+  const universalHits = (
+    draftText.match(
+      /\b(always|never|everyone|no one|all (?:people|writers|readers|users)|none of|proves?|guarantees?|undeniably|obviously|clearly)\b/gi,
+    ) ?? []
+  ).length;
+  return `Regex signals: filler ${fillerCount} (${wpct(fillerCount)}), vague ${vagueCount} (${wpct(
+    vagueCount,
+  )}), universal-claim hits: ${universalHits}.`;
+}
+
+export async function runClientEvidenceJudge(
+  req: EvidenceJudgeRequest,
+  settings: AiSettings,
+): Promise<{ score: number; rationale: string; provider: string } | null> {
+  const resolved = resolveFeatureConfig(settings, "rubric-judge");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  try {
+    const goal = req.brief?.answers.goal || "no goal stated in the brief";
+    const audience = req.brief?.answers.audience || "a general reader";
+    const text = await generateTrackedText({
+      feature: "rubric-judge",
+      resolved,
+      model,
+      system: buildEvidenceJudgeSystemPrompt(),
+      prompt: buildEvidenceJudgePrompt({
+        goal,
+        audience,
+        draftText: req.draftText,
+        staticNote: evidenceStaticNote(req.draftText),
+      }),
+      spanName: "rubric_judge_evidence",
+      evalSignals: { twyne_expected_format: "json_score_rationale" },
+    });
+    const parsed = parseJudgeOutput(text);
+    if (parsed) return { ...parsed, provider: resolved.provider.type };
+    return null;
+  } catch (err) {
+    console.warn("[twyne:ai-client] evidence judge failed:", err);
+    return null;
+  }
+}
+
+export async function runClientIntegrityJudge(
+  req: EvidenceJudgeRequest,
+  settings: AiSettings,
+): Promise<{ score: number; rationale: string; provider: string } | null> {
+  const resolved = resolveFeatureConfig(settings, "rubric-judge");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  try {
+    const goal = req.brief?.answers.goal || "no goal stated in the brief";
+    const audience = req.brief?.answers.audience || "a general reader";
+    const text = await generateTrackedText({
+      feature: "rubric-judge",
+      resolved,
+      model,
+      system: buildIntegrityJudgeSystemPrompt(),
+      prompt: buildIntegrityJudgePrompt({
+        goal,
+        audience,
+        draftText: req.draftText,
+        staticNote: integrityStaticNote(req.draftText),
+      }),
+      spanName: "rubric_judge_integrity",
+      evalSignals: { twyne_expected_format: "json_score_rationale" },
+    });
+    const parsed = parseJudgeOutput(text);
+    if (parsed) return { ...parsed, provider: resolved.provider.type };
+    return null;
+  } catch (err) {
+    console.warn("[twyne:ai-client] integrity judge failed:", err);
     return null;
   }
 }

@@ -10,13 +10,14 @@ import type { RequestHandler } from "@builder.io/qwik-city";
  * name starts with `twyne-desktop-<platform>`, and 302-redirects to it.
  *
  * On any miss (unknown platform, no matching asset, API failure) it falls back
- * to the human releases page rather than erroring, so a button always lands
- * somewhere useful.
+ * to our own downloads page rather than erroring or bouncing visitors out to
+ * GitHub, so a button always lands somewhere useful.
  */
 
 const REPO = "Diogenesoftoronto/twyne";
-const RELEASES_PAGE = `https://github.com/${REPO}/releases/latest`;
 const LATEST_API = `https://api.github.com/repos/${REPO}/releases/latest`;
+/** Fallback when no matching asset can be resolved — keep visitors on our own site. */
+const DOWNLOADS_PAGE = "/downloads/";
 
 /** Normalise common aliases to the asset-name platform token. */
 const PLATFORM_ALIASES: Record<string, "macos" | "windows" | "linux"> = {
@@ -45,7 +46,7 @@ export const onGet: RequestHandler = async ({ params, redirect, headers }) => {
 
   // Resolve the asset URL first; only throw the redirect once, afterwards, so
   // Qwik City's thrown-redirect control flow isn't caught by our own try/catch.
-  let target = RELEASES_PAGE;
+  let target = DOWNLOADS_PAGE;
   if (platform) {
     try {
       const res = await fetch(LATEST_API, {
@@ -63,7 +64,7 @@ export const onGet: RequestHandler = async ({ params, redirect, headers }) => {
         }
       }
     } catch {
-      // Network/parse failure — fall back to the releases page below.
+      // Network/parse failure — fall back to the downloads page below.
     }
   }
 

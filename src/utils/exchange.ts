@@ -11,7 +11,13 @@
  */
 
 import { marked } from "marked";
-import type { Folio, LayoutSettings, ProjectBrief, PersonaFeedback } from "../types";
+import type {
+  Folio,
+  LayoutSettings,
+  ProjectBrief,
+  PersonaFeedback,
+  RoomAnalysis,
+} from "../types";
 import { DEFAULT_LAYOUT, resolveMargins } from "../types";
 import {
   formatCitation,
@@ -510,6 +516,32 @@ export function exportAs(format: ExportFormat, payload: ExportPayload): Blob {
           ? exportPlainText(payload)
           : exportTwyneBackup(payload);
   return new Blob([body], { type: `${mime};charset=utf-8` });
+}
+
+/** Renders a room analysis (synthesis + per-editor memos) as a standalone Markdown document. */
+export function exportRoomAnalysisMarkdown(analysis: RoomAnalysis): string {
+  const parts: string[] = [];
+  const title = analysis.briefTitle || "Untitled";
+  parts.push(`# The Full Analysis — ${title}`);
+  parts.push("");
+  parts.push(`*Filed ${new Date(analysis.timestamp).toLocaleString()}*`);
+  parts.push("");
+
+  if (analysis.synthesis) {
+    parts.push("## The Room's Verdict");
+    parts.push("");
+    parts.push(analysis.synthesis.trim());
+    parts.push("");
+  }
+
+  for (const memo of analysis.memos) {
+    parts.push(`## ${memo.personaName}`);
+    parts.push("");
+    parts.push(memo.text.trim());
+    parts.push("");
+  }
+
+  return parts.join("\n");
 }
 
 export function downloadBlob(blob: Blob, filename: string): void {

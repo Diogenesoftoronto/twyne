@@ -7,7 +7,14 @@ import {
   noSerialize,
   type NoSerialize,
 } from "@builder.io/qwik";
+import { Link } from "@builder.io/qwik-city";
 import { useConvexClient } from "../../utils/convex-context";
+import { renderMarkdown } from "../../utils/markdown";
+import {
+  downloadBlob,
+  exportRoomAnalysisMarkdown,
+  safeFilename,
+} from "../../utils/exchange";
 import { api } from "../../../convex/_generated/api";
 import type {
   PersonaFeedback,
@@ -113,6 +120,10 @@ interface PersonasStore {
   isAnalyzing: boolean;
   /** Whether the full-screen analysis modal is open. */
   analysisOpen: boolean;
+  /** Persona ids whose memo is collapsed in the full-analysis modal. */
+  analysisCollapsed: Record<string, boolean>;
+  /** Persona id (or "synthesis") most recently copied, for a brief confirmation. */
+  analysisCopiedId: string | null;
 }
 
 interface PersonasPanelProps {
@@ -228,6 +239,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     analysis: null,
     isAnalyzing: false,
     analysisOpen: false,
+    analysisCollapsed: {},
+    analysisCopiedId: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -742,12 +755,51 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       };
       store.analysis = analysis;
       store.analysisOpen = true;
+      store.analysisCollapsed = {};
+      store.analysisCopiedId = null;
       void saveRoomAnalysisToIdb(analysis);
     } catch (err) {
       store.conveneError = (err as Error).message ?? "Full analysis failed.";
     } finally {
       store.isAnalyzing = false;
     }
+  });
+
+  /* ── Full-analysis modal: download, copy, collapse ───────────── */
+
+  const downloadAnalysis = $(() => {
+    if (!store.analysis) return;
+    const md = exportRoomAnalysisMarkdown(store.analysis);
+    const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+    const namePart = store.analysis.briefTitle
+      ? `${store.analysis.briefTitle} full analysis`
+      : "full-analysis";
+    downloadBlob(blob, safeFilename(namePart, "md"));
+  });
+
+  const copyAnalysisText = $(async (id: string, text: string) => {
+    try {
+      await navigator.clipboard?.writeText(text);
+      store.analysisCopiedId = id;
+      setTimeout(() => {
+        if (store.analysisCopiedId === id) store.analysisCopiedId = null;
+      }, 1500);
+    } catch {
+      // Clipboard may be unavailable (permissions, insecure context) — no-op.
+    }
+  });
+
+  const toggleMemoCollapsed = $((personaId: string) => {
+    store.analysisCollapsed = {
+      ...store.analysisCollapsed,
+      [personaId]: !store.analysisCollapsed[personaId],
+    };
+  });
+
+  const scrollToMemo = $((personaId: string) => {
+    document
+      .getElementById(`analysis-memo-${personaId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
   /* ── Reply flow ────────────────────────────────────────────── */
@@ -1883,8 +1935,34 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             onClick$={(e) => e.stopPropagation()}
           >
             <div class="sticky top-0 flex items-center justify-between border-b border-[var(--color-paper-3)] bg-[var(--color-paper)] px-6 py-4 rounded-t">
-              <p class="dept-label">The Full Analysis</p>
+              <div>
+                <p class="dept-label">The Full Analysis</p>
+                {store.analysis.briefTitle && (
+                  <p
+                    class="mt-0.5 text-[13px] text-[var(--color-ink-light)]"
+                    style="font-family: var(--font-serif);"
+                  >
+                    {store.analysis.briefTitle}
+                  </p>
+                )}
+              </div>
               <div class="flex items-center gap-4">
+                <Link
+                  href="/analysis/"
+                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                  style="font-family: var(--font-typewriter);"
+                  title="Open as a full page"
+                >
+                  ↗ full page
+                </Link>
+                <button
+                  onClick$={downloadAnalysis}
+                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                  style="font-family: var(--font-typewriter);"
+                  title="Download as Markdown"
+                >
+                  ⇩ download
+                </button>
                 <button
                   onClick$={() => {
                     store.analysis = null;
@@ -1909,43 +1987,108 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               </div>
             </div>
 
+            {store.analysis.memos.length > 1 && (
+              <div class="flex flex-wrap items-center gap-2 border-b border-[var(--color-paper-3)] px-6 py-2.5">
+                <span
+                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
+                  style="font-family: var(--font-typewriter);"
+                >
+                  Jump to
+                </span>
+                {store.analysis.memos.map((memo) => (
+                  <button
+                    key={memo.personaId}
+                    onClick$={() => scrollToMemo(memo.personaId)}
+                    class="rounded-full border px-2.5 py-0.5 text-[10px] tracking-[0.1em] uppercase transition-colors hover:bg-[var(--color-paper-soft)]"
+                    style={{
+                      fontFamily: "var(--font-typewriter)",
+                      borderColor: memo.personaColor,
+                      color: memo.personaColor,
+                    }}
+                  >
+                    {memo.personaName}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div class="px-6 py-5">
               {store.analysis.synthesis && (
                 <div class="mb-5 p-3 bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] rounded">
-                  <p class="dept-label">The Room's Verdict</p>
-                  <div
-                    class="mt-2 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
-                    style="font-family: var(--font-serif);"
-                  >
-                    {store.analysis.synthesis}
+                  <div class="flex items-center justify-between">
+                    <p class="dept-label">The Room's Verdict</p>
+                    <button
+                      onClick$={() =>
+                        copyAnalysisText(
+                          "synthesis",
+                          store.analysis!.synthesis,
+                        )
+                      }
+                      class="text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                      style="font-family: var(--font-typewriter);"
+                    >
+                      {store.analysisCopiedId === "synthesis"
+                        ? "✓ copied"
+                        : "copy"}
+                    </button>
                   </div>
+                  <div
+                    class="comment-markdown mt-2 text-[13px] leading-6 text-[var(--color-ink)]"
+                    style="font-family: var(--font-serif);"
+                    dangerouslySetInnerHTML={renderMarkdown(
+                      store.analysis.synthesis,
+                    )}
+                  />
                 </div>
               )}
 
               <div class="space-y-5">
-                {store.analysis.memos.map((memo) => (
-                  <article
-                    key={memo.personaId}
-                    class="pl-3"
-                    style={{ borderLeft: `3px solid ${memo.personaColor}` }}
-                  >
-                    <p
-                      class="text-[11px] tracking-[0.15em] uppercase"
-                      style={{
-                        fontFamily: "var(--font-typewriter)",
-                        color: memo.personaColor,
-                      }}
+                {store.analysis.memos.map((memo) => {
+                  const collapsed = !!store.analysisCollapsed[memo.personaId];
+                  return (
+                    <article
+                      key={memo.personaId}
+                      id={`analysis-memo-${memo.personaId}`}
+                      class="scroll-mt-24 pl-3"
+                      style={{ borderLeft: `3px solid ${memo.personaColor}` }}
                     >
-                      {memo.personaName}
-                    </p>
-                    <div
-                      class="mt-1 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
-                      style="font-family: var(--font-serif);"
-                    >
-                      {memo.text}
-                    </div>
-                  </article>
-                ))}
+                      <div class="flex items-center justify-between gap-2">
+                        <button
+                          onClick$={() => toggleMemoCollapsed(memo.personaId)}
+                          class="flex items-center gap-1.5 text-[11px] tracking-[0.15em] uppercase"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            color: memo.personaColor,
+                          }}
+                          aria-expanded={!collapsed}
+                        >
+                          <span class="inline-block w-3">
+                            {collapsed ? "▸" : "▾"}
+                          </span>
+                          {memo.personaName}
+                        </button>
+                        <button
+                          onClick$={() =>
+                            copyAnalysisText(memo.personaId, memo.text)
+                          }
+                          class="text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                          style="font-family: var(--font-typewriter);"
+                        >
+                          {store.analysisCopiedId === memo.personaId
+                            ? "✓ copied"
+                            : "copy"}
+                        </button>
+                      </div>
+                      {!collapsed && (
+                        <div
+                          class="comment-markdown mt-1 text-[13px] leading-6 text-[var(--color-ink)]"
+                          style="font-family: var(--font-serif);"
+                          dangerouslySetInnerHTML={renderMarkdown(memo.text)}
+                        />
+                      )}
+                    </article>
+                  );
+                })}
               </div>
             </div>
           </div>

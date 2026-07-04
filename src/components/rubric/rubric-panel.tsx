@@ -6,6 +6,7 @@ import type { ProjectBrief } from "../../types";
 import { loadDraftText, summarizeBrief } from "../../utils/anti-tabula-rasa";
 import {
   scoreStaticFeatures,
+  scoreSufficiency,
   combineJudgesAndStatic,
   type StaticScore,
   type JudgeResult,
@@ -19,10 +20,13 @@ import type { AiSettings } from "../../types";
 import {
   hasConfiguredAiProvider,
   runClientJudge,
+  runClientEvidenceJudge,
+  runClientIntegrityJudge,
   runClientRubricReview,
   normalizeAiSettings,
 } from "../../utils/ai-client";
 import { draftReadiness, MIN_RUBRIC_WORDS } from "../../utils/draft-thresholds";
+import { renderMarkdown } from "../../utils/markdown";
 
 interface RubricStore {
   result: RubricResult | null;
@@ -164,6 +168,118 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       }
       store.judges = judges;
 
+      // 2b. A dedicated LLM judge for content sufficiency vs the stated
+      //     goal — falls back to the keyword heuristic when offline/signed out.
+      const localSufficiency = () => {
+        const s = scoreSufficiency(draftText, brief?.answers.goal ?? null);
+        return { score: s.score, rationale: s.feedback };
+      };
+      let sufficiency: { score: number; rationale: string };
+      try {
+        sufficiency = client
+          ? ((await client.action(api.agents.judgeSufficiency, {
+              brief: brief ?? null,
+              draftText,
+            })) as { score: number; rationale: string })
+          : localSufficiency();
+      } catch {
+        sufficiency = localSufficiency();
+      }
+
+      // 2c. Dedicated LLM judges for evidence & integrity when we can
+      //     reach one. These catch what the static regex/density scorers
+      //     miss — padded citations, fake specificity, sophisticated
+      //     bullshit, legitimate emphatic prose flagged as filler.
+      const settings2 = store.aiSettings;
+
+      const localEvidence = () => {
+        const f = scoreStaticFeatures(draftText).features;
+        const density = f.citationDensity;
+        const score =
+          f.citationCount === 0
+            ? f.paragraphCount > 0
+              ? 3
+              : 1
+            : density >= 1.5 && density <= 6
+              ? 7
+              : density < 1.5
+                ? 5
+                : 4;
+        const audience = brief?.answers.audience || "the intended reader";
+        return {
+          score,
+          rationale: `${f.citationCount} citation-like reference${
+            f.citationCount === 1 ? "" : "s"
+          } (${density.toFixed(
+            1,
+          )} per 1,000 words). Counts shape, not substance — judge locally only. For ${audience}, evidence has to earn its claim.`,
+        };
+      };
+
+      const localIntegrity = () => {
+        const f = scoreStaticFeatures(draftText).features;
+        const deduction =
+          f.unsupportedUniversalClaimCount * 0.6 +
+          f.duplicateParagraphRatio * 60;
+        const score = deduction > 0 ? Math.max(1, 10 - Math.round(deduction)) : 7;
+        return {
+          score,
+          rationale: `${f.unsupportedUniversalClaimCount} unsupported universal claim${
+            f.unsupportedUniversalClaimCount === 1 ? "" : "s"
+          }, ${(f.fillerWordRatio * 100).toFixed(1)}% filler, ${(
+            f.vagueWordRatio * 100
+          ).toFixed(1)}% vague wording, ${(f.duplicateParagraphRatio * 100).toFixed(
+            0,
+          )}% duplicated paragraphs. Regex misses sophisticated bullshit and false-positives on legitimate emphatic prose.`,
+        };
+      };
+
+      let evidence: { score: number; rationale: string; provider?: string };
+      try {
+        const clientRes = settings2
+          ? await runClientEvidenceJudge(
+              { brief: brief ?? null, draftText },
+              settings2,
+            )
+          : null;
+        if (clientRes) {
+          evidence = clientRes;
+        } else if (client) {
+          const serverRes = (await client.action(api.agents.judgeEvidence, {
+            brief: brief ?? null,
+            draftText,
+          })) as { score: number; rationale: string; provider: string } | null;
+          evidence = serverRes ?? localEvidence();
+        } else {
+          evidence = localEvidence();
+        }
+      } catch {
+        evidence = localEvidence();
+      }
+
+      let integrity: { score: number; rationale: string; provider?: string };
+      try {
+        const clientRes = settings2
+          ? await runClientIntegrityJudge(
+              { brief: brief ?? null, draftText },
+              settings2,
+            )
+          : null;
+        if (clientRes) {
+          integrity = clientRes;
+        } else if (client) {
+          const serverRes = (await client.action(api.agents.judgeIntegrity, {
+            brief: brief ?? null,
+            draftText,
+          })) as { score: number; rationale: string; provider: string } | null;
+          integrity = serverRes ?? localIntegrity();
+        } else {
+          integrity = localIntegrity();
+        }
+      } catch {
+        integrity = localIntegrity();
+      }
+
       // 3. Combine into a brutal grade.
       const combined = combineJudgesAndStatic(judges, staticScore, brief);
       const criteria = buildCriteria(
@@ -171,6 +287,9 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
         judges,
         combined.combined,
         brief,
+        sufficiency,
+        evidence,
+        integrity,
       );
 
       const result: RubricResult = {
@@ -205,6 +324,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
         combined: result.overallScore,
         grade: result.overallGrade,
         judgeMean: combined.judgeMean,
+        minJudge: combined.minJudge,
         staticTotal: combined.staticTotal,
         judges: result.judges.map((j) => ({
           personaId: j.personaId,
@@ -462,11 +582,10 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
             <p class="dept-label">The Critic's Full Review</p>
             {store.result.review ? (
               <div
-                class="mt-2 text-[13px] leading-6 text-[var(--color-ink)] whitespace-pre-wrap"
+                class="comment-markdown mt-2 text-[13px] leading-6 text-[var(--color-ink)]"
                 style="font-family: var(--font-serif);"
-              >
-                {store.result.review}
-              </div>
+                dangerouslySetInnerHTML={renderMarkdown(store.result.review)}
+              />
             ) : (
               <button
                 onClick$={generateReview}
@@ -681,6 +800,9 @@ function buildCriteria(
   judges: JudgeResult[],
   final: number,
   brief: ProjectBrief | null,
+  sufficiency: { score: number; rationale: string },
+  evidence: { score: number; rationale: string },
+  integrity: { score: number; rationale: string },
 ): RubricCriterion[] {
   const audience = brief?.answers.audience || "the intended reader";
   const goal = brief?.answers.goal || "the central goal";
@@ -704,29 +826,25 @@ function buildCriteria(
       id: "evidence",
       label: "Evidence & Support",
       description: "Quality and relevance of supporting evidence",
-      score: Math.min(10, staticScore.perFeature.evidence),
+      score: Math.min(10, evidence.score),
       maxScore: 10,
-      feedback: `${staticScore.features.citationCount} citation-like reference${
-        staticScore.features.citationCount === 1 ? "" : "s"
-      } detected (${staticScore.features.citationDensity.toFixed(
-        1,
-      )} per 1,000 words). For ${audience}, evidence should earn its place.`,
+      feedback: evidence.rationale,
+    },
+    {
+      id: "sufficiency",
+      label: "Sufficiency & Development",
+      description: "Whether the draft develops enough on-topic material to earn its thesis or goal",
+      score: sufficiency.score,
+      maxScore: 10,
+      feedback: sufficiency.rationale,
     },
     {
       id: "integrity",
       label: "Bullshit Resistance",
       description: "Unsupported certainty, filler, vagueness, and repetition",
-      score: Math.min(10, staticScore.perFeature.integrity),
+      score: Math.min(10, integrity.score),
       maxScore: 10,
-      feedback: `${staticScore.features.unsupportedUniversalClaimCount} unsupported universal claim${
-        staticScore.features.unsupportedUniversalClaimCount === 1 ? "" : "s"
-      }; ${(staticScore.features.fillerWordRatio * 100).toFixed(1)}% filler; ${(
-        staticScore.features.vagueWordRatio * 100
-      ).toFixed(1)}% vague wording; ${(
-        staticScore.features.duplicateParagraphRatio * 100
-      ).toFixed(
-        0,
-      )}% duplicated paragraphs. The rubric now penalizes confident-sounding prose that does not pay rent.`,
+      feedback: integrity.rationale,
     },
     {
       id: "structure",

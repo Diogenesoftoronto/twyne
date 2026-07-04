@@ -57,6 +57,7 @@ import { MermaidDiagram } from "./extensions/mermaid-node";
 import { EndnoteNode } from "./extensions/endnote-node";
 import { RemoteCursors } from "./extensions/remote-cursors";
 import { type RemoteCursor } from "./extensions/remote-cursors";
+import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 import { SyncDot, LastSavedLine } from "./sync-indicator";
 import {
   startPresence,
@@ -78,6 +79,11 @@ import {
 } from "../../utils/convex-sync";
 import type { SuggestionPayload, Suggestion } from "../../types";
 import { renderMarkdown } from "../../utils/markdown";
+import {
+  computePopoverGeometry,
+  POPOVER_CARD_MARGIN,
+  POPOVER_CARD_WIDTH,
+} from "./popover-positioning";
 
 interface NotePopover {
   id: string;
@@ -86,7 +92,10 @@ interface NotePopover {
   label: string;
   note: string;
   x: number;
-  y: number;
+  top: number | null;
+  bottom: number | null;
+  maxH: number;
+  placement: "above" | "below";
   /** The passage the note is pinned to. */
   quote?: string;
   /** Brief title captured at convene time. */
@@ -480,6 +489,7 @@ export const TwyneEditor = component$(
             MermaidDiagram,
             EndnoteNode,
             RemoteCursors.configure({ cursors: [] }),
+            MarkAnchorWidgets,
           ],
           content: initialContent,
           editorProps: {
@@ -651,56 +661,81 @@ export const TwyneEditor = component$(
           };
         }
 
-        // Build a persona-note popover, anchored near its sentence but always
-        // kept fully inside the viewport (it prefers below, flips above when
-        // there isn't room, and clamps on both axes as a last resort).
-        const CARD_W = 340;
-        const CARD_MARGIN = 8;
-        const buildNotePopover = (
-          noteSpan: HTMLElement,
+        // Build a persona-note popover, anchored to the mark but never
+        // covering the sentence. Position is computed by the pure
+        // `computePopoverGeometry` module so the placement rules are
+        // unit-testable without a Tiptap editor. Splitting attribute
+        // read from geometry lets us re-use the same attribute
+        // extractor when opening from the mark-anchor chip (where the
+        // chip's own rect is the anchor, not the marked text's rect).
+        const buildNotePopoverFromRect = (
+          rect: DOMRect,
+          attrs: {
+            id: string;
+            author: string;
+            color: string;
+            label: string;
+            note: string;
+            quote?: string;
+            briefTitle?: string;
+          },
           pinned: boolean,
         ): NotePopover => {
-          const rect = noteSpan.getBoundingClientRect();
-          const vw = window.innerWidth;
-          const vh = window.innerHeight;
-          // Matches the card's CSS max-height: min(60vh, 520px).
-          const cardH = Math.min(vh * 0.6, 520);
-
-          const x = Math.max(
-            CARD_MARGIN,
-            Math.min(rect.left, vw - CARD_W - CARD_MARGIN),
-          );
-
-          // Prefer sitting just below the sentence; if that would run past the
-          // bottom edge, shift up only as much as needed so the card's full box
-          // stays in view (overlapping the sentence rather than leaving a gap,
-          // which keeps it reachable on hover).
-          let y = rect.bottom + CARD_MARGIN;
-          const maxTop = vh - CARD_MARGIN - cardH;
-          if (y > maxTop) y = Math.max(CARD_MARGIN, maxTop);
-
+          const geom = computePopoverGeometry({
+            vw: window.innerWidth,
+            vh: window.innerHeight,
+            rect: {
+              left: rect.left,
+              top: rect.top,
+              bottom: rect.bottom,
+            },
+          });
           return {
-            id: noteSpan.getAttribute("data-persona-note-id") ?? "",
-            author: noteSpan.getAttribute("data-persona-note-author") ?? "",
-            color:
-              noteSpan.getAttribute("data-persona-note-color") ??
-              "var(--color-vermilion)",
-            label: noteSpan.getAttribute("data-persona-note-label") ?? "",
-            note: noteSpan.getAttribute("data-persona-note-note") ?? "",
-            quote:
-              noteSpan.getAttribute("data-persona-note-quote") ?? undefined,
-            briefTitle:
-              noteSpan.getAttribute("data-persona-note-brief") ?? undefined,
+            id: attrs.id,
+            author: attrs.author,
+            color: attrs.color,
+            label: attrs.label,
+            note: attrs.note,
+            quote: attrs.quote,
+            briefTitle: attrs.briefTitle,
             draft: "",
             dismissed: false,
             pinned,
-            x,
-            y,
+            x: geom.x,
+            top: geom.top,
+            bottom: geom.bottom,
+            maxH: geom.maxH,
+            placement: geom.placement,
             thread: [],
             replying: false,
             error: null,
           };
         };
+
+        const readPersonaNoteAttrs = (noteSpan: HTMLElement) => ({
+          id: noteSpan.getAttribute("data-persona-note-id") ?? "",
+          author:
+            noteSpan.getAttribute("data-persona-note-author") ?? "",
+          color:
+            noteSpan.getAttribute("data-persona-note-color") ??
+            "var(--color-vermilion)",
+          label: noteSpan.getAttribute("data-persona-note-label") ?? "",
+          note: noteSpan.getAttribute("data-persona-note-note") ?? "",
+          quote:
+            noteSpan.getAttribute("data-persona-note-quote") ?? undefined,
+          briefTitle:
+            noteSpan.getAttribute("data-persona-note-brief") ?? undefined,
+        });
+
+        const buildNotePopover = (
+          noteSpan: HTMLElement,
+          pinned: boolean,
+        ): NotePopover =>
+          buildNotePopoverFromRect(
+            noteSpan.getBoundingClientRect(),
+            readPersonaNoteAttrs(noteSpan),
+            pinned,
+          );
         // When a new popover is born, ask the personas panel for any
         // existing reply thread for this note so the popover can
         // render the conversation inline. The panel mirrors it back
@@ -719,83 +754,149 @@ export const TwyneEditor = component$(
           requestThreadFor(pop.id);
         };
 
+        // Open the suggestion card from any source (click on the
+        // marked text, click on its mark-anchor chip). The chip's own
+        // rect is usually a better anchor than the marked text's (it
+        // sits at the end of the run and is unambiguous), so we accept
+        // an explicit `anchorEl` when one is available.
+        const openSuggestionPopover = (
+          suggestionSpan: HTMLElement,
+          anchorEl?: HTMLElement,
+        ) => {
+          const target = anchorEl ?? suggestionSpan;
+          const rect = target.getBoundingClientRect();
+          store.suggestionPopover = {
+            id: suggestionSpan.getAttribute("data-suggestion-id") ?? "",
+            versionId:
+              suggestionSpan.getAttribute("data-suggestion-versionId") ?? "",
+            author:
+              suggestionSpan.getAttribute("data-suggestion-author") ?? "",
+            color:
+              suggestionSpan.getAttribute("data-suggestion-color") ??
+              "var(--color-vermilion)",
+            original: suggestionSpan.textContent ?? "",
+            replacement:
+              suggestionSpan.getAttribute("data-suggestion-replacement") ??
+              "",
+            rationale:
+              suggestionSpan.getAttribute("data-suggestion-rationale") ??
+              "",
+            x: Math.max(8, Math.min(rect.left, window.innerWidth - 360)),
+            y: rect.bottom + 8,
+            busy: false,
+          };
+        };
+
         // ── Hover: preview a persona note below its sentence ──
+        // Non-blocking rules:
+        //   1. Hover-intent delay (350ms) — passing through doesn't
+        //      accidentally open a card.
+        //   2. Typing disarm — once the writer types (or deletes /
+        //      hits Enter), the next hover is suppressed. We re-arm
+        //      only on real mouse motion (>3px), filtering the
+        //      synthetic mousemove that scroll-under-cursor fires.
+        //   3. Pinned / replying / has-thread cards never close from
+        //      mouseout alone.
+        let hoverTimer: ReturnType<typeof setTimeout> | null = null;
+        let hoverArmed = true;
+        let lastMouse = { x: 0, y: 0 };
+        const clearHoverTimer = () => {
+          if (hoverTimer) {
+            clearTimeout(hoverTimer);
+            hoverTimer = null;
+          }
+        };
         el.addEventListener("mouseover", (e) => {
-          const noteSpan = (e.target as HTMLElement).closest(
-            ".twyne-persona-note",
-          ) as HTMLElement | null;
-          if (!noteSpan) return;
-          // Don't clobber a pinned card the writer is interacting with.
-          if (store.notePopover?.pinned) return;
-          buildAndPin(noteSpan, false);
-        });
-        el.addEventListener("mouseout", (e) => {
-          if (store.notePopover?.pinned) return;
-          // Mid-conversation: keep the popover anchored to the
-          // sentence so the writer can read replies and the typing
-          // indicator. The popover will close via Strike or Esc.
-          if (store.notePopover?.replying) return;
-          if ((store.notePopover?.thread.length ?? 0) > 0) return;
-          const related = e.relatedTarget as HTMLElement | null;
-          // Stay open while moving onto the card or within the same note.
-          if (related?.closest(".persona-note-card")) return;
-          if (related?.closest(".twyne-persona-note")) return;
-          store.notePopover = null;
-        });
-
-        // ── Comment + persona-note click handler ──
-        el.addEventListener("click", (e) => {
           const target = e.target as HTMLElement;
-
-          // Writer's own inline comment → show the margin popover.
-          const commentMark = target.closest(
-            ".twyne-comment-mark",
-          ) as HTMLElement | null;
-          if (commentMark) {
-            const commentId = commentMark.getAttribute("data-comment-id");
-            if (commentId) {
-              openUserCommentPopover(commentId, commentMark);
-              // Don't bubble to the persona-note path below.
-              return;
-            }
-          }
-
-          // Editor's proposed rewrite → show the accept/strike card.
-          const suggestionSpan = target.closest(
-            ".twyne-suggestion",
-          ) as HTMLElement | null;
-          if (suggestionSpan) {
-            const rect = suggestionSpan.getBoundingClientRect();
-            store.suggestionPopover = {
-              id: suggestionSpan.getAttribute("data-suggestion-id") ?? "",
-              versionId:
-                suggestionSpan.getAttribute("data-suggestion-versionId") ?? "",
-              author:
-                suggestionSpan.getAttribute("data-suggestion-author") ?? "",
-              color:
-                suggestionSpan.getAttribute("data-suggestion-color") ??
-                "var(--color-vermilion)",
-              original: suggestionSpan.textContent ?? "",
-              replacement:
-                suggestionSpan.getAttribute("data-suggestion-replacement") ??
-                "",
-              rationale:
-                suggestionSpan.getAttribute("data-suggestion-rationale") ?? "",
-              x: Math.max(8, Math.min(rect.left, window.innerWidth - 360)),
-              y: rect.bottom + 8,
-              busy: false,
-            };
-            return;
-          }
-
           const noteSpan = target.closest(
             ".twyne-persona-note",
           ) as HTMLElement | null;
-          if (noteSpan) {
-            // Clicking the sentence pins the card open (survives mouse-out).
-            buildAndPin(noteSpan, true);
-          } else if (!target.closest(".persona-note-card")) {
-            store.notePopover = null;
+          const chip = target.closest(
+            ".twyne-mark-anchor",
+          ) as HTMLElement | null;
+          if (!noteSpan && !chip) return;
+          // Don't clobber a pinned card the writer is interacting with.
+          if (store.notePopover?.pinned) return;
+          if (!hoverArmed) return;
+          // Resolve to the actual note span for geometry. The chip
+          // belongs to whichever note span it sits in (or directly
+          // adjacent to).
+          const anchor =
+            noteSpan ??
+            (chip?.closest(".twyne-persona-note") as HTMLElement | null);
+          if (!anchor) return;
+          clearHoverTimer();
+          hoverTimer = setTimeout(() => {
+            buildAndPin(anchor, false);
+          }, 350);
+        });
+        el.addEventListener("mouseout", (e) => {
+          const related = (e as MouseEvent)
+            .relatedTarget as HTMLElement | null;
+          // Stay open while moving onto the card, the marked span, or
+          // its corresponding anchor chip (text → chip → card).
+          if (related?.closest(".persona-note-card")) return;
+          if (related?.closest(".twyne-persona-note")) return;
+          if (related?.closest(".twyne-mark-anchor")) return;
+          // Even when we don't close, cancel any pending hover-open
+          // timer so a fast pass-through doesn't surprise the writer.
+          clearHoverTimer();
+          // Mid-conversation: keep the live thread open even if the
+          // popover was opened by hover rather than a click.
+          if (store.notePopover?.pinned) return;
+          if (store.notePopover?.replying) return;
+          if ((store.notePopover?.thread.length ?? 0) > 0) return;
+          store.notePopover = null;
+        });
+
+        // ── Click handler: anchor-chip routes by data-anchor-kind; mark
+        // clicks fall through to ProseMirror (caret placement, no popover). ──
+        el.addEventListener("click", (e) => {
+          const target = e.target as HTMLElement;
+
+          // Anchor chip first — must preventDefault so clicking the
+          // chip doesn't also place the caret.
+          const chip = target.closest(
+            ".twyne-mark-anchor",
+          ) as HTMLElement | null;
+          if (chip) {
+            e.preventDefault();
+            const kind = chip.getAttribute("data-anchor-kind");
+            const id = chip.getAttribute("data-anchor-id") ?? "";
+            if (!id) return;
+            const chipRect = chip.getBoundingClientRect();
+            if (kind === "comment") {
+              const span = el.querySelector(
+                `.twyne-comment-mark[data-comment-id="${CSS.escape(id)}"]`,
+              ) as HTMLElement | null;
+              if (span) openUserCommentPopover(id, span);
+            } else if (kind === "suggestion") {
+              const span = el.querySelector(
+                `.twyne-suggestion[data-suggestion-id="${CSS.escape(id)}"]`,
+              ) as HTMLElement | null;
+              if (span) openSuggestionPopover(span, chip);
+            } else if (kind === "note") {
+              const span = el.querySelector(
+                `.twyne-persona-note[data-persona-note-id="${CSS.escape(id)}"]`,
+              ) as HTMLElement | null;
+              if (span) {
+                const pop = buildNotePopoverFromRect(
+                  chipRect,
+                  readPersonaNoteAttrs(span),
+                  true,
+                );
+                store.notePopover = pop;
+                requestThreadFor(pop.id);
+              }
+            }
+            return;
+          }
+
+          // Plain click on a marked span — defer to ProseMirror for
+          // caret placement. Only act to close stray cards (click-away).
+          if (!target.closest(".persona-note-card")) {
+            const inNote = !!target.closest(".twyne-persona-note");
+            if (!inNote) store.notePopover = null;
           }
           if (
             !target.closest(".twyne-suggestion") &&
@@ -803,26 +904,24 @@ export const TwyneEditor = component$(
           ) {
             store.suggestionPopover = null;
           }
+          if (
+            !target.closest(".twyne-comment-mark") &&
+            !target.closest(".user-comment-card")
+          ) {
+            store.userCommentPopover = null;
+          }
         });
 
-        // ── Double-click: click through an inline comment mark so the
-        // writer can edit the sentence again. The single-click handler
-        // above pins the popover open; a second click within the
-        // browser's dblclick window dismisses it and drops the caret
-        // into the marked passage. The mark itself stays in place so
-        // the thread keeps its anchor — only the modal goes away. ──
+        // ── Double-click on a comment mark: dismiss the popover and drop
+        // the caret into the marked passage. Now a safety net since the
+        // single-click path no longer opens the popover for marked text. ──
         el.addEventListener("dblclick", (e) => {
           const target = e.target as HTMLElement;
           const commentMark = target.closest(
             ".twyne-comment-mark",
           ) as HTMLElement | null;
           if (!commentMark) return;
-          // Don't fight the popover: dismissing it is the whole point.
           store.userCommentPopover = null;
-          // Resolve the mark's first text node to a ProseMirror position
-          // and focus the editor there. posAtDOM returns the document
-          // offset for the DOM node, which is exactly the anchor we
-          // want — the cursor lands inside the marked passage.
           const pos = editor.view.posAtDOM(commentMark, 0);
           if (typeof pos === "number" && pos >= 0) {
             editor.commands.focus(pos);
@@ -830,6 +929,57 @@ export const TwyneEditor = component$(
             editor.commands.focus();
           }
         });
+
+        // ── Typing suppression: disarm hover, close no-thread previews ──
+        // We listen on the editor element rather than
+        // `editor.on("transaction")` so that remote multiplayer
+        // transactions don't disarm hover based on *someone else's*
+        // keystrokes.
+        el.addEventListener("keydown", (e) => {
+          if (e.ctrlKey || e.metaKey || e.altKey) return;
+          const k = e.key;
+          const isPrintable = k.length === 1;
+          if (
+            !isPrintable &&
+            k !== "Backspace" &&
+            k !== "Delete" &&
+            k !== "Enter"
+          ) {
+            return;
+          }
+          hoverArmed = false;
+          clearHoverTimer();
+          // An unpinned preview (no thread, not replying) closes — but a
+          // pinned card or one that's mid-thread stays open so the
+          // conversation can continue.
+          const p = store.notePopover;
+          if (p && !p.pinned && !p.replying && p.thread.length === 0) {
+            store.notePopover = null;
+          }
+        });
+        // Re-arm hover only on real mouse motion (not synthetic scroll
+        // mousemove events). Listener on `document` so moving out of the
+        // editor area still re-arms.
+        const rearmOnMove = (e: MouseEvent) => {
+          const dx = e.clientX - lastMouse.x;
+          const dy = e.clientY - lastMouse.y;
+          lastMouse = { x: e.clientX, y: e.clientY };
+          if (Math.hypot(dx, dy) > 3) {
+            hoverArmed = true;
+          }
+        };
+        document.addEventListener("mousemove", rearmOnMove);
+
+        // ── Global Escape: close any of the three popovers ──
+        // Listens on `window` so it works even when focus is in the
+        // reply textarea.
+        const onGlobalKeydown = (e: KeyboardEvent) => {
+          if (e.key !== "Escape") return;
+          if (store.notePopover) store.notePopover = null;
+          if (store.userCommentPopover) store.userCommentPopover = null;
+          if (store.suggestionPopover) store.suggestionPopover = null;
+        };
+        window.addEventListener("keydown", onGlobalKeydown);
 
         store.editor = editor;
 
@@ -1205,6 +1355,9 @@ export const TwyneEditor = component$(
             "twyne:scroll-to-suggestion",
             onScrollToSuggestion,
           );
+          clearHoverTimer();
+          document.removeEventListener("mousemove", rearmOnMove);
+          window.removeEventListener("keydown", onGlobalKeydown);
           editor.destroy();
           store.editor = null;
         });
@@ -2576,7 +2729,11 @@ export const TwyneEditor = component$(
           </span>
         </div>
 
-        {/* ── Persona-note card: anchored below the sentence, hover/pin ── */}
+        {/* ── Persona-note card: anchored below (or flipped above) the
+              sentence, never overlapping the marked text. The card
+              geometry is computed by `computePopoverGeometry` so the JSX
+              just mirrors the resulting fields. Click pins the card so it
+              survives mouse-out. ── */}
         {store.notePopover && (
           <div
             class="persona-note-card fixed z-50 flex flex-col"
@@ -2584,15 +2741,29 @@ export const TwyneEditor = component$(
             aria-label={`Note from ${store.notePopover.author}`}
             style={{
               left: `${store.notePopover.x}px`,
-              top: `${store.notePopover.y}px`,
+              top:
+                store.notePopover.top != null
+                  ? `${store.notePopover.top}px`
+                  : "auto",
+              bottom:
+                store.notePopover.bottom != null
+                  ? `${store.notePopover.bottom}px`
+                  : "auto",
               width: "340px",
-              "max-height": "min(60vh, 520px)",
+              "max-height": `${store.notePopover.maxH}px`,
               background: "var(--color-paper)",
               border: `2px solid ${store.notePopover.color}`,
               "border-radius": "4px",
               "box-shadow": "0 14px 36px rgba(0,0,0,0.28)",
             }}
-            onClick$={(e) => e.stopPropagation()}
+            onClick$={(e) => {
+              // Clicking the card itself pins it so it survives mouseout.
+              e.stopPropagation();
+              const p = store.notePopover;
+              if (p && !p.pinned) {
+                store.notePopover = { ...p, pinned: true };
+              }
+            }}
             onMouseLeave$={(e) => {
               if (store.notePopover?.pinned) return;
               // Mid-conversation: keep the live thread open even if the
@@ -2602,6 +2773,7 @@ export const TwyneEditor = component$(
               const related = (e as MouseEvent)
                 .relatedTarget as HTMLElement | null;
               if (related?.closest(".twyne-persona-note")) return;
+              if (related?.closest(".twyne-mark-anchor")) return;
               store.notePopover = null;
             }}
           >

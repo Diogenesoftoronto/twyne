@@ -72,7 +72,7 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
         ...this.options.HTMLAttributes,
         ...HTMLAttributes,
         class: "twyne-comment-mark",
-        style: `background: color-mix(in srgb, ${HTMLAttributes["data-comment-color"] ?? "var(--color-mustard)"} 18%, transparent); border-bottom: 2px solid ${HTMLAttributes["data-comment-color"] ?? "var(--color-mustard)"}; cursor: pointer;`,
+        style: `background: color-mix(in srgb, ${HTMLAttributes["data-comment-color"] ?? "var(--color-mustard)"} 18%, transparent); border-bottom: 2px solid ${HTMLAttributes["data-comment-color"] ?? "var(--color-mustard)"}; cursor: text;`,
       },
       0,
     ];

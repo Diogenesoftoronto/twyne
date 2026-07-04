@@ -707,6 +707,15 @@ export default component$(() => {
               </Link>
 
               <Link
+                href="/analysis/"
+                class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
+                style="font-family: var(--font-display); border-radius: 2px;"
+              >
+                <span class="dept-label block">The Full Analysis</span>
+                Cast analysis report
+              </Link>
+
+              <Link
                 href="/apparatus/"
                 class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
                 style="font-family: var(--font-display); border-radius: 2px;"

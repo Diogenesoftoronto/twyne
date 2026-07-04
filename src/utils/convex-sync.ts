@@ -227,11 +227,25 @@ export function clearConvexSyncContext() {
  */
 export function markDirty(): void {
   if (!state.userId || !state.client) return;
+  recordWritingActivity();
   if (pushTimer) return; // already scheduled
   pushTimer = setTimeout(() => {
     pushTimer = null;
     void pushLocalSnapshot();
   }, PUSH_DEBOUNCE_MS);
+}
+
+/** Client-side throttle so a writing session sends a handful of activity
+ * pings rather than one per keystroke-debounce tick. */
+const WRITING_ACTIVITY_THROTTLE_MS = 2 * 60 * 1000;
+let lastWritingActivityAt = 0;
+
+function recordWritingActivity(): void {
+  if (!state.client) return;
+  const now = Date.now();
+  if (now - lastWritingActivityAt < WRITING_ACTIVITY_THROTTLE_MS) return;
+  lastWritingActivityAt = now;
+  void state.client.mutation(api.writingActivity.recordActivity, {});
 }
 
 /** Force an immediate push, e.g. on pagehide. */

@@ -1069,7 +1069,7 @@ body {
 /* ── Persona margin notes — inline marks in the manuscript ── */
 .twyne-persona-note {
   --note-color: var(--color-vermilion);
-  cursor: pointer;
+  cursor: text;
   background: color-mix(in srgb, var(--note-color) 11%, transparent);
   border-bottom: 2px dotted var(--note-color);
   transition: background 0.15s ease;
@@ -1124,10 +1124,49 @@ body {
   }
 }
 
+/* ── Mark anchor chip ──
+   A small dot rendered at the end of every contiguous run of three
+   "comment-like" marks by the `MarkAnchorWidgets` ProseMirror plugin.
+   Click it to open the matching popover without disturbing the caret
+   in the marked text. The chip is the only hit target for these marks
+   — hovering the marked text triggers the hover preview, not a chip
+   click. */
+.twyne-mark-anchor {
+  display: inline-block;
+  vertical-align: middle;
+  width: 0.5em;
+  height: 0.5em;
+  margin: 0 0.15em 0 0.25em;
+  padding: 0;
+  border: none;
+  background: var(--note-color, var(--color-vermilion));
+  color: inherit;
+  border-radius: 999px;
+  cursor: pointer;
+  transform: scale(1);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  opacity: 0.55;
+}
+.twyne-mark-anchor:hover,
+.twyne-mark-anchor:focus-visible {
+  transform: scale(1.6);
+  opacity: 1;
+  outline: none;
+}
+.twyne-mark-anchor:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-paper), 0 0 0 4px var(--note-color, var(--color-vermilion));
+}
+/* Hide the chip in zen mode — the marks themselves stay in place
+   (the .zen-mode rule earlier already quiets them) but the chip is a
+   UI affordance we suppress. */
+.twyne-editor.zen-mode .twyne-mark-anchor {
+  display: none;
+}
+
 /* ── Suggestions — an editor's proposed rewrite, as a red-pencil mark ── */
 .twyne-suggestion {
   --suggestion-color: var(--color-vermilion);
-  cursor: pointer;
+  cursor: text;
   text-decoration: line-through;
   text-decoration-color: var(--suggestion-color);
   text-decoration-thickness: 2px;
