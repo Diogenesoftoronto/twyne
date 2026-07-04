@@ -79,11 +79,7 @@ import {
 } from "../../utils/convex-sync";
 import type { SuggestionPayload, Suggestion } from "../../types";
 import { renderMarkdown } from "../../utils/markdown";
-import {
-  computePopoverGeometry,
-  POPOVER_CARD_MARGIN,
-  POPOVER_CARD_WIDTH,
-} from "./popover-positioning";
+import { computePopoverGeometry } from "./popover-positioning";
 
 interface NotePopover {
   id: string;

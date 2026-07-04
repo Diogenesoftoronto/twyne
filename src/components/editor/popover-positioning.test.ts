@@ -134,11 +134,6 @@ describe("popover positioning", () => {
     // The whole point of the rework: a flipped card must NEVER cover
     // the span it is anchored to. Pick a geometry that flips above,
     // then assert the card's top edge sits at or above rect.top - margin.
-    const geom = computePopoverGeometry({
-      vw: 1280,
-      vh: 600,
-      rect: { left: 100, top: 200, bottom: 550 },
-    });
     // Force a flip by demanding a huge ideal card.
     const flipped = computePopoverGeometry({
       vw: 1280,
