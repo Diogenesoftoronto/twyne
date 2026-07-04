@@ -1,0 +1,177 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "d3500a10a7d3",
+  "session_id": "377ee993-d3e8-4523-9f89-f3e3b45b0c9c",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-04T10:31:07.697437571Z",
+  "branch": "main",
+  "checkpoints_count": 13,
+  "save_step_count": 13,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "convex/lib/rateLimit.ts",
+    "convex/profiles.ts",
+    "convex/schema.ts",
+    "convex/waitlist.ts",
+    "convex/writingActivity.ts",
+    "src/components/personas/personas-panel.tsx",
+    "src/components/profile/writing-heatmap.tsx",
+    "src/components/rubric/rubric-panel.tsx",
+    "src/routes/[handle]/index.tsx",
+    "src/routes/analysis/index.tsx",
+    "src/routes/download/[platform]/index.ts",
+    "src/routes/downloads/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/library/index.tsx",
+    "src/routes/personas/index.tsx",
+    "src/routes/rubric/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/convex-sync.ts",
+    "src/utils/exchange.ts",
+    "src/utils/persona-voices.test.ts",
+    "src/utils/rubric.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-sonnet-5",
+  "turn_id": "1f854b381099",
+  "token_usage": {
+    "input_tokens": 54387,
+    "cache_creation_tokens": 3473567,
+    "cache_read_tokens": 45664324,
+    "output_tokens": 162565,
+    "api_call_count": 377
+  },
+  "session_metrics": {
+    "turn_count": 13
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-04T10:31:07.592776746Z",
+    "agent_lines": 1480,
+    "agent_removed": 70,
+    "human_added": 1608,
+    "human_modified": 18,
+    "human_removed": 0,
+    "total_committed": 3106,
+    "total_lines_changed": 3375,
+    "agent_percentage": 45.925925925925924,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 449,
+      "agent_lines_removed": 16
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 458,
+      "agent_lines_removed": 24
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 650,
+      "agent_lines_removed": 50
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 650,
+      "agent_lines_removed": 50
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 1,
+      "user_lines_removed": 1,
+      "agent_lines_added": 650,
+      "agent_lines_removed": 50,
+      "user_added_per_file": {
+        "src/routes/rubric/index.tsx": 1
+      },
+      "user_removed_per_file": {
+        "src/routes/rubric/index.tsx": 1
+      }
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 872,
+      "agent_lines_removed": 62
+    },
+    {
+      "checkpoint_number": 8,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 874,
+      "agent_lines_removed": 64
+    },
+    {
+      "checkpoint_number": 9,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 875,
+      "agent_lines_removed": 64
+    },
+    {
+      "checkpoint_number": 10,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 875,
+      "agent_lines_removed": 64
+    },
+    {
+      "checkpoint_number": 11,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 875,
+      "agent_lines_removed": 64
+    },
+    {
+      "checkpoint_number": 12,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 875,
+      "agent_lines_removed": 64
+    },
+    {
+      "checkpoint_number": 13,
+      "user_lines_added": 555,
+      "user_lines_removed": 17,
+      "agent_lines_added": 1147,
+      "agent_lines_removed": 71,
+      "user_added_per_file": {
+        "convex/agentPrompts.ts": 79,
+        "convex/agents.ts": 255,
+        "src/components/rubric/rubric-panel.tsx": 104,
+        "src/utils/ai-client.ts": 117
+      },
+      "user_removed_per_file": {
+        "convex/agents.ts": 1,
+        "src/components/rubric/rubric-panel.tsx": 16
+      }
+    },
+    {
+      "checkpoint_number": 14,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1976,
+      "agent_lines_removed": 88
+    }
+  ]
+}
