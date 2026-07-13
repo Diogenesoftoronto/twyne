@@ -1,11 +1,11 @@
 /**
  * Offline rubric eval for Twyne.
  *
- * Replays the REAL production prompts from `convex/agentPrompts.ts` through the
- * Bifrost gateway for four task types, then scores the outputs with LLM-as-judge
- * rubrics. Mirrors the conventions of `evals/run-experiment.ts` and
- * `evals/judge.ts` (Node/TS via `tsx`, `node:fs`/`node:path` imports,
- * header-only Bifrost auth, case_id keys, main().catch() tail).
+ * Replays the REAL production prompts from `convex/agentPrompts.ts` through
+ * the hosted Portkey gateway for four task types, then scores the outputs
+ * with LLM-as-judge rubrics. Mirrors the conventions of
+ * `evals/run-experiment.ts` and `evals/judge.ts` (Node/TS via `tsx`,
+ * `node:fs`/`node:path` imports, case_id keys, main().catch() tail).
  *
  * Tasks:
  *   - rubric-judge    : production `judgeDraft` task. Generates a persona-scored
@@ -30,8 +30,9 @@
  *                       polished-but-empty pairs.
  *
  * Usage:
- *   BIFROST_BASE_URL=https://... BIFROST_API_KEY=sk_bf_xxx \
- *     JUDGE_MODEL=neuralwatt/kimi-k2.6 bun run eval:rubric
+ *   PORTKEY_API_KEY=pk-xxx bun run eval:rubric
+ *
+ * Calls the hosted Portkey gateway; see evals/llm-client.ts.
  *
  * Writes evals/rubric-scores.json.
  */
@@ -54,14 +55,11 @@ import {
 } from "../convex/agentPrompts";
 import { parseJudgeOutput } from "../src/utils/llm-parsing";
 import { PERSONAS } from "../src/utils/personas";
+import { chatCompletion, JUDGE_MODEL } from "./llm-client";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DATASET_PATH = resolve(HERE, "rubric.jsonl");
 const SCORES_PATH = resolve(HERE, "rubric-scores.json");
-
-const BIFROST_BASE_URL = process.env.BIFROST_BASE_URL;
-const BIFROST_API_KEY = process.env.BIFROST_API_KEY;
-const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "neuralwatt/kimi-k2.6";
 
 /**
  * The JUDGE TASK suffix appended to the user prompt by `judgeDraft` in
@@ -295,123 +293,14 @@ async function callBifrost(
   signal: AbortSignal,
   maxOutputTokens: number | null = null,
 ): Promise<string> {
-  if (!BIFROST_BASE_URL) {
-    throw new Error("BIFROST_BASE_URL is required");
-  }
-  const body: Record<string, unknown> = {
+  return chatCompletion({
+    system,
+    user,
     model,
-    messages: [
-      { role: "system", content: system },
-      { role: "user", content: user },
-    ],
     temperature,
-  };
-  if (maxOutputTokens !== null) body.max_tokens = maxOutputTokens;
-  return callBifrostWithRetry(body, signal);
-}
-
-const RETRY_DELAYS_MS = [1_500, 4_000];
-const MAX_ATTEMPTS = 3;
-
-/**
- * One bare attempt of the Bifrost chat-completions call. Throws on network /
- * abort errors and on 5xx / Bifrost 504 timeout responses; 4xx and any other
- * non-OK status is propagated without retry.
- */
-async function callBifrostOnce(
-  body: Record<string, unknown>,
-  signal: AbortSignal,
-): Promise<string> {
-  const res = await fetch(
-    `${BIFROST_BASE_URL!.replace(/\/$/, "")}/chat/completions`,
-    {
-      method: "POST",
-      // Header-only auth: Bifrost passes its stored provider key through. A
-      // bearer token would be misread as a virtual-key lookup → 401. This is
-      // exactly why the Arize integration's auth_type must be proxy_with_headers.
-      headers: {
-        "content-type": "application/json",
-        "x-bifrost-api-key": BIFROST_API_KEY ?? "",
-      },
-      body: JSON.stringify(body),
-      signal,
-    },
-  );
-  if (!res.ok) {
-    const text = await res.text();
-    const err = new Error(`Bifrost ${res.status}: ${text.slice(0, 300)}`);
-    // Attach status so the retry layer can decide without parsing the message.
-    (err as Error & { status?: number }).status = res.status;
-    throw err;
-  }
-  const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = json.choices?.[0]?.message?.content;
-  if (typeof content !== "string") {
-    throw new Error("Bifrost response missing choices[0].message.content");
-  }
-  return content;
-}
-
-function sleep(ms: number, signal: AbortSignal): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const t = setTimeout(resolve, ms);
-    if (signal.aborted) {
-      clearTimeout(t);
-      reject(signal.reason ?? new Error("aborted"));
-      return;
-    }
-    signal.addEventListener(
-      "abort",
-      () => {
-        clearTimeout(t);
-        reject(signal.reason ?? new Error("aborted"));
-      },
-      { once: true },
-    );
+    signal,
+    maxTokens: maxOutputTokens ?? undefined,
   });
-}
-
-/**
- * Retry wrapper for {@link callBifrostOnce}. Network/abort errors and HTTP
- * 5xx / Bifrost 504 (gateway timeout) responses are retried up to
- * {@link MAX_ATTEMPTS} total attempts with a short backoff; 4xx and all other
- * non-retryable errors propagate immediately. The per-attempt AbortSignal is
- * owned by the caller and is left untouched.
- */
-async function callBifrostWithRetry(
-  body: Record<string, unknown>,
-  signal: AbortSignal,
-): Promise<string> {
-  let lastErr: Error | null = null;
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
-    try {
-      return await callBifrostOnce(body, signal);
-    } catch (err) {
-      const e = err as Error & { status?: number; name?: string };
-      lastErr = e;
-      const isAbort = e.name === "AbortError";
-      const status = e.status;
-      const retryableNetwork =
-        e instanceof TypeError ||
-        // node fetch surfaces transient failures as system errors
-        e.name === "FetchError" ||
-        // undici uses these
-        e.name === "UndiciError";
-      const retryableStatus =
-        typeof status === "number" &&
-        (status === 504 || status === 408 || status >= 500);
-      const shouldRetry =
-        attempt < MAX_ATTEMPTS - 1 &&
-        !isAbort &&
-        (retryableNetwork || retryableStatus);
-      if (!shouldRetry) throw e;
-      await sleep(RETRY_DELAYS_MS[attempt], signal);
-    }
-  }
-  // Unreachable, but keep TS happy.
-  throw lastErr ?? new Error("Bifrost call failed");
 }
 
 function parseScoreRationale(raw: string): {

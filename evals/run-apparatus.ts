@@ -16,8 +16,9 @@
  * the evaluable quality is the relevance judgement downstream of it).
  *
  * Usage:
- *   BIFROST_BASE_URL=https://... BIFROST_API_KEY=sk_bf_xxx \
- *     JUDGE_MODEL=neuralwatt/kimi-k2.6 bun run eval:apparatus
+ *   PORTKEY_API_KEY=pk-xxx bun run eval:apparatus
+ *
+ * Calls the hosted Portkey gateway; see evals/llm-client.ts.
  *
  * Writes evals/apparatus-scores.json.
  */
@@ -26,14 +27,11 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { Source } from "../convex/research";
+import { chatCompletion, JUDGE_MODEL } from "./llm-client";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DATASET_PATH = resolve(HERE, "apparatus.jsonl");
 const SCORES_PATH = resolve(HERE, "apparatus-scores.json");
-
-const BIFROST_BASE_URL = process.env.BIFROST_BASE_URL;
-const BIFROST_API_KEY = process.env.BIFROST_API_KEY;
-const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "neuralwatt/kimi-k2.6";
 
 interface CandidateSource extends Source {
   /** Ground-truth label. */
@@ -110,48 +108,6 @@ const CHOICES: Record<string, number> = {
   relevant: 1,
   irrelevant: 0,
 };
-
-/** Header-only Bifrost call. Mirrors evals/judge.ts: a bearer token would 401. */
-async function callBifrost(
-  system: string,
-  user: string,
-  signal: AbortSignal,
-): Promise<string> {
-  if (!BIFROST_BASE_URL) {
-    throw new Error("BIFROST_BASE_URL is required");
-  }
-  const res = await fetch(
-    `${BIFROST_BASE_URL.replace(/\/$/, "")}/chat/completions`,
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-bifrost-api-key": BIFROST_API_KEY ?? "",
-      },
-      body: JSON.stringify({
-        model: JUDGE_MODEL,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: user },
-        ],
-        temperature: 0,
-      }),
-      signal,
-    },
-  );
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Bifrost ${res.status}: ${body.slice(0, 300)}`);
-  }
-  const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = json.choices?.[0]?.message?.content;
-  if (typeof content !== "string") {
-    throw new Error("Bifrost response missing choices[0].message.content");
-  }
-  return content;
-}
 
 /** Defensive JSON parse — same shape as evals/judge.ts's judge(). */
 function parseRelevanceVerdict(raw: string): LlmVerdict {
@@ -262,11 +218,13 @@ async function main(): Promise<void> {
         `exactly: {"label": "<one of: relevant, irrelevant>", "explanation": "<one sentence>"}. ` +
         `No other text.`;
       try {
-        const raw = await callBifrost(
+        const raw = await chatCompletion({
           system,
-          prompt,
-          AbortSignal.timeout(90_000),
-        );
+          user: prompt,
+          model: JUDGE_MODEL,
+          temperature: 0,
+          signal: AbortSignal.timeout(90_000),
+        });
         const verdict = parseRelevanceVerdict(raw);
         const predicted = verdict.label;
         const groundTruth: "relevant" | "irrelevant" = cand.relevant

@@ -97,7 +97,7 @@ describe("ai-orchestrator", () => {
         return {
           text: "Server result",
           type: "perspective",
-          provider: "bifrost",
+          provider: "portkey",
         };
       },
       localFallback: () => {
@@ -151,13 +151,13 @@ describe("ai-orchestrator", () => {
         return {
           text: "Server result",
           type: "perspective",
-          provider: "bifrost",
+          provider: "portkey",
         };
       },
     });
 
     expect(mockState.runClientCalls).toHaveLength(0);
     expect(serverCalls).toBe(1);
-    expect(result.provider).toBe("bifrost");
+    expect(result.provider).toBe("portkey");
   });
 });

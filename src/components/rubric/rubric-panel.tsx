@@ -164,7 +164,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       }
       if (judges.every((j) => j.provider === "local")) {
         store.error =
-          "Rubric used local fallback judges. Production LLM calls are not configured or failed; set BIFROST_BASE_URL, RIVET_ENDPOINT, ANTHROPIC_API_KEY, or OPENAI_API_KEY in Convex.";
+          "Rubric used local fallback judges. Production LLM calls are not configured or failed; set PORTKEY_API_KEY, RIVET_ENDPOINT, ANTHROPIC_API_KEY, or OPENAI_API_KEY in Convex.";
       }
       store.judges = judges;
 

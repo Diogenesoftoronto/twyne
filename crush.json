@@ -2,26 +2,31 @@
   "$schema": "https://charm.land/crush.json",
   "lsp": {
     "typescript": {
-      "command": "typescript-language-server",
+      "command": "/home/diogenes/.local/share/zed/languages/vtsls/node_modules/.bin/vtsls",
       "args": ["--stdio"],
       "filetypes": ["typescript", "typescriptreact", "javascript", "javascriptreact"],
       "root_markers": ["tsconfig.json", "package.json"]
     },
     "css": {
-      "command": "vscode-css-language-server",
+      "command": "/home/diogenes/.local/share/zed/languages/vscode-css-language-server/node_modules/.bin/vscode-css-language-server",
       "args": ["--stdio"],
       "filetypes": ["css", "scss", "less"]
     },
     "tailwind": {
-      "command": "tailwindcss-language-server",
+      "command": "/home/diogenes/.local/share/zed/languages/tailwindcss-language-server/node_modules/.bin/tailwindcss-language-server",
       "args": ["--stdio"],
       "filetypes": ["typescript", "typescriptreact", "javascript", "javascriptreact", "html", "css"],
       "root_markers": ["tailwind.config.js", "tailwind.config.ts", "package.json"]
     },
     "json": {
-      "command": "vscode-json-language-server",
+      "command": "/home/diogenes/.local/share/zed/languages/json-language-server/node_modules/.bin/vscode-json-language-server",
       "args": ["--stdio"],
       "filetypes": ["json", "jsonc"]
+    },
+    "markdown": {
+      "command": "/home/diogenes/.local/share/zed/languages/json-language-server/node_modules/.bin/vscode-markdown-language-server",
+      "args": ["--stdio"],
+      "filetypes": ["markdown"]
     }
   },
   "options": {

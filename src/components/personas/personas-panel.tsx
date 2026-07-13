@@ -388,7 +388,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     .provider-pill[data-provider="anthropic"],
     .provider-pill[data-provider="openai"],
     .provider-pill[data-provider="rivet"],
-    .provider-pill[data-provider="bifrost"] { color: var(--color-accent-green); border-color: var(--color-accent-green); }
+    .provider-pill[data-provider="portkey"] { color: var(--color-accent-green); border-color: var(--color-accent-green); }
 
     .reply-thread {
       margin-top: 0.6rem;
@@ -998,7 +998,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             };
             responseText = result.text;
             store.lastProvider =
-              (result.provider as typeof store.lastProvider) ?? "bifrost";
+              (result.provider as typeof store.lastProvider) ?? "portkey";
           } catch (err) {
             console.warn("[twyne:personas] runPersona failed:", err);
             const message =

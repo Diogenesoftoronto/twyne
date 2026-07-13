@@ -9,7 +9,7 @@
 
 Twyne is for writers who want editorial pushback while they draft, without
 handing their work to a hosted service. The default AI provider is Anthropic's
-Claude; OpenAI, Google, and self-hosted gateways (Bifrost, Rivet) are also
+Claude; OpenAI, Google, and gateways (Portkey, self-hosted Rivet) are also
 supported. Authentication supports email + one-time codes, passkeys, and
 Bluesky / ATProto sign-in.
 
