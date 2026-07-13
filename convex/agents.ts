@@ -65,7 +65,7 @@ import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 
 interface ProviderConfig {
   model: LanguageModel;
-  label: "rivet" | "anthropic" | "openai" | "bifrost";
+  label: "rivet" | "anthropic" | "openai" | "portkey";
   /** Default model id used by this provider. */
   modelId: string;
 }
@@ -86,29 +86,22 @@ function pickProvider(): ProviderConfig | null {
     };
   }
 
-  const bifrostUrl = process.env.BIFROST_BASE_URL;
-  if (bifrostUrl) {
+  const portkeyKey = process.env.PORTKEY_API_KEY;
+  if (portkeyKey) {
     const modelId =
-      process.env.BIFROST_DEFAULT_MODEL ?? "neuralwatt/qwen3.5-397b-fast";
-    const bifrostKey = process.env.BIFROST_API_KEY;
-    const bifrost = createOpenAI({
-      baseURL: bifrostUrl.replace(/\/$/, ""),
-      apiKey: "bifrost-dummy",
-      headers: bifrostKey ? { "x-bifrost-api-key": bifrostKey } : undefined,
-      // Bifrost authenticates via the x-bifrost-api-key header and calls the
-      // upstream provider with its own stored credential. The OpenAI provider
-      // always injects `Authorization: Bearer <apiKey>`, which Bifrost forwards
-      // upstream — the dummy bearer then makes the real provider (e.g.
-      // neuralwatt) return 401. Strip it so only x-bifrost-api-key is sent.
-      fetch: (async (input, init) => {
-        const headers = new Headers(init?.headers);
-        headers.delete("authorization");
-        return fetch(input, { ...init, headers });
-      }) as typeof fetch,
+      process.env.PORTKEY_DEFAULT_MODEL ?? "@neuralwatt/qwen3.5-397b-fast";
+    const portkey = createOpenAI({
+      baseURL: (
+        process.env.PORTKEY_BASE_URL ?? "https://api.portkey.ai/v1"
+      ).replace(/\/$/, ""),
+      // Portkey accepts the key as a standard bearer token; the @provider
+      // prefix on the model id routes to the Model Catalog provider, so no
+      // extra headers are needed.
+      apiKey: portkeyKey,
     });
     return {
-      model: bifrost.chat(modelId),
-      label: "bifrost",
+      model: portkey.chat(modelId),
+      label: "portkey",
       modelId,
     };
   }
@@ -638,7 +631,7 @@ export const runPersona = action({
 export interface RewriteResult {
   replacement: string;
   rationale: string;
-  provider: "rivet" | "anthropic" | "openai" | "bifrost" | "local";
+  provider: "rivet" | "anthropic" | "openai" | "portkey" | "local";
 }
 
 /** Parse the strict-JSON rewrite contract, tolerating code fences / prose. */

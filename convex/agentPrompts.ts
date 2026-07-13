@@ -61,7 +61,7 @@ export interface AgentRequest {
 export interface AgentResponse {
   text: string;
   type: FeedbackType;
-  provider: "rivet" | "anthropic" | "openai" | "bifrost" | "local";
+  provider: "rivet" | "anthropic" | "openai" | "portkey" | "local";
   /** Soft signal of how confident the model is in the answer (0-1). */
   confidence?: number;
   /**

@@ -12,14 +12,14 @@
  *
  * These mirror, verbatim, the two Arize template evaluators created under the
  * "kmannoel Space" (faithfulness-to-draft / feedback-helpfulness). The Arize
- * native judge task is blocked by the AI-integration's bearer injection (it
- * sends `Authorization: Bearer` to Bifrost → 401); this script runs the same
- * rubrics with header-only auth so the eval loop is reproducible in-repo and in
- * CI without that integration. Writes `evals/scores.json`.
+ * native judge task is blocked by the AI-integration's bearer injection; this
+ * script runs the same rubrics so the eval loop is reproducible in-repo and
+ * in CI without that integration. Writes `evals/scores.json`.
  *
  * Usage:
- *   BIFROST_BASE_URL=https://... BIFROST_API_KEY=sk_bf_xxx \
- *     JUDGE_MODEL=neuralwatt/kimi-k2.6 bun run eval:judge
+ *   PORTKEY_API_KEY=pk-xxx bun run eval:judge
+ *
+ * Calls the hosted Portkey gateway; see evals/llm-client.ts.
  *
  * Read-only w.r.t. the repo otherwise: only writes `evals/scores.json`.
  */
@@ -27,14 +27,12 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { chatCompletion, JUDGE_MODEL } from "./llm-client";
+
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DATASET_PATH = resolve(HERE, "dataset.jsonl");
 const RUNS_PATH = resolve(HERE, "runs.json");
 const SCORES_PATH = resolve(HERE, "scores.json");
-
-const BIFROST_BASE_URL = process.env.BIFROST_BASE_URL;
-const BIFROST_API_KEY = process.env.BIFROST_API_KEY;
-const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "neuralwatt/kimi-k2.6";
 
 interface DatasetRow {
   case_id: string;
@@ -85,42 +83,18 @@ async function judge(
   valid: Record<string, number>,
   signal: AbortSignal,
 ): Promise<Verdict> {
-  if (!BIFROST_BASE_URL) throw new Error("BIFROST_BASE_URL is required");
   const labels = Object.keys(valid);
   const system =
     `You are a strict evaluator. Read the rubric, then respond with a JSON object ` +
     `exactly: {"label": "<one of: ${labels.join(", ")}>", "explanation": "<one sentence>"}. ` +
     `No other text.`;
-  const res = await fetch(
-    `${BIFROST_BASE_URL.replace(/\/$/, "")}/chat/completions`,
-    {
-      method: "POST",
-      // Header-only auth: Bifrost passes its stored provider key through. A
-      // bearer token would be misread as a virtual-key lookup → 401. This is
-      // exactly why the Arize integration's auth_type must be proxy_with_headers.
-      headers: {
-        "content-type": "application/json",
-        "x-bifrost-api-key": BIFROST_API_KEY ?? "",
-      },
-      body: JSON.stringify({
-        model: JUDGE_MODEL,
-        messages: [
-          { role: "system", content: system },
-          { role: "user", content: prompt },
-        ],
-        temperature: 0,
-      }),
-      signal,
-    },
-  );
-  if (!res.ok) {
-    const body = await res.text();
-    throw new Error(`Bifrost ${res.status}: ${body.slice(0, 300)}`);
-  }
-  const json = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const raw = json.choices?.[0]?.message?.content ?? "";
+  const raw = await chatCompletion({
+    system,
+    user: prompt,
+    model: JUDGE_MODEL,
+    temperature: 0,
+    signal,
+  });
   let label = "";
   let explanation = "";
   let txt = raw.trim();
