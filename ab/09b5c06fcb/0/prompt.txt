@@ -1,0 +1,1 @@
+Today I want to create a mind map and also try to improve the evaluations that I have done in this repository under arize and pheonix. I really struggle to understand both arize and I also want to transition these repositories to using a different gateway via portkey instead of bifrost as well. As I don't think that I can pay the infrastructure bill for keeping bifrost up.

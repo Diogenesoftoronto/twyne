@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "ab09b5c06fcb",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "crush.json",
+    "evals/llm-client.ts",
+    "evals/run-experiment.ts",
+    "src/components/personas/personas-panel.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ab/09b5c06fcb/0/metadata.json",
+      "transcript": "/ab/09b5c06fcb/0/full.jsonl",
+      "content_hash": "/ab/09b5c06fcb/0/content_hash.txt",
+      "prompt": "/ab/09b5c06fcb/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8879,
+    "cache_creation_tokens": 258944,
+    "cache_read_tokens": 2855725,
+    "output_tokens": 45190,
+    "api_call_count": 33
+  }
+}

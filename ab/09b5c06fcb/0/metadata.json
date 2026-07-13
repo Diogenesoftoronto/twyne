@@ -1,0 +1,121 @@
+{
+  "cli_version": "0.7.7",
+  "checkpoint_id": "ab09b5c06fcb",
+  "session_id": "e558e62e-6207-4d54-b191-b4740c45139c",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-13T03:32:16.68086402Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "crush.json",
+    "evals/llm-client.ts",
+    "evals/run-experiment.ts",
+    "src/components/personas/personas-panel.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "",
+  "turn_id": "2fe277c95610",
+  "token_usage": {
+    "input_tokens": 8879,
+    "cache_creation_tokens": 258944,
+    "cache_read_tokens": 2855725,
+    "output_tokens": 45190,
+    "api_call_count": 33
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_01V7NA1wVWqFFqymFhcdQEFw",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "artifact-design"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "2fe277c95610",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 83,
+        "end": 84,
+        "entry_ids": [
+          "a339bd48-70da-4db9-bdf0-dabee65578bc"
+        ],
+        "tool_use_id": "toolu_01V7NA1wVWqFFqymFhcdQEFw"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_01V7NA1wVWqFFqymFhcdQEFw"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: artifact-design",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-13T03:32:16.663762606Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 72,
+    "human_removed": 270,
+    "total_committed": 155,
+    "total_lines_changed": 574,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 9,
+      "user_lines_removed": 4,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "crush.json": 9
+      },
+      "user_removed_per_file": {
+        "crush.json": 4
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 65,
+      "user_lines_removed": 285,
+      "agent_lines_added": 171,
+      "agent_lines_removed": 39,
+      "user_added_per_file": {
+        ".env.example": 14,
+        "evals/judge.ts": 15,
+        "evals/run-apparatus.ts": 10,
+        "evals/run-experiment.ts": 6,
+        "evals/run-rubric.ts": 14,
+        "public/llms.txt": 1,
+        "src/components/personas/personas-panel.tsx": 1,
+        "src/components/rubric/rubric-panel.tsx": 1,
+        "src/utils/ai-orchestrator.test.ts": 3
+      },
+      "user_removed_per_file": {
+        ".env.example": 9,
+        "evals/judge.ts": 41,
+        "evals/run-apparatus.ts": 52,
+        "evals/run-experiment.ts": 52,
+        "evals/run-rubric.ts": 125,
+        "public/llms.txt": 1,
+        "src/components/personas/personas-panel.tsx": 1,
+        "src/components/rubric/rubric-panel.tsx": 1,
+        "src/utils/ai-orchestrator.test.ts": 3
+      }
+    }
+  ]
+}
