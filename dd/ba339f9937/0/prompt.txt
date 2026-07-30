@@ -1,0 +1,13 @@
+the errors from the models and in the application leak into the console from convex. The issue is that these should be instead application errors and have the appropriate user display for them. The interview conversation option currently does not work properly because it is not connected to the api properly at this point unfortunately because the gateway sdk we have created isn't operating. However what we need to focus on is errors that let users know what is happening. Users should not have to look in the console to figure out what is wrong and wrong errors should not be exposed in production. Instead, I want to see good UI primitives used for error messages.
+
+---
+
+Implement the plan.
+
+---
+
+create a build execution graph for subagents and dependencies to execute the plan
+
+---
+
+create a skill when executing plans to create a build dependency and subagent plann like this.
