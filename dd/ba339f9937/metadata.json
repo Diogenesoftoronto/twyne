@@ -3,8 +3,10 @@
   "checkpoint_id": "ddba339f9937",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 6,
+  "checkpoints_count": 12,
   "files_touched": [
+    "assets/og/fraunces-display.ttf",
+    "assets/og/fraunces-text.ttf",
     "bun.lock",
     "convex/_generated/api.d.ts",
     "convex/agentPrompts.ts",
@@ -44,6 +46,7 @@
     "src/routes/editor/index.tsx",
     "src/routes/index.tsx",
     "src/routes/landings/index.tsx",
+    "src/routes/og/[handle]/[slug]/index.tsx",
     "src/routes/pricing/index.tsx",
     "src/routes/settings/index.tsx",
     "src/types/application-errors.ts",
@@ -70,6 +73,7 @@
     "src/utils/draft-trajectory.ts",
     "src/utils/idb.ts",
     "src/utils/llm-parsing.ts",
+    "src/utils/og-image.ts",
     "src/utils/panel-activity.test.ts",
     "src/utils/panel-activity.ts",
     "src/utils/persona-voices.test.ts",
@@ -105,13 +109,20 @@
       "compact_transcript": "/dd/ba339f9937/2/transcript.jsonl",
       "content_hash": "/dd/ba339f9937/2/content_hash.txt",
       "prompt": "/dd/ba339f9937/2/prompt.txt"
+    },
+    {
+      "metadata": "/dd/ba339f9937/3/metadata.json",
+      "transcript": "/dd/ba339f9937/3/full.jsonl",
+      "compact_transcript": "/dd/ba339f9937/3/transcript.jsonl",
+      "content_hash": "/dd/ba339f9937/3/content_hash.txt",
+      "prompt": "/dd/ba339f9937/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 157003,
-    "cache_creation_tokens": 1173869,
-    "cache_read_tokens": 142679451,
-    "output_tokens": 291355,
-    "api_call_count": 455
+    "input_tokens": 157130,
+    "cache_creation_tokens": 1297573,
+    "cache_read_tokens": 148462062,
+    "output_tokens": 366291,
+    "api_call_count": 524
   }
 }
