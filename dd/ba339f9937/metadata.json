@@ -3,7 +3,7 @@
   "checkpoint_id": "ddba339f9937",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     "convex/agents.ts",
     "convex/lib/applicationErrors.ts",
@@ -18,8 +18,11 @@
     "src/components/onboarding/conversational-interview.tsx",
     "src/components/personas/personas-panel.tsx",
     "src/components/rubric/rubric-panel.tsx",
+    "src/components/ui/application-notice.stories.tsx",
     "src/components/ui/application-notice.tsx",
+    "src/components/ui/global-connectivity-banner.tsx",
     "src/global.css",
+    "src/root.tsx",
     "src/routes/[handle]/[slug]/index.tsx",
     "src/routes/blog/[slug]/index.tsx",
     "src/routes/blog/index.tsx",
@@ -47,13 +50,20 @@
       "compact_transcript": "/dd/ba339f9937/0/transcript.jsonl",
       "content_hash": "/dd/ba339f9937/0/content_hash.txt",
       "prompt": "/dd/ba339f9937/0/prompt.txt"
+    },
+    {
+      "metadata": "/dd/ba339f9937/1/metadata.json",
+      "transcript": "/dd/ba339f9937/1/full.jsonl",
+      "compact_transcript": "/dd/ba339f9937/1/transcript.jsonl",
+      "content_hash": "/dd/ba339f9937/1/content_hash.txt",
+      "prompt": "/dd/ba339f9937/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 136578,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 1774737,
-    "output_tokens": 23644,
-    "api_call_count": 24
+    "input_tokens": 136639,
+    "cache_creation_tokens": 65139,
+    "cache_read_tokens": 3707091,
+    "output_tokens": 40079,
+    "api_call_count": 57
   }
 }

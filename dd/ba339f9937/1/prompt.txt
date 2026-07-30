@@ -1,0 +1,99 @@
+# Production-Safe Application Error Handling
+
+  ## Summary
+
+  - Replace raw Convex, model-provider, gateway, and SDK failures with structured application errors and safe user-facing messages.
+  - Introduce a reusable inline error primitive consistent with Twyne’s existing editorial visual language.
+  - Apply the system across all user-facing workflows, prioritizing the conversational interview and AI features.
+  - Do not repair or replace the gateway SDK in this work. When it is unavailable, explain the failure honestly and preserve the user’s work.
+  - Keep detailed diagnostics in server telemetry; never expose stacks, provider responses, credentials, internal function names, or infrastructure details in production UI or browser consoles.
+
+  ## Error Contract and Infrastructure
+
+  - Define a shared AppError contract containing:
+      - Stable error code.
+      - Safe title and message.
+      - Retryability.
+      - Optional reference ID and recovery action.
+
+  - Cover authentication, permission, validation, rate limits, offline/network failure, timeout, conflict, missing configuration, provider unavailable, malformed provider response, not found, and unexpected internal
+    failure.
+
+  - Use structured ConvexError payloads for expected server failures.
+  - For unexpected failures:
+      - Generate a reference ID.
+      - Report the original error through the existing server error-reporting infrastructure.
+      - Return only a generic message and reference ID to the client.
+
+  - Add a client normalizer for Convex, authentication, fetch, model-provider, and unknown errors. Components must no longer render arbitrary error.message values.
+  - Replace ambiguous AI helper returns such as T | null with a discriminated result:
+      - success
+      - not_configured
+      - failed
+
+  - Configure the Convex browser client with a production logger that suppresses raw error output and forwards only sanitized diagnostics to telemetry. Development retains useful console diagnostics.
+  - Never include keys, tokens, authorization headers, prompts, transcripts, draft content, provider response bodies, private endpoints, or stack traces in client telemetry.
+
+  ## UI and Workflow Changes
+
+  - Add a reusable ApplicationNotice component based on the existing error-slip styling:
+      - Accessible alert/live-region semantics.
+      - Error, warning, and outage variants.
+      - Concise title and explanation.
+      - Optional reference ID.
+      - Contextual actions such as Try again, Sign in, Open AI settings, Use the form, or Reload.
+      - Persistent until resolved or explicitly dismissed; no automatic timeout.
+
+  - Render failures inline beside the operation that failed. Reserve a global banner for application-wide connectivity or service outages.
+  - Replace raw or inconsistent error rendering across AI panels, authentication, sharing, publishing, payments, profiles, imports, settings, public content, and synchronization.
+  - Preserve user-entered data and previous successful results whenever an operation fails.
+  - Continue genuinely local functionality only when clearly identified as local. Never present deterministic fallback output as successful model output.
+  - Treat sync failures specially: explain that local work remains safe, show the current sync state, and allow retry without blocking editing.
+
+  ### Conversational Interview
+
+  - Keep the Conversation option available, but make its current gateway failure explicit and recoverable.
+  - Replace the synthetic local interviewer response with a structured provider-unavailable error when no usable API route exists.
+  - Preserve the transcript, composer contents, attachments, partial dossier fields, and current synthesis state.
+  - Track the pending writer turn separately so retrying does not duplicate the writer’s message.
+  - Display an inline notice above the composer with:
+      - Try again
+      - Open AI settings or Sign in, when applicable
+      - Use the form
+
+  - Pass partial interview answers and attachments into the form fallback so changing modes loses no work.
+  - Never display gateway SDK errors, token exchange failures, model identifiers, HTTP response bodies, or Convex function paths.
+
+  ## Public Interfaces and Tests
+
+  - Add the shared AppError, AppErrorCode, and AiCallResult<T> types.
+  - Add helpers for creating safe Convex errors, reporting unexpected errors, normalizing client errors, and selecting recovery actions.
+  - Add Storybook states for validation, expired authentication, provider outage, retryable network failure, and unexpected failure with a reference ID.
+  - Test:
+      - Every error-code normalization path, including malformed and non-Error thrown values.
+      - Redaction of secrets, prompts, transcripts, drafts, endpoints, and provider bodies.
+      - Expected versus unexpected Convex failures and matching reference IDs.
+      - Interview failure, retry, and form fallback without duplicate messages or lost data.
+      - Accessible alert semantics, focus behavior, keyboard actions, reduced motion, and narrow layouts.
+      - Production-mode failures produce the correct UI without raw Convex/provider details in rendered content or console.error.
+
+  - Run the full verification suite:
+      - rtk bun test
+      - rtk bun run build.types
+      - rtk bun run lint
+      - rtk bun run storybook.build
+      - rtk bun run build
+      - Targeted Playwright tests for production failure paths.
+
+  ## Assumptions
+
+  - This applies to every user-facing workflow, while internal scripts and webhooks retain appropriate server-side diagnostics.
+  - Inline error notices are the default; modal errors are reserved for destructive workflows already requiring confirmation.
+  - The gateway SDK itself remains out of scope.
+  - Model-dependent actions block when the model is unavailable rather than silently fabricating output.
+  - Existing unrelated worktree changes are preserved and accommodated rather than reverted.
+ <- this is the plan, it was executed in the repo a decent amount you can check entire to see that
+
+---
+
+.
