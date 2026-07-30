@@ -1,11 +1,26 @@
 import { component$, $, useStore, type PropFunction } from "@builder.io/qwik";
-import type { DossierAttachment, ProjectInterviewAnswers } from "../../types";
+import type {
+  DossierAttachment,
+  DossierProbe,
+  ProjectInterviewAnswers,
+} from "../../types";
+import { upsertProbe } from "../../utils/dossier-probes";
+import { ProbeInput } from "./probe-input";
+import { useConvexClient } from "../../utils/convex-context";
+import { api } from "../../../convex/_generated/api";
+import { loadAiSettingsFromIdb } from "../../utils/idb";
+import {
+  hasConfiguredAiProvider,
+  runClientInterviewTurn,
+  type InterviewTurnResult,
+} from "../../utils/ai-client";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { DEFAULT_INTERVIEW_ANSWERS } from "../../utils/anti-tabula-rasa";
 import { DossierAttachmentsEditor } from "./dossier-attachments-editor";
 
 type InterviewMode = "first-run" | "refine";
 
-type StepKind = "input" | "textarea" | "import" | "attachments";
+type StepKind = "input" | "textarea" | "import" | "attachments" | "probes";
 
 interface InterviewStep {
   /** Only set for answer-bearing steps (input/textarea). */
@@ -95,6 +110,14 @@ const STEPS: InterviewStep[] = [
   },
   {
     numeral: "VIII",
+    department: "Dept. of Particulars",
+    question: "A few specifics, drawn from what you just told us.",
+    hint: "The room reads your answers and asks the follow-ups that would sharpen them. Skip any that don't fit — they're questions, not a quiz.",
+    placeholder: "",
+    kind: "probes",
+  },
+  {
+    numeral: "IX",
     department: "Dept. of Prior Material",
     question: "Already have a draft, notes, or sources to bring in?",
     hint: "Paste or upload existing prose so the editor's room reads from your work instead of an empty page. Skip if you're starting from scratch.",
@@ -104,7 +127,7 @@ const STEPS: InterviewStep[] = [
     kind: "import",
   },
   {
-    numeral: "IX",
+    numeral: "X",
     department: "Dept. of References",
     question: "Anything else the room should know about, and why?",
     hint: "Add as many documents or links as you like, each with a one-line note on why it matters. Skip if there's nothing yet.",
@@ -124,6 +147,7 @@ interface AntiTabulaRasaProps {
       existingMaterial?: string,
       filename?: string,
       attachments?: DossierAttachment[],
+      probes?: DossierProbe[],
     ) => void
   >;
   onCancel$?: PropFunction<() => void>;
@@ -145,6 +169,11 @@ export const AntiTabulaRasa = component$(
       importedFilename: string;
       submitting: boolean;
       submitError: string;
+      /** Generated follow-ups for the Particulars step. */
+      probes: DossierProbe[];
+      probesLoading: boolean;
+      /** True once we've tried, so re-entering the step doesn't re-ask. */
+      probesRequested: boolean;
     }>({
       step: 0,
       answers: {
@@ -156,7 +185,11 @@ export const AntiTabulaRasa = component$(
       importedFilename: "",
       submitting: false,
       submitError: "",
+      probes: [],
+      probesLoading: false,
+      probesRequested: false,
     });
+    const clientSig = useConvexClient();
 
     const step = STEPS[store.step];
     if (!step) return null;
@@ -178,6 +211,7 @@ export const AntiTabulaRasa = component$(
               store.existingMaterial,
               store.importedFilename,
               store.attachments,
+              store.probes.filter((p) => p.answer !== undefined),
             );
           } catch (err) {
             store.submitError =
@@ -194,12 +228,19 @@ export const AntiTabulaRasa = component$(
               existingMaterial: store.existingMaterial,
               filename: store.importedFilename,
               attachments: store.attachments,
+              probes: store.probes.filter((p) => p.answer !== undefined),
             },
           }),
         );
         return;
       }
-      store.step = currentStep + 1;
+      const next = currentStep + 1;
+      store.step = next;
+      // Fetch the follow-ups as the writer arrives, not on mount — they are
+      // derived from answers that don't exist until this point.
+      if (STEPS[next]?.kind === "probes") {
+        void loadProbes();
+      }
     });
 
     const handleFile = $(async (event: Event) => {
@@ -221,6 +262,93 @@ export const AntiTabulaRasa = component$(
       if (store.step > 0) {
         store.step -= 1;
       }
+    });
+
+    /**
+     * Ask the interviewer for follow-ups based on the answers filled in so far.
+     *
+     * The interview turn endpoint is reused rather than adding a bespoke one:
+     * feeding it the form's answers as a transcript is exactly the situation it
+     * already handles, and it means the form and the conversation generate
+     * probes by the same rules.
+     *
+     * Failure is silent and the step becomes a plain "Continue". A form must
+     * never strand someone behind a network call — these questions are a bonus,
+     * not a gate.
+     */
+    const loadProbes = $(async () => {
+      if (store.probesRequested || store.probesLoading) return;
+      store.probesRequested = true;
+      store.probesLoading = true;
+      try {
+        const transcript = [
+          {
+            author: "interviewer" as const,
+            text: "Tell me about the piece — the form, the reader, the goal, the tone, the constraints, and how you'll know it landed.",
+          },
+          {
+            author: "writer" as const,
+            text: [
+              `Working title: ${store.answers.workingTitle}`,
+              `Format: ${store.answers.format}`,
+              `Audience: ${store.answers.audience}`,
+              `Goal: ${store.answers.goal}`,
+              `Tone: ${store.answers.tone}`,
+              `Constraints: ${store.answers.constraints}`,
+              `Success signal: ${store.answers.successSignal}`,
+            ].join("\n"),
+          },
+          {
+            author: "writer" as const,
+            text: "(ask me one sharp follow-up as a typed question — a choice, a scale, or a fill-in-the-blanks — about whichever of those answers is vaguest)",
+          },
+        ];
+
+        const collected: DossierProbe[] = [];
+        const settings = await loadAiSettingsFromIdb();
+        const useByok = hasConfiguredAiProvider(settings) && settings;
+
+        // Three sequential turns, each seeing the ones before, so the
+        // interviewer doesn't ask the same question three ways.
+        for (let i = 0; i < 3; i++) {
+          const messages = [
+            ...transcript,
+            ...collected.flatMap((p) => [
+              { author: "interviewer" as const, text: p.prompt },
+              { author: "writer" as const, text: "(noted — ask another)" },
+            ]),
+          ];
+          let result: InterviewTurnResult | null = null;
+          if (useByok) {
+            const client = await runClientInterviewTurn(
+              { messages, mode: "first-run", currentBrief: null },
+              settings,
+            );
+            result = client.ok ? client.value : null;
+          } else if (clientSig.value) {
+            result = (await clientSig.value.action(
+              api.agents.runInterviewTurn,
+              { messages, mode: "first-run", currentBrief: null },
+            )) as InterviewTurnResult;
+          }
+          if (!result || result.kind !== "question" || !result.probe) break;
+          collected.push(result.probe);
+        }
+
+        store.probes = collected;
+      } catch (err) {
+        reportApplicationDiagnostic("twyne:form:load-probes", err, {
+          feature: "interview",
+          operation: "form-probes",
+        });
+        store.probes = [];
+      } finally {
+        store.probesLoading = false;
+      }
+    });
+
+    const answerFormProbe = $((answered: DossierProbe) => {
+      store.probes = upsertProbe(store.probes, answered);
     });
 
     return (
@@ -512,6 +640,43 @@ export const AntiTabulaRasa = component$(
                             </span>
                           )}
                         </div>
+                      </div>
+                    )}
+                    {step.kind === "probes" && (
+                      <div class="space-y-3">
+                        {store.probesLoading && (
+                          <p
+                            class="text-sm text-[var(--color-ink-muted)]"
+                            style="font-family: var(--font-typewriter); letter-spacing: 0.1em;"
+                            role="status"
+                          >
+                            The room is reading your answers…
+                          </p>
+                        )}
+                        {!store.probesLoading &&
+                          store.probes.length === 0 &&
+                          store.probesRequested && (
+                            <p
+                              class="text-sm italic text-[var(--color-ink-muted)]"
+                              style="font-family: var(--font-serif);"
+                            >
+                              The room had nothing further to ask. Carry on.
+                            </p>
+                          )}
+                        {store.probes.map((probe) => (
+                          <div key={probe.id}>
+                            <p
+                              class="text-sm text-[var(--color-ink)]"
+                              style="font-family: var(--font-serif);"
+                            >
+                              {probe.prompt}
+                            </p>
+                            <ProbeInput
+                              probe={probe}
+                              onAnswer$={answerFormProbe}
+                            />
+                          </div>
+                        ))}
                       </div>
                     )}
                     {step.kind === "attachments" && (

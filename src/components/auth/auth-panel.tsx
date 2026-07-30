@@ -15,6 +15,10 @@ import {
   clearPreferredMethod,
   type SignInMethod,
 } from "../../utils/auth-preference";
+import type { AppError } from "../../types/application-errors";
+import { normalizeApplicationError } from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import { ApplicationNotice } from "../ui/application-notice";
 
 /**
  * The Editor's Office sign-in panel.
@@ -67,7 +71,7 @@ export const AuthPanel = component$(() => {
     addingPasskey: false,
     /** Confirmation shown after a passkey is registered from the signed-in view. */
     passkeyToast: null as string | null,
-    error: null as string | null,
+    error: null as AppError | string | null,
   });
 
   const sendOtp = $(async (email: string) => {
@@ -80,14 +84,26 @@ export const AuthPanel = component$(() => {
         type: "sign-in",
       });
       if (result?.error) {
-        store.error = result.error.message ?? "Failed to send the code";
+        reportApplicationDiagnostic("twyne:auth:send-otp", result.error, {
+          operation: "send-otp",
+        });
+        store.error = normalizeApplicationError(result.error, {
+          source: "auth",
+          metadata: { operation: "send-otp" },
+        });
         return false;
       }
       store.otpSent = true;
       store.otpSentFor = normalized;
       return true;
-    } catch (e: any) {
-      store.error = e?.message ?? "Failed to send the code";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:auth:send-otp", error, {
+        operation: "send-otp",
+      });
+      store.error = normalizeApplicationError(error, {
+        source: "auth",
+        metadata: { operation: "send-otp" },
+      });
       return false;
     } finally {
       store.sendingOtp = false;
@@ -143,12 +159,26 @@ export const AuthPanel = component$(() => {
           store.chosen = "otp";
           return;
         }
-        store.error = msg || "Passkey sign in failed";
+        reportApplicationDiagnostic(
+          "twyne:auth:passkey-sign-in",
+          result.error,
+          { operation: "passkey-sign-in" },
+        );
+        store.error = normalizeApplicationError(result.error, {
+          source: "auth",
+          metadata: { operation: "passkey-sign-in" },
+        });
       } else {
         setPreferredMethod(store.email, "passkey");
       }
-    } catch (e: any) {
-      store.error = e?.message ?? "Passkey sign in failed";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:auth:passkey-sign-in", error, {
+        operation: "passkey-sign-in",
+      });
+      store.error = normalizeApplicationError(error, {
+        source: "auth",
+        metadata: { operation: "passkey-sign-in" },
+      });
     } finally {
       store.usingPasskey = false;
     }
@@ -182,14 +212,26 @@ export const AuthPanel = component$(() => {
         otp: store.otpCode,
       });
       if (result?.error) {
-        store.error = result.error.message ?? "Verification failed";
+        reportApplicationDiagnostic("twyne:auth:verify-otp", result.error, {
+          operation: "verify-otp",
+        });
+        store.error = normalizeApplicationError(result.error, {
+          source: "auth",
+          metadata: { operation: "verify-otp" },
+        });
         return;
       }
       setPreferredMethod(store.email, "otp");
       // Persist the email so the post-sign-in passkey prompt has it.
       store.offerPasskey = true;
-    } catch (e: any) {
-      store.error = e?.message ?? "Verification failed";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:auth:verify-otp", error, {
+        operation: "verify-otp",
+      });
+      store.error = normalizeApplicationError(error, {
+        source: "auth",
+        metadata: { operation: "verify-otp" },
+      });
     } finally {
       store.verifyingOtp = false;
     }
@@ -213,7 +255,13 @@ export const AuthPanel = component$(() => {
           store.offerPasskey = false;
           return;
         }
-        store.error = result.error.message ?? "Couldn't add a passkey";
+        reportApplicationDiagnostic("twyne:auth:add-passkey", result.error, {
+          operation: "add-passkey",
+        });
+        store.error = normalizeApplicationError(result.error, {
+          source: "auth",
+          metadata: { operation: "add-passkey" },
+        });
         return;
       }
       const rememberEmail = store.email || auth.value.user?.email || "";
@@ -221,8 +269,14 @@ export const AuthPanel = component$(() => {
       store.knownPasskey = true;
       store.offerPasskey = false;
       store.passkeyToast = "Passkey registered for this device.";
-    } catch (e: any) {
-      store.error = e?.message ?? "Couldn't add a passkey";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:auth:add-passkey", error, {
+        operation: "add-passkey",
+      });
+      store.error = normalizeApplicationError(error, {
+        source: "auth",
+        metadata: { operation: "add-passkey" },
+      });
     } finally {
       store.addingPasskey = false;
     }
@@ -250,8 +304,14 @@ export const AuthPanel = component$(() => {
     try {
       // Redirects to the Bluesky consent screen and completes on return.
       await signInWithBluesky(handle);
-    } catch (e: any) {
-      store.error = e?.message ?? "Bluesky sign in failed";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:auth:atproto-sign-in", error, {
+        operation: "atproto-sign-in",
+      });
+      store.error = normalizeApplicationError(error, {
+        source: "auth",
+        metadata: { operation: "atproto-sign-in" },
+      });
       store.usingBluesky = false;
     }
   });
@@ -288,8 +348,14 @@ export const AuthPanel = component$(() => {
       store.otpCode = "";
       store.offerPasskey = false;
       store.step = 2;
-    } catch (e: any) {
-      store.error = e?.message ?? "Could not start passkey sign-up";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:auth:passkey-sign-up", error, {
+        operation: "passkey-sign-up",
+      });
+      store.error = normalizeApplicationError(error, {
+        source: "auth",
+        metadata: { operation: "passkey-sign-up" },
+      });
     } finally {
       store.usingPasskey = false;
     }
@@ -347,9 +413,9 @@ export const AuthPanel = component$(() => {
             later.
           </p>
           {store.error && (
-            <p class="error-slip mt-4" role="alert">
-              {store.error}
-            </p>
+            <div class="mt-4">
+              <AuthErrorNotice error={store.error} />
+            </div>
           )}
           <button
             type="button"
@@ -397,9 +463,9 @@ export const AuthPanel = component$(() => {
                   to wait for.
                 </p>
                 {store.error && (
-                  <p class="error-slip mt-3" role="alert">
-                    {store.error}
-                  </p>
+                  <div class="mt-3">
+                    <AuthErrorNotice error={store.error} />
+                  </div>
                 )}
                 <button
                   type="button"
@@ -433,11 +499,7 @@ export const AuthPanel = component$(() => {
             : "We'll send a one-time code or call up your passkey — whichever fits."
         }
       >
-        {store.error && (
-          <p class="error-slip" role="alert">
-            {store.error}
-          </p>
-        )}
+        {store.error && <AuthErrorNotice error={store.error} />}
         <form
           preventdefault:submit
           onSubmit$={handleStepOne}
@@ -677,11 +739,7 @@ export const AuthPanel = component$(() => {
         </button>
       </p>
 
-      {store.error && (
-        <p class="error-slip" role="alert">
-          {store.error}
-        </p>
-      )}
+      {store.error && <AuthErrorNotice error={store.error} />}
 
       {prefersOtp ? (
         <div class="space-y-4">
@@ -797,6 +855,16 @@ interface AuthShellFrameProps {
   question?: string;
   hint?: string;
 }
+
+const AuthErrorNotice = component$((props: { error: AppError | string }) =>
+  typeof props.error === "string" ? (
+    <p class="error-slip" role="alert">
+      {props.error}
+    </p>
+  ) : (
+    <ApplicationNotice error={props.error} compact />
+  ),
+);
 
 const AuthShellFrame = component$<AuthShellFrameProps>(
   ({ header, step, progress, department, question, hint }) => {

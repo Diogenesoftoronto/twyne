@@ -61,6 +61,21 @@ import {
   MIN_EDITOR_WORDS,
   MIN_MARKUP_WORDS,
 } from "../../utils/draft-thresholds";
+import { ApplicationNotice } from "../ui/application-notice";
+import { SpeakButton } from "../ui/speak-button";
+import type { AppError } from "../../types/application-errors";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import {
+  currentTrajectoryDigest,
+  noteExplicitConvene,
+  setBackgroundRoomEnabled,
+  WORD_DELTA_THRESHOLD,
+  type BackgroundRoomSnapshot,
+} from "../../utils/background-room";
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
@@ -78,8 +93,8 @@ interface PersonasStore {
   isReplying: boolean;
   /** Persona ids the user has pinned in the active convene. */
   pinnedPersonas: Set<string>;
-  /** Last convene error, if any. */
-  conveneError: string | null;
+  /** Last room action error, if any. */
+  conveneError: AppError | null;
   /** Replies keyed by noteId. */
   repliesByNote: Record<string, PersonaReply[]>;
   /** When true, group feedback by persona (latest + count). */
@@ -90,7 +105,7 @@ interface PersonasStore {
   replyDraft: string;
   /** Active note id being replied to. */
   replyNoteId: string | null;
-  /** Whether the last convene was served by an LLM (false = local fallback). */
+  /** Provider that served the last successful model-dependent action. */
   lastProvider: string | null;
   /** Whether sync has completed since sign-in. */
   hydrated: boolean;
@@ -124,6 +139,8 @@ interface PersonasStore {
   analysisCollapsed: Record<string, boolean>;
   /** Persona id (or "synthesis") most recently copied, for a brief confirmation. */
   analysisCopiedId: string | null;
+  /** Live status of the background room, for the footer indicator. */
+  backgroundRoom: BackgroundRoomSnapshot | null;
 }
 
 interface PersonasPanelProps {
@@ -136,6 +153,51 @@ function effectiveLevel(
   personaId: string,
 ): AssistanceLevel {
   return settings.perPersona?.[personaId] ?? settings.level;
+}
+
+function localDraftValidationError(
+  operation: string,
+  validationKey: "too_short" | "required" = "too_short",
+): AppError {
+  return createAppError("VALIDATION_FAILED", {
+    source: "validation",
+    validationKey,
+    metadata: { feature: "personas", operation, kind: "local-readiness" },
+  });
+}
+
+function providerUnavailableError(operation: string): AppError {
+  return createAppError("PROVIDER_ERROR", {
+    source: "provider",
+    recovery: { action: "retry", canRetry: true },
+    metadata: { feature: "personas", operation },
+  });
+}
+
+function providerConfigurationError(operation: string): AppError {
+  return createAppError("CONFIGURATION_ERROR", {
+    source: "application",
+    recovery: { action: "choose-provider", canRetry: false },
+    metadata: { feature: "personas", operation },
+  });
+}
+
+function malformedProviderResponseError(operation: string): AppError {
+  return createAppError("MALFORMED_RESPONSE", {
+    source: "provider",
+    metadata: { feature: "personas", operation },
+  });
+}
+
+function normalizePersonaError(
+  scope: string,
+  thrown: unknown,
+  source: "application" | "convex" | "provider",
+  operation: string,
+): AppError {
+  const metadata = { feature: "personas", operation };
+  reportApplicationDiagnostic(scope, thrown, metadata);
+  return normalizeApplicationError(thrown, { source, metadata });
 }
 
 /* ── Rewrite anchor selection (deterministic edit targets) ─────── */
@@ -241,6 +303,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     analysisOpen: false,
     analysisCollapsed: {},
     analysisCopiedId: null,
+    backgroundRoom: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -278,6 +341,21 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
   });
 
   useStylesScoped$(`
+    /* A note the room left on its own: same information, quieter voice.
+       No clipping frame, just a coloured rule down the side, so a glance
+       tells the writer which notes they asked for and which simply arrived. */
+    .passing-note {
+      position: relative;
+      border-left: 2px solid var(--clip-color, var(--color-paper-3));
+      background: transparent;
+      opacity: 0.86;
+      transition: opacity 0.2s ease, background 0.2s ease;
+    }
+    .passing-note:hover {
+      opacity: 1;
+      background: var(--color-paper-soft);
+    }
+
     .feedback-enter {
       animation: feedbackSlide 0.35s ease-out;
     }
@@ -488,7 +566,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       const draftText = await readCurrentDraftText();
       const readiness = draftReadiness(draftText, MIN_EDITOR_WORDS);
       if (!readiness.ok) {
-        store.conveneError = readiness.message;
+        store.conveneError = localDraftValidationError("convene-room");
         store.lastProvider = null;
         return;
       }
@@ -496,6 +574,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         auth.value.provider === "convex" && auth.value.user
           ? clientSig.value
           : null;
+      // What the writer has been doing since the room last read. Costs
+      // nothing to fetch and lets the editors respond to a direction rather
+      // than to a cold snapshot.
+      const trajectory = await currentTrajectoryDigest();
       let responses: Array<{
         personaId: string;
         text: string;
@@ -515,6 +597,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 persona: toAgentPersona(p),
                 brief: brief ?? null,
                 draftText,
+                trajectory,
                 instruction: "feedback" as const,
               };
               const res = await runClientAgent(
@@ -535,19 +618,31 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           );
           if (clientResults.every(Boolean)) {
             responses = clientResults as typeof responses;
-            store.lastProvider =
-              `client-${responses[0]?.provider ?? "local"}` as any;
+            if (
+              responses.some(
+                (response) =>
+                  !response.text.trim() || response.provider === "local",
+              )
+            ) {
+              store.lastProvider = null;
+              store.conveneError =
+                malformedProviderResponseError("convene-room");
+              return;
+            }
+            store.lastProvider = `client-${responses[0]!.provider}`;
           } else {
             store.lastProvider = null;
-            store.conveneError =
-              "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+            store.conveneError = providerUnavailableError("convene-room");
             return;
           }
         } catch (err) {
-          console.warn("[twyne:personas] client AI failed:", err);
           store.lastProvider = null;
-          store.conveneError =
-            "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+          store.conveneError = normalizePersonaError(
+            "twyne:personas:convene-client",
+            err,
+            "provider",
+            "convene-room",
+          );
           return;
         }
       }
@@ -560,6 +655,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             personas: personasForServer,
             brief: brief ?? null,
             draftText,
+            trajectory,
           })) as Array<{
             personaId: string;
             text: string;
@@ -567,12 +663,25 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             provider: string;
             anchor?: string;
           }>;
+          if (
+            result.some(
+              (response) =>
+                !response.text.trim() || response.provider === "local",
+            )
+          ) {
+            store.conveneError = providerUnavailableError("convene-room");
+            store.lastProvider = null;
+            return;
+          }
           responses = result;
           store.lastProvider = result[0]?.provider ?? null;
         } catch (err) {
-          console.warn("[twyne:personas] conveneRoom failed:", err);
-          store.conveneError =
-            "The shared server could not convene the room. Sign in again or use your own provider in Preferences.";
+          store.conveneError = normalizePersonaError(
+            "twyne:personas:convene-server",
+            err,
+            "convex",
+            "convene-room",
+          );
           store.lastProvider = null;
           return;
         }
@@ -581,8 +690,14 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       if (responses.length === 0) {
         store.lastProvider = null;
         store.conveneError = hasByok
-          ? "Your configured provider did not answer. Check the API key, model, and base URL in Preferences."
-          : "Add a provider in Preferences or sign in to convene the room.";
+          ? providerUnavailableError("convene-room")
+          : providerConfigurationError("convene-room");
+        return;
+      }
+
+      if (responses.some((response) => !response.text.trim())) {
+        store.lastProvider = null;
+        store.conveneError = malformedProviderResponseError("convene-room");
         return;
       }
 
@@ -625,12 +740,24 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               briefTitle: brief?.answers.workingTitle,
             });
           } catch (err) {
-            console.warn("[twyne:personas] putPersonaNote failed:", err);
+            reportApplicationDiagnostic(
+              "twyne:personas:sync-persona-note",
+              err,
+              {
+                feature: "personas",
+                operation: "sync-persona-note",
+              },
+            );
           }
         }
       }
 
       store.feedback = feedbackList;
+
+      // The room has now read everything. Reset the background watcher's
+      // baseline so it doesn't immediately re-read the same prose, and
+      // restart its interval from here.
+      noteExplicitConvene();
 
       // Pin the notes inline in the manuscript.
       window.dispatchEvent(new CustomEvent("twyne:clear-persona-notes"));
@@ -649,6 +776,14 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           new CustomEvent("twyne:persona-notes", { detail: notes }),
         );
       }
+    } catch (err) {
+      store.lastProvider = null;
+      store.conveneError = normalizePersonaError(
+        "twyne:personas:convene",
+        err,
+        "application",
+        "convene-room",
+      );
     } finally {
       store.isGenerating = false;
     }
@@ -662,6 +797,11 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     store.conveneError = null;
     try {
       const draftText = await loadDraftText();
+      const readiness = draftReadiness(draftText, MIN_EDITOR_WORDS);
+      if (!readiness.ok) {
+        store.conveneError = localDraftValidationError("full-analysis");
+        return;
+      }
       const client = store.clientRef ?? clientSig.value;
       const settings = store.aiSettings;
       const hasByok = hasConfiguredAiProvider(settings);
@@ -669,12 +809,12 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
       let memos: PersonaMemo[] = [];
       let synthesis = "";
-      let synthesisProvider = "local";
+      let synthesisProvider = "";
 
       if (hasByok && settings) {
         // Each editor writes a full memo on the BYOK path, honoring their
         // own model/temperature; then synthesise the five.
-        memos = await Promise.all(
+        const clientMemos = await Promise.all(
           store.personas.map(async (p) => {
             const res = await runClientAgent(
               "persona-analysis",
@@ -686,16 +826,24 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               },
               settings,
             );
+            if (!res || !res.text.trim() || res.provider === "local") {
+              return null;
+            }
             return {
               personaId: p.id,
               personaName: p.name,
               personaColor: p.color,
-              text: res?.text ?? "(no response)",
-              anchor: res?.anchor,
-              provider: res ? `client-${res.provider}` : "local",
+              text: res.text,
+              anchor: res.anchor,
+              provider: `client-${res.provider}`,
             } as PersonaMemo;
           }),
         );
+        if (clientMemos.some((memo) => memo === null)) {
+          store.conveneError = providerUnavailableError("full-analysis");
+          return;
+        }
+        memos = clientMemos as PersonaMemo[];
         const synth = await runClientRoomSynthesis(
           memos.map((m) => {
             const persona = store.personas.find((p) => p.id === m.personaId);
@@ -708,10 +856,12 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           brief ?? null,
           settings,
         );
-        if (synth) {
-          synthesis = synth.text;
-          synthesisProvider = `client-${synth.provider}`;
+        if (!synth || !synth.text.trim()) {
+          store.conveneError = providerUnavailableError("full-analysis");
+          return;
         }
+        synthesis = synth.text;
+        synthesisProvider = `client-${synth.provider}`;
       } else if (client) {
         const result = (await client.action(api.agents.analyzeRoom, {
           personas: store.personas.map(toAgentPersona),
@@ -741,8 +891,22 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         synthesis = result.synthesis;
         synthesisProvider = result.synthesisProvider;
       } else {
+        store.conveneError = providerConfigurationError("full-analysis");
+        return;
+      }
+
+      if (
+        memos.length !== store.personas.length ||
+        memos.some((memo) => !memo.text.trim()) ||
+        memos.some((memo) => memo.provider === "local") ||
+        synthesisProvider === "local" ||
+        !synthesis.trim()
+      ) {
         store.conveneError =
-          "Full analysis needs a configured provider (BYOK) or a signed-in Twyne account.";
+          memos.some((memo) => memo.provider === "local") ||
+          synthesisProvider === "local"
+            ? providerUnavailableError("full-analysis")
+            : malformedProviderResponseError("full-analysis");
         return;
       }
 
@@ -759,7 +923,12 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       store.analysisCopiedId = null;
       void saveRoomAnalysisToIdb(analysis);
     } catch (err) {
-      store.conveneError = (err as Error).message ?? "Full analysis failed.";
+      store.conveneError = normalizePersonaError(
+        "twyne:personas:full-analysis",
+        err,
+        hasConfiguredAiProvider(store.aiSettings) ? "provider" : "convex",
+        "full-analysis",
+      );
     } finally {
       store.isAnalyzing = false;
     }
@@ -827,102 +996,163 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     );
   });
 
-  const submitReply = $(async (noteId: string, askPersona: boolean, authorHint?: string) => {
-    const text = store.replyDraft.trim();
-    if (!text) return;
-    if (store.groupByPersona) {
-      const note = store.feedback.find((f) => f.noteId === noteId);
-      const latestForPersona = note
-        ? store.feedback
-            .filter((f) => f.personaId === note.personaId)
-            .sort((a, b) => b.timestamp - a.timestamp)[0]
-        : null;
-      if (note && latestForPersona?.noteId !== noteId) {
-        store.groupByPersona = false;
+  const submitReply = $(
+    async (noteId: string, askPersona: boolean, authorHint?: string) => {
+      const text = store.replyDraft.trim();
+      if (!text) return;
+      if (store.groupByPersona) {
+        const note = store.feedback.find((f) => f.noteId === noteId);
+        const latestForPersona = note
+          ? store.feedback
+              .filter((f) => f.personaId === note.personaId)
+              .sort((a, b) => b.timestamp - a.timestamp)[0]
+          : null;
+        if (note && latestForPersona?.noteId !== noteId) {
+          store.groupByPersona = false;
+        }
       }
-    }
-    const userReply: PersonaReply = {
-      id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      noteId,
-      author: "You",
-      authorKind: "user",
-      text,
-      timestamp: Date.now(),
-    };
-    const updated = [...(store.repliesByNote[noteId] ?? []), userReply];
-    store.repliesByNote = { ...store.repliesByNote, [noteId]: updated };
-    void emitReplyThread(noteId);
-    await addPersonaReplyLocally(userReply);
-    const client =
-      auth.value.provider === "convex" && auth.value.user
-        ? clientSig.value
-        : null;
-    if (client) {
-      try {
-        await client.mutation(api.sync.addPersonaReply, {
-          noteId,
-          replyId: userReply.id,
-          author: userReply.author,
-          authorKind: "user",
-          text: userReply.text,
-        });
-      } catch (err) {
-        console.warn("[twyne:personas] addPersonaReply (user) failed:", err);
+      const userReply: PersonaReply = {
+        id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        noteId,
+        author: "You",
+        authorKind: "user",
+        text,
+        timestamp: Date.now(),
+      };
+      const updated = [...(store.repliesByNote[noteId] ?? []), userReply];
+      store.repliesByNote = { ...store.repliesByNote, [noteId]: updated };
+      void emitReplyThread(noteId);
+      await addPersonaReplyLocally(userReply);
+      const client =
+        auth.value.provider === "convex" && auth.value.user
+          ? clientSig.value
+          : null;
+      if (client) {
+        try {
+          await client.mutation(api.sync.addPersonaReply, {
+            noteId,
+            replyId: userReply.id,
+            author: userReply.author,
+            authorKind: "user",
+            text: userReply.text,
+          });
+        } catch (err) {
+          reportApplicationDiagnostic("twyne:personas:sync-user-reply", err, {
+            feature: "personas",
+            operation: "sync-user-reply",
+          });
+        }
       }
-    }
-    store.replyDraft = "";
-    store.replyNoteId = null;
-    store.replyingTo = null;
+      store.replyDraft = "";
+      store.replyNoteId = null;
+      store.replyingTo = null;
 
-    if (askPersona) {
-      const note = store.feedback.find((f) => f.noteId === noteId);
-      // The note may not be in this session's feedback list (e.g. it was
-      // restored from a saved draft before the room re-convened). Fall
-      // back to matching the persona by the name shown on the popover so
-      // replying still works instead of silently doing nothing.
-      const persona =
-        (note && store.personas.find((p) => p.id === note.personaId)) ||
-        (authorHint
-          ? store.personas.find((p) => p.name === authorHint)
-          : undefined);
-      if (!persona) {
-        const message =
-          "Couldn't find that editor anymore — try re-convening the room.";
-        store.conveneError = message;
+      if (askPersona) {
+        const note = store.feedback.find((f) => f.noteId === noteId);
+        // The note may not be in this session's feedback list (e.g. it was
+        // restored from a saved draft before the room re-convened). Fall
+        // back to matching the persona by the name shown on the popover so
+        // replying still works instead of silently doing nothing.
+        const persona =
+          (note && store.personas.find((p) => p.id === note.personaId)) ||
+          (authorHint
+            ? store.personas.find((p) => p.name === authorHint)
+            : undefined);
+        if (!persona) {
+          const error = createAppError("NOT_FOUND", {
+            source: "application",
+            metadata: { feature: "personas", operation: "persona-reply" },
+          });
+          store.conveneError = error;
+          window.dispatchEvent(
+            new CustomEvent("twyne:persona-reply-error", {
+              detail: { noteId, message: error.message },
+            }),
+          );
+          return;
+        }
+        store.isReplying = true;
         window.dispatchEvent(
-          new CustomEvent("twyne:persona-reply-error", {
-            detail: { noteId, message },
+          new CustomEvent("twyne:persona-replying", {
+            detail: { noteId, replying: true },
           }),
         );
-        return;
-      }
-      store.isReplying = true;
-      window.dispatchEvent(
-        new CustomEvent("twyne:persona-replying", {
-          detail: { noteId, replying: true },
-        }),
-      );
-      try {
-        const draftText = await readCurrentDraftText();
-        const priorMessages = [
-          ...updated
-            .filter((r) => r.authorKind === "persona")
-            .map((r) => ({ author: "persona" as const, text: r.text })),
-          ...updated
-            .filter((r) => r.authorKind === "user")
-            .map((r) => ({ author: "user" as const, text: r.text })),
-        ];
+        try {
+          const draftText = await readCurrentDraftText();
+          const priorMessages = [
+            ...updated
+              .filter((r) => r.authorKind === "persona")
+              .map((r) => ({ author: "persona" as const, text: r.text })),
+            ...updated
+              .filter((r) => r.authorKind === "user")
+              .map((r) => ({ author: "user" as const, text: r.text })),
+          ];
 
-        let responseText: string | null = null;
+          let responseText: string | null = null;
 
-        // ── Try client-side AI first (BYOK) ─────────────────────────
-        const settings2 = store.aiSettings;
-        const hasByok = hasConfiguredAiProvider(settings2);
-        if (hasByok && settings2) {
-          try {
-            const res = await runClientAgent(
-              "persona-reply",
-              {
+          // ── Try client-side AI first (BYOK) ─────────────────────────
+          const settings2 = store.aiSettings;
+          const hasByok = hasConfiguredAiProvider(settings2);
+          if (hasByok && settings2) {
+            try {
+              const res = await runClientAgent(
+                "persona-reply",
+                {
+                  persona: {
+                    id: persona.id,
+                    name: persona.name,
+                    role: persona.role,
+                    description: persona.description,
+                    focus: persona.focus,
+                    color: persona.color,
+                    icon: persona.icon,
+                  },
+                  brief: brief ?? null,
+                  draftText,
+                  anchor: note?.anchor,
+                  priorMessages,
+                  userMessage: userReply.text,
+                  instruction: "elaborate",
+                },
+                settings2,
+              );
+              if (res && res.text.trim() && res.provider !== "local") {
+                responseText = res.text;
+                store.lastProvider = `client-${res.provider}`;
+              } else {
+                const error = providerUnavailableError("persona-reply");
+                store.conveneError = error;
+                window.dispatchEvent(
+                  new CustomEvent("twyne:persona-reply-error", {
+                    detail: { noteId, message: error.message },
+                  }),
+                );
+                return;
+              }
+            } catch (err) {
+              const error = normalizePersonaError(
+                "twyne:personas:reply-client",
+                err,
+                "provider",
+                "persona-reply",
+              );
+              store.conveneError = error;
+              window.dispatchEvent(
+                new CustomEvent("twyne:persona-reply-error", {
+                  detail: { noteId, message: error.message },
+                }),
+              );
+              return;
+            }
+          }
+
+          const c =
+            auth.value.provider === "convex" && auth.value.user
+              ? clientSig.value
+              : null;
+          if (!responseText && !hasByok && c) {
+            try {
+              const result = (await c.action(api.agents.runPersona, {
                 persona: {
                   id: persona.id,
                   name: persona.name,
@@ -938,137 +1168,108 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 priorMessages,
                 userMessage: userReply.text,
                 instruction: "elaborate",
-              },
-              settings2,
-            );
-            if (res) {
-              responseText = res.text;
-              store.lastProvider = `client-${res.provider}` as any;
-            } else {
-              const message =
-                "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
-              store.conveneError = message;
+              })) as {
+                text: string;
+                type: PersonaFeedback["type"];
+                provider: string;
+              };
+              if (
+                !result.text.trim() ||
+                !result.provider ||
+                result.provider === "local"
+              ) {
+                const error = providerUnavailableError("persona-reply");
+                store.conveneError = error;
+                window.dispatchEvent(
+                  new CustomEvent("twyne:persona-reply-error", {
+                    detail: { noteId, message: error.message },
+                  }),
+                );
+                return;
+              }
+              responseText = result.text;
+              store.lastProvider = result.provider;
+            } catch (err) {
+              const error = normalizePersonaError(
+                "twyne:personas:reply-server",
+                err,
+                "convex",
+                "persona-reply",
+              );
+              store.conveneError = error;
               window.dispatchEvent(
                 new CustomEvent("twyne:persona-reply-error", {
-                  detail: { noteId, message },
+                  detail: { noteId, message: error.message },
                 }),
               );
               return;
             }
-          } catch (err) {
-            console.warn("[twyne:personas] client reply failed:", err);
-            const message =
-              "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
-            store.conveneError = message;
+          }
+          if (!responseText) {
+            const error = hasByok
+              ? providerUnavailableError("persona-reply")
+              : providerConfigurationError("persona-reply");
+            store.conveneError = error;
             window.dispatchEvent(
               new CustomEvent("twyne:persona-reply-error", {
-                detail: { noteId, message },
+                detail: { noteId, message: error.message },
               }),
             );
             return;
           }
-        }
 
-        const c =
-          auth.value.provider === "convex" && auth.value.user
-            ? clientSig.value
-            : null;
-        if (!responseText && !hasByok && c) {
-          try {
-            const result = (await c.action(api.agents.runPersona, {
-              persona: {
-                id: persona.id,
-                name: persona.name,
-                role: persona.role,
-                description: persona.description,
-                focus: persona.focus,
-                color: persona.color,
-                icon: persona.icon,
-              },
-              brief: brief ?? null,
-              draftText,
-              anchor: note?.anchor,
-              priorMessages,
-              userMessage: userReply.text,
-              instruction: "elaborate",
-            })) as {
-              text: string;
-              type: PersonaFeedback["type"];
-              provider: string;
-            };
-            responseText = result.text;
-            store.lastProvider =
-              (result.provider as typeof store.lastProvider) ?? "portkey";
-          } catch (err) {
-            console.warn("[twyne:personas] runPersona failed:", err);
-            const message =
-              "The shared server could not answer. Sign in again or use your own provider in Preferences.";
-            store.conveneError = message;
-            window.dispatchEvent(
-              new CustomEvent("twyne:persona-reply-error", {
-                detail: { noteId, message },
-              }),
-            );
-            return;
+          const personaReply: PersonaReply = {
+            id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            noteId,
+            author: persona.name,
+            authorKind: "persona",
+            personaId: persona.id,
+            text: responseText,
+            timestamp: Date.now(),
+          };
+          const nextReplies = [
+            ...(store.repliesByNote[noteId] ?? []),
+            personaReply,
+          ];
+          store.repliesByNote = {
+            ...store.repliesByNote,
+            [noteId]: nextReplies,
+          };
+          void emitReplyThread(noteId);
+          await addPersonaReplyLocally(personaReply);
+
+          if (c) {
+            try {
+              await c.mutation(api.sync.addPersonaReply, {
+                noteId,
+                replyId: personaReply.id,
+                author: personaReply.author,
+                authorKind: "persona",
+                personaId: personaReply.personaId,
+                text: personaReply.text,
+              });
+            } catch (err) {
+              reportApplicationDiagnostic(
+                "twyne:personas:sync-persona-reply",
+                err,
+                {
+                  feature: "personas",
+                  operation: "sync-persona-reply",
+                },
+              );
+            }
           }
-        }
-        if (!responseText) {
-          const message = hasByok
-            ? "Your configured provider did not answer. Check the API key, model, and base URL in Preferences."
-            : "Add a provider in Preferences or sign in to keep the conversation going.";
-          store.conveneError = message;
+        } finally {
+          store.isReplying = false;
           window.dispatchEvent(
-            new CustomEvent("twyne:persona-reply-error", {
-              detail: { noteId, message },
+            new CustomEvent("twyne:persona-replying", {
+              detail: { noteId, replying: false },
             }),
           );
-          return;
         }
-
-        const personaReply: PersonaReply = {
-          id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          noteId,
-          author: persona.name,
-          authorKind: "persona",
-          personaId: persona.id,
-          text: responseText,
-          timestamp: Date.now(),
-        };
-        const nextReplies = [
-          ...(store.repliesByNote[noteId] ?? []),
-          personaReply,
-        ];
-        store.repliesByNote = { ...store.repliesByNote, [noteId]: nextReplies };
-        void emitReplyThread(noteId);
-        await addPersonaReplyLocally(personaReply);
-
-        if (c) {
-          try {
-            await c.mutation(api.sync.addPersonaReply, {
-              noteId,
-              replyId: personaReply.id,
-              author: personaReply.author,
-              authorKind: "persona",
-              personaId: personaReply.personaId,
-              text: personaReply.text,
-            });
-          } catch (err) {
-            console.warn(
-              "[twyne:personas] addPersonaReply (persona) failed:",
-              err,
-            );
-          }
-        }
-      } finally {
-        store.isReplying = false;
-        window.dispatchEvent(
-          new CustomEvent("twyne:persona-replying", {
-            detail: { noteId, replying: false },
-          }),
-        );
       }
-    }
-  });
+    },
+  );
 
   // Replies filed from the editor's inline-note modal arrive as a window
   // event (the modal lives in the editor component, the thread lives here).
@@ -1093,12 +1294,53 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       void emitReplyThread(detail.noteId);
     };
     window.addEventListener("twyne:request-persona-thread", onRequestThread);
+
+    // Notes the room left on its own while the writer was working. They join
+    // the same feed as convened notes — `origin: "background"` is what makes
+    // them render quietly — and pin inline like any other note.
+    const onBackgroundNotes = (e: Event) => {
+      const notes = (e as CustomEvent).detail as PersonaFeedback[];
+      if (!Array.isArray(notes) || notes.length === 0) return;
+      const known = new Set(store.feedback.map((f) => f.noteId));
+      const fresh = notes.filter((n) => !known.has(n.noteId));
+      if (fresh.length === 0) return;
+      store.feedback = [...fresh, ...store.feedback];
+
+      const pinned: PersonaNotePayload[] = fresh
+        .filter((f) => f.anchor && f.noteId)
+        .map((f) => ({
+          id: f.noteId!,
+          author: f.personaName,
+          color: f.personaColor,
+          label: typeLabel(f.type),
+          note: f.feedback,
+          quote: f.anchor!,
+        }));
+      if (pinned.length > 0) {
+        window.dispatchEvent(
+          new CustomEvent("twyne:persona-notes", { detail: pinned }),
+        );
+      }
+    };
+    window.addEventListener("twyne:background-room-notes", onBackgroundNotes);
+
+    const onBackgroundStatus = (e: Event) => {
+      store.backgroundRoom = (e as CustomEvent)
+        .detail as BackgroundRoomSnapshot;
+    };
+    window.addEventListener("twyne:background-room", onBackgroundStatus);
+
     cleanup(() => {
       window.removeEventListener("twyne:persona-reply", onReply);
       window.removeEventListener(
         "twyne:request-persona-thread",
         onRequestThread,
       );
+      window.removeEventListener(
+        "twyne:background-room-notes",
+        onBackgroundNotes,
+      );
+      window.removeEventListener("twyne:background-room", onBackgroundStatus);
     });
   });
 
@@ -1106,6 +1348,9 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
   const persistSettings = $(async (next: RoomSettings) => {
     store.roomSettings = next;
+    // Apply the background-room switch immediately rather than on next mount:
+    // a writer who turns it off wants silence now, not after a reload.
+    setBackgroundRoomEnabled(next.backgroundRoom !== false);
     await saveRoomSettingsLocally(next);
     const client =
       auth.value.provider === "convex" && auth.value.user
@@ -1138,7 +1383,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       const draftText = await readCurrentDraftText();
       const readiness = draftReadiness(draftText, MIN_MARKUP_WORDS);
       if (!readiness.ok) {
-        store.conveneError = readiness.message;
+        store.conveneError = localDraftValidationError("propose-fix");
         return false;
       }
       if (!anchor.trim()) return false;
@@ -1169,18 +1414,24 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             },
             settings,
           );
-          if (res) {
+          if (
+            res &&
+            res.replacement.trim() &&
+            res.replacement.trim() !== anchor.trim()
+          ) {
             replacement = res.replacement || anchor;
             rationale = res.rationale ?? "";
           } else {
-            store.conveneError =
-              "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+            store.conveneError = providerUnavailableError("propose-fix");
             return false;
           }
         } catch (err) {
-          console.warn("[twyne:personas] client rewrite failed:", err);
-          store.conveneError =
-            "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+          store.conveneError = normalizePersonaError(
+            "twyne:personas:rewrite-client",
+            err,
+            "provider",
+            "propose-fix",
+          );
           return false;
         }
       }
@@ -1202,22 +1453,35 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             draftText,
             original: anchor,
             level: kind,
-          })) as { replacement: string; rationale: string };
+          })) as {
+            replacement: string;
+            rationale: string;
+            provider?: string;
+          };
+          if (r.provider === "local") {
+            store.conveneError = providerUnavailableError("propose-fix");
+            return false;
+          }
           replacement = r.replacement || anchor;
           rationale = r.rationale ?? "";
         } catch (err) {
-          console.warn("[twyne:personas] suggestRewrite failed:", err);
-          store.conveneError =
-            "The shared server could not propose an edit. Sign in again or use your own provider in Preferences.";
+          store.conveneError = normalizePersonaError(
+            "twyne:personas:rewrite-server",
+            err,
+            "convex",
+            "propose-fix",
+          );
           return false;
         }
       }
       if (replacement.trim() === anchor.trim() && !hasByok && !client) {
-        store.conveneError =
-          "Add a provider in Preferences or sign in before asking for a fix.";
+        store.conveneError = providerConfigurationError("propose-fix");
         return false;
       }
-      if (replacement.trim() === anchor.trim()) return false;
+      if (replacement.trim() === anchor.trim()) {
+        store.conveneError = malformedProviderResponseError("propose-fix");
+        return false;
+      }
 
       window.dispatchEvent(
         new CustomEvent("twyne:propose-edit", {
@@ -1266,7 +1530,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       const draftText = await readCurrentDraftText();
       const readiness = draftReadiness(draftText, MIN_MARKUP_WORDS);
       if (!readiness.ok) {
-        store.conveneError = readiness.message;
+        store.conveneError = localDraftValidationError("mark-up-draft");
         return;
       }
       const scope = store.roomSettings.personaScope;
@@ -1314,612 +1578,722 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
   return (
     <>
       <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
-      {/* ── Header ─────────────────────────────────────────── */}
-      <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-        <div class="flex items-center justify-between gap-2">
-          <p class="dept-label">Tonight's Cast</p>
-          {store.lastProvider && (
-            <span
-              class="provider-pill"
-              data-provider={store.lastProvider}
-              title={
-                store.lastProvider === "local"
-                  ? "No LLM provider configured — using the local fallback. Set RIVET_ENDPOINT, ANTHROPIC_API_KEY, or OPENAI_API_KEY to upgrade."
-                  : `Served by ${store.lastProvider}.`
-              }
-            >
-              {store.lastProvider === "local" ? "fallback" : store.lastProvider}
-            </span>
-          )}
-        </div>
-        <h2
-          class="mt-0.5 text-xl text-[var(--color-ink)]"
-          style="font-family: var(--font-display); font-weight: 600;"
-        >
-          The Room of Editors
-        </h2>
-        <p
-          class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
-          style="font-family: var(--font-serif); font-style: italic;"
-        >
-          {summarizeBrief(brief)}
-        </p>
-      </div>
-
-      {/* ── Collapse toggle — hide the cast & controls to read notes ── */}
-      <button
-        onClick$={() => {
-          store.controlsCollapsed = !store.controlsCollapsed;
-        }}
-        class="focus-ring w-full flex items-center justify-between px-4 py-1.5 border-b border-[var(--color-paper-3)] text-[11px] text-[var(--color-ink-light)] hover:text-[var(--color-ink)]"
-        style="font-family: var(--font-typewriter);"
-        aria-expanded={!store.controlsCollapsed}
-        title={
-          store.controlsCollapsed
-            ? "Show the cast & controls"
-            : "Collapse the cast & controls for more room"
-        }
-      >
-        <span>
-          {store.controlsCollapsed
-            ? "▸ show cast & controls"
-            : "▾ hide cast & controls"}
-        </span>
-        {store.controlsCollapsed && store.feedback.length > 0 && (
-          <span class="text-[var(--color-ink-muted)]">
-            {store.feedback.length} note
-            {store.feedback.length === 1 ? "" : "s"}
-          </span>
-        )}
-      </button>
-
-      {/* ── The Cast — portraits ────────────────────────────── */}
-      {!store.controlsCollapsed && (
-        <div class="px-4 pt-4 pb-3 border-b border-[var(--color-paper-3)]">
-          <div class="flex items-center justify-between mb-2">
-            <span class="dept-label" style="margin: 0;">
-              The Cast
-            </span>
-            <a
-              href="/personas"
-              class="text-[0.7rem] tracking-[0.14em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)] focus-ring"
-              style="font-family: var(--font-typewriter);"
-            >
-              Manage the cast →
-            </a>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            {store.personas.map((persona) => {
-              const active = store.activePersona === persona.id;
-              return (
-                <button
-                  key={persona.id}
-                  onClick$={() => {
-                    store.activePersona = active ? null : persona.id;
-                  }}
-                  class={`portrait ${active ? "is-active" : ""}`}
-                  style={{ ["--frame-color" as never]: persona.color }}
-                  title={persona.description}
-                  aria-pressed={active}
-                >
-                  <div class="flex items-center gap-2">
-                    <span
-                      class="portrait-icon"
-                      style={{ ["--frame-color" as never]: persona.color }}
-                    >
-                      {persona.icon}
-                    </span>
-                    <div class="text-left min-w-0">
-                      <p
-                        class="text-[0.7rem] tracking-[0.12em] uppercase truncate"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          color: persona.color,
-                        }}
-                      >
-                        {persona.role.replace(/^The /, "")}
-                      </p>
-                      <p
-                        class="text-xs truncate text-[var(--color-ink)]"
-                        style="font-family: var(--font-display); font-weight: 600;"
-                      >
-                        {persona.name}
-                      </p>
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          <button
-            onClick$={requestFeedback}
-            disabled={store.isGenerating}
-            class="convene-btn mt-4"
-          >
-            {store.isGenerating ? (
-              <span class="flex items-center justify-center gap-2">
-                <span class="inline-block animate-spin">✦</span>
-                The room is reading…
-              </span>
-            ) : (
-              "✦  Convene the Room"
-            )}
-          </button>
-
-          <button
-            onClick$={() => {
-              if (store.analysis && !store.isAnalyzing) {
-                store.analysisOpen = true;
-                return;
-              }
-              void expandAnalysis();
-            }}
-            disabled={store.isAnalyzing}
-            class="mt-2 w-full text-[11px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] border border-dashed border-[var(--color-paper-3)] rounded py-2 disabled:opacity-50"
-            style="font-family: var(--font-typewriter);"
-            title="Each editor writes a full-page analysis, then the room synthesises them — opens in a full-screen view."
-          >
-            {store.isAnalyzing
-              ? "✦ The room is writing the full analysis…"
-              : store.analysis
-                ? "❡ Open the full analysis"
-                : "❡ Expand to full analysis"}
-          </button>
-
-          {store.feedback.length > 0 && !store.isGenerating && (
-            <div class="mt-2 flex items-center gap-2">
-              <button
-                onClick$={() => {
-                  store.groupByPersona = !store.groupByPersona;
-                }}
-                class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                style="font-family: var(--font-typewriter);"
-                aria-pressed={store.groupByPersona}
-                title={
-                  store.groupByPersona
-                    ? "Showing latest note per editor — click to show all"
-                    : "Showing every note — click to group by editor"
-                }
-              >
-                {store.groupByPersona ? "▾ grouped" : "▸ all notes"}
-              </button>
-              <button
-                onClick$={() => {
-                  store.compactView = !store.compactView;
-                }}
-                class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                style="font-family: var(--font-typewriter);"
-                aria-pressed={store.compactView}
-                title={
-                  store.compactView
-                    ? "Notes clamped — click to read in full"
-                    : "Showing full notes — click to clamp them"
-                }
-              >
-                {store.compactView ? "▸ compact" : "▾ full"}
-              </button>
-              <button onClick$={clearRoom} class="btn-paper flex-1 text-xs">
-                Strike the room
-              </button>
-            </div>
-          )}
-
-          {/* ── Mark up my draft + room settings ── */}
-          {store.roomSettings.level !== "comments" && (
-            <button
-              onClick$={markUpDraft}
-              disabled={store.isMarkingUp || store.isGenerating}
-              class="btn-paper w-full mt-2 text-xs"
-              title="The room proposes edits across your draft"
-            >
-              {store.isMarkingUp
-                ? "The room is marking up…"
-                : "✎  Mark up my draft"}
-            </button>
-          )}
-
-          <div class="mt-2 flex items-center justify-between">
-            <button
-              onClick$={() => {
-                store.settingsOpen = !store.settingsOpen;
-              }}
-              class="focus-ring text-[11px] text-[var(--color-ink-light)] hover:text-[var(--color-ink)]"
-              style="font-family: var(--font-typewriter);"
-              aria-expanded={store.settingsOpen}
-            >
-              {store.settingsOpen ? "▾" : "▸"} Room settings
-            </button>
-            {store.roomSettings.level === "paragraph" && (
+        {/* ── Header ─────────────────────────────────────────── */}
+        <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+          <div class="flex items-center justify-between gap-2">
+            <p class="dept-label">Tonight's Cast</p>
+            {store.lastProvider && (
               <span
-                class="text-[10px] text-[var(--color-ink-muted)]"
-                style="font-family: var(--font-typewriter);"
-                title="Large (paragraph) edits remaining this pass"
+                class="provider-pill"
+                data-provider={store.lastProvider}
+                title={
+                  store.lastProvider === "local"
+                    ? "No LLM provider configured — using the local fallback. Set RIVET_ENDPOINT, ANTHROPIC_API_KEY, or OPENAI_API_KEY to upgrade."
+                    : `Served by ${store.lastProvider}.`
+                }
               >
-                Large edits:{" "}
-                {Math.max(
-                  0,
-                  store.roomSettings.maxLargeEdits - store.largeEditsUsed,
-                )}{" "}
-                of {store.roomSettings.maxLargeEdits} left
+                {store.lastProvider === "local"
+                  ? "fallback"
+                  : store.lastProvider}
               </span>
             )}
           </div>
-
-          {store.settingsOpen && (
-            <div class="mt-2 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-3 space-y-3">
-              <div>
-                <p
-                  class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-light)] mb-1"
-                  style="font-family: var(--font-typewriter);"
-                >
-                  How much the room edits
-                </p>
-                <div class="flex gap-1">
-                  {(
-                    ["comments", "sentence", "paragraph"] as AssistanceLevel[]
-                  ).map((lvl) => (
-                    <button
-                      key={lvl}
-                      onClick$={() =>
-                        persistSettings({ ...store.roomSettings, level: lvl })
-                      }
-                      class={`flex-1 rounded-sm border px-1 py-1 text-[11px] capitalize ${
-                        store.roomSettings.level === lvl
-                          ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]"
-                          : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"
-                      }`}
-                      style="font-family: var(--font-typewriter);"
-                    >
-                      {lvl}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
-                <span style="font-family: var(--font-typewriter);">
-                  Max edits / pass
-                </span>
-                <input
-                  type="number"
-                  min={1}
-                  max={20}
-                  value={store.roomSettings.maxProposals}
-                  onChange$={(_, el) =>
-                    persistSettings({
-                      ...store.roomSettings,
-                      maxProposals: Math.max(
-                        1,
-                        Math.min(20, Number(el.value) || 1),
-                      ),
-                    })
-                  }
-                  class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
-                />
-              </label>
-              <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
-                <span style="font-family: var(--font-typewriter);">
-                  Max large edits
-                </span>
-                <input
-                  type="number"
-                  min={0}
-                  max={10}
-                  value={store.roomSettings.maxLargeEdits}
-                  onChange$={(_, el) =>
-                    persistSettings({
-                      ...store.roomSettings,
-                      maxLargeEdits: Math.max(
-                        0,
-                        Math.min(10, Number(el.value) || 0),
-                      ),
-                    })
-                  }
-                  class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
-                />
-              </label>
-            </div>
-          )}
-
-          {store.conveneError && (
-            <p
-              class="mt-2 text-[11px] text-[var(--color-vermilion)]"
-              style="font-family: var(--font-typewriter);"
-            >
-              ⚠ {store.conveneError}
-            </p>
-          )}
+          <h2
+            class="mt-0.5 text-xl text-[var(--color-ink)]"
+            style="font-family: var(--font-display); font-weight: 600;"
+          >
+            The Room of Editors
+          </h2>
+          <p
+            class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
+            style="font-family: var(--font-serif); font-style: italic;"
+          >
+            {summarizeBrief(brief)}
+          </p>
         </div>
-      )}
 
-      {/* ── Marginalia — feedback feed ──────────────────────── */}
-      <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {store.feedback.length === 0 && !store.isGenerating && (
-          <div class="text-center py-10 px-4">
-            <p
-              class="text-3xl"
-              style="font-family: var(--font-display); color: var(--color-vermilion);"
-            >
-              ❦
-            </p>
-            <p
-              class="mt-3 text-sm text-[var(--color-ink-light)]"
-              style="font-family: var(--font-serif); font-style: italic;"
-            >
-              The room awaits the manuscript.
-            </p>
-            <p
-              class="mt-1.5 text-[0.7rem] tracking-[0.14em] uppercase text-[var(--color-ink-light)]"
-              style="font-family: var(--font-typewriter);"
-            >
-              Write a few paragraphs, then convene.
-            </p>
-          </div>
-        )}
+        {/* ── Collapse toggle — hide the cast & controls to read notes ── */}
+        <button
+          onClick$={() => {
+            store.controlsCollapsed = !store.controlsCollapsed;
+          }}
+          class="focus-ring w-full flex items-center justify-between px-4 py-1.5 border-b border-[var(--color-paper-3)] text-[11px] text-[var(--color-ink-light)] hover:text-[var(--color-ink)]"
+          style="font-family: var(--font-typewriter);"
+          aria-expanded={!store.controlsCollapsed}
+          title={
+            store.controlsCollapsed
+              ? "Show the cast & controls"
+              : "Collapse the cast & controls for more room"
+          }
+        >
+          <span>
+            {store.controlsCollapsed
+              ? "▸ show cast & controls"
+              : "▾ hide cast & controls"}
+          </span>
+          {store.controlsCollapsed && store.feedback.length > 0 && (
+            <span class="text-[var(--color-ink-muted)]">
+              {store.feedback.length} note
+              {store.feedback.length === 1 ? "" : "s"}
+            </span>
+          )}
+        </button>
 
-        {(() => {
-          const filtered = store.feedback.filter(
-            (f) => !store.activePersona || f.personaId === store.activePersona,
-          );
-          // When grouped, reduce to one entry per persona (the latest).
-          const items: PersonaFeedback[] = store.groupByPersona
-            ? Array.from(
-                filtered
-                  .reduce((map, f) => {
-                    const cur = map.get(f.personaId);
-                    if (!cur || cur.timestamp < f.timestamp) {
-                      map.set(f.personaId, f);
-                    }
-                    return map;
-                  }, new Map<string, PersonaFeedback>())
-                  .values(),
-              )
-            : filtered;
-          return items.map((feedback) => {
-            const persona = store.personas.find(
-              (p) => p.id === feedback.personaId,
-            );
-            const isExpanded = store.expandedPersonas.has(feedback.personaId);
-            const groupCount = store.groupByPersona
-              ? filtered.filter((f) => f.personaId === feedback.personaId)
-                  .length
-              : 0;
-            const replies = feedback.noteId
-              ? (store.repliesByNote[feedback.noteId] ?? [])
-              : [];
-            const replyOpen = store.replyingTo === feedback.noteId;
-            const personaColor = feedback.personaColor;
-            const noteKey =
-              feedback.noteId ?? `${feedback.personaId}-${feedback.timestamp}`;
-            const bodyClamped =
-              store.compactView && !store.expandedFeedback.has(noteKey);
-            return (
-              <div
-                key={noteKey}
-                class="clipping feedback-enter p-4"
-                style={{ ["--clip-color" as never]: personaColor }}
+        {/* ── The Cast — portraits ────────────────────────────── */}
+        {!store.controlsCollapsed && (
+          <div class="px-4 pt-4 pb-3 border-b border-[var(--color-paper-3)]">
+            <div class="flex items-center justify-between mb-2">
+              <span class="dept-label" style="margin: 0;">
+                The Cast
+              </span>
+              <a
+                href="/personas"
+                class="text-[0.7rem] tracking-[0.14em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)] focus-ring"
+                style="font-family: var(--font-typewriter);"
               >
-                <div class="flex items-start gap-3 mb-2">
-                  <span
-                    class="portrait-icon flex-shrink-0"
-                    style={{ ["--frame-color" as never]: personaColor }}
-                  >
-                    {persona?.icon}
-                  </span>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between gap-2">
-                      <p
-                        class="text-sm text-[var(--color-ink)] truncate"
-                        style="font-family: var(--font-display); font-weight: 600;"
-                      >
-                        {feedback.personaName}
-                      </p>
-                      <p
-                        class="text-[0.65rem] tracking-[0.14em] uppercase"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          color: personaColor,
-                        }}
-                      >
-                        {typeLabel(feedback.type)}
-                      </p>
-                    </div>
-                    {feedback.anchor && (
-                      <blockquote
-                        class="mt-1.5 pl-2 border-l-2 text-[11px] italic text-[var(--color-ink-muted)] cursor-pointer hover:text-[var(--color-ink)]"
-                        style={{
-                          borderColor: personaColor,
-                          fontFamily: "var(--font-serif)",
-                        }}
-                        onClick$={() => {
-                          if (feedback.noteId) {
-                            window.dispatchEvent(
-                              new CustomEvent("twyne:scroll-to-persona-note", {
-                                detail: feedback.noteId,
-                              }),
-                            );
-                          }
-                        }}
-                        title="Show this note in the manuscript"
-                      >
-                        « {truncate(feedback.anchor, 160)} »
-                      </blockquote>
-                    )}
-                  </div>
-                </div>
-                <p
-                  class={`text-[14px] leading-6 text-[var(--color-ink-light)]${
-                    bodyClamped ? " cursor-pointer" : ""
-                  }`}
-                  style={
-                    bodyClamped
-                      ? "font-family: var(--font-serif); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;"
-                      : "font-family: var(--font-serif);"
-                  }
-                  title={
-                    bodyClamped ? "Click to read the full note" : undefined
-                  }
-                  onClick$={
-                    store.compactView
-                      ? () => {
-                          const cur = new Set(store.expandedFeedback);
-                          if (cur.has(noteKey)) cur.delete(noteKey);
-                          else cur.add(noteKey);
-                          store.expandedFeedback = cur;
-                        }
-                      : undefined
-                  }
-                >
-                  {feedback.feedback}
-                </p>
+                Manage the cast →
+              </a>
+            </div>
 
-                {store.groupByPersona && groupCount > 1 && (
+            <div class="grid grid-cols-2 gap-2">
+              {store.personas.map((persona) => {
+                const active = store.activePersona === persona.id;
+                return (
                   <button
-                    class="mt-1.5 text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                    style="font-family: var(--font-typewriter);"
+                    key={persona.id}
                     onClick$={() => {
-                      const cur = new Set(store.expandedPersonas);
-                      if (cur.has(feedback.personaId))
-                        cur.delete(feedback.personaId);
-                      else cur.add(feedback.personaId);
-                      store.expandedPersonas = cur;
+                      store.activePersona = active ? null : persona.id;
                     }}
+                    class={`portrait ${active ? "is-active" : ""}`}
+                    style={{ ["--frame-color" as never]: persona.color }}
+                    title={persona.description}
+                    aria-pressed={active}
                   >
-                    {isExpanded
-                      ? "▾ hide older"
-                      : `+ ${groupCount - 1} older from ${feedback.personaName}`}
-                  </button>
-                )}
-
-                {/* Threaded replies */}
-                {replies.length > 0 && (
-                  <div class="reply-thread">
-                    {replies.map((r) => (
-                      <div
-                        key={r.id}
-                        class={`reply-bubble ${r.authorKind === "persona" ? "is-persona" : ""}`}
-                        style={{ ["--reply-color" as never]: personaColor }}
+                    <div class="flex items-center gap-2">
+                      <span
+                        class="portrait-icon"
+                        style={{ ["--frame-color" as never]: persona.color }}
                       >
-                        <div class="reply-meta">
-                          <strong style={{ color: personaColor }}>
-                            {r.author}
-                          </strong>
-                          <span>· {timeAgo(r.timestamp)}</span>
-                        </div>
-                        <p class="mt-0.5">{r.text}</p>
-                      </div>
-                    ))}
-                    {store.isReplying && (
-                      <div
-                        class="reply-bubble is-persona"
-                        style={{ ["--reply-color" as never]: personaColor }}
-                      >
-                        <div class="reply-meta">
-                          <strong style={{ color: personaColor }}>
-                            {feedback.personaName}
-                          </strong>
-                          <span>· writing…</span>
-                        </div>
-                        <p class="mt-0.5">
-                          <span class="inline-block animate-pulse">…</span>
+                        {persona.icon}
+                      </span>
+                      <div class="text-left min-w-0">
+                        <p
+                          class="text-[0.7rem] tracking-[0.12em] uppercase truncate"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            color: persona.color,
+                          }}
+                        >
+                          {persona.role.replace(/^The /, "")}
+                        </p>
+                        <p
+                          class="text-xs truncate text-[var(--color-ink)]"
+                          style="font-family: var(--font-display); font-weight: 600;"
+                        >
+                          {persona.name}
                         </p>
                       </div>
-                    )}
-                  </div>
-                )}
-
-                {replyOpen ? (
-                  <div class="reply-box">
-                    <textarea
-                      class="reply-input"
-                      autoFocus
-                      placeholder={`Reply to ${feedback.personaName}…`}
-                      value={store.replyDraft}
-                      onInput$={(e) => {
-                        store.replyDraft = (
-                          e.target as HTMLTextAreaElement
-                        ).value;
-                      }}
-                      onKeyDown$={(e) => {
-                        if (
-                          (e.metaKey || e.ctrlKey) &&
-                          e.key === "Enter" &&
-                          feedback.noteId
-                        ) {
-                          submitReply(feedback.noteId, true);
-                        }
-                      }}
-                    />
-                    <div class="reply-actions">
-                      <button
-                        class="ask-again"
-                        disabled={!store.replyDraft.trim() || store.isReplying}
-                        onClick$={() => {
-                          if (feedback.noteId)
-                            submitReply(feedback.noteId, true);
-                        }}
-                      >
-                        {store.isReplying ? "…" : "Ask the editor ↺"}
-                      </button>
-                      <button
-                        class="ghost"
-                        onClick$={() => {
-                          if (feedback.noteId)
-                            submitReply(feedback.noteId, false);
-                        }}
-                        disabled={!store.replyDraft.trim() || store.isReplying}
-                      >
-                        File only
-                      </button>
-                      <button
-                        class="ghost"
-                        onClick$={cancelReply}
-                        disabled={store.isReplying}
-                      >
-                        Cancel
-                      </button>
                     </div>
-                    <p
-                      class="text-[10px] text-[var(--color-ink-muted)]"
-                      style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
-                    >
-                      ⌘+Enter to ask the editor to come back
-                    </p>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick$={requestFeedback}
+              disabled={store.isGenerating}
+              class="convene-btn mt-4"
+            >
+              {store.isGenerating ? (
+                <span class="flex items-center justify-center gap-2">
+                  <span class="inline-block animate-spin">✦</span>
+                  The room is reading…
+                </span>
+              ) : (
+                "✦  Convene the Room"
+              )}
+            </button>
+
+            <button
+              onClick$={() => {
+                if (store.analysis && !store.isAnalyzing) {
+                  store.analysisOpen = true;
+                  return;
+                }
+                void expandAnalysis();
+              }}
+              disabled={store.isAnalyzing}
+              class="mt-2 w-full text-[11px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] border border-dashed border-[var(--color-paper-3)] rounded py-2 disabled:opacity-50"
+              style="font-family: var(--font-typewriter);"
+              title="Each editor writes a full-page analysis, then the room synthesises them — opens in a full-screen view."
+            >
+              {store.isAnalyzing
+                ? "✦ The room is writing the full analysis…"
+                : store.analysis
+                  ? "❡ Open the full analysis"
+                  : "❡ Expand to full analysis"}
+            </button>
+
+            {store.feedback.length > 0 && !store.isGenerating && (
+              <div class="mt-2 flex items-center gap-2">
+                <button
+                  onClick$={() => {
+                    store.groupByPersona = !store.groupByPersona;
+                  }}
+                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                  style="font-family: var(--font-typewriter);"
+                  aria-pressed={store.groupByPersona}
+                  title={
+                    store.groupByPersona
+                      ? "Showing latest note per editor — click to show all"
+                      : "Showing every note — click to group by editor"
+                  }
+                >
+                  {store.groupByPersona ? "▾ grouped" : "▸ all notes"}
+                </button>
+                <button
+                  onClick$={() => {
+                    store.compactView = !store.compactView;
+                  }}
+                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                  style="font-family: var(--font-typewriter);"
+                  aria-pressed={store.compactView}
+                  title={
+                    store.compactView
+                      ? "Notes clamped — click to read in full"
+                      : "Showing full notes — click to clamp them"
+                  }
+                >
+                  {store.compactView ? "▸ compact" : "▾ full"}
+                </button>
+                <button onClick$={clearRoom} class="btn-paper flex-1 text-xs">
+                  Strike the room
+                </button>
+              </div>
+            )}
+
+            {/* ── The room reading in the background ──
+                A quiet line of status, not a control. The writer should be
+                able to tell at a glance whether anyone is listening, and how
+                close the next passing note is, without having to ask. */}
+            {store.backgroundRoom && store.backgroundRoom.status !== "off" && (
+              <p
+                class="mt-2 flex items-center gap-1.5 text-[10px] tracking-[0.12em] uppercase text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-typewriter);"
+                role="status"
+              >
+                <span
+                  aria-hidden="true"
+                  class={
+                    store.backgroundRoom.status === "reading"
+                      ? "animate-pulse"
+                      : ""
+                  }
+                  style={{
+                    color:
+                      store.backgroundRoom.status === "error"
+                        ? "var(--color-accent-red)"
+                        : store.backgroundRoom.status === "reading"
+                          ? "var(--color-vermilion)"
+                          : "var(--color-ink-muted)",
+                  }}
+                >
+                  ✦
+                </span>
+                {backgroundRoomLabel(store.backgroundRoom)}
+              </p>
+            )}
+
+            {/* ── Mark up my draft + room settings ── */}
+            {store.roomSettings.level !== "comments" && (
+              <button
+                onClick$={markUpDraft}
+                disabled={store.isMarkingUp || store.isGenerating}
+                class="btn-paper w-full mt-2 text-xs"
+                title="The room proposes edits across your draft"
+              >
+                {store.isMarkingUp
+                  ? "The room is marking up…"
+                  : "✎  Mark up my draft"}
+              </button>
+            )}
+
+            <div class="mt-2 flex items-center justify-between">
+              <button
+                onClick$={() => {
+                  store.settingsOpen = !store.settingsOpen;
+                }}
+                class="focus-ring text-[11px] text-[var(--color-ink-light)] hover:text-[var(--color-ink)]"
+                style="font-family: var(--font-typewriter);"
+                aria-expanded={store.settingsOpen}
+              >
+                {store.settingsOpen ? "▾" : "▸"} Room settings
+              </button>
+              {store.roomSettings.level === "paragraph" && (
+                <span
+                  class="text-[10px] text-[var(--color-ink-muted)]"
+                  style="font-family: var(--font-typewriter);"
+                  title="Large (paragraph) edits remaining this pass"
+                >
+                  Large edits:{" "}
+                  {Math.max(
+                    0,
+                    store.roomSettings.maxLargeEdits - store.largeEditsUsed,
+                  )}{" "}
+                  of {store.roomSettings.maxLargeEdits} left
+                </span>
+              )}
+            </div>
+
+            {store.settingsOpen && (
+              <div class="mt-2 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-3 space-y-3">
+                <div>
+                  <p
+                    class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-light)] mb-1"
+                    style="font-family: var(--font-typewriter);"
+                  >
+                    How much the room edits
+                  </p>
+                  <div class="flex gap-1">
+                    {(
+                      ["comments", "sentence", "paragraph"] as AssistanceLevel[]
+                    ).map((lvl) => (
+                      <button
+                        key={lvl}
+                        onClick$={() =>
+                          persistSettings({ ...store.roomSettings, level: lvl })
+                        }
+                        class={`flex-1 rounded-sm border px-1 py-1 text-[11px] capitalize ${
+                          store.roomSettings.level === lvl
+                            ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]"
+                            : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"
+                        }`}
+                        style="font-family: var(--font-typewriter);"
+                      >
+                        {lvl}
+                      </button>
+                    ))}
                   </div>
-                ) : (
-                  <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                </div>
+                <div>
+                  <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
+                    <span style="font-family: var(--font-typewriter);">
+                      Read as I write
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={store.roomSettings.backgroundRoom !== false}
+                      onChange$={(_, el) =>
+                        persistSettings({
+                          ...store.roomSettings,
+                          backgroundRoom: el.checked,
+                        })
+                      }
+                      class="h-3.5 w-3.5 accent-[var(--color-vermilion)]"
+                    />
+                  </label>
+                  <p
+                    class="mt-1 text-[10px] leading-4 text-[var(--color-ink-muted)]"
+                    style="font-family: var(--font-serif);"
+                  >
+                    The room leaves a short note after every {
+                      WORD_DELTA_THRESHOLD
+                    }{" "}
+                    new words, once you pause. Turn this off to write in silence
+                    until you ask.
+                  </p>
+                </div>
+                <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
+                  <span style="font-family: var(--font-typewriter);">
+                    Max edits / pass
+                  </span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={20}
+                    value={store.roomSettings.maxProposals}
+                    onChange$={(_, el) =>
+                      persistSettings({
+                        ...store.roomSettings,
+                        maxProposals: Math.max(
+                          1,
+                          Math.min(20, Number(el.value) || 1),
+                        ),
+                      })
+                    }
+                    class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
+                  />
+                </label>
+                <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
+                  <span style="font-family: var(--font-typewriter);">
+                    Max large edits
+                  </span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={10}
+                    value={store.roomSettings.maxLargeEdits}
+                    onChange$={(_, el) =>
+                      persistSettings({
+                        ...store.roomSettings,
+                        maxLargeEdits: Math.max(
+                          0,
+                          Math.min(10, Number(el.value) || 0),
+                        ),
+                      })
+                    }
+                    class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
+                  />
+                </label>
+              </div>
+            )}
+
+            {store.conveneError && (
+              <div class="mt-2">
+              <ApplicationNotice
+                error={store.conveneError}
+                compact
+                title={
+                  store.conveneError.source === "validation"
+                    ? "Draft readiness check"
+                    : undefined
+                }
+                recoveryLabel={
+                  store.conveneError.source === "validation"
+                    ? undefined
+                    : "Open AI settings"
+                }
+                recoveryHref={
+                  store.conveneError.source === "validation"
+                    ? undefined
+                    : "/settings/"
+                }
+                onDismiss$={() => {
+                  store.conveneError = null;
+                }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Marginalia — feedback feed ──────────────────────── */}
+        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          {store.feedback.length === 0 && !store.isGenerating && (
+            <div class="text-center py-10 px-4">
+              <p
+                class="text-3xl"
+                style="font-family: var(--font-display); color: var(--color-vermilion);"
+              >
+                ❦
+              </p>
+              <p
+                class="mt-3 text-sm text-[var(--color-ink-light)]"
+                style="font-family: var(--font-serif); font-style: italic;"
+              >
+                The room awaits the manuscript.
+              </p>
+              <p
+                class="mt-1.5 text-[0.7rem] tracking-[0.14em] uppercase text-[var(--color-ink-light)]"
+                style="font-family: var(--font-typewriter);"
+              >
+                Write a few paragraphs, then convene.
+              </p>
+            </div>
+          )}
+
+          {(() => {
+            const filtered = store.feedback.filter(
+              (f) =>
+                !store.activePersona || f.personaId === store.activePersona,
+            );
+            // When grouped, reduce to one entry per persona (the latest).
+            const items: PersonaFeedback[] = store.groupByPersona
+              ? Array.from(
+                  filtered
+                    .reduce((map, f) => {
+                      const cur = map.get(f.personaId);
+                      if (!cur || cur.timestamp < f.timestamp) {
+                        map.set(f.personaId, f);
+                      }
+                      return map;
+                    }, new Map<string, PersonaFeedback>())
+                    .values(),
+                )
+              : filtered;
+            return items.map((feedback) => {
+              const persona = store.personas.find(
+                (p) => p.id === feedback.personaId,
+              );
+              const isExpanded = store.expandedPersonas.has(feedback.personaId);
+              const groupCount = store.groupByPersona
+                ? filtered.filter((f) => f.personaId === feedback.personaId)
+                    .length
+                : 0;
+              const replies = feedback.noteId
+                ? (store.repliesByNote[feedback.noteId] ?? [])
+                : [];
+              const replyOpen = store.replyingTo === feedback.noteId;
+              const personaColor = feedback.personaColor;
+              const noteKey =
+                feedback.noteId ??
+                `${feedback.personaId}-${feedback.timestamp}`;
+              const bodyClamped =
+                store.compactView && !store.expandedFeedback.has(noteKey);
+              // A note the room left unasked is a remark over the shoulder,
+              // not a filed report — so it gets lighter chrome and says where
+              // it came from, and never looks like work the writer requested.
+              const isPassing = feedback.origin === "background";
+              return (
+                <div
+                  key={noteKey}
+                  class={
+                    isPassing
+                      ? "passing-note feedback-enter px-4 py-3"
+                      : "clipping feedback-enter p-4"
+                  }
+                  style={{ ["--clip-color" as never]: personaColor }}
+                >
+                  <div class="flex items-start gap-3 mb-2">
+                    <span
+                      class="portrait-icon flex-shrink-0"
+                      style={{ ["--frame-color" as never]: personaColor }}
+                    >
+                      {persona?.icon}
+                    </span>
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between gap-2">
+                        <p
+                          class="text-sm text-[var(--color-ink)] truncate"
+                          style="font-family: var(--font-display); font-weight: 600;"
+                        >
+                          {feedback.personaName}
+                        </p>
+                        <div class="flex items-center gap-1.5 flex-shrink-0">
+                          <p
+                            class="text-[0.65rem] tracking-[0.14em] uppercase"
+                            style={{
+                              fontFamily: "var(--font-typewriter)",
+                              color: personaColor,
+                            }}
+                          >
+                            {isPassing ? "in passing" : typeLabel(feedback.type)}
+                          </p>
+                          <SpeakButton
+                            compact
+                            id={noteKey}
+                            text={feedback.feedback}
+                            voice={persona?.speechVoice}
+                            voices={persona?.speechVoices}
+                            instructions={persona?.voice}
+                            label={feedback.personaName}
+                          />
+                        </div>
+                      </div>
+                      {feedback.anchor && (
+                        <blockquote
+                          class="mt-1.5 pl-2 border-l-2 text-[11px] italic text-[var(--color-ink-muted)] cursor-pointer hover:text-[var(--color-ink)]"
+                          style={{
+                            borderColor: personaColor,
+                            fontFamily: "var(--font-serif)",
+                          }}
+                          onClick$={() => {
+                            if (feedback.noteId) {
+                              window.dispatchEvent(
+                                new CustomEvent(
+                                  "twyne:scroll-to-persona-note",
+                                  {
+                                    detail: feedback.noteId,
+                                  },
+                                ),
+                              );
+                            }
+                          }}
+                          title="Show this note in the manuscript"
+                        >
+                          « {truncate(feedback.anchor, 160)} »
+                        </blockquote>
+                      )}
+                    </div>
+                  </div>
+                  <p
+                    class={`text-[14px] leading-6 text-[var(--color-ink-light)]${
+                      bodyClamped ? " cursor-pointer" : ""
+                    }`}
+                    style={
+                      bodyClamped
+                        ? "font-family: var(--font-serif); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;"
+                        : "font-family: var(--font-serif);"
+                    }
+                    title={
+                      bodyClamped ? "Click to read the full note" : undefined
+                    }
+                    onClick$={
+                      store.compactView
+                        ? () => {
+                            const cur = new Set(store.expandedFeedback);
+                            if (cur.has(noteKey)) cur.delete(noteKey);
+                            else cur.add(noteKey);
+                            store.expandedFeedback = cur;
+                          }
+                        : undefined
+                    }
+                  >
+                    {feedback.feedback}
+                  </p>
+
+                  {store.groupByPersona && groupCount > 1 && (
                     <button
-                      class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                      class="mt-1.5 text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
                       style="font-family: var(--font-typewriter);"
                       onClick$={() => {
-                        if (feedback.noteId) openReply(feedback.noteId);
+                        const cur = new Set(store.expandedPersonas);
+                        if (cur.has(feedback.personaId))
+                          cur.delete(feedback.personaId);
+                        else cur.add(feedback.personaId);
+                        store.expandedPersonas = cur;
                       }}
                     >
-                      + Reply / ask the editor
+                      {isExpanded
+                        ? "▾ hide older"
+                        : `+ ${groupCount - 1} older from ${feedback.personaName}`}
                     </button>
-                    {feedback.anchor &&
-                      effectiveLevel(store.roomSettings, feedback.personaId) !==
-                        "comments" && (
-                        <button
-                          class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] disabled:opacity-50"
-                          style="font-family: var(--font-typewriter);"
-                          disabled={store.fixingNoteId === feedback.noteId}
-                          onClick$={() => askForFix(feedback)}
-                          title="Ask this editor to propose an edit to the anchored passage"
+                  )}
+
+                  {/* Threaded replies */}
+                  {replies.length > 0 && (
+                    <div class="reply-thread">
+                      {replies.map((r) => (
+                        <div
+                          key={r.id}
+                          class={`reply-bubble ${r.authorKind === "persona" ? "is-persona" : ""}`}
+                          style={{ ["--reply-color" as never]: personaColor }}
                         >
-                          {store.fixingNoteId === feedback.noteId
-                            ? "drafting…"
-                            : "✎ ask for a fix"}
-                        </button>
+                          <div class="reply-meta">
+                            <strong style={{ color: personaColor }}>
+                              {r.author}
+                            </strong>
+                            <span>· {timeAgo(r.timestamp)}</span>
+                          </div>
+                          <p class="mt-0.5">{r.text}</p>
+                        </div>
+                      ))}
+                      {store.isReplying && (
+                        <div
+                          class="reply-bubble is-persona"
+                          style={{ ["--reply-color" as never]: personaColor }}
+                        >
+                          <div class="reply-meta">
+                            <strong style={{ color: personaColor }}>
+                              {feedback.personaName}
+                            </strong>
+                            <span>· writing…</span>
+                          </div>
+                          <p class="mt-0.5">
+                            <span class="inline-block animate-pulse">…</span>
+                          </p>
+                        </div>
                       )}
-                  </div>
-                )}
-              </div>
-            );
-          });
-        })()}
-      </div>
+                    </div>
+                  )}
+
+                  {replyOpen ? (
+                    <div class="reply-box">
+                      <textarea
+                        class="reply-input"
+                        autoFocus
+                        placeholder={`Reply to ${feedback.personaName}…`}
+                        value={store.replyDraft}
+                        onInput$={(e) => {
+                          store.replyDraft = (
+                            e.target as HTMLTextAreaElement
+                          ).value;
+                        }}
+                        onKeyDown$={(e) => {
+                          if (
+                            (e.metaKey || e.ctrlKey) &&
+                            e.key === "Enter" &&
+                            feedback.noteId
+                          ) {
+                            submitReply(feedback.noteId, true);
+                          }
+                        }}
+                      />
+                      <div class="reply-actions">
+                        <button
+                          class="ask-again"
+                          disabled={
+                            !store.replyDraft.trim() || store.isReplying
+                          }
+                          onClick$={() => {
+                            if (feedback.noteId)
+                              submitReply(feedback.noteId, true);
+                          }}
+                        >
+                          {store.isReplying ? "…" : "Ask the editor ↺"}
+                        </button>
+                        <button
+                          class="ghost"
+                          onClick$={() => {
+                            if (feedback.noteId)
+                              submitReply(feedback.noteId, false);
+                          }}
+                          disabled={
+                            !store.replyDraft.trim() || store.isReplying
+                          }
+                        >
+                          File only
+                        </button>
+                        <button
+                          class="ghost"
+                          onClick$={cancelReply}
+                          disabled={store.isReplying}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      <p
+                        class="text-[10px] text-[var(--color-ink-muted)]"
+                        style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
+                      >
+                        ⌘+Enter to ask the editor to come back
+                      </p>
+                    </div>
+                  ) : (
+                    <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <button
+                        class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                        style="font-family: var(--font-typewriter);"
+                        onClick$={() => {
+                          if (feedback.noteId) openReply(feedback.noteId);
+                        }}
+                      >
+                        + Reply / ask the editor
+                      </button>
+                      {feedback.anchor &&
+                        effectiveLevel(
+                          store.roomSettings,
+                          feedback.personaId,
+                        ) !== "comments" && (
+                          <button
+                            class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] disabled:opacity-50"
+                            style="font-family: var(--font-typewriter);"
+                            disabled={store.fixingNoteId === feedback.noteId}
+                            onClick$={() => askForFix(feedback)}
+                            title="Ask this editor to propose an edit to the anchored passage"
+                          >
+                            {store.fixingNoteId === feedback.noteId
+                              ? "drafting…"
+                              : "✎ ask for a fix"}
+                          </button>
+                        )}
+                    </div>
+                  )}
+                </div>
+              );
+            });
+          })()}
+        </div>
       </div>
 
       {/* ── Full-page cast analysis: a real expanded view, not a sidebar inset ── */}
@@ -2017,20 +2391,28 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 <div class="mb-5 p-3 bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] rounded">
                   <div class="flex items-center justify-between">
                     <p class="dept-label">The Room's Verdict</p>
-                    <button
-                      onClick$={() =>
-                        copyAnalysisText(
-                          "synthesis",
-                          store.analysis!.synthesis,
-                        )
-                      }
-                      class="text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                      style="font-family: var(--font-typewriter);"
-                    >
-                      {store.analysisCopiedId === "synthesis"
-                        ? "✓ copied"
-                        : "copy"}
-                    </button>
+                    <div class="flex items-center gap-2">
+                      <SpeakButton
+                        compact
+                        id="analysis-synthesis"
+                        text={store.analysis.synthesis}
+                        label="the room"
+                      />
+                      <button
+                        onClick$={() =>
+                          copyAnalysisText(
+                            "synthesis",
+                            store.analysis!.synthesis,
+                          )
+                        }
+                        class="text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                        style="font-family: var(--font-typewriter);"
+                      >
+                        {store.analysisCopiedId === "synthesis"
+                          ? "✓ copied"
+                          : "copy"}
+                      </button>
+                    </div>
                   </div>
                   <div
                     class="comment-markdown mt-2 text-[13px] leading-6 text-[var(--color-ink)]"
@@ -2067,17 +2449,40 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                           </span>
                           {memo.personaName}
                         </button>
-                        <button
-                          onClick$={() =>
-                            copyAnalysisText(memo.personaId, memo.text)
-                          }
-                          class="text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                          style="font-family: var(--font-typewriter);"
-                        >
-                          {store.analysisCopiedId === memo.personaId
-                            ? "✓ copied"
-                            : "copy"}
-                        </button>
+                        <div class="flex items-center gap-2">
+                          <SpeakButton
+                            compact
+                            id={`analysis-memo-${memo.personaId}`}
+                            text={memo.text}
+                            voice={
+                              store.personas.find(
+                                (p) => p.id === memo.personaId,
+                              )?.speechVoice
+                            }
+                            voices={
+                              store.personas.find(
+                                (p) => p.id === memo.personaId,
+                              )?.speechVoices
+                            }
+                            instructions={
+                              store.personas.find(
+                                (p) => p.id === memo.personaId,
+                              )?.voice
+                            }
+                            label={memo.personaName}
+                          />
+                          <button
+                            onClick$={() =>
+                              copyAnalysisText(memo.personaId, memo.text)
+                            }
+                            class="text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                            style="font-family: var(--font-typewriter);"
+                          >
+                            {store.analysisCopiedId === memo.personaId
+                              ? "✓ copied"
+                              : "copy"}
+                          </button>
+                        </div>
                       </div>
                       {!collapsed && (
                         <div
@@ -2112,6 +2517,37 @@ async function readCurrentDraftText(): Promise<string> {
 }
 
 /* ── Display helpers ────────────────────────────────────────── */
+
+/**
+ * One line describing what the background room is doing. Deliberately states
+ * how much more writing it is waiting for, so the cadence never feels
+ * arbitrary — a writer who can see "180 more words" understands the room, and
+ * a writer watching a silent panel does not.
+ */
+function backgroundRoomLabel(s: BackgroundRoomSnapshot): string {
+  switch (s.status) {
+    case "reading":
+      return "The room is reading your new pages…";
+    case "error":
+      return "The room stopped reading — it will try again";
+    case "armed": {
+      return "The room will read when you pause";
+    }
+    case "idle":
+    default: {
+      if (s.passesThisSession >= 1 && s.lastPassAt > 0) {
+        return `The room last read ${timeAgo(s.lastPassAt)}`;
+      }
+      const remaining = Math.max(
+        0,
+        WORD_DELTA_THRESHOLD - Math.max(0, s.pendingWords),
+      );
+      return remaining > 0
+        ? `The room reads on — ${remaining} more words`
+        : "The room is listening";
+    }
+  }
+}
 
 function typeLabel(type: PersonaFeedback["type"]): string {
   switch (type) {

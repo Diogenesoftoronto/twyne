@@ -5,6 +5,7 @@ import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa"
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
 import type {
   DossierAttachment,
+  DossierProbe,
   DossierCheckResult,
   DossierObservation,
   InterviewStyle,
@@ -35,6 +36,8 @@ interface RefiningStore {
   dossierCheckLoading: boolean;
   dossierCheckError: string | null;
   showDossierCheck: boolean;
+  formAnswers: Partial<ProjectInterviewAnswers> | null;
+  formAttachments: DossierAttachment[];
 }
 
 /**
@@ -56,6 +59,8 @@ export default component$(() => {
     dossierCheckLoading: false,
     dossierCheckError: null,
     showDossierCheck: false,
+    formAnswers: null,
+    formAttachments: [],
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -68,23 +73,36 @@ export default component$(() => {
   });
 
   const onFormSubmit = $(
-    (answers: ProjectInterviewAnswers, _existing?: string, _filename?: string, attachments?: DossierAttachment[]) => {
-    if (!store.brief) return;
-    const next = createProjectBrief(answers, store.brief, attachments);
-    saveProjectBrief(next);
-    void nav("/editor/");
+    (
+      answers: ProjectInterviewAnswers,
+      _existing?: string,
+      _filename?: string,
+      attachments?: DossierAttachment[],
+      probes?: DossierProbe[],
+    ) => {
+      if (!store.brief) return;
+      const next = createProjectBrief(answers, store.brief, attachments, probes);
+      saveProjectBrief(next);
+      void nav("/editor/");
     },
   );
 
-  const onConversationComplete = $(({ answers, attachments }: {
-    answers: ProjectInterviewAnswers;
-    attachments: DossierAttachment[];
-  }) => {
-    if (!store.brief) return;
-    const next = createProjectBrief(answers, store.brief, attachments);
-    saveProjectBrief(next);
-    void nav("/editor/");
-  });
+  const onConversationComplete = $(
+    ({
+      answers,
+      attachments,
+      probes,
+    }: {
+      answers: ProjectInterviewAnswers;
+      attachments: DossierAttachment[];
+      probes: DossierProbe[];
+    }) => {
+      if (!store.brief) return;
+      const next = createProjectBrief(answers, store.brief, attachments, probes);
+      saveProjectBrief(next);
+      void nav("/editor/");
+    },
+  );
 
   const runDossierCheck = $(async () => {
     if (!store.brief) return;
@@ -196,36 +214,25 @@ export default component$(() => {
         >
           <span aria-hidden="true">←</span> Back to desk
         </Link>
-        <div
-          class="flex items-center gap-3 text-[0.65rem] tracking-[0.18em] uppercase"
-          style={{ fontFamily: "var(--font-typewriter)" }}
-        >
-          <span class="text-[var(--color-ink-muted)]">Mode:</span>
-          <button
-            onClick$={() => {
-              store.style = "form";
-            }}
-            class={`px-3 py-1 rounded-full ${
-              store.style === "form"
-                ? "bg-[var(--color-vermilion)] text-white"
-                : "text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
-            }`}
+        {store.style === "form" && (
+          <div
+            class="flex items-center gap-3 text-[0.65rem] tracking-[0.18em] uppercase"
+            style={{ fontFamily: "var(--font-typewriter)" }}
           >
-            Form
-          </button>
-          <button
-            onClick$={() => {
-              store.style = "conversational";
-            }}
-            class={`px-3 py-1 rounded-full ${
-              store.style === "conversational"
-                ? "bg-[var(--color-vermilion)] text-white"
-                : "text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
-            }`}
-          >
-            Conversation
-          </button>
-        </div>
+            <span class="text-[var(--color-ink-muted)]">Mode:</span>
+            <span class="rounded-full bg-[var(--color-vermilion)] px-3 py-1 text-white">
+              Form
+            </span>
+            <button
+              onClick$={() => {
+                store.style = "conversational";
+              }}
+              class="px-3 py-1 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
+            >
+              Conversation
+            </button>
+          </div>
+        )}
       </div>
 
       {store.style === "form" && (
@@ -345,8 +352,15 @@ export default component$(() => {
       {store.style === "form" ? (
         <AntiTabulaRasa
           mode="refine"
-          initialAnswers={store.brief.answers}
-          initialAttachments={store.brief.attachments}
+          initialAnswers={
+            (store.formAnswers ??
+              store.brief.answers) as ProjectInterviewAnswers
+          }
+          initialAttachments={
+            store.formAttachments.length > 0
+              ? store.formAttachments
+              : store.brief.attachments
+          }
           onSubmit$={onFormSubmit}
           onCancel$={$(() => void nav("/editor/"))}
         />
@@ -357,6 +371,11 @@ export default component$(() => {
           initialAttachments={store.brief.attachments}
           onComplete$={onConversationComplete}
           onCancel$={$(() => void nav("/editor/"))}
+          onUseForm$={({ answers, attachments }) => {
+            store.formAnswers = answers;
+            store.formAttachments = attachments;
+            store.style = "form";
+          }}
         />
       )}
     </div>
@@ -368,8 +387,7 @@ export const head: DocumentHead = {
   meta: [
     {
       name: "description",
-      content:
-        "Refine the project brief that anchors the room of editors.",
+      content: "Refine the project brief that anchors the room of editors.",
     },
   ],
 };

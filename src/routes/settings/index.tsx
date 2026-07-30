@@ -1,5 +1,6 @@
 import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { ApplicationNotice } from "../../components/ui/application-notice";
 import { ThemedDialog } from "../../components/ui/themed-dialog";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
@@ -36,6 +37,12 @@ import {
 } from "../../utils/ai-client";
 import { LOCAL_PROVIDER_ID } from "../../utils/desktop-bridge";
 import { useFeatureFlags } from "../../utils/posthog-context";
+import type { AppError } from "../../types/application-errors";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
@@ -53,10 +60,10 @@ interface SettingsStore {
   testingProviderId: string | null;
   testResults: Record<
     string,
-    { ok: boolean; latencyMs: number; error?: string } | undefined
+    { ok: boolean; latencyMs: number; error?: AppError } | undefined
   >;
   discoveringProviderId: string | null;
-  providerModelErrors: Record<string, string | undefined>;
+  providerModelErrors: Record<string, AppError | undefined>;
   /* editing */
   editingProviderId: string | null;
   editKey: string;
@@ -78,7 +85,7 @@ interface SettingsStore {
   /* account deletion (danger zone) */
   deletingAccount: boolean;
   accountToast: string | null;
-  accountError: string | null;
+  accountError: AppError | null;
   showResetDialog: boolean;
   showDeleteDialog: boolean;
   deleteConfirmText: string;
@@ -88,12 +95,12 @@ interface SettingsStore {
   handle: string | null;
   handleDraft: string;
   handleBusy: boolean;
-  handleError: string | null;
+  handleError: AppError | string | null;
   handleToast: string | null;
   handleCheck: {
     available: boolean;
     handle?: string;
-    reason?: string;
+    error?: AppError;
   } | null;
   handleCheckBusy: boolean;
   profileDisplayName: string;
@@ -115,6 +122,7 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "rubric-judge": "Galley Proof",
   "rubric-review": "Full Review (narrative)",
   "voice-narration": "Voice Narration",
+  "voice-transcription": "Voice Transcription",
   "comment-reply": "Ask Editor (Notes)",
   "citation-format": "Citation Format",
   "source-summarize": "Source Summarize",
@@ -137,6 +145,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
     "A full-page narrative review that explains the grade and a revision plan.",
   "voice-narration":
     "Turns selected prose into spoken audio. BYOK uses your speech-capable provider; Pro can use Twyne-hosted voice.",
+  "voice-transcription":
+    "Turns your voice notes and spoken interview answers into text. BYOK uses your speech-capable provider; Pro can use Twyne-hosted transcription.",
   "comment-reply": "Ask an editor to weigh in on a margin note.",
   "citation-format": "Auto-format detected citations in your chosen style.",
   "source-summarize": "AI summarizes saved sources for your bibliography.",
@@ -342,9 +352,23 @@ export default component$(() => {
       };
       await persist();
     } catch (err) {
+      reportApplicationDiagnostic(
+        "twyne:settings:discover-provider-models",
+        err,
+        {
+          operation: "discover-provider-models",
+          providerId: id,
+        },
+      );
       store.providerModelErrors = {
         ...store.providerModelErrors,
-        [id]: (err as Error).message ?? "Could not load models.",
+        [id]: normalizeApplicationError(err, {
+          source: "provider",
+          metadata: {
+            operation: "discover-provider-models",
+            providerId: id,
+          },
+        }),
       };
     } finally {
       store.discoveringProviderId = null;
@@ -441,7 +465,37 @@ export default component$(() => {
     store.testingProviderId = config.id;
     store.testResults = { ...store.testResults, [config.id]: undefined };
     const result = await testProvider(config);
-    store.testResults = { ...store.testResults, [config.id]: result };
+    const safeResult: {
+      ok: boolean;
+      latencyMs: number;
+      error?: AppError;
+    } = result.ok
+      ? { ok: true, latencyMs: result.latencyMs }
+      : {
+          ok: false,
+          latencyMs: result.latencyMs,
+          error: normalizeApplicationError(
+            result.error ?? "Provider connection failed",
+            {
+              source: "provider",
+              metadata: {
+                operation: "test-provider",
+                providerId: config.id,
+              },
+            },
+          ),
+        };
+    if (!result.ok) {
+      reportApplicationDiagnostic(
+        "twyne:settings:test-provider",
+        result.error ?? "Provider connection failed",
+        {
+          operation: "test-provider",
+          providerId: config.id,
+        },
+      );
+    }
+    store.testResults = { ...store.testResults, [config.id]: safeResult };
     store.testingProviderId = null;
     if (result.ok) {
       await refreshProviderModels(config.id);
@@ -483,7 +537,10 @@ export default component$(() => {
 
   const openDeleteAccountDialog = $(() => {
     if (!convexClientSig.value) {
-      store.accountError = "Not connected. Try again in a moment.";
+      store.accountError = createAppError("NETWORK_UNAVAILABLE", {
+        source: "convex",
+        metadata: { operation: "delete-account" },
+      });
       return;
     }
     store.showDeleteDialog = true;
@@ -495,7 +552,10 @@ export default component$(() => {
   const handleDeleteAccount = $(async () => {
     const client = convexClientSig.value;
     if (!client) {
-      store.accountError = "Not connected. Try again in a moment.";
+      store.accountError = createAppError("NETWORK_UNAVAILABLE", {
+        source: "convex",
+        metadata: { operation: "delete-account" },
+      });
       return;
     }
     if (store.deleteConfirmText.trim() !== "DELETE") {
@@ -521,10 +581,15 @@ export default component$(() => {
       store.showDeleteDialog = false;
       store.deletingAccount = false;
       window.location.href = "/";
-    } catch (e: any) {
-      store.accountError =
-        e?.message ?? "Could not delete account. Please try again.";
-      store.deleteDialogError = store.accountError;
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:settings:delete-account", error, {
+        operation: "delete-account",
+      });
+      store.accountError = normalizeApplicationError(error, {
+        source: "convex",
+        metadata: { operation: "delete-account" },
+      });
+      store.deleteDialogError = store.accountError.message;
       store.deletingAccount = false;
     }
   });
@@ -588,7 +653,21 @@ export default component$(() => {
         })) as
           | { available: true; handle: string }
           | { available: false; reason: string };
-        store.handleCheck = result;
+        store.handleCheck = result.available
+          ? result
+          : {
+              available: false,
+              error: normalizeApplicationError(
+                {
+                  name: "ConvexError",
+                  data: { message: result.reason },
+                },
+                {
+                  source: "convex",
+                  metadata: { operation: "check-handle" },
+                },
+              ),
+            };
       } catch {
         store.handleCheck = null;
       } finally {
@@ -601,7 +680,10 @@ export default component$(() => {
   const handleClaim = $(async () => {
     const client = convexClientSig.value;
     if (!client) {
-      store.handleError = "Not connected. Try again in a moment.";
+      store.handleError = createAppError("NETWORK_UNAVAILABLE", {
+        source: "convex",
+        metadata: { operation: "claim-handle" },
+      });
       return;
     }
     store.handleBusy = true;
@@ -618,8 +700,14 @@ export default component$(() => {
         ? `Your handle is now @${result.handle}`
         : "Handle unchanged.";
       setTimeout(() => (store.handleToast = null), 4000);
-    } catch (e: any) {
-      store.handleError = e?.message ?? "Could not claim handle.";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:settings:claim-handle", error, {
+        operation: "claim-handle",
+      });
+      store.handleError = normalizeApplicationError(error, {
+        source: "convex",
+        metadata: { operation: "claim-handle" },
+      });
     } finally {
       store.handleBusy = false;
     }
@@ -637,10 +725,16 @@ export default component$(() => {
       });
       store.profileToast = "Profile saved.";
       setTimeout(() => (store.profileToast = null), 4000);
-    } catch (e: any) {
+    } catch (error) {
       store.profileToast = null;
       // Surface via handle's error channel for visibility.
-      store.handleError = e?.message ?? "Could not save profile.";
+      reportApplicationDiagnostic("twyne:settings:save-profile", error, {
+        operation: "save-profile",
+      });
+      store.handleError = normalizeApplicationError(error, {
+        source: "convex",
+        metadata: { operation: "save-profile" },
+      });
     } finally {
       store.profileBusy = false;
     }
@@ -685,8 +779,14 @@ export default component$(() => {
       store.profileAvatarUrl = row?.avatarUrl ?? null;
       store.profileToast = "Profile picture updated.";
       setTimeout(() => (store.profileToast = null), 4000);
-    } catch (e: any) {
-      store.handleError = e?.message ?? "Could not update your picture.";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:settings:update-avatar", error, {
+        operation: "update-avatar",
+      });
+      store.handleError = normalizeApplicationError(error, {
+        source: "convex",
+        metadata: { operation: "update-avatar" },
+      });
     } finally {
       store.profileAvatarBusy = false;
     }
@@ -705,8 +805,14 @@ export default component$(() => {
       store.profileAvatarUrl = null;
       store.profileToast = "Profile picture removed.";
       setTimeout(() => (store.profileToast = null), 4000);
-    } catch (e: any) {
-      store.handleError = e?.message ?? "Could not remove your picture.";
+    } catch (error) {
+      reportApplicationDiagnostic("twyne:settings:remove-avatar", error, {
+        operation: "remove-avatar",
+      });
+      store.handleError = normalizeApplicationError(error, {
+        source: "convex",
+        metadata: { operation: "remove-avatar" },
+      });
     } finally {
       store.profileAvatarBusy = false;
     }
@@ -1085,28 +1191,49 @@ export default component$(() => {
                             )}
 
                             {store.testResults[p.id] && (
-                              <p
-                                class={`mt-1.5 text-[0.65rem] ${
-                                  store.testResults[p.id]?.ok
-                                    ? "text-[var(--color-accent-green)]"
-                                    : "text-[var(--color-vermilion)]"
-                                }`}
-                                style={{
-                                  fontFamily: "var(--font-typewriter)",
-                                }}
-                              >
-                                {store.testResults[p.id]?.ok
-                                  ? `✓ Connected (${store.testResults[p.id]?.latencyMs}ms)`
-                                  : `✗ ${store.testResults[p.id]?.error}`}
-                              </p>
+                              <>
+                                {store.testResults[p.id]?.ok ? (
+                                  <p
+                                    class="mt-1.5 text-[0.65rem] text-[var(--color-accent-green)]"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    ✓ Connected (
+                                    {store.testResults[p.id]?.latencyMs}ms)
+                                  </p>
+                                ) : (
+                                  store.testResults[p.id]?.error && (
+                                    <div class="mt-2">
+                                      <ApplicationNotice
+                                        error={
+                                          store.testResults[p.id]
+                                            ?.error as AppError
+                                        }
+                                        compact
+                                        onRetry$={() => runTest(p)}
+                                      />
+                                    </div>
+                                  )
+                                )}
+                              </>
                             )}
                             {store.providerModelErrors[p.id] && (
-                              <p
-                                class="mt-1 text-[0.65rem] text-[var(--color-vermilion)]"
-                                style={{ fontFamily: "var(--font-typewriter)" }}
-                              >
-                                {store.providerModelErrors[p.id]}
-                              </p>
+                              <div class="mt-2">
+                                {(() => {
+                                  const modelError =
+                                    store.providerModelErrors[p.id];
+                                  return modelError ? (
+                                    <ApplicationNotice
+                                      error={modelError}
+                                      compact
+                                      onRetry$={() =>
+                                        refreshProviderModels(p.id)
+                                      }
+                                    />
+                                  ) : null;
+                                })()}
+                              </div>
                             )}
                           </div>
                         </div>
@@ -2456,13 +2583,25 @@ export default component$(() => {
                   </p>
                 )}
                 {store.handleError && (
-                  <p
-                    class="mb-3 text-[0.7rem] text-[var(--color-vermilion)]"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
-                    role="alert"
-                  >
-                    {store.handleError}
-                  </p>
+                  <div class="mb-3">
+                    {typeof store.handleError === "string" ? (
+                      <p
+                        class="text-[0.7rem] text-[var(--color-vermilion)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                        role="alert"
+                      >
+                        {store.handleError}
+                      </p>
+                    ) : (
+                      <ApplicationNotice
+                        error={store.handleError}
+                        compact
+                        onDismiss$={() => {
+                          store.handleError = null;
+                        }}
+                      />
+                    )}
+                  </div>
                 )}
 
                 <label
@@ -2516,12 +2655,14 @@ export default component$(() => {
                   {!store.handleCheckBusy &&
                     store.handleCheck &&
                     !store.handleCheck.available && (
-                      <span
-                        class="text-[var(--color-vermilion)]"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        {store.handleCheck.reason}
-                      </span>
+                      <div class="mt-2">
+                        {store.handleCheck.error && (
+                          <ApplicationNotice
+                            error={store.handleCheck.error}
+                            compact
+                          />
+                        )}
+                      </div>
                     )}
                   {!store.handleCheck &&
                     !store.handleCheckBusy &&
@@ -2735,13 +2876,20 @@ export default component$(() => {
                   </p>
                 )}
                 {store.accountError && (
-                  <p
-                    class="mb-3 text-[0.7rem] text-[var(--color-vermilion)]"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
-                    role="alert"
-                  >
-                    {store.accountError}
-                  </p>
+                  <div class="mb-3">
+                    <ApplicationNotice
+                      error={store.accountError}
+                      compact
+                      onRetry$={
+                        store.accountError.recovery.canRetry
+                          ? openDeleteAccountDialog
+                          : undefined
+                      }
+                      onDismiss$={() => {
+                        store.accountError = null;
+                      }}
+                    />
+                  </div>
                 )}
                 <button
                   onClick$={openDeleteAccountDialog}

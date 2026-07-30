@@ -20,9 +20,15 @@ export function extractFirstJsonObject(text: string): string | null {
   return end === null ? null : text.slice(open, end + 1);
 }
 
+/**
+ * Tags the interview contract can carry. `PROBE` is an optional typed
+ * follow-up attached to an ordinary question.
+ */
+export type TaggedJsonTag = "DOSSIER" | "SYNTHESIZE" | "PROBE";
+
 export function extractTaggedJson(
   text: string,
-  tag: "DOSSIER" | "SYNTHESIZE",
+  tag: TaggedJsonTag,
 ): TaggedJsonSegment | null {
   const marker = new RegExp(`${tag}:`, "i").exec(text);
   if (!marker) return null;

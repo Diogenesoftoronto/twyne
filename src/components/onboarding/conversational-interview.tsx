@@ -17,12 +17,26 @@ import {
 import { loadAiSettingsFromIdb } from "../../utils/idb";
 import type {
   DossierAttachment,
+  DossierProbe,
   ProjectBrief,
   ProjectInterviewAnswers,
 } from "../../types";
+import {
+  probeAnswerText,
+  upsertProbe,
+} from "../../utils/dossier-probes";
+import { ProbeInput } from "./probe-input";
+import { SpeakButton } from "../ui/speak-button";
+import { VoiceRecorder, type VoiceCapture } from "../ui/voice-recorder";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { DossierAttachmentsEditor } from "./dossier-attachments-editor";
+import { ApplicationNotice } from "../ui/application-notice";
+import type { AppError } from "../../types/application-errors";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../utils/application-errors";
 
 /**
  * The conversational interview. A chat-style replacement for the
@@ -75,10 +89,17 @@ interface ConversationalInterviewProps {
     (payload: {
       answers: ProjectInterviewAnswers;
       attachments: DossierAttachment[];
+      probes: DossierProbe[];
     }) => void
   >;
   onCancel$?: PropFunction<() => void>;
   cancelLabel?: string;
+  onUseForm$?: PropFunction<
+    (payload: {
+      answers: Partial<ProjectInterviewAnswers>;
+      attachments: DossierAttachment[];
+    }) => void
+  >;
 }
 
 interface Synthesis {
@@ -91,7 +112,8 @@ interface Synthesis {
 interface ComponentStore {
   messages: InterviewMessage[];
   loading: boolean;
-  error: string | null;
+  error: AppError | null;
+  pendingWriterText: string | null;
   synthesis: Synthesis | null;
   liveDraft: InterviewDossierDraft | null;
   /** When the writer edits a field of the synthesis before accepting. */
@@ -99,6 +121,11 @@ interface ComponentStore {
   draft: string;
   initialized: boolean;
   attachments: DossierAttachment[];
+  requestVersion: number;
+  /** The typed follow-up attached to the latest question, if any. */
+  activeProbe: DossierProbe | null;
+  /** Probes the writer has answered, carried into the finished dossier. */
+  answeredProbes: DossierProbe[];
 }
 
 function confidenceTone(c: InterviewConfidence | undefined): string {
@@ -130,6 +157,7 @@ export const ConversationalInterview = component$(
       messages: [],
       loading: false,
       error: null,
+      pendingWriterText: null,
       synthesis: null,
       liveDraft: props.initialBrief
         ? { brief: props.initialBrief.answers, confidence: {} }
@@ -138,6 +166,9 @@ export const ConversationalInterview = component$(
       draft: "",
       initialized: false,
       attachments: props.initialAttachments ?? [],
+      requestVersion: 0,
+      activeProbe: null,
+      answeredProbes: props.initialBrief?.probes ?? [],
     });
     const inputRef = useSignal<HTMLTextAreaElement>();
     const scrollerRef = useSignal<HTMLDivElement>();
@@ -177,11 +208,15 @@ export const ConversationalInterview = component$(
       if (el) el.scrollTop = el.scrollHeight;
     });
 
-    const runTurn = $(async (writerText: string) => {
-      store.messages = [
-        ...store.messages,
-        { author: "writer", text: writerText },
-      ];
+    const runTurn = $(async (writerText: string, appendWriter = true) => {
+      const requestVersion = ++store.requestVersion;
+      if (appendWriter) {
+        store.messages = [
+          ...store.messages,
+          { author: "writer", text: writerText },
+        ];
+      }
+      store.pendingWriterText = writerText;
       store.loading = true;
       store.error = null;
 
@@ -191,7 +226,7 @@ export const ConversationalInterview = component$(
         const hasByok = hasConfiguredAiProvider(settings);
 
         if (hasByok && settings) {
-          result = await runClientInterviewTurn(
+          const clientResult = await runClientInterviewTurn(
             {
               messages: store.messages,
               mode: props.mode,
@@ -199,12 +234,14 @@ export const ConversationalInterview = component$(
             },
             settings,
           );
-          if (!result) {
-            store.error =
-              "Your configured provider did not answer. Check the API key, model, and base URL in Preferences.";
+          if (!clientResult.ok) {
+            store.error = clientResult.error;
             return;
           }
+          result = clientResult.value;
         }
+
+        if (requestVersion !== store.requestVersion) return;
 
         if (!result && !hasByok && clientSig.value) {
           try {
@@ -216,17 +253,28 @@ export const ConversationalInterview = component$(
                 currentBrief: props.initialBrief ?? null,
               },
             )) as InterviewTurnResult | null;
-          } catch {
-            store.error =
-              "The shared server could not answer. Sign in again or use your own provider in Preferences.";
+          } catch (error) {
+            store.error = normalizeApplicationError(error, {
+              source: "convex",
+              metadata: { feature: "interview-turn" },
+            });
             return;
           }
         }
 
+        if (requestVersion !== store.requestVersion) return;
+
         if (!result) {
-          store.error = hasByok
-            ? "Your configured provider did not answer. Check the API key, model, and base URL in Preferences."
-            : "Add a provider in Preferences or sign in to use the interview.";
+          store.error = createAppError(
+            clientSig.value ? "AUTHENTICATION_REQUIRED" : "CONFIGURATION_ERROR",
+            {
+              recovery: {
+                action: clientSig.value ? "sign-in" : "choose-provider",
+                canRetry: false,
+              },
+              metadata: { feature: "interview-turn" },
+            },
+          );
           return;
         }
 
@@ -236,6 +284,10 @@ export const ConversationalInterview = component$(
             ...store.messages,
             { author: "interviewer", text: result.text },
           ];
+          // A typed follow-up, when the interviewer offered one. The question
+          // itself is always asked in prose above, so the writer can ignore
+          // the control and just type.
+          store.activeProbe = result.probe ?? null;
         } else {
           // Synthesis — fill any missing field with the writer's
           // own current answer so the dossier is never empty.
@@ -254,12 +306,15 @@ export const ConversationalInterview = component$(
           store.synthesis = { brief, confidence: result.confidence };
           store.liveDraft = { brief, confidence: result.confidence };
         }
-      } catch (err) {
-        store.error =
-          (err as Error).message ??
-          "The interview could not continue. Check your provider settings and try again.";
+        store.pendingWriterText = null;
+      } catch (error) {
+        store.error = normalizeApplicationError(error, {
+          metadata: { feature: "interview-turn" },
+        });
       } finally {
-        store.loading = false;
+        if (requestVersion === store.requestVersion) {
+          store.loading = false;
+        }
       }
     });
 
@@ -267,8 +322,66 @@ export const ConversationalInterview = component$(
       if (store.loading || store.synthesis) return;
       const text = store.draft.trim();
       if (!text) return;
-      store.draft = "";
+      // Typing past a probe is a legitimate answer to the question; retire it.
+      store.activeProbe = null;
       await runTurn(text);
+      if (!store.error) store.draft = "";
+    });
+
+    /**
+     * The writer answered a typed follow-up. Two things happen: the structured
+     * answer is kept for the dossier (that is the whole point — the judges get
+     * data, not prose), and a readable sentence goes into the transcript so
+     * the conversation still reads as a conversation after a tap.
+     */
+    const answerProbe = $(async (answered: DossierProbe) => {
+      if (store.loading) return;
+      store.answeredProbes = upsertProbe(store.answeredProbes, answered);
+      store.activeProbe = null;
+      await runTurn(probeAnswerText(answered));
+    });
+
+    const skipProbe = $(() => {
+      store.activeProbe = null;
+      inputRef.value?.focus();
+    });
+
+    const retryTurn = $(async () => {
+      const pending = store.pendingWriterText;
+      if (!pending || store.loading) return;
+      await runTurn(pending, false);
+    });
+
+    const useForm = $(() => {
+      store.requestVersion += 1;
+      props.onUseForm$?.({
+        answers:
+          store.synthesis?.brief ??
+          store.liveDraft?.brief ??
+          props.initialBrief?.answers ??
+          {},
+        attachments: store.attachments,
+      });
+    });
+
+    const cancelOrUseForm = $(() => {
+      store.requestVersion += 1;
+      if (props.onUseForm$) {
+        props.onUseForm$({
+          answers:
+            store.synthesis?.brief ??
+            store.liveDraft?.brief ??
+            props.initialBrief?.answers ??
+            {},
+          attachments: store.attachments,
+        });
+        return;
+      }
+      props.onCancel$?.();
+    });
+
+    const dismissError = $(() => {
+      store.error = null;
     });
 
     const requestSynthesis = $(async () => {
@@ -278,6 +391,7 @@ export const ConversationalInterview = component$(
       // rather than ask another question.
       await runTurn(
         "(the writer is ready to see the dossier — please synthesise now)",
+        false,
       );
     });
 
@@ -286,6 +400,7 @@ export const ConversationalInterview = component$(
       void props.onComplete$({
         answers: store.synthesis.brief,
         attachments: store.attachments,
+        probes: store.answeredProbes,
       });
     });
 
@@ -347,7 +462,7 @@ export const ConversationalInterview = component$(
           </div>
           {props.onCancel$ && (
             <button
-              onClick$={props.onCancel$}
+              onClick$={cancelOrUseForm}
               class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-sm"
               style={{
                 fontFamily: "var(--font-typewriter)",
@@ -385,17 +500,41 @@ export const ConversationalInterview = component$(
                     }}
                   >
                     {m.author === "interviewer" && (
-                      <p
-                        class="text-[0.55rem] tracking-[0.24em] uppercase mb-1 text-[var(--color-ink-muted)]"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        The room
-                      </p>
+                      <div class="flex items-center justify-between gap-2 mb-1">
+                        <p
+                          class="text-[0.55rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          The room
+                        </p>
+                        <SpeakButton
+                          compact
+                          id={`interview-${i}`}
+                          text={m.text}
+                          label="the room"
+                        />
+                      </div>
                     )}
                     {m.text}
                   </div>
                 </div>
               ))}
+
+              {/* A typed follow-up to the question just asked. Sits under the
+                  thread rather than inside the bubble so the transcript stays
+                  a transcript, and the writer can still just type instead. */}
+              {store.activeProbe && !store.loading && !store.synthesis && (
+                <div class="flex justify-start">
+                  <div class="max-w-[80%] w-full">
+                    <ProbeInput
+                      probe={store.activeProbe}
+                      disabled={store.loading}
+                      onAnswer$={answerProbe}
+                      onSkip$={skipProbe}
+                    />
+                  </div>
+                </div>
+              )}
 
               {store.loading && (
                 <div class="flex justify-start">
@@ -556,12 +695,6 @@ export const ConversationalInterview = component$(
                   </div>
                 </div>
               )}
-
-              {store.error && (
-                <div class="bg-[var(--color-vermilion)]/10 border border-[var(--color-vermilion)] rounded p-3 text-sm text-[var(--color-vermilion)]">
-                  {store.error}
-                </div>
-              )}
             </div>
 
             <aside class="lg:sticky lg:top-4 lg:self-start border border-[var(--color-paper-3)] bg-[var(--color-paper-2)] p-4 shadow-sm">
@@ -628,6 +761,34 @@ export const ConversationalInterview = component$(
                 })}
               </dl>
 
+              {store.answeredProbes.length > 0 && (
+                <div class="mt-4 border-t border-[var(--color-paper-3)] pt-3">
+                  <p
+                    class="text-[0.57rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Particulars
+                  </p>
+                  <ul class="mt-2 space-y-1.5">
+                    {store.answeredProbes.map((p) => (
+                      <li
+                        key={p.id}
+                        class="text-[0.72rem] leading-4 text-[var(--color-ink-light)]"
+                        style={{ fontFamily: "var(--font-serif)" }}
+                      >
+                        <span class="text-[var(--color-ink-muted)]">
+                          {p.prompt}
+                        </span>
+                        <br />
+                        <span class="text-[var(--color-ink)]">
+                          {probeAnswerText(p)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <p
                 class="mt-4 border-t border-[var(--color-paper-3)] pt-3 text-[0.72rem] leading-5 text-[var(--color-ink-muted)]"
                 style={{ fontFamily: "var(--font-typewriter)" }}
@@ -643,6 +804,33 @@ export const ConversationalInterview = component$(
         {!store.synthesis && (
           <div class="border-t border-[var(--color-paper-3)] bg-[var(--color-paper-2)] px-4 py-3">
             <div class="max-w-2xl mx-auto">
+              {store.error && (
+                <div class="mb-3">
+                  <ApplicationNotice
+                    error={store.error}
+                    busy={store.loading}
+                    onRetry$={
+                      store.error.recovery.canRetry ? retryTurn : undefined
+                    }
+                    recoveryLabel={
+                      store.error.code === "AUTHENTICATION_REQUIRED"
+                        ? "Sign in"
+                        : props.onUseForm$
+                          ? "Use the form"
+                          : "Open AI settings"
+                    }
+                    recoveryHref={
+                      store.error.code === "AUTHENTICATION_REQUIRED"
+                        ? "/signin/"
+                        : props.onUseForm$
+                          ? undefined
+                          : "/settings/"
+                    }
+                    onRecovery$={props.onUseForm$ ? useForm : undefined}
+                    onDismiss$={dismissError}
+                  />
+                </div>
+              )}
               <textarea
                 value={store.draft}
                 onInput$={(_, el) => {
@@ -663,6 +851,26 @@ export const ConversationalInterview = component$(
                 class="w-full border border-[var(--color-paper-3)] rounded px-3 py-2 text-sm bg-[var(--color-paper-soft)] focus:outline-none focus:border-[var(--color-vermilion)] disabled:opacity-50"
                 style={{ fontFamily: "var(--font-serif)" }}
               />
+              {/* Speaking an answer fills the box rather than sending it —
+                  transcription mishears, and the writer should see their own
+                  words before the room does. */}
+              <div class="mt-2">
+                <VoiceRecorder
+                  label="Answer out loud"
+                  transcriptionHint={
+                    props.initialBrief
+                      ? `${props.initialBrief.answers.workingTitle}. ${props.initialBrief.answers.audience}`
+                      : undefined
+                  }
+                  onCapture$={$((capture: VoiceCapture) => {
+                    store.draft = store.draft.trim()
+                      ? `${store.draft.trim()} ${capture.transcript}`
+                      : capture.transcript;
+                    inputRef.value?.focus();
+                  })}
+                />
+              </div>
+
               <div class="flex items-center justify-between mt-2">
                 <button
                   onClick$={requestSynthesis}

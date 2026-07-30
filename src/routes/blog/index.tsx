@@ -18,6 +18,11 @@ import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { BlogIndex } from "../../components/blog/blog-index";
 import type { PublicBlogPost } from "../../components/blog/blog-types";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 
 export default component$(() => {
   const clientSig = useConvexClient();
@@ -34,7 +39,10 @@ export default component$(() => {
       // is handled by the ConvexProvider re-mounting the
       // client and the page already being hydrated.
       isLoading.value = false;
-      errored.value = "Sign in to load the blog feed.";
+      errored.value = createAppError("NETWORK_UNAVAILABLE", {
+        source: "convex",
+        metadata: { operation: "load-blog-index" },
+      }).message;
       return;
     }
     try {
@@ -43,17 +51,23 @@ export default component$(() => {
       // keeps the wire shape correct without forcing a
       // Convex regeneration — the next `npx convex dev` will
       // pick the function up and the cast becomes redundant.
-      const data = (await (
+      const data = await (
         client.query as unknown as (
           ref: unknown,
           args: { limit?: number },
         ) => Promise<PublicBlogPost[]>
       )((api.published as unknown as { listBlog: unknown }).listBlog, {
         limit: 50,
-      }));
+      });
       posts.value = data;
     } catch (err) {
-      errored.value = (err as Error).message ?? "Could not load the blog.";
+      reportApplicationDiagnostic("twyne:blog:load-index", err, {
+        operation: "load-blog-index",
+      });
+      errored.value = normalizeApplicationError(err, {
+        source: "convex",
+        metadata: { operation: "load-blog-index" },
+      }).message;
     } finally {
       isLoading.value = false;
     }
@@ -83,8 +97,7 @@ export const head: DocumentHead = {
     { property: "og:title", content: "Twyne · Field Notes" },
     {
       property: "og:description",
-      content:
-        "Updates, experiments, and editorial notes from the Twyne desk.",
+      content: "Updates, experiments, and editorial notes from the Twyne desk.",
     },
   ],
 };

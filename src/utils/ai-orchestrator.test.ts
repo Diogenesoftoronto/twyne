@@ -13,7 +13,20 @@ const mockState: {
   runClientCalls: [],
 };
 
+/**
+ * Keep every real export and override only the one this test controls.
+ *
+ * A stub with a single export breaks as soon as anything else in the module
+ * graph statically imports another idb function — `lix.ts` imports
+ * `loadLixBlobFromIdb`, and it is reachable from here via
+ * application-diagnostics → posthog-context → auth-context → convex-sync.
+ * That is a link-time failure, so it takes the whole file down rather than
+ * one test. Spreading the real module makes the mock immune to that: the real
+ * functions are all `isBrowser()`-guarded and inert under the test runner.
+ */
+const realIdb = await import("./idb");
 mock.module("./idb", () => ({
+  ...realIdb,
   loadAiSettingsFromIdb: async () => mockState.settings,
 }));
 

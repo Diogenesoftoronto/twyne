@@ -3,6 +3,13 @@ import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
 import { api } from "../../../convex/_generated/api";
+import type { AppError } from "../../types/application-errors";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import { ApplicationNotice } from "../../components/ui/application-notice";
 
 const PRO_PRODUCT_ID = import.meta.env.PUBLIC_CREEM_PRODUCT_PRO as
   | string
@@ -26,7 +33,7 @@ export default component$(() => {
   const clientSig = useConvexClient();
   const auth = useAuth();
   const busy = useSignal(false);
-  const error = useSignal<string | null>(null);
+  const error = useSignal<AppError | null>(null);
   const subscriptionStatus = useSignal<string | null>(null);
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -54,16 +61,26 @@ export default component$(() => {
   const subscribe = $(async () => {
     error.value = null;
     if (!auth.value.user) {
-      error.value = "Please sign in first, then come back to subscribe.";
+      error.value = createAppError("AUTHENTICATION_REQUIRED", {
+        source: "auth",
+        recovery: { action: "sign-in", canRetry: false },
+        metadata: { operation: "start-checkout" },
+      });
       return;
     }
     if (!PRO_PRODUCT_ID) {
-      error.value = "Pricing is not fully configured yet (missing product id).";
+      error.value = createAppError("CONFIGURATION_ERROR", {
+        recovery: { action: "contact-support", canRetry: false },
+        metadata: { operation: "start-checkout" },
+      });
       return;
     }
     const client = clientSig.value;
     if (!client) {
-      error.value = "Not connected. Try again in a moment.";
+      error.value = createAppError("NETWORK_UNAVAILABLE", {
+        source: "convex",
+        metadata: { operation: "start-checkout" },
+      });
       return;
     }
     busy.value = true;
@@ -73,8 +90,13 @@ export default component$(() => {
       });
       window.location.href = checkoutUrl;
     } catch (err) {
-      error.value =
-        err instanceof Error ? err.message : "Could not start checkout.";
+      reportApplicationDiagnostic("twyne:pricing:start-checkout", err, {
+        operation: "start-checkout",
+      });
+      error.value = normalizeApplicationError(err, {
+        source: "convex",
+        metadata: { operation: "start-checkout" },
+      });
       busy.value = false;
     }
   });
@@ -169,9 +191,26 @@ export default component$(() => {
             </p>
           )}
           {error.value && (
-            <p class="mt-3 text-sm text-[var(--color-accent-red)]">
-              {error.value}
-            </p>
+            <div class="mt-3">
+              <ApplicationNotice
+                error={error.value}
+                compact
+                recoveryLabel={
+                  error.value.code === "AUTHENTICATION_REQUIRED"
+                    ? "Sign in"
+                    : undefined
+                }
+                recoveryHref={
+                  error.value.code === "AUTHENTICATION_REQUIRED"
+                    ? "/signin/"
+                    : undefined
+                }
+                onRetry$={error.value.recovery.canRetry ? subscribe : undefined}
+                onDismiss$={() => {
+                  error.value = null;
+                }}
+              />
+            </div>
           )}
         </section>
       </div>

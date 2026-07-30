@@ -42,6 +42,16 @@ export interface UserComment {
   createdAt: number;
   updatedAt: number;
   replies: UserCommentReply[];
+  /**
+   * Key into the local `voice-notes` IndexedDB store when this note was
+   * spoken. The comment's `text` is the transcript; this is the recording it
+   * came from, which carries the hesitation and emphasis the transcript
+   * drops. Local-only by design — audio does not sync.
+   */
+  audioId?: string;
+  audioDurationMs?: number;
+  /** Which provider produced the transcript, for the provider tag. */
+  transcriptProvider?: string;
 }
 
 const COMMENTS_PATH = "/user-comments.json";

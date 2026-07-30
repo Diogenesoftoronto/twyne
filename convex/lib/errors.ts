@@ -31,17 +31,54 @@ interface ReportArgs {
   context?: Record<string, unknown>;
 }
 
-export function reportError({ feature, error, context }: ReportArgs): void {
-  const message =
-    error instanceof Error
-      ? error.message
-      : typeof error === "string"
-        ? error
-        : JSON.stringify(error);
-  const stack = error instanceof Error ? error.stack : undefined;
+const SAFE_CONTEXT_KEYS = new Set([
+  "referenceId",
+  "feature",
+  "operation",
+  "provider",
+  "model",
+  "mode",
+  "status",
+  "kind",
+  "type",
+  "action",
+  "attempt",
+  "retryAfterMs",
+]);
 
-  // Console first — always works, even if PostHog is unconfigured.
-  console.error(`[twyne:${feature}]`, message, stack ?? "", context ?? "");
+function safeContext(
+  context: Record<string, unknown> | undefined,
+): Record<string, string | number | boolean | null> {
+  const output: Record<string, string | number | boolean | null> = {};
+  if (!context) return output;
+  for (const [key, value] of Object.entries(context)) {
+    if (!SAFE_CONTEXT_KEYS.has(key)) continue;
+    if (
+      value === null ||
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+    ) {
+      output[key] =
+        typeof value === "string" ? value.slice(0, 120) : value;
+    }
+  }
+  return output;
+}
+
+export function reportError({ feature, error, context }: ReportArgs): void {
+  const errorType = error instanceof Error ? error.name : "Error";
+  const sanitizedContext = safeContext(context);
+  const production = process.env.NODE_ENV === "production";
+
+  if (production) {
+    console.error(`[twyne:${feature}]`, {
+      errorType,
+      ...sanitizedContext,
+    });
+  } else {
+    console.error(`[twyne:${feature}]`, error, context ?? {});
+  }
 
   // Best-effort PostHog capture. Failures here are swallowed so a
   // telemetry hiccup never breaks the handler.
@@ -62,15 +99,13 @@ export function reportError({ feature, error, context }: ReportArgs): void {
         event: "$exception",
         properties: {
           distinct_id: "convex-server",
-          $exception_type:
-            error instanceof Error ? error.name : "Error",
-          $exception_message: message,
-          $exception_stack: stack,
+          $exception_type: errorType,
+          $exception_message: "Server operation failed",
           $exception_is_unhandled: false,
           $level: "error",
           twyne_feature: feature,
           twyne_server_runtime: "convex",
-          ...context,
+          ...sanitizedContext,
         },
       }),
     }).catch(() => {

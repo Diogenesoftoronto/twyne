@@ -21,6 +21,11 @@ import {
   loadBlogPieceBySlug,
   type PublishedPieceLoaderData,
 } from "../../../utils/published-metadata";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../../utils/application-diagnostics";
 
 interface BlogPostData {
   slug: string;
@@ -63,7 +68,10 @@ export default component$(() => {
     const client = clientSig.value;
     if (!client || !slug) {
       isLoading.value = false;
-      errored.value = "Unable to load post.";
+      errored.value = createAppError("NETWORK_UNAVAILABLE", {
+        source: "convex",
+        metadata: { operation: "load-blog-post" },
+      }).message;
       return;
     }
     try {
@@ -74,15 +82,17 @@ export default component$(() => {
       // `listBlog` lookup uses a type cast for the same
       // reason as the index page — see that file for the
       // full note.
-      const listBlog = (api.published as unknown as {
-        listBlog: unknown;
-      }).listBlog;
-      const all = (await (
+      const listBlog = (
+        api.published as unknown as {
+          listBlog: unknown;
+        }
+      ).listBlog;
+      const all = await (
         client.query as unknown as (
           ref: unknown,
           args: { limit?: number },
         ) => Promise<Array<{ slug: string }>>
-      )(listBlog, { limit: 200 }));
+      )(listBlog, { limit: 200 });
       const match = all.find((p) => p.slug === slug);
       if (!match) {
         missing.value = true;
@@ -97,7 +107,13 @@ export default component$(() => {
       }
       post.value = data;
     } catch (err) {
-      errored.value = (err as Error).message ?? "Could not load the post.";
+      reportApplicationDiagnostic("twyne:blog:load-post", err, {
+        operation: "load-blog-post",
+      });
+      errored.value = normalizeApplicationError(err, {
+        source: "convex",
+        metadata: { operation: "load-blog-post" },
+      }).message;
     } finally {
       isLoading.value = false;
     }
@@ -113,11 +129,15 @@ export default component$(() => {
   );
 });
 
-export const head: DocumentHead = ({ params, resolveValue }) => {
+export const head: DocumentHead = ({ params, resolveValue, url }) => {
   const { piece } = resolveValue(useBlogPost);
   const title = piece?.title ?? params.slug ?? "Field Notes";
   const description = blogDescription(piece);
   const author = piece?.authorName ?? piece?.ownerHandle ?? null;
+
+  // Per-post social card (see routes/og/blog/[slug]). Absolute URL so
+  // scrapers can resolve it; declaring these overrides RouterHead's defaults.
+  const ogImage = `${url.origin}/og/blog/${params.slug ?? ""}`;
 
   return {
     title: `Twyne · ${title}`,
@@ -126,8 +146,11 @@ export const head: DocumentHead = ({ params, resolveValue }) => {
       { property: "og:type", content: "article" },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
+      { property: "og:image", content: ogImage },
+      { property: "og:image:alt", content: `${title} — Twyne` },
       { name: "twitter:title", content: title },
       { name: "twitter:description", content: description },
+      { name: "twitter:image", content: ogImage },
       ...(author ? [{ name: "author", content: author }] : []),
     ],
   };

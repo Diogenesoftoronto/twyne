@@ -24,7 +24,25 @@ const CASES = [
       "hasConfiguredAiProvider",
       "runClientJudge",
       "runClientRubricReview",
+      "runClientTargetFitJudge",
+      "runClientCustomCriterionJudge",
     ],
+  },
+  {
+    // Voice must not become a hosted-only feature: both reading aloud and
+    // transcribing have to try the writer's own key first.
+    path: "src/utils/speech.ts",
+    // Voice gates on a voice-capable provider, not a language one — a writer
+    // may have only Fish Audio configured, or only an LLM that cannot speak.
+    mustInclude: ["hasConfiguredVoiceProvider", "runClientVoiceSpeech"],
+  },
+  {
+    path: "src/utils/voice-notes.ts",
+    mustInclude: ["hasConfiguredVoiceProvider", "runClientVoiceTranscribe"],
+  },
+  {
+    path: "src/utils/background-room.ts",
+    mustInclude: ["hasConfiguredAiProvider", "runClientAgent"],
   },
   {
     path: "src/routes/dossier/refine/index.tsx",

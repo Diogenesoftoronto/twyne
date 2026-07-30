@@ -54,7 +54,7 @@ import { CommentMark } from "./extensions/comment-mark";
 import { PersonaNoteMark } from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
 import { MermaidDiagram } from "./extensions/mermaid-node";
-import { EndnoteNode } from "./extensions/endnote-node";
+import { EndnoteNode, type NoteKind } from "./extensions/endnote-node";
 import { RemoteCursors } from "./extensions/remote-cursors";
 import { type RemoteCursor } from "./extensions/remote-cursors";
 import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
@@ -125,6 +125,14 @@ interface SuggestionPopover {
   busy: boolean;
 }
 
+/** A note collected live from the document, in reading order, numbered per kind. */
+export interface EditorNote {
+  kind: NoteKind;
+  number: number;
+  text: string;
+  pos: number;
+}
+
 export interface EditorStore {
   editor: Editor | null;
   content: string;
@@ -141,6 +149,8 @@ export interface EditorStore {
   /** Which note input row is open, if any. */
   noteInputKind: "endnote" | "footnote" | null;
   noteText: string;
+  /** Endnotes/footnotes collected live from the doc, for the bottom-of-manuscript notes panel. */
+  notes: EditorNote[];
   hasSelection: boolean;
   notePopover: NotePopover | null;
   suggestionPopover: SuggestionPopover | null;
@@ -255,6 +265,7 @@ export const TwyneEditor = component$(
       mermaidSource: "",
       noteInputKind: null,
       noteText: "",
+      notes: [],
       hasSelection: false,
       notePopover: null,
       suggestionPopover: null,
@@ -594,6 +605,25 @@ export const TwyneEditor = component$(
         };
         editor.on("selectionUpdate", refreshActive);
         editor.on("transaction", refreshActive);
+
+        // Walk the doc for endnote/footnote atoms so the bottom-of-manuscript
+        // notes panel stays in sync — numbered per kind, in reading order,
+        // matching the CSS-counter numbering of the inline markers.
+        const refreshNotes = () => {
+          const notes: EditorNote[] = [];
+          let endnoteCount = 0;
+          let footnoteCount = 0;
+          editor.state.doc.descendants((node, pos) => {
+            if (node.type.name !== "endnote") return;
+            const kind: NoteKind =
+              node.attrs.kind === "footnote" ? "footnote" : "endnote";
+            const number = kind === "footnote" ? ++footnoteCount : ++endnoteCount;
+            notes.push({ kind, number, text: node.attrs.text ?? "", pos });
+          });
+          store.notes = notes;
+        };
+        editor.on("update", refreshNotes);
+        refreshNotes();
 
         // Seed the colophon (word count, folios) from the loaded draft.
         store.meta = computeDocumentMeta(editor.getText());
@@ -1365,6 +1395,23 @@ export const TwyneEditor = component$(
       store.notePopover = null;
     });
 
+    /** Jump from a bottom-of-manuscript notes-panel entry to its marker in the text. */
+    const jumpToNote = $((pos: number) => {
+      const editor = store.editor;
+      if (!editor) return;
+      const dom = editor.view.nodeDOM(pos) as HTMLElement | null;
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      dom?.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "center",
+      });
+      dom?.classList.add("is-flashing");
+      setTimeout(() => dom?.classList.remove("is-flashing"), 1600);
+      editor.chain().focus().setTextSelection(pos).run();
+    });
+
     /**
      * Accept an editor's proposed rewrite: swap the original passage for the
      * replacement in the manuscript, merge the proposal's Lix branch into the
@@ -1646,6 +1693,28 @@ export const TwyneEditor = component$(
       if (kind === "header") store.headerText = next;
       else store.footerText = next;
       window.dispatchEvent(new CustomEvent(`twyne:${kind}`, { detail: next }));
+    });
+
+    /**
+     * Read the manuscript aloud — the selection when there is one, otherwise
+     * the whole draft. Hearing your own prose in another voice is the oldest
+     * revision trick there is, and the synthesis plumbing was already here.
+     */
+    const readAloud = $(async () => {
+      const editor = store.editor;
+      if (!editor) return;
+      const { from, to } = editor.state.selection;
+      const text =
+        from !== to
+          ? editor.state.doc.textBetween(from, to, "\n\n")
+          : editor.getText();
+      if (!text.trim()) return;
+      const { speak } = await import("../../utils/speech");
+      await speak({
+        id: from !== to ? `manuscript-${from}-${to}` : "manuscript",
+        text,
+        client: clientSig.value ?? null,
+      });
     });
 
     const runCommand = $((command: string) => {
@@ -2171,6 +2240,14 @@ export const TwyneEditor = component$(
               ☍ comment
             </button>
             <button
+              title="Read the selection aloud — or the whole draft when nothing is selected"
+              aria-label="Read aloud"
+              onClick$={readAloud}
+              class="tool-btn"
+            >
+              ♪ read
+            </button>
+            <button
               title="Insert endnote — collected under Notes on export"
               aria-label="Insert endnote"
               aria-pressed={store.noteInputKind === "endnote"}
@@ -2681,6 +2758,53 @@ export const TwyneEditor = component$(
             </div>
 
             <div id="twyne-editor-mount" />
+
+            {/* Notes — endnotes and footnotes collected live from the doc,
+                set at the foot of the manuscript like a book's own notes
+                page. Independent numbering per kind, mirroring the inline
+                markers and the exported "Notes"/"Footnotes" sections. */}
+            {store.notes.length > 0 && (
+              <div
+                class="manuscript-notes mt-10 pt-6 border-t border-[var(--color-paper-3)]"
+                style="font-family: var(--font-serif);"
+              >
+                {(["endnote", "footnote"] as const).map((kind) => {
+                  const items = store.notes.filter((n) => n.kind === kind);
+                  if (items.length === 0) return null;
+                  return (
+                    <div key={kind} class="manuscript-notes-group">
+                      <h3
+                        class="dept-label mb-2"
+                        style="font-family: var(--font-typewriter); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-muted);"
+                      >
+                        {kind === "endnote" ? "Notes" : "Footnotes"}
+                      </h3>
+                      <ol class="manuscript-notes-list">
+                        {items.map((n) => (
+                          <li key={`${kind}-${n.number}`}>
+                            <button
+                              type="button"
+                              class="manuscript-note-marker"
+                              style={{
+                                color:
+                                  kind === "footnote"
+                                    ? "var(--color-cobalt)"
+                                    : "var(--color-vermilion)",
+                              }}
+                              onClick$={() => jumpToNote(n.pos)}
+                              aria-label={`Jump to ${kind} ${n.number} in the text`}
+                            >
+                              {kind === "footnote" ? `†${n.number}` : n.number}
+                            </button>
+                            <span class="manuscript-note-text">{n.text}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Manuscript running footer — author-tunable, page numbers on export */}
             <div

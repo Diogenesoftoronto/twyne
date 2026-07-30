@@ -15,6 +15,20 @@ export interface Persona {
   voice?: string;
   /** One or two few-shot lines written in this persona's voice. */
   sampleLines?: string[];
+  /**
+   * Provider voice used when this editor is read aloud (e.g. "onyx").
+   * The `voice` lore above doubles as the TTS voice direction, so the two
+   * together are what make five editors sound like five people.
+   */
+  speechVoice?: string;
+  /**
+   * Per-provider voice overrides, keyed by {@link AiProviderType}. Providers
+   * name voices in incompatible ways — OpenAI uses names like "onyx", Fish
+   * Audio uses a 32-character voice-model id — so a single field cannot serve
+   * both. {@link Persona.speechVoice} is the fallback when a provider has no
+   * entry here.
+   */
+  speechVoices?: Partial<Record<AiProviderType, string>>;
   /** Optional per-persona generation prefs (honored on the BYOK client path). */
   providerId?: string;
   model?: string;
@@ -35,6 +49,13 @@ export interface PersonaFeedback {
   noteId?: string;
   /** Title of the brief the note was filed against, for the timeline. */
   briefTitle?: string;
+  /**
+   * How this note came to exist. `"convened"` (the default when absent) means
+   * the writer asked; `"background"` means the room read new material on its
+   * own while the writer was working, and the note should be presented more
+   * quietly.
+   */
+  origin?: "convened" | "background";
 }
 
 /** Payload of the `twyne:persona-notes` window event: notes to pin inline. */
@@ -57,6 +78,98 @@ export interface RubricCriterion {
   feedback: string;
 }
 
+/**
+ * One line of the writer's rubric configuration.
+ *
+ * The spine — the criteria Twyne ships — stays fixed so a score means the same
+ * thing from one pass to the next, and so the trend line is honest. What the
+ * writer controls is the weighting, whether a spine criterion is shown at all,
+ * and any number of criteria of their own that the room will judge alongside
+ * them. Spine entries can be disabled and reweighted but never deleted; that
+ * is what keeps two runs comparable.
+ */
+export interface RubricCriterionSpec {
+  id: string;
+  label: string;
+  description: string;
+  source: "spine" | "custom";
+  enabled: boolean;
+  /** Relative weight within the criteria list. 1 is the default. */
+  weight: number;
+}
+
+/** The criteria Twyne ships. Order is the order they render in. */
+export const SPINE_CRITERIA: ReadonlyArray<
+  Pick<RubricCriterionSpec, "id" | "label" | "description">
+> = [
+  {
+    id: "targetFit",
+    label: "Target Fit",
+    description:
+      "Whether the draft is about the right thing, for the right reader — independent of how well it is written",
+  },
+  {
+    id: "thesis",
+    label: "Thesis & Argument",
+    description: "Clarity and strength of the central argument",
+  },
+  {
+    id: "evidence",
+    label: "Evidence & Support",
+    description: "Quality and relevance of supporting evidence",
+  },
+  {
+    id: "sufficiency",
+    label: "Sufficiency & Development",
+    description:
+      "Whether the draft develops enough on-topic material to earn its thesis or goal",
+  },
+  {
+    id: "integrity",
+    label: "Bullshit Resistance",
+    description: "Unsupported certainty, filler, vagueness, and repetition",
+  },
+  {
+    id: "structure",
+    label: "Organization & Flow",
+    description: "Logical structure and transitions",
+  },
+  {
+    id: "pacing",
+    label: "Pacing & Rhythm",
+    description: "Sentence length variation and cadence",
+  },
+  {
+    id: "voice",
+    label: "Voice & Tone",
+    description: "Consistency of voice for the named audience",
+  },
+  {
+    id: "vocabulary",
+    label: "Vocabulary & Diction",
+    description: "Type-token ratio and word choice",
+  },
+  {
+    id: "paragraph",
+    label: "Paragraph Shape",
+    description: "Balance of short and long paragraphs",
+  },
+  {
+    id: "engagement",
+    label: "Reader Engagement",
+    description: "Whether the reader reaches the success signal",
+  },
+] as const;
+
+/** One recorded rubric pass, for the trend line. */
+export interface RubricHistoryEntry {
+  at: number;
+  overall: number;
+  grade: string;
+  targetFit?: number;
+  perCriterion: Record<string, number>;
+}
+
 export interface RubricResult {
   criteria: RubricCriterion[];
   overallScore: number;
@@ -71,6 +184,18 @@ export interface RubricResult {
   review?: string;
   /** Provider tag for the narrative review. */
   reviewProvider?: string;
+  /**
+   * Relevance to the brief's audience and goal, 0-10, from the target-fit
+   * judge. Caps the shape-derived criteria and scales the static weight in
+   * the combined grade. Absent on results saved before the gate existed.
+   */
+  targetFit?: number;
+  /**
+   * The same criteria re-scored under the writer's own weights, 0-100. Shown
+   * beside the editorial grade, never in place of it. Absent unless the
+   * writer has customised their rubric.
+   */
+  writerScore?: number;
 }
 
 /** One editor's full-page memo on the whole document. */
@@ -244,11 +369,46 @@ export interface DossierAttachment {
   addedAt: number;
 }
 
+/**
+ * A typed follow-up question the interviewer generates from what it has
+ * already learned. The seven prose fields say what the piece is; probes
+ * sharpen the parts a paragraph of prose left soft — and because the answers
+ * are structured rather than free text, the judges can use them directly.
+ */
+export type ProbeKind = "choice" | "multi" | "blanks" | "scale";
+
+export interface DossierProbe {
+  id: string;
+  kind: ProbeKind;
+  /** The question, as the writer reads it. */
+  prompt: string;
+  /** choice / multi: the options to pick from. */
+  options?: string[];
+  /** blanks: a sentence with `___` where the writer fills in, e.g.
+   *  "The reader should leave ___ and do ___." */
+  template?: string;
+  /** scale: the range and what each end means. */
+  min?: number;
+  max?: number;
+  minLabel?: string;
+  maxLabel?: string;
+  /** The writer's answer: string for choice, string[] for multi/blanks,
+   *  number for scale. Absent until answered. */
+  answer?: string | string[] | number;
+  /** Which brief field this sharpens, when it maps cleanly to one. */
+  relatesTo?: keyof ProjectInterviewAnswers;
+}
+
 export interface ProjectBrief {
   answers: ProjectInterviewAnswers;
   attachments: DossierAttachment[];
   completedAt: number;
   updatedAt: number;
+  /**
+   * Typed follow-ups the writer answered during the interview. Optional so
+   * every brief saved before probes existed keeps working untouched.
+   */
+  probes?: DossierProbe[];
 }
 
 export interface Folio {
@@ -348,6 +508,12 @@ export interface RoomSettings {
   personaScope: string[];
   /** Optional per-editor level override. */
   perPersona?: Record<string, AssistanceLevel>;
+  /**
+   * Whether the room reads new material on its own while the writer works.
+   * Optional so settings saved before the background room existed keep
+   * working; `undefined` is treated as on.
+   */
+  backgroundRoom?: boolean;
 }
 
 export const DEFAULT_ROOM_SETTINGS: RoomSettings = {
@@ -355,6 +521,7 @@ export const DEFAULT_ROOM_SETTINGS: RoomSettings = {
   maxProposals: 6,
   maxLargeEdits: 2,
   personaScope: [],
+  backgroundRoom: true,
 };
 
 /* ── Bibliography (re-exports from utils/bibliography) ─────────── */
@@ -398,6 +565,9 @@ export type AiProviderType =
   | "ollama"
   | "zai"
   | "minimax"
+  // Voice only: Fish Audio speaks and transcribes but is not an LLM, so it
+  // never counts as a provider for persona/rubric work.
+  | "fishaudio"
   // Desktop-only: native LiteRT (Gemma 4 E4B) served on loopback by the
   // Electrobun shell. Auto-registered, never added by hand — see desktop-bridge.
   | "litert";
@@ -421,6 +591,7 @@ export type AiFeature =
   | "rubric-judge"
   | "rubric-review"
   | "voice-narration"
+  | "voice-transcription"
   | "comment-reply"
   | "citation-format"
   | "source-summarize"
@@ -507,7 +678,19 @@ export interface ProviderMeta {
   defaultBaseUrl?: string;
   apiKeyOptional?: boolean;
   defaultApiKey?: string;
+  /**
+   * Speaks and listens but cannot think. A voice-only provider is never
+   * offered to the persona, rubric or interview features, and — crucially —
+   * having one configured does not make {@link hasConfiguredAiProvider} true,
+   * because those features would then take the BYOK path and find no model.
+   */
+  voiceOnly?: boolean;
 }
+
+/** Provider types that do speech but not language. */
+export const VOICE_ONLY_PROVIDER_TYPES: ReadonlyArray<AiProviderType> = [
+  "fishaudio",
+];
 
 export const PROVIDER_METAS: ProviderMeta[] = [
   {
@@ -586,5 +769,15 @@ export const PROVIDER_METAS: ProviderMeta[] = [
     label: "Local — Gemma 4 E4B",
     defaultModels: ["gemma-4-e4b"],
     needsBaseUrl: true,
+  },
+  {
+    type: "fishaudio",
+    label: "Fish Audio (voice only)",
+    // `s2.1-pro-free` runs without API credit, so it is listed first — it is
+    // the one model that works on a fresh key. `asr-1` is the transcription
+    // model and does require credit.
+    defaultModels: ["s2.1-pro-free", "s2.1-pro", "s2-pro", "s1", "asr-1"],
+    needsBaseUrl: false,
+    voiceOnly: true,
   },
 ];

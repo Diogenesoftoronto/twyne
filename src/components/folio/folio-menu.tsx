@@ -33,6 +33,13 @@ import {
   type PublishResult,
 } from "../../utils/standard-site";
 import type { Folio, ProjectBrief } from "../../types";
+import type { AppError } from "../../types/application-errors";
+import { ApplicationNotice } from "../ui/application-notice";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 
 /**
  * The folio's "File" menu. Sits in the editor toolbar and gives the
@@ -105,8 +112,7 @@ function shareUrlFor(
   slug: string,
 ): string | null {
   if (!ownerHandle) return null;
-  const origin =
-    typeof window !== "undefined" ? window.location.origin : "";
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
   return `${origin}/${ownerHandle}/${slug}`;
 }
 
@@ -115,17 +121,18 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   const clientSig = useConvexClient();
   const menuOpen = useSignal(false);
   const dialog = useSignal<"import" | "share" | null>(null);
-  const importError = useSignal<string | null>(null);
+  const fileError = useSignal<AppError | null>(null);
   const importBusy = useSignal(false);
   const shareBusy = useSignal(false);
-  const shareError = useSignal<string | null>(null);
+  const shareError = useSignal<AppError | null>(null);
+  const shareNotice = useSignal<string | null>(null);
   const shareSlug = useSignal<string | null>(null);
   const shareUrl = useSignal<string | null>(null);
   const copyState = useSignal<"idle" | "copied">("idle");
 
   // ATProto / Bluesky PDS publishing.
   const pdsBusy = useSignal(false);
-  const pdsError = useSignal<string | null>(null);
+  const pdsError = useSignal<AppError | null>(null);
   const pdsResult = useSignal<PublishResult | null>(null);
   const pdsCopyState = useSignal<"idle" | "copied">("idle");
 
@@ -180,47 +187,60 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         shareSlug.value = null;
         shareUrl.value = null;
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      reportApplicationDiagnostic("twyne:folio:list-publications", err, {
+        operation: "list-publications",
+      });
     }
   });
 
   const doExport = $(async (format: ExportFormat) => {
-    menuOpen.value = false;
-    const draftText = await readActiveFolioHtml(props.activeFolioId);
-    const folios = await loadFoliosFromIdb();
-    const [bibliography, apparatusSettings, marginalia] = await Promise.all([
-      loadBibliography(),
-      loadApparatusSettingsFromIdb(),
-      loadPersonaNotesLocally(),
-    ]);
-    const activeBibliography = bibliography.filter(
-      (entry) => entry.folioId === props.activeFolioId || !entry.folioId,
-    );
-    const payload = {
-      title: props.activeFolioName || "Untitled",
-      html: draftText,
-      brief: props.brief,
-      folios,
-      bibliography: activeBibliography,
-      marginalia,
-      citationStyle: apparatusSettings.defaultCitationStyle,
-    };
-    const blob = exportAs(format, payload);
-    const ext =
-      format === "markdown"
-        ? "md"
-        : format === "html"
-          ? "html"
-          : format === "txt"
-            ? "txt"
-            : "twyne.json";
-    downloadBlob(blob, safeFilename(props.activeFolioName, ext));
+    fileError.value = null;
+    try {
+      const draftText = await readActiveFolioHtml(props.activeFolioId);
+      const folios = await loadFoliosFromIdb();
+      const [bibliography, apparatusSettings, marginalia] = await Promise.all([
+        loadBibliography(),
+        loadApparatusSettingsFromIdb(),
+        loadPersonaNotesLocally(),
+      ]);
+      const activeBibliography = bibliography.filter(
+        (entry) => entry.folioId === props.activeFolioId || !entry.folioId,
+      );
+      const payload = {
+        title: props.activeFolioName || "Untitled",
+        html: draftText,
+        brief: props.brief,
+        folios,
+        bibliography: activeBibliography,
+        marginalia,
+        citationStyle: apparatusSettings.defaultCitationStyle,
+      };
+      const blob = exportAs(format, payload);
+      const ext =
+        format === "markdown"
+          ? "md"
+          : format === "html"
+            ? "html"
+            : format === "txt"
+              ? "txt"
+              : "twyne.json";
+      downloadBlob(blob, safeFilename(props.activeFolioName, ext));
+      menuOpen.value = false;
+    } catch (err) {
+      reportApplicationDiagnostic("twyne:folio:export", err, {
+        operation: "export",
+      });
+      fileError.value = normalizeApplicationError(err, {
+        source: "application",
+        metadata: { operation: "export" },
+      });
+    }
   });
 
   const handleImportFile = $(async (file: File) => {
     importBusy.value = true;
-    importError.value = null;
+    fileError.value = null;
     try {
       const result = await importAs(file);
       // Persist to the active folio.
@@ -246,7 +266,22 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         await props.onImported$(result);
       }
     } catch (err) {
-      importError.value = (err as Error).message ?? "Import failed";
+      reportApplicationDiagnostic("twyne:folio:import", err, {
+        operation: "import",
+      });
+      const normalized = normalizeApplicationError(err, {
+        source: "application",
+        metadata: { operation: "import" },
+      });
+      fileError.value =
+        normalized.code === "MALFORMED_RESPONSE" ||
+        normalized.code === "VALIDATION_FAILED"
+          ? createAppError("VALIDATION_FAILED", {
+              source: "validation",
+              validationKey: "invalid_format",
+              metadata: { operation: "import" },
+            })
+          : normalized;
     } finally {
       importBusy.value = false;
     }
@@ -255,19 +290,29 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   const doPublish = $(async () => {
     shareBusy.value = true;
     shareError.value = null;
+    shareNotice.value = null;
     try {
       if (!auth.value.user) {
-        shareError.value =
-          "Sign in (the editor's office, top right) to publish.";
+        shareError.value = createAppError("AUTHENTICATION_REQUIRED", {
+          source: "auth",
+          metadata: { operation: "publish" },
+        });
         return;
       }
       if (!props.activeFolioId) {
-        shareError.value = "No active folio to publish.";
+        shareError.value = createAppError("VALIDATION_FAILED", {
+          source: "validation",
+          validationKey: "required",
+          metadata: { operation: "publish", field: "activeFolioId" },
+        });
         return;
       }
       const client = clientSig.value;
       if (!client) {
-        shareError.value = "Sync is offline — try again in a moment.";
+        shareError.value = createAppError("NETWORK_UNAVAILABLE", {
+          source: "convex",
+          metadata: { operation: "publish" },
+        });
         return;
       }
       const draftText = await readActiveFolioHtml(props.activeFolioId);
@@ -279,10 +324,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       // "blog" get a plain "post" with `requestedBlog: true`
       // in the response so the client can surface a "you're
       // not an admin" message.
-      const isAdmin = await client.query(
-        api.admins.isCurrentUserAdmin,
-        {},
-      );
+      const isAdmin = await client.query(api.admins.isCurrentUserAdmin, {});
       const result = (await client.mutation(api.published.publish, {
         folioId: props.activeFolioId,
         title: props.activeFolioName || "Untitled",
@@ -307,15 +349,21 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         ? `${window.location.origin}/blog/${result.slug}`
         : shareUrlFor(result.ownerHandle, result.slug);
       if (!isAdmin && !result.ownerHandle) {
-        shareError.value =
+        shareNotice.value =
           "Published — claim a writer handle in Settings to get your share URL.";
       }
       if (result.requestedBlog && !isAdmin) {
-        shareError.value =
+        shareNotice.value =
           "You're not in the blog roster — published as a private share instead.";
       }
     } catch (err) {
-      shareError.value = (err as Error).message ?? "Publish failed";
+      reportApplicationDiagnostic("twyne:folio:publish", err, {
+        operation: "publish",
+      });
+      shareError.value = normalizeApplicationError(err, {
+        source: "convex",
+        metadata: { operation: "publish" },
+      });
     } finally {
       shareBusy.value = false;
     }
@@ -325,16 +373,29 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     if (!shareSlug.value) return;
     shareBusy.value = true;
     shareError.value = null;
+    shareNotice.value = null;
     try {
       const client = clientSig.value;
-      if (!client) return;
+      if (!client) {
+        shareError.value = createAppError("NETWORK_UNAVAILABLE", {
+          source: "convex",
+          metadata: { operation: "unpublish" },
+        });
+        return;
+      }
       await client.mutation(api.published.unpublish, {
         slug: shareSlug.value,
       });
       shareSlug.value = null;
       shareUrl.value = null;
     } catch (err) {
-      shareError.value = (err as Error).message ?? "Unpublish failed";
+      reportApplicationDiagnostic("twyne:folio:unpublish", err, {
+        operation: "unpublish",
+      });
+      shareError.value = normalizeApplicationError(err, {
+        source: "convex",
+        metadata: { operation: "unpublish" },
+      });
     } finally {
       shareBusy.value = false;
     }
@@ -346,8 +407,14 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       await navigator.clipboard.writeText(shareUrl.value);
       copyState.value = "copied";
       setTimeout(() => (copyState.value = "idle"), 1500);
-    } catch {
-      // ignore
+    } catch (err) {
+      reportApplicationDiagnostic("twyne:folio:copy-public-link", err, {
+        operation: "copy-public-link",
+      });
+      shareError.value = normalizeApplicationError(err, {
+        source: "application",
+        metadata: { operation: "copy-public-link" },
+      });
     }
   });
 
@@ -356,7 +423,11 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     pdsError.value = null;
     try {
       if (!props.activeFolioId) {
-        pdsError.value = "No active folio to publish.";
+        pdsError.value = createAppError("VALIDATION_FAILED", {
+          source: "validation",
+          validationKey: "required",
+          metadata: { operation: "publish-pds", field: "activeFolioId" },
+        });
         return;
       }
       const agent = await getAgent();
@@ -386,7 +457,13 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         publication,
       });
     } catch (err) {
-      pdsError.value = (err as Error).message ?? "Publish to PDS failed";
+      reportApplicationDiagnostic("twyne:folio:publish-pds", err, {
+        operation: "publish-pds",
+      });
+      pdsError.value = normalizeApplicationError(err, {
+        source: "provider",
+        metadata: { operation: "publish-pds", provider: "atproto" },
+      });
     } finally {
       pdsBusy.value = false;
     }
@@ -399,8 +476,14 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       await navigator.clipboard.writeText(uri);
       pdsCopyState.value = "copied";
       setTimeout(() => (pdsCopyState.value = "idle"), 1500);
-    } catch {
-      // ignore
+    } catch (err) {
+      reportApplicationDiagnostic("twyne:folio:copy-pds-uri", err, {
+        operation: "copy-pds-uri",
+      });
+      pdsError.value = normalizeApplicationError(err, {
+        source: "application",
+        metadata: { operation: "copy-pds-uri" },
+      });
     }
   });
 
@@ -440,7 +523,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             onClick$={() => {
               menuOpen.value = false;
               dialog.value = "import";
-              importError.value = null;
+              fileError.value = null;
             }}
           />
           <hr class="my-1 border-[var(--color-paper-3)]" />
@@ -450,8 +533,20 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               menuOpen.value = false;
               dialog.value = "share";
               shareError.value = null;
+              shareNotice.value = null;
             }}
           />
+          {fileError.value && (
+            <div class="px-2 pt-2">
+              <ApplicationNotice
+                error={fileError.value}
+                compact
+                onDismiss$={$(() => {
+                  fileError.value = null;
+                })}
+              />
+            </div>
+          )}
         </div>
       )}
 
@@ -507,10 +602,16 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               </span>
             </label>
 
-            {importError.value && (
-              <p class="error-slip mt-3" role="alert">
-                {importError.value}
-              </p>
+            {fileError.value && (
+              <div class="mt-3">
+                <ApplicationNotice
+                  error={fileError.value}
+                  compact
+                  onDismiss$={$(() => {
+                    fileError.value = null;
+                  })}
+                />
+              </div>
             )}
 
             <div class="mt-4 flex justify-end gap-2">
@@ -624,10 +725,36 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               </div>
             )}
 
-            {shareError.value && (
-              <p class="error-slip mt-3" role="alert">
-                {shareError.value}
+            {shareNotice.value && (
+              <p
+                class="mt-3 border border-[var(--color-mustard)] bg-[var(--color-paper-soft)] p-3 text-[12px] text-[var(--color-ink-light)]"
+                role="status"
+                style="font-family: var(--font-serif); border-radius: 2px;"
+              >
+                {shareNotice.value}
               </p>
+            )}
+
+            {shareError.value && (
+              <div class="mt-3">
+                <ApplicationNotice
+                  error={shareError.value}
+                  compact
+                  recoveryLabel={
+                    shareError.value.code === "AUTHENTICATION_REQUIRED"
+                      ? "Sign in"
+                      : undefined
+                  }
+                  recoveryHref={
+                    shareError.value.code === "AUTHENTICATION_REQUIRED"
+                      ? "/signin/"
+                      : undefined
+                  }
+                  onDismiss$={$(() => {
+                    shareError.value = null;
+                  })}
+                />
+              </div>
             )}
 
             <div class="mt-5 pt-4 border-t border-dashed border-[var(--color-paper-3)]">
@@ -644,9 +771,9 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                     class="text-[13px] leading-5 text-[var(--color-ink-light)]"
                     style="font-family: var(--font-serif);"
                   >
-                    Files this piece as a{" "}
-                    <code>site.standard.document</code> in your own ATProto
-                    repository, discoverable across the ATmosphere.
+                    Files this piece as a <code>site.standard.document</code> in
+                    your own ATProto repository, discoverable across the
+                    ATmosphere.
                   </p>
                   {pdsResult.value ? (
                     <div class="space-y-2">
@@ -661,10 +788,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                             (e.target as HTMLInputElement).select()
                           }
                         />
-                        <button
-                          class="btn-press text-xs"
-                          onClick$={copyPdsUri}
-                        >
+                        <button class="btn-press text-xs" onClick$={copyPdsUri}>
                           {pdsCopyState.value === "copied" ? "Copied" : "Copy"}
                         </button>
                       </div>
@@ -706,9 +830,23 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                     </button>
                   )}
                   {pdsError.value && (
-                    <p class="error-slip" role="alert">
-                      {pdsError.value}
-                    </p>
+                    <ApplicationNotice
+                      error={pdsError.value}
+                      compact
+                      recoveryLabel={
+                        pdsError.value.code === "CONFIGURATION_ERROR"
+                          ? "Open settings"
+                          : undefined
+                      }
+                      recoveryHref={
+                        pdsError.value.code === "CONFIGURATION_ERROR"
+                          ? "/settings/"
+                          : undefined
+                      }
+                      onDismiss$={$(() => {
+                        pdsError.value = null;
+                      })}
+                    />
                   )}
                 </div>
               ) : (

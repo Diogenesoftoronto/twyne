@@ -1,5 +1,6 @@
 import {
   component$,
+  isDev,
   createContextId,
   Slot,
   useContext,
@@ -11,6 +12,11 @@ import {
   type Signal,
 } from "@builder.io/qwik";
 import { ConvexClient, type ConvexClientOptions } from "convex/browser";
+import { capturePostHogEvent } from "./posthog-context";
+import {
+  normalizeApplicationError,
+  sanitizeErrorMetadata,
+} from "./application-errors";
 
 const ConvexClientContext = createContextId<
   Signal<NoSerialize<ConvexClient> | null>
@@ -24,6 +30,39 @@ interface ConvexProviderProps {
 
 export function useConvexClient() {
   return useContext(ConvexClientContext);
+}
+
+type ConvexLogger = NonNullable<
+  Exclude<ConvexClientOptions["logger"], boolean>
+>;
+
+export function createProductionConvexLogger(): ConvexLogger {
+  const capture = (level: "warn" | "error", args: unknown[]) => {
+    const error = normalizeApplicationError(args[args.length - 1], {
+      source: "convex",
+    });
+    void capturePostHogEvent("$exception", {
+      distinct_id: "convex-browser",
+      $exception_type: "ConvexClientError",
+      $exception_message: error.message,
+      $exception_is_unhandled: false,
+      $level: level,
+      twyne_error_code: error.code,
+      twyne_error_reference_id: error.referenceId,
+      twyne_error_source: error.source,
+      ...sanitizeErrorMetadata({ operation: "convex-client" }),
+    });
+  };
+  return {
+    logVerbose() {},
+    log() {},
+    warn(...args: unknown[]) {
+      capture("warn", args);
+    },
+    error(...args: unknown[]) {
+      capture("error", args);
+    },
+  };
 }
 
 export const ConvexProvider = component$(
@@ -43,7 +82,13 @@ export const ConvexProvider = component$(
         return;
       }
 
-      const createdClient = new ConvexClient(trackedUrl, options);
+      const createdClient = new ConvexClient(trackedUrl, {
+        ...options,
+        logger:
+          options?.logger ?? (isDev ? true : createProductionConvexLogger()),
+        verbose: options?.verbose ?? false,
+        reportDebugInfoToConvex: options?.reportDebugInfoToConvex ?? false,
+      });
       clientSignal.value = noSerialize(createdClient);
 
       cleanup(() => {

@@ -5,6 +5,9 @@
 /release
 /server
 
+# Storybook build output
+/storybook-static
+
 # Electrobun desktop build output
 /build
 /artifacts

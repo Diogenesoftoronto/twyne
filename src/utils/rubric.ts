@@ -503,16 +503,68 @@ export interface RubricCombineResult {
   combined: number; // 0-100
   grade: string;
   summary: string;
+  /** Relevance to the brief's audience/goal, 0-10. 10 when not judged. */
+  targetFit: number;
+  /**
+   * The static score after the relevance cap — what actually fed the grade.
+   * Equals {@link RubricCombineResult.staticTotal} when the draft is on-target.
+   */
+  effectiveStatic: number;
 }
 
 const JUDGE_WEIGHT = 0.45;
 const MIN_JUDGE_WEIGHT = 0.35;
+/** Weight the static-feature score gets when the draft is fully on-target. */
 const STATIC_WEIGHT = 0.2;
+
+/**
+ * The ceiling a purely shape-derived score may reach at a given target-fit.
+ *
+ * Static features measure *shape* — sentence-length variance, type-token
+ * ratio, paragraph balance. They never read the brief, so fluent prose that
+ * has nothing to do with the stated audience or goal scores 10/10 on all of
+ * them. That is the single most misleading thing the rubric can do: it tells
+ * a writer their off-target draft is excellent at three things.
+ *
+ * So a shape score is capped by how relevant the content is. At targetFit 10
+ * the cap is 10 (no effect); at targetFit 2 nothing shape-derived may exceed
+ * 4.4; at 0 the ceiling is 3 — enough to say "the sentences are well formed"
+ * and not a word more.
+ */
+export function shapeCeiling(targetFit: number): number {
+  return clamp(0, 10, 3 + clamp(0, 10, targetFit) * 0.7);
+}
+
+/**
+ * Apply {@link shapeCeiling} to a raw shape score, and report whether the cap
+ * actually bit so the UI can explain itself rather than silently deflating a
+ * number the writer can see is wrong.
+ */
+export function capShapeScore(
+  rawScore: number,
+  targetFit: number,
+): { score: number; capped: boolean; ceiling: number } {
+  const ceiling = shapeCeiling(targetFit);
+  const score = Math.min(rawScore, ceiling);
+  return {
+    score: Math.round(score * 10) / 10,
+    capped: score < rawScore - 0.05,
+    ceiling: Math.round(ceiling * 10) / 10,
+  };
+}
+
+/**
+ * When no target-fit judge could run (offline, no provider, draft too short)
+ * we must not silently punish the draft — an unjudged draft is treated as
+ * on-target, which reproduces the previous behaviour exactly.
+ */
+export const UNJUDGED_TARGET_FIT = 10;
 
 export function combineJudgesAndStatic(
   judges: JudgeResult[],
   staticScore: StaticScore,
   brief: { answers: { audience: string; goal: string } } | null,
+  targetFit: number = UNJUDGED_TARGET_FIT,
 ): RubricCombineResult {
   // Mean across judges, with a hard penalty for any judge below 4.
   const mean =
@@ -529,6 +581,16 @@ export function combineJudgesAndStatic(
     judges.length > 0 ? clamp(0, 10, Math.min(...judges.map((j) => j.score))) : 5;
 
   const staticTotal = staticScore.total;
+  const fit = clamp(0, 10, targetFit);
+
+  // The gate, applied to the aggregate by exactly the same rule as to each
+  // shape criterion: cap the static score by relevance. The weights stay
+  // fixed, which matters — reweighting looks tempting but can *raise* the
+  // grade whenever the static score happens to sit below the harshest
+  // judge's, and a relevance gate that sometimes rewards irrelevance is
+  // worse than no gate. Capping can only ever lower the score or leave it
+  // alone, and at full target fit the ceiling is 10, so this is a no-op.
+  const effectiveStatic = Math.min(staticTotal, shapeCeiling(fit));
 
   // Combined score on a 0-10 scale, then mapped to 0-100 with a curve
   // designed to be brutal. Most drafts should land in the 40-65 range;
@@ -536,7 +598,7 @@ export function combineJudgesAndStatic(
   const combinedTen =
     judgeMean * JUDGE_WEIGHT +
     minJudge * MIN_JUDGE_WEIGHT +
-    staticTotal * STATIC_WEIGHT;
+    effectiveStatic * STATIC_WEIGHT;
   const combinedHundred = brutalCurve(combinedTen * 10);
   const grade = letterGrade(combinedHundred);
 
@@ -546,7 +608,9 @@ export function combineJudgesAndStatic(
     staticTotal,
     combined: Math.round(combinedHundred),
     grade,
-    summary: buildSummary(judges, staticScore, combinedHundred, brief),
+    summary: buildSummary(judges, staticScore, combinedHundred, brief, fit),
+    targetFit: fit,
+    effectiveStatic: Math.round(effectiveStatic * 100) / 100,
   };
 }
 
@@ -592,6 +656,7 @@ function buildSummary(
   staticScore: StaticScore,
   final: number,
   brief: { answers: { audience: string; goal: string } } | null,
+  targetFit: number = UNJUDGED_TARGET_FIT,
 ): string {
   const harshest = [...judges].sort((a, b) => a.score - b.score)[0];
   const kindest = [...judges].sort((a, b) => b.score - a.score)[0];
@@ -603,6 +668,13 @@ function buildSummary(
   }
   if (kindest && kindest !== harshest) {
     parts.push(`Kindest: ${kindest.personaId} at ${kindest.score}/10.`);
+  }
+  if (targetFit < 7) {
+    parts.push(
+      `Target fit is ${targetFit}/10 — the draft is only partly doing the job the brief set, so the shape measurements below are capped at ${shapeCeiling(
+        targetFit,
+      ).toFixed(1)}/10 and count for less in the grade. Well-formed sentences about the wrong thing are still the wrong thing.`,
+    );
   }
   parts.push(
     `Static features land at ${staticScore.total.toFixed(

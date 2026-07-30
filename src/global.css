@@ -2341,6 +2341,61 @@ body {
   }
 }
 
+/* Flash an inline note marker when jumped to from the notes panel below. */
+.twyne-endnote.is-flashing {
+  animation: endnote-flash 1.4s ease-out;
+}
+@keyframes endnote-flash {
+  0%,
+  35% {
+    background: color-mix(in srgb, currentColor 30%, transparent);
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+/* Notes panel — endnotes and footnotes set at the foot of the manuscript,
+   like a book's own notes page. Mirrors the colophon's quiet, printed
+   feel: small typewriter labels, serif body text, hanging-indent list. */
+.manuscript-notes-group + .manuscript-notes-group {
+  margin-top: 1.75rem;
+}
+.manuscript-notes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--color-ink-light);
+}
+.manuscript-notes-list li {
+  display: flex;
+  gap: 0.6em;
+  padding: 0.2em 0;
+}
+.manuscript-note-marker {
+  flex: 0 0 auto;
+  min-width: 1.4em;
+  text-align: right;
+  font-family: var(--font-typewriter);
+  font-size: 0.78em;
+  font-weight: 600;
+  line-height: 1.6;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.15s ease;
+}
+.manuscript-note-marker:hover {
+  opacity: 0.7;
+  text-decoration: underline;
+}
+.manuscript-note-text {
+  flex: 1 1 auto;
+}
+
 /* Ink-bleed text effect for headings on hover */
 .ink-bleed {
   transition: text-shadow 0.3s ease;

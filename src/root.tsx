@@ -5,6 +5,7 @@ import { ConvexProvider } from "./utils/convex-context";
 import { AuthProvider } from "./utils/auth-context";
 import { PostHogProvider } from "./utils/posthog-context";
 import { installLixAuthInterceptor } from "./utils/lix-auth";
+import { GlobalConnectivityBanner } from "./components/ui/global-connectivity-banner";
 
 import "./global.css";
 
@@ -41,6 +42,7 @@ export default component$(() => {
         <RouterHead />
       </head>
       <body lang="en">
+        <GlobalConnectivityBanner />
         <ConvexProvider url={convexUrl}>
           <AuthProvider>
             <PostHogProvider>
