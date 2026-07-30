@@ -1,0 +1,9 @@
+what i would love is adding some audio features to the interview, and for the form I would like a bit more variety of questions add in some multiple choice fill in the blanks stuff that fits in and is generated based on the last form and take that into account when creating the judgement. one of the problems that I am worried about in the rubric is how static i feel it is, content with very little information or isn't relevant to the target should be getting high scores in an category. I really want you to take advantage of the flexibility and power of agents. I also want you to think deeply about the side panel in @src/routes/editor/index.tsx route which has rubric, editors and commnets and stuff. For the voice being able to save voice notes sounds awesome. Being able to do the voice interview seems great. Being able to here the different editors also great. I would also love if the editors as you were writing seemlessly commented rather than only when you wanted a check over. Once every N amount of edits. Pick a reasonable number, suppose we add a new paragraph or two the models would go ahead and convene the room on that for example this way its faster when I actually click on feedback and model get's regular context on the path of the edits, the trajectory that i have for those.
+
+---
+
+continue
+
+---
+
+use skate to try this with fish audio as the byok
