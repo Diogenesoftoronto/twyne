@@ -1,5 +1,15 @@
 import type { Persona } from "../types";
 
+/*
+ * On voices: `speechVoice` holds the OpenAI voice name, `speechVoices` the
+ * per-provider overrides. The Fish Audio ids below were chosen to match each
+ * editor's register — a clear British professional for the sceptic, a warm
+ * middle-aged audiobook reader for the patron, a measured educational
+ * narrator for the scholar, a dry documentary voice for the copy chief, and
+ * an ordinary American storyteller for the target reader. Verified distinct:
+ * the same sentence through each yields five different recordings.
+ */
+
 /**
  * The Cast — five resident editors of The Editorial Room.
  * Naming nods to a 1955 magazine bullpen; functional ids are kept
@@ -21,6 +31,8 @@ export const PERSONAS: Persona[] = [
       "This sentence assumes the reader already agrees. They do not. Earn it.",
       "Strike the qualifier. Either you can defend the claim or you cannot.",
     ],
+    speechVoice: "onyx",
+    speechVoices: { fishaudio: "91f2fedea8bc4465a6c668b2776be809" },
     temperature: 0.3,
   },
   {
@@ -38,6 +50,8 @@ export const PERSONAS: Persona[] = [
       "Here — this line. This is the one with a pulse. Everything else should be jealous of it.",
       "You already know how to do this; you did it in the third paragraph. Do it again, on purpose.",
     ],
+    speechVoice: "shimmer",
+    speechVoices: { fishaudio: "23c1b755b9994a68a1d21d6a67562445" },
     temperature: 0.6,
   },
   {
@@ -55,6 +69,8 @@ export const PERSONAS: Persona[] = [
       "This is asserted, not demonstrated. What is the evidence, and where does it come from?",
       "Define the term before you lean on it; otherwise the paragraph rests on a word doing two jobs.",
     ],
+    speechVoice: "echo",
+    speechVoices: { fishaudio: "c5f56a6cc2ec4fa8920cb4c5889a3fb7" },
     temperature: 0.3,
   },
   {
@@ -72,6 +88,8 @@ export const PERSONAS: Persona[] = [
       "'In order to' → 'to'. Again, twice more below.",
       "Two 'however's in one paragraph. Pick one. Cut the other.",
     ],
+    speechVoice: "ash",
+    speechVoices: { fishaudio: "3274bdf8143c4378a2cb779582d26364" },
     temperature: 0.4,
   },
   {
@@ -89,6 +107,8 @@ export const PERSONAS: Persona[] = [
       "I followed you for two paragraphs, then here I lost the thread and started skimming.",
       "By the end I'm not sure what you wanted me to do with this. Tell me earlier.",
     ],
+    speechVoice: "alloy",
+    speechVoices: { fishaudio: "125d6460953a443d8c65909adf87ca3f" },
     temperature: 0.7,
   },
 ];

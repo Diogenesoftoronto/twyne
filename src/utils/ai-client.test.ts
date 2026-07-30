@@ -4,6 +4,7 @@ import type { AiFeature, AiProviderConfig, AiSettings } from "../types";
 import {
   discoverProviderModels,
   hasConfiguredAiProvider,
+  hasConfiguredVoiceProvider,
   parseCitationFormatResult,
   parseMissingSourceResult,
   resolveFeatureConfig,
@@ -15,6 +16,7 @@ const ALL_FEATURES: AiFeature[] = [
   "persona-rewrite",
   "rubric-judge",
   "voice-narration",
+  "voice-transcription",
   "comment-reply",
   "citation-format",
   "source-summarize",
@@ -250,5 +252,109 @@ describe("ai-client citation parsers", () => {
       ],
       provider: "openai",
     });
+  });
+});
+
+/**
+ * Voice-only providers (Fish Audio) speak but cannot think. The routing has to
+ * keep them out of every language feature, because several callers treat "BYOK
+ * was attempted and produced nothing" as a hard error rather than falling back
+ * to the server.
+ */
+describe("voice-only providers", () => {
+  const fish: AiProviderConfig = {
+    id: "provider-fish",
+    name: "Fish Audio",
+    type: "fishaudio",
+    apiKey: "fish-test",
+    defaultModel: "s2.1-pro-free",
+  };
+  const anthropic: AiProviderConfig = {
+    id: "provider-anthropic",
+    name: "Anthropic",
+    type: "anthropic",
+    apiKey: "sk-ant",
+    defaultModel: "claude-sonnet-4-6",
+  };
+
+  test("Fish Audio alone does not count as a language provider", () => {
+    const settings = makeSettings({
+      providers: [fish],
+      defaultProviderId: fish.id,
+    });
+    expect(hasConfiguredAiProvider(settings)).toBe(false);
+    expect(hasConfiguredVoiceProvider(settings)).toBe(true);
+  });
+
+  test("Fish Audio is never chosen for a language feature", () => {
+    const settings = makeSettings({
+      providers: [fish],
+      defaultProviderId: fish.id,
+    });
+    for (const feature of ALL_FEATURES) {
+      const resolved = resolveFeatureConfig(settings, feature);
+      if (feature === "voice-narration" || feature === "voice-transcription") {
+        expect(resolved?.provider.type, feature).toBe("fishaudio");
+      } else {
+        expect(resolved, `${feature} must not resolve to a voice-only provider`)
+          .toBeNull();
+      }
+    }
+  });
+
+  /**
+   * The mixed setup is the one that matters: the room runs on Anthropic and
+   * the voices on Fish, with no per-feature overrides configured by hand.
+   */
+  test("routes each feature to the provider that can serve it", () => {
+    const settings = makeSettings({
+      providers: [anthropic, fish],
+      defaultProviderId: anthropic.id,
+    });
+    expect(hasConfiguredAiProvider(settings)).toBe(true);
+    expect(
+      resolveFeatureConfig(settings, "persona-feedback")?.provider.type,
+    ).toBe("anthropic");
+    expect(
+      resolveFeatureConfig(settings, "voice-narration")?.provider.type,
+    ).toBe("fishaudio");
+    expect(
+      resolveFeatureConfig(settings, "voice-transcription")?.provider.type,
+    ).toBe("fishaudio");
+  });
+
+  test("picks the free-tier model by default, since a fresh key has no credit", () => {
+    const settings = makeSettings({
+      providers: [fish],
+      defaultProviderId: fish.id,
+    });
+    expect(resolveFeatureConfig(settings, "voice-narration")?.model).toBe(
+      "s2.1-pro-free",
+    );
+    expect(resolveFeatureConfig(settings, "voice-transcription")?.model).toBe(
+      "asr-1",
+    );
+  });
+
+  test("ignores a per-feature override that names a provider which cannot serve it", () => {
+    const settings = makeSettings({
+      providers: [anthropic, fish],
+      defaultProviderId: anthropic.id,
+      perFeature: { "persona-feedback": { providerId: fish.id } },
+    });
+    // Falls back to a capable provider rather than resolving to one that
+    // would return no model and strand the caller.
+    expect(
+      resolveFeatureConfig(settings, "persona-feedback")?.provider.type,
+    ).toBe("anthropic");
+  });
+
+  test("an LLM provider that cannot speak is not offered for voice", () => {
+    const settings = makeSettings({
+      providers: [anthropic],
+      defaultProviderId: anthropic.id,
+    });
+    expect(resolveFeatureConfig(settings, "voice-narration")).toBeNull();
+    expect(hasConfiguredVoiceProvider(settings)).toBe(false);
   });
 });

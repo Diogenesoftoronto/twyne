@@ -1,4 +1,10 @@
-import { component$, $, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  $,
+  useSignal,
+  useStore,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 import { useNavigate } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
@@ -7,6 +13,7 @@ import { AuthPanel } from "../../../components/auth/auth-panel";
 import { useAuth } from "../../../utils/auth-context";
 import type {
   DossierAttachment,
+  DossierProbe,
   InterviewStyle,
   ProjectInterviewAnswers,
 } from "../../../types";
@@ -23,6 +30,8 @@ import { loadWriterSettingsFromIdb } from "../../../utils/idb";
 interface OnboardingStore {
   hydrated: boolean;
   style: InterviewStyle;
+  formAnswers: Partial<ProjectInterviewAnswers> | null;
+  formAttachments: DossierAttachment[];
 }
 
 /**
@@ -42,6 +51,8 @@ export default component$(() => {
   const store = useStore<OnboardingStore>({
     hydrated: false,
     style: "form",
+    formAnswers: null,
+    formAttachments: [],
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -57,8 +68,9 @@ export default component$(() => {
       existingMaterial?: string,
       filename?: string,
       attachments?: DossierAttachment[],
+      probes?: DossierProbe[],
     ) => {
-      const brief = createProjectBrief(answers, null, attachments);
+      const brief = createProjectBrief(answers, null, attachments, probes);
       saveProjectBrief(brief);
 
       if (!loadDraftHtml().trim()) {
@@ -141,12 +153,17 @@ export default component$(() => {
     return (
       <ConversationalInterview
         mode="first-run"
-        onComplete$={({ answers, attachments }) =>
-          completeOnboarding$(answers, undefined, undefined, attachments)
+        onComplete$={({ answers, attachments, probes }) =>
+          completeOnboarding$(answers, undefined, undefined, attachments, probes)
         }
         onCancel$={$(() => {
           store.style = "form";
         })}
+        onUseForm$={({ answers, attachments }) => {
+          store.formAnswers = answers;
+          store.formAttachments = attachments;
+          store.style = "form";
+        }}
         cancelLabel="Use form"
       />
     );
@@ -155,7 +172,10 @@ export default component$(() => {
   return (
     <AntiTabulaRasa
       mode="first-run"
-      initialAnswers={null}
+      initialAnswers={
+        store.formAnswers as ProjectInterviewAnswers | null | undefined
+      }
+      initialAttachments={store.formAttachments}
       onSubmit$={completeOnboarding$}
       onCancel$={onCancel$}
     />

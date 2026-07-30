@@ -30,6 +30,8 @@ import {
   writeFileAsJson,
   BRIEF_PATH,
 } from "./lix";
+import { normalizeApplicationError } from "./application-errors";
+import { reportApplicationDiagnostic } from "./application-diagnostics";
 
 /**
  * Browser ↔ Convex sync for the per-user data. The local IndexedDB
@@ -155,11 +157,16 @@ export function getSyncStatus(): SyncStatus {
   }
   if (state.pushing) return { kind: "syncing" };
   if (pushTimer) return { kind: "pending", queuedAt: Date.now() };
-  if (state.lastErrorAt && !state.lastSyncedAt) {
+  if (
+    state.lastErrorAt &&
+    (!state.lastSyncedAt || state.lastErrorAt > state.lastSyncedAt)
+  ) {
     return {
       kind: "error",
       lastErrorAt: state.lastErrorAt,
-      message: state.lastErrorMessage ?? "Sync failed",
+      message:
+        state.lastErrorMessage ??
+        "Sync failed. Your local work remains safe on this device.",
     };
   }
   if (state.lastSyncedAt) {
@@ -203,10 +210,16 @@ export function setConvexSyncContext(client: ConvexSyncClient, userId: string) {
   const previousUserId = state.userId;
   state.userId = userId;
   state.hydratedFromRemote = false;
+  state.lastSyncedAt = null;
+  state.lastErrorAt = null;
+  state.lastErrorMessage = null;
 
   // Fire and forget — we don't want the auth path to await the hydration.
   if (previousUserId !== userId) {
-    void handleUserChanged(previousUserId, userId);
+    void handleUserChanged(previousUserId, userId).catch((err) => {
+      setSyncFailure(err, "hydrate");
+      notifyStatusChange();
+    });
   }
 }
 
@@ -215,10 +228,15 @@ export function clearConvexSyncContext() {
   state.userId = null;
   state.lastSnapshot = null;
   state.hydratedFromRemote = false;
+  state.lastSyncedAt = null;
+  state.lastErrorAt = null;
+  state.lastErrorMessage = null;
+  state.pushing = false;
   if (pushTimer) {
     clearTimeout(pushTimer);
     pushTimer = null;
   }
+  notifyStatusChange();
 }
 
 /**
@@ -233,6 +251,7 @@ export function markDirty(): void {
     pushTimer = null;
     void pushLocalSnapshot();
   }, PUSH_DEBOUNCE_MS);
+  notifyStatusChange();
 }
 
 /** Client-side throttle so a writing session sends a handful of activity
@@ -245,7 +264,13 @@ function recordWritingActivity(): void {
   const now = Date.now();
   if (now - lastWritingActivityAt < WRITING_ACTIVITY_THROTTLE_MS) return;
   lastWritingActivityAt = now;
-  void state.client.mutation(api.writingActivity.recordActivity, {});
+  void state.client
+    .mutation(api.writingActivity.recordActivity, {})
+    .catch((err) => {
+      reportApplicationDiagnostic("twyne:sync:record-writing-activity", err, {
+        operation: "record-writing-activity",
+      });
+    });
 }
 
 /** Force an immediate push, e.g. on pagehide. */
@@ -261,21 +286,41 @@ export async function flushNow(): Promise<void> {
 
 export async function syncToConvex(): Promise<void> {
   if (!state.client || !state.userId) return;
-  await persistToIdb();
-  const { loadLixBlobFromIdb } = await import("./idb");
-  const blob = await loadLixBlobFromIdb();
-  if (!blob) return;
-  const buffer = await blob.arrayBuffer();
-  await state.client.mutation(api.lixBlobs.upsert, {
-    blob: buffer,
-  });
+  try {
+    await persistToIdb();
+    const { loadLixBlobFromIdb } = await import("./idb");
+    const blob = await loadLixBlobFromIdb();
+    if (!blob) return;
+    const buffer = await blob.arrayBuffer();
+    await state.client.mutation(api.lixBlobs.upsert, {
+      blob: buffer,
+    });
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:sync:lix-push", err, {
+      operation: "lix-push",
+    });
+    throw normalizeApplicationError(err, {
+      source: "convex",
+      metadata: { operation: "lix-push" },
+    });
+  }
 }
 
 export async function loadFromConvex(): Promise<Blob | null> {
   if (!state.client || !state.userId) return null;
-  const entry = await state.client.query(api.lixBlobs.get, {});
-  if (!entry?.blob) return null;
-  return new Blob([entry.blob]);
+  try {
+    const entry = await state.client.query(api.lixBlobs.get, {});
+    if (!entry?.blob) return null;
+    return new Blob([entry.blob]);
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:sync:lix-pull", err, {
+      operation: "lix-pull",
+    });
+    throw normalizeApplicationError(err, {
+      source: "convex",
+      metadata: { operation: "lix-pull" },
+    });
+  }
 }
 
 /* ── Internal: build local snapshot, decide push vs pull ─────────── */
@@ -360,11 +405,7 @@ async function pushLocalSnapshot(): Promise<void> {
     state.lastErrorAt = null;
     state.lastErrorMessage = null;
   } catch (err) {
-    // Convex calls may fail in dev where auth is mocked — swallow and continue.
-    console.warn("[twyne:sync] pushAll failed:", err);
-    state.lastErrorAt = Date.now();
-    state.lastErrorMessage =
-      (err as Error)?.message ?? "Sync failed — your changes are local only.";
+    setSyncFailure(err, "push-all");
   } finally {
     state.pushing = false;
     notifyStatusChange();
@@ -406,7 +447,9 @@ async function handleUserChanged(
   try {
     remote = (await state.client.query(api.sync.pullAll, {})) as SyncedSnapshot;
   } catch (err) {
-    console.warn("[twyne:sync] pullAll failed:", err);
+    setSyncFailure(err, "pull-all");
+    notifyStatusChange();
+    return;
   }
 
   if (!remote) {
@@ -443,6 +486,18 @@ async function handleUserChanged(
   state.hydratedFromRemote = true;
   // After hydration, push any local deltas back up.
   void pushLocalSnapshot();
+}
+
+function setSyncFailure(error: unknown, operation: string): void {
+  reportApplicationDiagnostic(`twyne:sync:${operation}`, error, {
+    operation,
+  });
+  const normalized = normalizeApplicationError(error, {
+    source: "convex",
+    metadata: { operation },
+  });
+  state.lastErrorAt = Date.now();
+  state.lastErrorMessage = `${normalized.message} Your local work remains safe on this device.`;
 }
 
 async function mergeFromRemote(

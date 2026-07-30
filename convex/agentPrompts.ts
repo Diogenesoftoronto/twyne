@@ -13,6 +13,7 @@
  */
 import type { Persona, ProjectBrief } from "../src/types";
 import { firstSubstantiveSentence } from "./agentTools";
+import { probeSummaryLine } from "../src/utils/dossier-probes";
 
 export type FeedbackType =
   | "encouragement"
@@ -49,6 +50,17 @@ export interface AgentRequest {
   priorMessages?: Array<{ author: "user" | "persona"; text: string }>;
   /** The user's follow-up question, if this is a reply. */
   userMessage?: string;
+  /**
+   * Prose summary of how the draft has been moving — paragraphs added and
+   * cut, net words, the most recent new material. Lets an editor respond to
+   * the writer's direction rather than to a cold snapshot.
+   */
+  trajectory?: string;
+  /**
+   * The passages written since this editor last read. When present the note
+   * should be aimed here, with the full draft as context rather than subject.
+   */
+  newMaterial?: string;
   /** Direct instruction the user is asking the persona to act on. */
   instruction?:
     | "feedback"
@@ -153,6 +165,11 @@ export function buildUserPrompt(req: AgentRequest): string {
 `
     : `PROJECT BRIEF: none filed — the writer is working without a dossier. Read for clarity and intent.\n\n`;
 
+  // Typed follow-ups the writer answered during the interview. These are the
+  // commitments they made in a single tap rather than a paragraph, so they are
+  // often sharper than the prose fields above and worth stating separately.
+  const particularsBlock = probeParticularsBlock(brief);
+
   const draftBlock = req.draftText.trim()
     ? `DRAFT (the manuscript as it stands — ${wordCount(req.draftText)} words)
 """
@@ -167,10 +184,33 @@ ${clampForContext(req.draftText, 4500)}
     ? `ANCHOR SENTENCE (your note must pin to this exact sentence unless the writer asks a different question):\n"${req.anchor}"\n\n`
     : "";
 
+  // How the draft has been moving, and what is new since this editor last
+  // read. Only rendered when a caller supplies them (the background room
+  // does; an explicit convene may) so the ordinary prompt is unchanged.
+  const trajectoryBlock = req.trajectory?.trim()
+    ? `SINCE YOUR LAST READ (how the draft has been moving — context for your note, not its subject)
+${req.trajectory.trim()}
+
+`
+    : "";
+
+  const newMaterialBlock = req.newMaterial?.trim()
+    ? `NEW MATERIAL (written since you last read — this is what you are reading now)
+"""
+${clampForContext(req.newMaterial.trim(), 3000)}
+"""
+
+`
+    : "";
+
   const instruction = req.instruction ?? "feedback";
   const instructionBlock =
     instruction === "feedback"
-      ? `TASK: Give the writer a single focused note, in your voice, on this draft. First call quote_passage with the sentence you are responding to, then write the note.`
+      ? req.newMaterial?.trim()
+        ? `TASK: The writer is mid-draft and has just written the NEW MATERIAL above. Give one short note, in your voice, on that new material specifically — you are reading over their shoulder, not filing a report. First call quote_passage with the sentence you are responding to (choose it from the new material), then write the note.
+
+Keep it to 40-120 words: this is a passing remark while the writer is still working, so earn the interruption. Do not summarise the whole draft, do not repeat notes you would have given on earlier passages, and do not open with pleasantries. If the new material genuinely needs nothing from you, say so in one sentence rather than inventing a concern.`
+        : `TASK: Give the writer a single focused note, in your voice, on this draft. First call quote_passage with the sentence you are responding to, then write the note.`
       : instruction === "elaborate"
         ? `TASK: The writer wants you to go deeper on a previous note. Call quote_passage for the passage under discussion, stay in your voice, expand your reasoning, and end with a concrete next move.`
         : instruction === "riff"
@@ -196,7 +236,30 @@ Write 400–700 words. This is a considered editorial memo, not a margin note.`
     ? `\nWRITER'S NEW MESSAGE:\n"${req.userMessage}"\n\nAddress the message directly.\n`
     : "";
 
-  return `${briefBlock}${referencesBlock}${draftBlock}${anchorBlock}${instructionBlock}${convoBlock}${userMessageBlock}`;
+  return `${briefBlock}${particularsBlock}${referencesBlock}${draftBlock}${trajectoryBlock}${newMaterialBlock}${anchorBlock}${instructionBlock}${convoBlock}${userMessageBlock}`;
+}
+
+/**
+ * The writer's answered probes, as a prompt block. Empty string when there are
+ * none, so callers can concatenate it unconditionally.
+ *
+ * Exported so the rubric judges can include it too — every judge builds its
+ * prompt through `buildUserPrompt`, but the standalone judges (evidence,
+ * integrity, target fit) do not, and these commitments matter most to them.
+ */
+export function probeParticularsBlock(brief: ProjectBrief | null): string {
+  const answered = (brief?.probes ?? []).filter(
+    (p) => p.answer !== undefined && p.answer !== null,
+  );
+  if (answered.length === 0) return "";
+  const lines = answered
+    .map((p) => `- ${probeSummaryLine(p)}`)
+    .filter((l) => !l.endsWith("→ "));
+  if (lines.length === 0) return "";
+  return `PARTICULARS (specific commitments the writer made during the interview — treat these as binding as the brief above)
+${lines.join("\n")}
+
+`;
 }
 
 function attachmentsBlock(brief: ProjectBrief | null): string {
@@ -448,6 +511,111 @@ Do NOT penalize: confident opinion, first-person stakes, legitimate emphasis, or
 
 Respond as JSON, and only JSON, in this exact shape:
 {"score": <integer 1-10>, "rationale": "<one sentence>"}`;
+}
+
+/**
+ * Dedicated LLM judge: is this content about the right thing, for the right
+ * reader, at all? Deliberately blind to craft — that is what makes it usable
+ * as a gate on the static shape metrics, which are blind to *content* and so
+ * happily award 10/10 to fluent prose about the wrong subject.
+ */
+export function buildTargetFitJudgeSystemPrompt(): string {
+  return `You are a commissioning editor who judges exactly one thing: whether a draft is about the right thing for the reader and purpose it was commissioned for.
+
+You are deliberately blind to craft. Prose quality, rhythm, structure, grammar and vocabulary are NOT your concern — other judges handle those. A beautifully written, impeccably paced piece about the wrong subject, or aimed at the wrong reader, scores 1 from you. A rough, ungainly draft that is squarely on the commissioned subject and lands with the commissioned reader scores 8 or 9.
+
+Be especially alert to a draft that gestures at the brief's vocabulary without doing the brief's work — repeating the goal's keywords, name-checking the audience, or restating the premise is not the same as serving it.`;
+}
+
+/**
+ * Pull the four commission fields out of a brief, with explicit "not stated"
+ * wording rather than silent blanks — the judge must be able to tell the
+ * difference between "the writer said nothing" and "the writer said this".
+ */
+export function targetFitCommission(brief: ProjectBrief | null): {
+  format: string;
+  audience: string;
+  goal: string;
+  successSignal: string;
+} {
+  const a = brief?.answers;
+  return {
+    format: a?.format?.trim() || "unspecified",
+    audience: a?.audience?.trim() || "no audience stated in the brief",
+    goal: a?.goal?.trim() || "no goal stated in the brief",
+    successSignal:
+      a?.successSignal?.trim() || "no success signal stated in the brief",
+  };
+}
+
+export function buildTargetFitJudgePrompt(input: {
+  format: string;
+  audience: string;
+  goal: string;
+  successSignal: string;
+  draftText: string;
+  particulars?: string;
+}): string {
+  return `THE COMMISSION
+- Format: ${input.format}
+- Audience: ${input.audience}
+- Goal: ${input.goal}
+- Success signal: ${input.successSignal}
+
+${input.particulars ?? ""}
+DRAFT:
+${clampForContext(input.draftText, 6000)}
+
+JUDGE TASK: Give an integer score from 1 to 10 for how well this content serves that specific audience and goal, in that format. Ignore how well it is written.
+
+1  = a competent piece about something else entirely, or aimed at a different reader.
+4  = adjacent to the commission; a reader would recognise the territory but not get what was promised.
+7  = squarely on the commission, with some drift or unserved corners.
+10 = every section is doing the commissioned job for the commissioned reader.
+
+Respond as JSON, and only JSON, in this exact shape:
+{"score": <integer 1-10>, "rationale": "<one sentence naming what the draft is actually about versus what was commissioned>"}`;
+}
+
+/**
+ * Judge one writer-authored criterion. Generic on purpose: the writer's own
+ * words are the standard, which is what lets an idiosyncratic requirement
+ * ("stays in second person", "every section ends on an image") be graded
+ * without Twyne having to anticipate it.
+ */
+export function buildCustomCriterionSystemPrompt(): string {
+  return `You are an exacting editor judging a draft against ONE criterion, supplied by the writer. Judge that criterion and nothing else — not prose quality, not structure, not relevance, unless the criterion itself asks about them. Other judges cover those.
+
+The writer chose this standard deliberately. Take it seriously and literally, including when it is idiosyncratic. If the criterion is too vague to assess against this draft, say so plainly in the rationale and score 5 rather than inventing a verdict.`;
+}
+
+export function buildCustomCriterionPrompt(input: {
+  label: string;
+  description: string;
+  format: string;
+  audience: string;
+  goal: string;
+  draftText: string;
+}): string {
+  return `THE CRITERION
+Name: ${input.label}
+What it asks: ${
+    input.description.trim() ||
+    "(the writer gave no further detail — judge the name as written)"
+  }
+
+CONTEXT (background only — do not judge these)
+- Format: ${input.format}
+- Audience: ${input.audience}
+- Goal: ${input.goal}
+
+DRAFT:
+${clampForContext(input.draftText, 6000)}
+
+JUDGE TASK: Give an integer score from 1 to 10 for how well the draft meets that one criterion. 1 means it does not meet it at all; 5 means partially, with clear misses; 8 means it meets it consistently; 10 means it meets it exactly, throughout.
+
+Respond as JSON, and only JSON, in this exact shape:
+{"score": <integer 1-10>, "rationale": "<one sentence, citing something specific in the draft>"}`;
 }
 
 /** Convert a Persona (UI) to an AgentPersona (LLM) shape. */

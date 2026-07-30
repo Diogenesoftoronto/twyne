@@ -51,8 +51,12 @@ export function statusLabel(
       return "Syncing…";
     case "synced":
       return `Synced ${formatAge(status.lastSyncedAt, now)}`;
-    case "error":
-      return `Sync failed ${formatAge(status.lastErrorAt, now)} — ${status.message}`;
+    case "error": {
+      const safetyCopy = /local work remains safe/i.test(status.message)
+        ? ""
+        : " Your local work remains safe on this device.";
+      return `Sync failed ${formatAge(status.lastErrorAt, now)} — ${status.message}${safetyCopy}`;
+    }
   }
 }
 

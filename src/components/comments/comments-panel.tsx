@@ -1,4 +1,10 @@
-import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
+import {
+  component$,
+  useSignal,
+  useStore,
+  useVisibleTask$,
+  $,
+} from "@builder.io/qwik";
 import { useConvexClient } from "../../utils/convex-context";
 import type { ProjectBrief, Persona } from "../../types";
 import {
@@ -27,9 +33,25 @@ import {
 } from "../../utils/mentions";
 import { renderMarkdown } from "../../utils/markdown";
 import { MentionDropdown } from "../ui/mention-dropdown";
+import { ApplicationNotice } from "../ui/application-notice";
+import { SpeakButton } from "../ui/speak-button";
+import { VoiceRecorder, type VoiceCapture } from "../ui/voice-recorder";
+import { formatDuration, readVoiceNote, storeVoiceNote } from "../../utils/voice-notes";
+import type { AppError } from "../../types/application-errors";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 
 function personaToMentionable(p: Persona): Mentionable {
-  return { id: p.id, name: p.name, kind: "persona", icon: p.icon, color: p.color };
+  return {
+    id: p.id,
+    name: p.name,
+    kind: "persona",
+    icon: p.icon,
+    color: p.color,
+  };
 }
 
 interface CommentsStore {
@@ -41,7 +63,7 @@ interface CommentsStore {
   askPersonaFor: string | null;
   askPersonaId: string | null;
   isAskingEditor: boolean;
-  askError: string | null;
+  askError: AppError | null;
   personas: Persona[];
   aiSettings: AiSettings | null;
   /** Ids of threads whose anchor mark is gone from the doc. */
@@ -66,6 +88,33 @@ interface CommentsPanelProps {
    * shared, and the @-mention flow picks them up with no further changes.
    */
   collaborators?: Mentionable[];
+}
+
+function commentProviderError(operation: string): AppError {
+  return createAppError("PROVIDER_ERROR", {
+    source: "provider",
+    recovery: { action: "retry", canRetry: true },
+    metadata: { feature: "comments", operation },
+  });
+}
+
+function commentConfigurationError(operation: string): AppError {
+  return createAppError("CONFIGURATION_ERROR", {
+    source: "application",
+    recovery: { action: "choose-provider", canRetry: false },
+    metadata: { feature: "comments", operation },
+  });
+}
+
+function normalizeCommentError(
+  scope: string,
+  thrown: unknown,
+  source: "convex" | "provider",
+  operation: string,
+): AppError {
+  const metadata = { feature: "comments", operation };
+  reportApplicationDiagnostic(scope, thrown, metadata);
+  return normalizeApplicationError(thrown, { source, metadata });
 }
 
 export const CommentsPanel = component$(
@@ -93,15 +142,15 @@ export const CommentsPanel = component$(
       mentionQuery: "",
     });
 
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(async () => {
-    if (initialComments) return;
-    store.comments = await loadUserComments();
-    const custom = await loadPersonasFromIdb();
-    if (custom && custom.length > 0) store.personas = custom;
-    const aiRaw = await loadAiSettingsFromIdb();
-    store.aiSettings = normalizeAiSettings(aiRaw);
-  });
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(async () => {
+      if (initialComments) return;
+      store.comments = await loadUserComments();
+      const custom = await loadPersonasFromIdb();
+      if (custom && custom.length > 0) store.personas = custom;
+      const aiRaw = await loadAiSettingsFromIdb();
+      store.aiSettings = normalizeAiSettings(aiRaw);
+    });
 
     // Refresh when a comment is filed or replied to elsewhere in the editor.
     // eslint-disable-next-line qwik/no-use-visible-task
@@ -167,6 +216,44 @@ export const CommentsPanel = component$(
       void triggerMentions(comment.id, comment.text);
     });
 
+    /**
+     * File a spoken note. The transcript becomes the comment text so it
+     * threads, resolves and @-mentions like any other; the recording is kept
+     * locally and playable from the card, because the transcript is not the
+     * whole of what the writer said.
+     */
+    const addVoiceComment = $(async (capture: VoiceCapture) => {
+      const transcript = capture.transcript.trim();
+      if (!transcript) return;
+      const id = `c-${Date.now()}`;
+      const audioId = `va-${id}`;
+      try {
+        await storeVoiceNote(audioId, capture.blob);
+      } catch (err) {
+        // Losing the audio must not lose the words.
+        reportApplicationDiagnostic("twyne:comments:store-voice-note", err, {
+          feature: "comments",
+          operation: "store-voice-note",
+        });
+      }
+      const comment: UserComment = {
+        id,
+        folioId: activeFolioId ?? "",
+        text: transcript,
+        author: "You",
+        resolved: false,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        replies: [],
+        audioId,
+        audioDurationMs: capture.durationMs,
+      };
+      const all = await upsertUserComment(comment);
+      store.comments = all;
+      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+      void triggerMentions(comment.id, comment.text);
+    });
+
     const addReply = $(async (commentId: string, text: string) => {
       if (!text.trim()) return;
       const reply: UserCommentReply = {
@@ -201,46 +288,88 @@ export const CommentsPanel = component$(
      * response as a persona-kind reply so the editor's colour + voice are
      * preserved.
      */
-    const askEditor = $(async (commentId: string, personaIdOverride?: string) => {
-      const personaId = personaIdOverride ?? store.askPersonaId;
-      if (!personaId) return;
-      const comment = store.comments.find((c) => c.id === commentId);
-      if (!comment) return;
-      const persona = store.personas.find((p) => p.id === personaId);
-      if (!persona) return;
-      const client = clientSig.value;
+    const askEditor = $(
+      async (commentId: string, personaIdOverride?: string) => {
+        const personaId = personaIdOverride ?? store.askPersonaId;
+        if (!personaId) return;
+        const comment = store.comments.find((c) => c.id === commentId);
+        if (!comment) return;
+        const persona = store.personas.find((p) => p.id === personaId);
+        if (!persona) return;
+        const client = clientSig.value;
+        store.askPersonaFor = commentId;
+        store.askPersonaId = personaId;
 
-      // Build the message — anchor + thread, mirror the inline-note call shape.
-      const userMessage = [
-        comment.anchor ? `On the passage: «${comment.anchor}»` : null,
-        `The writer's note: ${comment.text}`,
-        comment.replies.length > 0
-          ? `The thread so far: ${comment.replies
-              .map((r) => `${r.author}: ${r.text}`)
-              .join(" · ")}`
-          : null,
-        "Reply as if you are this editor — one paragraph, your voice.",
-      ]
-        .filter(Boolean)
-        .join("\n\n");
+        // Build the message — anchor + thread, mirror the inline-note call shape.
+        const userMessage = [
+          comment.anchor ? `On the passage: «${comment.anchor}»` : null,
+          `The writer's note: ${comment.text}`,
+          comment.replies.length > 0
+            ? `The thread so far: ${comment.replies
+                .map((r) => `${r.author}: ${r.text}`)
+                .join(" · ")}`
+            : null,
+          "Reply as if you are this editor — one paragraph, your voice.",
+        ]
+          .filter(Boolean)
+          .join("\n\n");
 
-      const priorMessages = comment.replies.map((r) => ({
-        author: r.authorKind,
-        text: r.text,
-      }));
+        const priorMessages = comment.replies.map((r) => ({
+          author: r.authorKind,
+          text: r.text,
+        }));
 
-      store.isAskingEditor = true;
-      store.askError = null;
-      try {
-        let replyText = "";
+        store.isAskingEditor = true;
+        store.askError = null;
+        try {
+          let replyText = "";
 
-        // ── Try client-side AI first (BYOK) ─────────────────────────
-        const settings = store.aiSettings;
-        if (hasConfiguredAiProvider(settings) && settings) {
-          try {
-            const res = await runClientAgent(
-              "comment-reply",
-              {
+          // ── Try client-side AI first (BYOK) ─────────────────────────
+          const settings = store.aiSettings;
+          const hasByok = hasConfiguredAiProvider(settings);
+          if (hasByok && settings) {
+            try {
+              const res = await runClientAgent(
+                "comment-reply",
+                {
+                  persona: {
+                    id: persona.id,
+                    name: persona.name,
+                    role: persona.role,
+                    description: persona.description,
+                    focus: persona.focus,
+                    color: persona.color,
+                    icon: persona.icon,
+                  },
+                  brief: brief ?? null,
+                  draftText: "",
+                  priorMessages,
+                  userMessage,
+                  instruction: "elaborate",
+                },
+                settings,
+              );
+              if (res && res.text.trim() && res.provider !== "local") {
+                replyText = res.text;
+              } else {
+                store.askError = commentProviderError("ask-editor");
+                return;
+              }
+            } catch (err) {
+              store.askError = normalizeCommentError(
+                "twyne:comments:ask-editor-client",
+                err,
+                "provider",
+                "ask-editor",
+              );
+              return;
+            }
+          }
+
+          // ── Server action only when no local provider is configured ────────
+          if (!replyText && !hasByok && client) {
+            try {
+              const res = await client.action(api.agents.runPersona, {
                 persona: {
                   id: persona.id,
                   name: persona.name,
@@ -250,65 +379,64 @@ export const CommentsPanel = component$(
                   color: persona.color,
                   icon: persona.icon,
                 },
-                brief: brief ?? null,
-                draftText: "",
-                priorMessages,
                 userMessage,
-                instruction: "elaborate",
-              },
-              settings,
-            );
-            if (res) {
-              replyText = res.text;
+                draftText: "",
+                brief: brief ?? null,
+                priorMessages,
+              });
+              const result = res as {
+                reply?: string;
+                text?: string;
+                provider?: string;
+              };
+              if (result.provider === "local") {
+                store.askError = commentProviderError("ask-editor");
+                return;
+              }
+              replyText = (result.reply ?? result.text ?? "").trim();
+            } catch (err) {
+              store.askError = normalizeCommentError(
+                "twyne:comments:ask-editor-server",
+                err,
+                "convex",
+                "ask-editor",
+              );
+              return;
             }
-          } catch (err) {
-            console.warn("[twyne:comments] client AI failed:", err);
           }
-        }
 
-        // ── Fallback to Convex server action ────────────────────────
-        if (!replyText && client) {
-          const res = await client.action(api.agents.runPersona, {
-            persona: {
-              id: persona.id,
-              name: persona.name,
-              role: persona.role,
-              description: persona.description,
-              focus: persona.focus,
-              color: persona.color,
-              icon: persona.icon,
-            },
-            userMessage,
-            draftText: "",
-            brief: brief ?? null,
-            priorMessages,
-          });
-          replyText = (res as { reply?: string })?.reply ?? "";
+          if (!replyText) {
+            store.askError = hasByok
+              ? commentProviderError("ask-editor")
+              : commentConfigurationError("ask-editor");
+            return;
+          }
+          const reply: UserCommentReply = {
+            id: `r-${Date.now()}`,
+            author: persona.name,
+            authorKind: "persona",
+            personaId: persona.id,
+            color: persona.color,
+            text: replyText,
+            createdAt: Date.now(),
+          };
+          const all = await appendUserCommentReply(commentId, reply);
+          store.comments = all;
+          window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+          store.askPersonaFor = null;
+          store.askPersonaId = null;
+        } catch (err) {
+          store.askError = normalizeCommentError(
+            "twyne:comments:ask-editor",
+            err,
+            hasConfiguredAiProvider(store.aiSettings) ? "provider" : "convex",
+            "ask-editor",
+          );
+        } finally {
+          store.isAskingEditor = false;
         }
-
-        if (!replyText) {
-          replyText = fallbackReply(persona, comment);
-        }
-        const reply: UserCommentReply = {
-          id: `r-${Date.now()}`,
-          author: persona.name,
-          authorKind: "persona",
-          personaId: persona.id,
-          color: persona.color,
-          text: replyText,
-          createdAt: Date.now(),
-        };
-        const all = await appendUserCommentReply(commentId, reply);
-        store.comments = all;
-        window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
-      } catch (err) {
-        store.askError = (err as Error).message ?? "Editor unavailable.";
-      } finally {
-        store.isAskingEditor = false;
-        store.askPersonaFor = null;
-        store.askPersonaId = null;
-      }
-    });
+      },
+    );
 
     const unresolved = store.comments.filter((c) => {
       if (c.resolved) return false;
@@ -436,6 +564,17 @@ export const CommentsPanel = component$(
           >
             Pencil it in
           </button>
+          <div class="mt-2">
+            <VoiceRecorder
+              label="Say it instead"
+              transcriptionHint={
+                brief
+                  ? `${brief.answers.workingTitle}. ${brief.answers.audience}`
+                  : undefined
+              }
+              onCapture$={addVoiceComment}
+            />
+          </div>
         </div>
 
         <div class="flex-1 overflow-y-auto">
@@ -506,6 +645,12 @@ export const CommentsPanel = component$(
                       style="font-family: var(--font-serif);"
                       dangerouslySetInnerHTML={renderMarkdown(comment.text)}
                     />
+                    {comment.audioId && (
+                      <VoiceNotePlayback
+                        audioId={comment.audioId}
+                        durationMs={comment.audioDurationMs}
+                      />
+                    )}
                   </div>
                   <div class="flex items-center gap-1 ml-2 flex-shrink-0">
                     <button
@@ -558,6 +703,29 @@ export const CommentsPanel = component$(
                           >
                             {getTimeAgo(reply.createdAt)}
                           </span>
+                          {reply.authorKind === "persona" && (
+                            <SpeakButton
+                              compact
+                              id={`comment-reply-${reply.id}`}
+                              text={reply.text}
+                              voice={
+                                store.personas.find(
+                                  (p) => p.id === reply.personaId,
+                                )?.speechVoice
+                              }
+                              voices={
+                                store.personas.find(
+                                  (p) => p.id === reply.personaId,
+                                )?.speechVoices
+                              }
+                              instructions={
+                                store.personas.find(
+                                  (p) => p.id === reply.personaId,
+                                )?.voice
+                              }
+                              label={reply.author}
+                            />
+                          )}
                         </div>
                         <div
                           class="comment-markdown text-xs text-[var(--color-ink-light)] leading-5"
@@ -609,9 +777,22 @@ export const CommentsPanel = component$(
                       ))}
                     </div>
                     {store.askError && (
-                      <p class="text-[0.7rem] text-[var(--color-vermilion)] mb-1.5">
-                        {store.askError}
-                      </p>
+                      <div class="mb-2">
+                        <ApplicationNotice
+                          error={store.askError}
+                          compact
+                          recoveryLabel="Open AI settings"
+                          recoveryHref="/settings/"
+                          onRetry$={
+                            store.askError.recovery.canRetry
+                              ? () => askEditor(comment.id)
+                              : undefined
+                          }
+                          onDismiss$={() => {
+                            store.askError = null;
+                          }}
+                        />
+                      </div>
                     )}
                     <div class="flex gap-3">
                       <button
@@ -628,6 +809,7 @@ export const CommentsPanel = component$(
                         onClick$={() => {
                           store.askPersonaFor = null;
                           store.askPersonaId = null;
+                          store.askError = null;
                         }}
                         class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
                         style="font-family: var(--font-typewriter);"
@@ -643,8 +825,7 @@ export const CommentsPanel = component$(
                         value={store.replyDrafts[comment.id] ?? ""}
                         aria-label="Reply to note"
                         onInput$={(e) => {
-                          const value = (e.target as HTMLTextAreaElement)
-                            .value;
+                          const value = (e.target as HTMLTextAreaElement).value;
                           store.replyDrafts[comment.id] = value;
                           const q = activeMentionQuery(value);
                           if (q !== null) {
@@ -731,6 +912,7 @@ export const CommentsPanel = component$(
                       onClick$={() => {
                         store.askPersonaFor = comment.id;
                         store.askPersonaId = store.personas[0]?.id ?? null;
+                        store.askError = null;
                       }}
                       class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
                       style="font-family: var(--font-typewriter);"
@@ -828,13 +1010,75 @@ function truncate(s: string, n: number): string {
   return s.slice(0, n - 1) + "…";
 }
 
-
-/** Last-resort reply if the agent call fails. */
-function fallbackReply(persona: Persona, c: UserComment): string {
-  return `${persona.name}: I would push you on this — ${c.text.slice(0, 60)}${c.text.length > 60 ? "…" : ""}. What's the strongest counter-argument?`;
-}
-
 function getCommentPlaceholder(brief: ProjectBrief | null): string {
   if (!brief) return "Add a comment...";
   return `Note for ${brief.answers.audience}...`;
 }
+
+/**
+ * Play back the recording a spoken note came from.
+ *
+ * The Blob is loaded lazily on first press rather than on render: a panel with
+ * thirty voice notes would otherwise pull thirty recordings out of IndexedDB
+ * and hold thirty object URLs open for audio nobody asked to hear.
+ */
+const VoiceNotePlayback = component$<{
+  audioId: string;
+  durationMs?: number;
+}>((props) => {
+  const url = useSignal("");
+  const playing = useSignal(false);
+  const missing = useSignal(false);
+
+  const toggle = $(async () => {
+    if (!url.value) {
+      const blob = await readVoiceNote(props.audioId);
+      if (!blob) {
+        missing.value = true;
+        return;
+      }
+      url.value = URL.createObjectURL(blob);
+    }
+    playing.value = !playing.value;
+  });
+
+  if (missing.value) {
+    return (
+      <p
+        class="mt-1 text-[10px] text-[var(--color-ink-muted)]"
+        style="font-family: var(--font-typewriter);"
+      >
+        The recording isn't on this device — the note above is what was said.
+      </p>
+    );
+  }
+
+  return (
+    <div class="mt-1.5 flex items-center gap-2">
+      <button
+        onClick$={toggle}
+        class="icon-btn text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+        aria-label={playing.value ? "Pause the recording" : "Play the recording"}
+        title={playing.value ? "Pause" : "Play the recording"}
+      >
+        {playing.value ? "❚❚" : "▶"}
+      </button>
+      {url.value && (
+        <audio
+          src={url.value}
+          autoplay={playing.value}
+          controls={false}
+          onEnded$={() => {
+            playing.value = false;
+          }}
+        />
+      )}
+      <span
+        class="text-[10px] tracking-[0.1em] text-[var(--color-ink-muted)]"
+        style="font-family: var(--font-typewriter);"
+      >
+        spoken{props.durationMs ? ` · ${formatDuration(props.durationMs)}` : ""}
+      </span>
+    </div>
+  );
+});

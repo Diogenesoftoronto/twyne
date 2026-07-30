@@ -22,11 +22,16 @@ export interface AuthUser {
 export interface AuthState {
   user: AuthUser | null;
   loading: boolean;
+  /** Restored ATProto identity, present alongside a Better Auth session. */
+  atproto?: {
+    did: string;
+    handle: string;
+    displayName?: string;
+    avatar?: string;
+  };
   /**
-   * Which identity backs the current session. "atproto" means the user
-   * signed in with Bluesky (PDS publishing available, but Convex-backed
-   * cloud features degrade to local-first); "convex" is the email/passkey
-   * better-auth account.
+   * Which identity backs Convex. ATProto can coexist in `atproto`; it only
+   * becomes the primary display identity when Better Auth is absent.
    */
   provider?: "convex" | "atproto";
 }
@@ -48,31 +53,26 @@ export const AuthProvider = component$(() => {
   useVisibleTask$(async ({ cleanup, track }) => {
     track(convexClient);
 
-    // A Bluesky/ATProto session takes precedence: it also completes any
-    // pending OAuth `?code&state` callback on this load. If present, we
-    // treat the user as signed in and skip the better-auth wiring.
+    // Restore/complete ATProto OAuth, but do not let it short-circuit Better
+    // Auth. The two sessions serve different purposes and can coexist.
     const { initSession } = await import("./atproto");
     const atproto = await initSession();
-    if (atproto) {
-      authState.value = {
-        user: {
-          id: atproto.did,
-          email: atproto.handle,
-          name: atproto.displayName ?? atproto.handle,
-          image: atproto.avatar,
-        },
-        loading: false,
-        provider: "atproto",
-      };
-      // Bluesky sessions don't carry a Convex identity; cloud sync stays
-      // local-first until the user signs in with an email/passkey account.
-      clearConvexSyncContext();
-      return;
-    }
 
     const sessionAtom = authClient.useSession;
     if (!sessionAtom || typeof sessionAtom !== "object") {
-      authState.value = { user: null, loading: false };
+      authState.value = atproto
+        ? {
+            user: {
+              id: atproto.did,
+              email: atproto.handle,
+              name: atproto.displayName ?? atproto.handle,
+              image: atproto.avatar,
+            },
+            loading: false,
+            provider: "atproto",
+            atproto,
+          }
+        : { user: null, loading: false };
       clearConvexSyncContext();
       return;
     }
@@ -100,12 +100,43 @@ export const AuthProvider = component$(() => {
             convexClient.value.setAuth(async () => null);
           }
           setConvexSyncContext(convexClient.value, user.id);
+
+          // This mutation requires the live Better Auth Convex token above.
+          // ATProto proof still comes from the official legacy browser OAuth
+          // client; see providerIdentity.ts for the server-conversion boundary.
+          if (atproto) {
+            try {
+              const { linkNotOrganicDid } = await import(
+                "./notorganic-provider"
+              );
+              await linkNotOrganicDid(convexClient.value, atproto.did);
+            } catch (error) {
+              console.warn("[twyne:notorganic] DID link failed", error);
+            }
+          }
         } else {
           clearConvexSyncContext();
         }
-        authState.value = { user, loading: false, provider: "convex" };
+        authState.value = {
+          user,
+          loading: false,
+          provider: "convex",
+          atproto: atproto ?? undefined,
+        };
       } else {
-        authState.value = { user: null, loading: val?.isPending ?? false };
+        authState.value = atproto
+          ? {
+              user: {
+                id: atproto.did,
+                email: atproto.handle,
+                name: atproto.displayName ?? atproto.handle,
+                image: atproto.avatar,
+              },
+              loading: val?.isPending ?? false,
+              provider: "atproto",
+              atproto,
+            }
+          : { user: null, loading: val?.isPending ?? false };
         try {
           convexClient.value?.setAuth(async () => null);
         } catch {

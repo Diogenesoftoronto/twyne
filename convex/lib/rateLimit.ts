@@ -154,6 +154,12 @@ export const RATE_LIMITS = {
   checkoutCreate: { limit: 10, windowMs: 60_000 },
   /** Hosted voice synthesis: 20 per minute per user. */
   voiceSynthesize: { limit: 20, windowMs: 60_000 },
+  /**
+   * Hosted transcription: 12 per minute per user. Lower than synthesis
+   * because each call carries a whole recording and costs by audio duration,
+   * and no honest dictation flow needs more than one every five seconds.
+   */
+  voiceTranscribe: { limit: 12, windowMs: 60_000 },
   /** Room of editors feedback: 30 per minute per user. */
   agentFeedback: { limit: 30, windowMs: 60_000 },
   /** Suggested rewrite: 30 per minute per user. */

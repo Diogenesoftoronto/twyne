@@ -1,5 +1,6 @@
 import type {
   DossierAttachment,
+  DossierProbe,
   ProjectBrief,
   ProjectInterviewAnswers,
 } from "../types";
@@ -24,11 +25,16 @@ export function createProjectBrief(
   answers: ProjectInterviewAnswers,
   previous?: ProjectBrief | null,
   attachments?: DossierAttachment[],
+  probes?: DossierProbe[],
 ): ProjectBrief {
   const now = Date.now();
+  const carried = probes ?? previous?.probes;
   return {
     answers: normalizeInterviewAnswers(answers),
     attachments: attachments ?? previous?.attachments ?? [],
+    // Omitted entirely rather than stored as [] so a brief that never had
+    // probes stays byte-identical to one written before they existed.
+    ...(carried && carried.length > 0 ? { probes: carried } : {}),
     completedAt: previous?.completedAt ?? now,
     updatedAt: now,
   };
@@ -43,9 +49,14 @@ export function loadProjectBrief(): ProjectBrief | null {
       answers?: ProjectInterviewAnswers;
     };
     if (!parsed.answers) return null;
+    const probes = Array.isArray(parsed.probes) ? parsed.probes : [];
     return {
       answers: normalizeInterviewAnswers(parsed.answers),
       attachments: Array.isArray(parsed.attachments) ? parsed.attachments : [],
+      // Rebuilt field-by-field on purpose (to normalise and defend against
+      // partial writes), which means every new field has to be carried here
+      // explicitly or it is silently dropped on reload.
+      ...(probes.length > 0 ? { probes } : {}),
       completedAt:
         typeof parsed.completedAt === "number" ? parsed.completedAt : Date.now(),
       updatedAt:

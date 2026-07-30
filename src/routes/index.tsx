@@ -1,4 +1,4 @@
-import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, useVisibleTask$, $ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { useNavigate } from "@builder.io/qwik-city";
 import { LandingPage } from "../components/landing/landing-page";
@@ -21,24 +21,20 @@ import {
 export default component$(() => {
   const nav = useNavigate();
   const auth = useAuth();
-  const store = useStore<{ checked: boolean; hasBrief: boolean }>({
-    checked: false,
-    hasBrief: false,
-  });
 
+  // The landing paints immediately — the redirect decision is a synchronous
+  // localStorage read that doesn't need the auth check, so we don't gate the
+  // first paint on it. Returning writers (with a filed brief) are bounced to
+  // the desk as soon as the document is ready; first-time visitors just stay.
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track }) => {
-    const loading = track(() => auth.value.loading);
-
-    if (loading) return;
-
-    const brief = loadProjectBrief();
-    store.hasBrief = brief !== null;
-    store.checked = true;
-    if (brief) {
-      window.location.replace("/editor/");
-    }
-  });
+  useVisibleTask$(
+    () => {
+      if (loadProjectBrief()) {
+        window.location.replace("/editor/");
+      }
+    },
+    { strategy: "document-ready" },
+  );
 
   const startBrief = $(() => {
     void nav(auth.value.user ? "/dossier/create/" : "/onboarding/");
@@ -64,32 +60,7 @@ export default component$(() => {
 
   return (
     <main class="paper-fade-in">
-      {store.checked && !store.hasBrief && (
-        <LandingPage
-          onStartBrief$={startBrief}
-          onSkipToEditor$={skipToEditor}
-        />
-      )}
-      {store.checked && store.hasBrief && (
-        <div class="min-h-screen flex items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
-          <p
-            class="text-sm tracking-[0.24em] uppercase"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Returning you to the desk…
-          </p>
-        </div>
-      )}
-      {!store.checked && (
-        <div class="min-h-screen flex items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
-          <p
-            class="text-xs tracking-[0.32em] uppercase"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Unfolding the broadsheet…
-          </p>
-        </div>
-      )}
+      <LandingPage onStartBrief$={startBrief} onSkipToEditor$={skipToEditor} />
     </main>
   );
 });

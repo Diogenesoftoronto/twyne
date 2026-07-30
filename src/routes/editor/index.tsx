@@ -1,4 +1,10 @@
-import { component$, $, useSignal, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  $,
+  useSignal,
+  useStore,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { Link, useNavigate } from "@builder.io/qwik-city";
 import { ProjectBriefCard } from "../../components/brief/project-brief-card";
@@ -20,6 +26,7 @@ import {
   saveFolioContentToIdb,
   loadMetaFromIdb,
   saveMetaToIdb,
+  loadPersonasFromIdb,
 } from "../../utils/idb";
 import { useAuth } from "../../utils/auth-context";
 import { clearUserComments } from "../../utils/user-comments";
@@ -31,13 +38,33 @@ import { CommentsPanel } from "../../components/comments/comments-panel";
 import { CitationsPanel } from "../../components/citations/citations-panel";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
-import { markDirty } from "../../utils/convex-sync";
+import { markDirty, loadRoomSettingsLocally } from "../../utils/convex-sync";
 import {
   startBackgroundResearch,
   stopBackgroundResearch,
   kickBackgroundResearch,
   onDraftChanged,
 } from "../../utils/background-research";
+import {
+  startBackgroundRoom,
+  stopBackgroundRoom,
+  onDraftChanged as onDraftChangedForRoom,
+} from "../../utils/background-room";
+import { paragraphTextFromHtml } from "../../utils/draft-trajectory";
+import {
+  panelActivity,
+  setVisiblePanel,
+  startPanelActivity,
+  type ActivityCounts,
+} from "../../utils/panel-activity";
+import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
+import type { AppError } from "../../types/application-errors";
+import { ApplicationNotice } from "../../components/ui/application-notice";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 
 type RightPanel = "personas" | "rubric" | "comments" | "citations";
 
@@ -46,7 +73,8 @@ const MIN_EDITOR_WIDTH = 360;
 const LEFT_SIDEBAR_WIDTH = 288;
 
 function maxRightPanelWidth(leftSidebarOpen: boolean): number {
-  const reserved = (leftSidebarOpen ? LEFT_SIDEBAR_WIDTH : 0) + MIN_EDITOR_WIDTH;
+  const reserved =
+    (leftSidebarOpen ? LEFT_SIDEBAR_WIDTH : 0) + MIN_EDITOR_WIDTH;
   return Math.max(260, Math.min(560, window.innerWidth - reserved));
 }
 
@@ -86,8 +114,12 @@ interface LayoutStore {
   sharedLixId: string | null;
   /** True while joining a shared document is in progress. */
   joiningShared: boolean;
-  /** Error message if joining failed. */
-  joinError: string | null;
+  /** Structured error if joining failed. */
+  joinError: AppError | null;
+  /** Structured error if the local workspace could not be opened. */
+  workspaceError: AppError | null;
+  /** Unread counts per board tab, so passive work is never silent. */
+  activity: ActivityCounts;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -167,95 +199,124 @@ export default component$(() => {
     sharedLixId: null,
     joiningShared: false,
     joinError: null,
+    workspaceError: null,
+    activity: panelActivity(),
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
     (async () => {
-      const brief = loadProjectBrief();
-      const folios = await loadFoliosFromIdb();
-      const activeFolioId = await loadActiveFolioIdFromIdb();
+      try {
+        const brief = loadProjectBrief();
+        const folios = await loadFoliosFromIdb();
+        const activeFolioId = await loadActiveFolioIdFromIdb();
 
-      // No dossier yet → the writer belongs in onboarding first.
-      if (!brief && folios.length === 0) {
-        void nav("/dossier/create/");
-        return;
-      }
-
-      // Migration: old storage had a single draft. If we have a brief but no
-      // folios, create a Folio I from the legacy draft key.
-      if (brief && folios.length === 0) {
-        const legacyDraft = loadDraftHtml();
-        const draftFolio: Folio = {
-          id: crypto.randomUUID(),
-          name: brief.answers.workingTitle || "Current draft",
-          type: "draft",
-          createdAt: brief.completedAt,
-          updatedAt: Date.now(),
-        };
-        await saveFoliosToIdb([draftFolio]);
-        await saveFolioContentToIdb(draftFolio.id, legacyDraft);
-        await saveActiveFolioIdToIdb(draftFolio.id);
-        saveDraftHtml(legacyDraft);
-        store.folios = [draftFolio];
-        store.activeFolioId = draftFolio.id;
-        store.editorSeed = legacyDraft;
-        markDirty();
-      } else if (folios.length > 0) {
-        store.folios = folios;
-        store.activeFolioId = activeFolioId ?? folios[0].id;
-        store.editorSeed = await loadFolioContentFromIdb(store.activeFolioId);
-        saveDraftHtml(store.editorSeed);
-      }
-
-      store.brief = brief;
-      store.hydrated = true;
-
-      // Surface the local-only sign-in nudge unless it was dismissed before.
-      const dismissed = await loadMetaFromIdb<boolean>(
-        "signin-toast-dismissed",
-      );
-      store.signInToastDismissed = dismissed === true;
-
-      // Arriving from the landing "Sign in" link → open the auth panel.
-      if (new URLSearchParams(window.location.search).get("auth") === "1") {
-        accountOpen.value = true;
-      }
-
-      // Arriving via a shared-document invite link (?shared=<lixId>).
-      const sharedId = new URLSearchParams(window.location.search).get(
-        "shared",
-      );
-      if (sharedId && clientSig.value && auth.value.user) {
-        store.joiningShared = true;
-        store.joinError = null;
-        try {
-          const client = clientSig.value;
-          // Accept pending invitation for this lixId (no-op if none).
-          try {
-            await client.mutation(api.collaboration.acceptInvitation, {
-              lixId: sharedId,
-            });
-          } catch {
-            // May have already accepted, or no pending invite — that's fine.
-          }
-          const meta = await client.query(api.collaboration.getSharedLixMeta, {
-            lixId: sharedId,
-          });
-          if (meta) {
-            const { joinSharedLix } = await import("../../utils/collaboration");
-            await joinSharedLix(client, sharedId);
-            store.sharedLixId = sharedId;
-            store.activeFolioId = meta.folioId;
-            store.editorSeed = "";
-          } else {
-            store.joinError = "You don't have access to this document.";
-          }
-        } catch (e: any) {
-          store.joinError = e?.message ?? "Could not join the shared document.";
-        } finally {
-          store.joiningShared = false;
+        // No dossier yet → the writer belongs in onboarding first.
+        if (!brief && folios.length === 0) {
+          void nav("/dossier/create/");
+          return;
         }
+
+        // Migration: old storage had a single draft. If we have a brief but no
+        // folios, create a Folio I from the legacy draft key.
+        if (brief && folios.length === 0) {
+          const legacyDraft = loadDraftHtml();
+          const draftFolio: Folio = {
+            id: crypto.randomUUID(),
+            name: brief.answers.workingTitle || "Current draft",
+            type: "draft",
+            createdAt: brief.completedAt,
+            updatedAt: Date.now(),
+          };
+          await saveFoliosToIdb([draftFolio]);
+          await saveFolioContentToIdb(draftFolio.id, legacyDraft);
+          await saveActiveFolioIdToIdb(draftFolio.id);
+          saveDraftHtml(legacyDraft);
+          store.folios = [draftFolio];
+          store.activeFolioId = draftFolio.id;
+          store.editorSeed = legacyDraft;
+          markDirty();
+        } else if (folios.length > 0) {
+          store.folios = folios;
+          store.activeFolioId = activeFolioId ?? folios[0].id;
+          store.editorSeed = await loadFolioContentFromIdb(store.activeFolioId);
+          saveDraftHtml(store.editorSeed);
+        }
+
+        store.brief = brief;
+        store.hydrated = true;
+
+        // Surface the local-only sign-in nudge unless it was dismissed before.
+        const dismissed = await loadMetaFromIdb<boolean>(
+          "signin-toast-dismissed",
+        );
+        store.signInToastDismissed = dismissed === true;
+
+        // Arriving from the landing "Sign in" link → open the auth panel.
+        if (new URLSearchParams(window.location.search).get("auth") === "1") {
+          accountOpen.value = true;
+        }
+
+        // Arriving via a shared-document invite link (?shared=<lixId>).
+        const sharedId = new URLSearchParams(window.location.search).get(
+          "shared",
+        );
+        if (sharedId && clientSig.value && auth.value.user) {
+          store.joiningShared = true;
+          store.joinError = null;
+          try {
+            const client = clientSig.value;
+            // Accept pending invitation for this lixId (no-op if none).
+            try {
+              await client.mutation(api.collaboration.acceptInvitation, {
+                lixId: sharedId,
+              });
+            } catch {
+              // May have already accepted, or no pending invite — that's fine.
+            }
+            const meta = await client.query(
+              api.collaboration.getSharedLixMeta,
+              {
+                lixId: sharedId,
+              },
+            );
+            if (meta) {
+              const { joinSharedLix } = await import(
+                "../../utils/collaboration"
+              );
+              await joinSharedLix(client, sharedId);
+              store.sharedLixId = sharedId;
+              store.activeFolioId = meta.folioId;
+              store.editorSeed = "";
+            } else {
+              store.joinError = createAppError("PERMISSION_DENIED", {
+                source: "convex",
+                metadata: { operation: "join-shared-document" },
+              });
+            }
+          } catch (err) {
+            reportApplicationDiagnostic(
+              "twyne:editor:join-shared-document",
+              err,
+              { operation: "join-shared-document" },
+            );
+            store.joinError = normalizeApplicationError(err, {
+              source: "convex",
+              metadata: { operation: "join-shared-document" },
+            });
+          } finally {
+            store.joiningShared = false;
+          }
+        }
+      } catch (err) {
+        reportApplicationDiagnostic("twyne:editor:open-workspace", err, {
+          operation: "open-workspace",
+        });
+        store.workspaceError = normalizeApplicationError(err, {
+          source: "application",
+          metadata: { operation: "open-workspace" },
+        });
+        store.hydrated = true;
       }
     })();
 
@@ -345,9 +406,7 @@ export default component$(() => {
       }
     };
     window.addEventListener("twyne:zen-mode", zenModeHandler);
-    cleanup(() =>
-      window.removeEventListener("twyne:zen-mode", zenModeHandler),
-    );
+    cleanup(() => window.removeEventListener("twyne:zen-mode", zenModeHandler));
 
     // Keep the right panel from squeezing the manuscript off-screen when
     // the browser window shrinks (e.g. a laptop that isn't maximized).
@@ -381,6 +440,29 @@ export default component$(() => {
         }
       })();
     }
+    // ── The background room: the five editors read new material as the
+    //    writer works, so a note is already waiting when they think to ask,
+    //    and every explicit convene inherits the trajectory. ──
+    if (store.activeFolioId) {
+      void (async () => {
+        const [custom, roomSettings, seed] = await Promise.all([
+          loadPersonasFromIdb(),
+          loadRoomSettingsLocally(),
+          loadFolioContentFromIdb(store.activeFolioId!),
+        ]);
+        startBackgroundRoom({
+          client,
+          brief: store.brief,
+          folioId: store.activeFolioId,
+          personas: custom && custom.length > 0 ? custom : DEFAULT_PERSONAS,
+          enabled: roomSettings.backgroundRoom !== false,
+          // Everything already on the page counts as read, so the writer is
+          // never ambushed by five notes on prose they wrote last week.
+          baselineText: paragraphTextFromHtml(seed ?? ""),
+        });
+      })();
+    }
+
     const onDraftContent = (e: Event) => {
       const html = (e as CustomEvent).detail as string;
       const plain = html
@@ -388,6 +470,8 @@ export default component$(() => {
         .replace(/\s+/g, " ")
         .trim();
       onDraftChanged(plain);
+      // The room needs paragraph breaks preserved; research does not.
+      onDraftChangedForRoom(paragraphTextFromHtml(html));
     };
     window.addEventListener("twyne:content", onDraftContent);
 
@@ -396,11 +480,23 @@ export default component$(() => {
     const onPersonaReply = () => {
       store.rightPanel = "personas";
       store.rightPanelOpen = true;
+      setVisiblePanel("personas");
     };
     window.addEventListener("twyne:persona-reply", onPersonaReply);
 
+    // ── Unread counts on the board tabs ──
+    const stopActivity = startPanelActivity();
+    setVisiblePanel(store.rightPanelOpen ? store.rightPanel : null);
+    const onActivity = (e: Event) => {
+      store.activity = (e as CustomEvent).detail as ActivityCounts;
+    };
+    window.addEventListener("twyne:panel-activity", onActivity);
+
     cleanup(() => {
+      stopActivity();
+      window.removeEventListener("twyne:panel-activity", onActivity);
       stopBackgroundResearch();
+      stopBackgroundRoom();
       window.removeEventListener("twyne:content", onDraftContent);
       window.removeEventListener("twyne:persona-reply", onPersonaReply);
     });
@@ -798,7 +894,9 @@ export default component$(() => {
         {/* ── Main area ─────────────────────────────────────── */}
         <div class="flex-1 flex flex-col min-w-0">
           {/* Masthead */}
-          <header class={`border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]${store.zenActive ? " zen-masthead" : ""}`}>
+          <header
+            class={`border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]${store.zenActive ? " zen-masthead" : ""}`}
+          >
             <div class="flex items-center px-5 pt-3 pb-1.5 gap-4">
               <button
                 onClick$={() => {
@@ -887,6 +985,9 @@ export default component$(() => {
                 <button
                   onClick$={() => {
                     store.rightPanelOpen = !store.rightPanelOpen;
+                    setVisiblePanel(
+                      store.rightPanelOpen ? store.rightPanel : null,
+                    );
                   }}
                   class="icon-btn p-1.5 text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
                   title="Toggle the editorial board"
@@ -913,6 +1014,28 @@ export default component$(() => {
               <span class="flex-1 h-px bg-[var(--color-ink)]" />
             </div>
           </header>
+
+          {(store.workspaceError || store.joinError) && (
+            <div class="border-b border-[var(--color-paper-3)] bg-[var(--color-paper)] px-5 py-3">
+              <ApplicationNotice
+                error={store.workspaceError ?? store.joinError!}
+                recoveryLabel={
+                  store.joinError?.code === "AUTHENTICATION_REQUIRED"
+                    ? "Sign in"
+                    : undefined
+                }
+                recoveryHref={
+                  store.joinError?.code === "AUTHENTICATION_REQUIRED"
+                    ? "/signin/"
+                    : undefined
+                }
+                onDismiss$={$(() => {
+                  store.workspaceError = null;
+                  store.joinError = null;
+                })}
+              />
+            </div>
+          )}
 
           {/* Editor + Editorial board */}
           <div class="flex-1 flex min-h-0">
@@ -972,15 +1095,22 @@ export default component$(() => {
                         {panelTabs.map((tab) => {
                           const active =
                             store.rightPanel === tab.id && store.rightPanelOpen;
+                          const unread = store.activity[tab.id] ?? 0;
                           return (
                             <button
                               key={tab.id}
                               onClick$={() => {
                                 store.rightPanel = tab.id;
                                 store.rightPanelOpen = true;
+                                setVisiblePanel(tab.id);
                               }}
                               class="flex-1 px-2 py-2.5 transition-colors group relative focus-ring"
                               aria-pressed={active}
+                              aria-label={
+                                unread > 0
+                                  ? `${tab.label} — ${unread} new`
+                                  : tab.label
+                              }
                               style={{
                                 borderBottom: active
                                   ? `3px solid ${tab.accent}`
@@ -1013,6 +1143,21 @@ export default component$(() => {
                               >
                                 {tab.label}
                               </span>
+                              {/* Work that arrived while the writer was
+                                  looking elsewhere. The panels stay mounted
+                                  but hidden, so without this it is silent. */}
+                              {unread > 0 && !active && (
+                                <span
+                                  class="absolute top-1.5 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] leading-none text-white"
+                                  style={{
+                                    background: tab.accent,
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
+                                  aria-hidden="true"
+                                >
+                                  {unread > 9 ? "9+" : unread}
+                                </span>
+                              )}
                             </button>
                           );
                         })}

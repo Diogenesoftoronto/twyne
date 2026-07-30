@@ -26,6 +26,7 @@ import type {
   AiProviderConfig,
   AiFeatureOverride,
 } from "../types";
+import { VOICE_ONLY_PROVIDER_TYPES } from "../types";
 import type {
   AgentRequest,
   AgentResponse,
@@ -43,10 +44,17 @@ import {
   buildEvidenceJudgePrompt,
   buildIntegrityJudgeSystemPrompt,
   buildIntegrityJudgePrompt,
+  buildTargetFitJudgeSystemPrompt,
+  buildTargetFitJudgePrompt,
+  targetFitCommission,
+  probeParticularsBlock,
+  buildCustomCriterionSystemPrompt,
+  buildCustomCriterionPrompt,
   type MemoForSynthesis,
 } from "../../convex/agentPrompts";
 import { buildQuoteTools } from "../../convex/agentTools";
-import type { ProjectBrief as ProjectBriefType } from "../types";
+import type { DossierProbe, ProjectBrief as ProjectBriefType } from "../types";
+import { normalizeProbe } from "./dossier-probes";
 import {
   localAiBaseUrl,
   LOCAL_MODEL_ID,
@@ -60,6 +68,13 @@ import {
   parseJudgeOutput,
   stripTaggedJson,
 } from "./llm-parsing";
+import {
+  createAppError,
+  failureResult,
+  successResult,
+} from "./application-errors";
+import type { ApplicationResult } from "../types/application-errors";
+import { reportApplicationDiagnostic } from "./application-diagnostics";
 
 /* ── Provider factory ───────────────────────────────────────────── */
 
@@ -71,6 +86,24 @@ function isOpenAiCompatibleProvider(type: AiProviderConfig["type"]): boolean {
     type === "ollama" ||
     type === "zai" ||
     type === "minimax"
+  );
+}
+
+/** Speaks and listens, but has no language model behind it. */
+export function isVoiceOnlyProvider(type: AiProviderConfig["type"]): boolean {
+  return VOICE_ONLY_PROVIDER_TYPES.includes(type);
+}
+
+/** Features that want a voice, not a mind. */
+const VOICE_FEATURES: ReadonlySet<AiFeature> = new Set<AiFeature>([
+  "voice-narration",
+  "voice-transcription",
+]);
+
+/** Can this provider serve speech at all? */
+function supportsVoice(type: AiProviderConfig["type"]): boolean {
+  return (
+    type === "openai" || isOpenAiCompatibleProvider(type) || isVoiceOnlyProvider(type)
   );
 }
 
@@ -128,6 +161,10 @@ async function createModel(
         });
         return openai.chat(modelId);
       }
+      case "fishaudio":
+        // Voice only — there is no language model to build. Callers fall back
+        // to the server path, which is the correct behaviour.
+        return null;
       case "litert": {
         // Desktop-only native model exposed as an OpenAI-compatible server on
         // loopback by the Electrobun shell. No real key; baseUrl is the local
@@ -143,7 +180,7 @@ async function createModel(
         return null;
     }
   } catch (err) {
-    console.warn("[twyne:ai-client] failed to create model:", err);
+    reportApplicationDiagnostic("twyne:ai-client:create-model", err);
     return null;
   }
 }
@@ -168,16 +205,30 @@ export function resolveFeatureConfig(
     return null;
   }
 
+  // A voice-only provider can serve the voice features and nothing else; an
+  // LLM provider that can't speak is no use for narration. Narrow the pool
+  // before picking, so a writer with (say) Anthropic for the room and Fish
+  // Audio for the voices gets the right one for each without configuring
+  // per-feature overrides by hand.
+  const wantsVoice = VOICE_FEATURES.has(feature);
+  const eligible = normalized.providers.filter((p) =>
+    wantsVoice ? supportsVoice(p.type) : !isVoiceOnlyProvider(p.type),
+  );
+  if (eligible.length === 0) return null;
+
   const override: AiFeatureOverride | undefined =
     normalized.perFeature[feature];
-  const providerId =
-    override?.providerId ??
-    normalized.defaultProviderId ??
-    normalized.providers[0]?.id;
-  if (!providerId) return null;
-
-  const provider = normalized.providers.find((p) => p.id === providerId);
-  if (!provider) return null;
+  // An explicit per-feature override wins, but only if it names a provider
+  // that can actually do the job.
+  const overridden = override?.providerId
+    ? eligible.find((p) => p.id === override.providerId)
+    : undefined;
+  const preferred =
+    overridden ??
+    eligible.find((p) => p.id === normalized.defaultProviderId) ??
+    eligible[0];
+  if (!preferred) return null;
+  const provider = preferred;
 
   return {
     provider,
@@ -216,11 +267,32 @@ export function resolveFeatureConfigForPersona(
   };
 }
 
+/**
+ * Is there a client-side provider that can do *language* work?
+ *
+ * Voice-only providers are excluded deliberately. Callers use this to decide
+ * whether to take the BYOK path at all, and several of them treat a BYOK
+ * attempt that yields nothing as a hard error rather than falling back to the
+ * server — so counting a Fish Audio key here would break the Cast panel for
+ * anyone who configured voice but not an LLM.
+ */
 export function hasConfiguredAiProvider(
   settings: Partial<AiSettings> | AiSettings | null | undefined,
 ): boolean {
   if (!settings) return false;
-  return normalizeAiSettings(settings).providers.length > 0;
+  return normalizeAiSettings(settings).providers.some(
+    (p) => !isVoiceOnlyProvider(p.type),
+  );
+}
+
+/** Is there a client-side provider that can speak or listen? */
+export function hasConfiguredVoiceProvider(
+  settings: Partial<AiSettings> | AiSettings | null | undefined,
+): boolean {
+  if (!settings) return false;
+  return normalizeAiSettings(settings).providers.some((p) =>
+    supportsVoice(p.type),
+  );
 }
 
 function defaultModelForFeature(
@@ -232,6 +304,17 @@ function defaultModelForFeature(
     (provider.type === "openai" || isOpenAiCompatibleProvider(provider.type))
   ) {
     return "gpt-4o-mini-tts";
+  }
+  if (
+    feature === "voice-transcription" &&
+    (provider.type === "openai" || isOpenAiCompatibleProvider(provider.type))
+  ) {
+    return "gpt-4o-mini-transcribe";
+  }
+  if (provider.type === "fishaudio") {
+    // `s2.1-pro-free` is the only model that works without API credit, so a
+    // fresh key speaks straight away; transcription has no free tier.
+    return feature === "voice-transcription" ? "asr-1" : "s2.1-pro-free";
   }
   return provider.defaultModel;
 }
@@ -247,6 +330,7 @@ function defaultTemperature(feature: AiFeature): number {
     case "room-synthesis":
       return 0.4;
     case "voice-narration":
+    case "voice-transcription":
       return 0.4;
     case "citation-format":
       return 0.1;
@@ -278,6 +362,7 @@ function defaultMaxTokens(feature: AiFeature): number {
     case "rubric-review":
       return 1200;
     case "voice-narration":
+    case "voice-transcription":
       return 0;
     case "comment-reply":
       return 280;
@@ -318,12 +403,10 @@ export async function runClientVoiceSpeech(
 ): Promise<VoiceSpeechResult | null> {
   const resolved = resolveFeatureConfig(settings, "voice-narration");
   if (!resolved) return null;
-  if (
-    resolved.provider.type !== "openai" &&
-    !isOpenAiCompatibleProvider(resolved.provider.type)
-  ) {
-    console.warn(
-      "[twyne:ai-client] voice narration requires an OpenAI or OpenAI-compatible provider.",
+  if (!supportsVoice(resolved.provider.type)) {
+    reportApplicationDiagnostic(
+      "twyne:ai-client:voice-unsupported-provider",
+      createAppError("CONFIGURATION_ERROR", { source: "provider" }),
     );
     return null;
   }
@@ -337,6 +420,18 @@ export async function runClientVoiceSpeech(
     req.responseFormat ?? override?.responseFormat ?? "mp3";
   const speed = req.speed ?? override?.speed;
   const instructions = req.instructions ?? override?.instructions;
+
+  if (resolved.provider.type === "fishaudio") {
+    return runFishAudioSpeech({
+      provider: resolved.provider,
+      model: resolved.model,
+      text: input,
+      voice,
+      responseFormat,
+      speed,
+    });
+  }
+
   const baseURL =
     isOpenAiCompatibleProvider(resolved.provider.type) &&
     resolved.provider.baseUrl
@@ -376,7 +471,7 @@ export async function runClientVoiceSpeech(
       responseFormat,
     };
   } catch (err) {
-    console.warn("[twyne:ai-client] voice narration failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:voice", err);
     return null;
   }
 }
@@ -626,7 +721,7 @@ PASSAGE:
     }
     return null;
   } catch (err) {
-    console.warn("[twyne:ai-client] rewrite failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:rewrite", err);
     return null;
   }
 }
@@ -682,7 +777,7 @@ export async function runClientAgent(
       anchor,
     };
   } catch (err) {
-    console.warn("[twyne:ai-client] generateText failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:generate", err);
     return null;
   }
 }
@@ -711,7 +806,7 @@ export async function runClientRoomSynthesis(
     const cleaned = text.trim();
     return cleaned ? { text: cleaned, provider: resolved.provider.type } : null;
   } catch (err) {
-    console.warn("[twyne:ai-client] room synthesis failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:room-synthesis", err);
     return null;
   }
 }
@@ -751,7 +846,7 @@ export async function runClientRubricReview(
     const cleaned = text.trim();
     return cleaned ? { text: cleaned, provider: resolved.provider.type } : null;
   } catch (err) {
-    console.warn("[twyne:ai-client] rubric review failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:rubric-review", err);
     return null;
   }
 }
@@ -807,9 +902,202 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
     }
     return null;
   } catch (err) {
-    console.warn("[twyne:ai-client] judge failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:judge", err);
     return null;
   }
+}
+
+/** Fish Audio's API root. Not configurable — it is a single hosted service. */
+const FISH_AUDIO_BASE = "https://api.fish.audio";
+
+/**
+ * Fish Audio speaks through its own API, not an OpenAI-compatible one:
+ * `POST /v1/tts`, the model in a `model:` header rather than the body, and the
+ * voice selected by `reference_id` (a voice-model id from their library)
+ * rather than by a name like "alloy".
+ *
+ * Because our persona voices are OpenAI names, they are only forwarded when
+ * they look like a Fish Audio id — otherwise Fish uses its default voice. A
+ * writer who wants a specific Fish voice puts its id in the per-feature voice
+ * override in settings.
+ */
+async function runFishAudioSpeech(args: {
+  provider: AiProviderConfig;
+  model: string;
+  text: string;
+  voice: string;
+  responseFormat: string;
+  speed?: number;
+}): Promise<VoiceSpeechResult | null> {
+  // Fish voice ids are 32-character hex; the OpenAI voice names we default to
+  // ("alloy", "onyx", …) are not, and sending one would 422.
+  const referenceId = /^[0-9a-f]{32}$/i.test(args.voice)
+    ? args.voice
+    : undefined;
+  const format = ["mp3", "wav", "pcm", "opus"].includes(args.responseFormat)
+    ? args.responseFormat
+    : "mp3";
+
+  try {
+    const res = await fetch(`${FISH_AUDIO_BASE}/v1/tts`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${args.provider.apiKey}`,
+        "content-type": "application/json",
+        model: args.model,
+      },
+      body: JSON.stringify({
+        text: args.text,
+        format,
+        ...(referenceId ? { reference_id: referenceId } : {}),
+        ...(args.speed ? { prosody: { speed: args.speed } } : {}),
+      }),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(
+        `Fish Audio speech failed (${res.status}): ${detail.slice(0, 240)}`,
+      );
+    }
+    return {
+      audio: new Blob([await res.arrayBuffer()], {
+        type: audioMimeType(format),
+      }),
+      provider: "fishaudio",
+      model: args.model,
+      voice: referenceId ?? "default",
+      responseFormat: format,
+    };
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:fishaudio-speech", err);
+    return null;
+  }
+}
+
+/**
+ * Fish Audio transcribes via `POST /v1/asr` as multipart form data — not the
+ * OpenAI `/audio/transcriptions` shape, and with no `model` field in the body.
+ */
+async function runFishAudioTranscribe(args: {
+  provider: AiProviderConfig;
+  model: string;
+  audio: Blob;
+}): Promise<VoiceTranscribeResult | null> {
+  try {
+    const form = new FormData();
+    form.append("audio", args.audio, `note.${blobExtension(args.audio.type)}`);
+    form.append("ignore_timestamps", "true");
+
+    const res = await fetch(`${FISH_AUDIO_BASE}/v1/asr`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${args.provider.apiKey}` },
+      body: form,
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(
+        `Fish Audio transcription failed (${res.status}): ${detail.slice(0, 240)}`,
+      );
+    }
+    const data = (await res.json()) as { text?: string };
+    return {
+      text: typeof data.text === "string" ? data.text.trim() : "",
+      provider: "fishaudio",
+      model: args.model,
+    };
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:fishaudio-transcribe", err);
+    return null;
+  }
+}
+
+/* ── Public: transcribe speech client-side (BYOK) ───────────────── */
+
+export interface VoiceTranscribeRequest {
+  audio: Blob;
+  /** Optional nudge for proper nouns and jargon in the recording. */
+  prompt?: string;
+}
+
+export interface VoiceTranscribeResult {
+  text: string;
+  provider: string;
+  model: string;
+}
+
+/**
+ * Transcribe a recording with the writer's own key. Mirrors
+ * {@link runClientVoiceSpeech}: OpenAI-compatible providers only, since the
+ * `/audio/transcriptions` shape is what the other vendors don't share.
+ */
+export async function runClientVoiceTranscribe(
+  req: VoiceTranscribeRequest,
+  settings: AiSettings,
+): Promise<VoiceTranscribeResult | null> {
+  const resolved = resolveFeatureConfig(settings, "voice-transcription");
+  if (!resolved) return null;
+  if (!supportsVoice(resolved.provider.type)) {
+    reportApplicationDiagnostic(
+      "twyne:ai-client:transcribe-unsupported-provider",
+      createAppError("CONFIGURATION_ERROR", { source: "provider" }),
+    );
+    return null;
+  }
+  if (req.audio.size === 0) return null;
+
+  if (resolved.provider.type === "fishaudio") {
+    return runFishAudioTranscribe({
+      provider: resolved.provider,
+      model: resolved.model,
+      audio: req.audio,
+    });
+  }
+
+  const baseURL =
+    isOpenAiCompatibleProvider(resolved.provider.type) &&
+    resolved.provider.baseUrl
+      ? resolved.provider.baseUrl.replace(/\/$/, "")
+      : "https://api.openai.com/v1";
+
+  try {
+    const form = new FormData();
+    form.append("file", req.audio, `note.${blobExtension(req.audio.type)}`);
+    form.append("model", resolved.model);
+    form.append("response_format", "json");
+    if (req.prompt?.trim()) {
+      form.append("prompt", req.prompt.trim().slice(0, 800));
+    }
+
+    const res = await fetch(`${baseURL}/audio/transcriptions`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${resolved.provider.apiKey}` },
+      body: form,
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(
+        `Transcription failed (${res.status}): ${detail.slice(0, 240)}`,
+      );
+    }
+    const data = (await res.json()) as { text?: string };
+    return {
+      text: typeof data.text === "string" ? data.text.trim() : "",
+      provider: resolved.provider.type,
+      model: resolved.model,
+    };
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:voice-transcribe", err);
+    return null;
+  }
+}
+
+function blobExtension(mimeType: string): string {
+  const base = mimeType.split(";")[0].trim().toLowerCase();
+  if (base === "audio/ogg") return "ogg";
+  if (base === "audio/mp4" || base === "audio/m4a") return "m4a";
+  if (base === "audio/wav" || base === "audio/x-wav") return "wav";
+  if (base === "audio/mpeg") return "mp3";
+  return "webm";
 }
 
 /* ── Public: dedicated evidence & integrity judges (BYOK path) ─── */
@@ -820,12 +1108,16 @@ export interface EvidenceJudgeRequest {
 }
 
 function evidenceStaticNote(draftText: string): string {
-  const citations = (draftText.match(
-    /\(\s*[A-Z][A-Za-z-]+,\s*\d{4}\s*\)|\[\d+\]|\b(?:doi:|https?:\/\/)\S+/g,
-  ) ?? []).length;
+  const citations = (
+    draftText.match(
+      /\(\s*[A-Z][A-Za-z-]+,\s*\d{4}\s*\)|\[\d+\]|\b(?:doi:|https?:\/\/)\S+/g,
+    ) ?? []
+  ).length;
   const words = draftText.split(/\s+/).filter(Boolean).length;
   const density =
-    words > 0 ? ` (${((citations / words) * 1000).toFixed(1)} per 1,000 words)` : "";
+    words > 0
+      ? ` (${((citations / words) * 1000).toFixed(1)} per 1,000 words)`
+      : "";
   const paragraphs = draftText
     .split(/\n{2,}/)
     .map((p) => p.trim())
@@ -886,7 +1178,7 @@ export async function runClientEvidenceJudge(
     if (parsed) return { ...parsed, provider: resolved.provider.type };
     return null;
   } catch (err) {
-    console.warn("[twyne:ai-client] evidence judge failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:evidence-judge", err);
     return null;
   }
 }
@@ -920,7 +1212,84 @@ export async function runClientIntegrityJudge(
     if (parsed) return { ...parsed, provider: resolved.provider.type };
     return null;
   } catch (err) {
-    console.warn("[twyne:ai-client] integrity judge failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:integrity-judge", err);
+    return null;
+  }
+}
+
+/**
+ * The relevance gate (BYOK path). Judges only whether the draft is about the
+ * right thing for the right reader — deliberately blind to craft, so the
+ * client can use it to cap the shape-derived rubric scores.
+ */
+export async function runClientTargetFitJudge(
+  req: EvidenceJudgeRequest,
+  settings: AiSettings,
+): Promise<{ score: number; rationale: string; provider: string } | null> {
+  const resolved = resolveFeatureConfig(settings, "rubric-judge");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  try {
+    const text = await generateTrackedText({
+      feature: "rubric-judge",
+      resolved,
+      model,
+      system: buildTargetFitJudgeSystemPrompt(),
+      prompt: buildTargetFitJudgePrompt({
+        ...targetFitCommission(req.brief),
+        draftText: req.draftText,
+        particulars: probeParticularsBlock(req.brief),
+      }),
+      spanName: "rubric_judge_target_fit",
+      evalSignals: { twyne_expected_format: "json_score_rationale" },
+    });
+    const parsed = parseJudgeOutput(text);
+    if (parsed) return { ...parsed, provider: resolved.provider.type };
+    return null;
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:target-fit-judge", err);
+    return null;
+  }
+}
+
+/**
+ * Judge the draft against a criterion the writer wrote (BYOK path).
+ * Shares the prompt with the Convex action so the two cannot drift.
+ */
+export async function runClientCustomCriterionJudge(
+  req: {
+    brief: ProjectBriefType | null;
+    draftText: string;
+    label: string;
+    description: string;
+  },
+  settings: AiSettings,
+): Promise<{ score: number; rationale: string; provider: string } | null> {
+  const resolved = resolveFeatureConfig(settings, "rubric-judge");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  try {
+    const text = await generateTrackedText({
+      feature: "rubric-judge",
+      resolved,
+      model,
+      system: buildCustomCriterionSystemPrompt(),
+      prompt: buildCustomCriterionPrompt({
+        ...targetFitCommission(req.brief),
+        label: req.label,
+        description: req.description,
+        draftText: req.draftText,
+      }),
+      spanName: "rubric_judge_custom",
+      evalSignals: { twyne_expected_format: "json_score_rationale" },
+    });
+    const parsed = parseJudgeOutput(text);
+    if (parsed) return { ...parsed, provider: resolved.provider.type };
+    return null;
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:custom-criterion-judge", err);
     return null;
   }
 }
@@ -1097,7 +1466,9 @@ export function parseCitationFormatResult(
       return {
         title: o.title.trim(),
         author:
-          typeof o.author === "string" ? o.author.trim() || undefined : undefined,
+          typeof o.author === "string"
+            ? o.author.trim() || undefined
+            : undefined,
         year,
         date,
         url: typeof o.url === "string" ? o.url.trim() || undefined : undefined,
@@ -1154,7 +1525,7 @@ Respond with JSON only:
 
     return parseCitationFormatResult(text, req.style, resolved.provider.type);
   } catch (err) {
-    console.warn("[twyne:ai-client] citation format failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:citation-format", err);
     return null;
   }
 }
@@ -1242,7 +1613,7 @@ Respond with JSON only:
     }
     return null;
   } catch (err) {
-    console.warn("[twyne:ai-client] source summarize failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:source-summary", err);
     return null;
   }
 }
@@ -1348,7 +1719,7 @@ Respond with JSON only:
 
     return parseMissingSourceResult(text, resolved.provider.type);
   } catch (err) {
-    console.warn("[twyne:ai-client] missing source detect failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:source-detect", err);
     return null;
   }
 }
@@ -1415,7 +1786,7 @@ Return JSON in this exact shape:
       ? { results, provider: `${resolved.provider.type}:web-search` }
       : null;
   } catch (err) {
-    console.warn("[twyne:ai-client] research web search failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:research-search", err);
     return null;
   }
 }
@@ -1575,6 +1946,8 @@ export type InterviewTurnResult =
       kind: "question";
       text: string;
       draft?: InterviewDossierDraft;
+      /** A typed follow-up to answer the question with, when one was offered. */
+      probe?: DossierProbe;
       provider: string;
       model: string;
     }
@@ -1631,17 +2004,39 @@ function normalizeInterviewDossierDraft(
 
 /**
  * Run one conversational-interview turn against the writer's configured
- * provider. Returns null when BYOK is off / no providers — the caller
- * is expected to fall back to the form-based `AntiTabulaRasa`.
+ * provider. Failures are returned as application errors so the caller can
+ * preserve the transcript and offer recovery without exposing provider detail.
  */
 export async function runClientInterviewTurn(
   request: InterviewTurnRequest,
   settings: AiSettings,
-): Promise<InterviewTurnResult | null> {
+): Promise<ApplicationResult<InterviewTurnResult>> {
   const cfg = resolveFeatureConfig(settings, "interview-turn");
-  if (!cfg) return null;
+  if (!cfg) {
+    return {
+      ok: false,
+      error: createAppError("CONFIGURATION_ERROR", {
+        source: "provider",
+        recovery: { action: "choose-provider", canRetry: false },
+        metadata: { feature: "interview-turn" },
+      }),
+    };
+  }
   const model = await createModel(cfg.provider, cfg.model);
-  if (!model) return null;
+  if (!model) {
+    return {
+      ok: false,
+      error: createAppError("CONFIGURATION_ERROR", {
+        source: "provider",
+        recovery: { action: "check-configuration", canRetry: false },
+        metadata: {
+          feature: "interview-turn",
+          provider: cfg.provider.name,
+          model: cfg.model,
+        },
+      }),
+    };
+  }
   try {
     const lastUser = [...request.messages]
       .reverse()
@@ -1672,18 +2067,38 @@ export async function runClientInterviewTurn(
         twyne_message_count: request.messages.length,
       },
     });
+    if (!text.trim()) {
+      return {
+        ok: false,
+        error: createAppError("MALFORMED_RESPONSE", {
+          source: "provider",
+          metadata: {
+            feature: "interview-turn",
+            provider: cfg.provider.name,
+            model: cfg.model,
+          },
+        }),
+      };
+    }
     const synthSegment = extractTaggedJson(text, "SYNTHESIZE");
     if (synthSegment) {
       const draft = normalizeInterviewDossierDraft(synthSegment.value);
       if (draft) {
-        return {
+        return successResult({
           kind: "synthesis",
           brief: draft.brief as ProjectInterviewAnswers,
           confidence: draft.confidence,
           provider: cfg.provider.name,
           model: cfg.model,
-        };
+        });
       }
+      return {
+        ok: false,
+        error: createAppError("MALFORMED_RESPONSE", {
+          source: "provider",
+          metadata: { feature: "interview-turn" },
+        }),
+      };
     }
 
     // Backward compatibility for the previous two-object SYNTHESIZE format.
@@ -1692,7 +2107,7 @@ export async function runClientInterviewTurn(
     );
     if (legacySynthMatch) {
       try {
-        return {
+        return successResult({
           kind: "synthesis",
           brief: JSON.parse(legacySynthMatch[1]) as ProjectInterviewAnswers,
           confidence: legacySynthMatch[2]
@@ -1702,29 +2117,64 @@ export async function runClientInterviewTurn(
             : {},
           provider: cfg.provider.name,
           model: cfg.model,
-        };
+        });
       } catch {
-        // Malformed synthesis — fall through to a question reply.
+        return {
+          ok: false,
+          error: createAppError("MALFORMED_RESPONSE", {
+            source: "provider",
+            metadata: { feature: "interview-turn" },
+          }),
+        };
       }
     }
 
     const dossierSegment = extractTaggedJson(text, "DOSSIER");
+    if (!dossierSegment && /\b(?:DOSSIER|SYNTHESIZE)\s*:/i.test(text)) {
+      return {
+        ok: false,
+        error: createAppError("MALFORMED_RESPONSE", {
+          source: "provider",
+          metadata: { feature: "interview-turn" },
+        }),
+      };
+    }
     const draft = dossierSegment
       ? normalizeInterviewDossierDraft(dossierSegment.value)
       : null;
+
+    // A probe is an optional garnish on a question, so a malformed one is
+    // dropped rather than failing the turn — the writer still gets asked,
+    // just in prose. Mirrors the Convex path exactly.
+    const probeSegment = extractTaggedJson(text, "PROBE");
+    const probe = probeSegment ? normalizeProbe(probeSegment.value) : null;
+
+    let body = text;
+    if (dossierSegment) body = stripTaggedJson(body, dossierSegment);
+    if (probeSegment) {
+      const reSegment = extractTaggedJson(body, "PROBE");
+      if (reSegment) body = stripTaggedJson(body, reSegment);
+    }
     const reply =
-      (dossierSegment ? stripTaggedJson(text, dossierSegment) : text).trim() ||
+      body.trim() ||
       (lastUser ? "Tell me more." : "What is the working title of this piece?");
-    return {
+    return successResult({
       kind: "question",
       text: reply,
       draft: draft ?? undefined,
+      probe: probe ?? undefined,
       provider: cfg.provider.name,
       model: cfg.model,
-    };
+    });
   } catch (err) {
-    console.warn("[twyne:ai-client] interview turn failed:", err);
-    return null;
+    return failureResult(err, {
+      source: "provider",
+      metadata: {
+        feature: "interview-turn",
+        provider: cfg.provider.name,
+        model: cfg.model,
+      },
+    });
   }
 }
 
@@ -1790,7 +2240,7 @@ export async function runClientDossierCheck(
       provider: cfg.provider.name,
     };
   } catch (err) {
-    console.warn("[twyne:ai-client] dossier check failed:", err);
+    reportApplicationDiagnostic("twyne:ai-client:dossier-check", err);
     return null;
   }
 }

@@ -28,7 +28,12 @@ import type {
 import { DEFAULT_APPARATUS_SETTINGS, DEFAULT_WRITER_SETTINGS } from "../types";
 
 const DB_NAME = "twyne";
-const DB_VERSION = 1;
+/**
+ * Bumped to 2 to add the `voice-notes` store. The upgrade handler creates
+ * every store conditionally, so this is purely additive for existing writers:
+ * nothing already in the database is touched.
+ */
+const DB_VERSION = 2;
 const AI_SETTINGS_STORAGE_KEY = "twyne.ai-settings.current";
 const WRITER_SETTINGS_STORAGE_KEY = "twyne.writer-settings.current";
 const APPARATUS_SETTINGS_STORAGE_KEY = "twyne.apparatus-settings.current";
@@ -90,6 +95,11 @@ function openDb(): Promise<IDBDatabase> {
       }
       if (!db.objectStoreNames.contains("lix-blob")) {
         db.createObjectStore("lix-blob", { keyPath: "key" });
+      }
+      // v2: recorded voice notes, kept as Blobs alongside the transcripts
+      // that live on the comments they are attached to.
+      if (!db.objectStoreNames.contains("voice-notes")) {
+        db.createObjectStore("voice-notes", { keyPath: "id" });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -676,6 +686,50 @@ export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
 }
 
 /* ── Lix blob (the versioned draft store) ───────────────────────── */
+
+/* ── Voice notes (recorded audio, kept beside its transcript) ───── */
+
+interface VoiceNoteRecord {
+  id: string;
+  blob: Blob;
+  updatedAt: number;
+}
+
+export async function saveVoiceNoteBlob(
+  id: string,
+  blob: Blob,
+): Promise<void> {
+  if (!isBrowser()) return;
+  const rec: VoiceNoteRecord = { id, blob, updatedAt: Date.now() };
+  await tx("voice-notes", "readwrite", (t) => {
+    t.objectStore("voice-notes").put(rec);
+  });
+}
+
+export async function loadVoiceNoteBlob(id: string): Promise<Blob | null> {
+  if (!isBrowser()) return null;
+  try {
+    const db = await openDb();
+    const rec = await reqAsPromise<VoiceNoteRecord | undefined>(
+      db.transaction("voice-notes").objectStore("voice-notes").get(id),
+    );
+    return rec?.blob instanceof Blob ? rec.blob : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function deleteVoiceNoteBlob(id: string): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await tx("voice-notes", "readwrite", (t) => {
+      t.objectStore("voice-notes").delete(id);
+    });
+  } catch {
+    // The transcript is the record of consequence; a stranded blob is not
+    // worth failing a delete over.
+  }
+}
 
 export async function loadLixBlobFromIdb(): Promise<Blob | null> {
   if (!isBrowser()) return null;

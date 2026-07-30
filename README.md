@@ -1,19 +1,93 @@
 # Twyne
 
-Twyne is a writer-first editing room. It opens with an anti-tabula-rasa interview so a draft starts from context instead of a blank page, then keeps that brief available to the editor, persona feedback, rubric review, comments, and citation detection.
+Twyne is a writer-first editing room. It opens with an anti-tabula-rasa interview so a draft starts from context instead of a blank page, then keeps that brief in front of every editor, judge, and margin note for the rest of the piece.
 
 ## Features
 
 - Rich-text drafting with Tiptap, Qwik City, Vite, and Tailwind CSS.
-- Anti-tabula-rasa project interview for title, format, audience, goal, tone, constraints, and success signal.
-- A room of editorial **personas** that read from your brief and draft and leave grounded feedback.
-- **Rubric** scoring based on draft length, structure, citations, audience, goal, tone, and success signal.
+- Anti-tabula-rasa project interview for title, format, audience, goal, tone, constraints, and success signal — with **typed follow-ups** (multiple choice, fill-in-the-blanks, scales) generated from what you've already said.
+- A room of five editorial **personas** that read from your brief and draft and leave grounded feedback — and that **read along as you write**, not only when you ask.
+- **Rubric** scoring gated on relevance: a Target Fit judge decides whether the draft is about the right thing, and caps the shape metrics when it isn't.
+- **Voice**: hear each editor in their own voice, record spoken margin notes, and answer the interview out loud.
 - **Citation detection** for URLs, DOIs, ISBNs, author-year citations, and footnote markers.
 - **Comments** panel for review notes and threaded replies.
 - **Apparatus** research panel (pluggable providers) for searching and pulling sources while writing.
 - **Convex** backend for sync, with **Better Auth** (passkeys) sign-in and **ATProto / standard.site** publishing.
-- BYOK AI: bring your own Anthropic / OpenAI / Google key in Settings (stored in your browser).
-- Installable PWA with brand favicons and OpenGraph share cards.
+- BYOK AI: bring your own key in Settings, stored in your browser and never sent to a server.
+- Installable PWA with brand favicons and per-article OpenGraph share cards.
+
+## The editorial room
+
+Four panels sit beside the manuscript: **Cast** (the five editors), **Rubric**
+(the galley proof), **Marginalia** (your notes), and **Apparatus** (sources).
+Each tab carries an unread count, so work that arrives while you're looking
+elsewhere isn't silent.
+
+### The room reads as you write
+
+Convening the room is deliberate and expensive — five model calls over the
+whole manuscript. Alongside it, a background pass runs on a narrower brief:
+once you've written **~300 net new words** *and* stopped typing for **two
+minutes**, all five editors read **only the new paragraphs**, plus a digest of
+how the draft has been moving.
+
+Those arrive as quieter "in passing" notes in the Cast panel. Two spend guards
+sit on top — a five-minute floor between passes and a per-session cap — because
+this runs without you asking. Turn it off with **Read as I write** in the room
+settings.
+
+The same digest goes along when you *do* press Convene, so the deliberate pass
+knows the trajectory rather than re-reading a cold snapshot.
+
+### The rubric grades against *this* piece
+
+The static feature scorer measures shape — sentence-length variance,
+type-token ratio, paragraph balance. It never reads the brief, so fluent prose
+about the wrong subject used to score 10/10 on three categories.
+
+A **Target Fit** judge now scores relevance independently of craft, and caps
+every shape-derived criterion by it. Lowering target fit can only ever lower
+the grade, never raise it.
+
+The criteria themselves are yours to shape. Twyne ships a fixed spine so a
+score in March means the same thing in June; you can disable or reweight any of
+it, add criteria of your own ("stays in second person", "every section ends on
+an image") for the room to judge, or ask it to **suggest criteria** fitted to
+your format — proposals you accept, never applied silently. Customise anything
+and a second "by your weights" score appears beside the editorial grade. Every
+pass is recorded, so the panel shows the run of grades rather than a snapshot.
+
+## Voice
+
+| What | Needs |
+| --- | --- |
+| Hear an editor, memo, or review read aloud | BYOK speech provider, or Twyne-hosted voice (Pro) |
+| Read the selection (or whole draft) aloud | same |
+| Record a spoken margin note | microphone + BYOK or hosted **transcription** |
+| Answer the interview out loud | same |
+
+Each of the five editors has their own voice, per provider — Fish Audio names
+voices by id and OpenAI by name, so the mapping is per-provider rather than one
+shared field. Spoken notes keep **both** the recording and the transcript: the
+transcript threads, resolves and @-mentions like any other note, and you edit it
+before it saves. Audio stays local and does not sync.
+
+## BYOK providers
+
+Keys live in your browser (IndexedDB) and are never sent to a Twyne server.
+Settings → AI lets you set a default and override any individual feature.
+
+- **Language**: OpenAI, Anthropic, Google, DeepSeek, OpenRouter, Ollama, Z.ai /
+  GLM, MiniMax, and any OpenAI- or Anthropic-compatible endpoint. The desktop
+  build also auto-registers a local Gemma 4 E4B served on loopback.
+- **Speech**: OpenAI (or an OpenAI-compatible endpoint) for both narration and
+  transcription; **Fish Audio** for voice only.
+
+Fish Audio speaks but cannot think, so it is never offered to the persona,
+rubric or interview features — configuring it alone won't make those features
+try a client path they can't complete. Its `s2.1-pro-free` model works without
+API credit; transcription (`/v1/asr`) does not, and needs a
+[funded API balance](https://fish.audio/app/developers).
 
 ## Requirements
 

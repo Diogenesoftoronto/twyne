@@ -198,3 +198,107 @@ describe("dedicated rubric judge prompts", () => {
     expect(it.toLowerCase()).toContain("resists bullshit");
   });
 });
+
+describe("particulars reach the judges", () => {
+  const brief = {
+    answers: {
+      workingTitle: "The Levy",
+      format: "Op-ed",
+      audience: "City planners",
+      goal: "Argue the levy pays for itself",
+      tone: "Exact",
+      constraints: "No jargon",
+      successSignal: "They can restate the case",
+    },
+    attachments: [],
+    completedAt: 0,
+    updatedAt: 0,
+    probes: [
+      {
+        id: "p1",
+        kind: "choice" as const,
+        prompt: "Which objection matters most?",
+        options: ["Cost", "Timeline"],
+        answer: "Cost",
+      },
+      {
+        id: "p2",
+        kind: "scale" as const,
+        prompt: "How technical?",
+        min: 1,
+        max: 5,
+        minLabel: "plain",
+        maxLabel: "wonkish",
+        answer: 4,
+      },
+    ],
+  };
+
+  test("answered probes appear in the shared user prompt", () => {
+    const prompt = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]),
+      brief,
+      draftText: "Some draft text about the levy.",
+      instruction: "feedback",
+    });
+    expect(prompt).toContain("PARTICULARS");
+    expect(prompt).toContain("Which objection matters most? → Cost");
+    expect(prompt).toContain("4 of 5 (1=plain, 5=wonkish)");
+  });
+
+  test("a brief with no probes produces no particulars block", () => {
+    const prompt = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]),
+      brief: { ...brief, probes: undefined },
+      draftText: "Some draft text.",
+      instruction: "feedback",
+    });
+    expect(prompt).not.toContain("PARTICULARS");
+  });
+
+  test("an unanswered probe is not presented as a commitment", () => {
+    const prompt = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]),
+      brief: {
+        ...brief,
+        probes: [
+          { id: "p3", kind: "choice" as const, prompt: "Unanswered?", options: ["a", "b"] },
+        ],
+      },
+      draftText: "Some draft text.",
+      instruction: "feedback",
+    });
+    expect(prompt).not.toContain("Unanswered?");
+  });
+});
+
+describe("the background room's prompt", () => {
+  test("aims the note at new material and carries the trajectory", () => {
+    const prompt = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]),
+      brief: null,
+      draftText: "The whole draft, which is long.",
+      newMaterial: "The two paragraphs just written.",
+      trajectory: "Over the last 20m: +340 words net, 2 paragraphs added.",
+      instruction: "feedback",
+    });
+    expect(prompt).toContain("SINCE YOUR LAST READ");
+    expect(prompt).toContain("+340 words net");
+    expect(prompt).toContain("NEW MATERIAL");
+    expect(prompt).toContain("The two paragraphs just written.");
+    // A passing remark, not a filed report.
+    expect(prompt).toContain("40-120 words");
+  });
+
+  test("an ordinary convene is unchanged", () => {
+    const prompt = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]),
+      brief: null,
+      draftText: "The whole draft.",
+      instruction: "feedback",
+    });
+    expect(prompt).not.toContain("SINCE YOUR LAST READ");
+    expect(prompt).not.toContain("NEW MATERIAL");
+    expect(prompt).not.toContain("40-120 words");
+  });
+});

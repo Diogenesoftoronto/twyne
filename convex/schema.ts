@@ -252,6 +252,21 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_eventId", ["eventId"]),
 
+  // One-to-one identity bridge between a Better Auth product subject and the
+  // DID restored by Twyne's ATProto OAuth client. The mutation enforces both
+  // indexes as unique inside one Convex transaction.
+  providerIdentities: defineTable({
+    productSubject: v.string(),
+    did: v.string(),
+    verificationMethod: v.literal("legacy_atproto_browser_oauth"),
+    sessionVersion: v.number(),
+    verifiedAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_productSubject", ["productSubject"])
+    .index("by_did", ["did"]),
+
   // Populated only when E2E_OTP_SECRET is configured on a test deployment.
   e2eOtps: defineTable({
     email: v.string(),

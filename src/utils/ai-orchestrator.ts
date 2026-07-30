@@ -16,11 +16,9 @@ import {
   runClientAgent,
   normalizeAiSettings,
 } from "./ai-client";
-import type {
-  AgentRequest,
-  AgentResponse,
-} from "../../convex/agentPrompts";
+import type { AgentRequest, AgentResponse } from "../../convex/agentPrompts";
 import type { ConvexClient } from "convex/browser";
+import { reportApplicationDiagnostic } from "./application-diagnostics";
 
 /* ── Cached settings ────────────────────────────────────────────── */
 
@@ -58,7 +56,8 @@ export async function runAiWithFallback(
       // Tag with "client" prefix so UI can distinguish
       return {
         ...clientResult,
-        provider: `client-${clientResult.provider}` as AgentResponse["provider"],
+        provider:
+          `client-${clientResult.provider}` as AgentResponse["provider"],
       };
     }
   }
@@ -68,9 +67,10 @@ export async function runAiWithFallback(
     try {
       return await opts.serverAction();
     } catch (err) {
-      console.warn(
-        `[twyne:ai-orchestrator] server action failed for ${opts.feature}:`,
+      reportApplicationDiagnostic(
+        `twyne:ai-orchestrator:${opts.feature}`,
         err,
+        { feature: opts.feature },
       );
     }
   }

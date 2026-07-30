@@ -15,6 +15,10 @@ import {
   stopPresence,
   stopWatchingRemote,
 } from "../../utils/collaboration";
+import type { AppError } from "../../types/application-errors";
+import { normalizeApplicationError } from "../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import { ApplicationNotice } from "../ui/application-notice";
 import { ThemedDialog } from "../ui/themed-dialog";
 
 interface ShareState {
@@ -24,11 +28,12 @@ interface ShareState {
   folioId: string;
   folioName: string;
   sharing: boolean;
-  error: string | null;
+  error: AppError | null;
   inviteEmail: string;
   inviteRole: "editor" | "commenter";
   inviting: boolean;
   inviteMsg: string | null;
+  inviteError: AppError | null;
   collaborators: Array<{
     userId: string;
     role: string;
@@ -68,6 +73,7 @@ export const ShareDialog = component$(
       inviteRole: "editor",
       inviting: false,
       inviteMsg: null,
+      inviteError: null,
       collaborators: [],
       confirmingUnshare: false,
     });
@@ -149,9 +155,14 @@ export const ShareDialog = component$(
         store.shared = true;
         props.onShared$?.(lixId);
         startPresence(client, lixId, auth.value.user?.email);
-      } catch (e: any) {
-        store.error =
-          e?.message ?? "Could not share. Pro subscription required.";
+      } catch (error) {
+        reportApplicationDiagnostic("twyne:collaboration:share", error, {
+          operation: "share-folio",
+        });
+        store.error = normalizeApplicationError(error, {
+          source: "convex",
+          metadata: { operation: "share-folio" },
+        });
       } finally {
         store.sharing = false;
       }
@@ -162,11 +173,13 @@ export const ShareDialog = component$(
       if (!client || !store.lixId) return;
       const email = store.inviteEmail.trim();
       if (!email || !email.includes("@")) {
+        store.inviteError = null;
         store.inviteMsg = "Enter a valid email.";
         return;
       }
       store.inviting = true;
       store.inviteMsg = null;
+      store.inviteError = null;
       try {
         const result = await client.mutation(
           api.collaboration.inviteCollaborator,
@@ -185,8 +198,14 @@ export const ShareDialog = component$(
           lixId: store.lixId,
         });
         store.collaborators = collabs as any;
-      } catch (e: any) {
-        store.inviteMsg = e?.message ?? "Could not invite.";
+      } catch (error) {
+        reportApplicationDiagnostic("twyne:collaboration:invite", error, {
+          operation: "invite-collaborator",
+        });
+        store.inviteError = normalizeApplicationError(error, {
+          source: "convex",
+          metadata: { operation: "invite-collaborator" },
+        });
       } finally {
         store.inviting = false;
       }
@@ -203,8 +222,16 @@ export const ShareDialog = component$(
         store.collaborators = store.collaborators.filter(
           (c) => c.userId !== targetUserId,
         );
-      } catch (e: any) {
-        store.error = e?.message ?? "Could not remove.";
+      } catch (error) {
+        reportApplicationDiagnostic(
+          "twyne:collaboration:remove-collaborator",
+          error,
+          { operation: "remove-collaborator" },
+        );
+        store.error = normalizeApplicationError(error, {
+          source: "convex",
+          metadata: { operation: "remove-collaborator" },
+        });
       }
     });
 
@@ -223,8 +250,14 @@ export const ShareDialog = component$(
         store.collaborators = [];
         presenceSig.value = [];
         props.onUnshared$?.();
-      } catch (e: any) {
-        store.error = e?.message ?? "Could not stop sharing.";
+      } catch (error) {
+        reportApplicationDiagnostic("twyne:collaboration:unshare", error, {
+          operation: "unshare-folio",
+        });
+        store.error = normalizeApplicationError(error, {
+          source: "convex",
+          metadata: { operation: "unshare-folio" },
+        });
       }
     });
 
@@ -325,9 +358,13 @@ export const ShareDialog = component$(
               </div>
 
               {store.error && (
-                <p class="text-xs text-[var(--color-vermilion)]" role="alert">
-                  {store.error}
-                </p>
+                <ApplicationNotice
+                  error={store.error}
+                  compact
+                  onDismiss$={() => {
+                    store.error = null;
+                  }}
+                />
               )}
 
               {!store.shared ? (
@@ -395,6 +432,15 @@ export const ShareDialog = component$(
                       >
                         {store.inviteMsg}
                       </p>
+                    )}
+                    {store.inviteError && (
+                      <ApplicationNotice
+                        error={store.inviteError}
+                        compact
+                        onDismiss$={() => {
+                          store.inviteError = null;
+                        }}
+                      />
                     )}
                   </div>
 
@@ -467,7 +513,7 @@ export const ShareDialog = component$(
           message="Collaborators will lose access immediately, and the live invite link will stop working."
           confirmLabel="Stop sharing"
           tone="danger"
-          error={store.error}
+          error={store.error?.message}
           onCancel$={() => {
             store.confirmingUnshare = false;
             store.error = null;

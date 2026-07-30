@@ -26,6 +26,13 @@ import {
   loadPublishedPieceByHandleAndSlug,
   type PublishedPieceLoaderData,
 } from "../../../utils/published-metadata";
+import type { AppError } from "../../../types/application-errors";
+import { ApplicationNotice } from "../../../components/ui/application-notice";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "../../../utils/application-errors";
+import { reportApplicationDiagnostic } from "../../../utils/application-diagnostics";
 
 interface PublishedPiece {
   slug: string;
@@ -64,7 +71,7 @@ export default component$(() => {
     loadedPiece.value.status === "loaded" && !loadedPiece.value.piece,
   );
   const isLoading = useSignal(loadedPiece.value.status === "unavailable");
-  const errored = useSignal<string | null>(null);
+  const errored = useSignal<AppError | null>(null);
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
@@ -77,14 +84,17 @@ export default component$(() => {
     const client = clientSig.value;
     if (!client || !handle || !slug) {
       isLoading.value = false;
-      errored.value = "Unable to load the piece.";
+      errored.value = createAppError("NETWORK_UNAVAILABLE", {
+        source: "convex",
+        metadata: { operation: "load-public-piece" },
+      });
       return;
     }
     try {
-      const data = (await client.query(
-        api.published.getByHandleAndSlug,
-        { handle, slug },
-      )) as PublishedPiece | null;
+      const data = (await client.query(api.published.getByHandleAndSlug, {
+        handle,
+        slug,
+      })) as PublishedPiece | null;
       if (!data) {
         missing.value = true;
         return;
@@ -92,8 +102,13 @@ export default component$(() => {
       piece.value = data;
       ownerHandle.value = data.ownerHandle ?? handle;
     } catch (err) {
-      errored.value =
-        (err as Error).message ?? "Could not load the piece.";
+      reportApplicationDiagnostic("twyne:public:load-piece", err, {
+        operation: "load-public-piece",
+      });
+      errored.value = normalizeApplicationError(err, {
+        source: "convex",
+        metadata: { operation: "load-public-piece" },
+      });
     } finally {
       isLoading.value = false;
     }
@@ -118,14 +133,7 @@ export default component$(() => {
       </header>
 
       <div class="mx-auto max-w-2xl px-6 py-10">
-        {errored.value && (
-          <p
-            class="text-sm text-[var(--color-vermilion)] border border-dashed border-[var(--color-vermilion)] p-4"
-            style="font-family: var(--font-serif); border-radius: 2px;"
-          >
-            {errored.value}
-          </p>
-        )}
+        {errored.value && <ApplicationNotice error={errored.value} />}
 
         {isLoading.value && !errored.value && (
           <p
@@ -223,13 +231,18 @@ function formatDate(timestamp: number): string {
   });
 }
 
-export const head: DocumentHead = ({ params, resolveValue }) => {
+export const head: DocumentHead = ({ params, resolveValue, url }) => {
   const { piece } = resolveValue(usePublishedPiece);
   const title = piece?.title ?? params.slug ?? "Read";
   const description = articleDescription(piece);
   const author = piece
     ? (piece.authorName ?? piece.ownerHandle ?? params.handle ?? null)
     : null;
+
+  // Per-article social card (see routes/og/[handle]/[slug]). Absolute URL so
+  // scrapers can resolve it; declaring these overrides RouterHead's defaults.
+  const handle = (params.handle ?? "").toLowerCase();
+  const ogImage = `${url.origin}/og/${handle}/${params.slug ?? ""}`;
 
   return {
     title: `Twyne · ${title}`,
@@ -238,8 +251,11 @@ export const head: DocumentHead = ({ params, resolveValue }) => {
       { property: "og:type", content: "article" },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
+      { property: "og:image", content: ogImage },
+      { property: "og:image:alt", content: `${title} — Twyne` },
       { name: "twitter:title", content: title },
       { name: "twitter:description", content: description },
+      { name: "twitter:image", content: ogImage },
       ...(author ? [{ name: "author", content: author }] : []),
     ],
   };
