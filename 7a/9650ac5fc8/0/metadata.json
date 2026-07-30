@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "7a9650ac5fc8",
+  "session_id": "c643d18d-360e-4869-9a89-a488d8eb6a13",
+  "strategy": "manual-commit",
+  "created_at": "2026-07-30T23:54:06.743380699Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".bumpy/bold-editors-room.md",
+    ".bumpy/bumpy-release-tooling.md",
+    ".bumpy/calm-jolly-oak.md",
+    ".bumpy/copper-glad-newt.md",
+    ".bumpy/editorial-apparatus-workflow.md",
+    ".bumpy/glad-coral-jade.md",
+    ".bumpy/merry-old-wind.md",
+    ".bumpy/old-tough-oak.md",
+    ".bumpy/room-that-reads-along.md",
+    ".bumpy/switch-evals-agents-to-portkey.md",
+    "CHANGELOG.md",
+    "package.json"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5[1m]",
+  "turn_id": "34a9d54622da",
+  "checkpoint_transcript_start": 1676,
+  "transcript_lines_at_start": 1676,
+  "compact_transcript_start": 430,
+  "token_usage": {
+    "input_tokens": 7,
+    "cache_creation_tokens": 3786,
+    "cache_read_tokens": 2277747,
+    "output_tokens": 1355,
+    "api_call_count": 4
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-07-30T23:54:06.134757004Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 26,
+    "human_removed": 32,
+    "total_committed": 0,
+    "total_lines_changed": 58,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
