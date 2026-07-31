@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "4681c437d065",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".bumpy/violet-soft-dog.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/46/81c437d065/0/metadata.json",
+      "transcript": "/46/81c437d065/0/full.jsonl",
+      "compact_transcript": "/46/81c437d065/0/transcript.jsonl",
+      "content_hash": "/46/81c437d065/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 24,
+    "cache_creation_tokens": 8924,
+    "cache_read_tokens": 7493564,
+    "output_tokens": 5853,
+    "api_call_count": 13
+  }
+}
