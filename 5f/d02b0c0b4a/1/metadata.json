@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "5fd02b0c0b4a",
+  "session_id": "019fb63d-e0f3-74a1-9960-f20f4ae0f3e3",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-01T01:46:25.685762459Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/swift-huge-star.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-luna",
+  "turn_id": "04db7397c3ed",
+  "checkpoint_transcript_start": 80,
+  "transcript_lines_at_start": 80,
+  "compact_transcript_start": 17,
+  "initial_attribution": {
+    "calculated_at": "2026-08-01T01:46:25.61323908Z",
+    "agent_lines": 2,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 2,
+    "agent_percentage": 100,
+    "metric_version": 2
+  }
+}
