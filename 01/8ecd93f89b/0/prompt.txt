@@ -1,0 +1,41 @@
+i want you to continue the voice synthesis should use the choosen model and there should be no browser voice used as that is terrible for the quality
+
+---
+
+skip vet from here on
+
+---
+
+.
+
+---
+
+the room of editors does not render as markdown when i believe it should.
+
+---
+
+for the providers list use models.dev
+
+---
+
+and for the available models, also let models be a searchable list.
+
+---
+
+I really want to make sure that each persona has a really unique voice, I am going to need you to make sure that the text and the way they write and critique the writing is unique to them. it should be easy to recognize each  persona. I'd like for them to have a short backstory to them when it comes to role play and the like. as well.
+
+---
+
+make sure the default personas have all this stuff filled in as well though
+
+---
+
+ignore this i see that the default personas do have this filled in
+
+---
+
+,
+
+---
+
+.'
