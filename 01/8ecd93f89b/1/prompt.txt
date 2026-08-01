@@ -1,0 +1,30 @@
+what i would really like is for the AI's to respond to me as I draft directly the other thing i noticed is that the editor room should address me directly and also get knowledge of who i am as well. So being able to add personal facts about the writer somewhere and the feedback they like would be great.
+
+---
+
+the other thing i noticed is that i am using bring your own key for the voice narration part and it doenstnt seem to be working
+
+---
+
+i would love if you also checked to check up on this: Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://tinker.thinkingmachines.dev/services/tinker-prod/anthropic/api/v1/messages. (Reason: CORS header ‘Access-Control-Allow-Origin’ missing). Status code: 405.
+ also the thinking machine model can just take raw audio as input so in that case it should be usable as a sort of transcription model
+
+---
+
+honestly possible to just skip transcription directly if you have a model with audio as input like it or gemma 4 12B and the other gemmas or similar models. for now you can test with inkling, make sure to use skate to get the api key
+
+---
+
+use a library for getting the raw audio please
+
+---
+
+resolve
+
+---
+
+.
+
+---
+
+skip vet
