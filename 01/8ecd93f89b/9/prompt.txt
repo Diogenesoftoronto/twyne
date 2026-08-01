@@ -1,0 +1,8 @@
+[CONVEX]
+[CONVEX] 7/30/2026, 8:39:51 PM [CONVEX A(voice:synthesizeSpeech)] Uncaught Error: Not signed in
+[CONVEX]     at handler (../convex/voice.ts:36:32)
+[CONVEX] should not need to sign in to get the voice working here, should just be using byok instead. also there is a a problem, i should be able to get voice icon in the modals that pop up in the editor for each passage.
+
+---
+
+.
