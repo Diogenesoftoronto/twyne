@@ -3,7 +3,7 @@
   "checkpoint_id": "a94d82dc118c",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
     ".bumpy/folio-workspaces-and-streamed-interview.md",
     ".bumpy/violet-soft-dog.md",
@@ -18,6 +18,20 @@
       "compact_transcript": "/a9/4d82dc118c/0/transcript.jsonl",
       "content_hash": "/a9/4d82dc118c/0/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/a9/4d82dc118c/1/metadata.json",
+      "transcript": "/a9/4d82dc118c/1/full.jsonl",
+      "compact_transcript": "/a9/4d82dc118c/1/transcript.jsonl",
+      "content_hash": "/a9/4d82dc118c/1/content_hash.txt",
+      "prompt": "/a9/4d82dc118c/1/prompt.txt"
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 147095,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1904128,
+    "output_tokens": 5092,
+    "api_call_count": 18
+  }
 }
