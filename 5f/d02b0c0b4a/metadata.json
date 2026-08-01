@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "5fd02b0c0b4a",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".bumpy/swift-huge-star.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/5f/d02b0c0b4a/0/metadata.json",
+      "transcript": "/5f/d02b0c0b4a/0/full.jsonl",
+      "compact_transcript": "/5f/d02b0c0b4a/0/transcript.jsonl",
+      "content_hash": "/5f/d02b0c0b4a/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
