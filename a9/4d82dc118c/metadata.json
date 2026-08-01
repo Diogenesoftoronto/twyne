@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "a94d82dc118c",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    ".bumpy/folio-workspaces-and-streamed-interview.md",
+    ".bumpy/violet-soft-dog.md",
+    ".bumpy/word-like-page-layout-and-pdf.md",
+    "CHANGELOG.md",
+    "package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a9/4d82dc118c/0/metadata.json",
+      "transcript": "/a9/4d82dc118c/0/full.jsonl",
+      "compact_transcript": "/a9/4d82dc118c/0/transcript.jsonl",
+      "content_hash": "/a9/4d82dc118c/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
