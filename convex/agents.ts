@@ -20,7 +20,12 @@
 import { action, type ActionCtx } from "./_generated/server";
 import { makeFunctionReference } from "convex/server";
 import { v } from "convex/values";
-import { generateText, stepCountIs, type LanguageModel } from "ai";
+import {
+  generateText,
+  stepCountIs,
+  streamText,
+  type LanguageModel,
+} from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { createOpenAI, openai } from "@ai-sdk/openai";
 import {
@@ -53,7 +58,11 @@ import type {
   ProjectInterviewAnswers,
 } from "../src/types";
 import { normalizeProbe } from "../src/utils/dossier-probes";
-import { stripReasoningTags } from "../src/utils/reasoning-tags";
+import {
+  hasReasoningTags,
+  removeReasoningTagMarkers,
+  stripReasoningTags,
+} from "../src/utils/reasoning-tags";
 import { scoreStaticFeatures, scoreSufficiency } from "../src/utils/rubric";
 import {
   clampScore,
@@ -82,6 +91,7 @@ import {
   applicationError,
   reportedApplicationError,
 } from "./lib/applicationErrors";
+import { createInterviewStreamSnapshot } from "../src/utils/interview-stream";
 
 /* ── Provider selection ─────────────────────────────────────────── */
 
@@ -91,6 +101,19 @@ interface ProviderConfig {
   /** Default model id used by this provider. */
   modelId: string;
 }
+
+const writeInterviewStreamReference = makeFunctionReference<
+  "mutation",
+  {
+    userId: string;
+    streamId: string;
+    text: string;
+    reasoning: string;
+    phase: "reasoning" | "answer";
+    status: "running" | "complete" | "error";
+  },
+  unknown
+>("interviewStreams:write");
 
 function pickLegacyProvider(): ProviderConfig | null {
   const rivetUrl = process.env.RIVET_ENDPOINT;
@@ -251,7 +274,9 @@ async function runLlm(
   const system = buildSystemPrompt(req.persona);
   const user = buildUserPrompt(req);
   const fallbackType: FeedbackType = defaultTypeForPersona(req.persona);
-  const temperature = provider.label === "openai" ? 0.6 : 0.4;
+  const temperature =
+    req.persona.temperature ??
+    (provider.label === "openai" ? 0.6 : 0.4);
   const start = Date.now();
   const { tools, getAnchor } = buildQuoteTools(req.draftText);
 
@@ -276,9 +301,10 @@ async function runLlm(
       },
     });
     let visibleText = stripReasoningTags(text);
-    // Reasoning models can wrap the whole reply in <think>; regenerate once
-    // so the note is never blank, then fall back to the raw text.
-    if (!visibleText) {
+    // Any reply that reached for the reasoning channel is discarded and asked
+    // again, not merely stripped: a note with the model's thinking bleeding
+    // through it reads worse than one that cost a second call.
+    if (!visibleText || hasReasoningTags(text)) {
       const retry = await generateText({
         model: provider.model,
         system,
@@ -298,7 +324,12 @@ async function runLlm(
           },
         },
       });
-      visibleText = stripReasoningTags(retry.text) || retry.text.trim();
+      const retryVisible = stripReasoningTags(retry.text);
+      visibleText =
+        (!hasReasoningTags(retry.text) && retryVisible) ||
+        visibleText ||
+        retryVisible ||
+        removeReasoningTagMarkers(retry.text);
     }
     await captureServerAiGeneration({
       feature,
@@ -368,12 +399,17 @@ async function runPlainLlm(
     });
   const { text } = await gen(user);
   let visible = stripReasoningTags(text);
-  if (!visible) {
+  if (!visible || hasReasoningTags(text)) {
     const retry = await gen(
       `${user}\n\nRespond with plain visible text. Do not place your whole answer inside <think> tags.`,
       "retry",
     );
-    visible = stripReasoningTags(retry.text) || retry.text.trim();
+    const retryVisible = stripReasoningTags(retry.text);
+    visible =
+      (!hasReasoningTags(retry.text) && retryVisible) ||
+      visible ||
+      retryVisible ||
+      removeReasoningTagMarkers(retry.text);
   }
   await flushArize();
   return visible.trim();
@@ -402,7 +438,11 @@ const personaValidator = v.object({
   role: v.string(),
   description: v.string(),
   focus: v.string(),
+  backstory: v.optional(v.string()),
+  criticalMethod: v.optional(v.string()),
   voice: v.optional(v.string()),
+  signatureMoves: v.optional(v.array(v.string())),
+  avoidances: v.optional(v.array(v.string())),
   sampleLines: v.optional(v.array(v.string())),
   providerId: v.optional(v.string()),
   model: v.optional(v.string()),
@@ -467,6 +507,19 @@ const briefValidator = v.union(
     probes: v.optional(v.array(probeValidator)),
     completedAt: v.number(),
     updatedAt: v.number(),
+  }),
+);
+
+const writerProfileValidator = v.optional(
+  v.object({
+    displayName: v.string(),
+    personalFacts: v.string(),
+    feedbackStyle: v.union(
+      v.literal("direct"),
+      v.literal("balanced"),
+      v.literal("gentle"),
+    ),
+    feedbackNotes: v.string(),
   }),
 );
 
@@ -671,6 +724,7 @@ export const runInterviewTurn = action({
     ),
     mode: v.union(v.literal("first-run"), v.literal("refine")),
     currentBrief: briefValidator,
+    streamId: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<InterviewTurnResult> => {
     const identity = await ctx.auth.getUserIdentity();
@@ -690,7 +744,7 @@ export const runInterviewTurn = action({
     const temperature = provider.label === "openai" ? 0.6 : 0.4;
     const maxTokens = 420;
     try {
-      const { text } = await generateText({
+      const generation = {
         model: provider.model,
         system: interviewSystemPrompt(
           args.mode,
@@ -709,7 +763,46 @@ export const runInterviewTurn = action({
             mode: args.mode,
           },
         },
-      });
+      };
+      let text: string;
+      if (args.streamId) {
+        let rawText = "";
+        let nativeReasoning = "";
+        const streamed = streamText(generation);
+        for await (const part of streamed.fullStream) {
+          if (part.type === "text-delta") rawText += part.text;
+          if (part.type === "reasoning-delta") nativeReasoning += part.text;
+          if (
+            part.type === "text-delta" ||
+            part.type === "reasoning-delta" ||
+            part.type === "reasoning-end"
+          ) {
+            const snapshot = createInterviewStreamSnapshot(
+              rawText,
+              nativeReasoning,
+            );
+            await ctx.runMutation(writeInterviewStreamReference, {
+              userId: identity.subject || identity.tokenIdentifier,
+              streamId: args.streamId,
+              ...snapshot,
+              status: "running",
+            });
+          }
+        }
+        text = await streamed.text;
+        const finalSnapshot = createInterviewStreamSnapshot(
+          text,
+          nativeReasoning,
+        );
+        await ctx.runMutation(writeInterviewStreamReference, {
+          userId: identity.subject || identity.tokenIdentifier,
+          streamId: args.streamId,
+          ...finalSnapshot,
+          status: "complete",
+        });
+      } else {
+        ({ text } = await generateText(generation));
+      }
       await flushArize();
       return parseInterviewTurnResult(
         text,
@@ -718,6 +811,18 @@ export const runInterviewTurn = action({
         args.messages as InterviewMessage[],
       );
     } catch (error) {
+      if (args.streamId) {
+        await ctx
+          .runMutation(writeInterviewStreamReference, {
+            userId: identity.subject || identity.tokenIdentifier,
+            streamId: args.streamId,
+            text: "",
+            reasoning: "",
+            phase: "answer",
+            status: "error",
+          })
+          .catch(() => undefined);
+      }
       if (error instanceof Error && error.name === "ConvexError") {
         throw error;
       }
@@ -750,6 +855,7 @@ export const runPersona = action({
     persona: personaValidator,
     brief: briefValidator,
     draftText: v.string(),
+    writerProfile: writerProfileValidator,
     anchor: v.optional(v.string()),
     priorMessages: v.optional(
       v.array(
@@ -786,6 +892,7 @@ export const runPersona = action({
       persona: args.persona as AgentPersona,
       brief: (args.brief ?? null) as ProjectBrief | null,
       draftText: args.draftText,
+      writerProfile: args.writerProfile,
       anchor: args.anchor,
       priorMessages: args.priorMessages as AgentRequest["priorMessages"],
       userMessage: args.userMessage,
@@ -848,6 +955,7 @@ export const suggestRewrite = action({
     persona: personaValidator,
     brief: briefValidator,
     draftText: v.string(),
+    writerProfile: writerProfileValidator,
     original: v.string(),
     level: v.union(v.literal("sentence"), v.literal("paragraph")),
   },
@@ -887,6 +995,7 @@ export const suggestRewrite = action({
         persona,
         brief: (args.brief ?? null) as ProjectBrief | null,
         draftText: args.draftText,
+        writerProfile: args.writerProfile,
         instruction: "rewrite-suggestion",
       }) +
       `\n\nREWRITE TASK: Rewrite the PASSAGE below in your voice, preserving its meaning but doing the work better. ${sizeRule}\n` +
@@ -895,7 +1004,7 @@ export const suggestRewrite = action({
 
     try {
       const start = Date.now();
-      const temperature = 0.4;
+      const temperature = persona.temperature ?? 0.4;
       const maxTokens = 320;
       const { text } = await generateText({
         model: provider.model,
@@ -924,6 +1033,7 @@ export const suggestRewrite = action({
           persona,
           brief: (args.brief ?? null) as ProjectBrief | null,
           draftText: args.draftText,
+          writerProfile: args.writerProfile,
           instruction: "rewrite-suggestion",
         },
         output: visibleText,
@@ -981,6 +1091,7 @@ export const conveneRoom = action({
     personas: v.array(personaValidator),
     brief: briefValidator,
     draftText: v.string(),
+    writerProfile: writerProfileValidator,
     anchors: v.optional(v.record(v.string(), v.string())),
     /** Passages written since the room last read — the background pass. */
     newMaterial: v.optional(v.string()),
@@ -1020,6 +1131,7 @@ export const conveneRoom = action({
         persona,
         brief,
         draftText: args.draftText,
+        writerProfile: args.writerProfile,
         anchor,
         instruction: "feedback",
         newMaterial: args.newMaterial,
@@ -1066,6 +1178,7 @@ export const analyzeRoom = action({
     personas: v.array(personaValidator),
     brief: briefValidator,
     draftText: v.string(),
+    writerProfile: writerProfileValidator,
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -1098,6 +1211,7 @@ export const analyzeRoom = action({
           persona,
           brief,
           draftText: args.draftText,
+          writerProfile: args.writerProfile,
           instruction: "analyze",
         };
         try {
@@ -1128,7 +1242,7 @@ export const analyzeRoom = action({
       synthesis = await runPlainLlm(
         provider,
         buildSynthesisSystemPrompt(),
-        buildSynthesisPrompt(memoInput, brief),
+        buildSynthesisPrompt(memoInput, brief, args.writerProfile),
         1400,
         "persona-analysis:synthesis",
       );
@@ -1252,7 +1366,7 @@ Respond as JSON, and only JSON, in this exact shape:
 
     try {
       const start = Date.now();
-      const temperature = 0.2;
+      const temperature = persona.temperature ?? 0.2;
       const maxTokens = 220;
       const { text } = await generateText({
         model: provider.model,

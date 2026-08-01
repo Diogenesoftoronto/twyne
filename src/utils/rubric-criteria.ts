@@ -81,17 +81,6 @@ export function reconcileSpecs(
   return [...spine, ...custom];
 }
 
-export async function loadCriteriaSpecs(): Promise<RubricCriterionSpec[]> {
-  const stored = await loadMetaFromIdb<RubricCriterionSpec[]>(CRITERIA_KEY);
-  return reconcileSpecs(Array.isArray(stored) ? stored : null);
-}
-
-export async function saveCriteriaSpecs(
-  specs: RubricCriterionSpec[],
-): Promise<void> {
-  await saveMetaToIdb(CRITERIA_KEY, specs);
-}
-
 /** The custom criteria that are switched on — the ones needing an LLM judge. */
 export function activeCustomCriteria(
   specs: RubricCriterionSpec[],
@@ -152,17 +141,47 @@ export function weightedCriteriaScore(
 
 /* ── The trend line ─────────────────────────────────────────────── */
 
-export async function loadRubricHistory(): Promise<RubricHistoryEntry[]> {
-  const stored = await loadMetaFromIdb<RubricHistoryEntry[]>(HISTORY_KEY);
+function criteriaKey(folioId?: string | null): string {
+  return folioId ? `${CRITERIA_KEY}:${folioId}` : CRITERIA_KEY;
+}
+
+function historyKey(folioId?: string | null): string {
+  return folioId ? `${HISTORY_KEY}:${folioId}` : HISTORY_KEY;
+}
+
+export async function loadCriteriaSpecs(
+  folioId?: string | null,
+): Promise<RubricCriterionSpec[]> {
+  const stored = await loadMetaFromIdb<RubricCriterionSpec[]>(
+    criteriaKey(folioId),
+  );
+  return reconcileSpecs(Array.isArray(stored) ? stored : null);
+}
+
+export async function saveCriteriaSpecs(
+  specs: RubricCriterionSpec[],
+  folioId?: string | null,
+): Promise<void> {
+  await saveMetaToIdb(criteriaKey(folioId), specs);
+}
+
+export async function loadRubricHistory(
+  folioId?: string | null,
+): Promise<RubricHistoryEntry[]> {
+  const stored = await loadMetaFromIdb<RubricHistoryEntry[]>(
+    historyKey(folioId),
+  );
   return Array.isArray(stored) ? stored : [];
 }
 
 export async function appendRubricHistory(
   entry: RubricHistoryEntry,
+  folioId?: string | null,
 ): Promise<RubricHistoryEntry[]> {
-  const existing = await loadRubricHistory();
-  const next = [...existing, entry].slice(-MAX_HISTORY);
-  await saveMetaToIdb(HISTORY_KEY, next);
+  const existing = await loadRubricHistory(folioId);
+  const scoped = { ...entry, ...(folioId ? { folioId } : {}) };
+  const next = [...existing, scoped].slice(-MAX_HISTORY);
+  await saveMetaToIdb(historyKey(folioId), next);
   return next;
 }
 

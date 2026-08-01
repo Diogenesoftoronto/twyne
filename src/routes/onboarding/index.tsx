@@ -109,7 +109,8 @@ export default component$(() => {
 
   const setInterviewStyle$ = $(async (style: InterviewStyle) => {
     store.style = style;
-    await saveWriterSettingsToIdb({ interviewStyle: style });
+    const current = await loadWriterSettingsFromIdb();
+    await saveWriterSettingsToIdb({ ...current, interviewStyle: style });
   });
 
   const setCitationStyle$ = $(async (style: ApparatusCitationStyle) => {

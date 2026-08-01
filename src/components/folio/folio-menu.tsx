@@ -9,6 +9,7 @@ import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import {
   exportAs,
+  exportPdf,
   downloadBlob,
   safeFilename,
   importAs,
@@ -17,14 +18,14 @@ import {
 } from "../../utils/exchange";
 import {
   loadFoliosFromIdb,
-  loadFolioContentFromIdb,
   saveFolioContentToIdb,
   saveFoliosToIdb,
   saveActiveFolioIdToIdb,
-  loadApparatusSettingsFromIdb,
 } from "../../utils/idb";
-import { loadBibliography } from "../../utils/bibliography";
-import { loadPersonaNotesLocally } from "../../utils/convex-sync";
+import {
+  buildFolioExportPayload,
+  readActiveFolioHtml,
+} from "../../utils/folio-export";
 import { useAuth } from "../../utils/auth-context";
 import { getAgent } from "../../utils/atproto";
 import {
@@ -79,28 +80,6 @@ interface FolioMenuProps {
   >;
 }
 
-/* ── Live content handshake ──────────────────────────────────── */
-
-async function readActiveFolioHtml(
-  activeFolioId: string | null,
-): Promise<string> {
-  // Try the live editor first — it has the freshest content, before any
-  // debounced save to IDB.
-  let html = "";
-  const receive = (e: Event) => {
-    html = (e as CustomEvent).detail as string;
-  };
-  window.addEventListener("twyne:draft-html", receive);
-  window.dispatchEvent(new CustomEvent("twyne:request-draft-html"));
-  window.removeEventListener("twyne:draft-html", receive);
-  if (html) return html;
-  // Fall back to the folio's IDB slot. This is where the parent route
-  // persists on every onUpdate.
-  if (activeFolioId) {
-    return await loadFolioContentFromIdb(activeFolioId);
-  }
-  return "";
-}
 
 /**
  * Compose the public reader URL for a published piece. Uses the first-class
@@ -194,28 +173,43 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     }
   });
 
+  /**
+   * The page setup travels with the payload — without `layout` the exporter
+   * silently fell back to DEFAULT_LAYOUT, so a writer who had set their own
+   * margins got someone else's page.
+   */
+  const buildExportPayload = $(() =>
+    buildFolioExportPayload({
+      folioId: props.activeFolioId,
+      folioName: props.activeFolioName,
+      brief: props.brief,
+      layout: props.layout,
+      header: props.header,
+      footer: props.footer,
+    }),
+  );
+
+  const doExportPdf = $(async () => {
+    fileError.value = null;
+    try {
+      const payload = await buildExportPayload();
+      menuOpen.value = false;
+      await exportPdf(payload);
+    } catch (err) {
+      reportApplicationDiagnostic("twyne:folio:export-pdf", err, {
+        operation: "export",
+      });
+      fileError.value = normalizeApplicationError(err, {
+        source: "application",
+        metadata: { operation: "export" },
+      });
+    }
+  });
+
   const doExport = $(async (format: ExportFormat) => {
     fileError.value = null;
     try {
-      const draftText = await readActiveFolioHtml(props.activeFolioId);
-      const folios = await loadFoliosFromIdb();
-      const [bibliography, apparatusSettings, marginalia] = await Promise.all([
-        loadBibliography(),
-        loadApparatusSettingsFromIdb(),
-        loadPersonaNotesLocally(),
-      ]);
-      const activeBibliography = bibliography.filter(
-        (entry) => entry.folioId === props.activeFolioId || !entry.folioId,
-      );
-      const payload = {
-        title: props.activeFolioName || "Untitled",
-        html: draftText,
-        brief: props.brief,
-        folios,
-        bibliography: activeBibliography,
-        marginalia,
-        citationStyle: apparatusSettings.defaultCitationStyle,
-      };
+      const payload = await buildExportPayload();
       const blob = exportAs(format, payload);
       const ext =
         format === "markdown"
@@ -507,6 +501,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           style={{ padding: "0.4rem 0" }}
         >
           <p class="dept-label px-3 py-1.5">Export</p>
+          <MenuItem label="PDF…" onClick$={doExportPdf} />
           <MenuItem
             label="Markdown (.md)"
             onClick$={() => doExport("markdown")}

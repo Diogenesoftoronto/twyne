@@ -28,9 +28,20 @@ import type {
   PersonaNotePayload,
   PersonaReply,
 } from "../../types";
-import { DEFAULT_LAYOUT, MARGIN_RANGE, resolveMargins } from "../../types";
+import {
+  DEFAULT_LAYOUT,
+  DOC_WIDTH_REM,
+  MARGIN_RANGE,
+  resolveMargins,
+} from "../../types";
+import { PageRuler } from "./page-ruler";
+import { exportPdf } from "../../utils/exchange";
+import { buildFolioExportPayload } from "../../utils/folio-export";
+import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { detectCitations } from "../../utils/citations";
 import { useConvexClient } from "../../utils/convex-context";
+import { useAuth } from "../../utils/auth-context";
+import { SpeakButton } from "../ui/speak-button";
 import { api } from "../../../convex/_generated/api";
 import {
   loadUserComments,
@@ -57,6 +68,7 @@ import { MermaidDiagram } from "./extensions/mermaid-node";
 import { EndnoteNode, type NoteKind } from "./extensions/endnote-node";
 import { RemoteCursors } from "./extensions/remote-cursors";
 import { type RemoteCursor } from "./extensions/remote-cursors";
+import { Indent } from "./extensions/indent";
 import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 import { SyncDot, LastSavedLine } from "./sync-indicator";
 import {
@@ -106,6 +118,12 @@ interface NotePopover {
   thread: PersonaReply[];
   /** True while the persona is generating a reply. */
   replying: boolean;
+  /**
+   * The reply as it is being written. Held apart from `thread` because it is
+   * not a reply yet — it has no id, it is not persisted, and it is replaced
+   * wholesale by the filed version the moment there is one.
+   */
+  streamingReply: string;
   /** Inline error to surface in the popover. */
   error: string | null;
 }
@@ -173,6 +191,8 @@ export interface EditorStore {
   footerText: string;
   /** Show the layout popover? */
   showLayout: boolean;
+  /** A PDF print job is being prepared. */
+  exportingPdf: boolean;
   /** Show the table tools popover? */
   showTableTools: boolean;
   /** Distraction-free mode: dims inline notes/comments and asks the route to collapse side panels. */
@@ -242,6 +262,7 @@ export const TwyneEditor = component$(
     sharedLixId,
   }: TwyneEditorProps) => {
     const clientSig = useConvexClient();
+    const auth = useAuth();
     const store = useStore<EditorStore>({
       editor: null,
       content: "",
@@ -279,6 +300,7 @@ export const TwyneEditor = component$(
       headerText: activeFolio?.header ?? "",
       footerText: activeFolio?.footer ?? "",
       showLayout: false,
+      exportingPdf: false,
       showTableTools: false,
       zenMode: false,
     });
@@ -290,8 +312,8 @@ export const TwyneEditor = component$(
     /* Zen mode: quiet the manuscript down to plain text while writing.
        The marks (and their data) are untouched — only the visual
        highlighting is suppressed, so nothing is lost on toggle-off.
-       The toolbar, running header/footer, and all marks fade out,
-       reappearing on hover so the writer can still reach tools. */
+       The toolbar and all marks fade out, reappearing on hover so the
+       writer can still reach tools. */
     .twyne-editor.zen-mode .twyne-persona-note {
       background: none;
       border-bottom: none;
@@ -311,25 +333,14 @@ export const TwyneEditor = component$(
       color: var(--color-ink-muted);
       background: none;
     }
-    /* Fade out the toolbar, running header, and footer in zen mode.
-       They reappear on hover so tools remain reachable. */
+    /* Fade out the toolbar in zen mode. It reappears on hover so tools
+       remain reachable. */
     .twyne-editor.zen-mode .twyne-toolbar {
       opacity: 0.15;
       transition: opacity 0.3s ease;
     }
     .twyne-editor.zen-mode .twyne-toolbar:hover {
       opacity: 1;
-    }
-    .twyne-editor.zen-mode .manuscript-header,
-    .twyne-editor.zen-mode .manuscript-footer {
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
-    }
-    .twyne-editor.zen-mode .manuscript-header:hover,
-    .twyne-editor.zen-mode .manuscript-footer:hover {
-      opacity: 0.5;
-      pointer-events: auto;
     }
     .persona-note-thread {
       max-height: 240px;
@@ -378,14 +389,13 @@ export const TwyneEditor = component$(
     useVisibleTask$(({ track }) => {
       const layout = track(() => store.layout);
       const root = document.documentElement;
-      const widthMap: Record<typeof layout.width, string> = {
-        narrow: "36rem",
-        normal: "48rem",
-        wide: "62rem",
-      };
       const m = resolveMargins(layout);
-      root.style.setProperty("--doc-width", widthMap[layout.width]);
-      root.style.setProperty("--doc-pad-x", `${m.x}rem`);
+      root.style.setProperty(
+        "--doc-width",
+        `${DOC_WIDTH_REM[layout.width]}rem`,
+      );
+      root.style.setProperty("--doc-pad-left", `${m.left}rem`);
+      root.style.setProperty("--doc-pad-right", `${m.right}rem`);
       root.style.setProperty("--doc-pad-y", `${m.top}rem`);
       root.style.setProperty("--doc-pad-bottom", `${m.bottom}rem`);
     });
@@ -444,7 +454,9 @@ export const TwyneEditor = component$(
           reconcileTimer = setTimeout(() => {
             void (async () => {
               const markIds = collectCommentMarkIdsFromHtml(html);
-              const threads = await loadUserComments();
+              const threads = (await loadUserComments()).filter(
+                (thread) => thread.folioId === store.activeFolioId,
+              );
               const result = reconcileCommentAnchors(threads, markIds);
               window.dispatchEvent(
                 new CustomEvent("twyne:comments-reconciled", {
@@ -497,6 +509,7 @@ export const TwyneEditor = component$(
             EndnoteNode,
             RemoteCursors.configure({ cursors: [] }),
             MarkAnchorWidgets,
+            Indent,
           ],
           content: initialContent,
           editorProps: {
@@ -734,6 +747,7 @@ export const TwyneEditor = component$(
             placement: geom.placement,
             thread: [],
             replying: false,
+            streamingReply: "",
             error: null,
           };
         };
@@ -1164,6 +1178,20 @@ export const TwyneEditor = component$(
             replying: !!detail.replying,
           };
         };
+        // The reply as the editor writes it. Arrives as the full visible text
+        // each time, so a discarded-and-regenerated answer simply resets.
+        const onReplyStream = (e: Event) => {
+          const detail = (e as CustomEvent).detail as {
+            noteId?: string;
+            text?: string;
+          };
+          if (!detail?.noteId || !store.notePopover) return;
+          if (detail.noteId !== store.notePopover.id) return;
+          store.notePopover = {
+            ...store.notePopover,
+            streamingReply: detail.text ?? "",
+          };
+        };
         const onReplyError = (e: Event) => {
           const detail = (e as CustomEvent).detail as {
             noteId?: string;
@@ -1178,6 +1206,7 @@ export const TwyneEditor = component$(
         };
         window.addEventListener("twyne:persona-reply-thread", onReplyThread);
         window.addEventListener("twyne:persona-replying", onReplying);
+        window.addEventListener("twyne:persona-reply-stream", onReplyStream);
         window.addEventListener("twyne:persona-reply-error", onReplyError);
 
         // Phase 4: the sync dot and the "Saved Xs ago" line read
@@ -1258,6 +1287,7 @@ export const TwyneEditor = component$(
 
             const suggestion: Suggestion = {
               id: d.id,
+              folioId,
               versionId,
               personaId: d.personaId,
               personaName: d.personaName,
@@ -1270,11 +1300,12 @@ export const TwyneEditor = component$(
               status: "open",
               createdAt: Date.now(),
             };
-            await saveSuggestionLocally(suggestion);
+            await saveSuggestionLocally(suggestion, folioId);
             const client = clientSig.value;
             if (client) {
               try {
                 await client.mutation(api.sync.putSuggestion, {
+                  folioId,
                   suggestionId: suggestion.id,
                   versionId: suggestion.versionId,
                   personaId: suggestion.personaId,
@@ -1370,6 +1401,10 @@ export const TwyneEditor = component$(
             onReplyThread,
           );
           window.removeEventListener("twyne:persona-replying", onReplying);
+          window.removeEventListener(
+            "twyne:persona-reply-stream",
+            onReplyStream,
+          );
           window.removeEventListener("twyne:persona-reply-error", onReplyError);
           window.removeEventListener("twyne:suggestions", onSuggestions);
           window.removeEventListener("twyne:propose-edit", onProposeEdit);
@@ -1440,11 +1475,16 @@ export const TwyneEditor = component$(
       } catch (err) {
         console.warn("[twyne:suggestion] merge failed", err);
       }
-      await updateSuggestionStatusLocally(pop.id, "accepted");
+      await updateSuggestionStatusLocally(
+        pop.id,
+        "accepted",
+        store.activeFolioId,
+      );
       const client = clientSig.value;
       if (client) {
         try {
           await client.mutation(api.sync.updateSuggestionStatus, {
+            folioId: store.activeFolioId,
             suggestionId: pop.id,
             status: "accepted",
           });
@@ -1464,11 +1504,16 @@ export const TwyneEditor = component$(
       const pop = store.suggestionPopover;
       if (!pop) return;
       if (store.editor) removeSuggestionMark(store.editor, pop.id);
-      await updateSuggestionStatusLocally(pop.id, "rejected");
+      await updateSuggestionStatusLocally(
+        pop.id,
+        "rejected",
+        store.activeFolioId,
+      );
       const client = clientSig.value;
       if (client) {
         try {
           await client.mutation(api.sync.updateSuggestionStatus, {
+            folioId: store.activeFolioId,
             suggestionId: pop.id,
             status: "rejected",
           });
@@ -1488,7 +1533,10 @@ export const TwyneEditor = component$(
     const openUserCommentPopover = $(
       async (commentId: string, markEl: HTMLElement) => {
         const all = await loadUserComments();
-        const c = all.find((x) => x.id === commentId);
+        const c = all.find(
+          (x) =>
+            x.id === commentId && x.folioId === store.activeFolioId,
+        );
         if (!c) {
           // The mark exists but the body didn't sync. Show a placeholder
           // so the writer can resolve or delete it; the next addComment
@@ -1689,6 +1737,33 @@ export const TwyneEditor = component$(
       window.dispatchEvent(new CustomEvent("twyne:layout", { detail: next }));
     });
 
+    /**
+     * Print the manuscript with the page setup the writer just chose. Goes
+     * through the same payload builder as the File menu, so the PDF carries
+     * the bibliography and marginalia rather than a bare draft.
+     */
+    const saveAsPdf = $(async () => {
+      if (store.exportingPdf) return;
+      store.exportingPdf = true;
+      try {
+        const payload = await buildFolioExportPayload({
+          folioId: activeFolioId ?? null,
+          folioName: activeFolio?.name || store.meta.title || "Untitled",
+          brief: brief ?? null,
+          layout: store.layout,
+          header: store.headerText,
+          footer: store.footerText,
+        });
+        await exportPdf(payload);
+      } catch (err) {
+        reportApplicationDiagnostic("twyne:editor:export-pdf", err, {
+          operation: "export",
+        });
+      } finally {
+        store.exportingPdf = false;
+      }
+    });
+
     const updateChromeText = $((kind: "header" | "footer", next: string) => {
       if (kind === "header") store.headerText = next;
       else store.footerText = next;
@@ -1714,6 +1789,7 @@ export const TwyneEditor = component$(
         id: from !== to ? `manuscript-${from}-${to}` : "manuscript",
         text,
         client: clientSig.value ?? null,
+        signedIn: Boolean(auth.value.user),
       });
     });
 
@@ -2365,9 +2441,10 @@ export const TwyneEditor = component$(
                 <p class="dept-label mb-2">Margins</p>
                 {(
                   [
-                    ["Side", "x", "marginX"],
-                    ["Header", "top", "marginTop"],
-                    ["Footer", "bottom", "marginBottom"],
+                    ["Left", "left", "marginLeft"],
+                    ["Right", "right", "marginRight"],
+                    ["Top", "top", "marginTop"],
+                    ["Bottom", "bottom", "marginBottom"],
                   ] as const
                 ).map(([label, rangeKey, field]) => {
                   const range = MARGIN_RANGE[rangeKey];
@@ -2487,6 +2564,17 @@ export const TwyneEditor = component$(
                     }
                   />
                 </div>
+                {/* Page setup and "print it" belong together — this is the
+                    panel where the writer just decided what the page looks
+                    like, so it is where they look to commit it to paper. */}
+                <button
+                  type="button"
+                  onClick$={saveAsPdf}
+                  disabled={store.exportingPdf}
+                  class="btn-paper mt-3 w-full text-[0.7rem] disabled:opacity-40"
+                >
+                  {store.exportingPdf ? "Preparing…" : "Save as PDF…"}
+                </button>
               </div>
             )}
           </div>
@@ -2721,42 +2809,24 @@ export const TwyneEditor = component$(
               <span>Drop plate or tabular here</span>
             </div>
           )}
+          {/* The ruler spans the page it describes, so its markers sit on the
+              real margins rather than near them. */}
+          <PageRuler
+            layout={store.layout}
+            pageWidthRem={DOC_WIDTH_REM[store.layout.width]}
+            zen={store.zenMode}
+            onChange$={emitLayout}
+          />
           <div
             class={`mx-auto twyne-editor page-canvas relative ${store.layout.showMarginGuides ? "show-margin-guides" : ""} ${store.zenMode ? "zen-mode" : ""}`}
             style={{
               "max-width": "var(--doc-width, 48rem)",
-              "padding-left": "var(--doc-pad-x, 3rem)",
-              "padding-right": "var(--doc-pad-x, 3rem)",
+              "padding-left": "var(--doc-pad-left, 3rem)",
+              "padding-right": "var(--doc-pad-right, 3rem)",
               "padding-top": "var(--doc-pad-y, 2.5rem)",
               "padding-bottom": "var(--doc-pad-bottom, 4rem)",
             }}
           >
-            {/* Manuscript running header — author-tunable, with brief-derived fallback */}
-            <div
-              class="manuscript-header mb-6 pb-2 flex items-center justify-between gap-3 border-b border-[var(--color-paper-3)]"
-              style="font-family: var(--font-typewriter); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-muted);"
-            >
-              <span class="dept-label">The Manuscript</span>
-              <span
-                class="flex-1 text-right truncate"
-                style="color: var(--color-ink-light);"
-              >
-                {store.layout.runningHeader
-                  ? runningHeaderText(store.headerText, brief ?? null)
-                  : store.headerText}
-              </span>
-              <button
-                type="button"
-                class="text-[0.6rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                style="letter-spacing: 0.1em;"
-                onClick$={() => {
-                  store.showLayout = true;
-                }}
-              >
-                edit
-              </button>
-            </div>
-
             <div id="twyne-editor-mount" />
 
             {/* Notes — endnotes and footnotes collected live from the doc,
@@ -2806,31 +2876,6 @@ export const TwyneEditor = component$(
               </div>
             )}
 
-            {/* Manuscript running footer — author-tunable, page numbers on export */}
-            <div
-              class="manuscript-footer mt-6 pt-2 border-t border-[var(--color-paper-3)] flex items-center justify-between gap-3"
-              style="font-family: var(--font-typewriter); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-muted);"
-            >
-              <span
-                class="flex-1 truncate"
-                style="color: var(--color-ink-light);"
-              >
-                {store.footerText}
-              </span>
-              <span class="dept-label" style="color: var(--color-ink-muted);">
-                {store.layout.pageNumbers ? "page" : ""}
-              </span>
-              <button
-                type="button"
-                class="text-[0.6rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                style="letter-spacing: 0.1em;"
-                onClick$={() => {
-                  store.showLayout = true;
-                }}
-              >
-                edit
-              </button>
-            </div>
           </div>
         </div>
 
@@ -2926,15 +2971,28 @@ export const TwyneEditor = component$(
                   </p>
                 )}
               </div>
-              <button
-                onClick$={() => {
-                  store.notePopover = null;
-                }}
-                class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
-                aria-label="Close note"
-              >
-                ✕
-              </button>
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                {/* Hear the note in its editor's voice, from the passage it
+                    concerns — the same control the Cast panel carries, so a
+                    writer working in the manuscript never has to go looking
+                    for the panel to be read to. */}
+                <SpeakButton
+                  compact
+                  id={`note-popover-${store.notePopover.id}`}
+                  text={store.notePopover.note}
+                  author={store.notePopover.author}
+                  label={store.notePopover.author}
+                />
+                <button
+                  onClick$={() => {
+                    store.notePopover = null;
+                  }}
+                  class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
+                  aria-label="Close note"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
             <div class="px-5 py-4 space-y-3 overflow-y-auto">
               {store.notePopover.quote && (
@@ -3026,19 +3084,57 @@ export const TwyneEditor = component$(
                   })()}
                 </div>
               )}
-              {store.notePopover.replying && (
-                <div
-                  class="persona-note-typing flex items-center gap-2 pt-1 italic text-[0.75rem] text-[var(--color-ink-muted)]"
-                  style={{ fontFamily: "var(--font-typewriter)" }}
-                >
-                  <span class="typing-dots" aria-hidden="true">
-                    <span>.</span>
-                    <span>.</span>
-                    <span>.</span>
-                  </span>
-                  <span>{store.notePopover.author} is typing…</span>
-                </div>
-              )}
+              {/* The reply as it is written. Once there are words the dots
+                  are redundant — watching the sentence form is a better
+                  progress indicator than any animation. It sits in the same
+                  bubble the finished reply will occupy, so nothing jumps
+                  when the two swap. */}
+              {store.notePopover.replying &&
+                store.notePopover.streamingReply.trim() && (
+                  <div class="persona-note-streaming flex justify-start">
+                    <div
+                      class="max-w-[85%] px-3 py-2 border text-[0.85rem] leading-5"
+                      style={{
+                        "background-color": store.notePopover.color,
+                        "border-color": store.notePopover.color,
+                        "border-radius": "6px 6px 6px 2px",
+                        fontFamily: "var(--font-serif)",
+                      }}
+                    >
+                      <p
+                        class="text-[0.6rem] tracking-[0.14em] uppercase mb-1"
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          color: "var(--color-paper)",
+                          opacity: "0.9",
+                        }}
+                      >
+                        {store.notePopover.author}
+                      </p>
+                      <div
+                        class="comment-markdown comment-markdown-on-color whitespace-pre-wrap"
+                        style={{ color: "var(--color-paper)" }}
+                        dangerouslySetInnerHTML={renderMarkdown(
+                          store.notePopover.streamingReply,
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
+              {store.notePopover.replying &&
+                !store.notePopover.streamingReply.trim() && (
+                  <div
+                    class="persona-note-typing flex items-center gap-2 pt-1 italic text-[0.75rem] text-[var(--color-ink-muted)]"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    <span class="typing-dots" aria-hidden="true">
+                      <span>.</span>
+                      <span>.</span>
+                      <span>.</span>
+                    </span>
+                    <span>{store.notePopover.author} is typing…</span>
+                  </div>
+                )}
               {store.notePopover.error && (
                 <p
                   class="persona-note-error text-[0.7rem] leading-4 pt-1 text-[var(--color-vermilion)]"
@@ -3181,15 +3277,26 @@ export const TwyneEditor = component$(
                 >
                   {store.suggestionPopover.author} proposes
                 </p>
-                <button
-                  onClick$={() => {
-                    store.suggestionPopover = null;
-                  }}
-                  class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  {/* Hearing a proposed rewrite is the fastest way to tell
+                      whether it sounds like you. */}
+                  <SpeakButton
+                    compact
+                    id={`suggestion-${store.suggestionPopover.id}`}
+                    text={store.suggestionPopover.replacement}
+                    author={store.suggestionPopover.author}
+                    label={store.suggestionPopover.author}
+                  />
+                  <button
+                    onClick$={() => {
+                      store.suggestionPopover = null;
+                    }}
+                    class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
               <div class="px-5 py-4 space-y-3">
                 <p
@@ -3282,13 +3389,20 @@ export const TwyneEditor = component$(
                     : "open · "}
                   {timeAgo(store.userCommentPopover.createdAt)}
                 </p>
-                <button
-                  onClick$={closeUserCommentPopover}
-                  class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
-                  aria-label="Close comment"
-                >
-                  ✕
-                </button>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <SpeakButton
+                    compact
+                    id={`user-comment-${store.userCommentPopover.id}`}
+                    text={store.userCommentPopover.text}
+                  />
+                  <button
+                    onClick$={closeUserCommentPopover}
+                    class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
+                    aria-label="Close comment"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
               <div class="px-5 py-4 space-y-3">
                 <div
@@ -3529,18 +3643,3 @@ function removeAllSuggestions(editor: Editor): void {
   removeSuggestionMark(editor, null);
 }
 
-/** Build the brief-derived running header — title · author/date. */
-function runningHeaderText(
-  override: string,
-  brief: import("../../types").ProjectBrief | null,
-): string {
-  if (override && override.trim()) return override;
-  if (!brief) return "";
-  const title = brief.answers.workingTitle || "Untitled";
-  const today = new Date().toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-  return `${title} · ${today}`;
-}

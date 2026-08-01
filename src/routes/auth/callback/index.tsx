@@ -1,22 +1,23 @@
 import { component$, useStore, useVisibleTask$ } from "@builder.io/qwik";
 import { Link, type DocumentHead, useNavigate } from "@builder.io/qwik-city";
-import { loadProjectBrief } from "../../../utils/anti-tabula-rasa";
 import { useAuth } from "../../../utils/auth-context";
 
 interface CallbackStore {
   status: "checking" | "success" | "error";
-  destination: "/editor/" | "/dossier/create/";
-  destinationLabel: string;
 }
+
+/**
+ * Signing in no longer decides where the writer goes. It used to read the
+ * stored brief and fork between the editor and the dossier interview, which
+ * meant an account action silently moved you somewhere you hadn't asked for.
+ * Sign-in now returns to the front page and the writer picks from there.
+ */
+const DESTINATION = "/";
 
 export default component$(() => {
   const auth = useAuth();
   const nav = useNavigate();
-  const store = useStore<CallbackStore>({
-    status: "checking",
-    destination: "/dossier/create/",
-    destinationLabel: "the dossier interview",
-  });
+  const store = useStore<CallbackStore>({ status: "checking" });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup, track }) => {
@@ -30,16 +31,10 @@ export default component$(() => {
       return;
     }
 
-    const hasDossier = loadProjectBrief() !== null;
-    const destination = hasDossier ? "/editor/" : "/dossier/create/";
     store.status = "success";
-    store.destination = destination;
-    store.destinationLabel = hasDossier
-      ? "the writer's room"
-      : "the dossier interview";
 
     const timeout = window.setTimeout(() => {
-      void nav(destination);
+      void nav(DESTINATION);
     }, 1100);
 
     cleanup(() => window.clearTimeout(timeout));
@@ -87,9 +82,9 @@ export default component$(() => {
                 <span class="font-semibold text-[var(--color-ink)]">
                   {byline}
                 </span>
-                . Sending you to {store.destinationLabel}.
+                . Sending you back to the front page.
               </p>
-              <Link href={store.destination} class="btn-press mt-6 inline-flex">
+              <Link href={DESTINATION} class="btn-press mt-6 inline-flex">
                 Continue now
               </Link>
             </>
@@ -127,7 +122,7 @@ export const head: DocumentHead = {
     {
       name: "description",
       content:
-        "Completes Bluesky sign-in and routes the writer to the dossier interview or the editor.",
+        "Completes Bluesky sign-in and returns the writer to the Twyne front page.",
     },
   ],
 };

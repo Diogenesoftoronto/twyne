@@ -7,12 +7,27 @@ export interface Persona {
   description: string;
   focus: string;
   /**
+   * Short fictional history used for role play and continuity. This is kept
+   * separate from the writing instructions so an editor can have a life
+   * without turning every response into exposition about that life.
+   */
+  backstory?: string;
+  /**
+   * The editor's critical doctrine: what they notice first, what they believe
+   * good writing owes the reader, and how they decide what must change.
+   */
+  criticalMethod?: string;
+  /**
    * Rich voice specification — diction, sentence rhythm, signature moves, and
    * what this editor never does. Injected into the system prompt so the five
    * personas read as genuinely different writers. Optional and backward
    * compatible: when absent, the generic shared wording is used.
    */
   voice?: string;
+  /** Recurring rhetorical habits that make this editor recognizable. */
+  signatureMoves?: string[];
+  /** Words, tones, structures, and other-persona behaviors this editor avoids. */
+  avoidances?: string[];
   /** One or two few-shot lines written in this persona's voice. */
   sampleLines?: string[];
   /**
@@ -36,6 +51,8 @@ export interface Persona {
 }
 
 export interface PersonaFeedback {
+  /** Folio whose manuscript this note belongs to. */
+  folioId?: string;
   personaId: string;
   personaName: string;
   personaColor: string;
@@ -163,6 +180,8 @@ export const SPINE_CRITERIA: ReadonlyArray<
 
 /** One recorded rubric pass, for the trend line. */
 export interface RubricHistoryEntry {
+  /** Folio whose rubric run produced this point. */
+  folioId?: string;
   at: number;
   overall: number;
   grade: string;
@@ -171,6 +190,8 @@ export interface RubricHistoryEntry {
 }
 
 export interface RubricResult {
+  /** Folio whose manuscript was graded. */
+  folioId?: string;
   criteria: RubricCriterion[];
   overallScore: number;
   overallGrade: string;
@@ -210,6 +231,8 @@ export interface PersonaMemo {
 
 /** The expanded cast analysis: per-persona memos plus a combined synthesis. */
 export interface RoomAnalysis {
+  /** Folio whose manuscript the room analyzed. */
+  folioId?: string;
   memos: PersonaMemo[];
   synthesis: string;
   synthesisProvider: string;
@@ -230,8 +253,16 @@ export interface LayoutSettings {
    * the layout sliders write the numeric fields instead.
    */
   margin: DocMargin;
-  /** Side (left/right) page margin, in rem. Falls back to {@link margin} when undefined. */
+  /**
+   * Symmetric side margin, in rem. Falls back to {@link margin} when
+   * undefined, and is itself the fallback for the independent left/right
+   * values below — documents written before the ruler existed have only this.
+   */
   marginX?: number;
+  /** Left page margin, in rem. Falls back to {@link marginX}. */
+  marginLeft?: number;
+  /** Right page margin, in rem. Falls back to {@link marginX}. */
+  marginRight?: number;
   /** Top (header) page margin, in rem. */
   marginTop?: number;
   /** Bottom (footer) page margin, in rem. */
@@ -244,6 +275,17 @@ export interface LayoutSettings {
   showMarginGuides?: boolean;
 }
 
+/**
+ * Text-column width, in rem, for each {@link DocWidth}. Shared so the page,
+ * the ruler above it, and the exported document cannot disagree about how
+ * wide the page is.
+ */
+export const DOC_WIDTH_REM: Record<DocWidth, number> = {
+  narrow: 36,
+  normal: 48,
+  wide: 62,
+};
+
 /** Side-margin rem values for the legacy coarse {@link DocMargin} presets. */
 export const MARGIN_PRESET_REM: Record<DocMargin, number> = {
   tight: 1.5,
@@ -251,34 +293,46 @@ export const MARGIN_PRESET_REM: Record<DocMargin, number> = {
   roomy: 5,
 };
 
-/** Allowed slider range (rem) for each adjustable page margin. */
+/** Allowed range (rem) for each adjustable page margin. */
 export const MARGIN_RANGE = {
-  x: { min: 0, max: 8, step: 0.25 },
+  left: { min: 0, max: 8, step: 0.25 },
+  right: { min: 0, max: 8, step: 0.25 },
   top: { min: 0, max: 8, step: 0.25 },
   bottom: { min: 0, max: 8, step: 0.25 },
 } as const;
 
-/**
- * Resolve the effective numeric page margins (in rem) for a layout, applying
- * sensible fallbacks so documents saved before numeric margins existed still
- * render correctly.
- */
-export function resolveMargins(layout: LayoutSettings): {
-  x: number;
+export interface ResolvedMargins {
+  left: number;
+  right: number;
   top: number;
   bottom: number;
-} {
+}
+
+/**
+ * Resolve the effective numeric page margins (in rem) for a layout.
+ *
+ * Three generations of the setting have to keep rendering: the coarse
+ * `margin` preset, the symmetric `marginX`, and the independent left/right
+ * the ruler writes. Each falls back to the one before it, so an old document
+ * opens with the page its writer chose rather than the current default.
+ */
+export function resolveMargins(layout: LayoutSettings): ResolvedMargins {
   const presetX = MARGIN_PRESET_REM[layout.margin] ?? MARGIN_PRESET_REM.normal;
   const x = layout.marginX ?? presetX;
-  const top = layout.marginTop ?? (layout.margin === "roomy" ? 5 : 2.5);
-  const bottom = layout.marginBottom ?? (layout.margin === "roomy" ? 5 : 4);
-  return { x, top, bottom };
+  return {
+    left: layout.marginLeft ?? x,
+    right: layout.marginRight ?? x,
+    top: layout.marginTop ?? (layout.margin === "roomy" ? 5 : 2.5),
+    bottom: layout.marginBottom ?? (layout.margin === "roomy" ? 5 : 4),
+  };
 }
 
 export const DEFAULT_LAYOUT: LayoutSettings = {
   width: "normal",
   margin: "normal",
   marginX: 3,
+  marginLeft: 3,
+  marginRight: 3,
   marginTop: 2.5,
   marginBottom: 4,
   runningHeader: false,
@@ -310,6 +364,8 @@ export type PersonaReplyAuthor = "user" | "persona";
 /** A single reply in a persona-note conversation. */
 export interface PersonaReply {
   id: string;
+  /** Folio whose room thread owns this reply. */
+  folioId?: string;
   /** Note (PersonaFeedback.noteId) this reply is attached to. */
   noteId: string;
   author: string;
@@ -458,6 +514,8 @@ export type SuggestionKind = "sentence" | "paragraph";
 export interface Suggestion {
   /** Proposal id; also the SuggestionMark id in the manuscript. */
   id: string;
+  /** Folio whose manuscript owns this proposal. */
+  folioId?: string;
   /** Lix version (branch) holding the proposed block edit. */
   versionId: string;
   personaId: string;
@@ -576,10 +634,19 @@ export interface AiProviderConfig {
   id: string;
   name: string;
   type: AiProviderType;
+  /** Provider identifier from models.dev, when configured from its catalog. */
+  modelsDevId?: string;
   apiKey: string;
   baseUrl?: string;
   defaultModel: string;
   availableModels?: string[];
+  /** Modality metadata for models discovered from models.dev. */
+  modelModalities?: Record<string, AiModelModalities>;
+}
+
+export interface AiModelModalities {
+  input: string[];
+  output: string[];
 }
 
 export type AiFeature =
@@ -600,14 +667,36 @@ export type AiFeature =
   | "interview-turn"
   | "dossier-check";
 
-/** Writer-level preferences (how onboarding / interview behaves). */
+/** Private context the room may use to speak to this writer as a person. */
+export interface WriterProfile {
+  /** Name the editors should use when addressing the writer. */
+  displayName: string;
+  /** Personal context that is useful to the room, one fact or detail per line. */
+  personalFacts: string;
+  /** How much pressure the writer wants in ordinary feedback. */
+  feedbackStyle: "direct" | "balanced" | "gentle";
+  /** Writer-authored guidance about what feedback should notice or avoid. */
+  feedbackNotes: string;
+}
+
+export const DEFAULT_WRITER_PROFILE: WriterProfile = {
+  displayName: "",
+  personalFacts: "",
+  feedbackStyle: "balanced",
+  feedbackNotes: "",
+};
+
+/** Writer-level preferences (identity, feedback, and onboarding). */
 export interface WriterSettings {
   /** Form-based AntiTabulaRasa vs the conversational interview. */
   interviewStyle: "form" | "conversational";
+  /** Private, account-local context included in editorial-room prompts. */
+  profile: WriterProfile;
 }
 
 export const DEFAULT_WRITER_SETTINGS: WriterSettings = {
   interviewStyle: "form",
+  profile: { ...DEFAULT_WRITER_PROFILE },
 };
 
 export type ApparatusCitationStyle = "mla" | "apa" | "chicago";
@@ -773,10 +862,9 @@ export const PROVIDER_METAS: ProviderMeta[] = [
   {
     type: "fishaudio",
     label: "Fish Audio (voice only)",
-    // `s2.1-pro-free` runs without API credit, so it is listed first — it is
-    // the one model that works on a fresh key. `asr-1` is the transcription
-    // model and does require credit.
-    defaultModels: ["s2.1-pro-free", "s2.1-pro", "s2-pro", "s1", "asr-1"],
+    // Fish's v1 TTS endpoint documents s2-pro and s1. `asr-1` is the
+    // transcription model and is kept available for voice notes.
+    defaultModels: ["s2-pro", "s1", "asr-1"],
     needsBaseUrl: false,
     voiceOnly: true,
   },

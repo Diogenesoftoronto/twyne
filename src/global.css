@@ -128,8 +128,8 @@ body {
     100% 1px,
     100% 1px;
   background-position:
-    left var(--doc-pad-x, 3rem) top 0,
-    right var(--doc-pad-x, 3rem) top 0,
+    left var(--doc-pad-left, 3rem) top 0,
+    right var(--doc-pad-right, 3rem) top 0,
     left 0 top var(--doc-pad-y, 2.5rem),
     left 0 bottom var(--doc-pad-bottom, 4rem);
 }
@@ -361,10 +361,7 @@ body {
   );
   text-underline-offset: 0.14em;
   text-decoration-skip-ink: none;
-  background: linear-gradient(
-    transparent 68%,
-    rgba(44, 74, 124, 0.12) 68%
-  );
+  background: linear-gradient(transparent 68%, rgba(44, 74, 124, 0.12) 68%);
   cursor: pointer;
   transition:
     color 120ms ease,
@@ -378,10 +375,7 @@ body {
 .twyne-editor .ProseMirror a.editor-link:focus-visible {
   color: var(--color-vermilion);
   text-decoration-color: var(--color-vermilion);
-  background: linear-gradient(
-    transparent 58%,
-    rgba(193, 39, 45, 0.16) 58%
-  );
+  background: linear-gradient(transparent 58%, rgba(193, 39, 45, 0.16) 58%);
 }
 
 /* Checklists — task list with editorial checkboxes */
@@ -1144,7 +1138,9 @@ body {
   border-radius: 999px;
   cursor: pointer;
   transform: scale(1);
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease;
   opacity: 0.55;
 }
 .twyne-mark-anchor:hover,
@@ -1154,7 +1150,9 @@ body {
   outline: none;
 }
 .twyne-mark-anchor:focus-visible {
-  box-shadow: 0 0 0 2px var(--color-paper), 0 0 0 4px var(--note-color, var(--color-vermilion));
+  box-shadow:
+    0 0 0 2px var(--color-paper),
+    0 0 0 4px var(--note-color, var(--color-vermilion));
 }
 /* Hide the chip in zen mode — the marks themselves stay in place
    (the .zen-mode rule earlier already quiets them) but the chip is a
@@ -1286,13 +1284,17 @@ body {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--color-ink-light);
-  transition: color 0.15s ease, letter-spacing 0.2s ease;
+  transition:
+    color 0.15s ease,
+    letter-spacing 0.2s ease;
   position: relative;
 }
 .landing-nav-link::after {
   content: "";
   position: absolute;
-  left: 0; right: 0; bottom: -2px;
+  left: 0;
+  right: 0;
+  bottom: -2px;
   height: 1px;
   background: var(--color-vermilion);
   transform: scaleX(0);
@@ -2213,7 +2215,8 @@ body {
     text-shadow: 0 0 0 transparent;
   }
   100% {
-    text-shadow: 0.5px 0.5px 0px color-mix(in srgb, var(--color-ink) 12%, transparent);
+    text-shadow: 0.5px 0.5px 0px
+      color-mix(in srgb, var(--color-ink) 12%, transparent);
   }
 }
 
@@ -2229,13 +2232,23 @@ body {
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes type-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
 }
 
 .slide-in {
@@ -2245,11 +2258,21 @@ body {
 /* Stagger sibling cards so a list settles like dealt pages rather
    than one opaque block. Caps at the 6th child — beyond that the
    list is long enough that waiting would feel slow, not polished. */
-.slide-in:nth-child(2) { animation-delay: 40ms; }
-.slide-in:nth-child(3) { animation-delay: 80ms; }
-.slide-in:nth-child(4) { animation-delay: 120ms; }
-.slide-in:nth-child(5) { animation-delay: 160ms; }
-.slide-in:nth-child(6) { animation-delay: 200ms; }
+.slide-in:nth-child(2) {
+  animation-delay: 40ms;
+}
+.slide-in:nth-child(3) {
+  animation-delay: 80ms;
+}
+.slide-in:nth-child(4) {
+  animation-delay: 120ms;
+}
+.slide-in:nth-child(5) {
+  animation-delay: 160ms;
+}
+.slide-in:nth-child(6) {
+  animation-delay: 200ms;
+}
 
 .fade-in {
   animation: fade-in 0.2s ease-out both;
@@ -2298,7 +2321,9 @@ body {
   cursor: pointer;
   font-family: var(--font-typewriter);
   font-weight: 600;
-  transition: color 0.15s ease, background 0.15s ease;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
   padding: 0 0.1em;
   border-radius: 1px;
   animation: note-pop 0.22s cubic-bezier(0.22, 1, 0.36, 1);
@@ -2414,21 +2439,29 @@ body {
 
 /* Icon button — press-down feedback */
 .icon-btn {
-  transition: transform 0.1s ease, color 0.15s ease;
+  transition:
+    transform 0.1s ease,
+    color 0.15s ease;
 }
 .icon-btn:active {
   transform: scale(0.92);
 }
 
 /* Smooth color transitions on interactive text */
-button, a {
-  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+button,
+a {
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
 }
 
 /* Zen masthead — collapses the header to a thin bar, fading out all
    chrome except the zen toggle. Fades back in on hover. */
 .zen-masthead {
-  transition: max-height 0.3s ease, opacity 0.3s ease;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
   max-height: 24px;
   opacity: 0;
   overflow: hidden;
@@ -2443,11 +2476,24 @@ button, a {
 
 /* Toast / status pulse — gentle attention without being aggressive */
 @keyframes gentle-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
 }
 .gentle-pulse {
   animation: gentle-pulse 2s ease-in-out infinite;
+}
+
+/* Dossier interview streaming: quiet state signal, not decorative motion. */
+.interview-reasoning {
+  border-radius: 3px;
+}
+.interview-stream-pulse {
+  animation: gentle-pulse 1.25s ease-in-out infinite;
 }
 
 /* Reduced motion: disable all micro-interactions */
@@ -2458,7 +2504,8 @@ button, a {
   .ink-bleed,
   .type-cursor::after,
   .twyne-endnote,
-  .gentle-pulse {
+  .gentle-pulse,
+  .interview-stream-pulse {
     animation: none !important;
     transition: none !important;
     transform: none !important;
@@ -2495,8 +2542,12 @@ button, a {
   padding-left: 1.25em;
   list-style-position: outside;
 }
-.comment-markdown ul { list-style-type: disc; }
-.comment-markdown ol { list-style-type: decimal; }
+.comment-markdown ul {
+  list-style-type: disc;
+}
+.comment-markdown ol {
+  list-style-type: decimal;
+}
 .comment-markdown li {
   margin: 0.15em 0;
 }
@@ -2530,6 +2581,36 @@ button, a {
   color: var(--color-vermilion);
 }
 
+/* ── The editorial board panels ────────────────────────────── */
+/* One typographic floor for every right-hand panel. The panels are a
+   narrow column read at arm's length, and the per-panel Tailwind sizes
+   had drifted down to 10-12px prose. These rules out-specify those
+   utilities so raising the floor is one change, not four. */
+.board-panel .comment-markdown,
+.board-panel .panel-prose {
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.board-panel .dept-label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
+}
+/* Typewriter chrome — labels, pills, toggles — never below 11px. */
+.board-panel .panel-meta {
+  font-family: var(--font-typewriter);
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+}
+/* The same floor for the chrome that still carries a hard-coded Tailwind
+   size. Matching the arbitrary-value utility by name is blunt, but it puts
+   the floor in one place instead of across four panels, and the panels can
+   migrate to .panel-meta at their own pace. */
+.board-panel [class*="text-[10px]"],
+.board-panel [class*="text-[0.6rem]"],
+.board-panel [class*="text-[0.65rem]"] {
+  font-size: 0.6875rem;
+}
+
 /* When a persona-coloured bubble renders Markdown on its coloured
    background, the default cobalt link and paper-3 code chip clash.
    Override against the persona color by switching the code chip to a
@@ -2541,4 +2622,352 @@ button, a {
 .comment-markdown-on-color a {
   color: var(--color-paper);
   text-decoration-color: rgba(244, 236, 216, 0.6);
+}
+
+/* ── The composer ─────────────────────────────────────────────────
+   One surface that holds the text, the microphone and the send key,
+   the way every modern chat client does it. The previous arrangement
+   stacked three separate controls down the page, which read as three
+   unrelated widgets rather than one place to speak from.
+
+   The whole card takes the focus treatment, not the textarea alone —
+   the writer is focusing "the composer", and a ring drawn around only
+   the inner box makes the toolbar look detached from it. */
+.composer {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-paper-soft);
+  border: 1px solid var(--color-paper-3);
+  border-radius: 3px;
+  transition:
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+  box-shadow: 0 1px 2px rgba(31, 27, 22, 0.04);
+}
+.composer:focus-within {
+  border-color: var(--color-vermilion);
+  box-shadow:
+    0 0 0 3px rgba(193, 39, 45, 0.12),
+    0 2px 10px -6px rgba(31, 27, 22, 0.35);
+}
+.composer[data-recording="true"] {
+  border-color: var(--color-vermilion);
+}
+.composer[data-disabled="true"] {
+  opacity: 0.6;
+}
+
+/* Borderless because the card around it already is the border. */
+.composer-input {
+  width: 100%;
+  resize: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 1.55;
+  padding: 0.7rem 0.85rem 0.15rem;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.composer-input::placeholder {
+  color: var(--color-ink-muted);
+}
+.composer-input:disabled {
+  cursor: not-allowed;
+}
+
+.composer-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem 0.45rem;
+}
+.composer-bar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
+
+/* The send key. Square-ish rather than a pill: this is a press, not a
+   chat bubble, and a 2px radius is the house rule everywhere else. */
+.composer-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.85rem;
+  width: 1.85rem;
+  flex-shrink: 0;
+  border-radius: 2px;
+  border: 1px solid var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.12s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.18s ease;
+}
+.composer-send:hover:not(:disabled) {
+  background: var(--color-vermilion-2);
+  border-color: var(--color-vermilion-2);
+  box-shadow: 0 4px 14px -8px rgba(156, 26, 31, 0.6);
+}
+.composer-send:active:not(:disabled) {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: none;
+}
+.composer-send:disabled {
+  background: transparent;
+  border-color: var(--color-paper-3);
+  color: var(--color-ink-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* The keyboard hint sits next to the send key and disappears on narrow
+   screens, where there is no keyboard to hint about. */
+.composer-hint {
+  font-family: var(--font-typewriter);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+}
+@media (max-width: 640px) {
+  .composer-hint {
+    display: none;
+  }
+}
+
+/* Recording and transcribing both live in the toolbar rather than
+   replacing the composer, so the draft the writer already typed never
+   disappears behind the recorder. */
+.composer-recording {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+.composer-rec-dot {
+  height: 0.45rem;
+  width: 0.45rem;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: var(--color-vermilion);
+  animation: composer-pulse 1.2s ease-in-out infinite;
+}
+@keyframes composer-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.composer-elapsed {
+  font-family: var(--font-typewriter);
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composer-rec-dot {
+    animation: none;
+  }
+  .composer-send:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ── The ruler ────────────────────────────────────────────────────
+   Word's page ruler, in Twyne's ink. It sits directly above the page
+   and spans exactly the page's width, so the markers line up with the
+   real margins rather than approximating them. Dragging a marker is
+   the natural way to change a margin: you move the edge of the text,
+   and the text reflows under your hand.
+
+   The shaded ends are the margins; the pale middle is the live text
+   column, which is the same relationship Word draws. */
+.ruler {
+  position: relative;
+  height: 1.35rem;
+  margin: 0 auto 0.25rem;
+  user-select: none;
+  font-family: var(--font-typewriter);
+  touch-action: none;
+}
+.ruler-track {
+  position: absolute;
+  inset: 0.3rem 0 0.3rem;
+  background: var(--color-paper-3);
+  border-radius: 1px;
+}
+.ruler-column {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  background: var(--color-paper-soft);
+  border-left: 1px solid var(--color-ink-muted);
+  border-right: 1px solid var(--color-ink-muted);
+}
+.ruler-tick {
+  position: absolute;
+  top: 50%;
+  width: 1px;
+  height: 0.3rem;
+  transform: translateY(-50%);
+  background: var(--color-ink-muted);
+  opacity: 0.5;
+}
+
+/* Generous hit area around a deliberately small visual marker: the
+   marker must not cover the text it is aligned with, but a 3px drag
+   target is unusable. */
+.ruler-handle {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1.1rem;
+  margin-left: -0.55rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ruler-handle::before {
+  content: "";
+  width: 0;
+  height: 0;
+  border-left: 0.32rem solid transparent;
+  border-right: 0.32rem solid transparent;
+  border-top: 0.42rem solid var(--color-ink-light);
+  transition:
+    border-top-color 0.15s ease,
+    transform 0.12s ease;
+}
+.ruler-handle:hover::before,
+.ruler-handle:focus-visible::before {
+  border-top-color: var(--color-vermilion);
+  transform: scale(1.15);
+}
+.ruler-handle:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+.ruler[data-dragging="true"] .ruler-handle::before {
+  border-top-color: var(--color-vermilion);
+}
+
+/* The live readout while dragging — Word shows the measurement, and
+   without it the writer is guessing at what they just set. */
+.ruler-readout {
+  position: absolute;
+  top: -1.35rem;
+  transform: translateX(-50%);
+  padding: 0.1rem 0.35rem;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  border-radius: 2px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.twyne-editor.zen-mode + .ruler,
+.ruler[data-zen="true"] {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.ruler[data-zen="true"]:hover {
+  opacity: 0.6;
+  pointer-events: auto;
+}
+
+@media (max-width: 640px) {
+  .ruler {
+    display: none;
+  }
+}
+
+/* ── Lists in the manuscript ──────────────────────────────────────
+   Tailwind's preflight strips markers and padding from every ul/ol,
+   which left bullet and numbered lists in the editor rendering as
+   bare paragraphs — the writer pressed "list" and nothing visibly
+   happened. These rules restore them for the manuscript only, so the
+   reset still holds for the application chrome around it.
+
+   Markers cycle by depth the way a word processor's do, so nesting
+   reads as structure rather than as an accident of indentation. */
+.twyne-editor .ProseMirror ul,
+.twyne-editor .ProseMirror ol {
+  padding-left: 1.6em;
+  margin: 0 0 1.1rem;
+}
+.twyne-editor .ProseMirror ul {
+  list-style: disc outside;
+}
+.twyne-editor .ProseMirror ul ul {
+  list-style-type: circle;
+}
+.twyne-editor .ProseMirror ul ul ul {
+  list-style-type: square;
+}
+.twyne-editor .ProseMirror ol {
+  list-style: decimal outside;
+}
+.twyne-editor .ProseMirror ol ol {
+  list-style-type: lower-alpha;
+}
+.twyne-editor .ProseMirror ol ol ol {
+  list-style-type: lower-roman;
+}
+
+/* Nested lists tuck under their parent rather than opening a gap. */
+.twyne-editor .ProseMirror li > ul,
+.twyne-editor .ProseMirror li > ol {
+  margin: 0.25rem 0 0.25rem;
+}
+.twyne-editor .ProseMirror li {
+  margin: 0.2rem 0;
+  padding-left: 0.15em;
+}
+/* A list item's paragraph is a layout wrapper, not a new block of
+   prose — the paragraph's own bottom margin would double-space the
+   list. */
+.twyne-editor .ProseMirror li > p {
+  margin: 0;
+}
+.twyne-editor .ProseMirror li::marker {
+  color: var(--color-ink-muted);
+}
+.twyne-editor .ProseMirror ol > li::marker {
+  font-family: var(--font-typewriter);
+  font-size: 0.85em;
+}
+
+/* The task list opts out of markers entirely; it draws checkboxes. */
+.twyne-editor .ProseMirror ul[data-type="taskList"],
+.twyne-editor .ProseMirror ul.twyne-task-list {
+  list-style: none;
+}
+
+/* Indented blocks keep their left margin in the exported document
+   too, since the indent is written as an inline style on the node. */
+.twyne-editor .ProseMirror [data-indent] {
+  transition: margin-left 0.12s ease;
 }

@@ -1,6 +1,7 @@
 import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
 import type { AiProviderType } from "../../types";
 import { useConvexClient } from "../../utils/convex-context";
+import { useAuth } from "../../utils/auth-context";
 import { speak, speechState, stopSpeech } from "../../utils/speech";
 
 interface SpeakButtonProps {
@@ -16,6 +17,12 @@ interface SpeakButtonProps {
   instructions?: string;
   /** Who is speaking, for the accessible label. */
   label?: string;
+  /**
+   * Who is speaking, by cast name. Callers holding a persona should pass
+   * `voice`/`voices`/`instructions` directly; this is for the inline editor
+   * cards, which know the author only as a string read off the mark.
+   */
+  author?: string;
   /** Slightly smaller styling for dense lists. */
   compact?: boolean;
 }
@@ -33,6 +40,7 @@ interface SpeakButtonProps {
  */
 export const SpeakButton = component$<SpeakButtonProps>((props) => {
   const clientSig = useConvexClient();
+  const auth = useAuth();
   const status = useSignal<"idle" | "loading" | "playing" | "error">("idle");
   const errorMessage = useSignal("");
 
@@ -65,7 +73,9 @@ export const SpeakButton = component$<SpeakButtonProps>((props) => {
       voice: props.voice,
       voices: props.voices,
       instructions: props.instructions,
+      author: props.author ?? props.label,
       client: clientSig.value ?? null,
+      signedIn: Boolean(auth.value.user),
     });
   });
 

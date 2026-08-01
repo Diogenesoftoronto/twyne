@@ -148,6 +148,73 @@ describe("speak", () => {
     expect(s.error?.recovery.action).toBe("choose-provider");
   });
 
+  test("never falls back to the browser speech synthesizer", async () => {
+    let browserSpeechCalls = 0;
+    Object.assign(globalThis.window, {
+      speechSynthesis: {
+        cancel: () => {},
+        getVoices: () => [],
+        speak: () => {
+          browserSpeechCalls += 1;
+        },
+      },
+    });
+    (globalThis as Record<string, unknown>).SpeechSynthesisUtterance = class {};
+
+    await speakModule.speak({
+      id: "note-browser-fallback",
+      text: "This must use generated audio.",
+    });
+
+    expect(browserSpeechCalls).toBe(0);
+    expect(speakModule.speechState().error?.code).toBe("CONFIGURATION_ERROR");
+    delete (globalThis as Record<string, unknown>).SpeechSynthesisUtterance;
+  });
+
+  /**
+   * The hosted action is sign-in *and* Pro gated, so entering it while signed
+   * out only ever throws "Not signed in" — a bewildering thing to be told
+   * about a passage you asked to hear on your own key. It must not be
+   * reached at all.
+   */
+  test("never calls the hosted action while signed out", async () => {
+    let hostedCalls = 0;
+    const client = {
+      action: async () => {
+        hostedCalls += 1;
+        throw new Error("Not signed in");
+      },
+    };
+
+    await speakModule.speak({
+      id: "note-1",
+      text: "Read this aloud.",
+      client: client as never,
+    });
+
+    expect(hostedCalls).toBe(0);
+    expect(speakModule.speechState().error?.code).toBe("CONFIGURATION_ERROR");
+  });
+
+  test("calls the hosted action when there is an account behind it", async () => {
+    let hostedCalls = 0;
+    const client = {
+      action: async () => {
+        hostedCalls += 1;
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    };
+
+    await speakModule.speak({
+      id: "note-1",
+      text: "Read this aloud.",
+      client: client as never,
+      signedIn: true,
+    });
+
+    expect(hostedCalls).toBe(1);
+  });
+
   test("an error on one passage does not leave another marked active", async () => {
     await speakModule.speak({ id: "note-1", text: "one" });
     expect(speakModule.speechState().id).toBe("note-1");

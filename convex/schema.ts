@@ -5,9 +5,31 @@ export default defineSchema({
   // ── Per-user state, synced from the browser on sign-up and on every change. ──
   briefs: defineTable({
     userId: v.string(),
+    folioId: v.optional(v.string()),
     brief: v.any(),
     updatedAt: v.number(),
-  }).index("by_userId", ["userId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_folioId", ["userId", "folioId"]),
+
+  // Ephemeral per-turn output for the hosted dossier interview. Convex actions
+  // write cumulative reasoning/text snapshots here while the browser watches
+  // the authenticated query; the client removes the row when the turn settles.
+  dossierInterviewStreams: defineTable({
+    userId: v.string(),
+    streamId: v.string(),
+    text: v.string(),
+    reasoning: v.string(),
+    phase: v.union(v.literal("reasoning"), v.literal("answer")),
+    status: v.union(
+      v.literal("running"),
+      v.literal("complete"),
+      v.literal("error"),
+    ),
+    updatedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_streamId", ["userId", "streamId"]),
 
   folios: defineTable({
     userId: v.string(),
@@ -47,6 +69,7 @@ export default defineSchema({
   // devices. Brief is denormalized so the panel can render summaries cheaply.
   personaNotes: defineTable({
     userId: v.string(),
+    folioId: v.optional(v.string()),
     noteId: v.string(),
     personaId: v.string(),
     personaName: v.string(),
@@ -63,11 +86,13 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_userId", ["userId"])
+    .index("by_userId_folioId", ["userId", "folioId"])
     .index("by_userId_noteId", ["userId", "noteId"]),
 
   // ── Threaded replies to persona notes, optionally re-prompting the agent. ──
   personaReplies: defineTable({
     userId: v.string(),
+    folioId: v.optional(v.string()),
     noteId: v.string(),
     replyId: v.string(),
     author: v.string(),
@@ -77,18 +102,23 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_userId", ["userId"])
+    .index("by_userId_folioId", ["userId", "folioId"])
     .index("by_userId_noteId", ["userId", "noteId"]),
 
-  // ── Rubric results — one per user, latest wins. ──
+  // ── Rubric results — one per folio; legacy rows may omit folioId. ──
   rubricResults: defineTable({
     userId: v.string(),
+    folioId: v.optional(v.string()),
     result: v.any(),
     updatedAt: v.number(),
-  }).index("by_userId", ["userId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_folioId", ["userId", "folioId"]),
 
   // ── Editorial change proposals (editors propose edits to the manuscript). ──
   suggestions: defineTable({
     userId: v.string(),
+    folioId: v.optional(v.string()),
     suggestionId: v.string(),
     versionId: v.string(),
     personaId: v.string(),
@@ -107,6 +137,7 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_userId", ["userId"])
+    .index("by_userId_folioId", ["userId", "folioId"])
     .index("by_userId_suggestionId", ["userId", "suggestionId"]),
 
   // ── Room settings (tunable assistance) — one per user, latest wins. ──

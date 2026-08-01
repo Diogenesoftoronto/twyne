@@ -1,6 +1,7 @@
 import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import { ApplicationNotice } from "../../components/ui/application-notice";
+import { SearchableModelSelect } from "../../components/ui/searchable-model-select";
 import { ThemedDialog } from "../../components/ui/themed-dialog";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
@@ -12,8 +13,10 @@ import type {
   AiProviderConfig,
   AiFeature,
   AiFeatureOverride,
+  AiModelModalities,
   ApparatusSettings,
   WriterSettings,
+  WriterProfile,
 } from "../../types";
 import {
   DEFAULT_AI_SETTINGS,
@@ -30,6 +33,7 @@ import {
 } from "../../utils/idb";
 import {
   discoverProviderModels,
+  providerSupportsFeature,
   testProvider,
   resolveFeatureConfig,
   normalizeAiSettings,
@@ -43,6 +47,14 @@ import {
   normalizeApplicationError,
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import {
+  findModelsDevProvider,
+  loadModelsDevCatalog,
+  modelsDevModelsForFeature,
+  searchModelsDevProviders,
+  type ModelsDevModel,
+  type ModelsDevProvider,
+} from "../../utils/models-dev";
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
@@ -57,6 +69,10 @@ interface SettingsStore {
   newProviderName: string;
   newProviderKey: string;
   newProviderBaseUrl: string;
+  providerSearch: string;
+  modelsDevProviders: ModelsDevProvider[];
+  modelsDevError: AppError | null;
+  modelsDevProviderId: string | null;
   testingProviderId: string | null;
   testResults: Record<
     string,
@@ -71,6 +87,7 @@ interface SettingsStore {
   openFeature: AiFeature | null;
   /* writer preferences */
   writerStyle: WriterSettings["interviewStyle"];
+  writerProfile: WriterProfile;
   writerToast: string | null;
   /* apparatus */
   defaultCitationStyle: ApparatusSettings["defaultCitationStyle"];
@@ -114,9 +131,9 @@ interface SettingsStore {
 }
 
 const FEATURE_LABELS: Record<AiFeature, string> = {
-  "persona-feedback": "Convene the Room",
+  "persona-feedback": "Read My Draft (room notes)",
   "persona-reply": "Reply Thread",
-  "persona-rewrite": "Mark Up Draft",
+  "persona-rewrite": "Edit My Draft (rewrites)",
   "persona-analysis": "Full Analysis (per editor)",
   "room-synthesis": "Room Synthesis",
   "rubric-judge": "Galley Proof",
@@ -168,6 +185,23 @@ function providerMetaForForm(type: string) {
   return PROVIDER_METAS.find((m) => m.type === type);
 }
 
+function isTinkerProvider(provider: AiProviderConfig): boolean {
+  return (
+    provider.baseUrl?.toLowerCase().includes("tinker.thinkingmachines.dev") ??
+    false
+  );
+}
+
+function catalogModelModalities(
+  provider: ModelsDevProvider | undefined,
+): Record<string, AiModelModalities> {
+  return Object.fromEntries(
+    (provider?.models ?? [])
+      .filter((model) => model.modalities)
+      .map((model) => [model.id, model.modalities as AiModelModalities]),
+  );
+}
+
 function providerModelOptions(provider: AiProviderConfig): string[] {
   return Array.from(
     new Set(
@@ -178,6 +212,27 @@ function providerModelOptions(provider: AiProviderConfig): string[] {
       ].filter(Boolean),
     ),
   );
+}
+
+function catalogModelsForProvider(
+  provider: AiProviderConfig,
+  catalog: ModelsDevProvider[],
+  feature: AiFeature | "language" = "language",
+): ModelsDevModel[] {
+  const catalogProvider = provider.modelsDevId
+    ? catalog.find((entry) => entry.id === provider.modelsDevId)
+    : findModelsDevProvider(catalog, provider);
+  const catalogModels = modelsDevModelsForFeature(
+    catalogProvider?.models ?? [],
+    feature === "voice-narration" || feature === "voice-transcription"
+      ? feature
+      : "language",
+  );
+  const known = new Map(catalogModels.map((model) => [model.id, model]));
+  for (const id of providerModelOptions(provider)) {
+    if (!known.has(id)) known.set(id, { id, name: id });
+  }
+  return Array.from(known.values());
 }
 
 function buildApparatusSettings(store: SettingsStore): ApparatusSettings {
@@ -210,6 +265,10 @@ export default component$(() => {
     newProviderName: "",
     newProviderKey: "",
     newProviderBaseUrl: "",
+    providerSearch: "",
+    modelsDevProviders: [],
+    modelsDevError: null,
+    modelsDevProviderId: null,
     testingProviderId: null,
     testResults: {},
     discoveringProviderId: null,
@@ -227,6 +286,12 @@ export default component$(() => {
     mcpToolName: DEFAULT_APPARATUS_SETTINGS.mcpToolName,
     mcpBearerToken: DEFAULT_APPARATUS_SETTINGS.mcpBearerToken,
     writerStyle: "form",
+    writerProfile: {
+      displayName: "",
+      personalFacts: "",
+      feedbackStyle: "balanced",
+      feedbackNotes: "",
+    },
     writerToast: null,
     deletingAccount: false,
     accountToast: null,
@@ -253,20 +318,42 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const [raw, writer, apparatus] = await Promise.all([
+    const [raw, writer, apparatus, catalog] = await Promise.all([
       loadAiSettingsFromIdb(),
       loadWriterSettingsFromIdb(),
       loadApparatusSettingsFromIdb(),
+      loadModelsDevCatalog().catch((error) => {
+        store.modelsDevError = normalizeApplicationError(error, {
+          source: "fetch",
+          metadata: { operation: "load-models-dev-catalog" },
+        });
+        return [] as ModelsDevProvider[];
+      }),
     ]);
     const normalized = normalizeAiSettings(raw);
     store.settings = {
       ...normalized,
-      providers: normalized.providers.map((provider) => ({
-        ...provider,
-        availableModels: providerModelOptions(provider),
-      })),
+      providers: normalized.providers.map((provider) => {
+        const catalogProvider = findModelsDevProvider(catalog, provider);
+        const catalogModels = modelsDevModelsForFeature(
+          catalogProvider?.models ?? [],
+          "language",
+        ).map((model) => model.id);
+        return {
+          ...provider,
+          modelsDevId: catalogProvider?.id ?? provider.modelsDevId,
+          modelModalities: {
+            ...provider.modelModalities,
+            ...catalogModelModalities(catalogProvider),
+          },
+          availableModels: Array.from(
+            new Set([...catalogModels, ...providerModelOptions(provider)]),
+          ),
+        };
+      }),
     };
     store.writerStyle = writer.interviewStyle;
+    store.writerProfile = writer.profile;
     store.defaultCitationStyle = apparatus.defaultCitationStyle;
     store.aiEnhanceCitations = apparatus.aiEnhanceCitations;
     store.flagMissingSources = apparatus.flagMissingSources;
@@ -276,6 +363,7 @@ export default component$(() => {
     store.mcpEndpointUrl = apparatus.mcpEndpointUrl;
     store.mcpToolName = apparatus.mcpToolName;
     store.mcpBearerToken = apparatus.mcpBearerToken;
+    store.modelsDevProviders = catalog;
     store.loaded = true;
   });
 
@@ -300,7 +388,10 @@ export default component$(() => {
   const setWriterStyle = $(
     async (interviewStyle: WriterSettings["interviewStyle"]) => {
       store.writerStyle = interviewStyle;
-      await saveWriterSettingsToIdb({ interviewStyle });
+      await saveWriterSettingsToIdb({
+        interviewStyle,
+        profile: store.writerProfile,
+      });
       store.writerToast =
         interviewStyle === "conversational"
           ? "Conversation mode set"
@@ -308,6 +399,16 @@ export default component$(() => {
       setTimeout(() => (store.writerToast = null), 1800);
     },
   );
+
+  const saveWriterProfile = $(async (profile: WriterProfile) => {
+    store.writerProfile = profile;
+    await saveWriterSettingsToIdb({
+      interviewStyle: store.writerStyle,
+      profile,
+    });
+    store.writerToast = "Writer context saved";
+    setTimeout(() => (store.writerToast = null), 1800);
+  });
 
   const persistApparatusSettings = $(async (settings: ApparatusSettings) => {
     store.defaultCitationStyle = settings.defaultCitationStyle;
@@ -333,7 +434,24 @@ export default component$(() => {
       [id]: undefined,
     };
     try {
-      const result = await discoverProviderModels(provider);
+      let catalog = store.modelsDevProviders;
+      try {
+        catalog = await loadModelsDevCatalog();
+        store.modelsDevProviders = catalog;
+        store.modelsDevError = null;
+      } catch (error) {
+        if (catalog.length === 0) throw error;
+      }
+      const catalogProvider = findModelsDevProvider(catalog, provider);
+      const result = catalogProvider
+        ? {
+            models: modelsDevModelsForFeature(
+              catalogProvider.models,
+              "language",
+            ).map((model) => model.id),
+            source: "models.dev" as const,
+          }
+        : await discoverProviderModels(provider);
       const models = result.models;
       store.settings = {
         ...store.settings,
@@ -341,6 +459,11 @@ export default component$(() => {
           p.id === id
             ? {
                 ...p,
+                modelsDevId: catalogProvider?.id ?? p.modelsDevId,
+                modelModalities: {
+                  ...p.modelModalities,
+                  ...catalogModelModalities(catalogProvider),
+                },
                 availableModels: models,
                 defaultModel:
                   models.includes(p.defaultModel) && p.defaultModel
@@ -376,6 +499,11 @@ export default component$(() => {
   });
 
   const addProvider = $(async () => {
+    const catalogProvider = store.modelsDevProviderId
+      ? store.modelsDevProviders.find(
+          (provider) => provider.id === store.modelsDevProviderId,
+        )
+      : undefined;
     const meta = PROVIDER_METAS.find((m) => m.type === store.newProviderType);
     if (!meta) return;
     const name = store.newProviderName.trim();
@@ -390,10 +518,17 @@ export default component$(() => {
       id: `pv-${Date.now()}`,
       name,
       type: store.newProviderType as AiProviderConfig["type"],
+      modelsDevId: catalogProvider?.id,
       apiKey,
       baseUrl: baseUrl || undefined,
-      defaultModel: "",
-      availableModels: [],
+      defaultModel:
+        modelsDevModelsForFeature(catalogProvider?.models ?? [], "language")[0]
+          ?.id ?? "",
+      availableModels: modelsDevModelsForFeature(
+        catalogProvider?.models ?? [],
+        "language",
+      ).map((model) => model.id),
+      modelModalities: catalogModelModalities(catalogProvider),
     };
 
     store.settings = {
@@ -406,8 +541,10 @@ export default component$(() => {
     store.newProviderName = "";
     store.newProviderKey = "";
     store.newProviderBaseUrl = "";
+    store.providerSearch = "";
+    store.modelsDevProviderId = null;
     await persist();
-    await refreshProviderModels(config.id);
+    if (!catalogProvider) await refreshProviderModels(config.id);
   });
 
   const removeProvider = $((id: string) => {
@@ -873,6 +1010,122 @@ export default component$(() => {
                 class="text-base font-semibold"
                 style={{ fontFamily: "var(--font-display)" }}
               >
+                About the writer
+              </h2>
+              <p class="text-xs text-[var(--color-ink-light)] mt-1 max-w-2xl">
+                This private context helps the room address you as a person
+                while you draft. It stays in this browser and is not part of
+                your public profile.
+              </p>
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    What should they call you?
+                  </span>
+                  <input
+                    value={store.writerProfile.displayName}
+                    placeholder="Your name"
+                    onInput$={(e) => {
+                      store.writerProfile = {
+                        ...store.writerProfile,
+                        displayName: (e.target as HTMLInputElement).value,
+                      };
+                    }}
+                    onBlur$={() => void saveWriterProfile(store.writerProfile)}
+                    class="w-full text-sm px-3 py-2 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                    style={{ borderRadius: "2px" }}
+                  />
+                </label>
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Feedback pressure
+                  </span>
+                  <select
+                    value={store.writerProfile.feedbackStyle}
+                    onChange$={(e) => {
+                      const feedbackStyle = (e.target as HTMLSelectElement)
+                        .value as WriterProfile["feedbackStyle"];
+                      void saveWriterProfile({
+                        ...store.writerProfile,
+                        feedbackStyle,
+                      });
+                    }}
+                    class="w-full text-sm px-3 py-2 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                    style={{ borderRadius: "2px" }}
+                  >
+                    <option value="direct">Direct and demanding</option>
+                    <option value="balanced">Balanced, candid, useful</option>
+                    <option value="gentle">Gentle, protect momentum</option>
+                  </select>
+                </label>
+              </div>
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Personal facts
+                  </span>
+                  <textarea
+                    value={store.writerProfile.personalFacts}
+                    rows={5}
+                    placeholder="Your background, lived experience, subjects you know well, or constraints the room should remember. One detail per line works well."
+                    onInput$={(e) => {
+                      store.writerProfile = {
+                        ...store.writerProfile,
+                        personalFacts: (e.target as HTMLTextAreaElement).value,
+                      };
+                    }}
+                    onBlur$={() => void saveWriterProfile(store.writerProfile)}
+                    class="w-full text-sm px-3 py-2 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none resize-y"
+                    style={{ borderRadius: "2px" }}
+                  />
+                </label>
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    How I like feedback
+                  </span>
+                  <textarea
+                    value={store.writerProfile.feedbackNotes}
+                    rows={5}
+                    placeholder="For example: question my assumptions before fixing sentences; do not praise every paragraph; flag places where I am hiding behind abstraction."
+                    onInput$={(e) => {
+                      store.writerProfile = {
+                        ...store.writerProfile,
+                        feedbackNotes: (e.target as HTMLTextAreaElement).value,
+                      };
+                    }}
+                    onBlur$={() => void saveWriterProfile(store.writerProfile)}
+                    class="w-full text-sm px-3 py-2 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none resize-y"
+                    style={{ borderRadius: "2px" }}
+                  />
+                </label>
+              </div>
+              {store.writerToast && (
+                <p
+                  class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-accent-green)] mt-3"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  {store.writerToast}
+                </p>
+              )}
+            </section>
+
+            <section class="folio p-5">
+              <h2
+                class="text-base font-semibold"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
                 Interview style
               </h2>
               <p class="text-xs text-[var(--color-ink-light)] mt-1">
@@ -1006,6 +1259,8 @@ export default component$(() => {
                     onClick$={() => {
                       store.showAddProvider = true;
                       store.newProviderType = "openai";
+                      store.modelsDevProviderId = null;
+                      store.providerSearch = "";
                     }}
                     class="btn-press text-xs"
                   >
@@ -1075,6 +1330,21 @@ export default component$(() => {
                                   {p.baseUrl}
                                 </p>
                               )}
+                              {isTinkerProvider(p) &&
+                                p.type === "anthropic-compatible" && (
+                                  <p
+                                    class="text-[0.65rem] text-[var(--color-ink-light)]"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    Tinker blocks direct browser requests, so
+                                    Twyne uses a fixed same-origin bridge to its
+                                    OpenAI-compatible route. Your key passes
+                                    through only for that request and is not
+                                    stored or logged by Twyne.
+                                  </p>
+                                )}
                               <p
                                 class="text-[0.65rem] text-[var(--color-ink-muted)]"
                                 style={{ fontFamily: "var(--font-typewriter)" }}
@@ -1260,40 +1530,88 @@ export default component$(() => {
                           class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
                           style={{ fontFamily: "var(--font-typewriter)" }}
                         >
-                          Provider type
+                          Provider
                         </label>
-                        <select
-                          value={store.newProviderType}
-                          onChange$={(e) => {
-                            const type = (e.target as HTMLSelectElement).value;
-                            const meta = providerMetaForForm(type);
-                            store.newProviderType = type;
-                            store.newProviderBaseUrl =
-                              meta?.defaultBaseUrl ?? "";
-                            if (!store.newProviderName.trim() && meta) {
-                              store.newProviderName = meta.label;
-                            }
-                            if (
-                              meta?.apiKeyOptional &&
-                              !store.newProviderKey.trim()
-                            ) {
-                              store.newProviderKey = meta.defaultApiKey ?? "";
-                            }
+                        <input
+                          value={store.providerSearch}
+                          onInput$={(event) => {
+                            store.providerSearch = (
+                              event.target as HTMLInputElement
+                            ).value;
                           }}
+                          placeholder="Search models.dev providers"
                           class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
                           style={{
                             fontFamily: "var(--font-typewriter)",
                             borderRadius: "2px",
                           }}
+                        />
+                        <div class="mt-1 max-h-48 overflow-y-auto border border-[var(--color-paper-3)] bg-[var(--color-paper)]">
+                          {searchModelsDevProviders(
+                            store.modelsDevProviders,
+                            store.providerSearch,
+                          )
+                            .slice(0, 80)
+                            .map((provider) => (
+                              <button
+                                key={provider.id}
+                                type="button"
+                                class={`block w-full px-2 py-1.5 text-left hover:bg-[var(--color-paper-soft)] ${
+                                  store.modelsDevProviderId === provider.id
+                                    ? "bg-[var(--color-paper-soft)]"
+                                    : ""
+                                }`}
+                                onClick$={() => {
+                                  store.modelsDevProviderId = provider.id;
+                                  store.newProviderType = provider.type;
+                                  store.newProviderName = provider.name;
+                                  store.newProviderBaseUrl =
+                                    provider.api ??
+                                    providerMetaFor(provider.type)
+                                      ?.defaultBaseUrl ??
+                                    "";
+                                  const meta = providerMetaFor(provider.type);
+                                  if (
+                                    meta?.apiKeyOptional &&
+                                    !store.newProviderKey.trim()
+                                  ) {
+                                    store.newProviderKey =
+                                      meta.defaultApiKey ?? "";
+                                  }
+                                }}
+                              >
+                                <span
+                                  class="block text-xs text-[var(--color-ink)]"
+                                  style="font-family: var(--font-typewriter);"
+                                >
+                                  {provider.name}
+                                </span>
+                                <span class="block text-[10px] text-[var(--color-ink-muted)]">
+                                  {provider.id} · {provider.models.length}{" "}
+                                  models
+                                </span>
+                              </button>
+                            ))}
+                          {store.modelsDevProviders.length === 0 && (
+                            <p class="px-2 py-2 text-xs text-[var(--color-ink-muted)]">
+                              The models.dev catalog is unavailable. Choose a
+                              custom provider below.
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          class="mt-1 text-[10px] tracking-[0.12em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                          style="font-family: var(--font-typewriter);"
+                          onClick$={() => {
+                            store.modelsDevProviderId = null;
+                            store.newProviderType = "openai-compatible";
+                            store.newProviderName = "Custom provider";
+                            store.newProviderBaseUrl = "";
+                          }}
                         >
-                          {PROVIDER_METAS.filter(
-                            (m) => m.type !== "litert",
-                          ).map((m) => (
-                            <option key={m.type} value={m.type}>
-                              {m.label}
-                            </option>
-                          ))}
-                        </select>
+                          Use a custom OpenAI-compatible provider
+                        </button>
                       </div>
 
                       <div>
@@ -1356,8 +1674,9 @@ export default component$(() => {
                           class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
                           style={{ fontFamily: "var(--font-typewriter)" }}
                         >
-                          Stored only in your browser. Never sent to our
-                          servers.
+                          Stored only in your browser. Tinker keys pass
+                          transiently through Twyne&apos;s fixed same-origin
+                          bridge because Tinker blocks direct browser calls.
                         </p>
                       </div>
 
@@ -1398,8 +1717,11 @@ export default component$(() => {
                         class="text-[0.65rem] text-[var(--color-ink-muted)]"
                         style={{ fontFamily: "var(--font-typewriter)" }}
                       >
-                        Add the provider first. Model choices live below and can
-                        be auto-discovered from the provider's model endpoint.
+                        Provider and model metadata comes from models.dev. Your
+                        API key remains stored in this browser and is only used
+                        with the provider you configure. Tinker requests use
+                        Twyne&apos;s fixed same-origin bridge because its API
+                        does not support browser CORS.
                       </p>
 
                       <div class="flex gap-2 pt-1">
@@ -1441,8 +1763,10 @@ export default component$(() => {
 
                   <div class="space-y-3">
                     {store.settings.providers.map((provider) => {
-                      const models = providerModelOptions(provider);
-                      const canSelect = models.length > 0;
+                      const models = catalogModelsForProvider(
+                        provider,
+                        store.modelsDevProviders,
+                      );
                       return (
                         <div
                           key={`model-${provider.id}`}
@@ -1493,50 +1817,19 @@ export default component$(() => {
                             >
                               Default model
                             </label>
-                            {canSelect ? (
-                              <select
-                                value={provider.defaultModel}
-                                onChange$={(e) => {
-                                  updateProviderDefaultModel(
-                                    provider.id,
-                                    (e.target as HTMLSelectElement).value,
-                                  );
-                                }}
-                                class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                style={{
-                                  fontFamily: "var(--font-typewriter)",
-                                  borderRadius: "2px",
-                                }}
-                              >
-                                {models.map((model) => (
-                                  <option key={model} value={model}>
-                                    {model}
-                                  </option>
-                                ))}
-                              </select>
-                            ) : (
-                              <input
-                                value={provider.defaultModel}
-                                onInput$={(e) => {
-                                  updateProviderDefaultModel(
-                                    provider.id,
-                                    (e.target as HTMLInputElement).value,
-                                  );
-                                }}
-                                placeholder="model-id"
-                                class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                style={{
-                                  fontFamily: "var(--font-typewriter)",
-                                  borderRadius: "2px",
-                                }}
-                              />
-                            )}
+                            <SearchableModelSelect
+                              value={provider.defaultModel}
+                              models={models}
+                              onSelect$={(model) =>
+                                updateProviderDefaultModel(provider.id, model)
+                              }
+                            />
                             <p
                               class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
                               style={{ fontFamily: "var(--font-typewriter)" }}
                             >
-                              {canSelect
-                                ? `${models.length} models available.`
+                              {models.length > 0
+                                ? `${models.length} searchable models available.`
                                 : "No catalog available yet. Refresh models or enter a model id manually."}
                             </p>
                           </div>
@@ -1570,16 +1863,54 @@ export default component$(() => {
                           feature,
                         );
                         const isOpen = store.openFeature === feature;
-                        const selectedProviderId =
-                          store.settings.perFeature[feature]?.providerId ??
-                          store.settings.defaultProviderId ??
-                          "";
-                        const selectedProvider = store.settings.providers.find(
-                          (p) => p.id === selectedProviderId,
-                        );
+                        const eligibleProviders =
+                          store.settings.providers.filter((provider) =>
+                            providerSupportsFeature(
+                              provider.type,
+                              feature,
+                              provider,
+                            ),
+                          );
+                        const configuredProviderId =
+                          store.settings.perFeature[feature]?.providerId;
+                        const selectedProvider =
+                          eligibleProviders.find(
+                            (provider) => provider.id === configuredProviderId,
+                          ) ??
+                          eligibleProviders.find(
+                            (provider) =>
+                              provider.id === store.settings.defaultProviderId,
+                          ) ??
+                          eligibleProviders[0];
+                        const selectedProviderId = configuredProviderId ?? "";
                         const selectedProviderModels = selectedProvider
                           ? providerModelOptions(selectedProvider)
                           : [];
+                        const selectedModel =
+                          store.settings.perFeature[feature]?.model ??
+                          resolved?.model ??
+                          "";
+                        const selectedModelOptions = selectedModel
+                          ? Array.from(
+                              new Set([
+                                selectedModel,
+                                ...selectedProviderModels,
+                              ]),
+                            )
+                          : selectedProviderModels;
+                        const selectedCatalogModels = selectedProvider
+                          ? catalogModelsForProvider(
+                              {
+                                ...selectedProvider,
+                                availableModels: selectedModelOptions,
+                              },
+                              store.modelsDevProviders,
+                              feature,
+                            )
+                          : selectedModelOptions.map((id) => ({
+                              id,
+                              name: id,
+                            }));
                         return (
                           <div
                             key={feature}
@@ -1650,9 +1981,17 @@ export default component$(() => {
                                           store.settings.perFeature[feature];
                                         setFeatureOverride(feature, {
                                           providerId: providerId || undefined,
-                                          model: existing?.model,
+                                          // Models are provider-specific. Do
+                                          // not carry a model chosen for the
+                                          // old provider into the new one.
+                                          model: undefined,
                                           temperature: existing?.temperature,
                                           maxTokens: existing?.maxTokens,
+                                          voice: existing?.voice,
+                                          speed: existing?.speed,
+                                          responseFormat:
+                                            existing?.responseFormat,
+                                          instructions: existing?.instructions,
                                         });
                                       }}
                                       class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
@@ -1662,9 +2001,11 @@ export default component$(() => {
                                       }}
                                     >
                                       <option value="">
-                                        Use default provider
+                                        {selectedProvider
+                                          ? `Use automatic provider (${selectedProvider.name})`
+                                          : "No compatible provider"}
                                       </option>
-                                      {store.settings.providers.map((p) => (
+                                      {eligibleProviders.map((p) => (
                                         <option key={p.id} value={p.id}>
                                           {`${p.name} (${p.type})`}
                                         </option>
@@ -1682,102 +2023,35 @@ export default component$(() => {
                                       >
                                         Model
                                       </label>
-                                      {selectedProviderModels.length > 0 ? (
-                                        <select
-                                          value={
-                                            store.settings.perFeature[feature]
-                                              ?.model ??
-                                            selectedProvider?.defaultModel ??
-                                            ""
-                                          }
-                                          onChange$={(e) => {
-                                            const model = (
-                                              e.target as HTMLSelectElement
-                                            ).value;
-                                            const existing =
-                                              store.settings.perFeature[
-                                                feature
-                                              ];
-                                            setFeatureOverride(feature, {
-                                              providerId:
-                                                existing?.providerId ??
-                                                store.settings
-                                                  .defaultProviderId ??
-                                                "",
-                                              model:
-                                                selectedProvider &&
-                                                model ===
-                                                  selectedProvider.defaultModel
-                                                  ? undefined
-                                                  : model || undefined,
-                                              temperature:
-                                                existing?.temperature,
-                                              maxTokens: existing?.maxTokens,
-                                            });
-                                          }}
-                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                          style={{
-                                            fontFamily:
-                                              "var(--font-typewriter)",
-                                            borderRadius: "2px",
-                                          }}
-                                        >
-                                          {selectedProvider?.defaultModel && (
-                                            <option
-                                              value={
+                                      <SearchableModelSelect
+                                        value={selectedModel}
+                                        models={selectedCatalogModels}
+                                        placeholder="Search or enter a model ID"
+                                        disabled={!selectedProvider}
+                                        onSelect$={(model) => {
+                                          const existing =
+                                            store.settings.perFeature[feature];
+                                          setFeatureOverride(feature, {
+                                            providerId:
+                                              existing?.providerId ?? undefined,
+                                            model:
+                                              feature !== "voice-narration" &&
+                                              selectedProvider &&
+                                              model ===
                                                 selectedProvider.defaultModel
-                                              }
-                                            >
-                                              {`${selectedProvider.defaultModel} (provider default)`}
-                                            </option>
-                                          )}
-                                          {selectedProviderModels
-                                            .filter(
-                                              (model) =>
-                                                model !==
-                                                selectedProvider?.defaultModel,
-                                            )
-                                            .map((model) => (
-                                              <option key={model} value={model}>
-                                                {model}
-                                              </option>
-                                            ))}
-                                        </select>
-                                      ) : (
-                                        <input
-                                          value={
-                                            store.settings.perFeature[feature]
-                                              ?.model ?? ""
-                                          }
-                                          onInput$={(e) => {
-                                            const model = (
-                                              e.target as HTMLInputElement
-                                            ).value;
-                                            const existing =
-                                              store.settings.perFeature[
-                                                feature
-                                              ];
-                                            setFeatureOverride(feature, {
-                                              providerId:
-                                                existing?.providerId ??
-                                                store.settings
-                                                  .defaultProviderId ??
-                                                "",
-                                              model: model || undefined,
-                                              temperature:
-                                                existing?.temperature,
-                                              maxTokens: existing?.maxTokens,
-                                            });
-                                          }}
-                                          placeholder="provider default"
-                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                          style={{
-                                            fontFamily:
-                                              "var(--font-typewriter)",
-                                            borderRadius: "2px",
-                                          }}
-                                        />
-                                      )}
+                                                ? undefined
+                                                : model || undefined,
+                                            temperature: existing?.temperature,
+                                            maxTokens: existing?.maxTokens,
+                                            voice: existing?.voice,
+                                            speed: existing?.speed,
+                                            responseFormat:
+                                              existing?.responseFormat,
+                                            instructions:
+                                              existing?.instructions,
+                                          });
+                                        }}
+                                      />
                                     </div>
                                     <div>
                                       <label
@@ -1924,6 +2198,17 @@ export default component$(() => {
                                             borderRadius: "2px",
                                           }}
                                         />
+                                        {resolveFeatureConfig(
+                                          store.settings,
+                                          "voice-narration",
+                                        )?.provider.type === "fishaudio" && (
+                                          <p class="text-[0.65rem] text-[var(--color-ink-muted)] mt-1">
+                                            Fish Audio needs the 32-character
+                                            reference voice id from its voice
+                                            page. Persona notes already carry
+                                            their own Fish voice ids.
+                                          </p>
+                                        )}
                                       </div>
                                       <div>
                                         <label
@@ -2544,9 +2829,11 @@ export default component$(() => {
                       Privacy note
                     </strong>
                     <br />
-                    Your API keys are stored only in your browser's IndexedDB
-                    and are never sent to Twyne's servers. We can't see them,
-                    and we don't want to.
+                    Your API keys are stored only in your browser&apos;s
+                    IndexedDB. Most calls go directly to your provider. Tinker
+                    blocks browser CORS, so its key passes transiently through a
+                    fixed Twyne relay for Tinker requests only; it is not stored
+                    or logged by Twyne.
                   </p>
                 </div>
               </div>

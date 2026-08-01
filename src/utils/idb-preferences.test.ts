@@ -1,12 +1,4 @@
 import { afterAll, afterEach, describe, expect, test } from "bun:test";
-import {
-  loadAiSettingsFromIdb,
-  loadApparatusSettingsFromIdb,
-  loadWriterSettingsFromIdb,
-  saveAiSettingsToIdb,
-  saveApparatusSettingsToIdb,
-  saveWriterSettingsToIdb,
-} from "./idb";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 import { DEFAULT_APPARATUS_SETTINGS, type AiSettings } from "../types";
 
@@ -26,6 +18,17 @@ const g = globalThis as unknown as {
 const originalWindow = globalThis.window;
 const originalLocalStorage = globalThis.localStorage;
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
+// Another test file replaces `./idb` with a process-global Bun module mock.
+// A cache-busted import gives this file the real implementation regardless of
+// module evaluation order in the full parallel suite.
+const {
+  loadAiSettingsFromIdb,
+  loadApparatusSettingsFromIdb,
+  loadWriterSettingsFromIdb,
+  saveAiSettingsToIdb,
+  saveApparatusSettingsToIdb,
+  saveWriterSettingsToIdb,
+} = await import(`./idb?idb-preferences=${Date.now()}`);
 
 const originalIndexedDb = g.indexedDB;
 const localStorageStore: Record<string, string> = {};
@@ -118,9 +121,23 @@ afterAll(() => {
 describe.serial("idb preference localStorage fallback", () => {
   test("persists, prefers, and normalizes localStorage-backed preferences", async () => {
     installStorage();
-    await saveWriterSettingsToIdb({ interviewStyle: "conversational" });
+    await saveWriterSettingsToIdb({
+      interviewStyle: "conversational",
+      profile: {
+        displayName: "Ada",
+        personalFacts: "Writes about machines",
+        feedbackStyle: "direct",
+        feedbackNotes: "Question the premise first",
+      },
+    });
     expect(await loadWriterSettingsFromIdb()).toEqual({
       interviewStyle: "conversational",
+      profile: {
+        displayName: "Ada",
+        personalFacts: "Writes about machines",
+        feedbackStyle: "direct",
+        feedbackNotes: "Question the premise first",
+      },
     });
 
     installStorage();
@@ -214,6 +231,12 @@ describe.serial("idb preference localStorage fallback", () => {
     );
     expect(await loadWriterSettingsFromIdb()).toEqual({
       interviewStyle: "conversational",
+      profile: {
+        displayName: "",
+        personalFacts: "",
+        feedbackStyle: "balanced",
+        feedbackNotes: "",
+      },
     });
     expect(await loadApparatusSettingsFromIdb()).toEqual({
       defaultCitationStyle: "chicago",
@@ -232,6 +255,12 @@ describe.serial("idb preference localStorage fallback", () => {
     g.window!.localStorage.setItem("twyne.apparatus-settings.current", "{nope");
     expect(await loadWriterSettingsFromIdb()).toEqual({
       interviewStyle: "form",
+      profile: {
+        displayName: "",
+        personalFacts: "",
+        feedbackStyle: "balanced",
+        feedbackNotes: "",
+      },
     });
     // Corrupt JSON must fall back to the canonical defaults, whatever
     // they currently are.

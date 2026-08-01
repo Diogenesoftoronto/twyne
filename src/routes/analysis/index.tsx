@@ -7,7 +7,10 @@ import {
 } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import type { RoomAnalysis } from "../../types";
-import { loadRoomAnalysisFromIdb } from "../../utils/idb";
+import {
+  loadActiveFolioIdFromIdb,
+  loadRoomAnalysisFromIdb,
+} from "../../utils/idb";
 import { renderMarkdown } from "../../utils/markdown";
 import {
   downloadBlob,
@@ -25,7 +28,8 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const cached = await loadRoomAnalysisFromIdb();
+    const folioId = await loadActiveFolioIdFromIdb();
+    const cached = await loadRoomAnalysisFromIdb(folioId);
     if (cached) store.result = cached;
     store.loaded = true;
   });
@@ -110,7 +114,7 @@ export default component$(() => {
             </p>
             <p class="mt-3 text-sm text-[var(--color-ink-light)] max-w-md mx-auto">
               No analysis on file yet. Open the room in the right panel and
-              run <em>Convene the room</em> to start.
+              run <em>Full analysis</em> to start.
             </p>
             <Link href="/editor" class="btn-press mt-4 inline-block text-sm">
               ← Back to desk

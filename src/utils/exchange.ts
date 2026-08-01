@@ -107,8 +107,7 @@ function wrapStandaloneHtml(
   };
   const m = resolveMargins(layout);
   const docWidth = widthMap[layout.width];
-  const docPadX = `${m.x}rem`;
-  const docPageMargin = `${m.top}rem ${m.x}rem ${m.bottom}rem`;
+  const docPageMargin = `${m.top}rem ${m.right}rem ${m.bottom}rem ${m.left}rem`;
 
   const running = layout.runningHeader
     ? (options.header && options.header.trim()) ||
@@ -132,7 +131,7 @@ function wrapStandaloneHtml(
     font-family: ui-serif, Georgia, "Times New Roman", serif;
     max-width: ${docWidth};
     margin: ${m.top}rem auto ${m.bottom}rem;
-    padding: 0 ${docPadX};
+    padding: 0 ${m.right}rem 0 ${m.left}rem;
     line-height: 1.7;
     color: #1a1611;
     background: #fbf6ec;
@@ -156,6 +155,19 @@ function wrapStandaloneHtml(
     font-style: italic;
   }
   hr { border: none; border-top: 1px solid #c7b89c; margin: 2rem 0; }
+  /* Match the editor's nesting: markers cycle by depth, and a list
+     item's paragraph does not double-space the list. */
+  ul, ol { padding-left: 1.6em; margin: 0 0 1.1rem; }
+  ul { list-style: disc outside; }
+  ul ul { list-style-type: circle; }
+  ul ul ul { list-style-type: square; }
+  ol { list-style: decimal outside; }
+  ol ol { list-style-type: lower-alpha; }
+  ol ol ol { list-style-type: lower-roman; }
+  li { margin: 0.2rem 0; }
+  li > p { margin: 0; }
+  li > ul, li > ol { margin: 0.25rem 0; }
+  ul[data-type="taskList"] { list-style: none; padding-left: 0; }
   footer { margin-top: 3rem; font-size: 0.85rem; color: #6a5d4a; }
   a { color: #8b2f24; }
   sup.endnote-ref { color: #b04a3a; font-size: 0.75em; }
@@ -268,22 +280,24 @@ function toSuperscript(n: number): string {
  * nodes are preserved — they are handled separately.
  */
 function stripEditorMarks(html: string): string {
-  return html
-    // Remove persona-note spans but keep the text inside.
-    .replace(
-      /<span[^>]*class="twyne-persona-note"[^>]*>([\s\S]*?)<\/span>/gi,
-      "$1",
-    )
-    // Remove suggestion spans — keep the original text (not the replacement).
-    .replace(
-      /<span[^>]*class="twyne-suggestion"[^>]*>([\s\S]*?)<\/span>/gi,
-      "$1",
-    )
-    // Remove comment marks but keep text.
-    .replace(
-      /<span[^>]*class="twyne-comment-mark"[^>]*>([\s\S]*?)<\/span>/gi,
-      "$1",
-    );
+  return (
+    html
+      // Remove persona-note spans but keep the text inside.
+      .replace(
+        /<span[^>]*class="twyne-persona-note"[^>]*>([\s\S]*?)<\/span>/gi,
+        "$1",
+      )
+      // Remove suggestion spans — keep the original text (not the replacement).
+      .replace(
+        /<span[^>]*class="twyne-suggestion"[^>]*>([\s\S]*?)<\/span>/gi,
+        "$1",
+      )
+      // Remove comment marks but keep text.
+      .replace(
+        /<span[^>]*class="twyne-comment-mark"[^>]*>([\s\S]*?)<\/span>/gi,
+        "$1",
+      )
+  );
 }
 
 /** Build the endnotes section HTML from marginalia + inline endnotes. */
@@ -496,6 +510,70 @@ export function exportTwyneBackup(p: ExportPayload): string {
     null,
     2,
   );
+}
+
+/**
+ * Export to PDF by printing the standalone HTML.
+ *
+ * No PDF library. The HTML export already carries the writer's page setup as
+ * real `@page` rules — margins, and `counter(page)` for the page numbers — and
+ * a print engine is the one renderer guaranteed to honour them. Bolting on
+ * jsPDF or html2canvas would mean re-implementing pagination, and canvas-based
+ * approaches rasterise the text, which loses selection, search and accessible
+ * structure in the resulting file.
+ *
+ * The trade is that the writer passes through the browser's print dialog and
+ * picks "Save as PDF" there. That dialog is also where paper size and
+ * orientation live, which is where a writer would look for them anyway.
+ *
+ * Resolves once printing has been dispatched; it cannot observe whether the
+ * writer completed or cancelled the save.
+ */
+export async function exportPdf(payload: ExportPayload): Promise<void> {
+  if (typeof document === "undefined") return;
+
+  const html = exportHtml(payload);
+  const frame = document.createElement("iframe");
+  // Off-screen rather than display:none — a hidden frame has no layout, and
+  // print() on a frame that was never laid out yields a blank page.
+  frame.setAttribute("aria-hidden", "true");
+  frame.style.cssText =
+    "position:fixed;right:0;bottom:0;width:1px;height:1px;opacity:0;border:0;";
+  document.body.appendChild(frame);
+
+  const cleanup = () => {
+    // Deferred: removing the frame while its print job is still spooling
+    // cancels the job in some engines.
+    setTimeout(() => frame.remove(), 1000);
+  };
+
+  try {
+    await new Promise<void>((resolve) => {
+      frame.addEventListener("load", () => resolve(), { once: true });
+      const doc = frame.contentDocument;
+      if (!doc) {
+        resolve();
+        return;
+      }
+      doc.open();
+      doc.write(html);
+      doc.close();
+    });
+
+    const win = frame.contentWindow;
+    if (!win) return;
+    // Fonts must be resolved before pagination, or line breaks land in the
+    // wrong places and the page count is wrong.
+    try {
+      await frame.contentDocument?.fonts?.ready;
+    } catch {
+      // Font loading is best-effort; print anyway.
+    }
+    win.focus();
+    win.print();
+  } finally {
+    cleanup();
+  }
 }
 
 export function exportAs(format: ExportFormat, payload: ExportPayload): Blob {
