@@ -94,6 +94,10 @@ API credit; transcription (`/v1/asr`) does not, and needs a
 - Bun 1.3.x or newer (install + build).
 - Node ≥ 20 (runs the SSR server; `server.js` uses `node:http`).
 
+Optional: [devenv](https://devenv.sh) for a reproducible shell with pinned Bun.
+With devenv + [direnv](https://direnv.net) installed, the shell activates
+automatically when you `cd` into the repo (the `.envrc` handles it).
+
 ## Environment
 
 Copy `.env.example` to `.env.local` and fill in at least `VITE_CONVEX_URL`,
@@ -105,6 +109,14 @@ are inlined at build time. See `.env.example` for the full annotated list.
 ```bash
 bun install
 bun run dev   # Convex dev + Vite SSR
+```
+
+Or, with devenv:
+
+```bash
+devenv shell   # enter the pinned shell
+bun install
+bun run dev
 ```
 
 The app runs locally with Vite, usually at `http://localhost:5173/`.

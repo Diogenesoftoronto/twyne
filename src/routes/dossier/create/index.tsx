@@ -14,6 +14,7 @@ import { useAuth } from "../../../utils/auth-context";
 import type {
   DossierAttachment,
   DossierProbe,
+  Folio,
   InterviewStyle,
   ProjectInterviewAnswers,
 } from "../../../types";
@@ -21,17 +22,26 @@ import {
   buildImportedMaterialDocument,
   buildStarterDocument,
   createProjectBrief,
-  loadDraftHtml,
-  saveDraftHtml,
-  saveProjectBrief,
+  saveProjectBriefForFolio,
 } from "../../../utils/anti-tabula-rasa";
-import { loadWriterSettingsFromIdb } from "../../../utils/idb";
+import {
+  loadActiveFolioIdFromIdb,
+  loadFolioContentFromIdb,
+  loadFoliosFromIdb,
+  loadWriterSettingsFromIdb,
+  saveActiveFolioIdToIdb,
+  saveFolioContentToIdb,
+  saveFoliosToIdb,
+} from "../../../utils/idb";
+import { markDirty } from "../../../utils/convex-sync";
 
 interface OnboardingStore {
   hydrated: boolean;
   style: InterviewStyle;
   formAnswers: Partial<ProjectInterviewAnswers> | null;
   formAttachments: DossierAttachment[];
+  folioId: string | null;
+  folioName: string;
 }
 
 /**
@@ -53,17 +63,32 @@ export default component$(() => {
     style: "form",
     formAnswers: null,
     formAttachments: [],
+    folioId: null,
+    folioName: "",
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const writer = await loadWriterSettingsFromIdb();
+    const [writer, folios, activeFolioId] = await Promise.all([
+      loadWriterSettingsFromIdb(),
+      loadFoliosFromIdb(),
+      loadActiveFolioIdFromIdb(),
+    ]);
     store.style = writer.interviewStyle;
+    const requestedFolioId = new URLSearchParams(window.location.search).get(
+      "folio",
+    );
+    const folio =
+      folios.find((candidate) => candidate.id === requestedFolioId) ??
+      folios.find((candidate) => candidate.id === activeFolioId) ??
+      null;
+    store.folioId = folio?.id ?? null;
+    store.folioName = folio?.name ?? "";
     store.hydrated = true;
   });
 
   const completeOnboarding$ = $(
-    (
+    async (
       answers: ProjectInterviewAnswers,
       existingMaterial?: string,
       filename?: string,
@@ -71,23 +96,60 @@ export default component$(() => {
       probes?: DossierProbe[],
     ) => {
       const brief = createProjectBrief(answers, null, attachments, probes);
-      saveProjectBrief(brief);
+      let folioId = store.folioId;
+      let folioName = store.folioName;
+      if (!folioId) {
+        const folio: Folio = {
+          id: crypto.randomUUID(),
+          name: answers.workingTitle || "Untitled folio",
+          type: "draft",
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        };
+        const folios = await loadFoliosFromIdb();
+        await saveFoliosToIdb([...folios, folio]);
+        await saveActiveFolioIdToIdb(folio.id);
+        folioId = folio.id;
+        folioName = folio.name;
+        store.folioId = folio.id;
+        store.folioName = folio.name;
+      }
 
-      if (!loadDraftHtml().trim()) {
+      await saveProjectBriefForFolio(folioId, brief);
+
+      const existingDraft = await loadFolioContentFromIdb(folioId);
+      if (!existingDraft.trim()) {
         const material = existingMaterial?.trim();
-        saveDraftHtml(
+        await saveFolioContentToIdb(
+          folioId,
           material
             ? buildImportedMaterialDocument(answers, material, filename)
             : buildStarterDocument(answers),
         );
       }
 
+      await saveActiveFolioIdToIdb(folioId);
+      if (folioName && folioName === "Untitled folio") {
+        const folios = await loadFoliosFromIdb();
+        await saveFoliosToIdb(
+          folios.map((folio) =>
+            folio.id === folioId
+              ? {
+                  ...folio,
+                  name: answers.workingTitle || folio.name,
+                  updatedAt: Date.now(),
+                }
+              : folio,
+          ),
+        );
+      }
+      markDirty();
       briefDone.value = true;
     },
   );
 
   const onCancel$ = $(() => {
-    void nav("/");
+    void nav(store.folioId ? "/editor/" : "/");
   });
 
   if (!store.hydrated) {
@@ -127,7 +189,7 @@ export default component$(() => {
               style="font-family: var(--font-serif);"
             >
               Your brief is saved on this device. Sign in to back it up and pick
-              up the manuscript anywhere — or head to the desk and do it later.
+              up this folio anywhere, or head to the desk and do it later.
             </p>
           </div>
 

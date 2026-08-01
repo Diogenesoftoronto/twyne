@@ -1,9 +1,8 @@
-import { component$, useVisibleTask$, $ } from "@builder.io/qwik";
+import { component$, $ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { useNavigate } from "@builder.io/qwik-city";
 import { LandingPage } from "../components/landing/landing-page";
 import type { Folio } from "../types";
-import { loadProjectBrief } from "../utils/anti-tabula-rasa";
 import { useAuth } from "../utils/auth-context";
 import {
   loadFoliosFromIdb,
@@ -13,28 +12,19 @@ import {
 
 /**
  * The landing page. Twyne-style: a magazine broadsheet the writer
- * unfolds before the first interview. Returning writers (already
- * filed a brief) skip past it to the desk; first-time local writers
- * unfold the page and "Start your brief" sends them to /onboarding,
- * while signed-in writers can jump straight to /dossier/create.
+ * unfolds before the first interview. Nobody is redirected off it:
+ * "Start your brief" sends first-time local writers to /onboarding and
+ * signed-in writers to /dossier/create, and returning writers take the
+ * header link to the desk when they want it.
  */
 export default component$(() => {
   const nav = useNavigate();
   const auth = useAuth();
 
-  // The landing paints immediately — the redirect decision is a synchronous
-  // localStorage read that doesn't need the auth check, so we don't gate the
-  // first paint on it. Returning writers (with a filed brief) are bounced to
-  // the desk as soon as the document is ready; first-time visitors just stay.
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(
-    () => {
-      if (loadProjectBrief()) {
-        window.location.replace("/editor/");
-      }
-    },
-    { strategy: "document-ready" },
-  );
+  // The front page stays the front page. Returning writers used to be bounced
+  // straight to /editor the moment a brief existed, which made the landing
+  // page — and every link on it — unreachable for anyone who had ever written
+  // anything. The desk is one click away in the header instead.
 
   const startBrief = $(() => {
     void nav(auth.value.user ? "/dossier/create/" : "/onboarding/");

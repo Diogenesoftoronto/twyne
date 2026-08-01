@@ -6,6 +6,7 @@ import type {
 } from "../types";
 import { markDirty as markSyncDirty } from "./convex-sync";
 import { BRIEF_PATH, writeFileAsJson } from "./lix";
+import { loadBriefFromIdb, saveBriefToIdb } from "./idb";
 
 export const BRIEF_STORAGE_KEY = "twyne-project-brief";
 export const DRAFT_STORAGE_KEY = "twyne-document";
@@ -49,22 +50,18 @@ export function loadProjectBrief(): ProjectBrief | null {
       answers?: ProjectInterviewAnswers;
     };
     if (!parsed.answers) return null;
-    const probes = Array.isArray(parsed.probes) ? parsed.probes : [];
-    return {
-      answers: normalizeInterviewAnswers(parsed.answers),
-      attachments: Array.isArray(parsed.attachments) ? parsed.attachments : [],
-      // Rebuilt field-by-field on purpose (to normalise and defend against
-      // partial writes), which means every new field has to be carried here
-      // explicitly or it is silently dropped on reload.
-      ...(probes.length > 0 ? { probes } : {}),
-      completedAt:
-        typeof parsed.completedAt === "number" ? parsed.completedAt : Date.now(),
-      updatedAt:
-        typeof parsed.updatedAt === "number" ? parsed.updatedAt : Date.now(),
-    };
+    return normalizeProjectBrief(parsed);
   } catch {
     return null;
   }
+}
+
+export async function loadProjectBriefForFolio(
+  folioId: string | null | undefined,
+): Promise<ProjectBrief | null> {
+  if (!folioId) return null;
+  const brief = await loadBriefFromIdb(folioId);
+  return brief ? normalizeProjectBrief(brief) : null;
 }
 
 export function saveProjectBrief(brief: ProjectBrief): void {
@@ -77,6 +74,40 @@ export function saveProjectBrief(brief: ProjectBrief): void {
   } catch {
     // storage unavailable
   }
+}
+
+export async function saveProjectBriefForFolio(
+  folioId: string,
+  brief: ProjectBrief,
+): Promise<void> {
+  const normalized = normalizeProjectBrief(brief);
+  await saveBriefToIdb(folioId, normalized);
+
+  // Keep the legacy mirrors current during the per-folio migration. They are
+  // no longer authoritative, but older routes and existing Lix histories can
+  // still open the most recently filed dossier.
+  saveProjectBrief(normalized);
+  await writeFileAsJson(`/folios/${folioId}/brief.json`, normalized);
+  markSyncDirty();
+}
+
+export function normalizeProjectBrief(
+  parsed: Partial<ProjectBrief> & {
+    answers?: ProjectInterviewAnswers;
+  },
+): ProjectBrief {
+  const probes = Array.isArray(parsed.probes) ? parsed.probes : [];
+  return {
+    answers: normalizeInterviewAnswers(
+      parsed.answers ?? DEFAULT_INTERVIEW_ANSWERS,
+    ),
+    attachments: Array.isArray(parsed.attachments) ? parsed.attachments : [],
+    ...(probes.length > 0 ? { probes } : {}),
+    completedAt:
+      typeof parsed.completedAt === "number" ? parsed.completedAt : Date.now(),
+    updatedAt:
+      typeof parsed.updatedAt === "number" ? parsed.updatedAt : Date.now(),
+  };
 }
 
 export function loadDraftHtml(): string {

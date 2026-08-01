@@ -35,6 +35,17 @@ export function invalidateAiSettingsCache(): void {
   _cachedSettings = null;
 }
 
+// Settings saved on the Settings route must reach the features immediately.
+// Without this the memo above outlives the save and the writer's new key is
+// ignored until a full reload — the voice features fail loudest, since their
+// only fallback is a hosted, account-gated path.
+if (
+  typeof window !== "undefined" &&
+  typeof window.addEventListener === "function"
+) {
+  window.addEventListener("twyne:ai-settings-saved", invalidateAiSettingsCache);
+}
+
 /* ── Convenience: run with full fallback chain ──────────────────── */
 
 export interface OrchestratorOptions {

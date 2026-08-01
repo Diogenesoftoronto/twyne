@@ -1,10 +1,12 @@
 /**
  * Client-side AI engine for BYOK (Bring Your Own Key).
  *
- * This module runs AI calls entirely in the browser using the Vercel AI SDK
- * and the provider packages bundled with the app. Provider API keys are read
- * from the caller's `AiSettings` object (stored in IndexedDB only). They are
- * never sent to any server.
+ * This module runs AI calls from the browser using the Vercel AI SDK and the
+ * provider packages bundled with the app. Provider API keys are read from the
+ * caller's `AiSettings` object (stored in IndexedDB only). Providers receive
+ * them directly except when a provider does not support browser CORS; Tinker
+ * calls use Twyne's fixed same-origin relay and the key is never persisted
+ * server-side.
  *
  * The prompt builders from `convex/agentPrompts.ts` are reused so the voices
  * stay identical whether the call runs client-side or server-side.
@@ -17,9 +19,12 @@
 import {
   generateText,
   stepCountIs,
+  streamText,
   type LanguageModel,
   type ToolSet,
 } from "ai";
+import decodeAudio from "audio-decode";
+import { encode as encodeWav } from "wav-encoder";
 import type {
   AiSettings,
   AiFeature,
@@ -61,13 +66,22 @@ import {
   LOCAL_PROVIDER_ID,
 } from "./desktop-bridge";
 import { captureAiGeneration } from "./ai-evals";
-import { stripReasoningTags } from "./reasoning-tags";
+import {
+  createVisibleTextFilter,
+  hasReasoningTags,
+  removeReasoningTagMarkers,
+  stripReasoningTags,
+} from "./reasoning-tags";
 import {
   extractFirstJsonObject,
   extractTaggedJson,
   parseJudgeOutput,
   stripTaggedJson,
 } from "./llm-parsing";
+import {
+  createInterviewStreamSnapshot,
+  type InterviewStreamSnapshot,
+} from "./interview-stream";
 import {
   createAppError,
   failureResult,
@@ -89,6 +103,27 @@ function isOpenAiCompatibleProvider(type: AiProviderConfig["type"]): boolean {
   );
 }
 
+const TINKER_HOST = "tinker.thinkingmachines.dev";
+
+export function isTinkerProviderConfig(
+  config: Pick<AiProviderConfig, "baseUrl">,
+): boolean {
+  if (!config.baseUrl) return false;
+  try {
+    return new URL(config.baseUrl).hostname.toLowerCase() === TINKER_HOST;
+  } catch {
+    return false;
+  }
+}
+
+function tinkerRelayBaseUrl(): string {
+  const origin =
+    typeof globalThis.location !== "undefined"
+      ? globalThis.location.origin
+      : "http://localhost";
+  return `${origin}/api/tinker`;
+}
+
 /** Speaks and listens, but has no language model behind it. */
 export function isVoiceOnlyProvider(type: AiProviderConfig["type"]): boolean {
   return VOICE_ONLY_PROVIDER_TYPES.includes(type);
@@ -100,11 +135,46 @@ const VOICE_FEATURES: ReadonlySet<AiFeature> = new Set<AiFeature>([
   "voice-transcription",
 ]);
 
-/** Can this provider serve speech at all? */
-function supportsVoice(type: AiProviderConfig["type"]): boolean {
+/** Can this provider serve the requested speech feature? */
+function supportsVoiceFeature(
+  type: AiProviderConfig["type"],
+  feature: "voice-narration" | "voice-transcription",
+  provider?: AiProviderConfig,
+): boolean {
+  if (feature === "voice-narration") {
+    return (
+      type === "openai" ||
+      isOpenAiCompatibleProvider(type) ||
+      isVoiceOnlyProvider(type)
+    );
+  }
+  // Audio-capable language models can transcribe by reading the recording as
+  // a file. Google and local/OpenAI-compatible multimodal models use that
+  // path; Anthropic-compatible endpoints are intentionally excluded because
+  // the Messages API does not define an audio content block.
   return (
-    type === "openai" || isOpenAiCompatibleProvider(type) || isVoiceOnlyProvider(type)
+    type === "openai" ||
+    isOpenAiCompatibleProvider(type) ||
+    (provider ? isTinkerProviderConfig(provider) : false) ||
+    type === "google" ||
+    type === "litert" ||
+    isVoiceOnlyProvider(type)
   );
+}
+
+/** Can a provider type serve this feature's modality? */
+export function providerSupportsFeature(
+  type: AiProviderConfig["type"],
+  feature: AiFeature,
+  provider?: AiProviderConfig,
+): boolean {
+  return VOICE_FEATURES.has(feature)
+    ? supportsVoiceFeature(
+        type,
+        feature as "voice-narration" | "voice-transcription",
+        provider,
+      )
+    : !isVoiceOnlyProvider(type);
 }
 
 async function createModel(
@@ -115,6 +185,14 @@ async function createModel(
     const modelId =
       modelOverride || config.defaultModel || config.availableModels?.[0] || "";
     if (!modelId) return null;
+    if (isTinkerProviderConfig(config)) {
+      const { createOpenAI } = await import("@ai-sdk/openai");
+      const tinker = createOpenAI({
+        apiKey: config.apiKey,
+        baseURL: tinkerRelayBaseUrl(),
+      });
+      return tinker.chat(modelId);
+    }
     switch (config.type) {
       case "openai": {
         const { createOpenAI } = await import("@ai-sdk/openai");
@@ -210,9 +288,8 @@ export function resolveFeatureConfig(
   // before picking, so a writer with (say) Anthropic for the room and Fish
   // Audio for the voices gets the right one for each without configuring
   // per-feature overrides by hand.
-  const wantsVoice = VOICE_FEATURES.has(feature);
   const eligible = normalized.providers.filter((p) =>
-    wantsVoice ? supportsVoice(p.type) : !isVoiceOnlyProvider(p.type),
+    providerSupportsFeature(p.type, feature, p),
   );
   if (eligible.length === 0) return null;
 
@@ -290,15 +367,46 @@ export function hasConfiguredVoiceProvider(
   settings: Partial<AiSettings> | AiSettings | null | undefined,
 ): boolean {
   if (!settings) return false;
-  return normalizeAiSettings(settings).providers.some((p) =>
-    supportsVoice(p.type),
+  return normalizeAiSettings(settings).providers.some(
+    (p) =>
+      supportsVoiceFeature(p.type, "voice-narration", p) ||
+      supportsVoiceFeature(p.type, "voice-transcription", p),
   );
+}
+
+/**
+ * Whether the selected model should receive the recording itself rather than
+ * being sent to a dedicated `/audio/transcriptions` endpoint.
+ *
+ * models.dev metadata is authoritative when present. The name fallback keeps
+ * manually entered models such as Inkling and Gemma useful until their
+ * provider catalog has been loaded.
+ */
+export function modelAcceptsDirectAudio(
+  provider: AiProviderConfig,
+  model: string,
+): boolean {
+  const modalities = provider.modelModalities?.[model];
+  if (modalities) {
+    return (
+      modalities.input.includes("audio") && modalities.output.includes("text")
+    );
+  }
+  if (provider.type === "google" || provider.type === "litert") return true;
+  const id = model.toLowerCase();
+  return /(?:inkling|gemma|gemini|audio|omni)/i.test(id);
 }
 
 function defaultModelForFeature(
   feature: AiFeature,
   provider: AiProviderConfig,
 ): string {
+  if (
+    feature === "voice-transcription" &&
+    modelAcceptsDirectAudio(provider, provider.defaultModel)
+  ) {
+    return provider.defaultModel;
+  }
   if (
     feature === "voice-narration" &&
     (provider.type === "openai" || isOpenAiCompatibleProvider(provider.type))
@@ -312,9 +420,9 @@ function defaultModelForFeature(
     return "gpt-4o-mini-transcribe";
   }
   if (provider.type === "fishaudio") {
-    // `s2.1-pro-free` is the only model that works without API credit, so a
-    // fresh key speaks straight away; transcription has no free tier.
-    return feature === "voice-transcription" ? "asr-1" : "s2.1-pro-free";
+    // Fish's v1 TTS contract documents s2-pro and s1. Keep the default on a
+    // documented model rather than the retired s2.1-pro-free id.
+    return feature === "voice-transcription" ? "asr-1" : "s2-pro";
   }
   return provider.defaultModel;
 }
@@ -403,7 +511,13 @@ export async function runClientVoiceSpeech(
 ): Promise<VoiceSpeechResult | null> {
   const resolved = resolveFeatureConfig(settings, "voice-narration");
   if (!resolved) return null;
-  if (!supportsVoice(resolved.provider.type)) {
+  if (
+    !supportsVoiceFeature(
+      resolved.provider.type,
+      "voice-narration",
+      resolved.provider,
+    )
+  ) {
     reportApplicationDiagnostic(
       "twyne:ai-client:voice-unsupported-provider",
       createAppError("CONFIGURATION_ERROR", { source: "provider" }),
@@ -472,7 +586,7 @@ export async function runClientVoiceSpeech(
     };
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:voice", err);
-    return null;
+    throw err;
   }
 }
 
@@ -494,6 +608,74 @@ function audioMimeType(format: string): string {
   }
 }
 
+/**
+ * Called as an answer arrives, with the visible text *so far* — not the delta.
+ *
+ * A cumulative string rather than a diff because every consumer is rendering
+ * a paragraph, not appending to a terminal: it makes the reasoning filter
+ * below possible (a `<think>` that opens mid-answer retracts the text it was
+ * about to show), it makes a discarded-and-regenerated answer a simple reset
+ * to `""`, and it makes a dropped or out-of-order call harmless.
+ */
+export type StreamText = (visibleSoFar: string) => void;
+
+/**
+ * One attempt at an answer, streamed when someone is listening.
+ *
+ * The reasoning filter runs over the accumulated raw text on every chunk
+ * rather than over the chunk itself. Tags arrive split across chunk
+ * boundaries, and an unclosed `<think>` has to hide everything after it —
+ * neither is knowable from a delta alone. Re-stripping a note-sized string a
+ * few dozen times costs nothing next to the network call producing it.
+ */
+async function runOnce({
+  model,
+  system,
+  prompt,
+  temperature,
+  maxOutputTokens,
+  tools,
+  stopWhen,
+  onText,
+}: {
+  model: LanguageModel;
+  system?: string;
+  prompt: string;
+  temperature: number;
+  maxOutputTokens: number;
+  tools?: ToolSet;
+  stopWhen?: ReturnType<typeof stepCountIs>;
+  onText?: StreamText;
+}): Promise<{ text: string }> {
+  if (!onText) {
+    return generateText({
+      model,
+      system,
+      prompt,
+      temperature,
+      maxOutputTokens,
+      ...(tools ? { tools, stopWhen } : {}),
+    });
+  }
+
+  const result = streamText({
+    model,
+    system,
+    prompt,
+    temperature,
+    maxOutputTokens,
+    ...(tools ? { tools, stopWhen } : {}),
+  });
+
+  const visibleText = createVisibleTextFilter();
+  for await (const delta of result.textStream) {
+    const visible = visibleText(delta);
+    if (visible !== null) onText(visible);
+  }
+
+  return { text: await result.text };
+}
+
 async function generateTrackedText({
   feature,
   resolved,
@@ -503,6 +685,7 @@ async function generateTrackedText({
   spanName,
   evalSignals,
   tools,
+  onText,
 }: {
   feature: AiFeature;
   resolved: {
@@ -518,37 +701,50 @@ async function generateTrackedText({
   evalSignals?: Record<string, unknown>;
   /** Tools the model may call (e.g. quote_passage). */
   tools?: ToolSet;
+  /** Stream the answer as it arrives. See {@link StreamText}. */
+  onText?: StreamText;
 }): Promise<string> {
   const start = performance.now();
   // When tools are present the model needs at least one extra step after the
   // tool result to write its visible answer.
   const stopWhen = tools ? stepCountIs(3) : undefined;
-  try {
-    const { text } = await generateText({
+  const run = (userPrompt: string) =>
+    runOnce({
       model,
       system,
-      prompt,
+      prompt: userPrompt,
       temperature: resolved.temperature,
       maxOutputTokens: resolved.maxTokens,
-      ...(tools ? { tools, stopWhen } : {}),
+      tools,
+      stopWhen,
+      onText,
     });
+  try {
+    const { text } = await run(prompt);
     let cleaned = stripReasoningTags(text);
-    // Reasoning models sometimes wrap the whole reply in <think> (or never
-    // close the tag), so stripping leaves nothing. Regenerate once, nudging
-    // the model to answer outside the reasoning channel; if it still comes
-    // back empty, fall back to the raw text so the note is never blank.
-    if (!cleaned) {
+    // Any reply that reached for the reasoning channel is thrown away and
+    // asked again — not just one that strips to nothing. A model that thinks
+    // out loud mid-note leaves prose with the seams showing, and stripping
+    // only hides the tags, not the damage. Regenerate once with a nudge to
+    // answer outside the channel; if that comes back empty too, keep the
+    // best text we have so the card is never blank.
+    if (!cleaned || hasReasoningTags(text)) {
       const retryPrompt = `${prompt}\n\nRespond with your note as plain visible text. Do not place your whole answer inside <think> tags.`;
-      const retry = await generateText({
-        model,
-        system,
-        prompt: retryPrompt,
-        temperature: resolved.temperature,
-        maxOutputTokens: resolved.maxTokens,
-        ...(tools ? { tools, stopWhen } : {}),
-      });
-      cleaned = stripReasoningTags(retry.text) || retry.text.trim();
+      // The discarded attempt may already have painted the screen. Blank it
+      // before the second one starts writing, so the reader sees a note begin
+      // again rather than two answers spliced together.
+      onText?.("");
+      const retry = await run(retryPrompt);
+      const retryCleaned = stripReasoningTags(retry.text);
+      cleaned =
+        (!hasReasoningTags(retry.text) && retryCleaned) ||
+        cleaned ||
+        retryCleaned ||
+        removeReasoningTagMarkers(retry.text);
     }
+    // Streaming is best-effort progress, but the last callback is a contract:
+    // it must exactly match the text the caller is about to file.
+    onText?.(cleaned);
     await captureAiGeneration({
       feature,
       provider: resolved.provider.type,
@@ -659,6 +855,7 @@ export interface RewriteClientRequest {
   persona: AgentRequest["persona"];
   brief: AgentRequest["brief"];
   draftText: string;
+  writerProfile?: AgentRequest["writerProfile"];
   original: string;
   level: "sentence" | "paragraph";
 }
@@ -689,6 +886,7 @@ export async function runClientRewrite(
       persona: req.persona,
       brief: req.brief,
       draftText: req.draftText,
+      writerProfile: req.writerProfile,
       instruction: "rewrite-suggestion",
     })}
 
@@ -732,6 +930,7 @@ export async function runClientAgent(
   feature: AiFeature,
   req: AgentRequest,
   settings: AiSettings,
+  onText?: StreamText,
 ): Promise<AgentResponse | null> {
   const resolved = resolveFeatureConfigForPersona(
     settings,
@@ -761,6 +960,7 @@ export async function runClientAgent(
         twyne_instruction: req.instruction ?? "feedback",
       },
       tools,
+      onText,
     });
 
     const cleaned = text.trim();
@@ -788,6 +988,8 @@ export async function runClientRoomSynthesis(
   memos: MemoForSynthesis[],
   brief: ProjectBriefType | null,
   settings: AiSettings,
+  writerProfile?: AgentRequest["writerProfile"],
+  onText?: StreamText,
 ): Promise<{ text: string; provider: string } | null> {
   const resolved = resolveFeatureConfig(settings, "room-synthesis");
   if (!resolved) return null;
@@ -799,9 +1001,10 @@ export async function runClientRoomSynthesis(
       resolved,
       model,
       system: buildSynthesisSystemPrompt(),
-      prompt: buildSynthesisPrompt(memos, brief),
+      prompt: buildSynthesisPrompt(memos, brief, writerProfile),
       spanName: "room_synthesis",
       evalSignals: { twyne_memo_count: memos.length },
+      onText,
     });
     const cleaned = text.trim();
     return cleaned ? { text: cleaned, provider: resolved.provider.type } : null;
@@ -828,6 +1031,7 @@ export interface RubricReviewRequest {
 export async function runClientRubricReview(
   req: RubricReviewRequest,
   settings: AiSettings,
+  onText?: StreamText,
 ): Promise<{ text: string; provider: string } | null> {
   const resolved = resolveFeatureConfig(settings, "rubric-review");
   if (!resolved) return null;
@@ -841,6 +1045,7 @@ export async function runClientRubricReview(
       system: buildRubricReviewSystemPrompt(),
       prompt: buildRubricReviewPrompt(req),
       spanName: "rubric_review",
+      onText,
       evalSignals: { twyne_combined_score: req.combined },
     });
     const cleaned = text.trim();
@@ -916,10 +1121,9 @@ const FISH_AUDIO_BASE = "https://api.fish.audio";
  * voice selected by `reference_id` (a voice-model id from their library)
  * rather than by a name like "alloy".
  *
- * Because our persona voices are OpenAI names, they are only forwarded when
- * they look like a Fish Audio id — otherwise Fish uses its default voice. A
- * writer who wants a specific Fish voice puts its id in the per-feature voice
- * override in settings.
+ * Because Fish requires a reference voice id, persona-specific Fish ids are
+ * forwarded when they look like one. A writer using Fish directly must put a
+ * 32-character model id in the Voice field in Settings.
  */
 async function runFishAudioSpeech(args: {
   provider: AiProviderConfig;
@@ -934,6 +1138,11 @@ async function runFishAudioSpeech(args: {
   const referenceId = /^[0-9a-f]{32}$/i.test(args.voice)
     ? args.voice
     : undefined;
+  if (!referenceId) {
+    throw new Error(
+      "Fish Audio needs a 32-character reference voice id in Voice Narration settings.",
+    );
+  }
   const format = ["mp3", "wav", "pcm", "opus"].includes(args.responseFormat)
     ? args.responseFormat
     : "mp3";
@@ -970,7 +1179,7 @@ async function runFishAudioSpeech(args: {
     };
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:fishaudio-speech", err);
-    return null;
+    throw err;
   }
 }
 
@@ -1011,6 +1220,118 @@ async function runFishAudioTranscribe(args: {
   }
 }
 
+interface DirectAudioInput {
+  data: Uint8Array;
+  mediaType: string;
+  filename: string;
+}
+
+/** Prepare browser recordings for providers that use OpenAI's input_audio shape. */
+async function prepareDirectAudio(
+  blob: Blob,
+  needsWavOrMp3: boolean,
+): Promise<DirectAudioInput> {
+  const mediaType = blob.type.split(";")[0].trim().toLowerCase();
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  if (
+    !needsWavOrMp3 ||
+    mediaType === "audio/wav" ||
+    mediaType === "audio/mp3" ||
+    mediaType === "audio/mpeg"
+  ) {
+    return {
+      data: bytes,
+      mediaType: mediaType || "audio/webm",
+      filename: `voice-note.${blobExtension(mediaType)}`,
+    };
+  }
+
+  const decoded = await decodeAudio(bytes);
+  const mono =
+    decoded.channelData.length > 1
+      ? [mixDownToMono(decoded.channelData)]
+      : decoded.channelData;
+  const wav = await encodeWav({
+    sampleRate: decoded.sampleRate,
+    channelData: mono,
+  });
+  return {
+    data: new Uint8Array(wav),
+    mediaType: "audio/wav",
+    filename: "voice-note.wav",
+  };
+}
+
+function mixDownToMono(channels: Float32Array[]): Float32Array {
+  const length = Math.max(...channels.map((channel) => channel.length));
+  const mono = new Float32Array(length);
+  for (const channel of channels) {
+    for (let i = 0; i < channel.length; i += 1) {
+      mono[i] += channel[i] / channels.length;
+    }
+  }
+  return mono;
+}
+
+async function runDirectAudioTranscribe(args: {
+  provider: AiProviderConfig;
+  model: string;
+  audio: Blob;
+  prompt?: string;
+}): Promise<VoiceTranscribeResult | null> {
+  const model = await createModel(args.provider, args.model);
+  if (!model) return null;
+  try {
+    const needsWavOrMp3 =
+      args.provider.type === "openai" ||
+      isOpenAiCompatibleProvider(args.provider.type) ||
+      isTinkerProviderConfig(args.provider) ||
+      args.provider.type === "litert";
+    const audio = await prepareDirectAudio(args.audio, needsWavOrMp3);
+    const result = await generateText({
+      model,
+      system:
+        "You are a transcription service. Return only the spoken words. Preserve meaningful punctuation, but do not add commentary, summaries, speaker labels, or guesses.",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text:
+                args.prompt?.trim() ||
+                "Transcribe this recording exactly. Return only the transcript.",
+            },
+            {
+              type: "file",
+              data: audio.data,
+              mediaType: audio.mediaType,
+              filename: audio.filename,
+            },
+          ],
+        },
+      ],
+      temperature: 0.1,
+      maxOutputTokens: 1200,
+    });
+    return {
+      text: result.text.trim(),
+      provider: args.provider.type,
+      model: args.model,
+    };
+  } catch (err) {
+    reportApplicationDiagnostic(
+      "twyne:ai-client:direct-audio-transcribe",
+      err,
+      {
+        provider: args.provider.type,
+        model: args.model,
+      },
+    );
+    return null;
+  }
+}
+
 /* ── Public: transcribe speech client-side (BYOK) ───────────────── */
 
 export interface VoiceTranscribeRequest {
@@ -1026,9 +1347,10 @@ export interface VoiceTranscribeResult {
 }
 
 /**
- * Transcribe a recording with the writer's own key. Mirrors
- * {@link runClientVoiceSpeech}: OpenAI-compatible providers only, since the
- * `/audio/transcriptions` shape is what the other vendors don't share.
+ * Transcribe a recording with the writer's own key. Providers with a
+ * multimodal model receive the recording as an audio file and return ordinary
+ * text; speech-specialist providers keep using their native transcription
+ * endpoint.
  */
 export async function runClientVoiceTranscribe(
   req: VoiceTranscribeRequest,
@@ -1036,7 +1358,13 @@ export async function runClientVoiceTranscribe(
 ): Promise<VoiceTranscribeResult | null> {
   const resolved = resolveFeatureConfig(settings, "voice-transcription");
   if (!resolved) return null;
-  if (!supportsVoice(resolved.provider.type)) {
+  if (
+    !supportsVoiceFeature(
+      resolved.provider.type,
+      "voice-transcription",
+      resolved.provider,
+    )
+  ) {
     reportApplicationDiagnostic(
       "twyne:ai-client:transcribe-unsupported-provider",
       createAppError("CONFIGURATION_ERROR", { source: "provider" }),
@@ -1050,6 +1378,15 @@ export async function runClientVoiceTranscribe(
       provider: resolved.provider,
       model: resolved.model,
       audio: req.audio,
+    });
+  }
+
+  if (modelAcceptsDirectAudio(resolved.provider, resolved.model)) {
+    return runDirectAudioTranscribe({
+      provider: resolved.provider,
+      model: resolved.model,
+      audio: req.audio,
+      prompt: req.prompt,
     });
   }
 
@@ -1373,10 +1710,12 @@ export async function discoverProviderModels(
       };
     }
 
+    const isTinker = isTinkerProviderConfig(config);
     const isAnthropicStyle =
-      config.type === "anthropic" || config.type === "anthropic-compatible";
+      !isTinker &&
+      (config.type === "anthropic" || config.type === "anthropic-compatible");
     const baseUrl = normalizeApiBaseUrl(
-      config.baseUrl,
+      isTinker ? tinkerRelayBaseUrl() : config.baseUrl,
       isAnthropicStyle
         ? "https://api.anthropic.com/v1"
         : "https://api.openai.com/v1",
@@ -1918,6 +2257,8 @@ export type InterviewConfidence = "high" | "medium" | "low";
 export interface InterviewMessage {
   author: "writer" | "interviewer";
   text: string;
+  /** Provider-authored reasoning shown in a collapsible transcript part. */
+  reasoning?: string;
 }
 
 export type InterviewMode = "first-run" | "refine";
@@ -1934,6 +2275,8 @@ export interface InterviewDossierDraft {
     Record<keyof ProjectInterviewAnswers, InterviewConfidence>
   >;
 }
+
+export type InterviewStreamUpdate = InterviewStreamSnapshot;
 
 /**
  * The synthesis the AI hands back when it has enough information to
@@ -2010,6 +2353,7 @@ function normalizeInterviewDossierDraft(
 export async function runClientInterviewTurn(
   request: InterviewTurnRequest,
   settings: AiSettings,
+  onUpdate?: (update: InterviewStreamUpdate) => void,
 ): Promise<ApplicationResult<InterviewTurnResult>> {
   const cfg = resolveFeatureConfig(settings, "interview-turn");
   if (!cfg) {
@@ -2055,18 +2399,43 @@ export async function runClientInterviewTurn(
     const transcript = request.messages
       .map((m) => `${m.author === "writer" ? "Writer" : "You"}: ${m.text}`)
       .join("\n");
-    const text = await generateTrackedText({
-      feature: "interview-turn",
-      resolved: cfg,
-      model,
-      system,
-      prompt: transcript,
-      spanName: "interview_turn",
-      evalSignals: {
-        twyne_interview_mode: request.mode,
-        twyne_message_count: request.messages.length,
-      },
-    });
+    let text: string;
+    if (onUpdate) {
+      const streamed = streamText({
+        model,
+        system,
+        prompt: transcript,
+        temperature: cfg.temperature,
+        maxOutputTokens: cfg.maxTokens,
+      });
+      let rawText = "";
+      let nativeReasoning = "";
+      for await (const part of streamed.fullStream) {
+        if (part.type === "text-delta") rawText += part.text;
+        if (part.type === "reasoning-delta") nativeReasoning += part.text;
+        if (
+          part.type === "text-delta" ||
+          part.type === "reasoning-delta" ||
+          part.type === "reasoning-end"
+        ) {
+          onUpdate(createInterviewStreamSnapshot(rawText, nativeReasoning));
+        }
+      }
+      text = await streamed.text;
+    } else {
+      text = await generateTrackedText({
+        feature: "interview-turn",
+        resolved: cfg,
+        model,
+        system,
+        prompt: transcript,
+        spanName: "interview_turn",
+        evalSignals: {
+          twyne_interview_mode: request.mode,
+          twyne_message_count: request.messages.length,
+        },
+      });
+    }
     if (!text.trim()) {
       return {
         ok: false,

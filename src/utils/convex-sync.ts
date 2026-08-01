@@ -18,17 +18,20 @@ import {
   loadPersonasFromIdb,
   loadFolioContentFromIdb,
   loadActiveFolioIdFromIdb,
+  loadAllBriefsFromIdb,
   saveFoliosToIdb,
+  saveBriefToIdb,
   saveFolioContentToIdb,
   savePersonasToIdb,
   saveDraftHtmlToIdb,
+  loadRubricResultFromIdb,
+  saveRubricResultToIdb,
   clearIdbStore,
 } from "./idb";
 import {
   persistToIdb,
   readFileAsJson,
   writeFileAsJson,
-  BRIEF_PATH,
 } from "./lix";
 import { normalizeApplicationError } from "./application-errors";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
@@ -55,14 +58,21 @@ import { reportApplicationDiagnostic } from "./application-diagnostics";
 type ConvexSyncClient = Pick<ConvexClient, "query" | "mutation">;
 
 interface SyncedSnapshot {
-  brief: ProjectBrief | null;
-  briefUpdatedAt: number;
+  briefs: Array<{
+    folioId: string;
+    brief: ProjectBrief;
+    updatedAt: number;
+  }>;
+  /** One-row-per-user dossier written before briefs became folio-scoped. */
+  legacyBrief: ProjectBrief | null;
+  legacyBriefUpdatedAt: number;
   folios: Folio[];
   foliosUpdatedAt: number;
   folioContent: Array<{ folioId: string; html: string; updatedAt: number }>;
   customPersonas: Persona[] | null;
   customPersonasUpdatedAt: number;
   personaNotes: Array<{
+    folioId?: string;
     noteId: string;
     personaId: string;
     personaName: string;
@@ -74,6 +84,7 @@ interface SyncedSnapshot {
     createdAt: number;
   }>;
   personaReplies: Array<{
+    folioId?: string;
     replyId: string;
     noteId: string;
     author: string;
@@ -82,8 +93,11 @@ interface SyncedSnapshot {
     text: string;
     createdAt: number;
   }>;
-  rubricResult: RubricResult | null;
-  rubricResultUpdatedAt: number;
+  rubricResults: Array<{
+    folioId?: string;
+    result: RubricResult;
+    updatedAt: number;
+  }>;
   bibliography: BibEntry[];
   bibliographyUpdatedAt: number;
 }
@@ -106,13 +120,13 @@ interface SyncState {
 }
 
 interface LocalSnapshot {
-  brief: ProjectBrief | null;
+  briefs: Array<{ folioId: string; brief: ProjectBrief }>;
   folios: Folio[];
   folioContent: Array<{ folioId: string; html: string }>;
   customPersonas: Persona[] | null;
   personaNotes: PersonaFeedback[];
   personaReplies: PersonaReply[];
-  rubricResult: RubricResult | null;
+  rubricResults: Array<{ folioId: string; result: RubricResult }>;
   bibliography: BibEntry[];
 }
 
@@ -131,6 +145,10 @@ let pushTimer: ReturnType<typeof setTimeout> | null = null;
 const PUSH_DEBOUNCE_MS = 4_000;
 const SIGN_UP_PUSH_FLAG = "twyne:signed-up-once";
 const BIBLIOGRAPHY_PATH = "/bibliography.json";
+
+function folioArtifactPath(folioId: string, filename: string): string {
+  return `/folios/${folioId}/${filename}`;
+}
 
 /* ── Status surface (Phase 4) ──────────────────────────────────────── */
 
@@ -326,7 +344,10 @@ export async function loadFromConvex(): Promise<Blob | null> {
 /* ── Internal: build local snapshot, decide push vs pull ─────────── */
 
 async function buildLocalSnapshot(): Promise<LocalSnapshot> {
-  const brief = (await readFileAsJson<ProjectBrief>(BRIEF_PATH)) ?? null;
+  const briefs = (await loadAllBriefsFromIdb()).map(({ folioId, brief }) => ({
+    folioId,
+    brief,
+  }));
   const folios = await loadFoliosFromIdb();
   const activeFolioId = await loadActiveFolioIdFromIdb();
   const ids = new Set<string>(folios.map((f) => f.id));
@@ -340,25 +361,31 @@ async function buildLocalSnapshot(): Promise<LocalSnapshot> {
   }
 
   const customPersonas = (await loadPersonasFromIdb()) as Persona[];
-  // Persona notes / replies are persisted in Lix too — they live with the
-  // manuscript rather than in their own IDB keys.
-  const notes =
-    (await readFileAsJson<PersonaFeedback[]>("/persona-notes.json")) ?? [];
-  const replies =
-    (await readFileAsJson<PersonaReply[]>("/persona-replies.json")) ?? [];
-  const rubric =
-    (await readFileAsJson<RubricResult>("/rubric-result.json")) ?? null;
+  const notes: PersonaFeedback[] = [];
+  const replies: PersonaReply[] = [];
+  const rubricResults: Array<{ folioId: string; result: RubricResult }> = [];
+  for (const folioId of ids) {
+    if (!folioId) continue;
+    const [folioNotes, folioReplies, rubric] = await Promise.all([
+      loadPersonaNotesLocally(folioId),
+      loadPersonaRepliesLocally(folioId),
+      loadRubricResultFromIdb(folioId),
+    ]);
+    notes.push(...folioNotes);
+    replies.push(...folioReplies);
+    if (rubric) rubricResults.push({ folioId, result: rubric });
+  }
   const bibliography =
     (await readFileAsJson<BibEntry[]>(BIBLIOGRAPHY_PATH)) ?? [];
 
   return {
-    brief,
+    briefs,
     folios,
     folioContent,
     customPersonas,
     personaNotes: notes,
     personaReplies: replies,
-    rubricResult: rubric,
+    rubricResults,
     bibliography: Array.isArray(bibliography) ? bibliography : [],
   };
 }
@@ -373,11 +400,12 @@ async function pushLocalSnapshot(): Promise<void> {
     state.lastSnapshot = snap;
 
     await state.client.mutation(api.sync.pushAll, {
-      brief: snap.brief,
+      briefs: snap.briefs,
       folios: snap.folios,
       folioContent: snap.folioContent,
       customPersonas: snap.customPersonas ?? undefined,
       personaNotes: snap.personaNotes.map((n) => ({
+        folioId: n.folioId ?? "",
         noteId: n.noteId ?? `pn-${n.personaId}-${n.timestamp}`,
         personaId: n.personaId,
         personaName: n.personaName,
@@ -385,10 +413,11 @@ async function pushLocalSnapshot(): Promise<void> {
         type: n.type,
         feedback: n.feedback,
         anchor: n.anchor,
-        briefTitle: snap.brief?.answers.workingTitle,
+        briefTitle: n.briefTitle,
         createdAt: n.timestamp,
       })),
       personaReplies: snap.personaReplies.map((r) => ({
+        folioId: r.folioId ?? "",
         replyId: r.id,
         noteId: r.noteId,
         author: r.author,
@@ -397,7 +426,7 @@ async function pushLocalSnapshot(): Promise<void> {
         text: r.text,
         createdAt: r.timestamp,
       })),
-      rubricResult: snap.rubricResult ?? undefined,
+      rubricResults: snap.rubricResults,
       bibliography: snap.bibliography,
     });
     // Success: clear the error and stamp the synced time.
@@ -463,12 +492,14 @@ async function handleUserChanged(
   // Merge: for each top-level slice, take whichever side is newer by
   // `updatedAt`. Newer-wins is the simplest sane policy without a CRDT.
   const hasRemoteData =
-    remote.brief !== null ||
+    remote.briefs.length > 0 ||
+    remote.legacyBrief !== null ||
     remote.folios.length > 0 ||
     remote.folioContent.length > 0 ||
     remote.customPersonas !== null ||
     remote.personaNotes.length > 0 ||
-    remote.rubricResult !== null ||
+    remote.personaReplies.length > 0 ||
+    remote.rubricResults.length > 0 ||
     (remote.bibliography?.length ?? 0) > 0;
 
   if (!hasRemoteData && !didSignUpHere) {
@@ -504,13 +535,41 @@ async function mergeFromRemote(
   local: LocalSnapshot,
   remote: SyncedSnapshot,
 ): Promise<void> {
-  // Brief — newer-wins by updatedAt.
-  if (
-    remote.brief &&
-    (local.brief === null ||
-      remote.briefUpdatedAt > (local.brief.updatedAt ?? 0))
-  ) {
-    await writeFileAsJson(BRIEF_PATH, remote.brief);
+  // Dossiers — per-folio, newer-wins by the brief's updatedAt.
+  for (const dossier of remote.briefs) {
+    const localDossier = local.briefs.find(
+      (candidate) => candidate.folioId === dossier.folioId,
+    );
+    if (
+      !localDossier ||
+      dossier.updatedAt > (localDossier.brief.updatedAt ?? 0)
+    ) {
+      await saveBriefToIdb(dossier.folioId, dossier.brief);
+      await writeFileAsJson(
+        `/folios/${dossier.folioId}/brief.json`,
+        dossier.brief,
+      );
+    }
+  }
+  if (remote.briefs.length === 0 && remote.legacyBrief) {
+    const activeFolioId = await loadActiveFolioIdFromIdb();
+    const targetFolioId = activeFolioId ?? local.folios[0]?.id;
+    const alreadyFiled = targetFolioId
+      ? local.briefs.find(
+          (candidate) => candidate.folioId === targetFolioId,
+        )
+      : null;
+    if (
+      targetFolioId &&
+      (!alreadyFiled ||
+        remote.legacyBriefUpdatedAt > (alreadyFiled.brief.updatedAt ?? 0))
+    ) {
+      await saveBriefToIdb(targetFolioId, remote.legacyBrief);
+      await writeFileAsJson(
+        `/folios/${targetFolioId}/brief.json`,
+        remote.legacyBrief,
+      );
+    }
   }
 
   // Folios — newer-wins.
@@ -538,21 +597,73 @@ async function mergeFromRemote(
     await savePersonasToIdb(remote.customPersonas);
   }
 
-  // Persona notes — union by noteId; later timestamp wins.
-  if (remote.personaNotes.length > 0) {
-    await writeFileAsJson("/persona-notes.json", remote.personaNotes);
+  const activeFolioId = await loadActiveFolioIdFromIdb();
+  const legacyTargetFolioId = activeFolioId ?? local.folios[0]?.id;
+
+  // Editorial artifacts are grouped by folio. Legacy remote rows without a
+  // folio id attach to the one folio that was active during migration.
+  const notesByFolio = new Map<string, PersonaFeedback[]>();
+  for (const note of remote.personaNotes) {
+    const folioId = note.folioId ?? legacyTargetFolioId;
+    if (!folioId) continue;
+    const group = notesByFolio.get(folioId) ?? [];
+    group.push({
+      ...note,
+      folioId,
+      timestamp: note.createdAt,
+    });
+    notesByFolio.set(folioId, group);
   }
-  if (remote.personaReplies.length > 0) {
-    await writeFileAsJson("/persona-replies.json", remote.personaReplies);
+  for (const [folioId, notes] of notesByFolio) {
+    await writeFileAsJson(
+      folioArtifactPath(folioId, "persona-notes.json"),
+      notes,
+    );
   }
 
-  // Rubric — newer-wins.
-  if (
-    remote.rubricResult &&
-    (local.rubricResult === null ||
-      remote.rubricResultUpdatedAt > (local.rubricResult.timestamp ?? 0))
-  ) {
-    await writeFileAsJson("/rubric-result.json", remote.rubricResult);
+  const repliesByFolio = new Map<string, PersonaReply[]>();
+  for (const reply of remote.personaReplies) {
+    const folioId = reply.folioId ?? legacyTargetFolioId;
+    if (!folioId) continue;
+    const group = repliesByFolio.get(folioId) ?? [];
+    group.push({
+      id: reply.replyId,
+      folioId,
+      noteId: reply.noteId,
+      author: reply.author,
+      authorKind: reply.authorKind,
+      personaId: reply.personaId,
+      text: reply.text,
+      timestamp: reply.createdAt,
+    });
+    repliesByFolio.set(folioId, group);
+  }
+  for (const [folioId, replies] of repliesByFolio) {
+    await writeFileAsJson(
+      folioArtifactPath(folioId, "persona-replies.json"),
+      replies,
+    );
+  }
+
+  for (const remoteRubric of remote.rubricResults) {
+    const folioId = remoteRubric.folioId ?? legacyTargetFolioId;
+    if (!folioId) continue;
+    const localRubric = local.rubricResults.find(
+      (entry) => entry.folioId === folioId,
+    )?.result;
+    if (
+      !localRubric ||
+      remoteRubric.updatedAt > (localRubric.timestamp ?? 0)
+    ) {
+      await saveRubricLocally(
+        { ...remoteRubric.result, folioId },
+        folioId,
+      );
+      await saveRubricResultToIdb(
+        { ...remoteRubric.result, folioId },
+        folioId,
+      );
+    }
   }
 
   if ((remote.bibliography?.length ?? 0) > 0) {
@@ -606,88 +717,127 @@ function sameJson(a: unknown, b: unknown): boolean {
 export async function savePersonaNoteLocally(
   note: PersonaFeedback,
   brief: ProjectBrief | null,
+  folioId = note.folioId ?? "",
 ): Promise<void> {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !folioId) return;
+  const path = folioArtifactPath(folioId, "persona-notes.json");
   const current =
-    (await readFileAsJson<PersonaFeedback[]>("/persona-notes.json")) ?? [];
+    (await readFileAsJson<PersonaFeedback[]>(path)) ?? [];
   const noteId = note.noteId ?? `pn-${note.personaId}-${note.timestamp}`;
   const filtered = current.filter((n) => (n.noteId ?? "") !== noteId);
   const stored: PersonaFeedback = {
     ...note,
+    folioId,
     noteId,
     briefTitle: brief?.answers.workingTitle,
   };
   filtered.push(stored);
-  await writeFileAsJson("/persona-notes.json", filtered);
+  await writeFileAsJson(path, filtered);
   markDirty();
 }
 
-export async function loadPersonaNotesLocally(): Promise<PersonaFeedback[]> {
-  if (typeof window === "undefined") return [];
-  return (await readFileAsJson<PersonaFeedback[]>("/persona-notes.json")) ?? [];
+export async function loadPersonaNotesLocally(
+  folioId?: string | null,
+): Promise<PersonaFeedback[]> {
+  if (typeof window === "undefined" || !folioId) return [];
+  return (
+    (await readFileAsJson<PersonaFeedback[]>(
+      folioArtifactPath(folioId, "persona-notes.json"),
+    )) ?? []
+  );
 }
 
-export async function clearPersonaNotesLocally(): Promise<void> {
-  if (typeof window === "undefined") return;
-  await writeFileAsJson("/persona-notes.json", []);
+export async function clearPersonaNotesLocally(
+  folioId?: string | null,
+): Promise<void> {
+  if (typeof window === "undefined" || !folioId) return;
+  await writeFileAsJson(folioArtifactPath(folioId, "persona-notes.json"), []);
   markDirty();
 }
 
 export async function addPersonaReplyLocally(
   reply: PersonaReply,
+  folioId = reply.folioId ?? "",
 ): Promise<void> {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || !folioId) return;
+  const path = folioArtifactPath(folioId, "persona-replies.json");
   const current =
-    (await readFileAsJson<PersonaReply[]>("/persona-replies.json")) ?? [];
-  current.push(reply);
-  await writeFileAsJson("/persona-replies.json", current);
+    (await readFileAsJson<PersonaReply[]>(path)) ?? [];
+  current.push({ ...reply, folioId });
+  await writeFileAsJson(path, current);
   markDirty();
 }
 
-export async function loadPersonaRepliesLocally(): Promise<PersonaReply[]> {
-  if (typeof window === "undefined") return [];
-  return (await readFileAsJson<PersonaReply[]>("/persona-replies.json")) ?? [];
+export async function loadPersonaRepliesLocally(
+  folioId?: string | null,
+): Promise<PersonaReply[]> {
+  if (typeof window === "undefined" || !folioId) return [];
+  return (
+    (await readFileAsJson<PersonaReply[]>(
+      folioArtifactPath(folioId, "persona-replies.json"),
+    )) ?? []
+  );
 }
 
-export async function saveRubricLocally(result: RubricResult): Promise<void> {
-  if (typeof window === "undefined") return;
-  await writeFileAsJson("/rubric-result.json", result);
+export async function saveRubricLocally(
+  result: RubricResult,
+  folioId = result.folioId ?? "",
+): Promise<void> {
+  if (typeof window === "undefined" || !folioId) return;
+  await writeFileAsJson(folioArtifactPath(folioId, "rubric-result.json"), {
+    ...result,
+    folioId,
+  });
   markDirty();
 }
 
-export async function loadRubricLocally(): Promise<RubricResult | null> {
-  if (typeof window === "undefined") return null;
-  return (await readFileAsJson<RubricResult>("/rubric-result.json")) ?? null;
+export async function loadRubricLocally(
+  folioId?: string | null,
+): Promise<RubricResult | null> {
+  if (typeof window === "undefined" || !folioId) return null;
+  return (
+    (await readFileAsJson<RubricResult>(
+      folioArtifactPath(folioId, "rubric-result.json"),
+    )) ?? null
+  );
 }
 
 /* ── Suggestions (editorial change proposals) ── */
 
-const SUGGESTIONS_PATH = "/suggestions.json";
-
 export async function saveSuggestionLocally(
   suggestion: Suggestion,
+  folioId = suggestion.folioId ?? "",
 ): Promise<void> {
-  if (typeof window === "undefined") return;
-  const current = (await readFileAsJson<Suggestion[]>(SUGGESTIONS_PATH)) ?? [];
+  if (typeof window === "undefined" || !folioId) return;
+  const path = folioArtifactPath(folioId, "suggestions.json");
+  const current = (await readFileAsJson<Suggestion[]>(path)) ?? [];
   const filtered = current.filter((s) => s.id !== suggestion.id);
-  filtered.push(suggestion);
-  await writeFileAsJson(SUGGESTIONS_PATH, filtered);
+  filtered.push({ ...suggestion, folioId });
+  await writeFileAsJson(path, filtered);
   markDirty();
 }
 
-export async function loadSuggestionsLocally(): Promise<Suggestion[]> {
-  if (typeof window === "undefined") return [];
-  return (await readFileAsJson<Suggestion[]>(SUGGESTIONS_PATH)) ?? [];
+export async function loadSuggestionsLocally(
+  folioId?: string | null,
+): Promise<Suggestion[]> {
+  if (typeof window === "undefined" || !folioId) return [];
+  return (
+    (await readFileAsJson<Suggestion[]>(
+      folioArtifactPath(folioId, "suggestions.json"),
+    )) ?? []
+  );
 }
 
 export async function updateSuggestionStatusLocally(
   id: string,
   status: Suggestion["status"],
+  folioId?: string | null,
 ): Promise<void> {
-  if (typeof window === "undefined") return;
-  const current = (await readFileAsJson<Suggestion[]>(SUGGESTIONS_PATH)) ?? [];
+  if (typeof window === "undefined" || !folioId) return;
+  const path = folioArtifactPath(folioId, "suggestions.json");
+  const current = (await readFileAsJson<Suggestion[]>(path)) ?? [];
   const next = current.map((s) => (s.id === id ? { ...s, status } : s));
-  await writeFileAsJson(SUGGESTIONS_PATH, next);
+  await writeFileAsJson(path, next);
   markDirty();
 }
 

@@ -6,7 +6,10 @@ import {
 } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import type { RubricResult } from "../../types";
-import { loadRubricResultFromIdb } from "../../utils/idb";
+import {
+  loadActiveFolioIdFromIdb,
+  loadRubricResultFromIdb,
+} from "../../utils/idb";
 import { renderMarkdown } from "../../utils/markdown";
 
 interface RubricPageStore {
@@ -94,7 +97,8 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const cached = await loadRubricResultFromIdb();
+    const folioId = await loadActiveFolioIdFromIdb();
+    const cached = await loadRubricResultFromIdb(folioId);
     if (cached) store.result = cached;
     store.loaded = true;
   });

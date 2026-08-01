@@ -38,6 +38,7 @@ import {
 } from "./draft-trajectory";
 import { hasConfiguredAiProvider, runClientAgent } from "./ai-client";
 import { getCachedAiSettings } from "./ai-orchestrator";
+import { loadWriterSettingsFromIdb } from "./idb";
 import { savePersonaNoteLocally } from "./convex-sync";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
 
@@ -113,6 +114,7 @@ export function snapshot(): BackgroundRoomSnapshot {
 
 function notify(): void {
   if (typeof window === "undefined") return;
+  if (typeof window.dispatchEvent !== "function") return;
   window.dispatchEvent(
     new CustomEvent("twyne:background-room", { detail: snapshot() }),
   );
@@ -319,6 +321,7 @@ export async function runPass(): Promise<PersonaFeedback[]> {
       const persona = activePersonas.find((p) => p.id === r.personaId);
       if (!persona || !r.text.trim()) continue;
       const note: PersonaFeedback = {
+        folioId: activeFolioId!,
         personaId: r.personaId,
         personaName: persona.name,
         personaColor: persona.color,
@@ -330,7 +333,7 @@ export async function runPass(): Promise<PersonaFeedback[]> {
         origin: "background",
       };
       notes.push(note);
-      await savePersonaNoteLocally(note, activeBrief);
+      await savePersonaNoteLocally(note, activeBrief, activeFolioId!);
     }
 
     lastReadText = draftText;
@@ -381,6 +384,7 @@ async function conveneQuietly(input: {
   trajectory: string;
 }): Promise<QuietResponse[]> {
   const settings = await getCachedAiSettings();
+  const writerProfile = (await loadWriterSettingsFromIdb()).profile;
 
   if (hasConfiguredAiProvider(settings)) {
     const results = await Promise.all(
@@ -391,6 +395,7 @@ async function conveneQuietly(input: {
             persona: toAgentPersona(p),
             brief: activeBrief,
             draftText: input.draftText,
+            writerProfile,
             newMaterial: input.newMaterial,
             trajectory: input.trajectory,
             instruction: "feedback" as const,
@@ -416,6 +421,7 @@ async function conveneQuietly(input: {
     personas: activePersonas.map(toAgentPersona),
     brief: activeBrief ?? null,
     draftText: input.draftText,
+    writerProfile,
     newMaterial: input.newMaterial,
     trajectory: input.trajectory,
   })) as QuietResponse[];

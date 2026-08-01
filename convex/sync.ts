@@ -36,9 +36,17 @@ async function requireIdentity(ctx: {
 /* ── Briefs ──────────────────────────────────────────────────────── */
 
 export const getBrief = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { folioId: v.optional(v.string()) },
+  handler: async (ctx, { folioId }) => {
     const userId = await requireIdentity(ctx);
+    if (folioId) {
+      return await ctx.db
+        .query("briefs")
+        .withIndex("by_userId_folioId", (q) =>
+          q.eq("userId", userId).eq("folioId", folioId),
+        )
+        .first();
+    }
     return await ctx.db
       .query("briefs")
       .withIndex("by_userId", (q) => q.eq("userId", userId))
@@ -47,19 +55,26 @@ export const getBrief = query({
 });
 
 export const putBrief = mutation({
-  args: { brief: v.any() },
-  handler: async (ctx, { brief }) => {
+  args: { folioId: v.string(), brief: v.any() },
+  handler: async (ctx, { folioId, brief }) => {
     const userId = await requireIdentity(ctx);
     const existing = await ctx.db
       .query("briefs")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .withIndex("by_userId_folioId", (q) =>
+        q.eq("userId", userId).eq("folioId", folioId),
+      )
       .first();
     const now = Date.now();
     if (existing) {
       await ctx.db.patch(existing._id, { brief, updatedAt: now });
       return existing._id;
     }
-    return await ctx.db.insert("briefs", { userId, brief, updatedAt: now });
+    return await ctx.db.insert("briefs", {
+      userId,
+      folioId,
+      brief,
+      updatedAt: now,
+    });
   },
 });
 
@@ -200,19 +215,27 @@ export const putCustomPersonas = mutation({
 /* ── Persona notes & replies ─────────────────────────────────────── */
 
 export const listPersonaNotes = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { folioId: v.optional(v.string()) },
+  handler: async (ctx, { folioId }) => {
     const userId = await requireIdentity(ctx);
-    const rows = await ctx.db
-      .query("personaNotes")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
+    const rows = folioId
+      ? await ctx.db
+          .query("personaNotes")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", folioId),
+          )
+          .collect()
+      : await ctx.db
+          .query("personaNotes")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .collect();
     return rows.sort((a, b) => a.createdAt - b.createdAt);
   },
 });
 
 export const putPersonaNote = mutation({
   args: {
+    folioId: v.string(),
     noteId: v.string(),
     personaId: v.string(),
     personaName: v.string(),
@@ -237,6 +260,7 @@ export const putPersonaNote = mutation({
       .first();
     if (existing) {
       await ctx.db.patch(existing._id, {
+        folioId: args.folioId,
         feedback: args.feedback,
         type: args.type,
         anchor: args.anchor,
@@ -245,6 +269,7 @@ export const putPersonaNote = mutation({
     }
     return await ctx.db.insert("personaNotes", {
       userId,
+      folioId: args.folioId,
       noteId: args.noteId,
       personaId: args.personaId,
       personaName: args.personaName,
@@ -285,8 +310,11 @@ export const removePersonaNote = mutation({
 });
 
 export const listPersonaReplies = query({
-  args: { noteId: v.optional(v.string()) },
-  handler: async (ctx, { noteId }) => {
+  args: {
+    folioId: v.optional(v.string()),
+    noteId: v.optional(v.string()),
+  },
+  handler: async (ctx, { folioId, noteId }) => {
     const userId = await requireIdentity(ctx);
     if (noteId) {
       const rows = await ctx.db
@@ -297,15 +325,23 @@ export const listPersonaReplies = query({
         .collect();
       return rows.sort((a, b) => a.createdAt - b.createdAt);
     }
-    return await ctx.db
-      .query("personaReplies")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
+    return folioId
+      ? await ctx.db
+          .query("personaReplies")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", folioId),
+          )
+          .collect()
+      : await ctx.db
+          .query("personaReplies")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .collect();
   },
 });
 
 export const addPersonaReply = mutation({
   args: {
+    folioId: v.string(),
     noteId: v.string(),
     replyId: v.string(),
     author: v.string(),
@@ -317,6 +353,7 @@ export const addPersonaReply = mutation({
     const userId = await requireIdentity(ctx);
     return await ctx.db.insert("personaReplies", {
       userId,
+      folioId: args.folioId,
       noteId: args.noteId,
       replyId: args.replyId,
       author: args.author,
@@ -346,31 +383,41 @@ export const removePersonaReply = mutation({
 /* ── Rubric results ──────────────────────────────────────────────── */
 
 export const getRubricResult = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { folioId: v.optional(v.string()) },
+  handler: async (ctx, { folioId }) => {
     const userId = await requireIdentity(ctx);
-    return await ctx.db
-      .query("rubricResults")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+    return folioId
+      ? await ctx.db
+          .query("rubricResults")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", folioId),
+          )
+          .first()
+      : await ctx.db
+          .query("rubricResults")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .first();
   },
 });
 
 export const putRubricResult = mutation({
-  args: { result: v.any() },
-  handler: async (ctx, { result }) => {
+  args: { folioId: v.string(), result: v.any() },
+  handler: async (ctx, { folioId, result }) => {
     const userId = await requireIdentity(ctx);
     const existing = await ctx.db
       .query("rubricResults")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .withIndex("by_userId_folioId", (q) =>
+        q.eq("userId", userId).eq("folioId", folioId),
+      )
       .first();
     const now = Date.now();
     if (existing) {
-      await ctx.db.patch(existing._id, { result, updatedAt: now });
+      await ctx.db.patch(existing._id, { folioId, result, updatedAt: now });
       return existing._id;
     }
     return await ctx.db.insert("rubricResults", {
       userId,
+      folioId,
       result,
       updatedAt: now,
     });
@@ -380,19 +427,27 @@ export const putRubricResult = mutation({
 /* ── Suggestions (editorial change proposals) ────────────────────── */
 
 export const listSuggestions = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { folioId: v.optional(v.string()) },
+  handler: async (ctx, { folioId }) => {
     const userId = await requireIdentity(ctx);
-    const rows = await ctx.db
-      .query("suggestions")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .collect();
+    const rows = folioId
+      ? await ctx.db
+          .query("suggestions")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", folioId),
+          )
+          .collect()
+      : await ctx.db
+          .query("suggestions")
+          .withIndex("by_userId", (q) => q.eq("userId", userId))
+          .collect();
     return rows.sort((a, b) => a.createdAt - b.createdAt);
   },
 });
 
 export const putSuggestion = mutation({
   args: {
+    folioId: v.string(),
     suggestionId: v.string(),
     versionId: v.string(),
     personaId: v.string(),
@@ -419,6 +474,7 @@ export const putSuggestion = mutation({
       .first();
     if (existing) {
       await ctx.db.patch(existing._id, {
+        folioId: args.folioId,
         status: args.status,
         replacement: args.replacement,
       });
@@ -434,6 +490,7 @@ export const putSuggestion = mutation({
 
 export const updateSuggestionStatus = mutation({
   args: {
+    folioId: v.string(),
     suggestionId: v.string(),
     status: v.union(
       v.literal("open"),
@@ -441,7 +498,7 @@ export const updateSuggestionStatus = mutation({
       v.literal("rejected"),
     ),
   },
-  handler: async (ctx, { suggestionId, status }) => {
+  handler: async (ctx, { folioId, suggestionId, status }) => {
     const userId = await requireIdentity(ctx);
     const existing = await ctx.db
       .query("suggestions")
@@ -449,7 +506,7 @@ export const updateSuggestionStatus = mutation({
         q.eq("userId", userId).eq("suggestionId", suggestionId),
       )
       .first();
-    if (existing) await ctx.db.patch(existing._id, { status });
+    if (existing) await ctx.db.patch(existing._id, { folioId, status });
   },
 });
 
@@ -510,7 +567,9 @@ export const putRoomSettings = mutation({
  */
 export const pushAll = mutation({
   args: {
-    brief: v.optional(v.any()),
+    briefs: v.optional(
+      v.array(v.object({ folioId: v.string(), brief: v.any() })),
+    ),
     folios: v.optional(v.array(v.any())),
     folioContent: v.optional(
       v.array(v.object({ folioId: v.string(), html: v.string() })),
@@ -519,6 +578,7 @@ export const pushAll = mutation({
     personaNotes: v.optional(
       v.array(
         v.object({
+          folioId: v.string(),
           noteId: v.string(),
           personaId: v.string(),
           personaName: v.string(),
@@ -534,6 +594,7 @@ export const pushAll = mutation({
     personaReplies: v.optional(
       v.array(
         v.object({
+          folioId: v.string(),
           replyId: v.string(),
           noteId: v.string(),
           author: v.string(),
@@ -544,29 +605,36 @@ export const pushAll = mutation({
         }),
       ),
     ),
-    rubricResult: v.optional(v.any()),
+    rubricResults: v.optional(
+      v.array(v.object({ folioId: v.string(), result: v.any() })),
+    ),
     bibliography: v.optional(v.array(v.any())),
   },
   handler: async (ctx, args) => {
     const userId = await requireIdentity(ctx);
     const now = Date.now();
 
-    if (args.brief !== undefined) {
-      const existing = await ctx.db
-        .query("briefs")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first();
-      if (existing) {
-        await ctx.db.patch(existing._id, {
-          brief: args.brief,
-          updatedAt: now,
-        });
-      } else {
-        await ctx.db.insert("briefs", {
-          userId,
-          brief: args.brief,
-          updatedAt: now,
-        });
+    if (args.briefs) {
+      for (const dossier of args.briefs) {
+        const existing = await ctx.db
+          .query("briefs")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", dossier.folioId),
+          )
+          .first();
+        if (existing) {
+          await ctx.db.patch(existing._id, {
+            brief: dossier.brief,
+            updatedAt: now,
+          });
+        } else {
+          await ctx.db.insert("briefs", {
+            userId,
+            folioId: dossier.folioId,
+            brief: dossier.brief,
+            updatedAt: now,
+          });
+        }
       }
     }
 
@@ -642,6 +710,7 @@ export const pushAll = mutation({
           .first();
         if (existing) {
           await ctx.db.patch(existing._id, {
+            folioId: n.folioId,
             feedback: n.feedback,
             type: n.type as
               | "encouragement"
@@ -657,6 +726,7 @@ export const pushAll = mutation({
         } else {
           await ctx.db.insert("personaNotes", {
             userId,
+            folioId: n.folioId,
             noteId: n.noteId,
             personaId: n.personaId,
             personaName: n.personaName,
@@ -685,6 +755,7 @@ export const pushAll = mutation({
         if (!dup) {
           await ctx.db.insert("personaReplies", {
             userId,
+            folioId: r.folioId,
             replyId: r.replyId,
             noteId: r.noteId,
             author: r.author,
@@ -697,22 +768,28 @@ export const pushAll = mutation({
       }
     }
 
-    if (args.rubricResult !== undefined) {
-      const existing = await ctx.db
-        .query("rubricResults")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first();
-      if (existing) {
-        await ctx.db.patch(existing._id, {
-          result: args.rubricResult,
-          updatedAt: now,
-        });
-      } else {
-        await ctx.db.insert("rubricResults", {
-          userId,
-          result: args.rubricResult,
-          updatedAt: now,
-        });
+    if (args.rubricResults !== undefined) {
+      for (const rubric of args.rubricResults) {
+        const existing = await ctx.db
+          .query("rubricResults")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", rubric.folioId),
+          )
+          .first();
+        if (existing) {
+          await ctx.db.patch(existing._id, {
+            folioId: rubric.folioId,
+            result: rubric.result,
+            updatedAt: now,
+          });
+        } else {
+          await ctx.db.insert("rubricResults", {
+            userId,
+            folioId: rubric.folioId,
+            result: rubric.result,
+            updatedAt: now,
+          });
+        }
       }
     }
 
@@ -750,19 +827,19 @@ export const pullAll = query({
     const userId = await requireIdentity(ctx);
 
     const [
-      brief,
+      briefs,
       folios,
       folioContent,
       customPersonas,
       personaNotes,
       personaReplies,
-      rubricResult,
+      rubricResults,
       bibliography,
     ] = await Promise.all([
       ctx.db
         .query("briefs")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first(),
+        .collect(),
       ctx.db
         .query("folios")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
@@ -786,7 +863,7 @@ export const pullAll = query({
       ctx.db
         .query("rubricResults")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first(),
+        .collect(),
       ctx.db
         .query("bibliographies")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
@@ -794,8 +871,17 @@ export const pullAll = query({
     ]);
 
     return {
-      brief: brief?.brief ?? null,
-      briefUpdatedAt: brief?.updatedAt ?? 0,
+      briefs: briefs
+        .filter((row) => row.folioId)
+        .map((row) => ({
+          folioId: row.folioId!,
+          brief: row.brief,
+          updatedAt: row.updatedAt,
+        })),
+      legacyBrief:
+        briefs.find((row) => row.folioId === undefined)?.brief ?? null,
+      legacyBriefUpdatedAt:
+        briefs.find((row) => row.folioId === undefined)?.updatedAt ?? 0,
       folios: folios?.folios ?? [],
       foliosUpdatedAt: folios?.updatedAt ?? 0,
       folioContent: folioContent.map((fc) => ({
@@ -806,6 +892,7 @@ export const pullAll = query({
       customPersonas: customPersonas?.personas ?? null,
       customPersonasUpdatedAt: customPersonas?.updatedAt ?? 0,
       personaNotes: personaNotes.map((n) => ({
+        folioId: n.folioId,
         noteId: n.noteId,
         personaId: n.personaId,
         personaName: n.personaName,
@@ -817,6 +904,7 @@ export const pullAll = query({
         createdAt: n.createdAt,
       })),
       personaReplies: personaReplies.map((r) => ({
+        folioId: r.folioId,
         replyId: r.replyId,
         noteId: r.noteId,
         author: r.author,
@@ -825,8 +913,11 @@ export const pullAll = query({
         text: r.text,
         createdAt: r.createdAt,
       })),
-      rubricResult: rubricResult?.result ?? null,
-      rubricResultUpdatedAt: rubricResult?.updatedAt ?? 0,
+      rubricResults: rubricResults.map((rubric) => ({
+        folioId: rubric.folioId,
+        result: rubric.result,
+        updatedAt: rubric.updatedAt,
+      })),
       bibliography: bibliography?.entries ?? [],
       bibliographyUpdatedAt: bibliography?.updatedAt ?? 0,
     };

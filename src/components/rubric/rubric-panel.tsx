@@ -61,11 +61,14 @@ import {
   weightedCriteriaScore,
   sparklinePoints,
 } from "../../utils/rubric-criteria";
+import { toAgentPersona } from "../../../convex/agentPrompts";
 
 interface RubricStore {
   result: RubricResult | null;
   isAnalyzing: boolean;
   isReviewing: boolean;
+  /** Visible text from the full review currently being generated. */
+  streamingReview: string;
   error: AppError | null;
   judges: JudgeResult[];
   static: StaticScore | null;
@@ -83,7 +86,18 @@ interface RubricStore {
   /** Criteria the room proposed, awaiting the writer's decision. */
   suggestions: Array<{ label: string; description: string }>;
   isSuggesting: boolean;
+  /** Which of the three readings of the same result is on screen. */
+  section: RubricSection;
+  /** Criteria whose reasoning is open, keyed by criterion id. */
+  openCriteria: Record<string, boolean>;
 }
+
+/**
+ * The proof is three different documents wearing one scroll bar: a list of
+ * marks, five judges talking, and an essay. Splitting them means each is a
+ * short scroll instead of one very long one.
+ */
+type RubricSection = "marks" | "room" | "review";
 
 interface RubricCriterion {
   id: string;
@@ -95,6 +109,7 @@ interface RubricCriterion {
 }
 
 interface RubricResult {
+  folioId?: string;
   criteria: RubricCriterion[];
   overallScore: number;
   overallGrade: string;
@@ -112,14 +127,17 @@ interface RubricResult {
 
 interface RubricPanelProps {
   brief: ProjectBrief | null;
+  activeFolioId: string;
 }
 
-export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
+export const RubricPanel = component$(
+  ({ brief, activeFolioId }: RubricPanelProps) => {
   const clientSig = useConvexClient();
   const store = useStore<RubricStore>({
     result: null,
     isAnalyzing: false,
     isReviewing: false,
+    streamingReview: "",
     error: null,
     judges: [],
     static: null,
@@ -132,6 +150,8 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
     newCriterionDescription: "",
     suggestions: [],
     isSuggesting: false,
+    section: "marks",
+    openCriteria: {},
   });
 
   const analyze = $(async () => {
@@ -166,15 +186,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
           const tasks = personas.map(async (p) => {
             const res = await runClientJudge(
               {
-                persona: {
-                  id: p.id,
-                  name: p.name,
-                  role: p.role,
-                  description: p.description,
-                  focus: p.focus,
-                  color: p.color,
-                  icon: p.icon,
-                },
+                persona: toAgentPersona(p),
                 brief: brief ?? null,
                 draftText,
                 instruction: "feedback",
@@ -201,15 +213,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
 
       if (judges.length === 0 && client) {
         try {
-          const personasForServer = defaultPersonas().map((p) => ({
-            id: p.id,
-            name: p.name,
-            role: p.role,
-            description: p.description,
-            focus: p.focus,
-            color: p.color,
-            icon: p.icon,
-          }));
+          const personasForServer = defaultPersonas().map(toAgentPersona);
           judges = (await client.action(api.agents.judgeRoom, {
             personas: personasForServer,
             brief: brief ?? null,
@@ -479,6 +483,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       ];
 
       const result: RubricResult = {
+        folioId: activeFolioId,
         criteria: visibleCriteria,
         overallScore: combined.combined,
         overallGrade: combined.grade,
@@ -494,8 +499,9 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
           ) ?? undefined,
       };
       store.result = result;
-      void saveRubricResultToIdb(result);
+      void saveRubricResultToIdb(result, activeFolioId);
       store.history = await appendRubricHistory({
+        folioId: activeFolioId,
         at: result.timestamp,
         overall: result.overallScore,
         grade: result.overallGrade,
@@ -503,7 +509,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
         perCriterion: Object.fromEntries(
           visibleCriteria.map((c) => [c.id, c.score]),
         ),
-      });
+      }, activeFolioId);
     } finally {
       store.isAnalyzing = false;
     }
@@ -513,6 +519,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
     const result = store.result;
     if (!result || store.isReviewing) return;
     store.isReviewing = true;
+    store.streamingReview = "";
     store.error = null;
     try {
       const draftText = await loadDraftText();
@@ -543,6 +550,9 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
         const res = await runClientRubricReview(
           { ...payload, brief: brief ?? null, draftText },
           settings,
+          (partial) => {
+            store.streamingReview = partial;
+          },
         );
         if (res) {
           review = res.text;
@@ -562,7 +572,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       if (review) {
         const updated: RubricResult = { ...result, review, reviewProvider };
         store.result = updated;
-        void saveRubricResultToIdb(updated);
+        void saveRubricResultToIdb(updated, activeFolioId);
       } else {
         store.error = createAppError("CONFIGURATION_ERROR", {
           recovery: { action: "choose-provider", canRetry: false },
@@ -575,12 +585,13 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       });
     } finally {
       store.isReviewing = false;
+      store.streamingReview = "";
     }
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const cached = await loadRubricResultFromIdb();
+    const cached = await loadRubricResultFromIdb(activeFolioId);
     if (cached && !store.result) {
       store.result = cached;
       store.judges = cached.judges ?? [];
@@ -589,18 +600,26 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
     const aiRaw = await loadAiSettingsFromIdb();
     store.aiSettings = normalizeAiSettings(aiRaw);
     const [specs, history] = await Promise.all([
-      loadCriteriaSpecs(),
-      loadRubricHistory(),
+      loadCriteriaSpecs(activeFolioId),
+      loadRubricHistory(activeFolioId),
     ]);
     store.criteriaSpecs = specs;
     store.history = history;
+  });
+
+  /** Open or close one criterion's reasoning. */
+  const toggleCriterionOpen = $((id: string) => {
+    store.openCriteria = {
+      ...store.openCriteria,
+      [id]: !store.openCriteria[id],
+    };
   });
 
   /* ── The writer's criteria ─────────────────────────────────────── */
 
   const persistSpecs = $(async (next: RubricCriterionSpec[]) => {
     store.criteriaSpecs = next;
-    await saveCriteriaSpecs(next);
+    await saveCriteriaSpecs(next, activeFolioId);
   });
 
   const toggleCriterion = $((id: string) => {
@@ -693,7 +712,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
 
   return (
     <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
-      <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+      <div class="px-5 py-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
         <p class="dept-label">Dept. of Rigor</p>
         <h2
           class="mt-0.5 text-xl text-[var(--color-ink)]"
@@ -701,12 +720,6 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
         >
           The Galley Proof
         </h2>
-        <p
-          class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
-          style="font-family: var(--font-serif); font-style: italic;"
-        >
-          {summarizeBrief(brief)}
-        </p>
       </div>
 
       {!store.result && !store.isAnalyzing && (
@@ -723,6 +736,12 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
           >
             Send the galley to the proof desk. Five judges read it, then the
             rubric counts features the eye can't see.
+          </p>
+          <p
+            class="mt-2 max-w-xs text-xs leading-5 text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-serif); font-style: italic;"
+          >
+            {summarizeBrief(brief)}
           </p>
           <button onClick$={analyze} class="btn-press mt-5">
             Send to copyedit
@@ -769,12 +788,12 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
       )}
 
       {store.result && !store.isAnalyzing && (
-        <div class="flex-1 overflow-y-auto">
-          {/* Overall score */}
-          <div class="px-5 py-5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-            <div class="flex items-stretch gap-4">
+        <div class="flex-1 min-h-0 flex flex-col">
+          {/* The verdict. Stays on screen whichever reading is open. */}
+          <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+            <div class="flex items-center gap-4">
               <div
-                class={`flex-shrink-0 w-20 h-20 flex items-center justify-center ${getGradeColor(store.result.overallGrade)}`}
+                class={`flex-shrink-0 w-16 h-16 flex items-center justify-center ${getGradeColor(store.result.overallGrade)}`}
                 role="img"
                 aria-label={`Overall grade ${store.result.overallGrade}, ${store.result.overallScore} of 100`}
                 style={{
@@ -782,7 +801,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
                   border: "2.5px solid currentColor",
                   fontFamily: "var(--font-display)",
                   fontWeight: 700,
-                  fontSize: "2.25rem",
+                  fontSize: "1.85rem",
                   lineHeight: 1,
                   fontStyle: "italic",
                   transform: "rotate(-4deg)",
@@ -794,7 +813,7 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
               <div class="flex-1 min-w-0">
                 <p class="dept-label">Editor's Mark</p>
                 <p
-                  class="mt-0.5 text-lg text-[var(--color-ink)]"
+                  class="mt-0.5 text-2xl text-[var(--color-ink)]"
                   style="font-family: var(--font-display); font-weight: 600;"
                 >
                   {store.result.overallScore}
@@ -802,80 +821,39 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
                     {" "}
                     / 100
                   </span>
-                  {store.result.writerScore !== undefined && (
-                    <span
-                      class="ml-2 text-[11px] text-[var(--color-ink-muted)]"
-                      style="font-family: var(--font-typewriter); font-weight: 400;"
-                      title="The same criteria re-scored under the weights you set. The grade to its left is the fixed editorial instrument, so the two can be compared over time."
-                    >
-                      · {store.result.writerScore} by your weights
-                    </span>
-                  )}
                 </p>
-                <p
-                  class="mt-1.5 text-xs leading-5 text-[var(--color-ink-light)]"
-                  style="font-family: var(--font-serif); font-style: italic;"
-                >
-                  {store.result.summary}
-                </p>
+                {store.result.writerScore !== undefined && (
+                  <p
+                    class="panel-meta mt-0.5 text-[var(--color-ink-muted)]"
+                    title="The same criteria re-scored under the weights you set. The grade above is the fixed editorial instrument, so the two can be compared over time."
+                  >
+                    {store.result.writerScore} by your weights
+                  </p>
+                )}
               </div>
             </div>
-
-            {/* Per-judge scorecard */}
-            <div class="mt-4 pt-4 border-t border-dashed border-[var(--color-paper-3)]">
-              <p class="dept-label">The Judges' Verdict</p>
-              {store.error && (
-                <div class="mt-2">
-                  <ApplicationNotice
-                    error={store.error}
-                    compact
-                    onRetry$={
-                      store.error.recovery.canRetry ? analyze : undefined
-                    }
-                    recoveryLabel="Open AI settings"
-                    recoveryHref="/settings/"
-                  />
-                </div>
-              )}
-              <ul class="mt-2 space-y-1.5">
-                {store.result.judges.map((j) => (
-                  <li
-                    key={j.personaId}
-                    class="flex items-start gap-2 text-[12px] leading-5"
-                  >
-                    <span
-                      class="font-mono flex-shrink-0 w-6 text-right"
-                      style={{
-                        color:
-                          j.score >= 7
-                            ? "var(--color-accent-green)"
-                            : j.score >= 4
-                              ? "var(--color-accent-amber)"
-                              : "var(--color-accent-red)",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {j.score}
-                    </span>
-                    <span
-                      class="flex-1 text-[var(--color-ink-light)]"
-                      style="font-family: var(--font-serif); font-style: italic;"
-                    >
-                      <span class="not-italic font-semibold text-[var(--color-ink)]">
-                        {j.personaId}
-                      </span>
-                      {" — "}
-                      {j.rationale}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <p
+              class="panel-prose mt-3 text-[var(--color-ink-light)]"
+              style="font-family: var(--font-serif); font-style: italic;"
+            >
+              {store.result.summary}
+            </p>
+            {store.error && (
+              <div class="mt-3">
+                <ApplicationNotice
+                  error={store.error}
+                  compact
+                  onRetry$={store.error.recovery.canRetry ? analyze : undefined}
+                  recoveryLabel="Open AI settings"
+                  recoveryHref="/settings/"
+                />
+              </div>
+            )}
           </div>
 
           {/* The trend line — the rubric as a trajectory, not a snapshot. */}
           {store.history.length >= 2 && (
-            <div class="px-5 py-3 border-b border-dashed border-[var(--color-paper-3)]">
+            <div class="px-5 py-2 border-b border-dashed border-[var(--color-paper-3)]">
               <div class="flex items-baseline justify-between">
                 <p class="dept-label">The Run of Grades</p>
                 <ScoreDeltaBadge delta={scoreDelta(store.history)} />
@@ -884,98 +862,191 @@ export const RubricPanel = component$(({ brief }: RubricPanelProps) => {
             </div>
           )}
 
-          {/* Criteria */}
-          <div class="px-4 py-4 space-y-3">
-            {store.result.criteria.map((criterion, idx) => (
-              <RubricCriterionCard
-                key={criterion.id}
-                criterion={criterion}
-                index={idx + 1}
-                scoreColor={getScoreColor(criterion.score, criterion.maxScore)}
-              />
-            ))}
+          {/* Three readings of one proof, each its own short scroll. */}
+          <div class="flex border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+            {(
+              [
+                {
+                  id: "marks",
+                  label: "Marks",
+                  count: store.result.criteria.length,
+                },
+                {
+                  id: "room",
+                  label: "The Room",
+                  count: store.result.judges.length,
+                },
+                { id: "review", label: "Review" },
+              ] as Array<{ id: RubricSection; label: string; count?: number }>
+            ).map((s) => {
+              const active = store.section === s.id;
+              return (
+                <button
+                  key={s.id}
+                  onClick$={() => {
+                    store.section = s.id;
+                  }}
+                  class="panel-meta flex-1 px-2 py-2 uppercase focus-ring"
+                  aria-pressed={active}
+                  style={{
+                    borderBottom: active
+                      ? "2px solid var(--color-cobalt)"
+                      : "2px solid transparent",
+                    color: active
+                      ? "var(--color-ink)"
+                      : "var(--color-ink-muted)",
+                    background: active ? "var(--color-paper)" : "transparent",
+                  }}
+                >
+                  {s.label}
+                  {s.count !== undefined && (
+                    <span class="ml-1 text-[var(--color-ink-muted)]">
+                      {s.count}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Full narrative review */}
-          <div class="px-4 py-4 border-t border-dashed border-[var(--color-paper-3)]">
-            <div class="flex items-center justify-between gap-2">
-              <p class="dept-label">The Critic's Full Review</p>
-              {store.result.review && (
-                <SpeakButton
-                  compact
-                  id="rubric-review"
-                  text={store.result.review}
-                  label="the critic"
-                />
-              )}
-            </div>
-            {store.result.review ? (
-              <div
-                class="comment-markdown mt-2 text-[13px] leading-6 text-[var(--color-ink)]"
-                style="font-family: var(--font-serif);"
-                dangerouslySetInnerHTML={renderMarkdown(store.result.review)}
-              />
-            ) : (
-              <button
-                onClick$={generateReview}
-                disabled={store.isReviewing}
-                class="btn-paper w-full mt-2"
-              >
-                {store.isReviewing
-                  ? "✍ Writing the full review…"
-                  : "✍ Expand to a full-page review"}
-              </button>
+          <div class="flex-1 min-h-0 overflow-y-auto">
+            {/* ── Marks: every criterion on one screen, reasoning on demand ── */}
+            {store.section === "marks" && (
+              <div class="px-4 py-3">
+                <div class="space-y-1">
+                  {store.result.criteria.map((criterion, idx) => (
+                    <RubricCriterionRow
+                      key={criterion.id}
+                      criterion={criterion}
+                      index={idx + 1}
+                      open={store.openCriteria[criterion.id] === true}
+                      scoreColor={getScoreColor(
+                        criterion.score,
+                        criterion.maxScore,
+                      )}
+                      onToggle$={toggleCriterionOpen}
+                    />
+                  ))}
+                </div>
+
+                <div class="mt-4 border-t border-dashed border-[var(--color-paper-3)] pt-3">
+                  <button
+                    onClick$={() => {
+                      store.criteriaOpen = !store.criteriaOpen;
+                    }}
+                    class="panel-meta w-full text-left uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] focus-ring"
+                    aria-expanded={store.criteriaOpen}
+                  >
+                    {store.criteriaOpen ? "▾" : "▸"} What the proof desk grades
+                  </button>
+                  {store.criteriaOpen && (
+                    <div class="mt-2">
+                      <CriteriaEditor
+                        specs={store.criteriaSpecs}
+                        suggestions={store.suggestions}
+                        isSuggesting={store.isSuggesting}
+                        newLabel={store.newCriterionLabel}
+                        newDescription={store.newCriterionDescription}
+                        onToggle$={toggleCriterion}
+                        onWeight$={setCriterionWeight}
+                        onRemove$={removeCriterion}
+                        onAdd$={addCriterion}
+                        onSuggest$={suggestCriteria}
+                        onAccept$={acceptSuggestion}
+                        onLabelInput$={$((v: string) => {
+                          store.newCriterionLabel = v;
+                        })}
+                        onDescriptionInput$={$((v: string) => {
+                          store.newCriterionDescription = v;
+                        })}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── The Room: five judges, each given room to be read ── */}
+            {store.section === "room" && (
+              <div class="px-4 py-3 space-y-3">
+                {store.result.judges.map((judge) => (
+                  <JudgeCard key={judge.personaId} judge={judge} />
+                ))}
+              </div>
+            )}
+
+            {/* ── Review: the long-form argument behind the grade ── */}
+            {store.section === "review" && (
+              <div class="px-4 py-4">
+                {store.result.review ? (
+                  <>
+                    <div class="flex items-center justify-between gap-2">
+                      <p class="dept-label">The Critic's Full Review</p>
+                      <SpeakButton
+                        compact
+                        id="rubric-review"
+                        text={store.result.review}
+                        label="the critic"
+                      />
+                    </div>
+                    <div
+                      class="comment-markdown mt-2 text-[var(--color-ink)]"
+                      style="font-family: var(--font-serif);"
+                      dangerouslySetInnerHTML={renderMarkdown(
+                        store.result.review,
+                      )}
+                    />
+                  </>
+                ) : store.isReviewing && store.streamingReview.trim() ? (
+                  <div
+                    class="comment-markdown text-[var(--color-ink)]"
+                    style="font-family: var(--font-serif);"
+                    aria-live="polite"
+                    dangerouslySetInnerHTML={renderMarkdown(
+                      store.streamingReview,
+                    )}
+                  />
+                ) : (
+                  <div class="py-6 text-center">
+                    <p
+                      class="panel-prose mx-auto max-w-xs text-[var(--color-ink-light)]"
+                      style="font-family: var(--font-serif); font-style: italic;"
+                    >
+                      The marks say where the draft stands. A full review says
+                      why, in one sitting.
+                    </p>
+                    <button
+                      onClick$={generateReview}
+                      disabled={store.isReviewing}
+                      class="btn-paper mt-3"
+                    >
+                      {store.isReviewing
+                        ? "✍ Writing…"
+                        : "✍ Write the full review"}
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
-          <div class="px-4 py-3 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] space-y-2">
-            <button
-              onClick$={() => {
-                store.criteriaOpen = !store.criteriaOpen;
-              }}
-              class="w-full text-left text-[11px] tracking-[0.12em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] focus-ring"
-              style="font-family: var(--font-typewriter);"
-              aria-expanded={store.criteriaOpen}
-            >
-              {store.criteriaOpen ? "▾" : "▸"} What the proof desk grades
-            </button>
-            {store.criteriaOpen && (
-              <CriteriaEditor
-                specs={store.criteriaSpecs}
-                suggestions={store.suggestions}
-                isSuggesting={store.isSuggesting}
-                newLabel={store.newCriterionLabel}
-                newDescription={store.newCriterionDescription}
-                onToggle$={toggleCriterion}
-                onWeight$={setCriterionWeight}
-                onRemove$={removeCriterion}
-                onAdd$={addCriterion}
-                onSuggest$={suggestCriteria}
-                onAccept$={acceptSuggestion}
-                onLabelInput$={$((v: string) => {
-                  store.newCriterionLabel = v;
-                })}
-                onDescriptionInput$={$((v: string) => {
-                  store.newCriterionDescription = v;
-                })}
-              />
-            )}
-            <Link
-              href="/rubric"
-              class="block w-full text-center text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-              style="font-family: var(--font-typewriter); letter-spacing: 0.12em; text-transform: uppercase;"
-            >
-              Expand ↗ Full galley report
-            </Link>
-            <button onClick$={analyze} class="btn-paper w-full">
+          <div class="flex items-center gap-3 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-2.5">
+            <button onClick$={analyze} class="btn-paper flex-1 text-xs">
               ↻ Send back for re-reading
             </button>
+            <Link
+              href="/rubric"
+              class="panel-meta flex-shrink-0 uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+            >
+              Full report ↗
+            </Link>
           </div>
         </div>
       )}
     </div>
   );
-});
+  },
+);
 
 /**
  * The score trend. Scaled to the observed range rather than 0-100 so a writer
@@ -1079,7 +1150,7 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
   return (
     <div class="rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3 space-y-3">
       <p
-        class="text-[10px] leading-4 text-[var(--color-ink-muted)]"
+        class="text-xs leading-5 text-[var(--color-ink-muted)]"
         style="font-family: var(--font-serif);"
       >
         The standing criteria stay put so one pass can be compared with the
@@ -1203,7 +1274,7 @@ const CriterionRow = component$<{
         aria-label={`Grade ${spec.label}`}
       />
       <span
-        class="flex-1 min-w-0 truncate text-[11px]"
+        class="flex-1 min-w-0 truncate text-[13px]"
         style={{
           fontFamily: "var(--font-serif)",
           color: spec.enabled
@@ -1241,88 +1312,161 @@ const CriterionRow = component$<{
   );
 });
 
-function RubricCriterionCard({
-  criterion,
-  scoreColor,
-  index,
-}: {
+/**
+ * One criterion, as a line rather than a card.
+ *
+ * The old card put a label, a bar, a paragraph of reasoning and a prescribed
+ * next move on screen for all eleven criteria at once — about two thousand
+ * words of 12px type in a 340px column. The mark and the bar are what a
+ * writer scans; the reasoning is what they read once they've found the row
+ * that matters, so it waits behind a click and arrives at a readable size.
+ */
+const RubricCriterionRow = component$<{
   criterion: RubricCriterion;
   scoreColor: string;
   index: number;
-}) {
+  open: boolean;
+  onToggle$: PropFunction<(id: string) => void>;
+}>((props) => {
+  const { criterion, scoreColor, open } = props;
   const pct = Math.round((criterion.score / criterion.maxScore) * 100);
-  const roman =
-    ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][index - 1] ||
-    `${index}`;
 
   return (
     <div
-      class="bg-[var(--color-paper)] border border-[var(--color-paper-3)] p-4"
-      style="border-radius: 2px;"
+      class="border-b border-dashed border-[var(--color-paper-3)] last:border-b-0"
+      style={{ ["--bar-color" as never]: scoreColor }}
     >
-      <div class="flex items-baseline justify-between gap-3 mb-2">
-        <div class="flex items-baseline gap-2 min-w-0">
+      <button
+        onClick$={() => props.onToggle$(criterion.id)}
+        class="focus-ring w-full py-2 text-left hover:bg-[var(--color-paper-soft)]"
+        aria-expanded={open}
+      >
+        <div class="flex items-baseline gap-2.5">
           <span
-            class="text-xs flex-shrink-0"
-            style={{
-              fontFamily: "var(--font-typewriter)",
-              color: "var(--color-ink-muted)",
-              letterSpacing: "0.15em",
-            }}
+            class="w-3 flex-shrink-0 text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-typewriter); font-size: 0.7rem;"
+            aria-hidden="true"
           >
-            §{roman}
+            {open ? "▾" : "▸"}
           </span>
           <span
-            class="text-sm text-[var(--color-ink)] truncate"
-            style="font-family: var(--font-display); font-weight: 600;"
+            class="min-w-0 flex-1 truncate text-[var(--color-ink)]"
+            style="font-family: var(--font-display); font-weight: 600; font-size: 0.9375rem;"
           >
             {criterion.label}
           </span>
+          <span
+            class="flex-shrink-0 tabular-nums"
+            style={{
+              color: scoreColor,
+              fontFamily: "var(--font-typewriter)",
+              fontSize: "0.8125rem",
+            }}
+          >
+            {criterion.score}
+            <span class="text-[var(--color-ink-muted)]">
+              /{criterion.maxScore}
+            </span>
+          </span>
         </div>
+        <div
+          class="ml-[1.375rem] mt-1.5 h-[3px] bg-[var(--color-paper-2)]"
+          role="meter"
+          aria-label={criterion.label}
+          aria-valuemin={0}
+          aria-valuemax={criterion.maxScore}
+          aria-valuenow={criterion.score}
+        >
+          <div
+            class="rubric-bar h-full"
+            style={{ width: `${pct}%`, backgroundColor: scoreColor }}
+          />
+        </div>
+      </button>
+
+      {open && (
+        <div class="ml-[1.375rem] pb-3">
+          <p
+            class="panel-prose text-[var(--color-ink-light)]"
+            style="font-family: var(--font-serif);"
+          >
+            {criterion.feedback}
+          </p>
+          {pct < 60 && (
+            <p
+              class="panel-prose mt-2 border-l-2 pl-2.5"
+              style={{
+                fontFamily: "var(--font-serif)",
+                borderColor: "var(--color-vermilion)",
+                color: "var(--color-ink)",
+              }}
+            >
+              <span
+                class="panel-meta block uppercase text-[var(--color-vermilion)]"
+                style="font-family: var(--font-typewriter);"
+              >
+                Next move
+              </span>
+              {nextMoveFor(criterion.id)}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+});
+
+/**
+ * One judge's verdict.
+ *
+ * The judges used to be a bulleted list keyed by raw persona id — "devil",
+ * "scholar" — with the reasoning set in 12px italic and the Markdown the
+ * model wrote (its quoted lines from the draft, its emphasis) flattened to
+ * plain text. Here each editor is named, coloured like their portrait in the
+ * Cast, and their note rendered as what it is.
+ */
+function JudgeCard({ judge }: { judge: JudgeResult }) {
+  const persona = DEFAULT_PERSONAS.find((p) => p.id === judge.personaId);
+  const color = persona?.color ?? "var(--color-ink)";
+  const scoreColor =
+    judge.score >= 7
+      ? "var(--color-accent-green)"
+      : judge.score >= 4
+        ? "var(--color-accent-amber)"
+        : "var(--color-accent-red)";
+
+  return (
+    <div class="border-l-2 pl-3" style={{ borderColor: color }}>
+      <div class="flex items-baseline justify-between gap-2">
+        <p
+          class="min-w-0 truncate text-[var(--color-ink)]"
+          style="font-family: var(--font-display); font-weight: 600; font-size: 0.9375rem;"
+        >
+          {persona?.icon ? `${persona.icon} ` : ""}
+          {persona?.name ?? judge.personaId}
+        </p>
         <span
-          class="text-xs flex-shrink-0"
+          class="flex-shrink-0 tabular-nums"
           style={{
             color: scoreColor,
             fontFamily: "var(--font-typewriter)",
-            letterSpacing: "0.1em",
+            fontSize: "0.8125rem",
           }}
         >
-          {criterion.score}/{criterion.maxScore}
+          {judge.score}
+          <span class="text-[var(--color-ink-muted)]">/10</span>
         </span>
       </div>
-      <div
-        class="w-full h-[3px] bg-[var(--color-paper-2)] mb-2.5"
-        role="meter"
-        aria-label={criterion.label}
-        aria-valuemin={0}
-        aria-valuemax={criterion.maxScore}
-        aria-valuenow={criterion.score}
-      >
-        <div
-          class="rubric-bar h-full"
-          style={{
-            width: `${pct}%`,
-            backgroundColor: scoreColor,
-          }}
-        />
-      </div>
-      <p
-        class="text-xs leading-5 text-[var(--color-ink-light)]"
-        style="font-family: var(--font-serif);"
-      >
-        {criterion.feedback}
-      </p>
-      {pct < 60 && (
-        <p
-          class="mt-1.5 text-[11px] leading-5"
-          style={{
-            fontFamily: "var(--font-typewriter)",
-            color: "var(--color-vermilion)",
-          }}
-        >
-          Next move → {nextMoveFor(criterion.id)}
+      {persona?.role && (
+        <p class="panel-meta uppercase" style={{ color }}>
+          {persona.role}
         </p>
       )}
+      <div
+        class="comment-markdown mt-1.5 text-[var(--color-ink-light)]"
+        style="font-family: var(--font-serif);"
+        dangerouslySetInnerHTML={renderMarkdown(judge.rationale)}
+      />
     </div>
   );
 }

@@ -94,6 +94,25 @@ function normalizeWriterSettings(value: unknown): WriterSettings {
   return {
     interviewStyle:
       v.interviewStyle === "conversational" ? "conversational" : "form",
+    profile: {
+      displayName:
+        typeof v.profile?.displayName === "string"
+          ? v.profile.displayName
+          : DEFAULT_WRITER_SETTINGS.profile.displayName,
+      personalFacts:
+        typeof v.profile?.personalFacts === "string"
+          ? v.profile.personalFacts
+          : DEFAULT_WRITER_SETTINGS.profile.personalFacts,
+      feedbackStyle:
+        v.profile?.feedbackStyle === "direct" ||
+        v.profile?.feedbackStyle === "gentle"
+          ? v.profile.feedbackStyle
+          : DEFAULT_WRITER_SETTINGS.profile.feedbackStyle,
+      feedbackNotes:
+        typeof v.profile?.feedbackNotes === "string"
+          ? v.profile.feedbackNotes
+          : DEFAULT_WRITER_SETTINGS.profile.feedbackNotes,
+    },
   };
 }
 
@@ -140,6 +159,7 @@ function normalizeApparatusSettings(value: unknown): ApparatusSettings {
 mock.module("./idb", () => ({
   // Read paths used by buildLocalSnapshot()
   loadFoliosFromIdb: async () => SAMPLE_FOLIOS,
+  loadAllBriefsFromIdb: async () => [],
   loadActiveFolioIdFromIdb: async () => "f1",
   loadFolioContentFromIdb: async () => SAMPLE_HTML,
   loadPersonasFromIdb: async () => [],
@@ -147,9 +167,12 @@ mock.module("./idb", () => ({
   loadLixBlobFromIdb: async () => lixBlobFromIdb,
   // Write paths convex-sync imports but our tests never hit — safe no-ops.
   saveFoliosToIdb: async () => {},
+  saveBriefToIdb: async () => {},
   saveFolioContentToIdb: async () => {},
   savePersonasToIdb: async () => {},
   saveDraftHtmlToIdb: async () => {},
+  loadRubricResultFromIdb: async () => null,
+  saveRubricResultToIdb: async () => {},
   clearIdbStore: async () => {},
   loadAiSettingsFromIdb: async () =>
     readLocalStorageJson<AiSettings>(AI_SETTINGS_STORAGE_KEY),
@@ -200,8 +223,9 @@ interface RecordingClient {
 
 function emptyRemoteSnapshot(): SyncedSnapshot {
   return {
-    brief: null,
-    briefUpdatedAt: 0,
+    briefs: [],
+    legacyBrief: null,
+    legacyBriefUpdatedAt: 0,
     folios: [],
     foliosUpdatedAt: 0,
     folioContent: [],
@@ -209,16 +233,20 @@ function emptyRemoteSnapshot(): SyncedSnapshot {
     customPersonasUpdatedAt: 0,
     personaNotes: [],
     personaReplies: [],
-    rubricResult: null,
-    rubricResultUpdatedAt: 0,
+    rubricResults: [],
     bibliography: [],
     bibliographyUpdatedAt: 0,
   };
 }
 
 interface SyncedSnapshot {
-  brief: ProjectBrief | null;
-  briefUpdatedAt: number;
+  briefs: Array<{
+    folioId: string;
+    brief: ProjectBrief;
+    updatedAt: number;
+  }>;
+  legacyBrief: ProjectBrief | null;
+  legacyBriefUpdatedAt: number;
   folios: typeof SAMPLE_FOLIOS;
   foliosUpdatedAt: number;
   folioContent: Array<{ folioId: string; html: string; updatedAt: number }>;
@@ -226,8 +254,11 @@ interface SyncedSnapshot {
   customPersonasUpdatedAt: number;
   personaNotes: unknown[];
   personaReplies: unknown[];
-  rubricResult: RubricResult | null;
-  rubricResultUpdatedAt: number;
+  rubricResults: Array<{
+    folioId?: string;
+    result: RubricResult;
+    updatedAt: number;
+  }>;
   bibliography: BibEntry[];
   bibliographyUpdatedAt: number;
 }

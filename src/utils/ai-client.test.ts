@@ -7,7 +7,10 @@ import {
   hasConfiguredVoiceProvider,
   parseCitationFormatResult,
   parseMissingSourceResult,
+  providerSupportsFeature,
   resolveFeatureConfig,
+  runClientVoiceTranscribe,
+  runClientVoiceSpeech,
 } from "./ai-client";
 
 const ALL_FEATURES: AiFeature[] = [
@@ -186,6 +189,260 @@ describe("ai-client provider model discovery", () => {
   });
 });
 
+describe("client voice synthesis", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  test("sends the Voice Narration provider and chosen model to synthesis", async () => {
+    let requestedUrl = "";
+    let requestBody: Record<string, unknown> | null = null;
+    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      requestedUrl = String(url);
+      requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return new Response(new Uint8Array([1, 2, 3]), {
+        status: 200,
+        headers: { "content-type": "audio/mpeg" },
+      });
+    }) as typeof fetch;
+
+    const settings = makeSettings({
+      providers: [
+        {
+          id: "default-openai",
+          name: "Default OpenAI",
+          type: "openai",
+          apiKey: "sk-default",
+          defaultModel: "gpt-5.5-mini",
+        },
+        {
+          id: "voice-provider",
+          name: "Voice Provider",
+          type: "openai-compatible",
+          apiKey: "voice-key",
+          baseUrl: "https://voice.example/v1/",
+          defaultModel: "provider-default-tts",
+        },
+      ],
+      defaultProviderId: "default-openai",
+      perFeature: {
+        "voice-narration": {
+          providerId: "voice-provider",
+          model: "chosen-high-quality-tts",
+          voice: "chosen-voice",
+        },
+      },
+    });
+
+    const result = await runClientVoiceSpeech(
+      { text: "Read this passage." },
+      settings,
+    );
+
+    expect(requestedUrl).toBe("https://voice.example/v1/audio/speech");
+    expect(requestBody).toMatchObject({
+      model: "chosen-high-quality-tts",
+      input: "Read this passage.",
+      voice: "chosen-voice",
+    });
+    expect(result?.provider).toBe("openai-compatible");
+    expect(result?.model).toBe("chosen-high-quality-tts");
+    expect(result?.voice).toBe("chosen-voice");
+  });
+
+  test("sends direct audio to an audio-capable OpenAI-compatible model", async () => {
+    let requestedUrl = "";
+    let requestBody: Record<string, unknown> | null = null;
+    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      requestedUrl = String(url);
+      requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return new Response(
+        JSON.stringify({
+          id: "chatcmpl-audio",
+          object: "chat.completion",
+          created: 1,
+          model: "gemma-4-12b",
+          choices: [
+            {
+              index: 0,
+              message: { role: "assistant", content: "A spoken note." },
+              finish_reason: "stop",
+            },
+          ],
+          usage: { prompt_tokens: 4, completion_tokens: 4, total_tokens: 8 },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const result = await runClientVoiceTranscribe(
+      {
+        audio: new Blob([new Uint8Array(44)], { type: "audio/wav" }),
+        prompt: "Transcribe this recording.",
+      },
+      makeSettings({
+        providers: [
+          {
+            id: "audio-provider",
+            name: "Audio Provider",
+            type: "openai-compatible",
+            apiKey: "audio-key",
+            baseUrl: "https://audio.example/v1",
+            defaultModel: "gemma-4-12b",
+          },
+        ],
+        defaultProviderId: "audio-provider",
+      }),
+    );
+
+    const messages = (
+      requestBody as {
+        messages?: Array<{ content: unknown }>;
+      } | null
+    )?.messages;
+    const message = (messages?.find((entry) => Array.isArray(entry.content))
+      ?.content ?? []) as Array<Record<string, unknown>>;
+    expect(requestedUrl).toBe("https://audio.example/v1/chat/completions");
+    expect(message).toEqual(
+      expect.arrayContaining([
+        { type: "text", text: "Transcribe this recording." },
+        {
+          type: "input_audio",
+          input_audio: { format: "wav", data: expect.any(String) },
+        },
+      ]),
+    );
+    expect(result).toMatchObject({
+      text: "A spoken note.",
+      provider: "openai-compatible",
+      model: "gemma-4-12b",
+    });
+  });
+
+  test("routes Inkling audio through Twyne's Tinker bridge", async () => {
+    let requestedUrl = "";
+    let requestBody: Record<string, unknown> | null = null;
+    let authorization = "";
+    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      requestedUrl = String(url);
+      authorization = new Headers(init?.headers).get("authorization") ?? "";
+      requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      return new Response(
+        JSON.stringify({
+          id: "chatcmpl-inkling-audio",
+          object: "chat.completion",
+          created: 1,
+          model: "thinkingmachines/Inkling",
+          choices: [
+            {
+              index: 0,
+              message: { role: "assistant", content: "An Inkling transcript." },
+              finish_reason: "stop",
+            },
+          ],
+          usage: { prompt_tokens: 4, completion_tokens: 4, total_tokens: 8 },
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const tinker: AiProviderConfig = {
+      id: "tinker",
+      name: "Tinker",
+      type: "anthropic-compatible",
+      apiKey: "tinker-test-key",
+      baseUrl:
+        "https://tinker.thinkingmachines.dev/services/tinker-prod/anthropic/api/v1",
+      defaultModel: "thinkingmachines/Inkling",
+    };
+
+    expect(
+      providerSupportsFeature(tinker.type, "voice-transcription", tinker),
+    ).toBe(true);
+
+    const result = await runClientVoiceTranscribe(
+      {
+        audio: new Blob([new Uint8Array(44)], { type: "audio/wav" }),
+      },
+      makeSettings({
+        providers: [tinker],
+        defaultProviderId: tinker.id,
+      }),
+    );
+
+    const messages = (
+      requestBody as {
+        messages?: Array<{ content: unknown }>;
+      } | null
+    )?.messages;
+    const content = (messages?.find((entry) => Array.isArray(entry.content))
+      ?.content ?? []) as Array<Record<string, unknown>>;
+    expect(requestedUrl).toBe("http://localhost/api/tinker/chat/completions");
+    expect(authorization).toBe("Bearer tinker-test-key");
+    expect(content).toEqual(
+      expect.arrayContaining([
+        {
+          type: "input_audio",
+          input_audio: { format: "wav", data: expect.any(String) },
+        },
+      ]),
+    );
+    expect(result).toMatchObject({
+      text: "An Inkling transcript.",
+      model: "thinkingmachines/Inkling",
+    });
+  });
+
+  test("uses Fish Audio's current TTS contract and reference voice id", async () => {
+    let requestedUrl = "";
+    let requestBody: Record<string, unknown> | null = null;
+    let requestHeaders: Headers | null = null;
+    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      requestedUrl = String(url);
+      requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
+      requestHeaders = new Headers(init?.headers);
+      return new Response(new Uint8Array([1, 2, 3]), {
+        status: 200,
+        headers: { "content-type": "audio/mpeg" },
+      });
+    }) as typeof fetch;
+
+    const settings = makeSettings({
+      providers: [
+        {
+          id: "fish-provider",
+          name: "Fish Audio",
+          type: "fishaudio",
+          apiKey: "fish-key",
+          defaultModel: "s2-pro",
+        },
+      ],
+      defaultProviderId: "fish-provider",
+      perFeature: {
+        "voice-narration": {
+          voice: "91f2fedea8bc4465a6c668b2776be809",
+        },
+      },
+    });
+
+    const result = await runClientVoiceSpeech(
+      { text: "Read this passage." },
+      settings,
+    );
+
+    expect(requestedUrl).toBe("https://api.fish.audio/v1/tts");
+    expect((requestHeaders as Headers | null)?.get("model")).toBe("s2-pro");
+    expect(requestBody).toMatchObject({
+      text: "Read this passage.",
+      format: "mp3",
+      reference_id: "91f2fedea8bc4465a6c668b2776be809",
+    });
+    expect(result?.provider).toBe("fishaudio");
+  });
+});
+
 describe("ai-client citation parsers", () => {
   test("preserves formatted citation metadata from fenced JSON", () => {
     const parsed = parseCitationFormatResult(
@@ -267,7 +524,7 @@ describe("voice-only providers", () => {
     name: "Fish Audio",
     type: "fishaudio",
     apiKey: "fish-test",
-    defaultModel: "s2.1-pro-free",
+    defaultModel: "s2-pro",
   };
   const anthropic: AiProviderConfig = {
     id: "provider-anthropic",
@@ -296,8 +553,10 @@ describe("voice-only providers", () => {
       if (feature === "voice-narration" || feature === "voice-transcription") {
         expect(resolved?.provider.type, feature).toBe("fishaudio");
       } else {
-        expect(resolved, `${feature} must not resolve to a voice-only provider`)
-          .toBeNull();
+        expect(
+          resolved,
+          `${feature} must not resolve to a voice-only provider`,
+        ).toBeNull();
       }
     }
   });
@@ -323,13 +582,13 @@ describe("voice-only providers", () => {
     ).toBe("fishaudio");
   });
 
-  test("picks the free-tier model by default, since a fresh key has no credit", () => {
+  test("picks Fish's documented TTS model by default", () => {
     const settings = makeSettings({
       providers: [fish],
       defaultProviderId: fish.id,
     });
     expect(resolveFeatureConfig(settings, "voice-narration")?.model).toBe(
-      "s2.1-pro-free",
+      "s2-pro",
     );
     expect(resolveFeatureConfig(settings, "voice-transcription")?.model).toBe(
       "asr-1",
@@ -356,5 +615,30 @@ describe("voice-only providers", () => {
     });
     expect(resolveFeatureConfig(settings, "voice-narration")).toBeNull();
     expect(hasConfiguredVoiceProvider(settings)).toBe(false);
+  });
+
+  test("a transcription-only provider does not make narration resolvable", () => {
+    // Google can listen but not speak. `hasConfiguredVoiceProvider` answers
+    // "some voice feature is reachable", which is true here — so reading aloud
+    // must gate on narration resolving, not on that broader question. Gating
+    // on the broad one stranded writers running an LLM plus Google: narration
+    // resolved to nothing and the hosted fallback was never tried.
+    const google: AiProviderConfig = {
+      id: "provider-google",
+      name: "Google",
+      type: "google",
+      apiKey: "goog-test",
+      defaultModel: "gemini-2.5-flash",
+    };
+    const settings = makeSettings({
+      providers: [anthropic, google],
+      defaultProviderId: anthropic.id,
+    });
+
+    expect(hasConfiguredVoiceProvider(settings)).toBe(true);
+    expect(resolveFeatureConfig(settings, "voice-transcription")?.provider.type).toBe(
+      "google",
+    );
+    expect(resolveFeatureConfig(settings, "voice-narration")).toBeNull();
   });
 });

@@ -43,6 +43,7 @@ import {
   normalizeApplicationError,
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import { toAgentPersona } from "../../../convex/agentPrompts";
 
 function personaToMentionable(p: Persona): Mentionable {
   return {
@@ -63,6 +64,8 @@ interface CommentsStore {
   askPersonaFor: string | null;
   askPersonaId: string | null;
   isAskingEditor: boolean;
+  /** Visible text from the editor response currently being generated. */
+  streamingEditorReply: string;
   askError: AppError | null;
   personas: Persona[];
   aiSettings: AiSettings | null;
@@ -133,6 +136,7 @@ export const CommentsPanel = component$(
       askPersonaFor: null,
       askPersonaId: null,
       isAskingEditor: false,
+      streamingEditorReply: "",
       askError: null,
       personas: DEFAULT_PERSONAS,
       aiSettings: null,
@@ -145,7 +149,9 @@ export const CommentsPanel = component$(
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async () => {
       if (initialComments) return;
-      store.comments = await loadUserComments();
+      store.comments = (await loadUserComments()).filter(
+        (comment) => comment.folioId === activeFolioId,
+      );
       const custom = await loadPersonasFromIdb();
       if (custom && custom.length > 0) store.personas = custom;
       const aiRaw = await loadAiSettingsFromIdb();
@@ -158,7 +164,9 @@ export const CommentsPanel = component$(
       const refresh = () => {
         void loadUserComments().then((all) => {
           if (initialComments) return;
-          store.comments = all;
+          store.comments = all.filter(
+            (comment) => comment.folioId === activeFolioId,
+          );
         });
       };
       const onScroll = (e: Event) => {
@@ -320,6 +328,7 @@ export const CommentsPanel = component$(
         }));
 
         store.isAskingEditor = true;
+        store.streamingEditorReply = "";
         store.askError = null;
         try {
           let replyText = "";
@@ -332,15 +341,7 @@ export const CommentsPanel = component$(
               const res = await runClientAgent(
                 "comment-reply",
                 {
-                  persona: {
-                    id: persona.id,
-                    name: persona.name,
-                    role: persona.role,
-                    description: persona.description,
-                    focus: persona.focus,
-                    color: persona.color,
-                    icon: persona.icon,
-                  },
+                  persona: toAgentPersona(persona),
                   brief: brief ?? null,
                   draftText: "",
                   priorMessages,
@@ -348,6 +349,9 @@ export const CommentsPanel = component$(
                   instruction: "elaborate",
                 },
                 settings,
+                (partial) => {
+                  store.streamingEditorReply = partial;
+                },
               );
               if (res && res.text.trim() && res.provider !== "local") {
                 replyText = res.text;
@@ -370,15 +374,7 @@ export const CommentsPanel = component$(
           if (!replyText && !hasByok && client) {
             try {
               const res = await client.action(api.agents.runPersona, {
-                persona: {
-                  id: persona.id,
-                  name: persona.name,
-                  role: persona.role,
-                  description: persona.description,
-                  focus: persona.focus,
-                  color: persona.color,
-                  icon: persona.icon,
-                },
+                persona: toAgentPersona(persona),
                 userMessage,
                 draftText: "",
                 brief: brief ?? null,
@@ -434,11 +430,13 @@ export const CommentsPanel = component$(
           );
         } finally {
           store.isAskingEditor = false;
+          store.streamingEditorReply = "";
         }
       },
     );
 
     const unresolved = store.comments.filter((c) => {
+      if (c.folioId !== activeFolioId) return false;
       if (c.resolved) return false;
       // The "ghosts only" filter shows threads whose anchor
       // passage is gone from the manuscript. Ghosts come first
@@ -446,7 +444,9 @@ export const CommentsPanel = component$(
       if (store.ghostsOnly && !store.ghostIds.has(c.id)) return false;
       return true;
     });
-    const resolved = store.comments.filter((c) => c.resolved);
+    const resolved = store.comments.filter(
+      (c) => c.folioId === activeFolioId && c.resolved,
+    );
     const mentionables: Mentionable[] = [
       ...store.personas.map(personaToMentionable),
       ...(collaborators ?? []),
@@ -793,6 +793,24 @@ export const CommentsPanel = component$(
                           }}
                         />
                       </div>
+                    )}
+                    {store.isAskingEditor && (
+                      <div
+                        class="comment-markdown mb-2 p-2 border-l-2 text-xs leading-5 text-[var(--color-ink-light)]"
+                        style={{
+                          borderColor:
+                            store.personas.find(
+                              (persona) =>
+                                persona.id === store.askPersonaId,
+                            )?.color ?? "var(--color-paper-3)",
+                          fontFamily: "var(--font-serif)",
+                        }}
+                        aria-live="polite"
+                        dangerouslySetInnerHTML={renderMarkdown(
+                          store.streamingEditorReply ||
+                            "The editor is beginning to write…",
+                        )}
+                      />
                     )}
                     <div class="flex gap-3">
                       <button

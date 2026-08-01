@@ -15,14 +15,33 @@ import { PERSONAS } from "./personas";
 describe("persona voices", () => {
   test("every default persona ships a distinct voice spec", () => {
     for (const p of PERSONAS) {
+      expect(p.backstory, `${p.id} should have a backstory`).toBeTruthy();
+      expect(
+        p.criticalMethod,
+        `${p.id} should have an editorial doctrine`,
+      ).toBeTruthy();
       expect(p.voice, `${p.id} should have a voice`).toBeTruthy();
+      expect(
+        (p.signatureMoves ?? []).length,
+        `${p.id} should have signature moves`,
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        (p.avoidances ?? []).length,
+        `${p.id} should define boundaries`,
+      ).toBeGreaterThanOrEqual(2);
       expect(
         (p.sampleLines ?? []).length,
         `${p.id} should have sample lines`,
-      ).toBeGreaterThan(0);
+      ).toBeGreaterThanOrEqual(3);
     }
     const voices = PERSONAS.map((p) => p.voice);
     expect(new Set(voices).size).toBe(PERSONAS.length);
+    expect(new Set(PERSONAS.map((p) => p.backstory)).size).toBe(
+      PERSONAS.length,
+    );
+    expect(new Set(PERSONAS.map((p) => p.criticalMethod)).size).toBe(
+      PERSONAS.length,
+    );
   });
 
   test("the system prompt injects the persona's voice and lore", () => {
@@ -31,10 +50,59 @@ describe("persona voices", () => {
     const devilPrompt = buildSystemPrompt(toAgentPersona(devil));
     const readerPrompt = buildSystemPrompt(toAgentPersona(reader));
 
-    expect(devilPrompt).toContain("WHO YOU ARE");
-    expect(devilPrompt).toContain(devil.voice!.slice(0, 24));
+    expect(devilPrompt).toContain("PERSONA BIBLE");
+    expect(devilPrompt).toContain("BACKSTORY");
+    expect(devilPrompt).toContain("EDITORIAL DOCTRINE");
+    expect(devilPrompt).toContain("VOICEPRINT");
+    expect(devilPrompt).toContain("SIGNATURE MOVES");
+    expect(devilPrompt).toContain("NEVER BORROW THESE HABITS");
+    expect(devilPrompt).toContain(devil.backstory!.slice(0, 24));
     // Two different editors must produce materially different prompts.
     expect(devilPrompt).not.toBe(readerPrompt);
+  });
+
+  test("every default editor produces a materially distinct persona bible", () => {
+    const prompts = PERSONAS.map((persona) =>
+      buildSystemPrompt(toAgentPersona(persona)),
+    );
+
+    for (let left = 0; left < prompts.length; left++) {
+      for (let right = left + 1; right < prompts.length; right++) {
+        const a = new Set(prompts[left]!.toLowerCase().match(/[a-zæ]+/g) ?? []);
+        const b = new Set(prompts[right]!.toLowerCase().match(/[a-zæ]+/g) ?? []);
+        const intersection = [...a].filter((word) => b.has(word)).length;
+        const union = new Set([...a, ...b]).size;
+        expect(intersection / union).toBeLessThan(0.82);
+      }
+    }
+  });
+
+  test("toAgentPersona preserves the complete identity contract", () => {
+    const source = PERSONAS[0]!;
+    const agent = toAgentPersona(source);
+
+    expect(agent).toMatchObject({
+      backstory: source.backstory,
+      criticalMethod: source.criticalMethod,
+      voice: source.voice,
+      signatureMoves: source.signatureMoves,
+      avoidances: source.avoidances,
+      sampleLines: source.sampleLines,
+    });
+  });
+
+  test("full analyses may take a persona-specific structure", () => {
+    const prompt = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]!),
+      brief: null,
+      draftText: "A sufficiently developed draft.",
+      instruction: "analyze",
+    });
+
+    expect(prompt).toContain("YOUR editorial doctrine");
+    expect(prompt).toContain("rather than a shared five-part template");
+    expect(prompt).toContain("the sceptic may build a case");
+    expect(prompt).toContain("the reader may narrate");
   });
 
   test("personas with no voice fall back to the generic instruction", () => {
@@ -61,6 +129,24 @@ describe("synthesis + review prompts", () => {
     expect(out).toContain("A (critic)");
     expect(out).toContain("memo-a");
     expect(out).toContain("memo-b");
+  });
+
+  test("writer profile tells the room who it is addressing and how", () => {
+    const out = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]),
+      brief: null,
+      draftText: "A draft sentence with enough context to read.",
+      writerProfile: {
+        displayName: "Mara",
+        personalFacts: "I am writing from lived experience.",
+        feedbackStyle: "direct",
+        feedbackNotes: "Question my premise before polishing the prose.",
+      },
+    });
+    expect(out).toContain("Name: Mara");
+    expect(out).toContain("Personal context:");
+    expect(out).toContain("Question my premise");
+    expect(out).toContain("Speak to this person directly");
   });
 
   test("brief attachments are serialized into prompt context", () => {

@@ -14,12 +14,14 @@ import type { ProjectBrief, Folio } from "../../types";
 import {
   loadDraftHtml,
   loadProjectBrief,
+  loadProjectBriefForFolio,
+  saveProjectBriefForFolio,
   saveDraftHtml,
 } from "../../utils/anti-tabula-rasa";
 import {
-  clearIdbStore,
   loadFoliosFromIdb,
   loadActiveFolioIdFromIdb,
+  loadAllBriefsFromIdb,
   loadFolioContentFromIdb,
   saveFoliosToIdb,
   saveActiveFolioIdToIdb,
@@ -29,7 +31,6 @@ import {
   loadPersonasFromIdb,
 } from "../../utils/idb";
 import { useAuth } from "../../utils/auth-context";
-import { clearUserComments } from "../../utils/user-comments";
 import { TwyneEditor } from "../../components/editor/twyne-editor";
 import { ShareDialog } from "../../components/collaboration/share-dialog";
 import { PersonasPanel } from "../../components/personas/personas-panel";
@@ -65,6 +66,7 @@ import {
   normalizeApplicationError,
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import { migrateLegacyEditorialArtifacts } from "../../utils/folio-workspace";
 
 type RightPanel = "personas" | "rubric" | "comments" | "citations";
 
@@ -207,25 +209,25 @@ export default component$(() => {
   useVisibleTask$(({ cleanup }) => {
     (async () => {
       try {
-        const brief = loadProjectBrief();
+        const legacyBrief = loadProjectBrief();
         const folios = await loadFoliosFromIdb();
         const activeFolioId = await loadActiveFolioIdFromIdb();
 
         // No dossier yet → the writer belongs in onboarding first.
-        if (!brief && folios.length === 0) {
+        if (!legacyBrief && folios.length === 0) {
           void nav("/dossier/create/");
           return;
         }
 
         // Migration: old storage had a single draft. If we have a brief but no
         // folios, create a Folio I from the legacy draft key.
-        if (brief && folios.length === 0) {
+        if (legacyBrief && folios.length === 0) {
           const legacyDraft = loadDraftHtml();
           const draftFolio: Folio = {
             id: crypto.randomUUID(),
-            name: brief.answers.workingTitle || "Current draft",
+            name: legacyBrief.answers.workingTitle || "Current draft",
             type: "draft",
-            createdAt: brief.completedAt,
+            createdAt: legacyBrief.completedAt,
             updatedAt: Date.now(),
           };
           await saveFoliosToIdb([draftFolio]);
@@ -235,6 +237,7 @@ export default component$(() => {
           store.folios = [draftFolio];
           store.activeFolioId = draftFolio.id;
           store.editorSeed = legacyDraft;
+          await saveProjectBriefForFolio(draftFolio.id, legacyBrief);
           markDirty();
         } else if (folios.length > 0) {
           store.folios = folios;
@@ -243,7 +246,20 @@ export default component$(() => {
           saveDraftHtml(store.editorSeed);
         }
 
-        store.brief = brief;
+        store.brief = await loadProjectBriefForFolio(store.activeFolioId);
+        if (store.activeFolioId) {
+          await migrateLegacyEditorialArtifacts(store.activeFolioId);
+        }
+        const folioDossiers = await loadAllBriefsFromIdb();
+        if (
+          !store.brief &&
+          folioDossiers.length === 0 &&
+          legacyBrief &&
+          store.activeFolioId
+        ) {
+          await saveProjectBriefForFolio(store.activeFolioId, legacyBrief);
+          store.brief = legacyBrief;
+        }
         store.hydrated = true;
 
         // Surface the local-only sign-in nudge unless it was dismissed before.
@@ -418,51 +434,6 @@ export default component$(() => {
     onWindowResize();
     cleanup(() => window.removeEventListener("resize", onWindowResize));
 
-    // ── Background research: Apparatus agents run on the writer's
-    //    behalf, debounced, watching the draft. ──
-    const client = clientSig.value;
-    if (client && store.activeFolioId) {
-      startBackgroundResearch({
-        client,
-        brief: store.brief,
-        folioId: store.activeFolioId,
-      });
-      // Kick an initial pass with the current draft (if any) so the
-      // writer lands on a populated bibliography, not an empty one.
-      void (async () => {
-        const seed = await loadFolioContentFromIdb(store.activeFolioId!);
-        const plain = (seed ?? "")
-          .replace(/<[^>]+>/g, " ")
-          .replace(/\s+/g, " ")
-          .trim();
-        if (plain.length > 40) {
-          kickBackgroundResearch(plain);
-        }
-      })();
-    }
-    // ── The background room: the five editors read new material as the
-    //    writer works, so a note is already waiting when they think to ask,
-    //    and every explicit convene inherits the trajectory. ──
-    if (store.activeFolioId) {
-      void (async () => {
-        const [custom, roomSettings, seed] = await Promise.all([
-          loadPersonasFromIdb(),
-          loadRoomSettingsLocally(),
-          loadFolioContentFromIdb(store.activeFolioId!),
-        ]);
-        startBackgroundRoom({
-          client,
-          brief: store.brief,
-          folioId: store.activeFolioId,
-          personas: custom && custom.length > 0 ? custom : DEFAULT_PERSONAS,
-          enabled: roomSettings.backgroundRoom !== false,
-          // Everything already on the page counts as read, so the writer is
-          // never ambushed by five notes on prose they wrote last week.
-          baselineText: paragraphTextFromHtml(seed ?? ""),
-        });
-      })();
-    }
-
     const onDraftContent = (e: Event) => {
       const html = (e as CustomEvent).detail as string;
       const plain = html
@@ -495,11 +466,123 @@ export default component$(() => {
     cleanup(() => {
       stopActivity();
       window.removeEventListener("twyne:panel-activity", onActivity);
-      stopBackgroundResearch();
-      stopBackgroundRoom();
       window.removeEventListener("twyne:content", onDraftContent);
       window.removeEventListener("twyne:persona-reply", onPersonaReply);
     });
+  });
+
+  // Each folio owns its own research and editorial-room process. Tracking the
+  // active id stops the previous room before opening the next one, including
+  // ordinary drawer switches that do not navigate away from /editor.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track, cleanup }) => {
+    const hydrated = track(() => store.hydrated);
+    const folioId = track(() => store.activeFolioId);
+    const brief = track(() => store.brief);
+    if (!hydrated || !folioId) return;
+
+    let cancelled = false;
+    cleanup(() => {
+      cancelled = true;
+      stopBackgroundResearch();
+      stopBackgroundRoom();
+    });
+
+    const client = clientSig.value;
+    const [custom, roomSettings, seed] = await Promise.all([
+      loadPersonasFromIdb(),
+      loadRoomSettingsLocally(),
+      loadFolioContentFromIdb(folioId),
+    ]);
+    if (cancelled || store.activeFolioId !== folioId) return;
+
+    if (client) {
+      startBackgroundResearch({ client, brief, folioId });
+      const plain = (seed ?? "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      if (plain.length > 40) kickBackgroundResearch(plain);
+    }
+    startBackgroundRoom({
+      client,
+      brief,
+      folioId,
+      personas: custom && custom.length > 0 ? custom : DEFAULT_PERSONAS,
+      enabled: roomSettings.backgroundRoom !== false,
+      baselineText: paragraphTextFromHtml(seed ?? ""),
+    });
+  });
+
+  /**
+   * Activate one existing folio as a complete workspace boundary.
+   *
+   * Load the dossier and manuscript before publishing the new active id so
+   * tracked background services can never observe "new folio + old dossier."
+   * The keyed right-rail panels remount when the id changes.
+   */
+  const activateFolio = $(async (folio: Folio) => {
+    if (store.activeFolioId === folio.id) return;
+    stopBackgroundResearch();
+    stopBackgroundRoom();
+    const [content, brief] = await Promise.all([
+      loadFolioContentFromIdb(folio.id),
+      loadProjectBriefForFolio(folio.id),
+    ]);
+    store.brief = brief;
+    store.editorSeed = content;
+    store.sharedLixId = null;
+    store.activeFolioId = folio.id;
+    store.folioKey += 1;
+    store.activity = panelActivity();
+    saveDraftHtml(content);
+    await saveActiveFolioIdToIdb(folio.id);
+    window.dispatchEvent(
+      new CustomEvent("twyne:load-folio", { detail: content }),
+    );
+  });
+
+  /**
+   * Create a blank folio and immediately open its own dossier.
+   *
+   * This is the only creation path used by the drawer, Enter-to-save, and
+   * "File a new piece", keeping their persistence and room reset semantics
+   * identical.
+   */
+  const createFolio = $(async (requestedName: string) => {
+    stopBackgroundResearch();
+    stopBackgroundRoom();
+    const now = Date.now();
+    const newFolio: Folio = {
+      id: crypto.randomUUID(),
+      name: requestedName.trim() || "Untitled folio",
+      type: "draft",
+      createdAt: now,
+      updatedAt: now,
+    };
+    const nextFolios = [...store.folios, newFolio];
+
+    // Publish a complete blank workspace atomically to reactive consumers.
+    store.folios = nextFolios;
+    store.brief = null;
+    store.editorSeed = "";
+    store.sharedLixId = null;
+    store.activeFolioId = newFolio.id;
+    store.folioKey += 1;
+    store.activity = panelActivity();
+    store.newFolioFormOpen = false;
+    store.confirmNukeOpen = false;
+    saveDraftHtml("");
+
+    await Promise.all([
+      saveFoliosToIdb(nextFolios),
+      saveFolioContentToIdb(newFolio.id, ""),
+      saveActiveFolioIdToIdb(newFolio.id),
+    ]);
+    markDirty();
+    await nav(
+      `/dossier/create/?folio=${encodeURIComponent(newFolio.id)}`,
+    );
   });
 
   const panelTabs: PanelTab[] = [
@@ -623,7 +706,12 @@ export default component$(() => {
               <ProjectBriefCard
                 brief={store.brief}
                 onStartInterview$={$(() => {
-                  void nav("/dossier/refine/");
+                  if (!store.activeFolioId) return;
+                  void nav(
+                    store.brief
+                      ? `/dossier/refine/?folio=${encodeURIComponent(store.activeFolioId)}`
+                      : `/dossier/create/?folio=${encodeURIComponent(store.activeFolioId)}`,
+                  );
                 })}
               />
 
@@ -648,17 +736,7 @@ export default component$(() => {
                       style="font-family: var(--font-serif); border-radius: 2px;"
                       onClick$={$(async () => {
                         if (active) return;
-                        const content = await loadFolioContentFromIdb(folio.id);
-                        store.activeFolioId = folio.id;
-                        store.editorSeed = content;
-                        store.folioKey += 1;
-                        saveDraftHtml(content);
-                        void saveActiveFolioIdToIdb(folio.id);
-                        window.dispatchEvent(
-                          new CustomEvent("twyne:load-folio", {
-                            detail: content,
-                          }),
-                        );
+                        await activateFolio(folio);
                       })}
                     >
                       <span class="dept-label block">
@@ -688,27 +766,10 @@ export default component$(() => {
                       placeholder="Folio name"
                       class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-3 py-2 text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
                       style="font-family: var(--font-display); border-radius: 2px;"
-                      onKeyDown$={(e) => {
+                      onKeyDown$={async (e) => {
                         if (e.key === "Enter") {
                           const input = e.target as HTMLInputElement;
-                          const name = input.value.trim() || "Untitled folio";
-                          const newFolio: Folio = {
-                            id: crypto.randomUUID(),
-                            name,
-                            type: "notes",
-                            createdAt: Date.now(),
-                            updatedAt: Date.now(),
-                          };
-                          store.folios = [...store.folios, newFolio];
-                          store.activeFolioId = newFolio.id;
-                          store.editorSeed = "";
-                          store.folioKey += 1;
-                          saveDraftHtml("");
-                          store.newFolioFormOpen = false;
-                          void saveFoliosToIdb(store.folios);
-                          void saveFolioContentToIdb(newFolio.id, "");
-                          void saveActiveFolioIdToIdb(newFolio.id);
-                          markDirty();
+                          await createFolio(input.value);
                         }
                         if (e.key === "Escape") {
                           store.newFolioFormOpen = false;
@@ -717,28 +778,11 @@ export default component$(() => {
                     />
                     <div class="flex gap-2">
                       <button
-                        onClick$={$(() => {
+                        onClick$={$(async () => {
                           const input = document.getElementById(
                             "new-folio-name",
                           ) as HTMLInputElement | null;
-                          const name = input?.value.trim() || "Untitled folio";
-                          const newFolio: Folio = {
-                            id: crypto.randomUUID(),
-                            name,
-                            type: "notes",
-                            createdAt: Date.now(),
-                            updatedAt: Date.now(),
-                          };
-                          store.folios = [...store.folios, newFolio];
-                          store.activeFolioId = newFolio.id;
-                          store.editorSeed = "";
-                          store.folioKey += 1;
-                          saveDraftHtml("");
-                          store.newFolioFormOpen = false;
-                          void saveFoliosToIdb(store.folios);
-                          void saveFolioContentToIdb(newFolio.id, "");
-                          void saveActiveFolioIdToIdb(newFolio.id);
-                          markDirty();
+                          await createFolio(input?.value ?? "");
                         })}
                         class="btn-press flex-1 text-xs"
                       >
@@ -829,6 +873,57 @@ export default component$(() => {
                 Pricing + Pro checkout
               </Link>
 
+              <Link
+                href="/settings/"
+                class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
+                style="font-family: var(--font-display); border-radius: 2px;"
+              >
+                <span class="dept-label block">The Composing Room</span>
+                Preferences + models
+              </Link>
+
+              <div
+                class="ornament-divider"
+                style="font-family: var(--font-display);"
+              >
+                ❦
+              </div>
+
+              {/* The rest of the paper. Without these the editor is a
+                  dead end: every other page was reachable only from the
+                  landing footer. */}
+              <p class="dept-label px-3">Elsewhere in the paper</p>
+              <div class="space-y-1">
+                {[
+                  { href: "/blog/", label: "The Column" },
+                  { href: "/docs/", label: "The Manual" },
+                  { href: "/faq/", label: "Queries Answered" },
+                  { href: "/downloads/", label: "The Press Room" },
+                ].map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    class="block px-3 py-1.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring"
+                    style="font-family: var(--font-serif); border-radius: 2px;"
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              <div
+                class="flex items-center gap-3 px-3 pt-1 text-[10px] tracking-wider text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-typewriter);"
+              >
+                <Link href="/terms/" class="hover:text-[var(--color-ink)]">
+                  Terms
+                </Link>
+                <span aria-hidden="true">·</span>
+                <Link href="/privacy/" class="hover:text-[var(--color-ink)]">
+                  Privacy
+                </Link>
+              </div>
+
               <div
                 class="ornament-divider"
                 style="font-family: var(--font-display);"
@@ -842,30 +937,17 @@ export default component$(() => {
                     class="text-xs text-[var(--color-ink-light)]"
                     style="font-family: var(--font-serif);"
                   >
-                    Start a brand new piece? Your current draft, dossier, and
-                    any pending margin notes will all be cleared.
+                    File a separate piece? Your current folio stays in the
+                    drawer. The new folio starts with its own dossier.
                   </p>
                   <div class="flex gap-2">
                     <button
                       onClick$={$(async () => {
-                        // Sweep the writer's comment threads out of the
-                        // Lix store so they don't silently orphan
-                        // against the new piece. Without this the
-                        // Marginalia panel of the next project would
-                        // light up with ghost notes the writer
-                        // never asked for.
-                        await clearUserComments();
-                        await clearIdbStore();
-                        store.brief = null;
-                        store.folios = [];
-                        store.activeFolioId = null;
-                        store.editorSeed = "";
-                        store.confirmNukeOpen = false;
-                        void nav("/dossier/create/");
+                        await createFolio("Untitled folio");
                       })}
                       class="btn-press flex-1 text-xs"
                     >
-                      Replace
+                      Create piece
                     </button>
                     <button
                       onClick$={$(() => {
@@ -941,12 +1023,17 @@ export default component$(() => {
               <div class="flex items-center gap-2">
                 <button
                   onClick$={$(() => {
-                    void nav("/dossier/refine/");
+                    if (!store.activeFolioId) return;
+                    void nav(
+                      store.brief
+                        ? `/dossier/refine/?folio=${encodeURIComponent(store.activeFolioId)}`
+                        : `/dossier/create/?folio=${encodeURIComponent(store.activeFolioId)}`,
+                    );
                   })}
                   class="btn-paper hidden sm:inline-flex"
                   title="Refine the dossier"
                 >
-                  Refine the dossier
+                  {store.brief ? "Refine the dossier" : "File a dossier"}
                 </button>
                 <FolioMenu
                   brief={store.brief}
@@ -1042,8 +1129,15 @@ export default component$(() => {
             {/* Editor */}
             <div class="flex-1 min-w-0 overflow-auto bg-[var(--color-paper-soft)]">
               <TwyneEditor
+                key={`editor-${store.activeFolioId ?? "none"}-${store.folioKey}`}
                 initialContent={store.editorSeed}
                 activeFolioId={store.activeFolioId ?? undefined}
+                activeFolio={
+                  store.folios.find(
+                    (folio) => folio.id === store.activeFolioId,
+                  ) ?? null
+                }
+                brief={store.brief}
                 sharedLixId={store.sharedLixId ?? undefined}
               />
             </div>
@@ -1168,20 +1262,32 @@ export default component$(() => {
                         event listeners (e.g. replying to an inline note from
                         the editor modal) and in-progress state survive tab
                         switches. Inactive panels are hidden, not unmounted. */}
-                    <div class="flex-1 min-h-0 overflow-hidden">
+                    <div class="board-panel flex-1 min-h-0 overflow-hidden">
                       <div
                         class={
                           store.rightPanel === "personas" ? "h-full" : "hidden"
                         }
                       >
-                        <PersonasPanel brief={store.brief} />
+                        {store.activeFolioId && (
+                          <PersonasPanel
+                            key={`personas-${store.activeFolioId}`}
+                            brief={store.brief}
+                            activeFolioId={store.activeFolioId}
+                          />
+                        )}
                       </div>
                       <div
                         class={
                           store.rightPanel === "rubric" ? "h-full" : "hidden"
                         }
                       >
-                        <RubricPanel brief={store.brief} />
+                        {store.activeFolioId && (
+                          <RubricPanel
+                            key={`rubric-${store.activeFolioId}`}
+                            brief={store.brief}
+                            activeFolioId={store.activeFolioId}
+                          />
+                        )}
                       </div>
                       <div
                         class={
@@ -1189,6 +1295,7 @@ export default component$(() => {
                         }
                       >
                         <CommentsPanel
+                          key={`comments-${store.activeFolioId ?? "none"}`}
                           brief={store.brief}
                           activeFolioId={store.activeFolioId}
                         />
@@ -1198,7 +1305,14 @@ export default component$(() => {
                           store.rightPanel === "citations" ? "h-full" : "hidden"
                         }
                       >
-                        <CitationsPanel />
+                        <CitationsPanel
+                          key={`citations-${store.activeFolioId ?? "none"}`}
+                          activeFolio={
+                            store.folios.find(
+                              (folio) => folio.id === store.activeFolioId,
+                            ) ?? null
+                          }
+                        />
                       </div>
                     </div>
                   </div>

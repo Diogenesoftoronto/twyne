@@ -17,14 +17,16 @@ import {
   runClientDossierCheck,
 } from "../../../utils/ai-client";
 import {
+  loadActiveFolioIdFromIdb,
   loadAiSettingsFromIdb,
+  loadFolioContentFromIdb,
   loadWriterSettingsFromIdb,
 } from "../../../utils/idb";
 import { loadDraftHtml } from "../../../utils/anti-tabula-rasa";
 import {
   createProjectBrief,
-  loadProjectBrief,
-  saveProjectBrief,
+  loadProjectBriefForFolio,
+  saveProjectBriefForFolio,
 } from "../../../utils/anti-tabula-rasa";
 
 interface RefiningStore {
@@ -38,6 +40,7 @@ interface RefiningStore {
   showDossierCheck: boolean;
   formAnswers: Partial<ProjectInterviewAnswers> | null;
   formAttachments: DossierAttachment[];
+  folioId: string | null;
 }
 
 /**
@@ -61,12 +64,20 @@ export default component$(() => {
     showDossierCheck: false,
     formAnswers: null,
     formAttachments: [],
+    folioId: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    store.brief = loadProjectBrief();
-    store.draftText = loadDraftHtml();
+    const activeFolioId = await loadActiveFolioIdFromIdb();
+    const requestedFolioId = new URLSearchParams(window.location.search).get(
+      "folio",
+    );
+    store.folioId = requestedFolioId ?? activeFolioId;
+    store.brief = await loadProjectBriefForFolio(store.folioId);
+    store.draftText = store.folioId
+      ? await loadFolioContentFromIdb(store.folioId)
+      : loadDraftHtml();
     const writer = await loadWriterSettingsFromIdb();
     store.style = writer.interviewStyle;
     store.hydrated = true;
@@ -80,9 +91,9 @@ export default component$(() => {
       attachments?: DossierAttachment[],
       probes?: DossierProbe[],
     ) => {
-      if (!store.brief) return;
+      if (!store.brief || !store.folioId) return;
       const next = createProjectBrief(answers, store.brief, attachments, probes);
-      saveProjectBrief(next);
+      void saveProjectBriefForFolio(store.folioId, next);
       void nav("/editor/");
     },
   );
@@ -97,9 +108,9 @@ export default component$(() => {
       attachments: DossierAttachment[];
       probes: DossierProbe[];
     }) => {
-      if (!store.brief) return;
+      if (!store.brief || !store.folioId) return;
       const next = createProjectBrief(answers, store.brief, attachments, probes);
-      saveProjectBrief(next);
+      void saveProjectBriefForFolio(store.folioId, next);
       void nav("/editor/");
     },
   );
@@ -137,7 +148,7 @@ export default component$(() => {
   });
 
   const applyObservation = $((obs: DossierObservation) => {
-    if (!store.brief || !obs.suggested) return;
+    if (!store.brief || !store.folioId || !obs.suggested) return;
     const updated: ProjectInterviewAnswers = {
       ...store.brief.answers,
       [obs.field]: obs.suggested,
@@ -147,7 +158,7 @@ export default component$(() => {
       answers: updated,
       updatedAt: Date.now(),
     };
-    saveProjectBrief(next);
+    void saveProjectBriefForFolio(store.folioId, next);
     store.brief = next;
     if (store.dossierCheck) {
       store.dossierCheck = {
@@ -193,11 +204,15 @@ export default component$(() => {
             The refinery needs a brief to refine. Start a fresh one.
           </p>
           <Link
-            href="/dossier/create/"
+            href={
+              store.folioId
+                ? `/dossier/create/?folio=${encodeURIComponent(store.folioId)}`
+                : "/dossier/create/"
+            }
             class="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-vermilion)] text-white px-5 py-2.5 text-sm"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Begin the dossier
+            File this folio's dossier
           </Link>
         </div>
       </div>

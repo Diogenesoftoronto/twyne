@@ -52,6 +52,7 @@ import {
 import type { AiSettings } from "../../types";
 import {
   loadAiSettingsFromIdb,
+  loadWriterSettingsFromIdb,
   loadRoomAnalysisFromIdb,
   saveRoomAnalysisToIdb,
 } from "../../utils/idb";
@@ -97,6 +98,19 @@ interface PersonasStore {
   conveneError: AppError | null;
   /** Replies keyed by noteId. */
   repliesByNote: Record<string, PersonaReply[]>;
+  /**
+   * Notes still being written, keyed by persona id, and the reply still being
+   * written, keyed by note id. Both hold the visible text so far.
+   *
+   * Kept apart from `feedback` and `repliesByNote` on purpose: those are the
+   * record, persisted and synced, and a half-finished sentence does not
+   * belong in a record. They are rendered beside it and cleared the moment
+   * the real thing lands.
+   */
+  streamingNotes: Record<string, string>;
+  streamingReplies: Record<string, string>;
+  /** The room's verdict as it is being written, during a full analysis. */
+  streamingSynthesis: string;
   /** When true, group feedback by persona (latest + count). */
   groupByPersona: boolean;
   /** Expanded persona ids (for the per-persona "see older" toggle). */
@@ -129,6 +143,8 @@ interface PersonasStore {
   proposalsUsed: number;
   /** Loaded BYOK settings (null until hydrated). */
   aiSettings: AiSettings | null;
+  /** Private writer context used to address the writer directly. */
+  writerProfile: import("../../types").WriterProfile;
   /** The expanded full-page cast analysis, when generated. */
   analysis: RoomAnalysis | null;
   /** Whether the full-analysis pass is in flight. */
@@ -145,6 +161,7 @@ interface PersonasStore {
 
 interface PersonasPanelProps {
   brief: ProjectBrief | null;
+  activeFolioId: string;
 }
 
 /** Effective assistance level for a persona (per-persona override wins). */
@@ -267,7 +284,8 @@ function pickAnchorSentences(
 
 /* ── Component ──────────────────────────────────────────────────── */
 
-export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
+export const PersonasPanel = component$(
+  ({ brief, activeFolioId }: PersonasPanelProps) => {
   const clientSig = useConvexClient();
   const auth = useAuth();
   const store = useStore<PersonasStore>({
@@ -282,6 +300,9 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     pinnedPersonas: new Set(),
     conveneError: null,
     repliesByNote: {},
+    streamingNotes: {},
+    streamingReplies: {},
+    streamingSynthesis: "",
     groupByPersona: true,
     expandedPersonas: new Set(),
     replyDraft: "",
@@ -298,6 +319,12 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     largeEditsUsed: 0,
     proposalsUsed: 0,
     aiSettings: null,
+    writerProfile: {
+      displayName: "",
+      personalFacts: "",
+      feedbackStyle: "balanced",
+      feedbackNotes: "",
+    },
     analysis: null,
     isAnalyzing: false,
     analysisOpen: false,
@@ -314,8 +341,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
     // Hydrate previously-saved notes & replies + room settings.
     const [notes, replies, settings] = await Promise.all([
-      loadPersonaNotesLocally(),
-      loadPersonaRepliesLocally(),
+      loadPersonaNotesLocally(activeFolioId),
+      loadPersonaRepliesLocally(activeFolioId),
       loadRoomSettingsLocally(),
     ]);
     if (notes.length > 0) store.feedback = notes;
@@ -327,9 +354,13 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     store.repliesByNote = grouped;
 
     // Load BYOK settings (client-side only, keys never touch the server).
-    const aiRaw = await loadAiSettingsFromIdb();
+    const [aiRaw, writerSettings] = await Promise.all([
+      loadAiSettingsFromIdb(),
+      loadWriterSettingsFromIdb(),
+    ]);
     store.aiSettings = normalizeAiSettings(aiRaw);
-    const savedAnalysis = await loadRoomAnalysisFromIdb();
+    store.writerProfile = writerSettings.profile;
+    const savedAnalysis = await loadRoomAnalysisFromIdb(activeFolioId);
     if (savedAnalysis && !store.analysis) store.analysis = savedAnalysis;
 
     // Capture the live Convex client (noSerialize keeps Qwik happy).
@@ -448,6 +479,60 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
     }
     .convene-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* The room's two real actions differ in one way that matters more than
+       any other: one of them rewrites the writer's prose. So they are told
+       apart by weight and by a line of plain English under each, and the
+       one that edits is outlined rather than filled — it should read as a
+       deliberate second step, not as the twin of the button above it. */
+    .room-btn-title {
+      display: block;
+      font-family: var(--font-typewriter);
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-size: 0.72rem;
+    }
+    .room-btn-sub {
+      display: block;
+      margin-top: 0.3rem;
+      font-family: var(--font-serif);
+      font-size: 0.75rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+      text-transform: none;
+      opacity: 0.75;
+    }
+
+    .markup-btn {
+      width: 100%;
+      padding: 0.6rem 1rem;
+      background: var(--color-paper);
+      color: var(--color-ink);
+      border: 1px solid var(--color-ink-light);
+      border-radius: 2px;
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .markup-btn:hover:not(:disabled) {
+      border-color: var(--color-vermilion);
+      background: var(--color-paper-soft);
+    }
+    .markup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .room-btn-link {
+      display: block;
+      width: 100%;
+      padding: 0.35rem 0;
+      text-align: center;
+      font-family: var(--font-typewriter);
+      font-size: 0.6875rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--color-ink-muted);
+      cursor: pointer;
+    }
+    .room-btn-link:hover:not(:disabled) { color: var(--color-vermilion); }
+    .room-btn-link:disabled { opacity: 0.6; cursor: not-allowed; }
+
     .provider-pill {
       display: inline-flex;
       align-items: center;
@@ -522,9 +607,14 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       min-height: 3.2rem;
       border-radius: 2px;
     }
+    /* Same focus treatment as .composer, so the two places a writer types a
+       message to the room do not read as two different applications. */
     .reply-input:focus {
       outline: none;
       border-color: var(--color-vermilion);
+      box-shadow:
+        0 0 0 3px rgba(193, 39, 45, 0.12),
+        0 2px 10px -6px rgba(31, 27, 22, 0.35);
     }
     .reply-actions {
       display: flex;
@@ -597,6 +687,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 persona: toAgentPersona(p),
                 brief: brief ?? null,
                 draftText,
+                writerProfile: store.writerProfile,
                 trajectory,
                 instruction: "feedback" as const,
               };
@@ -604,7 +695,20 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 "persona-feedback",
                 req,
                 settings,
+                // Each editor writes into their own slot, so five of them
+                // filling in at once reads as five people at a table rather
+                // than one queue.
+                (partial) => {
+                  store.streamingNotes = {
+                    ...store.streamingNotes,
+                    [p.id]: partial,
+                  };
+                },
               );
+              // The finished text is deliberately left on screen: the filed
+              // cards are only built once all five editors are in, so
+              // clearing here would blank an editor who finished early and
+              // leave a hole until the slowest one lands.
               return res
                 ? {
                     personaId: p.id,
@@ -655,6 +759,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             personas: personasForServer,
             brief: brief ?? null,
             draftText,
+            writerProfile: store.writerProfile,
             trajectory,
           })) as Array<{
             personaId: string;
@@ -710,6 +815,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         const anchor = r.anchor;
         const noteId = `pn-${r.personaId}-${timestamp}`;
         const fb: PersonaFeedback = {
+          folioId: activeFolioId,
           personaId: r.personaId,
           personaName: persona.name,
           personaColor: persona.color,
@@ -720,7 +826,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           noteId,
         };
         feedbackList.push(fb);
-        await savePersonaNoteLocally(fb, brief);
+        await savePersonaNoteLocally(fb, brief, activeFolioId);
 
         // Server-side push (best-effort, no-op if not signed in).
         const c =
@@ -730,6 +836,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         if (c) {
           try {
             await c.mutation(api.sync.putPersonaNote, {
+              folioId: activeFolioId,
               noteId,
               personaId: r.personaId,
               personaName: persona.name,
@@ -786,6 +893,9 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       );
     } finally {
       store.isGenerating = false;
+      // Whatever happened — filed, failed, or refused — nothing is still
+      // being written, and a half-sentence left on screen would say otherwise.
+      store.streamingNotes = {};
     }
   });
 
@@ -822,9 +932,19 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 persona: toAgentPersona(p),
                 brief: brief ?? null,
                 draftText,
+                writerProfile: store.writerProfile,
                 instruction: "analyze",
               },
               settings,
+              // The analysis is the longest wait in the app. The modal only
+              // opens when all five memos are in, so the progress belongs
+              // here, in the panel the writer is already looking at.
+              (partial) => {
+                store.streamingNotes = {
+                  ...store.streamingNotes,
+                  [p.id]: partial,
+                };
+              },
             );
             if (!res || !res.text.trim() || res.provider === "local") {
               return null;
@@ -855,6 +975,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           }),
           brief ?? null,
           settings,
+          store.writerProfile,
+          (partial) => {
+            store.streamingSynthesis = partial;
+          },
         );
         if (!synth || !synth.text.trim()) {
           store.conveneError = providerUnavailableError("full-analysis");
@@ -867,6 +991,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           personas: store.personas.map(toAgentPersona),
           brief: brief ?? null,
           draftText,
+          writerProfile: store.writerProfile,
         })) as {
           memos: Array<{
             personaId: string;
@@ -911,6 +1036,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       }
 
       const analysis: RoomAnalysis = {
+        folioId: activeFolioId,
         memos,
         synthesis,
         synthesisProvider,
@@ -921,7 +1047,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       store.analysisOpen = true;
       store.analysisCollapsed = {};
       store.analysisCopiedId = null;
-      void saveRoomAnalysisToIdb(analysis);
+      void saveRoomAnalysisToIdb(analysis, activeFolioId);
     } catch (err) {
       store.conveneError = normalizePersonaError(
         "twyne:personas:full-analysis",
@@ -931,6 +1057,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       );
     } finally {
       store.isAnalyzing = false;
+      store.streamingNotes = {};
+      store.streamingSynthesis = "";
     }
   });
 
@@ -1013,6 +1141,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       }
       const userReply: PersonaReply = {
         id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        folioId: activeFolioId,
         noteId,
         author: "You",
         authorKind: "user",
@@ -1022,7 +1151,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       const updated = [...(store.repliesByNote[noteId] ?? []), userReply];
       store.repliesByNote = { ...store.repliesByNote, [noteId]: updated };
       void emitReplyThread(noteId);
-      await addPersonaReplyLocally(userReply);
+      await addPersonaReplyLocally(userReply, activeFolioId);
       const client =
         auth.value.provider === "convex" && auth.value.user
           ? clientSig.value
@@ -1030,6 +1159,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       if (client) {
         try {
           await client.mutation(api.sync.addPersonaReply, {
+            folioId: activeFolioId,
             noteId,
             replyId: userReply.id,
             author: userReply.author,
@@ -1072,6 +1202,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           return;
         }
         store.isReplying = true;
+        store.streamingReplies = {
+          ...store.streamingReplies,
+          [noteId]: "",
+        };
         window.dispatchEvent(
           new CustomEvent("twyne:persona-replying", {
             detail: { noteId, replying: true },
@@ -1098,23 +1232,30 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               const res = await runClientAgent(
                 "persona-reply",
                 {
-                  persona: {
-                    id: persona.id,
-                    name: persona.name,
-                    role: persona.role,
-                    description: persona.description,
-                    focus: persona.focus,
-                    color: persona.color,
-                    icon: persona.icon,
-                  },
+                  persona: toAgentPersona(persona),
                   brief: brief ?? null,
                   draftText,
+                  writerProfile: store.writerProfile,
                   anchor: note?.anchor,
                   priorMessages,
                   userMessage: userReply.text,
                   instruction: "elaborate",
                 },
                 settings2,
+                // The reply lands in two places at once — the panel's thread
+                // and the inline card in the manuscript — so the partial goes
+                // out on the same event bus the finished one uses.
+                (partial) => {
+                  store.streamingReplies = {
+                    ...store.streamingReplies,
+                    [noteId]: partial,
+                  };
+                  window.dispatchEvent(
+                    new CustomEvent("twyne:persona-reply-stream", {
+                      detail: { noteId, text: partial, author: persona.name },
+                    }),
+                  );
+                },
               );
               if (res && res.text.trim() && res.provider !== "local") {
                 responseText = res.text;
@@ -1153,17 +1294,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           if (!responseText && !hasByok && c) {
             try {
               const result = (await c.action(api.agents.runPersona, {
-                persona: {
-                  id: persona.id,
-                  name: persona.name,
-                  role: persona.role,
-                  description: persona.description,
-                  focus: persona.focus,
-                  color: persona.color,
-                  icon: persona.icon,
-                },
+                persona: toAgentPersona(persona),
                 brief: brief ?? null,
                 draftText,
+                writerProfile: store.writerProfile,
                 anchor: note?.anchor,
                 priorMessages,
                 userMessage: userReply.text,
@@ -1220,6 +1354,7 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
 
           const personaReply: PersonaReply = {
             id: `preply-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            folioId: activeFolioId,
             noteId,
             author: persona.name,
             authorKind: "persona",
@@ -1236,11 +1371,12 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
             [noteId]: nextReplies,
           };
           void emitReplyThread(noteId);
-          await addPersonaReplyLocally(personaReply);
+          await addPersonaReplyLocally(personaReply, activeFolioId);
 
           if (c) {
             try {
               await c.mutation(api.sync.addPersonaReply, {
+                folioId: activeFolioId,
                 noteId,
                 replyId: personaReply.id,
                 author: personaReply.author,
@@ -1261,6 +1397,16 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           }
         } finally {
           store.isReplying = false;
+          // Clear the in-flight text before announcing the end of the reply:
+          // the filed version is already in the thread, and leaving the
+          // partial up would briefly show the answer twice.
+          delete store.streamingReplies[noteId];
+          store.streamingReplies = { ...store.streamingReplies };
+          window.dispatchEvent(
+            new CustomEvent("twyne:persona-reply-stream", {
+              detail: { noteId, text: "" },
+            }),
+          );
           window.dispatchEvent(
             new CustomEvent("twyne:persona-replying", {
               detail: { noteId, replying: false },
@@ -1398,17 +1544,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
         try {
           const res = await runClientRewrite(
             {
-              persona: {
-                id: persona.id,
-                name: persona.name,
-                role: persona.role,
-                description: persona.description,
-                focus: persona.focus,
-                color: persona.color,
-                icon: persona.icon,
-              },
+              persona: toAgentPersona(persona),
               brief: brief ?? null,
               draftText,
+              writerProfile: store.writerProfile,
               original: anchor,
               level: kind,
             },
@@ -1440,17 +1579,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       if (replacement.trim() === anchor.trim() && !hasByok && client) {
         try {
           const r = (await client.action(api.agents.suggestRewrite, {
-            persona: {
-              id: persona.id,
-              name: persona.name,
-              role: persona.role,
-              description: persona.description,
-              focus: persona.focus,
-              color: persona.color,
-              icon: persona.icon,
-            },
+            persona: toAgentPersona(persona),
             brief: brief ?? null,
             draftText,
+            writerProfile: store.writerProfile,
             original: anchor,
             level: kind,
           })) as {
@@ -1699,78 +1831,70 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
               })}
             </div>
 
-            <button
-              onClick$={requestFeedback}
-              disabled={store.isGenerating}
-              class="convene-btn mt-4"
-            >
-              {store.isGenerating ? (
-                <span class="flex items-center justify-center gap-2">
-                  <span class="inline-block animate-spin">✦</span>
-                  The room is reading…
-                </span>
-              ) : (
-                "✦  Convene the Room"
+            {/* ── The room's two actions, told apart by what comes back ── */}
+            <div class="mt-4 space-y-2">
+              <button
+                onClick$={requestFeedback}
+                disabled={store.isGenerating}
+                class="convene-btn"
+              >
+                {store.isGenerating ? (
+                  <span class="flex items-center justify-center gap-2">
+                    <span class="inline-block animate-spin">✦</span>
+                    The room is reading…
+                  </span>
+                ) : (
+                  <>
+                    <span class="room-btn-title">✦ Read my draft</span>
+                    <span class="room-btn-sub">
+                      Five editors leave short notes in the margin. Your text is
+                      untouched.
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {store.roomSettings.level !== "comments" && (
+                <button
+                  onClick$={markUpDraft}
+                  disabled={store.isMarkingUp || store.isGenerating}
+                  class="markup-btn"
+                >
+                  {store.isMarkingUp ? (
+                    <span class="room-btn-title">
+                      The room is marking up…
+                    </span>
+                  ) : (
+                    <>
+                      <span class="room-btn-title">✎ Edit my draft</span>
+                      <span class="room-btn-sub">
+                        The room proposes rewrites you accept or reject — up to{" "}
+                        {store.roomSettings.maxProposals} this pass.
+                      </span>
+                    </>
+                  )}
+                </button>
               )}
-            </button>
 
-            <button
-              onClick$={() => {
-                if (store.analysis && !store.isAnalyzing) {
-                  store.analysisOpen = true;
-                  return;
-                }
-                void expandAnalysis();
-              }}
-              disabled={store.isAnalyzing}
-              class="mt-2 w-full text-[11px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] border border-dashed border-[var(--color-paper-3)] rounded py-2 disabled:opacity-50"
-              style="font-family: var(--font-typewriter);"
-              title="Each editor writes a full-page analysis, then the room synthesises them — opens in a full-screen view."
-            >
-              {store.isAnalyzing
-                ? "✦ The room is writing the full analysis…"
-                : store.analysis
-                  ? "❡ Open the full analysis"
-                  : "❡ Expand to full analysis"}
-            </button>
-
-            {store.feedback.length > 0 && !store.isGenerating && (
-              <div class="mt-2 flex items-center gap-2">
-                <button
-                  onClick$={() => {
-                    store.groupByPersona = !store.groupByPersona;
-                  }}
-                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                  style="font-family: var(--font-typewriter);"
-                  aria-pressed={store.groupByPersona}
-                  title={
-                    store.groupByPersona
-                      ? "Showing latest note per editor — click to show all"
-                      : "Showing every note — click to group by editor"
+              <button
+                onClick$={() => {
+                  if (store.analysis && !store.isAnalyzing) {
+                    store.analysisOpen = true;
+                    return;
                   }
-                >
-                  {store.groupByPersona ? "▾ grouped" : "▸ all notes"}
-                </button>
-                <button
-                  onClick$={() => {
-                    store.compactView = !store.compactView;
-                  }}
-                  class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                  style="font-family: var(--font-typewriter);"
-                  aria-pressed={store.compactView}
-                  title={
-                    store.compactView
-                      ? "Notes clamped — click to read in full"
-                      : "Showing full notes — click to clamp them"
-                  }
-                >
-                  {store.compactView ? "▸ compact" : "▾ full"}
-                </button>
-                <button onClick$={clearRoom} class="btn-paper flex-1 text-xs">
-                  Strike the room
-                </button>
-              </div>
-            )}
+                  void expandAnalysis();
+                }}
+                disabled={store.isAnalyzing}
+                class="room-btn-link"
+                title="The same five editors, at length: a full-page memo each, then the room's synthesis. Opens full screen."
+              >
+                {store.isAnalyzing
+                  ? "✦ writing the full analysis…"
+                  : store.analysis
+                    ? "❡ open the full analysis ↗"
+                    : "❡ full analysis ↗"}
+              </button>
+            </div>
 
             {/* ── The room reading in the background ──
                 A quiet line of status, not a control. The writer should be
@@ -1802,20 +1926,6 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                 </span>
                 {backgroundRoomLabel(store.backgroundRoom)}
               </p>
-            )}
-
-            {/* ── Mark up my draft + room settings ── */}
-            {store.roomSettings.level !== "comments" && (
-              <button
-                onClick$={markUpDraft}
-                disabled={store.isMarkingUp || store.isGenerating}
-                class="btn-paper w-full mt-2 text-xs"
-                title="The room proposes edits across your draft"
-              >
-                {store.isMarkingUp
-                  ? "The room is marking up…"
-                  : "✎  Mark up my draft"}
-              </button>
             )}
 
             <div class="mt-2 flex items-center justify-between">
@@ -1977,8 +2087,129 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
           </div>
         )}
 
+        {/* ── The feed's own header. Striking the room is a delete, not a
+            third way to ask the editors for something, so it sits with the
+            notes it clears rather than under the buttons that make them. ── */}
+        {store.feedback.length > 0 && !store.isGenerating && (
+          <div class="flex items-center gap-3 border-b border-[var(--color-paper-3)] px-4 py-1.5">
+            <span
+              class="panel-meta uppercase text-[var(--color-ink-muted)]"
+              style="font-family: var(--font-typewriter);"
+            >
+              {store.feedback.length} note
+              {store.feedback.length === 1 ? "" : "s"}
+            </span>
+            <span class="flex-1" />
+            <button
+              onClick$={() => {
+                store.groupByPersona = !store.groupByPersona;
+              }}
+              class="panel-meta uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] focus-ring"
+              style="font-family: var(--font-typewriter);"
+              aria-pressed={store.groupByPersona}
+              title={
+                store.groupByPersona
+                  ? "Showing latest note per editor — click to show all"
+                  : "Showing every note — click to group by editor"
+              }
+            >
+              {store.groupByPersona ? "▾ grouped" : "▸ all notes"}
+            </button>
+            <button
+              onClick$={() => {
+                store.compactView = !store.compactView;
+              }}
+              class="panel-meta uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] focus-ring"
+              style="font-family: var(--font-typewriter);"
+              aria-pressed={store.compactView}
+              title={
+                store.compactView
+                  ? "Notes clamped — click to read in full"
+                  : "Showing full notes — click to clamp them"
+              }
+            >
+              {store.compactView ? "▸ compact" : "▾ full"}
+            </button>
+            <button
+              onClick$={clearRoom}
+              class="panel-meta uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] focus-ring"
+              style="font-family: var(--font-typewriter);"
+              title="Strike the room — clears every note here and every pin in the manuscript"
+            >
+              clear ✕
+            </button>
+          </div>
+        )}
+
         {/* ── Marginalia — feedback feed ──────────────────────── */}
         <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+          {/* Notes being written, above the filed ones. Each editor fills
+              their own card as they go, so the wait is spent reading rather
+              than watching a spinner. These are not notes yet: no reply box,
+              no strike, nothing to act on until they are filed. */}
+          {store.personas
+            .filter((p) => (store.streamingNotes[p.id] ?? "").trim())
+            .map((persona) => (
+              <div
+                key={`streaming-${persona.id}`}
+                class="p-3 border-l-2 bg-[var(--color-paper-soft)]"
+                style={{
+                  borderColor: persona.color,
+                  borderRadius: "2px",
+                }}
+                aria-live="polite"
+              >
+                <div class="flex items-baseline justify-between gap-2">
+                  <p
+                    class="text-sm truncate text-[var(--color-ink)]"
+                    style="font-family: var(--font-display); font-weight: 600;"
+                  >
+                    {persona.name}
+                  </p>
+                  <p
+                    class="text-[0.65rem] tracking-[0.14em] uppercase"
+                    style={{
+                      fontFamily: "var(--font-typewriter)",
+                      color: persona.color,
+                    }}
+                  >
+                    writing…
+                  </p>
+                </div>
+                <div
+                  class="comment-markdown mt-1.5 text-[0.85rem] leading-5 text-[var(--color-ink-light)]"
+                  style="font-family: var(--font-serif);"
+                  dangerouslySetInnerHTML={renderMarkdown(
+                    store.streamingNotes[persona.id] ?? "",
+                  )}
+                />
+              </div>
+            ))}
+
+          {store.streamingSynthesis.trim() && (
+            <div
+              class="p-3 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] rounded"
+              aria-live="polite"
+            >
+              <div class="flex items-baseline justify-between gap-2">
+                <p class="dept-label">The Room's Verdict</p>
+                <p
+                  class="text-[0.65rem] tracking-[0.14em] uppercase text-[var(--color-ink-muted)]"
+                  style="font-family: var(--font-typewriter);"
+                >
+                  writing…
+                </p>
+              </div>
+              <div
+                class="comment-markdown mt-1.5 text-[0.85rem] leading-5 text-[var(--color-ink-light)]"
+                style="font-family: var(--font-serif);"
+                dangerouslySetInnerHTML={renderMarkdown(
+                  store.streamingSynthesis,
+                )}
+              />
+            </div>
+          )}
+
           {store.feedback.length === 0 && !store.isGenerating && (
             <div class="text-center py-10 px-4">
               <p
@@ -2116,8 +2347,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                       )}
                     </div>
                   </div>
-                  <p
-                    class={`text-[14px] leading-6 text-[var(--color-ink-light)]${
+                  <div
+                    class={`comment-markdown text-[14px] leading-6 text-[var(--color-ink-light)]${
                       bodyClamped ? " cursor-pointer" : ""
                     }`}
                     style={
@@ -2138,9 +2369,10 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                           }
                         : undefined
                     }
-                  >
-                    {feedback.feedback}
-                  </p>
+                    dangerouslySetInnerHTML={renderMarkdown(
+                      feedback.feedback,
+                    )}
+                  />
 
                   {store.groupByPersona && groupCount > 1 && (
                     <button
@@ -2175,10 +2407,15 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                             </strong>
                             <span>· {timeAgo(r.timestamp)}</span>
                           </div>
-                          <p class="mt-0.5">{r.text}</p>
+                          <div
+                            class="comment-markdown mt-0.5"
+                            dangerouslySetInnerHTML={renderMarkdown(r.text)}
+                          />
                         </div>
                       ))}
-                      {store.isReplying && (
+                      {feedback.noteId &&
+                        store.isReplying &&
+                        store.streamingReplies[feedback.noteId] !== undefined && (
                         <div
                           class="reply-bubble is-persona"
                           style={{ ["--reply-color" as never]: personaColor }}
@@ -2189,9 +2426,20 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
                             </strong>
                             <span>· writing…</span>
                           </div>
-                          <p class="mt-0.5">
-                            <span class="inline-block animate-pulse">…</span>
-                          </p>
+                          {/* The reply as it is written. The pulse is only
+                              for the gap before the first words arrive. */}
+                          {(store.streamingReplies[feedback.noteId] ?? "").trim() ? (
+                            <div
+                              class="comment-markdown mt-0.5"
+                              dangerouslySetInnerHTML={renderMarkdown(
+                                store.streamingReplies[feedback.noteId],
+                              )}
+                            />
+                          ) : (
+                            <p class="mt-0.5">
+                              <span class="inline-block animate-pulse">…</span>
+                            </p>
+                          )}
                         </div>
                       )}
                     </div>
@@ -2501,7 +2749,8 @@ export const PersonasPanel = component$(({ brief }: PersonasPanelProps) => {
       )}
     </>
   );
-});
+  },
+);
 
 /* ── Draft text helpers ──────────────────────────────────────── */
 

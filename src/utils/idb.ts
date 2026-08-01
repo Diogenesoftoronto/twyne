@@ -24,8 +24,13 @@ import type {
   Persona,
   RubricResult,
   RoomAnalysis,
+  ProjectBrief,
 } from "../types";
-import { DEFAULT_APPARATUS_SETTINGS, DEFAULT_WRITER_SETTINGS } from "../types";
+import {
+  DEFAULT_APPARATUS_SETTINGS,
+  DEFAULT_WRITER_PROFILE,
+  DEFAULT_WRITER_SETTINGS,
+} from "../types";
 
 const DB_NAME = "twyne";
 /**
@@ -168,9 +173,31 @@ function normalizeWriterSettings(value: unknown): WriterSettings {
     return { ...DEFAULT_WRITER_SETTINGS };
   }
   const v = value as Partial<WriterSettings>;
+  const profile =
+    v.profile && typeof v.profile === "object"
+      ? (v.profile as Partial<WriterSettings["profile"]>)
+      : {};
   return {
     interviewStyle:
       v.interviewStyle === "conversational" ? "conversational" : "form",
+    profile: {
+      displayName:
+        typeof profile.displayName === "string"
+          ? profile.displayName.slice(0, 120)
+          : DEFAULT_WRITER_PROFILE.displayName,
+      personalFacts:
+        typeof profile.personalFacts === "string"
+          ? profile.personalFacts.slice(0, 4000)
+          : DEFAULT_WRITER_PROFILE.personalFacts,
+      feedbackStyle:
+        profile.feedbackStyle === "direct" || profile.feedbackStyle === "gentle"
+          ? profile.feedbackStyle
+          : DEFAULT_WRITER_PROFILE.feedbackStyle,
+      feedbackNotes:
+        typeof profile.feedbackNotes === "string"
+          ? profile.feedbackNotes.slice(0, 2000)
+          : DEFAULT_WRITER_PROFILE.feedbackNotes,
+    },
   };
 }
 
@@ -330,7 +357,7 @@ export async function saveDraftHtmlToIdb(
 
 export async function loadBriefFromIdb(
   folioId: string,
-): Promise<unknown | null> {
+): Promise<ProjectBrief | null> {
   if (!isBrowser()) return null;
   try {
     const db = await openDb();
@@ -338,7 +365,7 @@ export async function loadBriefFromIdb(
       (await reqAsPromise<BriefRecord | undefined>(
         db.transaction("brief").objectStore("brief").get(folioId),
       )) ?? null;
-    return rec?.brief ?? null;
+    return (rec?.brief as ProjectBrief | undefined) ?? null;
   } catch {
     return null;
   }
@@ -346,7 +373,7 @@ export async function loadBriefFromIdb(
 
 export async function saveBriefToIdb(
   folioId: string,
-  brief: unknown,
+  brief: ProjectBrief,
 ): Promise<void> {
   if (!isBrowser()) return;
   try {
@@ -356,6 +383,44 @@ export async function saveBriefToIdb(
         .transaction("brief", "readwrite")
         .objectStore("brief")
         .put(rec),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function loadAllBriefsFromIdb(): Promise<
+  Array<{ folioId: string; brief: ProjectBrief; updatedAt: number }>
+> {
+  if (!isBrowser()) return [];
+  try {
+    const db = await openDb();
+    const records = await reqAsPromise<BriefRecord[]>(
+      db.transaction("brief").objectStore("brief").getAll(),
+    );
+    return records
+      .filter(
+        (record): record is BriefRecord & { brief: ProjectBrief } =>
+          Boolean(record.folioId && record.brief),
+      )
+      .map((record) => ({
+        folioId: record.folioId,
+        brief: record.brief,
+        updatedAt: record.updatedAt,
+      }));
+  } catch {
+    return [];
+  }
+}
+
+export async function deleteBriefFromIdb(folioId: string): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await reqAsPromise(
+      (await openDb())
+        .transaction("brief", "readwrite")
+        .objectStore("brief")
+        .delete(folioId),
     );
   } catch {
     /* ignore */
@@ -526,15 +591,22 @@ export async function saveApparatusSettingsToIdb(
   }
 }
 
-/* ── Rubric result (single record in `meta`, key="rubric-result") ── */
+function folioMetaKey(base: string, folioId?: string | null): string {
+  return folioId ? `${base}:${folioId}` : base;
+}
 
-export async function loadRubricResultFromIdb(): Promise<RubricResult | null> {
+export async function loadRubricResultFromIdb(
+  folioId?: string | null,
+): Promise<RubricResult | null> {
   if (!isBrowser()) return null;
   try {
     const db = await openDb();
     const rec =
       (await reqAsPromise<MetaRecord | undefined>(
-        db.transaction("meta").objectStore("meta").get("rubric-result"),
+        db
+          .transaction("meta")
+          .objectStore("meta")
+          .get(folioMetaKey("rubric-result", folioId)),
       )) ?? null;
     if (!rec?.value || typeof rec.value !== "object") return null;
     return rec.value as RubricResult;
@@ -545,12 +617,13 @@ export async function loadRubricResultFromIdb(): Promise<RubricResult | null> {
 
 export async function saveRubricResultToIdb(
   result: RubricResult,
+  folioId?: string | null,
 ): Promise<void> {
   if (!isBrowser()) return;
   try {
     const rec: MetaRecord = {
-      key: "rubric-result",
-      value: result,
+      key: folioMetaKey("rubric-result", folioId),
+      value: { ...result, ...(folioId ? { folioId } : {}) },
       updatedAt: Date.now(),
     };
     await reqAsPromise(
@@ -564,13 +637,18 @@ export async function saveRubricResultToIdb(
   }
 }
 
-export async function loadRoomAnalysisFromIdb(): Promise<RoomAnalysis | null> {
+export async function loadRoomAnalysisFromIdb(
+  folioId?: string | null,
+): Promise<RoomAnalysis | null> {
   if (!isBrowser()) return null;
   try {
     const db = await openDb();
     const rec =
       (await reqAsPromise<MetaRecord | undefined>(
-        db.transaction("meta").objectStore("meta").get("room-analysis"),
+        db
+          .transaction("meta")
+          .objectStore("meta")
+          .get(folioMetaKey("room-analysis", folioId)),
       )) ?? null;
     if (!rec?.value || typeof rec.value !== "object") return null;
     return rec.value as RoomAnalysis;
@@ -581,12 +659,13 @@ export async function loadRoomAnalysisFromIdb(): Promise<RoomAnalysis | null> {
 
 export async function saveRoomAnalysisToIdb(
   analysis: RoomAnalysis,
+  folioId?: string | null,
 ): Promise<void> {
   if (!isBrowser()) return;
   try {
     const rec: MetaRecord = {
-      key: "room-analysis",
-      value: analysis,
+      key: folioMetaKey("room-analysis", folioId),
+      value: { ...analysis, ...(folioId ? { folioId } : {}) },
       updatedAt: Date.now(),
     };
     await reqAsPromise(
@@ -664,9 +743,25 @@ export async function loadAiSettingsFromIdb(): Promise<AiSettings | null> {
   return null;
 }
 
+/**
+ * Announce that the AI settings changed.
+ *
+ * The orchestrator memoises the settings for the life of the page, so a key
+ * added on the Settings route was invisible to every feature until a reload —
+ * which is how a writer with a perfectly good OpenAI key ended up on the
+ * hosted path being told they were not signed in. An event rather than a
+ * direct call because `ai-orchestrator` already imports this module.
+ */
+function announceAiSettingsSaved(): void {
+  if (typeof window === "undefined") return;
+  if (typeof window.dispatchEvent !== "function") return;
+  window.dispatchEvent(new CustomEvent("twyne:ai-settings-saved"));
+}
+
 export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
   if (!getLocalStorage() && !hasIndexedDb()) return;
   writeLocalStorageJson(AI_SETTINGS_STORAGE_KEY, settings);
+  announceAiSettingsSaved();
   if (!hasIndexedDb()) return;
   try {
     const rec: MetaRecord = {

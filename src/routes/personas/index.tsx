@@ -29,6 +29,14 @@ function buildVoicePreview(p: Persona): string {
   return sharedVoicePreview(toAgentPersona(p));
 }
 
+function linesFromTextarea(value: string): string[] | undefined {
+  const lines = value
+    .split("\n")
+    .map((line) => line.trim().replace(/^[-•—]\s*/, ""))
+    .filter(Boolean);
+  return lines.length > 0 ? lines : undefined;
+}
+
 const COLOR_SWATCHES: ReadonlyArray<{ label: string; value: string }> = [
   { label: "vermilion", value: "var(--color-vermilion)" },
   { label: "mustard", value: "var(--color-mustard)" },
@@ -72,6 +80,12 @@ interface BoardStore {
   draftRole: string;
   draftDescription: string;
   draftFocus: string;
+  draftBackstory: string;
+  draftCriticalMethod: string;
+  draftVoice: string;
+  draftSignatureMoves: string;
+  draftAvoidances: string;
+  draftSampleLines: string;
   draftIcon: string;
   draftColor: string;
   adding: boolean;
@@ -79,6 +93,12 @@ interface BoardStore {
   newRole: string;
   newDescription: string;
   newFocus: string;
+  newBackstory: string;
+  newCriticalMethod: string;
+  newVoice: string;
+  newSignatureMoves: string;
+  newAvoidances: string;
+  newSampleLines: string;
   newIcon: string;
   newColor: string;
   showResetConfirm: boolean;
@@ -96,6 +116,12 @@ export default component$(() => {
     draftRole: "",
     draftDescription: "",
     draftFocus: "",
+    draftBackstory: "",
+    draftCriticalMethod: "",
+    draftVoice: "",
+    draftSignatureMoves: "",
+    draftAvoidances: "",
+    draftSampleLines: "",
     draftIcon: "",
     draftColor: COLOR_SWATCHES[0].value,
     adding: false,
@@ -103,6 +129,12 @@ export default component$(() => {
     newRole: "",
     newDescription: "",
     newFocus: "",
+    newBackstory: "",
+    newCriticalMethod: "",
+    newVoice: "",
+    newSignatureMoves: "",
+    newAvoidances: "",
+    newSampleLines: "",
     newIcon: "❧",
     newColor: COLOR_SWATCHES[0].value,
     showResetConfirm: false,
@@ -230,6 +262,12 @@ export default component$(() => {
     store.draftRole = p.role;
     store.draftDescription = p.description;
     store.draftFocus = p.focus;
+    store.draftBackstory = p.backstory ?? "";
+    store.draftCriticalMethod = p.criticalMethod ?? "";
+    store.draftVoice = p.voice ?? "";
+    store.draftSignatureMoves = (p.signatureMoves ?? []).join("\n");
+    store.draftAvoidances = (p.avoidances ?? []).join("\n");
+    store.draftSampleLines = (p.sampleLines ?? []).join("\n");
     store.draftIcon = p.icon;
     store.draftColor = p.color;
   });
@@ -244,6 +282,12 @@ export default component$(() => {
             role: store.draftRole,
             description: store.draftDescription,
             focus: store.draftFocus,
+            backstory: store.draftBackstory.trim() || undefined,
+            criticalMethod: store.draftCriticalMethod.trim() || undefined,
+            voice: store.draftVoice.trim() || undefined,
+            signatureMoves: linesFromTextarea(store.draftSignatureMoves),
+            avoidances: linesFromTextarea(store.draftAvoidances),
+            sampleLines: linesFromTextarea(store.draftSampleLines),
             icon: store.draftIcon,
             color: store.draftColor,
           }
@@ -289,11 +333,23 @@ export default component$(() => {
       description:
         store.newDescription.trim() || "A sharp, insightful editorial voice.",
       focus: store.newFocus.trim() || "General editing",
+      backstory: store.newBackstory.trim() || undefined,
+      criticalMethod: store.newCriticalMethod.trim() || undefined,
+      voice: store.newVoice.trim() || undefined,
+      signatureMoves: linesFromTextarea(store.newSignatureMoves),
+      avoidances: linesFromTextarea(store.newAvoidances),
+      sampleLines: linesFromTextarea(store.newSampleLines),
     };
     store.newName = "";
     store.newRole = "";
     store.newDescription = "";
     store.newFocus = "";
+    store.newBackstory = "";
+    store.newCriticalMethod = "";
+    store.newVoice = "";
+    store.newSignatureMoves = "";
+    store.newAvoidances = "";
+    store.newSampleLines = "";
     store.newIcon = "❧";
     store.newColor = COLOR_SWATCHES[0].value;
     store.adding = false;
@@ -446,6 +502,66 @@ export default component$(() => {
                   }}
                   placeholder="Focus (e.g. diction, evidence, audience fit)"
                   class="room-input"
+                />
+                <textarea
+                  value={store.newBackstory}
+                  onInput$={(e) => {
+                    store.newBackstory = (
+                      e.target as HTMLTextAreaElement
+                    ).value;
+                  }}
+                  placeholder="Short backstory: where did this editor come from, and what shaped them?"
+                  class="room-textarea"
+                />
+                <textarea
+                  value={store.newCriticalMethod}
+                  onInput$={(e) => {
+                    store.newCriticalMethod = (
+                      e.target as HTMLTextAreaElement
+                    ).value;
+                  }}
+                  placeholder="Editorial doctrine: what do they notice first, and how do they judge a draft?"
+                  class="room-textarea"
+                />
+                <textarea
+                  value={store.newVoice}
+                  onInput$={(e) => {
+                    store.newVoice = (
+                      e.target as HTMLTextAreaElement
+                    ).value;
+                  }}
+                  placeholder="Voiceprint: diction, sentence rhythm, warmth, humor, and point of view"
+                  class="room-textarea"
+                />
+                <textarea
+                  value={store.newSignatureMoves}
+                  onInput$={(e) => {
+                    store.newSignatureMoves = (
+                      e.target as HTMLTextAreaElement
+                    ).value;
+                  }}
+                  placeholder={"Signature moves, one per line\nQuote the strongest phrase\nEnd on a question"}
+                  class="room-textarea"
+                />
+                <textarea
+                  value={store.newAvoidances}
+                  onInput$={(e) => {
+                    store.newAvoidances = (
+                      e.target as HTMLTextAreaElement
+                    ).value;
+                  }}
+                  placeholder={"Never does, one per line\nNo praise sandwiches\nNo craft jargon"}
+                  class="room-textarea"
+                />
+                <textarea
+                  value={store.newSampleLines}
+                  onInput$={(e) => {
+                    store.newSampleLines = (
+                      e.target as HTMLTextAreaElement
+                    ).value;
+                  }}
+                  placeholder="Sample lines in this editor's voice, one per line"
+                  class="room-textarea"
                 />
                 <div>
                   <p
@@ -693,6 +809,66 @@ export default component$(() => {
                           class="room-input"
                           placeholder="Focus"
                         />
+                        <textarea
+                          value={store.draftBackstory}
+                          onInput$={(e) => {
+                            store.draftBackstory = (
+                              e.target as HTMLTextAreaElement
+                            ).value;
+                          }}
+                          class="room-textarea"
+                          placeholder="Short backstory"
+                        />
+                        <textarea
+                          value={store.draftCriticalMethod}
+                          onInput$={(e) => {
+                            store.draftCriticalMethod = (
+                              e.target as HTMLTextAreaElement
+                            ).value;
+                          }}
+                          class="room-textarea"
+                          placeholder="Editorial doctrine"
+                        />
+                        <textarea
+                          value={store.draftVoice}
+                          onInput$={(e) => {
+                            store.draftVoice = (
+                              e.target as HTMLTextAreaElement
+                            ).value;
+                          }}
+                          class="room-textarea"
+                          placeholder="Voiceprint"
+                        />
+                        <textarea
+                          value={store.draftSignatureMoves}
+                          onInput$={(e) => {
+                            store.draftSignatureMoves = (
+                              e.target as HTMLTextAreaElement
+                            ).value;
+                          }}
+                          class="room-textarea"
+                          placeholder="Signature moves, one per line"
+                        />
+                        <textarea
+                          value={store.draftAvoidances}
+                          onInput$={(e) => {
+                            store.draftAvoidances = (
+                              e.target as HTMLTextAreaElement
+                            ).value;
+                          }}
+                          class="room-textarea"
+                          placeholder="Never does, one per line"
+                        />
+                        <textarea
+                          value={store.draftSampleLines}
+                          onInput$={(e) => {
+                            store.draftSampleLines = (
+                              e.target as HTMLTextAreaElement
+                            ).value;
+                          }}
+                          class="room-textarea"
+                          placeholder="Sample lines, one per line"
+                        />
                         <div>
                           <p
                             class="text-[0.6rem] text-[var(--color-ink-muted)] mb-1.5"
@@ -773,6 +949,14 @@ export default component$(() => {
                       >
                         Focus: {p.focus}
                       </p>
+                      {p.backstory && (
+                        <p
+                          class="mt-2 text-xs italic leading-5 text-[var(--color-ink-light)]"
+                          style={{ fontFamily: "var(--font-serif)" }}
+                        >
+                          {p.backstory}
+                        </p>
+                      )}
 
                       <button
                         onClick$={() => toggleVoicePreview(p.id)}

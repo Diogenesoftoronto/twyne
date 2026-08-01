@@ -11,6 +11,7 @@ import {
   type InterviewTurnResult,
   type InterviewConfidence,
   type InterviewDossierDraft,
+  type InterviewStreamUpdate,
   hasConfiguredAiProvider,
   runClientInterviewTurn,
 } from "../../utils/ai-client";
@@ -27,7 +28,7 @@ import {
 } from "../../utils/dossier-probes";
 import { ProbeInput } from "./probe-input";
 import { SpeakButton } from "../ui/speak-button";
-import { VoiceRecorder, type VoiceCapture } from "../ui/voice-recorder";
+import { ChatComposer } from "../ui/chat-composer";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { DossierAttachmentsEditor } from "./dossier-attachments-editor";
@@ -50,9 +51,10 @@ import {
  *   - "refine"    — the writer has a dossier already; the AI
  *     cross-references it during the conversation.
  *
- * Non-streaming. Streaming the AI's question into the chat is a
- * polish pass for later — the current implementation waits for the
- * full response before showing the next message.
+ * Model output is rendered as separate reasoning and answer parts. This
+ * follows the same content-part model as assistant-ui without importing a
+ * React runtime into Qwik: reasoning can begin first, then the visible answer
+ * streams into the same turn while the tagged dossier contract stays hidden.
  */
 
 const FIELD_LABELS: Record<keyof ProjectInterviewAnswers, string> = {
@@ -126,6 +128,10 @@ interface ComponentStore {
   activeProbe: DossierProbe | null;
   /** Probes the writer has answered, carried into the finished dossier. */
   answeredProbes: DossierProbe[];
+  /** The in-flight assistant turn, kept separate from committed transcript. */
+  streaming: InterviewStreamUpdate | null;
+  /** Reasoning panels the writer explicitly opened, keyed by turn index. */
+  openReasoning: Record<number, boolean>;
 }
 
 function confidenceTone(c: InterviewConfidence | undefined): string {
@@ -151,6 +157,47 @@ function mergeDossierDraft(
   };
 }
 
+interface ReasoningPartProps {
+  text: string;
+  streaming: boolean;
+  open: boolean;
+  onToggle$: PropFunction<() => void>;
+}
+
+const ReasoningPart = component$((props: ReasoningPartProps) => (
+  <section class="interview-reasoning border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+    <button
+      type="button"
+      onClick$={props.onToggle$}
+      aria-expanded={props.open}
+      class="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-[0.65rem] text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-vermilion)]"
+      style={{ fontFamily: "var(--font-typewriter)" }}
+    >
+      <span class="flex items-center gap-2">
+        <span
+          class={`h-1.5 w-1.5 rounded-full ${
+            props.streaming
+              ? "bg-[var(--color-mustard)] interview-stream-pulse"
+              : "bg-[var(--color-ink-muted)]"
+          }`}
+          aria-hidden="true"
+        />
+        {props.streaming ? "Reasoning…" : "Reasoning"}
+      </span>
+      <span aria-hidden="true">{props.open ? "Hide" : "Show"}</span>
+    </button>
+    {props.open && (
+      <div
+        aria-live="polite"
+        class="border-t border-[var(--color-paper-3)] px-3 py-2.5 text-[0.78rem] leading-5 text-[var(--color-ink-light)] whitespace-pre-wrap"
+        style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
+      >
+        {props.text}
+      </div>
+    )}
+  </section>
+));
+
 export const ConversationalInterview = component$(
   (props: ConversationalInterviewProps) => {
     const store = useStore<ComponentStore>({
@@ -169,6 +216,8 @@ export const ConversationalInterview = component$(
       requestVersion: 0,
       activeProbe: null,
       answeredProbes: props.initialBrief?.probes ?? [],
+      streaming: null,
+      openReasoning: {},
     });
     const inputRef = useSignal<HTMLTextAreaElement>();
     const scrollerRef = useSignal<HTMLDivElement>();
@@ -219,6 +268,11 @@ export const ConversationalInterview = component$(
       store.pendingWriterText = writerText;
       store.loading = true;
       store.error = null;
+      store.streaming = {
+        text: "",
+        reasoning: "",
+        phase: "reasoning",
+      };
 
       try {
         const settings = await loadAiSettingsFromIdb();
@@ -233,6 +287,10 @@ export const ConversationalInterview = component$(
               currentBrief: props.initialBrief ?? null,
             },
             settings,
+            (update) => {
+              if (requestVersion !== store.requestVersion) return;
+              store.streaming = update;
+            },
           );
           if (!clientResult.ok) {
             store.error = clientResult.error;
@@ -244,6 +302,20 @@ export const ConversationalInterview = component$(
         if (requestVersion !== store.requestVersion) return;
 
         if (!result && !hasByok && clientSig.value) {
+          const streamId = crypto.randomUUID();
+          const unsubscribe = clientSig.value.onUpdate(
+            (api as any).interviewStreams.get,
+            { streamId },
+            (update: InterviewStreamUpdate | null) => {
+              if (requestVersion !== store.requestVersion || !update) return;
+              store.streaming = {
+                text: update.text,
+                reasoning: update.reasoning,
+                phase: update.phase,
+              };
+            },
+            () => undefined,
+          );
           try {
             result = (await clientSig.value.action(
               (api as any).agents.runInterviewTurn,
@@ -251,6 +323,7 @@ export const ConversationalInterview = component$(
                 messages: store.messages,
                 mode: props.mode,
                 currentBrief: props.initialBrief ?? null,
+                streamId,
               },
             )) as InterviewTurnResult | null;
           } catch (error) {
@@ -259,6 +332,11 @@ export const ConversationalInterview = component$(
               metadata: { feature: "interview-turn" },
             });
             return;
+          } finally {
+            unsubscribe();
+            void clientSig.value
+              ?.mutation((api as any).interviewStreams.clear, { streamId })
+              .catch(() => undefined);
           }
         }
 
@@ -280,9 +358,10 @@ export const ConversationalInterview = component$(
 
         if (result.kind === "question") {
           store.liveDraft = mergeDossierDraft(store.liveDraft, result.draft);
+          const reasoning = store.streaming?.reasoning.trim() || undefined;
           store.messages = [
             ...store.messages,
-            { author: "interviewer", text: result.text },
+            { author: "interviewer", text: result.text, reasoning },
           ];
           // A typed follow-up, when the interviewer offered one. The question
           // itself is always asked in prose above, so the writer can ignore
@@ -307,6 +386,7 @@ export const ConversationalInterview = component$(
           store.liveDraft = { brief, confidence: result.confidence };
         }
         store.pendingWriterText = null;
+        store.streaming = null;
       } catch (error) {
         store.error = normalizeApplicationError(error, {
           metadata: { feature: "interview-turn" },
@@ -314,6 +394,7 @@ export const ConversationalInterview = component$(
       } finally {
         if (requestVersion === store.requestVersion) {
           store.loading = false;
+          store.streaming = null;
         }
       }
     });
@@ -486,39 +567,99 @@ export const ConversationalInterview = component$(
                   key={i}
                   class={`flex ${m.author === "writer" ? "justify-end" : "justify-start"}`}
                 >
-                  <div
-                    class={`max-w-[80%] rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem] ${
-                      m.author === "writer"
-                        ? "bg-[var(--color-vermilion)] text-white"
-                        : "bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)]"
-                    }`}
-                    style={{
-                      fontFamily:
-                        m.author === "writer"
-                          ? "var(--font-serif)"
-                          : "var(--font-display)",
-                    }}
-                  >
-                    {m.author === "interviewer" && (
-                      <div class="flex items-center justify-between gap-2 mb-1">
-                        <p
-                          class="text-[0.55rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
-                          style={{ fontFamily: "var(--font-typewriter)" }}
-                        >
-                          The room
-                        </p>
-                        <SpeakButton
-                          compact
-                          id={`interview-${i}`}
-                          text={m.text}
-                          label="the room"
-                        />
-                      </div>
+                  <div class="max-w-[80%] space-y-2">
+                    {m.author === "interviewer" && m.reasoning && (
+                      <ReasoningPart
+                        text={m.reasoning}
+                        streaming={false}
+                        open={store.openReasoning[i] ?? false}
+                        onToggle$={$(() => {
+                          store.openReasoning = {
+                            ...store.openReasoning,
+                            [i]: !(store.openReasoning[i] ?? false),
+                          };
+                        })}
+                      />
                     )}
-                    {m.text}
+                    <div
+                      class={`rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem] ${
+                        m.author === "writer"
+                          ? "bg-[var(--color-vermilion)] text-white"
+                          : "bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)]"
+                      }`}
+                      style={{
+                        fontFamily:
+                          m.author === "writer"
+                            ? "var(--font-serif)"
+                            : "var(--font-display)",
+                      }}
+                    >
+                      {m.author === "interviewer" && (
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                          <p
+                            class="text-[0.55rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          >
+                            The room
+                          </p>
+                          <SpeakButton
+                            compact
+                            id={`interview-${i}`}
+                            text={m.text}
+                            label="the room"
+                          />
+                        </div>
+                      )}
+                      {m.text}
+                    </div>
                   </div>
                 </div>
               ))}
+
+              {store.loading &&
+                (store.streaming?.reasoning || store.streaming?.text) && (
+                  <div class="flex justify-start">
+                    <div class="max-w-[80%] space-y-2">
+                      {store.streaming.reasoning && (
+                        <ReasoningPart
+                          text={store.streaming.reasoning}
+                          streaming={store.streaming.phase === "reasoning"}
+                          open={store.openReasoning[store.messages.length] ?? true}
+                          onToggle$={$(() => {
+                            const key = store.messages.length;
+                            store.openReasoning = {
+                              ...store.openReasoning,
+                              [key]: !(store.openReasoning[key] ?? true),
+                            };
+                          })}
+                        />
+                      )}
+                      {store.streaming.text && (
+                        <div
+                          aria-live="polite"
+                          class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)] rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem]"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          <div class="flex items-center gap-2 mb-1">
+                            <p
+                              class="text-[0.55rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
+                              style={{
+                                fontFamily: "var(--font-typewriter)",
+                              }}
+                            >
+                              The room
+                            </p>
+                            <span
+                              class="h-1.5 w-1.5 rounded-full bg-[var(--color-mustard)] interview-stream-pulse"
+                              aria-label="Response streaming"
+                            />
+                          </div>
+                          {store.streaming.text}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
               {/* A typed follow-up to the question just asked. Sits under the
                   thread rather than inside the bubble so the transcript stays
@@ -536,18 +677,20 @@ export const ConversationalInterview = component$(
                 </div>
               )}
 
-              {store.loading && (
+              {store.loading &&
+                !store.streaming?.reasoning &&
+                !store.streaming?.text && (
                 <div class="flex justify-start">
                   <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[3px] px-4 py-2.5">
                     <span
                       class="text-[var(--color-ink-muted)] text-sm"
                       style={{ fontFamily: "var(--font-typewriter)" }}
                     >
-                      The room is reading…
+                      Preparing the next question…
                     </span>
                   </div>
                 </div>
-              )}
+                )}
 
               {store.synthesis && (
                 <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[2px] p-5 shadow-sm space-y-4">
@@ -831,65 +974,40 @@ export const ConversationalInterview = component$(
                   />
                 </div>
               )}
-              <textarea
-                value={store.draft}
-                onInput$={(_, el) => {
-                  store.draft = el.value;
-                }}
-                onKeyDown$={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                    void send();
-                  }
-                }}
-                rows={3}
-                placeholder={
-                  store.messages.length <= 1
-                    ? "Type your answer here. ⌘↩ to send."
-                    : "Type your answer. ⌘↩ to send."
-                }
-                disabled={store.loading}
-                class="w-full border border-[var(--color-paper-3)] rounded px-3 py-2 text-sm bg-[var(--color-paper-soft)] focus:outline-none focus:border-[var(--color-vermilion)] disabled:opacity-50"
-                style={{ fontFamily: "var(--font-serif)" }}
-              />
               {/* Speaking an answer fills the box rather than sending it —
                   transcription mishears, and the writer should see their own
                   words before the room does. */}
-              <div class="mt-2">
-                <VoiceRecorder
-                  label="Answer out loud"
-                  transcriptionHint={
-                    props.initialBrief
-                      ? `${props.initialBrief.answers.workingTitle}. ${props.initialBrief.answers.audience}`
-                      : undefined
-                  }
-                  onCapture$={$((capture: VoiceCapture) => {
-                    store.draft = store.draft.trim()
-                      ? `${store.draft.trim()} ${capture.transcript}`
-                      : capture.transcript;
-                    inputRef.value?.focus();
-                  })}
-                />
-              </div>
-
-              <div class="flex items-center justify-between mt-2">
+              <ChatComposer
+                value={store.draft}
+                onValueChange$={$((value: string) => {
+                  store.draft = value;
+                })}
+                onSend$={send}
+                busy={store.loading}
+                label="Your answer"
+                placeholder={
+                  store.messages.length <= 1
+                    ? "Type your answer here, or speak it."
+                    : "Type your answer…"
+                }
+                transcriptionHint={
+                  props.initialBrief
+                    ? `${props.initialBrief.answers.workingTitle}. ${props.initialBrief.answers.audience}`
+                    : undefined
+                }
+              >
                 <button
+                  q:slot="actions"
+                  type="button"
                   onClick$={requestSynthesis}
                   disabled={store.loading || store.messages.length < 3}
-                  class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] disabled:opacity-30"
+                  class="focus-ring text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] disabled:opacity-30"
                   style={{ fontFamily: "var(--font-typewriter)" }}
                   title="Ask the room to synthesise the dossier now"
                 >
                   → Show me what you have
                 </button>
-                <button
-                  onClick$={send}
-                  disabled={store.loading || !store.draft.trim()}
-                  class="rounded-full bg-[var(--color-vermilion)] text-white px-4 py-1.5 text-sm disabled:opacity-30"
-                  style={{ fontFamily: "var(--font-display)" }}
-                >
-                  Send
-                </button>
-              </div>
+              </ChatComposer>
             </div>
           </div>
         )}

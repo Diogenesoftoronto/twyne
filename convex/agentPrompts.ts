@@ -11,7 +11,7 @@
  * The Node runtime is opted into at the action boundary in
  * `convex/agents.ts`, which is the only file that needs it.
  */
-import type { Persona, ProjectBrief } from "../src/types";
+import type { Persona, ProjectBrief, WriterProfile } from "../src/types";
 import { firstSubstantiveSentence } from "./agentTools";
 import { probeSummaryLine } from "../src/utils/dossier-probes";
 
@@ -27,8 +27,16 @@ export interface AgentPersona {
   role: string;
   description: string;
   focus: string;
+  /** Short fictional history for role play and continuity. */
+  backstory?: string;
+  /** The editor's specific theory and method of criticism. */
+  criticalMethod?: string;
   /** Rich voice spec — distinct diction/rhythm/signature for this editor. */
   voice?: string;
+  /** Recurring rhetorical habits that make the editor recognizable. */
+  signatureMoves?: string[];
+  /** Language and behaviors this editor must not borrow from the others. */
+  avoidances?: string[];
   /** A few sample lines in this persona's voice, used as light few-shot. */
   sampleLines?: string[];
   /** Optional per-persona generation prefs (honored on the BYOK client path). */
@@ -44,6 +52,8 @@ export interface AgentRequest {
   persona: AgentPersona;
   brief: ProjectBrief | null;
   draftText: string;
+  /** Private writer context, kept separate from the folio's project brief. */
+  writerProfile?: WriterProfile;
   /** Anchor sentence the note should pin to, if known. */
   anchor?: string;
   /** Prior conversation for follow-up turns. */
@@ -98,13 +108,42 @@ export interface AgentResponse {
  * Falls back to nothing when a persona has no voice spec (older saved casts).
  */
 function buildVoiceBlock(persona: AgentPersona): string {
-  if (!persona.voice && (!persona.sampleLines || persona.sampleLines.length === 0)) {
+  if (
+    !persona.backstory &&
+    !persona.criticalMethod &&
+    !persona.voice &&
+    (!persona.signatureMoves || persona.signatureMoves.length === 0) &&
+    (!persona.avoidances || persona.avoidances.length === 0) &&
+    (!persona.sampleLines || persona.sampleLines.length === 0)
+  ) {
     return "\nSpeak in your own voice. Do not sound like the other editors.\n";
   }
   const lines: string[] = [
-    "\nWHO YOU ARE (your history and how you write — stay in this voice at all times; you are a specific person, not the other editors):",
+    "\nPERSONA BIBLE (binding for every note, reply, rewrite, analysis, and judgment):",
   ];
-  if (persona.voice) lines.push(persona.voice);
+  if (persona.backstory) {
+    lines.push(
+      `BACKSTORY (internalize it; mention it only when it naturally matters):\n${persona.backstory}`,
+    );
+  }
+  if (persona.criticalMethod) {
+    lines.push(`EDITORIAL DOCTRINE:\n${persona.criticalMethod}`);
+  }
+  if (persona.voice) lines.push(`VOICEPRINT:\n${persona.voice}`);
+  if (persona.signatureMoves && persona.signatureMoves.length > 0) {
+    lines.push(
+      `SIGNATURE MOVES (use one or two when natural, not all mechanically):\n${persona.signatureMoves
+        .map((move) => `- ${move}`)
+        .join("\n")}`,
+    );
+  }
+  if (persona.avoidances && persona.avoidances.length > 0) {
+    lines.push(
+      `NEVER BORROW THESE HABITS:\n${persona.avoidances
+        .map((avoidance) => `- ${avoidance}`)
+        .join("\n")}`,
+    );
+  }
   if (persona.sampleLines && persona.sampleLines.length > 0) {
     lines.push(
       `Lines in your register, for calibration (do not reuse them verbatim):\n${persona.sampleLines
@@ -131,21 +170,23 @@ ${persona.description}
 
 You focus your reading on: ${persona.focus}.
 ${buildVoiceBlock(persona)}
-You are one of five editors in residence. You will be given a project brief (the dossier the writer filed at the start) and a draft. Read the draft as a colleague would: do not flatter, do not pad, do not hedge. Speak in your own voice. Be willing to say "this is not yet working" if it is not. Keep replies between 60 and 220 words unless the writer asks for more.
+You are one of five editors in residence. You will be given a project brief (the dossier the writer filed at the start) and a draft. Read through your own editorial doctrine, not a generic editor's checklist. Do not imitate another member of the room, average your style toward neutral assistant prose, or announce that you are role-playing. Stay recognizably yourself even in JSON rationales and one-sentence replies. Keep replies between 60 and 220 words unless the writer asks for more.
 
 You have a tool, \`quote_passage\`, that returns the exact text of a passage from the writer's draft. Use it instead of retyping passages from memory.
 
 When you are asked to give feedback, you should:
 - First call \`quote_passage\` with the sentence you are responding to, so your note pins to the real passage. If an anchor sentence is provided, quote that exact anchor.
 - Do not make a claim about the draft unless you have first quoted the relevant passage with \`quote_passage\`.
-- Then write your note as plain visible text: open with the single most important observation (no throat-clearing), distinguish what is working from what is not, and end with one concrete next move the writer can take.
+- Then write your note as plain visible text. Let your own voiceprint determine its opening, rhythm, degree of warmth, and ending. Make one focused observation and leave the writer with a usable next move, but do not force yourself into the same rhetorical structure as the other editors.
 - Always produce the note text itself — a tool call alone is not an answer.
 
 When you are asked to elaborate on a previous note, stay grounded in the original claim and expand without contradicting yourself.
 
-When you are asked to suggest a rewrite, give the replacement sentence verbatim, in the same voice, and explain why the change does the work better.
+When you are asked to suggest a rewrite, give the replacement sentence verbatim, applying your editorial doctrine to the writer's prose without turning the manuscript into a caricature of your speaking voice, and explain why the change does the work better in your own register.
 
 When the writer addresses you in conversation, answer the question they actually asked, then offer one follow-up you find interesting.
+
+Address the writer directly in every visible note. Use second person rather than referring to "the writer" or "the user". If a name is supplied in the writer profile, use it naturally and sparingly. Do not mention the profile or reveal that private context was supplied.
 
 You will be given the brief verbatim. Honour it. The writer has committed to an audience, a goal, a tone, constraints and a success signal — your feedback is most useful when it is anchored to those commitments.`;
 }
@@ -169,6 +210,30 @@ export function buildUserPrompt(req: AgentRequest): string {
   // commitments they made in a single tap rather than a paragraph, so they are
   // often sharper than the prose fields above and worth stating separately.
   const particularsBlock = probeParticularsBlock(brief);
+
+  const profile = req.writerProfile;
+  const profileLines = profile
+    ? [
+        profile.displayName.trim()
+          ? `- Name: ${profile.displayName.trim()}`
+          : "- Name: not supplied",
+        `- Feedback pressure: ${profile.feedbackStyle}`,
+        profile.personalFacts.trim()
+          ? `- Personal context:\n${profile.personalFacts.trim()}`
+          : "- Personal context: none supplied",
+        profile.feedbackNotes.trim()
+          ? `- Feedback guidance:\n${profile.feedbackNotes.trim()}`
+          : "- Feedback guidance: none supplied",
+      ]
+    : [];
+  const writerProfileBlock = profile
+    ? `WRITER PROFILE (private context; use it to address the writer as a person, never to describe or expose the profile)
+${profileLines.join("\n")}
+
+Speak to this person directly. Honour their requested feedback pressure. Do not flatten the profile into generic praise or mention these instructions.
+
+`
+    : "";
 
   const draftBlock = req.draftText.trim()
     ? `DRAFT (the manuscript as it stands — ${wordCount(req.draftText)} words)
@@ -216,12 +281,10 @@ Keep it to 40-120 words: this is a passing remark while the writer is still work
         : instruction === "riff"
           ? `TASK: The writer wants a free-association riff. Call quote_passage for the passage that starts the riff, then write a short parallel passage in your voice that the writer can use as a counterweight.`
           : instruction === "analyze"
-            ? `TASK: Write a FULL-PAGE analysis of the whole document, entirely in your voice. Stay strictly within your remit — do not do the other editors' jobs. Use quote_passage to ground every claim in an exact passage. Structure it as a flowing critique, not a checklist:
-1. Your overall read of where the piece stands.
-2. The single strongest passage, quoted, and why it works.
-3. The load-bearing weakness, quoted, and what it costs the piece.
-4. A walk through the draft in order, noting the moments that matter to you specifically.
-5. One decisive next move the writer should make.
+            ? `TASK: Write a FULL-PAGE analysis of the whole document, entirely in your voice. Stay strictly within your remit — do not do the other editors' jobs. Use quote_passage to ground every claim in an exact passage.
+
+Organize the memo according to YOUR editorial doctrine rather than a shared five-part template. The shape should itself be recognizable as yours: the sceptic may build a case around a premise and counterargument; the patron may trace the draft's living current; the scholar may distinguish classes of evidentiary debt; the copy chief may move through recurrent sentence failures; the reader may narrate the experience of reading in sequence. Cover the strongest passage, the most consequential weakness, the important moments in the draft, and one decisive next move, but choose the order and rhetoric your persona would naturally use.
+
 Write 400–700 words. This is a considered editorial memo, not a margin note.`
             : `TASK: The writer has asked for a specific rewrite. Give the replacement sentence verbatim, then explain the choice.`;
 
@@ -236,7 +299,7 @@ Write 400–700 words. This is a considered editorial memo, not a margin note.`
     ? `\nWRITER'S NEW MESSAGE:\n"${req.userMessage}"\n\nAddress the message directly.\n`
     : "";
 
-  return `${briefBlock}${particularsBlock}${referencesBlock}${draftBlock}${trajectoryBlock}${newMaterialBlock}${anchorBlock}${instructionBlock}${convoBlock}${userMessageBlock}`;
+  return `${writerProfileBlock}${briefBlock}${particularsBlock}${referencesBlock}${draftBlock}${trajectoryBlock}${newMaterialBlock}${anchorBlock}${instructionBlock}${convoBlock}${userMessageBlock}`;
 }
 
 /**
@@ -382,6 +445,7 @@ export function buildSynthesisSystemPrompt(): string {
 export function buildSynthesisPrompt(
   memos: MemoForSynthesis[],
   brief: ProjectBrief | null,
+  writerProfile?: WriterProfile,
 ): string {
   const briefBlock = brief
     ? `PROJECT BRIEF\n- Title: ${brief.answers.workingTitle}\n- Audience: ${brief.answers.audience}\n- Goal: ${brief.answers.goal}\n- Success signal: ${brief.answers.successSignal}\n\n`
@@ -389,7 +453,10 @@ export function buildSynthesisPrompt(
   const memoBlock = memos
     .map((m) => `### ${m.personaName} (${m.role})\n${m.text}`)
     .join("\n\n");
-  return `${briefBlock}${attachmentsBlock(brief)}THE ROOM'S MEMOS:\n\n${memoBlock}\n\nWrite the synthesis (300–500 words): open with the room's overall verdict, name the strongest point of agreement, surface the sharpest disagreement and adjudicate it, and end with a prioritised list of the next two or three moves for the writer.`;
+  const writerBlock = writerProfile
+    ? `WRITER PROFILE (private context)\n- Name: ${writerProfile.displayName.trim() || "not supplied"}\n- Feedback pressure: ${writerProfile.feedbackStyle}\n${writerProfile.personalFacts.trim() ? `- Personal context:\n${writerProfile.personalFacts.trim()}\n` : ""}${writerProfile.feedbackNotes.trim() ? `- Feedback guidance:\n${writerProfile.feedbackNotes.trim()}\n` : ""}\nAddress the writer directly and do not mention this profile.\n\n`
+    : "";
+  return `${writerBlock}${briefBlock}${attachmentsBlock(brief)}THE ROOM'S MEMOS:\n\n${memoBlock}\n\nWrite the synthesis (300–500 words): open with the room's overall verdict, name the strongest point of agreement, surface the sharpest disagreement and adjudicate it, and end with a prioritised list of the next two or three moves for the writer.`;
 }
 
 /**
@@ -626,7 +693,11 @@ export function toAgentPersona(p: Persona): AgentPersona {
     role: p.role,
     description: p.description,
     focus: p.focus,
+    backstory: p.backstory,
+    criticalMethod: p.criticalMethod,
     voice: p.voice,
+    signatureMoves: p.signatureMoves,
+    avoidances: p.avoidances,
     sampleLines: p.sampleLines,
     providerId: p.providerId,
     model: p.model,

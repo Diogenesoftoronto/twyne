@@ -47,8 +47,11 @@ mock.module("./ai-client", () => ({
   },
 }));
 
+// Other files mock the same dependencies process-globally under Bun. Import a
+// private instance so this unit always sees the mocks declared immediately
+// above, independent of full-suite module evaluation order.
 const { invalidateAiSettingsCache, runAiWithFallback } = await import(
-  "./ai-orchestrator"
+  `./ai-orchestrator?ai-orchestrator-test=${Date.now()}`
 );
 
 afterEach(() => {

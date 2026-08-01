@@ -85,3 +85,6 @@ evals/robustness-scores.json
 .stryker-tmp
 reports/
 stryker.log
+
+# devenv (nix dev shell) — local build cache
+.devenv/
