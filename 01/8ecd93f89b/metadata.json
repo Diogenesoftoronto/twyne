@@ -3,7 +3,7 @@
   "checkpoint_id": "018ecd93f89b",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 15,
+  "checkpoints_count": 17,
   "files_touched": [
     "bun.lock",
     "convex/_generated/api.d.ts",
@@ -13,20 +13,24 @@
     "convex/sync.ts",
     "package.json",
     "src/components/comments/comments-panel.tsx",
+    "src/components/editor/page-ruler.tsx",
     "src/components/editor/twyne-editor.tsx",
     "src/components/folio/folio-menu.tsx",
     "src/components/onboarding/conversational-interview.tsx",
     "src/components/personas/personas-panel.tsx",
     "src/components/rubric/rubric-panel.tsx",
+    "src/components/ui/chat-composer.tsx",
     "src/components/ui/searchable-model-select.tsx",
     "src/components/ui/speak-button.tsx",
     "src/global.css",
     "src/routes/analysis/index.tsx",
     "src/routes/api/tinker/chat/completions/index.ts",
     "src/routes/api/tinker/models/index.ts",
+    "src/routes/auth/callback/index.tsx",
     "src/routes/dossier/create/index.tsx",
     "src/routes/dossier/refine/index.tsx",
     "src/routes/editor/index.tsx",
+    "src/routes/index.tsx",
     "src/routes/onboarding/index.tsx",
     "src/routes/personas/index.tsx",
     "src/routes/rubric/index.tsx",
@@ -41,7 +45,9 @@
     "src/utils/background-room.ts",
     "src/utils/convex-sync.test.ts",
     "src/utils/convex-sync.ts",
+    "src/utils/exchange.ts",
     "src/utils/folio-dossier-wiring.test.ts",
+    "src/utils/folio-export.ts",
     "src/utils/folio-workspace.ts",
     "src/utils/generation-stream.ts",
     "src/utils/idb-preferences.test.ts",
@@ -49,6 +55,7 @@
     "src/utils/interview-stream.ts",
     "src/utils/models-dev.test.ts",
     "src/utils/models-dev.ts",
+    "src/utils/page-margins.test.ts",
     "src/utils/persona-identity-wiring.test.ts",
     "src/utils/persona-voices.test.ts",
     "src/utils/personas-markdown-wiring.test.ts",
@@ -138,13 +145,20 @@
       "compact_transcript": "/01/8ecd93f89b/10/transcript.jsonl",
       "content_hash": "/01/8ecd93f89b/10/content_hash.txt",
       "prompt": "/01/8ecd93f89b/10/prompt.txt"
+    },
+    {
+      "metadata": "/01/8ecd93f89b/11/metadata.json",
+      "transcript": "/01/8ecd93f89b/11/full.jsonl",
+      "compact_transcript": "/01/8ecd93f89b/11/transcript.jsonl",
+      "content_hash": "/01/8ecd93f89b/11/content_hash.txt",
+      "prompt": "/01/8ecd93f89b/11/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 5999570,
-    "cache_creation_tokens": 310483,
-    "cache_read_tokens": 175904551,
-    "output_tokens": 455738,
-    "api_call_count": 925
+    "input_tokens": 5999994,
+    "cache_creation_tokens": 832464,
+    "cache_read_tokens": 206912234,
+    "output_tokens": 558598,
+    "api_call_count": 1149
   }
 }
