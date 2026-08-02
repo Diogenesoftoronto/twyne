@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "7c8ab980b59e",
+  "session_id": "019fbf5c-ac19-76e2-ad5e-81d6f3ff5408",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-02T01:20:33.896141387Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/pure-amber-kite.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "bc91449da655",
+  "checkpoint_transcript_start": 188,
+  "transcript_lines_at_start": 188,
+  "compact_transcript_start": 35,
+  "initial_attribution": {
+    "calculated_at": "2026-08-02T01:20:33.759314865Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 2,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 2,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
