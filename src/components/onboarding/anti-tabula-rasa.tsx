@@ -385,7 +385,7 @@ export const AntiTabulaRasa = component$(
         {store.submitError && (
           <div
             class="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded"
-            style="z-index: 9999; background: #c1272d; color: #fff; font-family: monospace; font-size: 0.875rem;"
+            style="z-index: var(--z-toast); background: var(--color-vermilion); color: var(--color-paper-soft); font-family: var(--font-mono); font-size: 0.875rem;"
           >
             ⚠ {store.submitError}
           </div>

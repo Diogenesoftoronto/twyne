@@ -12,7 +12,15 @@ import {
   footnoteCite,
   mergeBibEntry,
 } from "../../utils/bibliography";
-import { snapshot as researchSnapshot } from "../../utils/background-research";
+import {
+  formatResearchTime,
+  retryBackgroundResearch,
+  retryResearchTarget,
+  snapshot as researchSnapshot,
+  type ResearchActivityEntry,
+  type ResearchProgressItem,
+} from "../../utils/background-research";
+import { targetKindLabel } from "../../utils/research-targets";
 import {
   loadAiSettingsFromIdb,
   loadApparatusSettingsFromIdb,
@@ -36,11 +44,17 @@ interface CitationsStore {
   /** Live status from the background-research module. */
   research: {
     status: "idle" | "running" | "saving" | "error";
+    phase: string;
+    passActive: boolean;
     lastQuery: string;
     lastQueryAt: number;
     savedThisSession: number;
     lastTickAt: number;
     error?: string;
+    /** Claims being researched right now (or the last pass). */
+    progress: ResearchProgressItem[];
+    /** Recently-settled claims, newest first. */
+    activity: ResearchActivityEntry[];
   };
   /** The most recent background-saved entry, used for a transient toast. */
   lastBackgroundSave: { saved: number; query: string } | null;
@@ -73,10 +87,14 @@ export const CitationsPanel = component$(
       embedLoading: false,
       research: {
         status: "idle",
+        phase: "idle",
+        passActive: false,
         lastQuery: "",
         lastQueryAt: 0,
         savedThisSession: 0,
         lastTickAt: 0,
+        progress: [],
+        activity: [],
       },
       lastBackgroundSave: null,
       aiSettings: null,
@@ -119,7 +137,11 @@ export const CitationsPanel = component$(
           );
           if (!result) continue;
           all = await mergeBibEntry(
-            buildBibEntryFromFormattedCitation(citation, result, activeFolio.id),
+            buildBibEntryFromFormattedCitation(
+              citation,
+              result,
+              activeFolio.id,
+            ),
           );
           if (citation.lookupUrl) {
             seen.add(citation.lookupUrl.replace(/\/+$/, ""));
@@ -212,11 +234,15 @@ export const CitationsPanel = component$(
         const s = researchSnapshot();
         store.research = {
           status: s.status as CitationsStore["research"]["status"],
+          phase: s.phase,
+          passActive: s.passActive,
           lastQuery: s.lastQuery,
           lastQueryAt: s.lastQueryAt,
           savedThisSession: s.savedThisSession,
           lastTickAt: s.lastTickAt,
           error: s.error,
+          progress: s.progress,
+          activity: s.activity,
         };
       };
       const onSources = (e: Event) => {
@@ -224,14 +250,16 @@ export const CitationsPanel = component$(
           saved: number;
           query: string;
         };
-        store.lastBackgroundSave = detail;
-        // Drop the toast after a few seconds.
-        setTimeout(() => {
-          if (store.lastBackgroundSave === detail) {
-            store.lastBackgroundSave = null;
-          }
-        }, 6_000);
-        // Refresh the bibliography so the new entries show up.
+        if (detail.saved > 0) {
+          store.lastBackgroundSave = detail;
+          // Drop the toast after a few seconds.
+          setTimeout(() => {
+            if (store.lastBackgroundSave === detail) {
+              store.lastBackgroundSave = null;
+            }
+          }, 6_000);
+        }
+        // Refresh the bibliography so newly-saved entries show up.
         void loadBibliography().then((all) => {
           store.bibliography = all;
         });
@@ -354,9 +382,12 @@ export const CitationsPanel = component$(
     const backgroundCount = store.bibliography.filter(
       (b) => b.provenance === "background" && b.folioId === activeFolio?.id,
     ).length;
-    const writerCount = store.bibliography.filter(
-      (b) => b.folioId === activeFolio?.id,
-    ).length - backgroundCount;
+    const writerCount =
+      store.bibliography.filter((b) => b.folioId === activeFolio?.id).length -
+      backgroundCount;
+    const hasResearchErrors =
+      store.research.status === "error" ||
+      store.research.progress.some((p) => p.status === "error");
 
     return (
       <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
@@ -415,9 +446,18 @@ export const CitationsPanel = component$(
               class="text-[0.65rem] text-[var(--color-ink)]"
               style={{ fontFamily: "var(--font-typewriter)" }}
             >
-              {store.research.status === "running" && "Apparatus is searching…"}
-              {store.research.status === "saving" && "Saving discovered sources…"}
-              {store.research.status === "error" && "Apparatus is offline."}
+              {store.research.status === "running" &&
+                store.research.phase === "extracting" &&
+                "Apparatus is reading your draft…"}
+              {store.research.status === "running" &&
+                store.research.phase === "searching" &&
+                "Apparatus is hunting for sources…"}
+              {store.research.status === "saving" &&
+                "Saving a discovered source…"}
+              {store.research.status === "error" &&
+                (store.research.error
+                  ? store.research.error
+                  : "Apparatus hit an error while researching.")}
               {store.research.status === "idle" &&
                 (backgroundCount > 0
                   ? `Agents are watching — ${backgroundCount} source${backgroundCount === 1 ? "" : "s"} on file.`
@@ -433,7 +473,140 @@ export const CitationsPanel = component$(
               </p>
             )}
           </div>
+          {(hasResearchErrors || store.research.status === "error") && (
+            <button
+              onClick$={() => retryBackgroundResearch()}
+              class="text-[0.6rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] flex-shrink-0 border border-[var(--color-vermilion)] px-1.5 py-0.5"
+              style={{ fontFamily: "var(--font-typewriter)" }}
+              title="Re-run the research pass against the current draft."
+            >
+              ↻ retry
+            </button>
+          )}
         </div>
+
+        {/* Live claims — what the watcher decided needs a source, and how
+            each one is resolving. Streams as the pass runs. */}
+        {store.research.progress.length > 0 && (
+          <div
+            class="px-4 py-2.5 border-b border-[var(--color-paper-3)]"
+            style="background: var(--color-paper-2);"
+          >
+            <p class="dept-label mb-1.5">
+              {store.research.passActive
+                ? "Researching your claims"
+                : "Research — last pass"}
+            </p>
+            <ul class="space-y-2">
+              {store.research.progress.map((item) => {
+                const dot =
+                  item.status === "searching"
+                    ? {
+                        background: "var(--color-mustard)",
+                        animation: "pulse 1.4s ease-in-out infinite",
+                      }
+                    : item.status === "found"
+                      ? { background: "var(--color-accent-green)" }
+                      : item.status === "missed"
+                        ? { background: "var(--color-ink-muted)" }
+                        : { background: "var(--color-paper-3)" };
+                return (
+                  <li key={item.key} class="flex items-start gap-2">
+                    <span
+                      class="inline-block w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
+                      style={dot}
+                      aria-hidden="true"
+                    />
+                    <div class="min-w-0 flex-1">
+                      <p
+                        class="text-[0.6rem] leading-4 text-[var(--color-ink)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        <span class="uppercase text-[var(--color-ink-muted)]">
+                          {targetKindLabel(item.kind)} ·{" "}
+                        </span>
+                        “{item.anchor.slice(0, 90)}
+                        {item.anchor.length > 90 ? "…" : ""}”
+                      </p>
+                      <p
+                        class="text-[0.55rem] text-[var(--color-ink-muted)] truncate"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                        title={
+                          item.status === "error"
+                            ? (item.error ?? item.query)
+                            : item.query
+                        }
+                      >
+                        {item.status === "searching"
+                          ? "searching…"
+                          : item.status === "found"
+                            ? `${item.count ?? 0} source${(item.count ?? 1) === 1 ? "" : "s"} found`
+                            : item.status === "missed"
+                              ? "no sources matched"
+                              : item.status === "error"
+                                ? `⚠ ${item.error ?? "failed to research"}`
+                                : "queued"}
+                      </p>
+                    </div>
+                    {item.status === "error" && (
+                      <button
+                        onClick$={() => retryResearchTarget(item.key)}
+                        class="text-[0.55rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] flex-shrink-0"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                        title="Retry this claim only."
+                      >
+                        ↻ retry
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+
+        {/* Recent settlements — claims that already resolved. */}
+        {store.research.activity.length > 0 && (
+          <div
+            class="px-4 py-2.5 border-b border-[var(--color-paper-3)]"
+            style="background: var(--color-paper-2);"
+          >
+            <p class="dept-label mb-1.5">Recent research</p>
+            <ul class="space-y-1">
+              {store.research.activity.slice(0, 5).map((a) => (
+                <li
+                  key={a.id}
+                  class="flex items-baseline gap-1.5 text-[0.58rem] leading-4"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  <span
+                    class={
+                      a.outcome === "found"
+                        ? "text-[var(--color-accent-green)] flex-shrink-0"
+                        : a.outcome === "error"
+                          ? "text-[var(--color-vermilion)] flex-shrink-0"
+                          : "text-[var(--color-ink-muted)] flex-shrink-0"
+                    }
+                    title={a.outcome === "error" ? a.error : undefined}
+                  >
+                    {a.outcome === "found"
+                      ? `✦ +${a.count}`
+                      : a.outcome === "error"
+                        ? "⚠"
+                        : "✗"}
+                  </span>
+                  <span class="truncate text-[var(--color-ink-muted)]">
+                    “{a.anchor.slice(0, 50)}
+                    {a.anchor.length > 50 ? "…" : ""}”
+                  </span>
+                  <span class="ml-auto text-[var(--color-ink-muted)] flex-shrink-0">
+                    {formatResearchTime(a.at)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Transient toast when background agents save new sources */}
         {store.lastBackgroundSave && (
@@ -450,7 +623,9 @@ export const CitationsPanel = component$(
               class="text-xs text-[var(--color-ink)]"
               style={{ fontFamily: "var(--font-serif)" }}
             >
-              <span style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}>
+              <span
+                style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+              >
                 Apparatus found{" "}
                 {store.lastBackgroundSave.saved === 1
                   ? "a source"
@@ -562,6 +737,18 @@ export const CitationsPanel = component$(
                       >
                         {formatCitation(entry, store.style)}
                       </p>
+                      {isBackground && entry.target && (
+                        <p
+                          class="text-[0.6rem] text-[var(--color-ink-muted)] mt-1 italic"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          for: “{entry.target.anchor.slice(0, 110)}
+                          {entry.target.anchor.length > 110 ? "…" : ""}”
+                          <span class="uppercase not-italic ml-1">
+                            · {targetKindLabel(entry.target.kind)}
+                          </span>
+                        </p>
+                      )}
                       {isBackground && entry.backgroundQuery && (
                         <p
                           class="text-[0.6rem] text-[var(--color-ink-muted)] mt-1 italic"
@@ -616,7 +803,8 @@ export const CitationsPanel = component$(
             const accent = getTypeAccent(citation.type);
             const isFormatting = !!store.formattingIds[citation.id];
             const isAdded = !!store.addedIds[citation.id];
-            const hasAi = store.aiSettings && hasConfiguredAiProvider(store.aiSettings);
+            const hasAi =
+              store.aiSettings && hasConfiguredAiProvider(store.aiSettings);
             return (
               <div
                 key={citation.id}
@@ -672,16 +860,18 @@ export const CitationsPanel = component$(
                     </p>
                     {store.expandedId === citation.id && citation.metadata && (
                       <div class="mt-2 space-y-1 pl-2 border-l border-dashed border-[var(--color-paper-3)]">
-                        {Object.entries(citation.metadata).map(([_key, val]) => (
-                          <p
-                            key={_key}
-                            class="text-xs text-[var(--color-ink-muted)]"
-                            style={{ fontFamily: "var(--font-serif)" }}
-                          >
-                            <span class="dept-label not-italic">{_key}</span>{" "}
-                            {val}
-                          </p>
-                        ))}
+                        {Object.entries(citation.metadata).map(
+                          ([_key, val]) => (
+                            <p
+                              key={_key}
+                              class="text-xs text-[var(--color-ink-muted)]"
+                              style={{ fontFamily: "var(--font-serif)" }}
+                            >
+                              <span class="dept-label not-italic">{_key}</span>{" "}
+                              {val}
+                            </p>
+                          ),
+                        )}
                       </div>
                     )}
                     {citation.lookupUrl && (
@@ -704,9 +894,11 @@ export const CitationsPanel = component$(
                         disabled={isFormatting || isAdded}
                         class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)] disabled:opacity-40 disabled:cursor-default"
                         style="font-family: var(--font-typewriter);"
-                        title={hasAi
-                          ? "Format this citation with AI and add it to your bibliography."
-                          : "Add this citation to your bibliography."}
+                        title={
+                          hasAi
+                            ? "Format this citation with AI and add it to your bibliography."
+                            : "Add this citation to your bibliography."
+                        }
                       >
                         {isFormatting
                           ? "formatting…"
@@ -761,7 +953,10 @@ export const CitationsPanel = component$(
                   <div class="min-w-0">
                     <p
                       class="text-sm text-[var(--color-ink)] truncate"
-                      style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+                      style={{
+                        fontFamily: "var(--font-display)",
+                        fontWeight: 600,
+                      }}
                     >
                       {store.embedTitle}
                     </p>

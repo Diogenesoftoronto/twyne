@@ -525,6 +525,52 @@ export const EDITOR_COMMANDS = [
     availability: "splittable-cell",
     surfaces: ["shortcut-dialog", "manual"],
   },
+  // The removals carry the `slash` surface the additions do not. The floating
+  // toolbar is a wide, horizontally scrolling strip, so its trailing buttons
+  // are easy to miss — writers reported being unable to get rid of a table at
+  // all. The slash menu gives them a second, searchable way in.
+  {
+    id: "table.delete-row",
+    label: "Delete row",
+    description: "Delete the table row containing the active cell.",
+    group: "table",
+    searchTerms: ["table", "row", "delete", "remove"],
+    availability: "table",
+    surfaces: ["slash", "shortcut-dialog", "manual"],
+    slash: {
+      group: "Structure",
+      order: 60,
+      keywords: ["remove", "drop", "table"],
+    },
+  },
+  {
+    id: "table.delete-column",
+    label: "Delete column",
+    description: "Delete the table column containing the active cell.",
+    group: "table",
+    searchTerms: ["table", "column", "delete", "remove"],
+    availability: "table",
+    surfaces: ["slash", "shortcut-dialog", "manual"],
+    slash: {
+      group: "Structure",
+      order: 61,
+      keywords: ["remove", "drop", "table"],
+    },
+  },
+  {
+    id: "table.delete-table",
+    label: "Delete table",
+    description: "Remove the whole table from the manuscript.",
+    group: "table",
+    searchTerms: ["table", "delete", "remove", "destroy"],
+    availability: "table",
+    surfaces: ["slash", "shortcut-dialog", "manual"],
+    slash: {
+      group: "Structure",
+      order: 62,
+      keywords: ["remove", "drop", "get rid of"],
+    },
+  },
 ] as const satisfies readonly EditorCommandDefinition[];
 
 export type EditorCommandId = (typeof EDITOR_COMMANDS)[number]["id"];

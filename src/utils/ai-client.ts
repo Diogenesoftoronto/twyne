@@ -30,6 +30,7 @@ import type {
   AiFeature,
   AiProviderConfig,
   AiFeatureOverride,
+  ResearchTarget,
 } from "../types";
 import { VOICE_ONLY_PROVIDER_TYPES } from "../types";
 import type {
@@ -78,6 +79,12 @@ import {
   parseJudgeOutput,
   stripTaggedJson,
 } from "./llm-parsing";
+import {
+  DEFAULT_TARGETS_PER_PASS,
+  buildResearchExtractSystemPrompt,
+  buildResearchExtractUserPrompt,
+  parseResearchTargets,
+} from "./research-targets";
 import {
   createInterviewStreamSnapshot,
   type InterviewStreamSnapshot,
@@ -447,6 +454,7 @@ function defaultTemperature(feature: AiFeature): number {
     case "source-detect-missing":
       return 0.2;
     case "research-web-search":
+    case "research-extract":
       return 0.2;
     default:
       return 0.4;
@@ -482,6 +490,8 @@ function defaultMaxTokens(feature: AiFeature): number {
       return 350;
     case "research-web-search":
       return 900;
+    case "research-extract":
+      return 1600;
     default:
       return 300;
   }
@@ -2060,6 +2070,64 @@ Respond with JSON only:
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:source-detect", err);
     return null;
+  }
+}
+
+export interface TargetExtractRequest {
+  draftText: string;
+  existingSources: string[];
+  maxTargets?: number;
+  instructions?: string;
+}
+
+/**
+ * The agentic front of auto-research. The model reads the draft and decides
+ * exactly which passages need a source (a quote to attribute, a film, a
+ * statistic, a claim), and for each returns a precise search query. The
+ * background watcher then resolves each target one at a time through the
+ * configured research provider.
+ */
+export async function runClientResearchExtract(
+  req: TargetExtractRequest,
+  settings: AiSettings,
+): Promise<{ targets: ResearchTarget[]; provider: string } | null> {
+  const resolved = resolveFeatureConfig(settings, "research-extract");
+  if (!resolved) return null;
+
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+
+  const maxTargets = Math.max(
+    1,
+    Math.min(6, req.maxTargets ?? DEFAULT_TARGETS_PER_PASS),
+  );
+
+  try {
+    const text = await generateTrackedText({
+      feature: "research-extract",
+      resolved,
+      model,
+      system: buildResearchExtractSystemPrompt(),
+      prompt: buildResearchExtractUserPrompt({
+        draftText: req.draftText,
+        existingSources: req.existingSources,
+        maxTargets,
+        instructions: req.instructions,
+      }),
+      spanName: "research_extract",
+      evalSignals: {
+        twyne_draft_chars: req.draftText.length,
+        twyne_existing_sources_count: req.existingSources.length,
+        twyne_expected_format: "json_research_targets",
+      },
+    });
+
+    const targets = parseResearchTargets(text);
+    if (targets.length === 0) return null;
+    return { targets, provider: resolved.provider.type };
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:research-extract", err);
+    throw err;
   }
 }
 

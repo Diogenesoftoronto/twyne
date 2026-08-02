@@ -24,7 +24,15 @@ import {
   loadFolioContentFromIdb,
   saveApparatusSettingsToIdb,
 } from "../../utils/idb";
-import { snapshot as researchSnapshot } from "../../utils/background-research";
+import {
+  formatResearchTime,
+  retryBackgroundResearch,
+  retryResearchTarget,
+  snapshot as researchSnapshot,
+  type ResearchActivityEntry,
+  type ResearchProgressItem,
+} from "../../utils/background-research";
+import { targetKindLabel } from "../../utils/research-targets";
 import {
   hasConfiguredAiProvider,
   runClientCitationFormat,
@@ -47,12 +55,16 @@ interface ApparatusStore {
   embedLoading: boolean;
   research: {
     status: "idle" | "running" | "saving" | "error";
+    phase: string;
+    passActive: boolean;
     lastQuery: string;
     lastQueryAt: number;
     savedThisSession: number;
     lastTickAt: number;
     provider?: string;
     error?: string;
+    progress: ResearchProgressItem[];
+    activity: ResearchActivityEntry[];
   };
   showResearchLog: boolean;
   /* ── AI-enhanced apparatus ─────────────────────────────────── */
@@ -94,10 +106,14 @@ export default component$(() => {
     embedLoading: false,
     research: {
       status: "idle",
+      phase: "idle",
+      passActive: false,
       lastQuery: "",
       lastQueryAt: 0,
       savedThisSession: 0,
       lastTickAt: 0,
+      progress: [],
+      activity: [],
     },
     showResearchLog: false,
     aiSettings: null,
@@ -166,12 +182,16 @@ export default component$(() => {
       const s = researchSnapshot();
       store.research = {
         status: s.status as ApparatusStore["research"]["status"],
+        phase: s.phase,
+        passActive: s.passActive,
         lastQuery: s.lastQuery,
         lastQueryAt: s.lastQueryAt,
         savedThisSession: s.savedThisSession,
         lastTickAt: s.lastTickAt,
         provider: s.provider,
         error: s.error,
+        progress: s.progress,
+        activity: s.activity,
       };
     };
     const onSources = () => {
@@ -467,11 +487,18 @@ export default component$(() => {
                 style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
               >
                 {store.research.status === "running" &&
-                  "Apparatus is searching…"}
+                  store.research.phase === "extracting" &&
+                  "Apparatus is reading your draft…"}
+                {store.research.status === "running" &&
+                  (store.research.phase === "searching" ||
+                    store.research.phase === "saving") &&
+                  "Apparatus is hunting for sources…"}
                 {store.research.status === "saving" &&
-                  "Saving discovered sources…"}
+                  "Saving a discovered source…"}
                 {store.research.status === "error" &&
-                  "Apparatus is offline — sources will resume when the connection is back."}
+                  (store.research.error
+                    ? store.research.error
+                    : "Apparatus hit an error while researching.")}
                 {store.research.status === "idle" &&
                   (backgroundEntries.length > 0
                     ? `Agents are watching — ${backgroundEntries.length} source${backgroundEntries.length === 1 ? "" : "s"} found so far.`
@@ -490,7 +517,8 @@ export default component$(() => {
                   class="text-[0.7rem] text-[var(--color-ink-muted)] mt-0.5"
                   style={{ fontFamily: "var(--font-typewriter)" }}
                 >
-                  The query is derived from your brief and the current draft.
+                  The Apparatus reads your draft and hunts sources for the
+                  claims inside it.
                 </p>
               )}
               {store.research.provider && (
@@ -518,12 +546,148 @@ export default component$(() => {
             </div>
           </div>
           {store.research.error && (
-            <p
-              class="text-[0.7rem] text-[var(--color-vermilion)] mt-2"
+            <div
+              class="mt-2 flex items-center gap-2"
               style={{ fontFamily: "var(--font-typewriter)" }}
             >
-              {store.research.error}
-            </p>
+              <p class="text-[0.7rem] text-[var(--color-vermilion)] flex-1 min-w-0">
+                {store.research.error}
+              </p>
+              {(store.research.status === "error" ||
+                store.research.progress.some((p) => p.status === "error")) && (
+                <button
+                  onClick$={() => retryBackgroundResearch()}
+                  class="text-[0.6rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] flex-shrink-0 border border-[var(--color-vermilion)] px-1.5 py-0.5"
+                  title="Re-run the research pass."
+                >
+                  ↻ retry
+                </button>
+              )}
+            </div>
+          )}
+          {(store.research.progress.length > 0 ||
+            store.research.activity.length > 0) && (
+            <div class="mt-3 pt-3 border-t border-[var(--color-paper-3)]">
+              {store.research.progress.length > 0 && (
+                <>
+                  <p
+                    class="text-[0.6rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-2"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    {store.research.passActive
+                      ? "Live — researching these claims"
+                      : "Last pass"}
+                  </p>
+                  <ul class="space-y-2 mb-3">
+                    {store.research.progress.map((item) => {
+                      const dot =
+                        item.status === "searching"
+                          ? {
+                              background: "var(--color-mustard)",
+                              animation: "pulse 1.4s ease-in-out infinite",
+                            }
+                          : item.status === "found"
+                            ? { background: "var(--color-accent-green)" }
+                            : item.status === "missed"
+                              ? { background: "var(--color-ink-muted)" }
+                              : { background: "var(--color-paper-3)" };
+                      return (
+                        <li
+                          key={item.key}
+                          class="flex items-start gap-2"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          <span
+                            class="inline-block w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
+                            style={dot}
+                            aria-hidden="true"
+                          />
+                          <div class="min-w-0 flex-1">
+                            <p class="text-[0.65rem] leading-4 text-[var(--color-ink)]">
+                              <span class="uppercase text-[var(--color-ink-muted)]">
+                                {targetKindLabel(item.kind)} ·{" "}
+                              </span>
+                              “{item.anchor.slice(0, 100)}
+                              {item.anchor.length > 100 ? "…" : ""}”
+                            </p>
+                            <p
+                              class="text-[0.6rem] text-[var(--color-ink-muted)] truncate"
+                              title={
+                                item.status === "error"
+                                  ? (item.error ?? item.query)
+                                  : item.query
+                              }
+                            >
+                              {item.status === "searching"
+                                ? "searching…"
+                                : item.status === "found"
+                                  ? `${item.count ?? 0} source${(item.count ?? 1) === 1 ? "" : "s"} found`
+                                  : item.status === "missed"
+                                    ? "no sources matched"
+                                    : item.status === "error"
+                                      ? `⚠ ${item.error ?? "failed to research"}`
+                                      : "queued"}
+                            </p>
+                          </div>
+                          {item.status === "error" && (
+                            <button
+                              onClick$={() => retryResearchTarget(item.key)}
+                              class="text-[0.55rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] flex-shrink-0"
+                              title="Retry this claim only."
+                            >
+                              ↻ retry
+                            </button>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+              {store.research.activity.length > 0 && (
+                <>
+                  <p
+                    class="text-[0.6rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-1.5"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Recent research
+                  </p>
+                  <ul class="space-y-1">
+                    {store.research.activity.slice(0, 6).map((a) => (
+                      <li
+                        key={a.id}
+                        class="flex items-baseline gap-1.5 text-[0.62rem] leading-4"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        <span
+                          class={
+                            a.outcome === "found"
+                              ? "text-[var(--color-accent-green)] flex-shrink-0"
+                              : a.outcome === "error"
+                                ? "text-[var(--color-vermilion)] flex-shrink-0"
+                                : "text-[var(--color-ink-muted)] flex-shrink-0"
+                          }
+                          title={a.outcome === "error" ? a.error : undefined}
+                        >
+                          {a.outcome === "found"
+                            ? `✦ +${a.count}`
+                            : a.outcome === "error"
+                              ? "⚠"
+                              : "✗"}
+                        </span>
+                        <span class="truncate text-[var(--color-ink-muted)]">
+                          “{a.anchor.slice(0, 60)}
+                          {a.anchor.length > 60 ? "…" : ""}”
+                        </span>
+                        <span class="ml-auto text-[var(--color-ink-muted)] flex-shrink-0">
+                          {formatResearchTime(a.at)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
           )}
         </section>
 
@@ -558,7 +722,10 @@ export default component$(() => {
                 backgroundEntries.map((entry) => {
                   const isCited = citedUrls.has(entry.url.replace(/\/+$/, ""));
                   return (
-                    <div key={entry.id} class="row group slide-in transition-colors hover:bg-[var(--color-paper-soft)] page-turn">
+                    <div
+                      key={entry.id}
+                      class="row group slide-in transition-colors hover:bg-[var(--color-paper-soft)] page-turn"
+                    >
                       <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0 flex-1">
                           <div class="flex items-center gap-2 mb-1 flex-wrap">
@@ -586,6 +753,18 @@ export default component$(() => {
                           >
                             {formatCitation(entry, store.style)}
                           </p>
+                          {entry.target && (
+                            <p
+                              class="text-[0.6rem] text-[var(--color-ink-muted)] mt-1 italic"
+                              style={{ fontFamily: "var(--font-typewriter)" }}
+                            >
+                              for: “{entry.target.anchor.slice(0, 100)}
+                              {entry.target.anchor.length > 100 ? "…" : ""}”
+                              <span class="uppercase not-italic ml-1">
+                                · {targetKindLabel(entry.target.kind)}
+                              </span>
+                            </p>
+                          )}
                           {entry.backgroundQuery && (
                             <p
                               class="text-[0.6rem] text-[var(--color-ink-muted)] mt-1 italic"
@@ -680,7 +859,10 @@ export default component$(() => {
                   const isSummarizing = !!store.aiLoading[sumKey];
                   const summary = store.aiSummaries[entry.id];
                   return (
-                    <div key={entry.id} class="row group slide-in transition-colors hover:bg-[var(--color-paper-soft)] page-turn">
+                    <div
+                      key={entry.id}
+                      class="row group slide-in transition-colors hover:bg-[var(--color-paper-soft)] page-turn"
+                    >
                       <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0 flex-1">
                           <p
@@ -837,9 +1019,11 @@ export default component$(() => {
                           disabled={isFormatting || isAdded}
                           class="ml-auto text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)] disabled:opacity-40 disabled:cursor-default"
                           style="font-family: var(--font-typewriter);"
-                          title={hasAi
-                            ? "Format this citation with AI and add it to your bibliography."
-                            : "Add this citation to your bibliography."}
+                          title={
+                            hasAi
+                              ? "Format this citation with AI and add it to your bibliography."
+                              : "Add this citation to your bibliography."
+                          }
                         >
                           {isFormatting
                             ? "formatting…"

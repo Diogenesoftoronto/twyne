@@ -95,6 +95,9 @@ const REGISTRY_COMMAND_ALIASES: Partial<Record<EditorCommandId, string>> = {
   "table.add-column-after": "addColumnAfter",
   "table.merge-cells": "mergeCells",
   "table.split-cell": "splitCell",
+  "table.delete-row": "deleteRow",
+  "table.delete-column": "deleteColumn",
+  "table.delete-table": "deleteTable",
 };
 import { api } from "../../../convex/_generated/api";
 import {
@@ -174,7 +177,6 @@ import {
 } from "./table-core";
 import {
   TableCellFormat,
-  getSelectedCellFormat,
   runTableCellFormatIntent,
   type SelectedCellFormat,
   type TableCellFormatIntent,
@@ -296,6 +298,8 @@ export interface EditorStore {
   footerText: string;
   /** Show the layout popover? */
   showLayout: boolean;
+  /** Room below the layout button, measured on open so the panel always fits. */
+  layoutPanelMaxH: number;
   /** A PDF print job is being prepared. */
   exportingPdf: boolean;
   /** Coordinator-owned navigation and help surfaces. */
@@ -438,6 +442,7 @@ export const TwyneEditor = component$(
       headerText: activeFolio?.header ?? "",
       footerText: activeFolio?.footer ?? "",
       showLayout: false,
+      layoutPanelMaxH: 544,
       exportingPdf: false,
       showFindReplace: false,
       showShortcutDialog: false,
@@ -1345,9 +1350,9 @@ export const TwyneEditor = component$(
         store.editor = editor;
         const tableToolbarController = createTableToolbarController(
           editor,
-          (snapshot) => {
+          (snapshot, cellFormat) => {
             store.tableToolbar = snapshot;
-            store.cellFormat = getSelectedCellFormat(editor);
+            store.cellFormat = cellFormat;
           },
         );
 
@@ -2596,7 +2601,7 @@ export const TwyneEditor = component$(
         >
         {/* ── Toolbar (compositor's stick) ───────────────── */}
         <div
-          class="twyne-toolbar flex items-center gap-1 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] flex-wrap"
+          class="twyne-toolbar flex items-center gap-1 px-2 sm:px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] flex-nowrap overflow-x-auto sm:flex-wrap sm:overflow-x-visible"
           style="font-family: var(--font-typewriter);"
           role="toolbar"
           aria-label="Formatting"
@@ -3253,7 +3258,14 @@ export const TwyneEditor = component$(
               title="Page layout"
               aria-label="Page layout"
               aria-expanded={store.showLayout}
-              onClick$={() => {
+              onClick$={(_, el) => {
+                // Cap the panel to the room actually below the button. A bare
+                // `max-height` cannot do this: it knows the viewport but not
+                // where the panel starts, so a tall panel opened from a
+                // toolbar partway down the page still ran off the bottom.
+                const below =
+                  window.innerHeight - el.getBoundingClientRect().bottom - 16;
+                store.layoutPanelMaxH = Math.max(220, Math.round(below));
                 store.showLayout = !store.showLayout;
               }}
               class="tool-btn"
@@ -3263,8 +3275,13 @@ export const TwyneEditor = component$(
             {store.showLayout && (
               <div
                 data-layout-popover
-                class="absolute right-0 top-full mt-1 z-50 w-64 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
-                style="border-radius: 2px; font-family: var(--font-typewriter);"
+                class="absolute right-0 top-full mt-1 z-50 w-[21rem] max-w-[calc(100vw-1.5rem)] overflow-y-auto p-4 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
+                style={{
+                  borderRadius: "2px",
+                  fontFamily: "var(--font-typewriter)",
+                  maxHeight: `${store.layoutPanelMaxH}px`,
+                  overscrollBehavior: "contain",
+                }}
                 role="dialog"
                 aria-label="Page layout"
               >
@@ -3309,6 +3326,8 @@ export const TwyneEditor = component$(
                   ))}
                 </div>
 
+                <hr class="mb-3 border-[var(--color-paper-3)]" />
+
                 <p class="dept-label mb-2">Flow</p>
                 <div class="flex items-center gap-1 mb-3">
                   {(
@@ -3352,52 +3371,78 @@ export const TwyneEditor = component$(
                     </div>
                   </>
                 )}
+                <hr class="mb-3 border-[var(--color-paper-3)]" />
+
                 <p class="dept-label mb-2">Margins</p>
-                {(
-                  [
-                    ["Left", "left", "marginLeft"],
-                    ["Right", "right", "marginRight"],
-                    ["Top", "top", "marginTop"],
-                    ["Bottom", "bottom", "marginBottom"],
-                  ] as const
-                ).map(([label, rangeKey, field]) => {
-                  const range = MARGIN_RANGE[rangeKey];
-                  const value = resolveMargins(store.layout)[rangeKey];
-                  return (
-                    <label
-                      key={field}
-                      class="block mb-2.5 text-[0.7rem] text-[var(--color-ink-light)]"
-                    >
-                      <span class="flex items-center justify-between mb-1">
-                        <span>{label}</span>
-                        <span
-                          class="tabular-nums text-[var(--color-ink-muted)]"
-                          style="font-family: var(--font-typewriter);"
-                        >
-                          {value.toFixed(2)} rem
+                {/* Two columns, paired the way the page reads: the opposing
+                    edges sit beside each other, so setting a symmetric margin
+                    is a comparison rather than a memory test. */}
+                <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+                  {(
+                    [
+                      ["Left", "left", "marginLeft"],
+                      ["Right", "right", "marginRight"],
+                      ["Top", "top", "marginTop"],
+                      ["Bottom", "bottom", "marginBottom"],
+                    ] as const
+                  ).map(([label, rangeKey, field]) => {
+                    const range = MARGIN_RANGE[rangeKey];
+                    const value = resolveMargins(store.layout)[rangeKey];
+                    return (
+                      <label
+                        key={field}
+                        class="block text-[0.7rem] text-[var(--color-ink-light)]"
+                      >
+                        <span class="flex items-baseline justify-between mb-1 gap-2">
+                          <span>{label}</span>
+                          <span class="tabular-nums text-[0.65rem] text-[var(--color-ink-muted)]">
+                            {value.toFixed(2)}
+                          </span>
                         </span>
-                      </span>
-                      <input
-                        type="range"
-                        class="margin-slider"
-                        min={range.min}
-                        max={range.max}
-                        step={range.step}
-                        value={value}
-                        onInput$={(e) =>
-                          emitLayout({
-                            ...store.layout,
-                            [field]: Number(
-                              (e.target as HTMLInputElement).value,
-                            ),
-                          })
-                        }
-                      />
-                    </label>
-                  );
-                })}
-                <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] mb-1.5 cursor-pointer">
-                  <span>Running header</span>
+                        <input
+                          type="range"
+                          class="margin-slider"
+                          aria-label={`${label} margin, rem`}
+                          min={range.min}
+                          max={range.max}
+                          step={range.step}
+                          value={value}
+                          onInput$={(e) =>
+                            emitLayout({
+                              ...store.layout,
+                              [field]: Number(
+                                (e.target as HTMLInputElement).value,
+                              ),
+                            })
+                          }
+                        />
+                      </label>
+                    );
+                  })}
+                </div>
+                <label class="mt-2 flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] cursor-pointer">
+                  <span>Margin guides</span>
+                  <input
+                    type="checkbox"
+                    checked={store.layout.showMarginGuides === true}
+                    onChange$={(e) =>
+                      emitLayout({
+                        ...store.layout,
+                        showMarginGuides: (e.target as HTMLInputElement)
+                          .checked,
+                      })
+                    }
+                  />
+                </label>
+
+                <hr class="my-3 border-[var(--color-paper-3)]" />
+
+                {/* Header, footer and page numbers are one subject — the
+                    running heads — and used to be interleaved with the margin
+                    guides and each other. */}
+                <p class="dept-label mb-2">Running heads</p>
+                <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] mb-2 cursor-pointer">
+                  <span>Show running header</span>
                   <input
                     type="checkbox"
                     checked={store.layout.runningHeader}
@@ -3409,7 +3454,20 @@ export const TwyneEditor = component$(
                     }
                   />
                 </label>
-                <div class="mb-3">
+                <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] mb-3 cursor-pointer">
+                  <span>Page numbers</span>
+                  <input
+                    type="checkbox"
+                    checked={store.layout.pageNumbers}
+                    onChange$={(e) =>
+                      emitLayout({
+                        ...store.layout,
+                        pageNumbers: (e.target as HTMLInputElement).checked,
+                      })
+                    }
+                  />
+                </label>
+                <div class="mb-2">
                   <label
                     class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
                     for="layout-header-text"
@@ -3430,34 +3488,7 @@ export const TwyneEditor = component$(
                     }
                   />
                 </div>
-                <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] cursor-pointer">
-                  <span>Page numbers</span>
-                  <input
-                    type="checkbox"
-                    checked={store.layout.pageNumbers}
-                    onChange$={(e) =>
-                      emitLayout({
-                        ...store.layout,
-                        pageNumbers: (e.target as HTMLInputElement).checked,
-                      })
-                    }
-                  />
-                </label>
-                <label class="mt-1.5 flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] cursor-pointer">
-                  <span>Margin guides</span>
-                  <input
-                    type="checkbox"
-                    checked={store.layout.showMarginGuides === true}
-                    onChange$={(e) =>
-                      emitLayout({
-                        ...store.layout,
-                        showMarginGuides: (e.target as HTMLInputElement)
-                          .checked,
-                      })
-                    }
-                  />
-                </label>
-                <div class="mt-3">
+                <div>
                   <label
                     class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
                     for="layout-footer-text"
@@ -3481,11 +3512,12 @@ export const TwyneEditor = component$(
                 {/* Page setup and "print it" belong together — this is the
                     panel where the writer just decided what the page looks
                     like, so it is where they look to commit it to paper. */}
+                <hr class="my-3 border-[var(--color-paper-3)]" />
                 <button
                   type="button"
                   onClick$={saveAsPdf}
                   disabled={store.exportingPdf}
-                  class="btn-paper mt-3 w-full text-[0.7rem] disabled:opacity-40"
+                  class="btn-paper w-full py-1.5 text-[0.7rem] disabled:opacity-40"
                 >
                   {store.exportingPdf ? "Preparing…" : "Save as PDF…"}
                 </button>
@@ -3650,12 +3682,14 @@ export const TwyneEditor = component$(
         />
         {store.tableToolbar.visible &&
           store.tableToolbar.position &&
+          store.tableToolbar.position.cellRowTop != null &&
           store.cellFormat.cellCount > 0 && (
             <div
+              data-table-cell-format-panel
               class="fixed overflow-x-auto border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2 shadow-lg"
               style={{
                 left: `${store.tableToolbar.position.left}px`,
-                top: `${store.tableToolbar.position.top + 120}px`,
+                top: `${store.tableToolbar.position.cellRowTop}px`,
                 width: `${store.tableToolbar.position.width}px`,
                 zIndex: "var(--z-dropdown)",
               }}

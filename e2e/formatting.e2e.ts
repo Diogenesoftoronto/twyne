@@ -41,6 +41,10 @@ async function seedFolio(page: Page, html: string) {
           type: "draft",
           createdAt: now,
           updatedAt: now,
+          // Explicit: an unset mode resolves to continuous now that the editor
+          // defaults to scrolling, and `openEditor` waits on a pagination
+          // measurement that continuous mode never performs.
+          layout: { pagination: "paginated" },
         });
         t.objectStore("folio-content").put({
           folioId: id,
@@ -207,5 +211,51 @@ test.describe("word-style formatting toolbar", () => {
       "data-space-after",
       "24",
     );
+  });
+});
+
+/**
+ * The drop cap is a `::first-letter` rule, which outranks the inline
+ * font-family and font-size the type controls write onto the surrounding
+ * span. Hard-coding the display face there meant a manuscript set in
+ * Special Elite kept a Fraunces drop cap — the most prominent glyph on
+ * page one, visibly ignoring the writer — and 4.2em of a large size blew
+ * the letter up past the height of the sheet.
+ */
+test.describe("drop cap follows the writer's type", () => {
+  test("takes the chosen family and stays within the page", async ({
+    page,
+  }) => {
+    await openEditor(page, "<p>First paragraph here, with a drop cap.</p>");
+    const first = page.locator(".ProseMirror > p").first();
+
+    const dropCap = () =>
+      first.evaluate((el) => {
+        const fl = getComputedStyle(el, "::first-letter");
+        return {
+          family: fl.fontFamily,
+          size: Number.parseFloat(fl.fontSize),
+        };
+      });
+
+    // The house look at the default body size is unchanged.
+    expect((await dropCap()).size).toBeCloseTo(75.6, 0);
+
+    await selectAllText(page);
+    await page
+      .getByRole("button", { name: "Type options", exact: true })
+      .click();
+    await page.getByRole("combobox", { name: "Font family" }).selectOption({
+      label: "Special Elite",
+    });
+    await page
+      .getByRole("combobox", { name: "Font size" })
+      .selectOption("36pt");
+
+    await expect
+      .poll(async () => (await dropCap()).family)
+      .toContain("Special Elite");
+    // 4.2em of 48px would be 201.6px — taller than the text block it opens.
+    expect((await dropCap()).size).toBeLessThanOrEqual(80);
   });
 });

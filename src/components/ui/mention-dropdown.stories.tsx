@@ -58,3 +58,16 @@ export const NoMatches: Story = {
     query: "zzz",
   },
 };
+
+/**
+ * Arrow-key navigation highlights a candidate. The marker has to read
+ * differently from `:hover`, since the mouse may be resting on another row
+ * while the writer drives the list from the keyboard.
+ */
+export const KeyboardHighlight: Story = {
+  args: {
+    items: personasAndCollaborators,
+    query: "",
+    activeIndex: 1,
+  },
+};

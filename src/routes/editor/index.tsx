@@ -74,10 +74,28 @@ type RightPanel = "personas" | "rubric" | "comments" | "citations";
 const MIN_EDITOR_WIDTH = 360;
 const LEFT_SIDEBAR_WIDTH = 288;
 
+/**
+ * Below this the rails stop being furniture and start being the whole screen,
+ * so they are undocked rather than squeezed. Matches Tailwind's `sm`, which is
+ * where the toolbar also switches to a single scrolling row.
+ */
+const NARROW_VIEWPORT = 640;
+
 function maxRightPanelWidth(leftSidebarOpen: boolean): number {
   const reserved =
     (leftSidebarOpen ? LEFT_SIDEBAR_WIDTH : 0) + MIN_EDITOR_WIDTH;
+  // The 260px floor is a minimum *useful* panel, not a promise there is room
+  // for one: on a 390px phone it left the manuscript 122px wide. Callers must
+  // check `fitsDockedPanel` before docking rather than trusting this number.
   return Math.max(260, Math.min(560, window.innerWidth - reserved));
+}
+
+/** Is there room to dock a rail without crushing the manuscript? */
+function fitsDockedPanel(leftSidebarOpen: boolean): boolean {
+  if (window.innerWidth < NARROW_VIEWPORT) return false;
+  const reserved =
+    (leftSidebarOpen ? LEFT_SIDEBAR_WIDTH : 0) + MIN_EDITOR_WIDTH;
+  return window.innerWidth - reserved >= 260;
 }
 
 interface PanelTab {
@@ -429,6 +447,19 @@ export default component$(() => {
     const onWindowResize = () => {
       const max = maxRightPanelWidth(store.leftSidebarOpen);
       if (store.rightPanelWidth > max) store.rightPanelWidth = max;
+
+      // On a phone there is no room to dock anything: both rails together
+      // reserved 548px of a 390px screen, leaving the manuscript 122px. Undock
+      // them instead of rendering a column too narrow to write in. This runs
+      // on mount too, so the editor opens usable rather than opening wrong and
+      // waiting for a resize that never comes.
+      if (!fitsDockedPanel(store.leftSidebarOpen)) {
+        if (store.leftSidebarOpen) store.leftSidebarOpen = false;
+        if (store.rightPanelOpen) {
+          store.rightPanelOpen = false;
+          setVisiblePanel(null);
+        }
+      }
     };
     window.addEventListener("resize", onWindowResize);
     onWindowResize();
@@ -1055,6 +1086,39 @@ export default component$(() => {
                     store.folios.find((f) => f.id === store.activeFolioId)
                       ?.footer
                   }
+                  onImported$={$(async () => {
+                    // FolioMenu has already written the imported piece to
+                    // IndexedDB and may have created a folio for it. Without
+                    // this the dialog just closed: the editor kept showing the
+                    // old manuscript, and its next autosave wrote that back
+                    // over the import — so importing appeared to do nothing.
+                    stopBackgroundResearch();
+                    stopBackgroundRoom();
+                    const [folios, activeId] = await Promise.all([
+                      loadFoliosFromIdb(),
+                      loadActiveFolioIdFromIdb(),
+                    ]);
+                    const folioId = activeId ?? folios[0]?.id ?? null;
+                    if (!folioId) return;
+                    const [content, brief] = await Promise.all([
+                      loadFolioContentFromIdb(folioId),
+                      loadProjectBriefForFolio(folioId),
+                    ]);
+                    store.folios = folios;
+                    store.brief = brief;
+                    store.editorSeed = content;
+                    store.sharedLixId = null;
+                    store.activeFolioId = folioId;
+                    // Remount the editor so Tiptap re-seeds from the import
+                    // rather than diffing against the document it replaced.
+                    store.folioKey += 1;
+                    store.activity = panelActivity();
+                    saveDraftHtml(content);
+                    markDirty();
+                    window.dispatchEvent(
+                      new CustomEvent("twyne:load-folio", { detail: content }),
+                    );
+                  })}
                 />
                 {store.activeFolioId && auth.value.user && (
                   <ShareDialog

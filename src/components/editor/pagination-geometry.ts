@@ -293,7 +293,30 @@ export function paginate(
     const overflows =
       stackInkBottom(metrics, tops, i) - tops[runStart] > contentH;
 
-    if (!forced && !overflows) continue;
+    // Blocks are atomic, so one taller than the content box bleeds through the
+    // gap wherever it starts. Moving it to a fresh sheet buys no fidelity and
+    // costs a hole in the sheet before it. Worse, when such a block follows a
+    // heading the backwards keepWithNext walk has nowhere to go
+    // (`breakAt > runStart + 1` is already false), so the run closes with the
+    // heading alone on an otherwise blank sheet — a long paragraph leaves a
+    // trail of near-empty pages with its headings marooned on them.
+    //
+    // So let an unfittable block start where it falls and bleed from there.
+    // The block after it still gets a clean break, because the run will have
+    // overflowed by then.
+    //
+    // Guarded on the run so far actually fitting: when *every* block is taller
+    // than the content box — margins dragged until they meet — there is no
+    // good page to stay on, and the engine falls back to one block per sheet
+    // rather than emitting a single unbounded run.
+    const fitsOnAPageAlone =
+      stackInkBottom(metrics, tops, i) - tops[i] <= contentH;
+    const runSoFarFits =
+      stackInkBottom(metrics, tops, i - 1) - tops[runStart] <= contentH;
+
+    if (!forced && (!overflows || (!fitsOnAPageAlone && runSoFarFits))) {
+      continue;
+    }
 
     let breakAt = i;
     if (!forced) {

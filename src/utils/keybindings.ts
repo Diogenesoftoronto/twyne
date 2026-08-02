@@ -33,6 +33,12 @@ export const EDITOR_KEYBINDINGS = [
     priority: 200,
     context: "Yields to exitCode while the cursor is in a code block.",
   },
+  // Table removals are bound so they appear in the shortcut dialog at all —
+  // the floating toolbar scrolls its trailing buttons out of sight, which is
+  // how writers ended up with tables they could not delete. Both are covered
+  // by undo, so no confirmation step.
+  { commandId: "table.delete-row", shortcut: "Mod-Alt-Backspace" },
+  { commandId: "table.delete-table", shortcut: "Mod-Alt-Shift-Backspace" },
   { commandId: "review.comment", shortcut: "Mod-Alt-m" },
   { commandId: "navigate.find", shortcut: "Mod-f" },
   { commandId: "navigate.replace", shortcut: "Mod-h" },
