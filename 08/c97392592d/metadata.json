@@ -3,7 +3,7 @@
   "checkpoint_id": "08c97392592d",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
     ".bumpy/proud-dry-finch.md",
     ".bumpy/pure-amber-kite.md",
@@ -24,6 +24,20 @@
       "compact_transcript": "/08/c97392592d/1/transcript.jsonl",
       "content_hash": "/08/c97392592d/1/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/08/c97392592d/2/metadata.json",
+      "transcript": "/08/c97392592d/2/full.jsonl",
+      "compact_transcript": "/08/c97392592d/2/transcript.jsonl",
+      "content_hash": "/08/c97392592d/2/content_hash.txt",
+      "prompt": "/08/c97392592d/2/prompt.txt"
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 555328,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 37795328,
+    "output_tokens": 75260,
+    "api_call_count": 311
+  }
 }
