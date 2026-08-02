@@ -3,7 +3,7 @@
   "checkpoint_id": "7c4a85ed334f",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
     ".bumpy/neat-fair-glow.md"
   ],
@@ -21,6 +21,20 @@
       "compact_transcript": "/7c/4a85ed334f/1/transcript.jsonl",
       "content_hash": "/7c/4a85ed334f/1/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/7c/4a85ed334f/2/metadata.json",
+      "transcript": "/7c/4a85ed334f/2/full.jsonl",
+      "compact_transcript": "/7c/4a85ed334f/2/transcript.jsonl",
+      "content_hash": "/7c/4a85ed334f/2/content_hash.txt",
+      "prompt": "/7c/4a85ed334f/2/prompt.txt"
     }
-  ]
+  ],
+  "token_usage": {
+    "input_tokens": 555328,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 37795328,
+    "output_tokens": 75260,
+    "api_call_count": 311
+  }
 }
