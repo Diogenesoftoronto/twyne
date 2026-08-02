@@ -23,14 +23,12 @@ import {
   loadAiSettingsFromIdb,
   loadFolioContentFromIdb,
   loadWriterSettingsFromIdb,
-  saveDraftHtmlToIdb,
 } from "../../../utils/idb";
 import {
   createProjectBrief,
   htmlToPlainText,
   loadDraftHtml,
   loadProjectBriefForFolio,
-  saveDraftHtml,
   saveProjectBriefForFolio,
   saveStartingMaterial,
 } from "../../../utils/anti-tabula-rasa";
