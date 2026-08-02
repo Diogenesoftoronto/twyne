@@ -7,14 +7,8 @@
   "files_touched": [
     "CHANGELOG.md",
     "bun.lock",
-    "convex/agents.ts",
     "package.json",
-    "src/components/onboarding/anti-tabula-rasa.tsx",
-    "src/components/onboarding/conversational-interview.tsx",
-    "src/routes/dossier/create/index.tsx",
-    "src/routes/dossier/refine/index.tsx",
-    "src/utils/ai-client.ts",
-    "src/utils/anti-tabula-rasa.ts"
+    "src/components/onboarding/anti-tabula-rasa.tsx"
   ],
   "sessions": [
     {
@@ -89,11 +83,11 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 2941380,
+    "input_tokens": 2831853,
     "cache_creation_tokens": 588062,
-    "cache_read_tokens": 146443530,
-    "output_tokens": 420631,
-    "api_call_count": 876
+    "cache_read_tokens": 146262346,
+    "output_tokens": 410868,
+    "api_call_count": 871
   },
   "combined_attribution": {
     "calculated_at": "2026-08-02T01:10:14.759614835Z",
