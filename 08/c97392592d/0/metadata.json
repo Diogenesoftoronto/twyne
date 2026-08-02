@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "08c97392592d",
+  "session_id": "019fbf21-f0ad-7091-b27a-2ef8f40af1c9",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-02T20:21:00.725446482Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".bumpy/proud-dry-finch.md",
+    ".bumpy/pure-amber-kite.md",
+    "CHANGELOG.md",
+    "package.json"
+  ],
+  "agent": "Codex",
+  "model": "fugu-ultra",
+  "turn_id": "822b604a236e",
+  "checkpoint_transcript_start": 2130,
+  "transcript_lines_at_start": 2130,
+  "compact_transcript_start": 792,
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-02T20:21:00.550005702Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 7,
+    "human_removed": 1,
+    "total_committed": 0,
+    "total_lines_changed": 8,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}

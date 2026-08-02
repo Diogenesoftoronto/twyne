@@ -1,0 +1,22 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "08c97392592d",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".bumpy/proud-dry-finch.md",
+    ".bumpy/pure-amber-kite.md",
+    "CHANGELOG.md",
+    "package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/08/c97392592d/0/metadata.json",
+      "transcript": "/08/c97392592d/0/full.jsonl",
+      "compact_transcript": "/08/c97392592d/0/transcript.jsonl",
+      "content_hash": "/08/c97392592d/0/content_hash.txt",
+      "prompt": ""
+    }
+  ]
+}
