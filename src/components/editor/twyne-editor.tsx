@@ -3,15 +3,12 @@ import {
   useStore,
   useStyles$,
   useVisibleTask$,
+  noSerialize,
   $,
+  type NoSerialize,
 } from "@builder.io/qwik";
 import ImgApprovalStamp from "../../media/approval-stamp.svg?jsx";
 import { StarterKit } from "@tiptap/starter-kit";
-import { Image } from "@tiptap/extension-image";
-import { Table } from "@tiptap/extension-table";
-import { TableRow } from "@tiptap/extension-table-row";
-import { TableCell } from "@tiptap/extension-table-cell";
-import { TableHeader } from "@tiptap/extension-table-header";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { Highlight } from "@tiptap/extension-highlight";
 import { Underline } from "@tiptap/extension-underline";
@@ -20,7 +17,11 @@ import { Link as TiptapLink } from "@tiptap/extension-link";
 import { Typography } from "@tiptap/extension-typography";
 import { TaskList } from "@tiptap/extension-task-list";
 import { TaskItem } from "@tiptap/extension-task-item";
+import { TextStyleKit } from "@tiptap/extension-text-style";
+import { Subscript } from "@tiptap/extension-subscript";
+import { Superscript } from "@tiptap/extension-superscript";
 import type { Editor } from "@tiptap/core";
+import { TextSelection } from "@tiptap/pm/state";
 import type {
   DocumentMeta,
   Folio,
@@ -33,8 +34,12 @@ import {
   DOC_WIDTH_REM,
   MARGIN_RANGE,
   resolveMargins,
+  resolvePageSetup,
 } from "../../types";
 import { PageRuler } from "./page-ruler";
+import { PageChrome } from "./page-chrome";
+import { computePageGeometry } from "./pagination-geometry";
+import { pxToRem, rootFontSize } from "../../utils/css-units";
 import { exportPdf } from "../../utils/exchange";
 import { buildFolioExportPayload } from "../../utils/folio-export";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
@@ -42,6 +47,55 @@ import { detectCitations } from "../../utils/citations";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
 import { SpeakButton } from "../ui/speak-button";
+import { SpeechTransport } from "../ui/speech-transport";
+import { ColorPicker } from "../ui/color-picker";
+import {
+  FONT_CHOICES,
+  FONT_SIZES,
+  LINE_SPACINGS,
+  PARAGRAPH_SPACINGS,
+  recaseTextSegments,
+  type TextCase,
+} from "../../utils/typography-options";
+import { speak } from "../../utils/speech";
+
+/**
+ * The reading the toolbar owns. Stable rather than derived from the
+ * selection, so the transport can find the reading it started.
+ */
+const MANUSCRIPT_READING_ID = "manuscript";
+const REGISTRY_COMMAND_ALIASES: Partial<Record<EditorCommandId, string>> = {
+  "format.bold": "bold",
+  "format.italic": "italic",
+  "format.underline": "underline",
+  "format.strike": "strike",
+  "format.highlight": "highlight",
+  "format.superscript": "superscript",
+  "format.subscript": "subscript",
+  "format.clear": "clearFormatting",
+  "paragraph.heading-1": "h1",
+  "paragraph.heading-2": "h2",
+  "paragraph.heading-3": "h3",
+  "paragraph.bullet-list": "bullet",
+  "paragraph.numbered-list": "ordered",
+  "paragraph.task-list": "taskList",
+  "paragraph.blockquote": "blockquote",
+  "paragraph.code-block": "code",
+  "paragraph.align-left": "left",
+  "paragraph.align-center": "center",
+  "paragraph.align-right": "right",
+  "paragraph.justify": "justify",
+  "insert.horizontal-rule": "horizontal",
+  "insert.page-break": "pageBreak",
+  "history.undo": "undo",
+  "history.redo": "redo",
+  "table.add-row-before": "addRowBefore",
+  "table.add-row-after": "addRowAfter",
+  "table.add-column-before": "addColumnBefore",
+  "table.add-column-after": "addColumnAfter",
+  "table.merge-cells": "mergeCells",
+  "table.split-cell": "splitCell",
+};
 import { api } from "../../../convex/_generated/api";
 import {
   loadUserComments,
@@ -65,11 +119,27 @@ import { CommentMark } from "./extensions/comment-mark";
 import { PersonaNoteMark } from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
 import { MermaidDiagram } from "./extensions/mermaid-node";
-import { EndnoteNode, type NoteKind } from "./extensions/endnote-node";
+import type { NoteKind } from "./extensions/endnote-node";
+import { InlineNoteNode } from "./extensions/inline-note-popover";
+import { FindReplace } from "./extensions/find-replace";
+import { MathExtensions } from "./extensions/math";
+import { SectionReorder } from "./extensions/section-reorder";
+import { FindReplacePanel } from "./find-replace-panel";
+import { ShortcutDialog } from "./shortcut-dialog";
+import { TextModal } from "../ui/text-modal";
+import { EDITOR_KEYBINDINGS, chordMatches } from "../../utils/keybindings";
+import { DocumentOutline } from "./document-outline";
+import {
+  buildDocumentOutline,
+  type DocumentOutlineModel,
+} from "../../utils/document-outline";
 import { RemoteCursors } from "./extensions/remote-cursors";
 import { type RemoteCursor } from "./extensions/remote-cursors";
 import { Indent } from "./extensions/indent";
 import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
+import { PageBreakNode } from "./extensions/page-break-node";
+import { Pagination, type PaginationInfo } from "./extensions/pagination";
+import { ParagraphFormat } from "./extensions/paragraph-format";
 import { SyncDot, LastSavedLine } from "./sync-indicator";
 import {
   startPresence,
@@ -92,6 +162,38 @@ import {
 import type { SuggestionPayload, Suggestion } from "../../types";
 import { renderMarkdown } from "../../utils/markdown";
 import { computePopoverGeometry } from "./popover-positioning";
+import {
+  EMPTY_TABLE_TOOLBAR_SNAPSHOT,
+  FloatingTableToolbar,
+  TableInsertionGrid,
+  createTableCoreExtensions,
+  createTableToolbarController,
+  runTableToolbarIntent,
+  type TableToolbarIntent,
+  type TableToolbarSnapshot,
+} from "./table-core";
+import {
+  TableCellFormat,
+  getSelectedCellFormat,
+  runTableCellFormatIntent,
+  type SelectedCellFormat,
+  type TableCellFormatIntent,
+} from "./extensions/table-cell-format";
+import { TableCellFormatControls } from "./table-cell-format-controls";
+import { SlashCommand, getSlashCommandState } from "./extensions/slash-command";
+import { SlashCommandMenu } from "./slash-command-menu";
+import type { EditorCommandId } from "../../utils/editor-commands";
+import {
+  ImageNode,
+  chooseAndInsertImages,
+  retryImageUpload,
+  type ImageNodeAttributes,
+} from "./extensions/image-node";
+import { ImageInspector } from "./image-inspector";
+import {
+  createImageUploadAdapter,
+  type ImageUploadAdapter,
+} from "../../utils/image-upload";
 
 interface NotePopover {
   id: string;
@@ -160,6 +262,9 @@ export interface EditorStore {
   active: Record<string, boolean>;
   showImageInput: boolean;
   imageUrl: string;
+  imageUploadAdapter: NoSerialize<ImageUploadAdapter> | null;
+  selectedImage: ImageNodeAttributes | null;
+  imageUploadError: string | null;
   showCommentInput: boolean;
   commentText: string;
   showMermaidInput: boolean;
@@ -193,10 +298,40 @@ export interface EditorStore {
   showLayout: boolean;
   /** A PDF print job is being prepared. */
   exportingPdf: boolean;
-  /** Show the table tools popover? */
-  showTableTools: boolean;
+  /** Coordinator-owned navigation and help surfaces. */
+  showFindReplace: boolean;
+  showShortcutDialog: boolean;
+  showOutline: boolean;
+  outline: DocumentOutlineModel;
+  showTableInsertion: boolean;
+  tableToolbar: TableToolbarSnapshot;
+  cellFormat: SelectedCellFormat;
+  slashOpen: boolean;
+  slashQuery: string;
+  slashLeft: number;
+  slashTop: number;
   /** Distraction-free mode: dims inline notes/comments and asks the route to collapse side panels. */
   zenMode: boolean;
+  /** Which formatting popover is open, if any. Only one at a time. */
+  openPicker: "highlight" | "textColor" | "type" | "spacing" | null;
+  /** Applied text colour at the cursor, as a hex literal. */
+  currentColor: string | null;
+  /** Applied highlight colour at the cursor. */
+  currentHighlight: string | null;
+  currentFontFamily: string | null;
+  currentFontSize: string | null;
+  currentLineHeight: string | null;
+  currentSpaceBefore: number | null;
+  currentSpaceAfter: number | null;
+  currentKeepWithNext: boolean;
+  /** Sheets the manuscript currently occupies, reported by the pagination engine. */
+  pageCount: number;
+  /**
+   * False when the engine fell back to a continuous column — either because
+   * the writer asked for it, or because the document is past the size at
+   * which painting page frames is worth doing.
+   */
+  paginationActive: boolean;
 }
 
 /** The popover for a writer-authored inline comment, anchored to its mark. */
@@ -280,6 +415,9 @@ export const TwyneEditor = component$(
       },
       showImageInput: false,
       imageUrl: "",
+      imageUploadAdapter: null,
+      selectedImage: null,
+      imageUploadError: null,
       showCommentInput: false,
       commentText: "",
       showMermaidInput: false,
@@ -301,8 +439,43 @@ export const TwyneEditor = component$(
       footerText: activeFolio?.footer ?? "",
       showLayout: false,
       exportingPdf: false,
-      showTableTools: false,
+      showFindReplace: false,
+      showShortcutDialog: false,
+      showOutline: false,
+      outline: {
+        items: [],
+        flat: [],
+        byId: {},
+        documentSize: 0,
+      },
+      showTableInsertion: false,
+      tableToolbar: EMPTY_TABLE_TOOLBAR_SNAPSHOT,
+      cellFormat: {
+        cellCount: 0,
+        backgroundColor: null,
+        horizontalAlignment: null,
+        verticalAlignment: null,
+        borderColor: null,
+        borderStyle: null,
+        borderWidth: null,
+        stylePreset: null,
+      },
+      slashOpen: false,
+      slashQuery: "",
+      slashLeft: 0,
+      slashTop: 0,
       zenMode: false,
+      openPicker: null,
+      currentColor: null,
+      currentHighlight: null,
+      currentFontFamily: null,
+      currentFontSize: null,
+      currentLineHeight: null,
+      currentSpaceBefore: null,
+      currentSpaceAfter: null,
+      currentKeepWithNext: false,
+      pageCount: 1,
+      paginationActive: false,
     });
 
     useStyles$(`
@@ -390,30 +563,64 @@ export const TwyneEditor = component$(
       const layout = track(() => store.layout);
       const root = document.documentElement;
       const m = resolveMargins(layout);
-      root.style.setProperty(
-        "--doc-width",
-        `${DOC_WIDTH_REM[layout.width]}rem`,
-      );
-      root.style.setProperty("--doc-pad-left", `${m.left}rem`);
-      root.style.setProperty("--doc-pad-right", `${m.right}rem`);
-      root.style.setProperty("--doc-pad-y", `${m.top}rem`);
-      root.style.setProperty("--doc-pad-bottom", `${m.bottom}rem`);
+      const setup = resolvePageSetup(layout);
+
+      if (setup.pagination === "paginated") {
+        // The sheet, not the writer's column preference, decides how wide the
+        // canvas is. `--doc-width` is a border-box max-width, so it carries
+        // the full page — margins included — and the padding below carves the
+        // text column out of it.
+        const g = computePageGeometry(layout, rootFontSize());
+        root.style.setProperty("--doc-width", `${g.pageW}px`);
+        root.style.setProperty("--doc-pad-left", `${g.marginLeft}px`);
+        root.style.setProperty("--doc-pad-right", `${g.marginRight}px`);
+        root.style.setProperty("--doc-pad-y", `${g.marginTop}px`);
+        root.style.setProperty("--doc-pad-bottom", `${g.marginBottom}px`);
+        // Read by the sheet paint and by the `img { max-height }` rule that
+        // stops a plate from being taller than the page it sits on.
+        root.style.setProperty("--page-h", `${g.pageH}px`);
+        root.style.setProperty("--page-w", `${g.pageW}px`);
+        root.style.setProperty("--page-gap", `${g.gap}px`);
+        root.style.setProperty("--page-content-h", `${g.contentH}px`);
+      } else {
+        root.style.setProperty(
+          "--doc-width",
+          `${DOC_WIDTH_REM[layout.width]}rem`,
+        );
+        root.style.setProperty("--doc-pad-left", `${m.left}rem`);
+        root.style.setProperty("--doc-pad-right", `${m.right}rem`);
+        root.style.setProperty("--doc-pad-y", `${m.top}rem`);
+        root.style.setProperty("--doc-pad-bottom", `${m.bottom}rem`);
+        root.style.removeProperty("--page-h");
+        root.style.removeProperty("--page-w");
+        root.style.removeProperty("--page-gap");
+        root.style.removeProperty("--page-content-h");
+      }
+
+      // Push the new settings into the engine. A layout change invalidates
+      // every measured height, so this is what makes the pages resettle after
+      // a paper change or a margin drag.
+      store.editor?.commands.setPaginationLayout(layout);
     });
 
     // Dismiss the editor popovers on outside click.
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(({ cleanup, track }) => {
       const layoutOpen = track(() => store.showLayout);
-      const tableOpen = track(() => store.showTableTools);
-      if (!layoutOpen && !tableOpen) return;
+      const pickerOpen = track(() => store.openPicker);
+      if (!layoutOpen && !pickerOpen) return;
       const onDoc = (e: MouseEvent) => {
         const t = e.target as HTMLElement | null;
         if (t && t.closest("[data-layout-popover]")) return;
         if (t && t.closest('[aria-label="Page layout"]')) return;
-        if (t && t.closest("[data-table-popover]")) return;
-        if (t && t.closest('[aria-label="Table tools"]')) return;
+        // The formatting popovers and the buttons that open them. Matching on
+        // the wrapper rather than each control keeps a click on a swatch from
+        // closing the picker it came from.
+        if (t && t.closest("[data-color-picker]")) return;
+        if (t && t.closest("[data-type-popover]")) return;
+        if (t && t.closest("[aria-expanded]")) return;
         store.showLayout = false;
-        store.showTableTools = false;
+        store.openPicker = null;
       };
       document.addEventListener("mousedown", onDoc);
       cleanup(() => document.removeEventListener("mousedown", onDoc));
@@ -427,6 +634,31 @@ export const TwyneEditor = component$(
           console.warn("[twyne:editor] #twyne-editor-mount not found in DOM");
           return;
         }
+        const offlineImageAdapter = createImageUploadAdapter({
+          mode: "offline",
+        });
+        const imageUploadAdapter: ImageUploadAdapter = {
+          mode: navigator.onLine ? "online" : "offline",
+          upload(file, onProgress) {
+            if (!navigator.onLine) {
+              return offlineImageAdapter.upload(file, onProgress);
+            }
+            const client = clientSig.value;
+            if (!client) {
+              return Promise.reject(
+                new Error(
+                  "Image storage is not connected yet. Try again shortly.",
+                ),
+              );
+            }
+            return createImageUploadAdapter({
+              mode: "online",
+              client,
+              folioId: () => store.activeFolioId,
+            }).upload(file, onProgress);
+          },
+        };
+        store.imageUploadAdapter = noSerialize(imageUploadAdapter);
         // Debounced mirror of the manuscript into Lix key_value blocks, so
         // editor branches (proposed edits) have real content to fork from.
         let mirrorTimer: ReturnType<typeof setTimeout> | null = null;
@@ -471,23 +703,42 @@ export const TwyneEditor = component$(
           extensions: [
             StarterKit.configure({
               heading: { levels: [1, 2, 3] },
+              // Configured explicitly below so there is one extension name
+              // and one command surface for each feature.
+              link: false,
+              underline: false,
             }),
-            Image.configure({
-              inline: false,
-              allowBase64: true,
-              HTMLAttributes: { class: "twyne-image" },
+            ImageNode.configure({
+              uploadAdapter: imageUploadAdapter,
+              onUploadError: (error) => {
+                store.imageUploadError = error.message;
+              },
             }),
-            Table.configure({ resizable: true }),
-            TableRow,
-            TableCell,
-            TableHeader,
+            ...createTableCoreExtensions({ resizable: true }),
+            TableCellFormat,
             Placeholder.configure({
               placeholder:
                 "Begin writing from the brief. The room of editors is listening...",
             }),
             Highlight.configure({ multicolor: true }),
             Underline,
-            TextAlign.configure({ types: ["heading", "paragraph"] }),
+            Subscript,
+            Superscript,
+            // Line height is a paragraph property, not a character one — a
+            // writer setting "double spaced" means the whole paragraph, not
+            // the three words they had selected. The rest of the kit stays on
+            // the default textStyle mark, where it belongs.
+            TextStyleKit.configure({
+              // TipTap 3.22's bundled LineHeight command always writes a
+              // textStyle mark even when configured with paragraph types.
+              // ParagraphFormat owns line height so a three-word selection
+              // cannot make half a paragraph "double spaced".
+              lineHeight: false,
+            }),
+            TextAlign.configure({
+              types: ["heading", "paragraph"],
+              alignments: ["left", "center", "right", "justify"],
+            }),
             TiptapLink.configure({
               openOnClick: true,
               autolink: true,
@@ -506,10 +757,28 @@ export const TwyneEditor = component$(
             PersonaNoteMark,
             SuggestionMark,
             MermaidDiagram,
-            EndnoteNode,
+            InlineNoteNode,
             RemoteCursors.configure({ cursors: [] }),
             MarkAnchorWidgets,
             Indent,
+            FindReplace,
+            SlashCommand,
+            ...MathExtensions,
+            SectionReorder,
+            ParagraphFormat,
+            PageBreakNode,
+            Pagination.configure({
+              layout: store.layout,
+              // The notes block sits after the editor but inside the page
+              // canvas, so it has to be counted or it spills past the last
+              // sheet with nothing under it.
+              getTailElement: () =>
+                document.querySelector<HTMLElement>(".manuscript-notes"),
+              onPaginate: (info: PaginationInfo) => {
+                store.pageCount = info.pageCount;
+                store.paginationActive = info.active;
+              },
+            }),
           ],
           content: initialContent,
           editorProps: {
@@ -521,25 +790,6 @@ export const TwyneEditor = component$(
               const coords = { left: event.clientX, top: event.clientY };
               const pos = view.posAtCoords(coords);
               if (!pos) return false;
-
-              const files = event.dataTransfer?.files;
-              if (files && files.length > 0) {
-                for (const file of Array.from(files)) {
-                  if (file.type.startsWith("image/")) {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                      const src = reader.result as string;
-                      const node = view.state.schema.nodes.image.create({
-                        src,
-                      });
-                      const tr = view.state.tr.insert(pos.pos, node);
-                      view.dispatch(tr);
-                    };
-                    reader.readAsDataURL(file);
-                    return true;
-                  }
-                }
-              }
 
               const html = event.dataTransfer?.getData("text/html");
               if (html) {
@@ -603,13 +853,38 @@ export const TwyneEditor = component$(
             left: editor.isActive({ textAlign: "left" }),
             center: editor.isActive({ textAlign: "center" }),
             right: editor.isActive({ textAlign: "right" }),
+            justify: editor.isActive({ textAlign: "justify" }),
+            superscript: editor.isActive("superscript"),
+            subscript: editor.isActive("subscript"),
             isInTable: editor.isActive("table"),
             canMergeCells: editor.can().mergeCells(),
             canSplitCell: editor.can().splitCell(),
           };
-          if (!editor.isActive("table")) {
-            store.showTableTools = false;
-          }
+          store.selectedImage = editor.isActive("image")
+            ? (editor.getAttributes("image") as ImageNodeAttributes)
+            : null;
+          // Current values, as opposed to on/off states — the pickers show
+          // what is applied here rather than merely whether anything is.
+          const attrs = editor.getAttributes("textStyle");
+          store.currentColor = attrs.color ?? null;
+          store.currentFontFamily = attrs.fontFamily ?? null;
+          store.currentFontSize = attrs.fontSize ?? null;
+          store.currentHighlight =
+            editor.getAttributes("highlight").color ?? null;
+          const paragraphAttrs = editor.isActive("heading")
+            ? editor.getAttributes("heading")
+            : editor.getAttributes("paragraph");
+          store.currentLineHeight = paragraphAttrs.lineHeight ?? null;
+          store.currentSpaceBefore =
+            paragraphAttrs.spaceBefore == null
+              ? null
+              : Number(paragraphAttrs.spaceBefore);
+          store.currentSpaceAfter =
+            paragraphAttrs.spaceAfter == null
+              ? null
+              : Number(paragraphAttrs.spaceAfter);
+          store.currentKeepWithNext =
+            paragraphAttrs.keepWithNext === true || editor.isActive("heading");
           // History availability — driven by the Tiptap history
           // extension, which the StarterKit includes by default.
           // `can().undo()` / `can().redo()` are safe on every transaction.
@@ -630,13 +905,36 @@ export const TwyneEditor = component$(
             if (node.type.name !== "endnote") return;
             const kind: NoteKind =
               node.attrs.kind === "footnote" ? "footnote" : "endnote";
-            const number = kind === "footnote" ? ++footnoteCount : ++endnoteCount;
+            const number =
+              kind === "footnote" ? ++footnoteCount : ++endnoteCount;
             notes.push({ kind, number, text: node.attrs.text ?? "", pos });
           });
           store.notes = notes;
         };
         editor.on("update", refreshNotes);
         refreshNotes();
+
+        const refreshOutline = () => {
+          store.outline = buildDocumentOutline(editor.state.doc);
+        };
+        editor.on("transaction", refreshOutline);
+        refreshOutline();
+
+        const refreshSlashMenu = () => {
+          const slash = getSlashCommandState(editor.state);
+          store.slashOpen = slash.open;
+          store.slashQuery = slash.query;
+          if (!slash.open) return;
+          try {
+            const coords = editor.view.coordsAtPos(slash.to);
+            store.slashLeft = coords.left;
+            store.slashTop = coords.bottom + 6;
+          } catch {
+            store.slashOpen = false;
+          }
+        };
+        editor.on("transaction", refreshSlashMenu);
+        refreshSlashMenu();
 
         // Seed the colophon (word count, folios) from the loaded draft.
         store.meta = computeDocumentMeta(editor.getText());
@@ -754,15 +1052,13 @@ export const TwyneEditor = component$(
 
         const readPersonaNoteAttrs = (noteSpan: HTMLElement) => ({
           id: noteSpan.getAttribute("data-persona-note-id") ?? "",
-          author:
-            noteSpan.getAttribute("data-persona-note-author") ?? "",
+          author: noteSpan.getAttribute("data-persona-note-author") ?? "",
           color:
             noteSpan.getAttribute("data-persona-note-color") ??
             "var(--color-vermilion)",
           label: noteSpan.getAttribute("data-persona-note-label") ?? "",
           note: noteSpan.getAttribute("data-persona-note-note") ?? "",
-          quote:
-            noteSpan.getAttribute("data-persona-note-quote") ?? undefined,
+          quote: noteSpan.getAttribute("data-persona-note-quote") ?? undefined,
           briefTitle:
             noteSpan.getAttribute("data-persona-note-brief") ?? undefined,
         });
@@ -809,18 +1105,15 @@ export const TwyneEditor = component$(
             id: suggestionSpan.getAttribute("data-suggestion-id") ?? "",
             versionId:
               suggestionSpan.getAttribute("data-suggestion-versionId") ?? "",
-            author:
-              suggestionSpan.getAttribute("data-suggestion-author") ?? "",
+            author: suggestionSpan.getAttribute("data-suggestion-author") ?? "",
             color:
               suggestionSpan.getAttribute("data-suggestion-color") ??
               "var(--color-vermilion)",
             original: suggestionSpan.textContent ?? "",
             replacement:
-              suggestionSpan.getAttribute("data-suggestion-replacement") ??
-              "",
+              suggestionSpan.getAttribute("data-suggestion-replacement") ?? "",
             rationale:
-              suggestionSpan.getAttribute("data-suggestion-rationale") ??
-              "",
+              suggestionSpan.getAttribute("data-suggestion-rationale") ?? "",
             x: Math.max(8, Math.min(rect.left, window.innerWidth - 360)),
             y: rect.bottom + 8,
             busy: false,
@@ -871,8 +1164,7 @@ export const TwyneEditor = component$(
           }, 350);
         });
         el.addEventListener("mouseout", (e) => {
-          const related = (e as MouseEvent)
-            .relatedTarget as HTMLElement | null;
+          const related = (e as MouseEvent).relatedTarget as HTMLElement | null;
           // Stay open while moving onto the card, the marked span, or
           // its corresponding anchor chip (text → chip → card).
           if (related?.closest(".persona-note-card")) return;
@@ -1014,14 +1306,50 @@ export const TwyneEditor = component$(
         // Listens on `window` so it works even when focus is in the
         // reply textarea.
         const onGlobalKeydown = (e: KeyboardEvent) => {
+          const target = e.target as HTMLElement | null;
+          const editingField =
+            !!target &&
+            (target.matches("input, textarea, select") ||
+              (target.isContentEditable && !target.closest(".ProseMirror")));
+          const key = e.key.toLowerCase();
+
+          if (!editingField) {
+            const matched = EDITOR_KEYBINDINGS.find((binding) =>
+              chordMatches(
+                {
+                  key,
+                  metaKey: e.metaKey,
+                  ctrlKey: e.ctrlKey,
+                  altKey: e.altKey,
+                  shiftKey: e.shiftKey,
+                },
+                binding.shortcut,
+              ),
+            );
+            if (matched) {
+              e.preventDefault();
+              void runRegistryCommand(matched.commandId);
+              return;
+            }
+          }
           if (e.key !== "Escape") return;
           if (store.notePopover) store.notePopover = null;
           if (store.userCommentPopover) store.userCommentPopover = null;
           if (store.suggestionPopover) store.suggestionPopover = null;
+          if (store.openPicker) store.openPicker = null;
+          store.showFindReplace = false;
+          store.showOutline = false;
         };
         window.addEventListener("keydown", onGlobalKeydown);
 
         store.editor = editor;
+        const tableToolbarController = createTableToolbarController(
+          editor,
+          (snapshot) => {
+            store.tableToolbar = snapshot;
+            store.cellFormat = getSelectedCellFormat(editor);
+          },
+        );
 
         // ── Vertical (row-height) resize on the header row ──
         // Tiptap's Table extension only ships a column-resize handle
@@ -1379,6 +1707,7 @@ export const TwyneEditor = component$(
         window.addEventListener("twyne:stamp", onStamp);
 
         cleanup(() => {
+          store.imageUploadAdapter = null;
           if (stampTimer) clearTimeout(stampTimer);
           window.removeEventListener("twyne:stamp", onStamp);
           window.removeEventListener("twyne:load-folio", onLoadFolio);
@@ -1419,6 +1748,8 @@ export const TwyneEditor = component$(
           clearHoverTimer();
           document.removeEventListener("mousemove", rearmOnMove);
           window.removeEventListener("keydown", onGlobalKeydown);
+          editor.off("transaction", refreshSlashMenu);
+          tableToolbarController.destroy();
           editor.destroy();
           store.editor = null;
         });
@@ -1534,8 +1865,7 @@ export const TwyneEditor = component$(
       async (commentId: string, markEl: HTMLElement) => {
         const all = await loadUserComments();
         const c = all.find(
-          (x) =>
-            x.id === commentId && x.folioId === store.activeFolioId,
+          (x) => x.id === commentId && x.folioId === store.activeFolioId,
         );
         if (!c) {
           // The mark exists but the body didn't sync. Show a placeholder
@@ -1727,8 +2057,41 @@ export const TwyneEditor = component$(
       store.editor
         ?.chain()
         .focus()
-        .setImage({ src, alt: alt || "" })
+        .insertContent({
+          type: "image",
+          attrs: { src, alt: alt || "", offline: src.startsWith("data:") },
+        })
         .run();
+    });
+
+    const chooseImageFiles = $(async () => {
+      const editor = store.editor;
+      const adapter = store.imageUploadAdapter;
+      if (!editor || !adapter) return;
+      store.imageUploadError = null;
+      await chooseAndInsertImages(editor, adapter, undefined, (error) => {
+        store.imageUploadError = error.message;
+      });
+      store.showImageInput = false;
+    });
+
+    const patchSelectedImage = $((patch: Partial<ImageNodeAttributes>) => {
+      store.editor?.chain().focus().updateAttributes("image", patch).run();
+    });
+
+    const retrySelectedImage = $(async () => {
+      const editor = store.editor;
+      const adapter = store.imageUploadAdapter;
+      const uploadId = store.selectedImage?.uploadId;
+      if (!editor || !adapter || !uploadId) return;
+      store.imageUploadError = null;
+      await retryImageUpload(editor, uploadId, adapter, undefined, (error) => {
+        store.imageUploadError = error.message;
+      });
+    });
+
+    const removeSelectedImage = $(() => {
+      store.editor?.chain().focus().deleteSelection().run();
     });
 
     /** Push the new layout to the parent (which writes to the Folio) and apply live CSS vars. */
@@ -1736,6 +2099,44 @@ export const TwyneEditor = component$(
       store.layout = next;
       window.dispatchEvent(new CustomEvent("twyne:layout", { detail: next }));
     });
+
+    /**
+     * How wide the ruler should be. On a paginated canvas the ruler describes
+     * the sheet, so its markers land on the real page margins; in continuous
+     * mode there is no sheet and it describes the chosen column instead.
+     */
+    const pageWidthRem = () => {
+      const setup = resolvePageSetup(store.layout);
+      if (setup.pagination !== "paginated") {
+        return DOC_WIDTH_REM[store.layout.width];
+      }
+      const root = rootFontSize();
+      return pxToRem(computePageGeometry(store.layout, root).pageW, root);
+    };
+
+    /**
+     * How tall the canvas must be to contain every sheet. The chrome is
+     * absolutely positioned and contributes no height, so the canvas has to be
+     * told; otherwise a final page that is only a third full is clipped where
+     * the prose stops rather than showing a whole sheet.
+     */
+    const canvasMinHeight = () => {
+      const g = computePageGeometry(store.layout, rootFontSize());
+      return Math.max(0, store.pageCount * (g.pageH + g.gap) - g.gap);
+    };
+
+    /** The page box, in the CSS pixels the chrome overlay positions against. */
+    const pageChromeGeometry = () => {
+      const g = computePageGeometry(store.layout, rootFontSize());
+      return {
+        pageH: g.pageH,
+        gap: g.gap,
+        marginTop: g.marginTop,
+        marginBottom: g.marginBottom,
+        marginLeft: g.marginLeft,
+        marginRight: g.marginRight,
+      };
+    };
 
     /**
      * Print the manuscript with the page setup the writer just chose. Goes
@@ -1775,6 +2176,15 @@ export const TwyneEditor = component$(
      * the whole draft. Hearing your own prose in another voice is the oldest
      * revision trick there is, and the synthesis plumbing was already here.
      */
+    /**
+     * Read the selection aloud, or the whole draft when nothing is selected.
+     *
+     * The id is stable rather than derived from the selection: the transport
+     * owns pause and resume, so this only ever runs from an idle state, and a
+     * changing id would leave the transport unable to find the reading it just
+     * started. `speak` is imported statically — a dynamic import here would
+     * spend part of the user gesture that playback permission depends on.
+     */
     const readAloud = $(async () => {
       const editor = store.editor;
       if (!editor) return;
@@ -1784,13 +2194,112 @@ export const TwyneEditor = component$(
           ? editor.state.doc.textBetween(from, to, "\n\n")
           : editor.getText();
       if (!text.trim()) return;
-      const { speak } = await import("../../utils/speech");
       await speak({
-        id: from !== to ? `manuscript-${from}-${to}` : "manuscript",
+        id: MANUSCRIPT_READING_ID,
         text,
         client: clientSig.value ?? null,
         signedIn: Boolean(auth.value.user),
       });
+    });
+
+    /** Apply or clear the highlighter. Colours are hex literals — see palette.ts. */
+    const applyHighlight = $((hex: string | null) => {
+      const chain = store.editor?.chain().focus();
+      if (!chain) return;
+      if (hex) chain.setHighlight({ color: hex }).run();
+      else chain.unsetHighlight().run();
+      store.openPicker = null;
+    });
+
+    const applyTextColor = $((hex: string | null) => {
+      const chain = store.editor?.chain().focus();
+      if (!chain) return;
+      if (hex) chain.setColor(hex).run();
+      else chain.unsetColor().run();
+      store.openPicker = null;
+    });
+
+    const applyFontFamily = $((stack: string | null) => {
+      const chain = store.editor?.chain().focus();
+      if (!chain) return;
+      if (stack) chain.setFontFamily(stack).run();
+      else chain.unsetFontFamily().run();
+    });
+
+    const applyFontSize = $((size: string | null) => {
+      const chain = store.editor?.chain().focus();
+      if (!chain) return;
+      if (size) chain.setFontSize(size).run();
+      else chain.unsetFontSize().run();
+    });
+
+    const applyLineHeight = $((value: string | null) => {
+      const chain = store.editor?.chain().focus();
+      if (!chain) return;
+      chain.setParagraphLineHeight(value).run();
+    });
+
+    const applySpaceBefore = $((points: number | null) => {
+      store.editor?.chain().focus().setSpaceBefore(points).run();
+    });
+
+    const applySpaceAfter = $((points: number | null) => {
+      store.editor?.chain().focus().setSpaceAfter(points).run();
+    });
+
+    const applyKeepWithNext = $((enabled: boolean) => {
+      store.editor?.chain().focus().setKeepWithNext(enabled).run();
+    });
+
+    /**
+     * Recase the selection in place.
+     *
+     * Only text nodes are replaced, in reverse document order. That preserves
+     * the marks on each node (bold, links, comments, suggestions) instead of
+     * flattening the selected range into unformatted text.
+     */
+    const applyTextCase = $((mode: TextCase) => {
+      const editor = store.editor;
+      if (!editor) return;
+      const { from, to } = editor.state.selection;
+      if (from === to) return;
+      const segments: Array<{
+        from: number;
+        to: number;
+        text: string;
+        marks: readonly any[];
+      }> = [];
+      editor.state.doc.nodesBetween(from, to, (node, pos) => {
+        if (!node.isText || !node.text) return;
+        const segmentFrom = Math.max(from, pos);
+        const segmentTo = Math.min(to, pos + node.nodeSize);
+        if (segmentFrom >= segmentTo) return;
+        const start = segmentFrom - pos;
+        const end = segmentTo - pos;
+        segments.push({
+          from: segmentFrom,
+          to: segmentTo,
+          text: node.text.slice(start, end),
+          marks: node.marks,
+        });
+      });
+      const edits = recaseTextSegments(segments, mode);
+      let tr = editor.state.tr;
+      for (let i = edits.length - 1; i >= 0; i--) {
+        const edit = edits[i];
+        if (edit.text === segments[i].text) continue;
+        tr = tr.replaceWith(
+          edit.from,
+          edit.to,
+          editor.state.schema.text(edit.text, segments[i].marks),
+        );
+      }
+      if (!tr.docChanged) return;
+      tr.setSelection(
+        TextSelection.create(tr.doc, from, Math.min(to, tr.doc.content.size)),
+      );
+      editor.view.dispatch(tr);
+      editor.commands.focus();
     });
 
     const runCommand = $((command: string) => {
@@ -1811,6 +2320,22 @@ export const TwyneEditor = component$(
           break;
         case "highlight":
           chain.toggleHighlight().run();
+          break;
+        case "superscript":
+          // Mutually exclusive with subscript: text cannot be raised and
+          // lowered at once, and TipTap will happily apply both.
+          chain.unsetSubscript().toggleSuperscript().run();
+          break;
+        case "subscript":
+          chain.unsetSuperscript().toggleSubscript().run();
+          break;
+        case "justify":
+          chain.setTextAlign("justify").run();
+          break;
+        case "clearFormatting":
+          // Marks and block type both — "clear formatting" that left a
+          // heading a heading would not match anyone's expectation.
+          chain.unsetAllMarks().unsetParagraphFormat().clearNodes().run();
           break;
         case "h1":
           chain.toggleHeading({ level: 1 }).run();
@@ -1848,6 +2373,9 @@ export const TwyneEditor = component$(
         case "horizontal":
           chain.setHorizontalRule().run();
           break;
+        case "pageBreak":
+          chain.setPageBreak().run();
+          break;
         case "undo":
           chain.undo().run();
           break;
@@ -1856,7 +2384,6 @@ export const TwyneEditor = component$(
           break;
         case "insertTable":
           chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
-          store.showTableTools = true;
           break;
         case "addRowBefore":
           chain.addRowBefore().run();
@@ -1890,7 +2417,6 @@ export const TwyneEditor = component$(
           break;
         case "deleteTable":
           chain.deleteTable().run();
-          store.showTableTools = false;
           break;
         case "addComment": {
           const editor = store.editor!;
@@ -1954,6 +2480,99 @@ export const TwyneEditor = component$(
       }
     });
 
+    const handleTableToolbarIntent = $((intent: TableToolbarIntent) => {
+      const editor = store.editor;
+      if (!editor) return;
+      runTableToolbarIntent(editor, intent, store.tableToolbar.anchor?.width);
+    });
+
+    const handleCellFormatIntent = $((intent: TableCellFormatIntent) => {
+      const editor = store.editor;
+      if (!editor) return;
+      runTableCellFormatIntent(editor, intent);
+    });
+
+    const insertTableDimensions = $(
+      (rows: number, columns: number, withHeaderRow: boolean) => {
+        store.editor
+          ?.chain()
+          .focus()
+          .insertTable({ rows, cols: columns, withHeaderRow })
+          .run();
+        store.showTableInsertion = false;
+      },
+    );
+
+    const runRegistryCommand = $(async (commandId: EditorCommandId) => {
+      const alias = REGISTRY_COMMAND_ALIASES[commandId];
+      if (alias) {
+        await runCommand(alias);
+        return;
+      }
+
+      const editor = store.editor;
+      switch (commandId) {
+        case "insert.image":
+          store.showImageInput = true;
+          break;
+        case "insert.table":
+          store.showTableInsertion = true;
+          break;
+        case "insert.mermaid":
+          store.showMermaidInput = true;
+          break;
+        case "insert.math-inline":
+          editor?.chain().focus().setInlineMath({ source: "" }).run();
+          break;
+        case "insert.math-block":
+          editor?.chain().focus().setBlockMath({ source: "" }).run();
+          break;
+        case "insert.endnote":
+          store.noteInputKind = "endnote";
+          store.noteText = "";
+          break;
+        case "insert.footnote":
+          store.noteInputKind = "footnote";
+          store.noteText = "";
+          break;
+        case "review.comment":
+          store.showCommentInput = true;
+          break;
+        case "review.read-aloud":
+          await readAloud();
+          break;
+        case "navigate.find":
+        case "navigate.replace":
+          store.showFindReplace = true;
+          break;
+        case "navigate.outline":
+          store.showOutline = true;
+          break;
+        case "view.shortcuts":
+          store.showShortcutDialog = true;
+          break;
+        case "view.zen":
+          store.zenMode = !store.zenMode;
+          window.dispatchEvent(
+            new CustomEvent("twyne:zen-mode", {
+              detail: { on: store.zenMode },
+            }),
+          );
+          break;
+        default:
+          break;
+      }
+    });
+
+    const selectSlashCommand = $(async (commandId: EditorCommandId) => {
+      const editor = store.editor;
+      if (!editor) return;
+      editor.commands.removeSlashCommandQuery();
+      await runRegistryCommand(commandId);
+      editor.commands.focus();
+      store.slashOpen = false;
+    });
+
     /* Editorial toolbar — typewriter labels, paper buttons */
     const Sep = () => (
       <span
@@ -1967,10 +2586,18 @@ export const TwyneEditor = component$(
 
     return (
       <div class="flex flex-1 flex-col min-h-0">
+        {/* Sticky chrome stack: toolbar plus whichever inline input bar is
+            active (image, note, comment, mermaid). All live in one sticky
+            wrapper so the active bar always sits flush under the toolbar
+            rather than scrolling out of view as the manuscript scrolls. */}
+        <div
+          class="sticky top-0"
+          style={{ zIndex: "var(--z-sticky)" }}
+        >
         {/* ── Toolbar (compositor's stick) ───────────────── */}
         <div
-          class="twyne-toolbar flex items-center gap-1 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] sticky top-0 flex-wrap"
-          style="font-family: var(--font-typewriter); z-index: var(--z-sticky);"
+          class="twyne-toolbar flex items-center gap-1 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] flex-wrap"
+          style="font-family: var(--font-typewriter);"
           role="toolbar"
           aria-label="Formatting"
         >
@@ -2014,16 +2641,304 @@ export const TwyneEditor = component$(
               <s style="font-family: var(--font-display);">S</s>
             </button>
             <button
-              title="Highlight"
-              aria-label="Highlight"
-              aria-pressed={!!store.active.highlight}
-              onClick$={() => runCommand("highlight")}
+              title="Superscript"
+              aria-label="Superscript"
+              aria-pressed={!!store.active.superscript}
+              onClick$={() => runCommand("superscript")}
               class="tool-btn"
             >
-              <span style="background: linear-gradient(transparent 60%, rgba(212,160,23,0.5) 60%);">
-                Hi
+              <span style="font-family: var(--font-display);">
+                x<sup>2</sup>
               </span>
             </button>
+            <button
+              title="Subscript"
+              aria-label="Subscript"
+              aria-pressed={!!store.active.subscript}
+              onClick$={() => runCommand("subscript")}
+              class="tool-btn"
+            >
+              <span style="font-family: var(--font-display);">
+                x<sub>2</sub>
+              </span>
+            </button>
+
+            {/* Highlight: a toggle for the last colour used, plus a caret to
+                change it. Splitting the two is what makes multicolor usable —
+                Highlight has been configured `multicolor: true` since the
+                editor was written, and the toolbar only ever called the bare
+                toggle, so the capability shipped unreachable. */}
+            <div class="flex items-center relative">
+              <button
+                title="Highlight"
+                aria-label="Highlight"
+                aria-pressed={!!store.active.highlight}
+                onClick$={() =>
+                  store.active.highlight
+                    ? applyHighlight(null)
+                    : applyHighlight(store.currentHighlight ?? "#fbeaa8")
+                }
+                class="tool-btn"
+              >
+                <span
+                  style={{
+                    background: `linear-gradient(transparent 60%, ${store.currentHighlight ?? "#fbeaa8"} 60%)`,
+                  }}
+                >
+                  Hi
+                </span>
+              </button>
+              <button
+                title="Highlight colour"
+                aria-label="Choose highlight colour"
+                aria-expanded={store.openPicker === "highlight"}
+                onClick$={() => {
+                  store.openPicker =
+                    store.openPicker === "highlight" ? null : "highlight";
+                }}
+                class="tool-btn px-1"
+              >
+                ▾
+              </button>
+              {store.openPicker === "highlight" && (
+                <ColorPicker
+                  kind="highlight"
+                  title="Highlight"
+                  value={store.currentHighlight}
+                  clearLabel="No highlight"
+                  onPick$={(hex) => applyHighlight(hex)}
+                  onClear$={() => applyHighlight(null)}
+                  onClose$={() => {
+                    store.openPicker = null;
+                  }}
+                />
+              )}
+            </div>
+
+            {/* Text colour, from the darker palette — every entry clears
+                WCAG AA against the manuscript's paper. */}
+            <div class="flex items-center relative">
+              <button
+                title="Text colour"
+                aria-label="Text colour"
+                aria-expanded={store.openPicker === "textColor"}
+                onClick$={() => {
+                  store.openPicker =
+                    store.openPicker === "textColor" ? null : "textColor";
+                }}
+                class="tool-btn"
+              >
+                <span
+                  style={{
+                    color: store.currentColor ?? "var(--color-ink)",
+                    fontFamily: "var(--font-display)",
+                    borderBottom: `2px solid ${store.currentColor ?? "var(--color-ink)"}`,
+                  }}
+                >
+                  A
+                </span>
+              </button>
+              {store.openPicker === "textColor" && (
+                <ColorPicker
+                  kind="text"
+                  title="Text colour"
+                  value={store.currentColor}
+                  clearLabel="Default ink"
+                  onPick$={(hex) => applyTextColor(hex)}
+                  onClear$={() => applyTextColor(null)}
+                  onClose$={() => {
+                    store.openPicker = null;
+                  }}
+                />
+              )}
+            </div>
+
+            <button
+              title="Clear formatting"
+              aria-label="Clear formatting"
+              onClick$={() => runCommand("clearFormatting")}
+              class="tool-btn"
+            >
+              ⌫ fmt
+            </button>
+          </div>
+
+          <Sep />
+
+          {/* Type: family, size, line spacing, and case. One popover rather
+              than five toolbar controls — this is the "open the dialog" end of
+              formatting, not the every-sentence end. */}
+          <div class="flex items-center relative">
+            <button
+              title="Type — font, size, spacing, case"
+              aria-label="Type options"
+              aria-expanded={store.openPicker === "type"}
+              onClick$={() => {
+                store.openPicker = store.openPicker === "type" ? null : "type";
+              }}
+              class="tool-btn"
+            >
+              Aa type
+            </button>
+            {store.openPicker === "type" && (
+              <div
+                data-type-popover
+                class="absolute left-0 top-full mt-1 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg w-60"
+                style={{
+                  zIndex: "var(--z-dropdown)",
+                  borderRadius: "2px",
+                  fontFamily: "var(--font-typewriter)",
+                }}
+                role="dialog"
+                aria-label="Type options"
+              >
+                <p class="dept-label mb-1.5">Family</p>
+                <select
+                  class="field-input mb-3 text-[0.7rem]"
+                  value={store.currentFontFamily ?? ""}
+                  onChange$={(_, el) =>
+                    applyFontFamily(el.value === "" ? null : el.value)
+                  }
+                  aria-label="Font family"
+                >
+                  <option value="">Manuscript default</option>
+                  {FONT_CHOICES.map((f) => (
+                    <option key={f.id} value={f.stack}>
+                      {f.label}
+                    </option>
+                  ))}
+                </select>
+
+                <p class="dept-label mb-1.5">Size</p>
+                <select
+                  class="field-input mb-3 text-[0.7rem]"
+                  value={store.currentFontSize ?? ""}
+                  onChange$={(_, el) =>
+                    applyFontSize(el.value === "" ? null : el.value)
+                  }
+                  aria-label="Font size"
+                >
+                  <option value="">Default</option>
+                  {FONT_SIZES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {`${s.label} pt`}
+                    </option>
+                  ))}
+                </select>
+
+                <p class="dept-label mb-1.5">Line spacing</p>
+                <div class="flex items-center gap-1 mb-3">
+                  {LINE_SPACINGS.map((s) => (
+                    <button
+                      key={s.value}
+                      type="button"
+                      onClick$={() => applyLineHeight(s.value)}
+                      class={`flex-1 text-[0.62rem] py-1 border ${store.currentLineHeight === s.value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
+                      style="border-radius: 1px;"
+                    >
+                      {s.label}
+                    </button>
+                  ))}
+                </div>
+
+                <p class="dept-label mb-1.5">Paragraph spacing</p>
+                <div class="grid grid-cols-2 gap-2 mb-3">
+                  <label class="text-[0.62rem] text-[var(--color-ink-light)]">
+                    <span class="block mb-1">Before</span>
+                    <select
+                      class="field-input text-[0.68rem]"
+                      value={
+                        store.currentSpaceBefore == null
+                          ? ""
+                          : String(store.currentSpaceBefore)
+                      }
+                      onChange$={(_, el) =>
+                        applySpaceBefore(
+                          el.value === "" ? null : Number(el.value),
+                        )
+                      }
+                      aria-label="Space before paragraph"
+                    >
+                      <option value="">Default</option>
+                      {PARAGRAPH_SPACINGS.map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label class="text-[0.62rem] text-[var(--color-ink-light)]">
+                    <span class="block mb-1">After</span>
+                    <select
+                      class="field-input text-[0.68rem]"
+                      value={
+                        store.currentSpaceAfter == null
+                          ? ""
+                          : String(store.currentSpaceAfter)
+                      }
+                      onChange$={(_, el) =>
+                        applySpaceAfter(
+                          el.value === "" ? null : Number(el.value),
+                        )
+                      }
+                      aria-label="Space after paragraph"
+                    >
+                      <option value="">Default</option>
+                      {PARAGRAPH_SPACINGS.map((s) => (
+                        <option key={s.value} value={s.value}>
+                          {s.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+
+                <label class="flex items-center justify-between gap-3 mb-3 text-[0.68rem] text-[var(--color-ink-light)]">
+                  <span>
+                    Keep with next
+                    {store.active.h1 || store.active.h2 || store.active.h3
+                      ? " (heading default)"
+                      : ""}
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={store.currentKeepWithNext}
+                    disabled={
+                      !!store.active.h1 ||
+                      !!store.active.h2 ||
+                      !!store.active.h3
+                    }
+                    onChange$={(_, el) => applyKeepWithNext(el.checked)}
+                    aria-label="Keep paragraph with next"
+                  />
+                </label>
+
+                <p class="dept-label mb-1.5">Case</p>
+                <div class="flex items-center gap-1">
+                  {(
+                    [
+                      ["upper", "AA"],
+                      ["lower", "aa"],
+                      ["title", "Aa"],
+                      ["sentence", "A."],
+                    ] as const
+                  ).map(([mode, label]) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      disabled={!store.hasSelection}
+                      aria-label={`${mode} case`}
+                      title={`${mode} case${store.hasSelection ? "" : " — select some text first"}`}
+                      onClick$={() => applyTextCase(mode as TextCase)}
+                      class="flex-1 text-[0.65rem] py-1 border border-[var(--color-paper-3)] text-[var(--color-ink-light)] disabled:opacity-30 disabled:cursor-not-allowed"
+                      style="border-radius: 1px;"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           <Sep />
@@ -2141,6 +3056,15 @@ export const TwyneEditor = component$(
             >
               ⌐
             </button>
+            <button
+              title="Justify"
+              aria-label="Justify"
+              aria-pressed={!!store.active.justify}
+              onClick$={() => runCommand("justify")}
+              class="tool-btn"
+            >
+              ▤
+            </button>
           </div>
 
           <Sep />
@@ -2159,133 +3083,14 @@ export const TwyneEditor = component$(
             <button
               title="Insert tabular (table)"
               aria-label="Insert table"
-              onClick$={() => runCommand("insertTable")}
+              aria-expanded={store.showTableInsertion}
+              onClick$={() => {
+                store.showTableInsertion = !store.showTableInsertion;
+              }}
               class="tool-btn"
             >
               ▤ tab.
             </button>
-            {!!store.active.isInTable && (
-              <div class="relative flex items-center">
-                <button
-                  title="Table tools"
-                  aria-label="Table tools"
-                  aria-expanded={store.showTableTools}
-                  onClick$={() => {
-                    store.showTableTools = !store.showTableTools;
-                  }}
-                  class="tool-btn"
-                >
-                  ≣ tab.
-                </button>
-                {store.showTableTools && (
-                  <div
-                    data-table-popover
-                    class="absolute left-0 top-full mt-1 z-50 w-72 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
-                    style="border-radius: 2px; font-family: var(--font-typewriter);"
-                    role="dialog"
-                    aria-label="Table tools"
-                  >
-                    <p class="dept-label mb-2">Table tools</p>
-                    <div class="space-y-3">
-                      <div>
-                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
-                          Rows
-                        </p>
-                        <div class="grid grid-cols-2 gap-1.5">
-                          <button
-                            onClick$={() => runCommand("addRowBefore")}
-                            class="btn-paper text-[0.65rem]"
-                          >
-                            Add above
-                          </button>
-                          <button
-                            onClick$={() => runCommand("addRowAfter")}
-                            class="btn-paper text-[0.65rem]"
-                          >
-                            Add below
-                          </button>
-                          <button
-                            onClick$={() => runCommand("deleteRow")}
-                            class="btn-paper text-[0.65rem]"
-                          >
-                            Delete row
-                          </button>
-                          <button
-                            onClick$={() => runCommand("toggleHeaderRow")}
-                            class="btn-paper text-[0.65rem]"
-                          >
-                            Toggle header
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
-                          Columns
-                        </p>
-                        <div class="grid grid-cols-2 gap-1.5">
-                          <button
-                            onClick$={() => runCommand("addColumnBefore")}
-                            class="btn-paper text-[0.65rem]"
-                          >
-                            Add left
-                          </button>
-                          <button
-                            onClick$={() => runCommand("addColumnAfter")}
-                            class="btn-paper text-[0.65rem]"
-                          >
-                            Add right
-                          </button>
-                          <button
-                            onClick$={() => runCommand("deleteColumn")}
-                            class="btn-paper text-[0.65rem]"
-                          >
-                            Delete column
-                          </button>
-                          <button
-                            onClick$={() => runCommand("toggleHeaderColumn")}
-                            class="btn-paper text-[0.65rem]"
-                          >
-                            Toggle header
-                          </button>
-                        </div>
-                      </div>
-
-                      <div>
-                        <p class="mb-1 text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]">
-                          Cells
-                        </p>
-                        <div class="grid grid-cols-2 gap-1.5">
-                          <button
-                            onClick$={() => runCommand("mergeCells")}
-                            disabled={!store.active.canMergeCells}
-                            class="btn-paper text-[0.65rem] disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            Merge cells
-                          </button>
-                          <button
-                            onClick$={() => runCommand("splitCell")}
-                            disabled={!store.active.canSplitCell}
-                            class="btn-paper text-[0.65rem] disabled:opacity-40 disabled:cursor-not-allowed"
-                          >
-                            Split cell
-                          </button>
-                        </div>
-                      </div>
-
-                      <div class="border-t border-[var(--color-paper-3)] pt-2">
-                        <button
-                          onClick$={() => runCommand("deleteTable")}
-                          class="btn-paper text-[0.65rem] text-[var(--color-vermilion)]"
-                        >
-                          Delete table
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
             <button
               title="Insert diagram (Mermaid)"
               aria-label="Insert Mermaid diagram"
@@ -2305,6 +3110,14 @@ export const TwyneEditor = component$(
               ❦
             </button>
             <button
+              title="Page break (Ctrl/Cmd + Enter)"
+              aria-label="Insert page break"
+              onClick$={() => runCommand("pageBreak")}
+              class="tool-btn"
+            >
+              ⤓ page
+            </button>
+            <button
               title="Add comment"
               aria-label="Add comment"
               disabled={!store.hasSelection}
@@ -2315,14 +3128,11 @@ export const TwyneEditor = component$(
             >
               ☍ comment
             </button>
-            <button
-              title="Read the selection aloud — or the whole draft when nothing is selected"
-              aria-label="Read aloud"
-              onClick$={readAloud}
-              class="tool-btn"
-            >
-              ♪ read
-            </button>
+            <SpeechTransport
+              id={MANUSCRIPT_READING_ID}
+              onPlay$={readAloud}
+              playLabel="Read the selection aloud — or the whole draft when nothing is selected"
+            />
             <button
               title="Insert endnote — collected under Notes on export"
               aria-label="Insert endnote"
@@ -2404,6 +3214,39 @@ export const TwyneEditor = component$(
             {store.zenMode ? "◑ zen: on" : "◐ zen"}
           </button>
 
+          <button
+            title="Find and replace (⌘F / ⌘H)"
+            aria-label="Find and replace"
+            aria-pressed={store.showFindReplace}
+            onClick$={() => {
+              store.showFindReplace = !store.showFindReplace;
+            }}
+            class="tool-btn"
+          >
+            ⌕ find
+          </button>
+          <button
+            title="Document outline (⌘⇧O)"
+            aria-label="Document outline"
+            aria-pressed={store.showOutline}
+            onClick$={() => {
+              store.showOutline = !store.showOutline;
+            }}
+            class="tool-btn"
+          >
+            ☷ outline
+          </button>
+          <button
+            title="Keyboard shortcuts (⌘/)"
+            aria-label="Keyboard shortcuts"
+            onClick$={() => {
+              store.showShortcutDialog = true;
+            }}
+            class="tool-btn"
+          >
+            ? keys
+          </button>
+
           {/* Layout popover — one control for width, margin, running header, page numbers */}
           <div class="flex items-center relative">
             <button
@@ -2425,19 +3268,90 @@ export const TwyneEditor = component$(
                 role="dialog"
                 aria-label="Page layout"
               >
-                <p class="dept-label mb-2">Page</p>
-                <div class="flex items-center gap-1 mb-3">
-                  {(["narrow", "normal", "wide"] as const).map((w) => (
+                <p class="dept-label mb-2">Paper</p>
+                <div class="flex items-center gap-1 mb-2">
+                  {(
+                    [
+                      ["letter", "Letter"],
+                      ["a4", "A4"],
+                      ["legal", "Legal"],
+                    ] as const
+                  ).map(([value, label]) => (
                     <button
-                      key={w}
-                      onClick$={() => emitLayout({ ...store.layout, width: w })}
-                      class={`flex-1 text-[0.7rem] py-1 border ${store.layout.width === w ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
+                      key={value}
+                      onClick$={() =>
+                        emitLayout({ ...store.layout, paper: value })
+                      }
+                      class={`flex-1 text-[0.7rem] py-1 border ${resolvePageSetup(store.layout).paper === value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
                       style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
                     >
-                      {w}
+                      {label}
                     </button>
                   ))}
                 </div>
+                <div class="flex items-center gap-1 mb-3">
+                  {(
+                    [
+                      ["portrait", "Portrait"],
+                      ["landscape", "Landscape"],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      key={value}
+                      onClick$={() =>
+                        emitLayout({ ...store.layout, orientation: value })
+                      }
+                      class={`flex-1 text-[0.7rem] py-1 border ${resolvePageSetup(store.layout).orientation === value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
+                      style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                <p class="dept-label mb-2">Flow</p>
+                <div class="flex items-center gap-1 mb-3">
+                  {(
+                    [
+                      ["paginated", "Pages"],
+                      ["continuous", "Scroll"],
+                    ] as const
+                  ).map(([value, label]) => (
+                    <button
+                      key={value}
+                      onClick$={() =>
+                        emitLayout({ ...store.layout, pagination: value })
+                      }
+                      class={`flex-1 text-[0.7rem] py-1 border ${resolvePageSetup(store.layout).pagination === value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
+                      style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* The column-width presets only mean anything without a
+                    sheet. On a paginated canvas the paper decides the width
+                    and the margins decide the column. */}
+                {resolvePageSetup(store.layout).pagination === "continuous" && (
+                  <>
+                    <p class="dept-label mb-2">Column</p>
+                    <div class="flex items-center gap-1 mb-3">
+                      {(["narrow", "normal", "wide"] as const).map((w) => (
+                        <button
+                          key={w}
+                          onClick$={() =>
+                            emitLayout({ ...store.layout, width: w })
+                          }
+                          class={`flex-1 text-[0.7rem] py-1 border ${store.layout.width === w ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
+                          style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
+                        >
+                          {w}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
                 <p class="dept-label mb-2">Margins</p>
                 {(
                   [
@@ -2580,6 +3494,194 @@ export const TwyneEditor = component$(
           </div>
         </div>
 
+        {store.showFindReplace && (
+          <div
+            class="fixed right-4 top-16"
+            style={{ zIndex: "var(--z-dropdown)" }}
+          >
+            <FindReplacePanel
+              editor={store.editor ? noSerialize(store.editor) : null}
+              onClose$={() => {
+                store.showFindReplace = false;
+              }}
+            />
+          </div>
+        )}
+
+        {store.showOutline && (
+          <aside
+            class="fixed bottom-16 left-4 top-20 w-72 overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3 shadow-lg"
+            style={{ zIndex: "var(--z-dropdown)" }}
+            aria-label="Document outline panel"
+          >
+            <div class="mb-2 flex items-center justify-between gap-3">
+              <p class="dept-label">Document outline</p>
+              <button
+                type="button"
+                class="tool-btn"
+                aria-label="Close document outline"
+                onClick$={() => {
+                  store.showOutline = false;
+                }}
+              >
+                ×
+              </button>
+            </div>
+            <DocumentOutline
+              outline={store.outline}
+              editor={store.editor ? noSerialize(store.editor) : undefined}
+            />
+          </aside>
+        )}
+
+        <ShortcutDialog
+          open={store.showShortcutDialog}
+          onClose$={() => {
+            store.showShortcutDialog = false;
+          }}
+        />
+
+        {/* Footnote / endnote modal — replaces the old single-line inline bar
+            so the writer can hold a real sentence of gloss, with Cmd+Enter
+            to commit. Visibility tracks `noteInputKind` so the existing
+            toolbar toggle keeps working. */}
+        <TextModal
+          open={store.noteInputKind !== null}
+          kicker={store.noteInputKind === "footnote" ? "Insert" : "Insert"}
+          title={store.noteInputKind === "footnote" ? "Footnote" : "Endnote"}
+          description={
+            store.noteInputKind === "footnote"
+              ? "Footnote text appears at the foot of the page on the same sheet as the marker — for asides the reader needs on the same page as the line that prompted them."
+              : "Endnote text collects under Notes at the end of the manuscript — for sourcing, citations, and longer remarks."
+          }
+          inputLabel={
+            store.noteInputKind === "footnote" ? "Footnote text" : "Endnote text"
+          }
+          placeholder={
+            store.noteInputKind === "footnote"
+              ? "e.g. See Smith 2019, p. 142, for the original formulation."
+              : "e.g. The name 'Eleanor' surfaces across the archive in nine distinct hands."
+          }
+          helpText="Cmd/Ctrl + Enter to insert · Esc to cancel"
+          rows={4}
+          minHeightRem={8}
+          submitLabel={
+            store.noteInputKind === "footnote" ? "Insert footnote" : "Insert endnote"
+          }
+          onCancel$={() => {
+            store.noteInputKind = null;
+            store.noteText = "";
+          }}
+          onConfirm$={async (value) => {
+            store.noteText = value.trim();
+            if (!store.noteText) {
+              store.noteInputKind = null;
+              return;
+            }
+            await runCommand("insertNote");
+          }}
+        />
+
+        {/* Mermaid modal — the inline bar couldn't hold a real diagram spec. */}
+        <TextModal
+          open={store.showMermaidInput}
+          kicker="Insert"
+          title="Mermaid diagram"
+          description="Write a Mermaid diagram spec. It will render in-line where the cursor sits."
+          inputLabel="Diagram source"
+          placeholder="graph TD; A[Manuscript] --> B{Reviewed?}; B -->|Yes| C[Publish]; B -->|No| D[Revise]; D --> A"
+          helpText="Cmd/Ctrl + Enter to insert · Esc to cancel. See mermaid.js.org for syntax."
+          rows={8}
+          minHeightRem={14}
+          submitLabel="Insert diagram"
+          onCancel$={() => {
+            store.showMermaidInput = false;
+            store.mermaidSource = "";
+          }}
+          onConfirm$={async (value) => {
+            store.mermaidSource = value.trim();
+            if (!store.mermaidSource) {
+              store.showMermaidInput = false;
+              return;
+            }
+            await runCommand("insertMermaid");
+          }}
+        />
+
+        <SlashCommandMenu
+          open={store.slashOpen}
+          query={store.slashQuery}
+          left={store.slashLeft}
+          top={store.slashTop}
+          context={{
+            hasSelection: store.hasSelection,
+            inTable: !!store.active.isInTable,
+            canMergeCells: !!store.active.canMergeCells,
+            canSplitCell: !!store.active.canSplitCell,
+            canUndo: store.canUndo,
+            canRedo: store.canRedo,
+            hasDocument: true,
+            paginationActive: store.paginationActive,
+          }}
+          onSelect$={selectSlashCommand}
+          onClose$={() => {
+            store.editor?.commands.closeSlashCommand();
+            store.slashOpen = false;
+          }}
+        />
+
+        {store.showTableInsertion && (
+          <div
+            class="fixed left-1/2 top-16 -translate-x-1/2"
+            style={{ zIndex: "var(--z-dropdown)" }}
+          >
+            <TableInsertionGrid
+              onInsert$={insertTableDimensions}
+              onCancel$={() => {
+                store.showTableInsertion = false;
+              }}
+            />
+          </div>
+        )}
+
+        <FloatingTableToolbar
+          snapshot={store.tableToolbar}
+          onIntent$={handleTableToolbarIntent}
+        />
+        {store.tableToolbar.visible &&
+          store.tableToolbar.position &&
+          store.cellFormat.cellCount > 0 && (
+            <div
+              class="fixed overflow-x-auto border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2 shadow-lg"
+              style={{
+                left: `${store.tableToolbar.position.left}px`,
+                top: `${store.tableToolbar.position.top + 120}px`,
+                width: `${store.tableToolbar.position.width}px`,
+                zIndex: "var(--z-dropdown)",
+              }}
+            >
+              <TableCellFormatControls
+                format={store.cellFormat}
+                onIntent$={handleCellFormatIntent}
+              />
+            </div>
+          )}
+
+        {store.selectedImage && (
+          <div
+            class="fixed right-4 top-24 w-72 shadow-lg"
+            style={{ zIndex: "var(--z-dropdown)" }}
+          >
+            <ImageInspector
+              attributes={store.selectedImage}
+              onPatch$={patchSelectedImage}
+              onChooseFiles$={chooseImageFiles}
+              onRetry$={retrySelectedImage}
+              onRemove$={removeSelectedImage}
+            />
+          </div>
+        )}
+
         {store.showImageInput && (
           <div
             class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
@@ -2591,6 +3693,15 @@ export const TwyneEditor = component$(
             >
               Plate URL:
             </span>
+            <button
+              type="button"
+              onClick$={chooseImageFiles}
+              disabled={!store.imageUploadAdapter}
+              class="tool-btn text-xs"
+            >
+              Choose file…
+            </button>
+            <span class="text-xs text-[var(--color-ink-muted)]">or</span>
             <input
               autoFocus
               value={store.imageUrl}
@@ -2633,59 +3744,11 @@ export const TwyneEditor = component$(
             >
               Cancel
             </button>
-          </div>
-        )}
-
-        {store.noteInputKind && (
-          <div
-            class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-            style="z-index: var(--z-sticky);"
-          >
-            <span
-              class="text-xs text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter);"
-            >
-              {store.noteInputKind === "footnote" ? "Footnote:" : "Endnote:"}
-            </span>
-            <input
-              autoFocus
-              value={store.noteText}
-              onInput$={(e) => {
-                store.noteText = (e.target as HTMLInputElement).value;
-              }}
-              onKeyDown$={(e) => {
-                if (e.key === "Enter" && store.noteText.trim()) {
-                  runCommand("insertNote");
-                }
-                if (e.key === "Escape") {
-                  store.noteInputKind = null;
-                  store.noteText = "";
-                }
-              }}
-              placeholder={
-                store.noteInputKind === "footnote"
-                  ? "Footnote text — appears under Footnotes on export…"
-                  : "Endnote text — appears under Notes on export…"
-              }
-              class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
-              style="font-family: var(--font-typewriter); border-radius: 2px;"
-            />
-            <button
-              onClick$={() => runCommand("insertNote")}
-              disabled={!store.noteText.trim()}
-              class="tool-btn text-xs disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              Insert
-            </button>
-            <button
-              onClick$={() => {
-                store.noteInputKind = null;
-                store.noteText = "";
-              }}
-              class="tool-btn text-xs"
-            >
-              Cancel
-            </button>
+            {store.imageUploadError && (
+              <span role="alert" class="text-xs text-[var(--color-vermilion)]">
+                {store.imageUploadError}
+              </span>
+            )}
           </div>
         )}
 
@@ -2740,62 +3803,11 @@ export const TwyneEditor = component$(
             </button>
           </div>
         )}
-
-        {store.showMermaidInput && (
-          <div
-            class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-            style="z-index: var(--z-sticky);"
-          >
-            <span
-              class="text-xs text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter);"
-            >
-              Mermaid:
-            </span>
-            <input
-              autoFocus
-              value={store.mermaidSource}
-              onInput$={(e) => {
-                store.mermaidSource = (e.target as HTMLInputElement).value;
-              }}
-              onKeyDown$={(e) => {
-                if (e.key === "Enter" && store.mermaidSource.trim()) {
-                  runCommand("insertMermaid");
-                }
-                if (e.key === "Escape") {
-                  store.showMermaidInput = false;
-                  store.mermaidSource = "";
-                }
-              }}
-              placeholder="graph TD; A-->B;"
-              class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
-              style="font-family: var(--font-typewriter); border-radius: 2px;"
-            />
-            <button
-              onClick$={() => {
-                if (store.mermaidSource.trim()) {
-                  runCommand("insertMermaid");
-                }
-              }}
-              class="tool-btn text-xs"
-            >
-              Insert
-            </button>
-            <button
-              onClick$={() => {
-                store.showMermaidInput = false;
-                store.mermaidSource = "";
-              }}
-              class="tool-btn text-xs"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
+        </div>
 
         {/* ── Editor area (the manuscript page) ──────────── */}
         <div
-          class="flex-1 overflow-y-auto"
+          class="flex-1 overflow-y-auto overflow-x-auto"
           style="background: var(--color-editor-bg);"
           preventdefault:dragover
           preventdefault:dragleave
@@ -2813,21 +3825,57 @@ export const TwyneEditor = component$(
               real margins rather than near them. */}
           <PageRuler
             layout={store.layout}
-            pageWidthRem={DOC_WIDTH_REM[store.layout.width]}
+            pageWidthRem={pageWidthRem()}
             zen={store.zenMode}
             onChange$={emitLayout}
           />
           <div
-            class={`mx-auto twyne-editor page-canvas relative ${store.layout.showMarginGuides ? "show-margin-guides" : ""} ${store.zenMode ? "zen-mode" : ""}`}
+            class={`mx-auto twyne-editor page-canvas relative ${store.layout.showMarginGuides ? "show-margin-guides" : ""} ${store.zenMode ? "zen-mode" : ""} ${store.paginationActive ? "is-paginated" : ""}`}
             style={{
-              "max-width": "var(--doc-width, 48rem)",
+              // A sheet is a physical size. Given only a max-width it would
+              // shrink with the viewport, narrowing the column, making every
+              // block taller, and silently changing how many pages the
+              // manuscript is — a page count that moves when you drag the
+              // window is not a page count. So the paginated canvas takes a
+              // fixed width and the area around it scrolls, which is what
+              // every word processor does.
+              ...(store.paginationActive
+                ? {
+                    width: "var(--page-w)",
+                    "flex-shrink": "0",
+                    // The sheets are absolutely positioned, so they add no
+                    // height of their own. Without this the last page — which
+                    // is usually only part full — gets clipped where the prose
+                    // happens to stop, and the paper ends mid-sheet.
+                    "min-height": `${canvasMinHeight()}px`,
+                  }
+                : { "max-width": "var(--doc-width, 48rem)" }),
               "padding-left": "var(--doc-pad-left, 3rem)",
               "padding-right": "var(--doc-pad-right, 3rem)",
               "padding-top": "var(--doc-pad-y, 2.5rem)",
               "padding-bottom": "var(--doc-pad-bottom, 4rem)",
             }}
           >
-            <div id="twyne-editor-mount" />
+            {/* Sheet edges, running headers and page numbers. Painted behind
+                the prose from the engine's page count — it reads nothing from
+                the DOM, because the uniform grid makes every position a
+                multiply. */}
+            <PageChrome
+              pageCount={store.pageCount}
+              active={store.paginationActive}
+              layout={store.layout}
+              title={store.meta.title}
+              headerText={store.headerText}
+              footerText={store.footerText}
+              zen={store.zenMode}
+              onHeaderCommit$={(value) => updateChromeText("header", value)}
+              onFooterCommit$={(value) => updateChromeText("footer", value)}
+              {...pageChromeGeometry()}
+            />
+            <div
+              id="twyne-editor-mount"
+              style={{ position: "relative", zIndex: 1 }}
+            />
 
             {/* Notes — endnotes and footnotes collected live from the doc,
                 set at the foot of the manuscript like a book's own notes
@@ -2875,14 +3923,19 @@ export const TwyneEditor = component$(
                 })}
               </div>
             )}
-
           </div>
         </div>
 
         {/* ── Status bar (the colophon) ──────────────────── */}
         <div
-          class="flex items-center justify-between px-5 py-1.5 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] text-[var(--color-ink-light)]"
-          style="font-family: var(--font-typewriter); letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.72rem;"
+          class="flex items-center justify-between px-5 py-1.5 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] text-[var(--color-ink-light)] sticky bottom-0"
+          style={{
+            fontFamily: "var(--font-typewriter)",
+            letterSpacing: "0.1em",
+            textTransform: "uppercase",
+            fontSize: "0.72rem",
+            zIndex: "var(--z-sticky)",
+          }}
         >
           <span>
             {formatWordCount(store.meta.wordCount)} words · {folios} folios
@@ -3315,7 +4368,9 @@ export const TwyneEditor = component$(
                   <div
                     class="comment-markdown text-[0.78rem] italic leading-5 text-[var(--color-ink-light)]"
                     style={{ fontFamily: "var(--font-serif)" }}
-                    dangerouslySetInnerHTML={renderMarkdown(store.suggestionPopover.rationale)}
+                    dangerouslySetInnerHTML={renderMarkdown(
+                      store.suggestionPopover.rationale,
+                    )}
                   />
                 )}
                 <div class="pt-2 flex gap-2 justify-end">
@@ -3408,7 +4463,9 @@ export const TwyneEditor = component$(
                 <div
                   class="comment-markdown text-[1rem] leading-6 text-[var(--color-ink)]"
                   style="font-family: var(--font-serif);"
-                  dangerouslySetInnerHTML={renderMarkdown(store.userCommentPopover.text)}
+                  dangerouslySetInnerHTML={renderMarkdown(
+                    store.userCommentPopover.text,
+                  )}
                 />
                 {store.userCommentPopover.replies.length > 0 && (
                   <div
@@ -3642,4 +4699,3 @@ function removeSuggestionMark(editor: Editor, id: string | null): void {
 function removeAllSuggestions(editor: Editor): void {
   removeSuggestionMark(editor, null);
 }
-

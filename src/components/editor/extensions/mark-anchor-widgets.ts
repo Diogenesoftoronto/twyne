@@ -88,6 +88,11 @@ function buildDecorations(doc: PmNode): DecorationSet {
       // marked text rather than inside the next character.
       decos.push(
         Decoration.widget(runEnd, () => createChip(kind, id), {
+          // Stable identity, so ProseMirror reuses the chip's DOM instead of
+          // recreating it on every keystroke. Without a key the whole set is
+          // rebuilt on each doc change, which both costs layout and makes the
+          // pagination engine's ResizeObserver fire far more than it should.
+          key: `twyne-anchor:${kind}:${id}`,
           side: 1,
           ignoreSelection: true,
         }),

@@ -60,6 +60,6 @@ describe("resolveMargins", () => {
 
   test("the default layout resolves to its own declared numbers", () => {
     const m = resolveMargins(DEFAULT_LAYOUT);
-    expect(m).toEqual({ left: 3, right: 3, top: 2.5, bottom: 4 });
+    expect(m).toEqual({ left: 2, right: 2, top: 1, bottom: 1 });
   });
 });

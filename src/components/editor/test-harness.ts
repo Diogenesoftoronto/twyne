@@ -5,6 +5,7 @@ import { StarterKit } from "@tiptap/starter-kit";
 import { CommentMark } from "./extensions/comment-mark";
 import { PersonaNoteMark } from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
+import { PageBreakNode } from "./extensions/page-break-node";
 
 /**
  * Tiptap + JSDOM test harness. The project's editor mounts inside a
@@ -34,12 +35,20 @@ export interface WithEditorOptions {
   extensions?: EditorOptions["extensions"];
 }
 
-/** Standard Tiptap extensions used by the project's editor. */
+/**
+ * Standard Tiptap extensions used by the project's editor.
+ *
+ * The pagination extension is deliberately absent: JSDOM has no layout
+ * engine, so every `offsetHeight` it reports is zero and the measurements
+ * would be meaningless. Pagination's arithmetic is tested directly against
+ * `pagination-geometry.ts`, and its DOM behaviour in the Playwright suite.
+ */
 export const projectExtensions = [
   StarterKit,
   CommentMark,
   PersonaNoteMark,
   SuggestionMark,
+  PageBreakNode,
 ];
 
 /**
@@ -75,6 +84,12 @@ export async function withEditor(
   install("Element", dom.window.Element);
   install("navigator", dom.window.navigator);
   install("getComputedStyle", dom.window.getComputedStyle);
+  // Tiptap's `keyboardShortcut` command synthesises a real KeyboardEvent to
+  // run it through the keymap, so a test that exercises a binding needs the
+  // constructor on the global rather than only on the JSDOM window.
+  install("Event", dom.window.Event);
+  install("KeyboardEvent", dom.window.KeyboardEvent);
+  install("MouseEvent", dom.window.MouseEvent);
   install(
     "requestAnimationFrame",
     (cb: FrameRequestCallback) => setTimeout(() => cb(0), 0) as unknown as number,

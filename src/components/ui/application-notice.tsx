@@ -14,6 +14,8 @@ interface ApplicationNoticeProps {
   variant?: ApplicationNoticeVariant;
   title?: string;
   compact?: boolean;
+  /** Hide support-oriented references for local validation guidance. */
+  showReference?: boolean;
   recoveryLabel?: string;
   recoveryHref?: string;
   busy?: boolean;
@@ -141,7 +143,7 @@ export const ApplicationNotice = component$((props: ApplicationNoticeProps) => {
             </div>
           )}
 
-          {props.error.referenceId && (
+          {props.showReference !== false && props.error.referenceId && (
             <p
               class="mt-2 break-all text-[0.6rem] tracking-[0.08em] text-[var(--color-ink-muted)]"
               style={{ fontFamily: "var(--font-typewriter)" }}

@@ -16,6 +16,7 @@ import {
   toAgentPersona,
 } from "../../../convex/agentPrompts";
 import { loadPersonasFromIdb, savePersonasToIdb } from "../../utils/idb";
+import { INK_SWATCHES } from "../../utils/palette";
 import {
   loadRoomSettingsLocally,
   saveRoomSettingsLocally,
@@ -37,23 +38,22 @@ function linesFromTextarea(value: string): string[] | undefined {
   return lines.length > 0 ? lines : undefined;
 }
 
-const COLOR_SWATCHES: ReadonlyArray<{ label: string; value: string }> = [
-  { label: "vermilion", value: "var(--color-vermilion)" },
-  { label: "mustard", value: "var(--color-mustard)" },
-  { label: "cobalt", value: "var(--color-cobalt)" },
-  { label: "forest", value: "var(--color-accent-green)" },
-  { label: "indigo", value: "var(--color-accent-blue)" },
-  { label: "wine", value: "var(--color-persona-editor)" },
-];
-
-const __COLOR_SWATCHES: ReadonlyArray<{ label: string; value: string }> = [
-  { label: "vermilion", value: "var(--color-vermilion)" },
-  { label: "mustard", value: "var(--color-mustard)" },
-  { label: "cobalt", value: "var(--color-cobalt)" },
-  { label: "forest", value: "var(--color-accent-green)" },
-  { label: "indigo", value: "var(--color-accent-blue)" },
-  { label: "wine", value: "var(--color-persona-editor)" },
-];
+/**
+ * The cast's colours, from the shared palette.
+ *
+ * Stored as `var(--color-…)` rather than as literals, which is safe here
+ * because persona colour never leaves the app — `stripEditorMarks` removes
+ * persona-note spans from every export, so there is no document that needs to
+ * resolve the custom property without a stylesheet.
+ *
+ * This replaces two byte-identical local copies of a six-entry list that held
+ * only four colours: "wine" was `--color-persona-editor`, which is mustard,
+ * and "indigo" was `--color-accent-blue`, which is cobalt. A persona already
+ * saved with either still renders exactly as before — it was always that
+ * paint — it simply no longer appears twice in the picker.
+ */
+const COLOR_SWATCHES: ReadonlyArray<{ label: string; value: string }> =
+  INK_SWATCHES.map((s) => ({ label: s.label.toLowerCase(), value: s.cssVar }));
 
 const ASSISTANCE_LEVELS: ReadonlyArray<{
   value: AssistanceLevel;
@@ -183,18 +183,6 @@ export default component$(() => {
       outline: none;
     }
     .room-textarea { resize: vertical; min-height: 4rem; }
-    .swatch {
-      width: 1.4rem;
-      height: 1.4rem;
-      border-radius: 999px;
-      border: 2px solid transparent;
-      cursor: pointer;
-      transition: transform 0.1s, border-color 0.1s;
-    }
-    .swatch[aria-pressed="true"] {
-      border-color: var(--color-ink);
-      transform: scale(1.1);
-    }
     .scope-pill {
       display: inline-flex; align-items: center; gap: 0.35rem;
       padding: 0.15rem 0.55rem;
@@ -571,7 +559,7 @@ export default component$(() => {
                     Colour
                   </p>
                   <div class="flex flex-wrap gap-2">
-                    {__COLOR_SWATCHES.map((c) => (
+                    {COLOR_SWATCHES.map((c) => (
                       <button
                         key={c.value}
                         type="button"
@@ -877,7 +865,7 @@ export default component$(() => {
                             Colour
                           </p>
                           <div class="flex flex-wrap gap-2">
-                            {__COLOR_SWATCHES.map((c) => (
+                            {COLOR_SWATCHES.map((c) => (
                               <button
                                 key={c.value}
                                 type="button"
