@@ -43,3 +43,7 @@ Implement Wave 2 DR — Section drag/reorder exactly per docs/editor-parallel-bu
 ---
 
 Implement Wave 1 IB — Image backend exactly per docs/editor-parallel-build-graph.md. FIRST read convex/_generated/ai/guidelines.md. Ownership ONLY convex/images.ts, required source schema additions, ownership/security tests. Do NOT edit generated Convex files, frontend, protected shared files, or any other pre-existing dirty files. You are not alone in the codebase; do not revert others. Deliver upload URL mutation, durable file metadata record, authorized lookup and deletion; every operation checks ownership; reject unsupported type and oversize uploads; deletion removes metadata and stored file. Run focused tests/typecheck where feasible. Report exact files changed and codegen needed.
+
+---
+
+what is left

@@ -5,8 +5,10 @@
   "branch": "main",
   "checkpoints_count": 12,
   "files_touched": [
+    "bun.lock",
     "convex/agents.ts",
     "docs/changes/dossier-ux-cleanup.md",
+    "package.json",
     "src/components/onboarding/anti-tabula-rasa.tsx",
     "src/components/onboarding/conversational-interview.tsx",
     "src/components/onboarding/dossier-top-bar.tsx",
