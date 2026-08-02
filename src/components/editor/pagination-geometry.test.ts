@@ -171,12 +171,34 @@ describe("paginate — blocks taller than a page", () => {
     assertGridInvariant(metrics, result);
   });
 
-  test("an oversized block that opens a page is never pushed off it", () => {
+  test("an oversized block bleeds from where it falls, without a hole before it", () => {
     // This is the case that would loop forever in a naive engine: the block
     // does not fit, so move it to the next page, where it still does not fit.
+    //
+    // It is also the case that used to leave a hole. A 5000px block bleeds
+    // across sheets wherever it starts, so pushing it to a fresh page bought
+    // nothing and wasted the 600px still free on the page before. It now
+    // begins in place; only the block *after* it takes a break.
     const metrics = [block(200), block(5000), block(200)];
     const result = paginate(metrics, GEO);
-    expect(result.breaks.map((b) => b.blockIndex)).toEqual([1, 2]);
+    expect(result.breaks.map((b) => b.blockIndex)).toEqual([2]);
+    assertGridInvariant(metrics, result);
+  });
+
+  test("a heading is never marooned on a blank page by the paragraph it opens", () => {
+    // The reported bug. The backwards keepWithNext walk cannot move here —
+    // the heading is already the first block after `runStart` — so the run
+    // used to close with nothing on the sheet but the heading, once per
+    // oversized paragraph.
+    const metrics = [
+      block(700),
+      block(50, { keepWithNext: true }),
+      block(2000),
+      block(100),
+    ];
+    const result = paginate(metrics, GEO);
+    // No break lands on the paragraph, so nothing strands the heading before it.
+    expect(result.breaks.map((b) => b.blockIndex)).not.toContain(2);
     assertGridInvariant(metrics, result);
   });
 
@@ -300,13 +322,17 @@ describe("paginate — keepWithNext", () => {
   test("the block re-tested after a backwards walk is not skipped", () => {
     // Moving the break back to the heading leaves the following paragraph on
     // the new page; it must still be measured there rather than assumed to fit.
+    // 780px fits on a sheet of its own, so it is a candidate for a break;
+    // it just does not fit in the 750px left under the heading it follows.
     const metrics = [
       block(700),
       block(50, { keepWithNext: true }),
-      block(900),
+      block(780),
       block(100),
     ];
     const result = paginate(metrics, GEO);
+    // The break at 2 is the re-test: block 2 moved to the new page with the
+    // heading, was measured there, and still did not fit.
     expect(result.breaks.map((b) => b.blockIndex)).toEqual([1, 2, 3]);
     assertGridInvariant(metrics, result);
   });
@@ -394,7 +420,10 @@ describe("paginate — stability", () => {
 });
 
 describe("computePageGeometry", () => {
-  const layout: LayoutSettings = { ...DEFAULT_LAYOUT };
+  // Explicit: an unset mode resolves to continuous now that the editor
+  // defaults to scrolling, and continuous takes its width from the text
+  // column rather than the sheet. These are the sheet numbers.
+  const layout: LayoutSettings = { ...DEFAULT_LAYOUT, pagination: "paginated" };
 
   test("Letter portrait at a 16px root is 816 x 1056 CSS px", () => {
     const g = computePageGeometry(layout, 16);

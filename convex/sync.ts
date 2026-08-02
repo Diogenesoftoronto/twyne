@@ -558,6 +558,44 @@ export const putRoomSettings = mutation({
   },
 });
 
+/* ── Appearance (theme) ──────────────────────────────────────────── */
+
+export const getAppearance = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await requireIdentity(ctx);
+    return await ctx.db
+      .query("appearance")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+  },
+});
+
+export const putAppearance = mutation({
+  args: {
+    preset: v.string(),
+    custom: v.optional(v.record(v.string(), v.string())),
+  },
+  handler: async (ctx, { preset, custom }) => {
+    const userId = await requireIdentity(ctx);
+    const existing = await ctx.db
+      .query("appearance")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .first();
+    const now = Date.now();
+    if (existing) {
+      await ctx.db.patch(existing._id, { preset, custom, updatedAt: now });
+      return existing._id;
+    }
+    return await ctx.db.insert("appearance", {
+      userId,
+      preset,
+      custom,
+      updatedAt: now,
+    });
+  },
+});
+
 /* ── Bulk push / pull ────────────────────────────────────────────── */
 
 /**

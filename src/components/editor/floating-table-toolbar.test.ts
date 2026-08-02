@@ -3,9 +3,12 @@ import { withEditor } from "./test-harness";
 import { createTableCoreExtensions } from "./extensions/table-format";
 import {
   computeTableToolbarPosition,
+  computeTableToolbarStackPosition,
   createTableToolbarController,
   getActiveTableElement,
   readTableToolbarSnapshot,
+  TABLE_CELL_FORMAT_PANEL_HEIGHT,
+  TABLE_TOOLBAR_GAP,
   type PlainRect,
 } from "./floating-table-toolbar";
 
@@ -59,6 +62,103 @@ describe("floating table toolbar positioning", () => {
     );
     expect(position.width).toBe(304);
     expect(position.left).toBe(8);
+  });
+});
+
+describe("floating table toolbar stacked cell-format row", () => {
+  test("keeps the stacked row above the table when placed above", () => {
+    const stack = computeTableToolbarStackPosition(
+      rect(200, 300, 400, 200),
+      { width: 1000, height: 800 },
+      true,
+      { width: 600, height: 100 },
+    );
+    expect(stack.placement).toBe("above");
+    expect(stack.cellRowTop).not.toBeNull();
+    // The cell row must hover above the table's top edge, never cover it.
+    expect(stack.cellRowTop! + TABLE_CELL_FORMAT_PANEL_HEIGHT).toBeLessThanOrEqual(
+      300 - TABLE_TOOLBAR_GAP,
+    );
+  });
+
+  test("does not reserve panel room when the cell row is hidden", () => {
+    const stack = computeTableToolbarStackPosition(
+      rect(200, 300, 400, 200),
+      { width: 1000, height: 800 },
+      false,
+      { width: 600, height: 100 },
+    );
+    expect(stack.cellRowTop).toBeNull();
+    expect(stack.top).toBe(300 - 100 - TABLE_TOOLBAR_GAP);
+  });
+
+  /**
+   * The regression this whole stack exists for. The old code parked the
+   * cell-format panel at `toolbar.top + 120`, which lands exactly on the
+   * table's first row and swallows its clicks — the second row stayed
+   * deletable, the first did not. Measured heights must not reintroduce it.
+   */
+  test("never covers the first row, whatever the measured heights are", () => {
+    const tableTop = 300;
+    for (const height of [80, 112, 160, 210]) {
+      for (const cellPanelHeight of [40, 68, 96]) {
+        const stack = computeTableToolbarStackPosition(
+          rect(200, tableTop, 400, 200),
+          { width: 1000, height: 900 },
+          true,
+          { width: 600, height, cellPanelHeight },
+        );
+        if (stack.placement !== "above") continue;
+        expect(stack.cellRowTop! + cellPanelHeight).toBeLessThanOrEqual(
+          tableTop,
+        );
+      }
+    }
+  });
+
+  test("drops below rather than clamping back over the table", () => {
+    // Tall stack, table high on the page: there is not enough room above once
+    // the viewport margin is applied, so "above" would clamp down onto row 1.
+    const stack = computeTableToolbarStackPosition(
+      rect(200, 140, 400, 620),
+      { width: 1000, height: 800 },
+      true,
+      { width: 600, height: 200, cellPanelHeight: 120 },
+    );
+    expect(stack.placement).toBe("below");
+    expect(stack.top).toBeGreaterThanOrEqual(140);
+  });
+
+  test("uses the measured panel height instead of the estimate", () => {
+    const measured = computeTableToolbarStackPosition(
+      rect(200, 400, 400, 200),
+      { width: 1000, height: 900 },
+      true,
+      { width: 600, height: 100, cellPanelHeight: 140 },
+    );
+    const estimated = computeTableToolbarStackPosition(
+      rect(200, 400, 400, 200),
+      { width: 1000, height: 900 },
+      true,
+      { width: 600, height: 100 },
+    );
+    // A taller panel has to push the whole stack further up the page.
+    expect(measured.top).toBeLessThan(estimated.top);
+    expect(measured.cellRowTop! + 140).toBeLessThanOrEqual(400);
+  });
+
+  test("keeps the stacked rows below the table near the viewport top", () => {
+    const stack = computeTableToolbarStackPosition(
+      rect(100, 20, 500, 200),
+      { width: 900, height: 700 },
+      true,
+      { width: 600, height: 100 },
+    );
+    expect(stack.placement).toBe("below");
+    expect(stack.cellRowTop).not.toBeNull();
+    expect(stack.cellRowTop! + TABLE_CELL_FORMAT_PANEL_HEIGHT).toBeLessThanOrEqual(
+      700 - 8,
+    );
   });
 });
 

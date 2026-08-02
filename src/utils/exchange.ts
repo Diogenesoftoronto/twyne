@@ -90,7 +90,13 @@ function wrapStandaloneHtml(
   };
   const m = resolveMargins(layout);
   const setup = resolvePageSetup(layout);
-  const paginated = setup.pagination === "paginated";
+  // Print is paginated unless the document explicitly asked for a continuous
+  // sheet. This deliberately does *not* use `setup.pagination`, whose default
+  // flipped to continuous when scroll became the editor's default view: a
+  // printed page is a physical object, and defaulting a PDF to `size: auto`
+  // because the writer happened to be drafting in scroll mode would be the
+  // wrong answer for every export.
+  const paginated = (layout.pagination ?? "paginated") === "paginated";
   const docWidth = widthMap[layout.width];
 
   // Margins go to `@page` in inches, converted through the same fixed 96px/in

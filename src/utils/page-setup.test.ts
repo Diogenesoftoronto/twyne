@@ -31,10 +31,18 @@ describe("resolvePageSetup", () => {
     const s = resolvePageSetup(legacy);
     expect(s.paper).toBe("letter");
     expect(s.orientation).toBe("portrait");
-    expect(s.pagination).toBe("paginated");
+    // Continuous is the default *view* — writers draft by scrolling. The
+    // sheet dimensions are still resolved, because export and the Pages
+    // toggle both need to know what paper this document is set on.
+    expect(s.pagination).toBe("continuous");
     expect(s.marginUnit).toBe("rem");
     expect(s.widthIn).toBe(8.5);
     expect(s.heightIn).toBe(11);
+  });
+
+  test("paginated mode is honoured rather than overridden", () => {
+    const s = resolvePageSetup({ ...legacy, pagination: "paginated" });
+    expect(s.pagination).toBe("paginated");
   });
 
   test("landscape swaps the sheet dimensions", () => {
@@ -77,7 +85,7 @@ describe("resolvePageSetup", () => {
     const s = resolvePageSetup(DEFAULT_LAYOUT);
     expect(s.paper).toBe("letter");
     expect(s.orientation).toBe("portrait");
-    expect(s.pagination).toBe("paginated");
+    expect(s.pagination).toBe("continuous");
   });
 });
 

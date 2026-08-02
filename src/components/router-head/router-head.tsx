@@ -64,7 +64,22 @@ export const RouterHead = component$(() => {
         sizes="180x180"
         href="/apple-touch-icon.png"
       />
-      <meta name="theme-color" content="#9c1a1f" />
+      {/*
+        Browser chrome color. `media` lets the browser pick without any JS —
+        the light entry is the default and the dark one only applies when the
+        OS asks for dark. The color tracks the OS scheme only; an explicit
+        preset pick in the appearance settings is not mirrored here.
+      */}
+      <meta
+        name="theme-color"
+        media="(prefers-color-scheme: light)"
+        content="#9c1a1f"
+      />
+      <meta
+        name="theme-color"
+        media="(prefers-color-scheme: dark)"
+        content="#191714"
+      />
 
       {/* Site-wide social defaults (routes may override any key) */}
       {socialDefaults.map((m) => (

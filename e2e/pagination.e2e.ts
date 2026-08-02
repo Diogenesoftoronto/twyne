@@ -52,6 +52,10 @@ async function seedFolio(page: Page, html: string) {
           type: "draft",
           createdAt: now,
           updatedAt: now,
+          // Explicit: an unset mode now resolves to continuous, because the
+          // editor defaults to scrolling. This suite is about sheet view, so
+          // it asks for sheet view rather than relying on a default.
+          layout: { pagination: "paginated" },
         });
         t.objectStore("folio-content").put({
           folioId: id,

@@ -48,6 +48,24 @@ import {
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import {
+  DEFAULT_THEME_PREFERENCE,
+  THEME_PRESETS,
+  THEME_SYNC_STAMP_KEY,
+  THEME_TOKENS,
+  WCAG_AA_CONTRAST,
+  applyTheme,
+  getThemePreset,
+  normalizeThemePreference,
+  readThemePreference,
+  resolveThemePreset,
+  resolvedThemeTokens,
+  themeContrast,
+  writeThemePreference,
+  type ThemePreference,
+  type ThemePresetId,
+  type ThemeTokenId,
+} from "../../utils/theme";
+import {
   findModelsDevProvider,
   loadModelsDevCatalog,
   modelsDevModelsForFeature,
@@ -128,6 +146,10 @@ interface SettingsStore {
   profileAvatarUrl: string | null;
   /** True while an avatar upload/clear round-trip is in flight. */
   profileAvatarBusy: boolean;
+  /* appearance */
+  theme: ThemePreference;
+  themeCustomOpen: boolean;
+  themeToast: string | null;
 }
 
 const FEATURE_LABELS: Record<AiFeature, string> = {
@@ -145,6 +167,7 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "source-summarize": "Source Summarize",
   "source-detect-missing": "Missing Source Detection",
   "research-web-search": "Apparatus Web Search",
+  "research-extract": "Auto-Research (claim finding)",
   "interview-turn": "Conversational Interview",
   "dossier-check": "Read My Draft",
 };
@@ -171,6 +194,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
     "AI detects claims in your draft that need citations.",
   "research-web-search":
     "The Apparatus asks a model endpoint with web-search support for source candidates.",
+  "research-extract":
+    "The Apparatus reads your draft and decides which claims, quotes, films, and figures need a source, then hunts each one down automatically.",
   "interview-turn":
     "The room interviews you, one question at a time, and synthesises a dossier from your answers.",
   "dossier-check":
@@ -314,6 +339,9 @@ export default component$(() => {
     profileToast: null,
     profileAvatarUrl: null,
     profileAvatarBusy: false,
+    theme: { ...DEFAULT_THEME_PREFERENCE },
+    themeCustomOpen: false,
+    themeToast: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -364,7 +392,42 @@ export default component$(() => {
     store.mcpToolName = apparatus.mcpToolName;
     store.mcpBearerToken = apparatus.mcpBearerToken;
     store.modelsDevProviders = catalog;
+    store.theme = readThemePreference();
+    store.themeCustomOpen = Boolean(store.theme.custom);
     store.loaded = true;
+
+    // Reconcile with the account afterwards, never before: the bootstrap
+    // script already painted from localStorage, and a signed-in device that
+    // has since been re-themed locally should not be overwritten by a stale
+    // remote record. Newer wins.
+    const client =
+      auth.value.provider === "convex" && auth.value.user
+        ? convexClientSig.value
+        : null;
+    if (!client) return;
+    try {
+      const remote = await client.query(api.sync.getAppearance, {});
+      if (!remote) return;
+      const localStamp = Number(
+        localStorage.getItem(THEME_SYNC_STAMP_KEY) ?? 0,
+      );
+      if (remote.updatedAt <= localStamp) return;
+      const preference = normalizeThemePreference({
+        preset: remote.preset,
+        custom: remote.custom,
+      });
+      store.theme = preference;
+      store.themeCustomOpen = Boolean(preference.custom);
+      writeThemePreference(preference);
+      localStorage.setItem(THEME_SYNC_STAMP_KEY, String(remote.updatedAt));
+      applyTheme(
+        preference,
+        document.documentElement,
+        window.matchMedia("(prefers-color-scheme: dark)").matches,
+      );
+    } catch {
+      /* the local palette stands. */
+    }
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -423,6 +486,50 @@ export default component$(() => {
     await saveApparatusSettingsToIdb(settings);
     store.toast = "Preferences saved";
     setTimeout(() => (store.toast = null), 1800);
+  });
+
+  /**
+   * Local first, then a best-effort push to the account.
+   *
+   * The order matters. The palette is applied to `<html>` immediately so the
+   * page re-inks as you click rather than on the next mount, then written to
+   * localStorage — which is what the bootstrap script reads before first
+   * paint. The Convex write is last and its failure is swallowed: this app
+   * works offline, and a theme is not worth an error.
+   */
+  const persistTheme = $(async (next: ThemePreference) => {
+    const preference = normalizeThemePreference(next);
+    store.theme = preference;
+
+    if (typeof document !== "undefined") {
+      const prefersDark =
+        typeof window !== "undefined" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyTheme(preference, document.documentElement, prefersDark);
+    }
+    writeThemePreference(preference);
+    try {
+      localStorage.setItem(THEME_SYNC_STAMP_KEY, String(Date.now()));
+    } catch {
+      /* storage disabled — sync just falls back to "remote wins". */
+    }
+
+    store.themeToast = "Appearance saved";
+    setTimeout(() => (store.themeToast = null), 1800);
+
+    const client =
+      auth.value.provider === "convex" && auth.value.user
+        ? convexClientSig.value
+        : null;
+    if (!client) return;
+    try {
+      await client.mutation(api.sync.putAppearance, {
+        preset: preference.preset,
+        custom: preference.custom,
+      });
+    } catch {
+      /* offline or signed out mid-flight — local already has the truth. */
+    }
   });
 
   const refreshProviderModels = $(async (id: string) => {
@@ -1004,6 +1111,240 @@ export default component$(() => {
 
         {store.loaded && (
           <div class="space-y-8">
+            {/* ── Appearance ── */}
+            <section class="folio p-5">
+              <h2
+                class="text-base font-semibold"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Appearance
+              </h2>
+              <p class="text-xs text-[var(--color-ink-light)] mt-1 max-w-2xl">
+                The palette the room is printed in. This changes the app only —
+                colours you apply to your own prose are written into the
+                document and stay exactly as you set them, in Twyne and in
+                anything you export.
+              </p>
+
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                {(
+                  [
+                    ...THEME_PRESETS,
+                    {
+                      id: "system" as ThemePresetId,
+                      label: "System",
+                      description:
+                        "Follow the machine — Editorial by day, Nightpress when your OS asks for dark.",
+                      dark: false,
+                      tokens: getThemePreset("editorial").tokens,
+                    },
+                  ] as const
+                ).map((preset) => {
+                  const active = store.theme.preset === preset.id;
+                  const swatches =
+                    preset.id === "system"
+                      ? getThemePreset("editorial").tokens
+                      : preset.tokens;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      aria-pressed={active}
+                      onClick$={() =>
+                        persistTheme({
+                          preset: preset.id as ThemePresetId,
+                          custom: store.theme.custom,
+                        })
+                      }
+                      class="text-left p-3 border transition-colors"
+                      style={{
+                        borderRadius: "2px",
+                        borderColor: active
+                          ? "var(--color-vermilion)"
+                          : "var(--color-paper-3)",
+                        background: active
+                          ? "color-mix(in srgb, var(--color-vermilion) 6%, transparent)"
+                          : "transparent",
+                      }}
+                    >
+                      <span class="flex items-center gap-2">
+                        <span
+                          class="text-sm text-[var(--color-ink)]"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          {preset.label}
+                        </span>
+                        {active && (
+                          <span
+                            class="text-[0.6rem] uppercase tracking-[0.15em] text-[var(--color-vermilion)]"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          >
+                            in use
+                          </span>
+                        )}
+                        <span class="ml-auto flex gap-1" aria-hidden="true">
+                          {(
+                            [
+                              "paper",
+                              "paper-3",
+                              "ink",
+                              "vermilion",
+                            ] as ThemeTokenId[]
+                          ).map((id) => (
+                            <span
+                              key={id}
+                              class="inline-block h-4 w-4 border border-[var(--color-paper-3)]"
+                              style={{ background: swatches[id] }}
+                            />
+                          ))}
+                        </span>
+                      </span>
+                      <span class="block text-[0.65rem] text-[var(--color-ink-muted)] mt-1">
+                        {preset.description}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <button
+                type="button"
+                class="mt-4 text-xs text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
+                style={{ fontFamily: "var(--font-typewriter)" }}
+                aria-expanded={store.themeCustomOpen}
+                onClick$={() =>
+                  (store.themeCustomOpen = !store.themeCustomOpen)
+                }
+              >
+                {store.themeCustomOpen ? "▾" : "▸"} Customise palette
+              </button>
+
+              {store.themeCustomOpen && (
+                <div class="mt-3 space-y-2">
+                  <p class="text-[0.65rem] text-[var(--color-ink-muted)] max-w-2xl">
+                    Overrides sit on top of whichever preset is selected, so
+                    changing preset keeps your edits. Anything you leave alone
+                    follows the preset.
+                  </p>
+                  {THEME_TOKENS.map((token) => {
+                    const resolved = resolvedThemeTokens(store.theme);
+                    const overridden = Boolean(store.theme.custom?.[token.id]);
+                    return (
+                      <div
+                        key={token.id}
+                        class="flex items-center gap-3 py-1.5 border-b border-[var(--color-paper-3)] last:border-b-0"
+                      >
+                        <input
+                          type="color"
+                          value={resolved[token.id]}
+                          aria-label={token.label}
+                          class="h-7 w-9 shrink-0 cursor-pointer border border-[var(--color-paper-3)] bg-transparent p-0"
+                          onChange$={(e) =>
+                            persistTheme({
+                              preset: store.theme.preset,
+                              custom: {
+                                ...store.theme.custom,
+                                [token.id]: (e.target as HTMLInputElement)
+                                  .value,
+                              },
+                            })
+                          }
+                        />
+                        <span class="min-w-0">
+                          <span class="block text-xs text-[var(--color-ink)]">
+                            {token.label}
+                          </span>
+                          <span class="block text-[0.62rem] text-[var(--color-ink-muted)]">
+                            {token.description}
+                          </span>
+                        </span>
+                        <span
+                          class="ml-auto text-[0.62rem] text-[var(--color-ink-muted)]"
+                          style={{ fontFamily: "var(--font-mono)" }}
+                        >
+                          {resolved[token.id]}
+                        </span>
+                        {overridden && (
+                          <button
+                            type="button"
+                            class="text-[0.62rem] text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                            aria-label={`Reset ${token.label}`}
+                            onClick$={() => {
+                              const custom = { ...store.theme.custom };
+                              delete custom[token.id];
+                              void persistTheme({
+                                preset: store.theme.preset,
+                                custom,
+                              });
+                            }}
+                          >
+                            reset
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/*
+                    A custom palette is the one place a writer can make the app
+                    unreadable, so say so rather than letting them discover it
+                    an hour later.
+                  */}
+                  {(() => {
+                    const ratio = themeContrast(store.theme);
+                    const passes = ratio >= WCAG_AA_CONTRAST;
+                    return (
+                      <p
+                        class="text-[0.65rem] pt-1"
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          color: passes
+                            ? "var(--color-ink-muted)"
+                            : "var(--color-accent-red)",
+                        }}
+                      >
+                        {passes ? "✓" : "⚠"} Ink on paper: {ratio.toFixed(1)}:1
+                        {passes
+                          ? " — clears WCAG AA."
+                          : ` — below the ${WCAG_AA_CONTRAST}:1 needed for body text.`}
+                      </p>
+                    );
+                  })()}
+
+                  {store.theme.custom && (
+                    <button
+                      type="button"
+                      class="btn-paper px-3 py-1.5 text-xs mt-1"
+                      onClick$={() =>
+                        persistTheme({ preset: store.theme.preset })
+                      }
+                    >
+                      Reset to{" "}
+                      {
+                        getThemePreset(
+                          resolveThemePreset(
+                            store.theme.preset,
+                            typeof window !== "undefined" &&
+                              window.matchMedia("(prefers-color-scheme: dark)")
+                                .matches,
+                          ),
+                        ).label
+                      }
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {store.themeToast && (
+                <p
+                  class="text-[0.65rem] text-[var(--color-accent-green)] mt-3"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  {store.themeToast}
+                </p>
+              )}
+            </section>
+
             {/* ── Writer preferences (always shown, no BYOK required) ── */}
             <section class="folio p-5">
               <h2

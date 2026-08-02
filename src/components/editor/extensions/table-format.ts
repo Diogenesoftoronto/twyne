@@ -482,11 +482,16 @@ export interface TableActionDefinition {
 export const TABLE_ACTIONS: readonly TableActionDefinition[] = [
   { id: "addRowBefore", label: "Add row above", group: "rows" },
   { id: "addRowAfter", label: "Add row below", group: "rows" },
-  { id: "deleteRow", label: "Delete row", group: "rows" },
+  { id: "deleteRow", label: "Delete row", group: "rows", destructive: true },
   { id: "toggleHeaderRow", label: "Toggle header row", group: "rows" },
   { id: "addColumnBefore", label: "Add column left", group: "columns" },
   { id: "addColumnAfter", label: "Add column right", group: "columns" },
-  { id: "deleteColumn", label: "Delete column", group: "columns" },
+  {
+    id: "deleteColumn",
+    label: "Delete column",
+    group: "columns",
+    destructive: true,
+  },
   {
     id: "toggleHeaderColumn",
     label: "Toggle header column",

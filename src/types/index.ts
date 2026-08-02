@@ -344,7 +344,12 @@ export function resolvePageSetup(layout: LayoutSettings): ResolvedPageSetup {
   return {
     paper,
     orientation,
-    pagination: layout.pagination ?? "paginated",
+    // Continuous is the default *view*: writers draft by scrolling, and
+    // sheet view is the thing you switch to when you care what the page
+    // looks like. Export does not read this fallback — print is paginated
+    // whether or not the document ever expressed an opinion. See
+    // `exchange.ts`, which resolves the print page model separately.
+    pagination: layout.pagination ?? "continuous",
     marginUnit: layout.marginUnit ?? "rem",
     widthIn: landscape ? size.h : size.w,
     heightIn: landscape ? size.w : size.h,
@@ -416,7 +421,11 @@ export const DEFAULT_LAYOUT: LayoutSettings = {
   showMarginGuides: false,
   paper: "letter",
   orientation: "portrait",
-  pagination: "paginated",
+  // Deliberately unset, not "continuous". Leaving it absent is what lets the
+  // screen and the printer disagree sensibly: the editor resolves an unset
+  // value to continuous (writers draft by scrolling) while export resolves it
+  // to paginated (a PDF is a physical object). Once the writer picks a mode
+  // in the layout panel, that choice is explicit and both surfaces honour it.
   marginUnit: "rem",
 };
 
@@ -464,6 +473,47 @@ export interface DetectedCitation {
   type: "url" | "doi" | "isbn" | "author-year" | "footnote";
   lookupUrl?: string;
   metadata?: Record<string, string>;
+}
+
+/**
+ * What kind of thing in a draft the Apparatus decides needs backing up.
+ * The extractor (not a regex) chooses this per passage — works include
+ * films, books, songs and plays; statistics are numeric claims; quotes
+ * are attributed speech, however the draft found it.
+ */
+export type ResearchTargetKind =
+  | "quote"
+  | "work"
+  | "person"
+  | "statistic"
+  | "claim"
+  | "event";
+
+/**
+ * A citable thing the background agent pulled out of the draft. It is the
+ * unit of auto-research: the apparatus hunts a source for exactly one of
+ * these at a time, instead of googling the whole essay.
+ */
+export interface ResearchTarget {
+  /** Stable id for the pass (used for UI keys, not persistence). */
+  id: string;
+  kind: ResearchTargetKind;
+  /** The passage verbatim just as it appears in the draft. */
+  anchor: string;
+  /** Why this specific thing should not stand uncited. */
+  reason: string;
+  /** The precise query the search providers should receive for this target. */
+  query: string;
+  /** 1 (nice-to-have) to 5 (the argument collapses without it). */
+  importance: number;
+}
+
+/** The target a background-saved bibliography entry was found for. */
+export interface ResearchTargetRef {
+  kind: ResearchTargetKind;
+  anchor: string;
+  query: string;
+  reason?: string;
 }
 
 export interface DroppedAsset {
@@ -744,6 +794,7 @@ export type AiFeature =
   | "source-summarize"
   | "source-detect-missing"
   | "research-web-search"
+  | "research-extract"
   | "interview-turn"
   | "dossier-check";
 

@@ -167,6 +167,21 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_userId", ["userId"]),
 
+  // ── Appearance (theme) — one per user, latest wins.
+  // Its own table rather than a key inside `roomSettings`: that record is
+  // written whole by the personas panel, which knows nothing about themes
+  // and would drop the key on every assistance change. `updatedAt` is what
+  // decides a local-vs-remote conflict when a second device signs in. ──
+  appearance: defineTable({
+    userId: v.string(),
+    preset: v.string(),
+    // Token id -> `#rrggbb`. Validated client-side before it is written into
+    // a CSS custom property; stored loosely so adding a themeable token
+    // later needs no migration.
+    custom: v.optional(v.record(v.string(), v.string())),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
   // ── Lix snapshots (existing). ──
   lixBlobs: defineTable({
     userId: v.string(),

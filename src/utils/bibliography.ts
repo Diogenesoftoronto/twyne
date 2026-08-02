@@ -6,7 +6,7 @@
  */
 
 import { readFileAsJson, writeFileAsJson } from "./lix";
-import type { DetectedCitation } from "../types";
+import type { DetectedCitation, ResearchTargetRef } from "../types";
 
 const BIB_PATH = "/bibliography.json";
 
@@ -46,6 +46,8 @@ export interface BibEntry {
   backgroundQuery?: string;
   /** Whether the writer has explicitly accepted a background-saved entry. */
   accepted?: boolean;
+  /** The claim/quote/work this source was found for (auto-research). */
+  target?: ResearchTargetRef;
   /** Free-form creation timestamp (used by AI-generated entries). */
   createdAt?: number;
 }
@@ -167,7 +169,6 @@ export function footnoteCite(e: BibEntry, style: CitationStyle): string {
 }
 
 /* ── Dedup helpers ──────────────────────────────────────────────── */
-
 
 /** Normalize a URL for dedupe — strips trailing slashes, lowercases host. */
 export function normalizeUrl(u: string): string {

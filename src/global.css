@@ -71,6 +71,175 @@
   --z-toast: 60;
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * Tokens referenced across the app that had no definition — they
+ * were resolving to `unset`. Aliases, so they follow the theme.
+ * ───────────────────────────────────────────────────────────── */
+:root {
+  --color-accent: var(--color-vermilion);
+  --color-rule: var(--color-paper-3);
+  --color-crimson: var(--color-vermilion-2);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Document colors — the text and highlight swatches in
+ * `palette.ts`, which named these custom properties without any
+ * of them ever being defined.
+ *
+ * Literal, and deliberately outside the theme blocks. These are
+ * colors the writer applies to their prose; they get written into
+ * the document as hex and have to render identically in an export
+ * that has no stylesheet. A theme may re-ink the room, never the
+ * manuscript.
+ * ───────────────────────────────────────────────────────────── */
+:root {
+  --color-text-olive: #556134;
+  --color-text-periwinkle: #454f9e;
+  --color-text-amber: #7a5a07;
+  --color-text-sienna: #964f40;
+  --color-highlight-butter: #fbeaa8;
+  --color-highlight-rose: #f8d3d4;
+  --color-highlight-sky: #cfe0f2;
+  --color-highlight-mint: #d5e6c4;
+  --color-highlight-lilac: #dcdff4;
+  --color-highlight-peach: #fadfd5;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Texture tokens
+ *
+ * The letterpress surfaces — paper grain, foxing, the `.folio`
+ * emboss, `.ink-bleed`'s halo — used to hard-code `rgba(31,27,22,…)`
+ * ink and `rgba(255,255,255,…)` highlights. Baked that way they
+ * invert wrongly on any other ground: a white inset sheen on dark
+ * paper reads as a scratch. Expressed against the palette instead,
+ * every texture follows the active theme.
+ * ───────────────────────────────────────────────────────────── */
+:root {
+  /* Paper tooth. Its own tokens so a preset can flatten it entirely. */
+  --grain-1: color-mix(in srgb, var(--color-ink) 2.5%, transparent);
+  --grain-2: color-mix(in srgb, var(--color-ink) 2%, transparent);
+  --grain-3: color-mix(in srgb, var(--color-ink) 1.5%, transparent);
+  /* Base colors the textures are mixed from, never used at full strength. */
+  --emboss: #ffffff;
+  --foxing-base: #7a5426;
+  /*
+   * The color shadows are cast in. On paper this is just the ink, but a
+   * shadow always darkens — on a dark preset, mixing from ink would make
+   * every drop shadow glow. Kept separate so presets can say so.
+   */
+  --shade: var(--color-ink);
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Themes
+ *
+ * Each block redefines only the core palette; everything else is
+ * expressed against it, so a preset switch is one attribute flip
+ * on <html>. Writers may override the eight core tokens inline on
+ * top of any preset — see `src/utils/theme.ts`.
+ *
+ * `system` is resolved to a concrete preset by the bootstrap
+ * script before first paint, so no preset block is needed for it.
+ * ───────────────────────────────────────────────────────────── */
+
+/* Foolscap — cool grey-white, the yellow taken out. */
+[data-theme="foolscap"] {
+  --color-paper: #eef0f1;
+  --color-paper-2: #e3e6e8;
+  --color-paper-3: #c9ced2;
+  --color-paper-soft: #f7f8f9;
+  --color-ink: #1c2024;
+  --color-ink-light: #3f464d;
+  --color-ink-muted: #69727a;
+  --color-editor-bg: #f9fafb;
+  --color-editor-line: #e6e9eb;
+  --color-vermilion: #9b4a52;
+  --color-vermilion-2: #7d353d;
+  --color-mustard: #9a7b2e;
+  --color-surface: #eef0f1;
+  --color-surface-2: #e3e6e8;
+  --color-surface-3: #c9ced2;
+  --color-brand: #9b4a52;
+  --color-brand-light: #b76a72;
+  --color-brand-dark: #7d353d;
+  /* No newsprint browning on a cool ground — foxing goes grey. */
+  --foxing-base: #6b727a;
+}
+
+/* Broadsheet — near-white, maximum contrast, minimum tint. */
+[data-theme="broadsheet"] {
+  --color-paper: #ffffff;
+  --color-paper-2: #f4f4f4;
+  --color-paper-3: #c4c4c4;
+  --color-paper-soft: #fafafa;
+  --color-ink: #111111;
+  --color-ink-light: #333333;
+  --color-ink-muted: #5c5c5c;
+  --color-editor-bg: #ffffff;
+  --color-editor-line: #ececec;
+  --color-vermilion: #b3121a;
+  --color-vermilion-2: #8c0d14;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f4f4;
+  --color-surface-3: #c4c4c4;
+  --color-brand: #b3121a;
+  --color-brand-light: #d43c43;
+  --color-brand-dark: #8c0d14;
+  /* Deliberately flat: the point of this preset is an untinted page. */
+  --grain-1: transparent;
+  --grain-2: transparent;
+  --grain-3: transparent;
+  --foxing-base: transparent;
+}
+
+/* Nightpress — the composing room after hours. */
+[data-theme="nightpress"] {
+  --color-paper: #191714;
+  --color-paper-2: #211e1a;
+  --color-paper-3: #3b3630;
+  --color-paper-soft: #252119;
+  --color-ink: #ece4d4;
+  --color-ink-light: #c4bbab;
+  --color-ink-muted: #8e8577;
+  --color-editor-bg: #201d18;
+  --color-editor-line: #2e2a23;
+  --color-vermilion: #e2686c;
+  --color-vermilion-2: #c14d52;
+  --color-periwinkle: #8b97dc;
+  --color-sage: #a8b775;
+  --color-mustard: #e0b545;
+  --color-blush: #e8a598;
+  --color-cobalt: #7396c9;
+  --color-accent-green: #8fb069;
+  --color-accent-amber: #d6a53a;
+  --color-accent-red: #e2686c;
+  --color-accent-blue: #7396c9;
+  --color-surface: #191714;
+  --color-surface-2: #211e1a;
+  --color-surface-3: #3b3630;
+  --color-brand: #e2686c;
+  --color-brand-light: #ef8b8e;
+  --color-brand-dark: #c14d52;
+  --color-persona-devil: #e2686c;
+  --color-persona-angel: #a8b775;
+  --color-persona-scholar: #8b97dc;
+  --color-persona-editor: #e0b545;
+  --color-persona-reader: #7396c9;
+  /*
+   * Every texture is mixed from `--color-ink`, which is now the *light*
+   * value — so grain and drop shadows would glow instead of darken. Point
+   * them at black, and turn the white letterpress emboss into a faint rule
+   * highlight, which is what a raised edge looks like on a dark ground.
+   */
+  --grain-1: color-mix(in srgb, #000000 18%, transparent);
+  --grain-2: color-mix(in srgb, #000000 14%, transparent);
+  --grain-3: color-mix(in srgb, #000000 10%, transparent);
+  --emboss: var(--color-paper-3);
+  --foxing-base: #c99a5b;
+  --shade: #000000;
+}
+
 /* ── Page foundation ─────────────────────────────────────── */
 * {
   scrollbar-width: thin;
@@ -85,17 +254,17 @@ body {
   background-image:
     radial-gradient(
       circle at 25% 35%,
-      rgba(31, 27, 22, 0.025) 0,
+      var(--grain-1) 0,
       transparent 1px
     ),
     radial-gradient(
       circle at 75% 65%,
-      rgba(31, 27, 22, 0.02) 0,
+      var(--grain-2) 0,
       transparent 1px
     ),
     radial-gradient(
       circle at 45% 85%,
-      rgba(31, 27, 22, 0.015) 0,
+      var(--grain-3) 0,
       transparent 1px
     );
   background-size:
@@ -115,7 +284,7 @@ body {
  * the layout sliders moves the guides. Painted as the page's own background
  * so they always sit behind the text without any z-index juggling. */
 .page-canvas.show-margin-guides {
-  --guide: rgba(193, 39, 45, 0.28);
+  --guide: color-mix(in srgb, var(--color-vermilion) 28%, transparent);
   background-image:
     linear-gradient(var(--guide), var(--guide)),
     linear-gradient(var(--guide), var(--guide)),
@@ -166,8 +335,8 @@ body {
   background: var(--color-paper);
   border: 1px solid var(--color-paper-3);
   box-shadow:
-    0 1px 0 rgba(31, 27, 22, 0.04),
-    0 18px 34px -22px rgba(31, 27, 22, 0.35);
+    0 1px 0 color-mix(in srgb, var(--shade) 4%, transparent),
+    0 18px 34px -22px color-mix(in srgb, var(--shade) 35%, transparent);
 }
 
 .page-canvas.is-paginated {
@@ -287,7 +456,7 @@ body {
   height: 1.4rem;
   border-radius: 999px;
   border: 2px solid transparent;
-  box-shadow: inset 0 0 0 1px rgba(31, 27, 22, 0.14);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--shade) 14%, transparent);
   cursor: pointer;
   transition:
     transform 0.1s,
@@ -387,7 +556,7 @@ body {
   letter-spacing: 0.22em;
   text-transform: uppercase;
   transform: rotate(-3deg);
-  background: rgba(193, 39, 45, 0.04);
+  background: color-mix(in srgb, var(--color-vermilion) 4%, transparent);
   border-radius: 2px;
 }
 
@@ -398,13 +567,13 @@ body {
     to bottom,
     transparent 0,
     transparent 27px,
-    rgba(92, 107, 192, 0.18) 27px,
-    rgba(92, 107, 192, 0.18) 28px
+    color-mix(in srgb, var(--color-periwinkle) 18%, transparent) 27px,
+    color-mix(in srgb, var(--color-periwinkle) 18%, transparent) 28px
   );
   border: 1px solid var(--color-paper-3);
   box-shadow:
-    0 1px 0 rgba(31, 27, 22, 0.04),
-    0 6px 14px -10px rgba(31, 27, 22, 0.18);
+    0 1px 0 color-mix(in srgb, var(--shade) 4%, transparent),
+    0 6px 14px -10px color-mix(in srgb, var(--shade) 18%, transparent);
   position: relative;
 }
 .index-card::before {
@@ -424,9 +593,9 @@ body {
   background: var(--color-paper-soft);
   border: 1px solid var(--color-paper-3);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 14px 32px -22px rgba(31, 27, 22, 0.4),
-    0 2px 0 rgba(31, 27, 22, 0.05);
+    0 1px 0 color-mix(in srgb, var(--emboss) 60%, transparent) inset,
+    0 14px 32px -22px color-mix(in srgb, var(--shade) 40%, transparent),
+    0 2px 0 color-mix(in srgb, var(--shade) 5%, transparent);
 }
 
 /* ── Tiptap manuscript page ──────────────────────────────── */
@@ -450,11 +619,22 @@ body {
   -webkit-hyphens: auto;
 }
 
-/* Drop cap on the very first paragraph — the magazine touch */
+/* Drop cap on the very first paragraph — the magazine touch.
+ *
+ * `::first-letter` beats the inline `font-family` / `font-size` that the
+ * type controls write onto the surrounding span, so anything hard-coded
+ * here is a rule the writer cannot override. Setting a manuscript in
+ * Special Elite used to leave its most prominent glyph in Fraunces.
+ *
+ * `font-family: inherit` puts the letter back under the writer's control.
+ * The size stays proportional — a drop cap that ignored the type scale
+ * would be worse — but it is bounded: 4.2em of 36pt is ~200px, which
+ * overflows the sheet. The cap sits just above 4.2em of the default 18px
+ * body, so the house look is unchanged until the writer goes large. */
 .twyne-editor .ProseMirror > p:first-of-type::first-letter {
-  font-family: var(--font-display);
+  font-family: inherit;
   font-weight: 700;
-  font-size: 4.2em;
+  font-size: min(4.2em, 5rem);
   float: left;
   line-height: 0.85;
   margin: 0.08em 0.12em -0.05em 0;
@@ -528,7 +708,7 @@ body {
   );
   text-underline-offset: 0.14em;
   text-decoration-skip-ink: none;
-  background: linear-gradient(transparent 68%, rgba(44, 74, 124, 0.12) 68%);
+  background: linear-gradient(transparent 68%, color-mix(in srgb, var(--color-cobalt) 12%, transparent) 68%);
   cursor: pointer;
   transition:
     color 120ms ease,
@@ -542,7 +722,7 @@ body {
 .twyne-editor .ProseMirror a.editor-link:focus-visible {
   color: var(--color-vermilion);
   text-decoration-color: var(--color-vermilion);
-  background: linear-gradient(transparent 58%, rgba(193, 39, 45, 0.16) 58%);
+  background: linear-gradient(transparent 58%, color-mix(in srgb, var(--color-vermilion) 16%, transparent) 58%);
 }
 
 /* Checklists — task list with editorial checkboxes */
@@ -643,7 +823,7 @@ body {
   border: 6px solid white;
   box-shadow:
     0 1px 0 var(--color-paper-3),
-    0 18px 30px -18px rgba(31, 27, 22, 0.45);
+    0 18px 30px -18px color-mix(in srgb, var(--shade) 45%, transparent);
   margin: 1.4em auto;
   display: block;
 }
@@ -751,7 +931,7 @@ body {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(193, 39, 45, 0.08);
+  background: color-mix(in srgb, var(--color-vermilion) 8%, transparent);
   pointer-events: none;
 }
 
@@ -801,7 +981,7 @@ body {
 /* The default highlighter: a marker stroke across the lower two-fifths,
  * rather than a filled block. */
 .twyne-editor .ProseMirror mark {
-  background: linear-gradient(transparent 60%, rgba(212, 160, 23, 0.45) 60%);
+  background: linear-gradient(transparent 60%, color-mix(in srgb, var(--color-mustard) 45%, transparent) 60%);
   padding: 0;
   border-radius: 0;
 }
@@ -862,14 +1042,14 @@ body {
 
 /* Citation: a hot-pencil underline */
 .twyne-editor .ProseMirror .citation-mark {
-  background-color: rgba(92, 107, 192, 0.1);
+  background-color: color-mix(in srgb, var(--color-periwinkle) 10%, transparent);
   border-bottom: 2px dotted var(--color-periwinkle);
   cursor: pointer;
 }
 
 /* Comment: marginalia highlight */
 .twyne-editor .ProseMirror .comment-mark {
-  background-color: rgba(212, 160, 23, 0.18);
+  background-color: color-mix(in srgb, var(--color-mustard) 18%, transparent);
   border-bottom: 2px solid var(--color-mustard);
   cursor: pointer;
 }
@@ -883,7 +1063,7 @@ body {
 .drag-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(193, 39, 45, 0.07);
+  background: color-mix(in srgb, var(--color-vermilion) 7%, transparent);
   border: 2px dashed var(--color-vermilion);
   z-index: var(--z-overlay);
   display: flex;
@@ -971,7 +1151,7 @@ body {
 .btn-press:hover {
   background: var(--color-vermilion-2);
   border-color: var(--color-vermilion-2);
-  box-shadow: 0 4px 14px -8px rgba(156, 26, 31, 0.6);
+  box-shadow: 0 4px 14px -8px color-mix(in srgb, var(--color-vermilion-2) 60%, transparent);
 }
 .btn-press:active {
   transform: translateY(1px) scale(0.98);
@@ -1001,7 +1181,7 @@ body {
 .btn-paper:hover {
   background: var(--color-paper-2);
   border-color: var(--color-ink-muted);
-  box-shadow: 0 3px 10px -6px rgba(31, 27, 22, 0.25);
+  box-shadow: 0 3px 10px -6px color-mix(in srgb, var(--shade) 25%, transparent);
 }
 .btn-paper:active {
   transform: translateY(1px);
@@ -1071,6 +1251,44 @@ body {
   outline-offset: -2px;
 }
 
+/* ─────────────────────────────────────────────────────────────
+ * Compositor's stick, on a narrow screen
+ *
+ * The toolbar carries around forty controls in seven groups. Left
+ * to wrap, that is six stacked rows on a phone — roughly a third
+ * of the viewport, in an app whose entire product is vertical
+ * space for prose. Below `sm` it becomes one horizontally
+ * scrolling row instead.
+ *
+ * Groups never split or squash: `flex: none` keeps each control
+ * at its natural width so a scroll never lands mid-group, and
+ * scroll-snap parks the strip on a group boundary. The scrollbar
+ * is deliberately left visible — it is the affordance, and the
+ * one thing the floating table toolbar was missing when writers
+ * could not find "Delete table".
+ * ───────────────────────────────────────────────────────────── */
+.twyne-toolbar > * {
+  flex: none;
+}
+
+@media (max-width: 639px) {
+  .twyne-toolbar {
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-paper-3) transparent;
+  }
+  .twyne-toolbar > * {
+    scroll-snap-align: start;
+  }
+  /* Touch targets. 0.25rem of padding is fine for a mouse and not for a
+     thumb; this brings each control to a 34px box without changing the
+     desktop metrics above. */
+  .twyne-toolbar .tool-btn {
+    padding: 0.4rem 0.55rem;
+  }
+}
+
 /* Editorial form controls — shared input vocabulary */
 .field-label {
   display: block;
@@ -1108,7 +1326,7 @@ body {
 .error-slip {
   padding: 0.6rem 0.8rem;
   border: 1px solid var(--color-vermilion);
-  background: rgba(193, 39, 45, 0.05);
+  background: color-mix(in srgb, var(--color-vermilion) 5%, transparent);
   border-radius: 2px;
   color: var(--color-vermilion-2);
   font-family: var(--font-serif);
@@ -1123,15 +1341,20 @@ body {
   background:
     radial-gradient(
       circle at top left,
-      rgba(193, 39, 45, 0.08),
+      color-mix(in srgb, var(--color-vermilion) 8%, transparent),
       transparent 26%
     ),
     radial-gradient(
       circle at 82% 18%,
-      rgba(92, 107, 192, 0.08),
+      color-mix(in srgb, var(--color-periwinkle) 8%, transparent),
       transparent 18%
     ),
-    linear-gradient(180deg, #f7f1e2 0%, #f4ecd8 34%, #f2e7cf 100%);
+    linear-gradient(
+      180deg,
+      var(--color-paper-soft) 0%,
+      var(--color-paper) 34%,
+      var(--color-paper-2) 100%
+    );
 }
 
 .landing-page::before {
@@ -1142,17 +1365,17 @@ body {
   background-image:
     radial-gradient(
       circle at 15% 20%,
-      rgba(31, 27, 22, 0.025) 0,
+      var(--grain-1) 0,
       transparent 1px
     ),
     radial-gradient(
       circle at 70% 40%,
-      rgba(31, 27, 22, 0.02) 0,
+      var(--grain-2) 0,
       transparent 1px
     ),
     radial-gradient(
       circle at 85% 78%,
-      rgba(31, 27, 22, 0.015) 0,
+      var(--grain-3) 0,
       transparent 1px
     );
   background-size:
@@ -1170,12 +1393,12 @@ body {
 }
 
 .landing-frame {
-  background: rgba(250, 243, 223, 0.7);
-  border: 1px solid rgba(122, 30, 34, 0.08);
+  background: color-mix(in srgb, var(--color-paper-soft) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-vermilion-2) 8%, transparent);
   border-radius: 28px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 40px 80px -52px rgba(31, 27, 22, 0.28);
+    0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent) inset,
+    0 40px 80px -52px color-mix(in srgb, var(--shade) 28%, transparent);
   backdrop-filter: blur(10px);
 }
 
@@ -1236,7 +1459,7 @@ body {
 .landing-button.secondary {
   background: transparent;
   color: var(--color-ink);
-  border-color: rgba(31, 27, 22, 0.28);
+  border-color: color-mix(in srgb, var(--color-ink) 28%, transparent);
 }
 
 .landing-chip {
@@ -1245,8 +1468,8 @@ body {
   gap: 0.4rem;
   padding: 0.4rem 0.85rem;
   border-radius: 999px;
-  border: 1px solid rgba(31, 27, 22, 0.1);
-  background: rgba(250, 243, 223, 0.55);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 10%, transparent);
+  background: color-mix(in srgb, var(--color-paper-soft) 55%, transparent);
   font-family: var(--font-typewriter);
   font-size: 0.64rem;
   letter-spacing: 0.2em;
@@ -1261,50 +1484,50 @@ body {
 }
 
 .landing-feature-card {
-  background: rgba(250, 243, 223, 0.78);
-  border: 1px solid rgba(31, 27, 22, 0.06);
+  background: color-mix(in srgb, var(--color-paper-soft) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 6%, transparent);
   border-radius: 22px;
-  box-shadow: 0 18px 38px -28px rgba(31, 27, 22, 0.22);
+  box-shadow: 0 18px 38px -28px color-mix(in srgb, var(--shade) 22%, transparent);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 .landing-feature-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 26px 48px -30px rgba(31, 27, 22, 0.3);
+  box-shadow: 0 26px 48px -30px color-mix(in srgb, var(--shade) 30%, transparent);
 }
 
 .landing-preview {
   background:
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.82),
-      rgba(245, 236, 216, 0.95)
+      color-mix(in srgb, var(--emboss) 82%, transparent),
+      color-mix(in srgb, var(--color-paper) 95%, transparent)
     ),
     repeating-linear-gradient(
       to bottom,
       transparent 0,
       transparent 29px,
-      rgba(92, 107, 192, 0.12) 29px,
-      rgba(92, 107, 192, 0.12) 30px
+      color-mix(in srgb, var(--color-periwinkle) 12%, transparent) 29px,
+      color-mix(in srgb, var(--color-periwinkle) 12%, transparent) 30px
     );
-  border: 1px solid rgba(31, 27, 22, 0.08);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
   border-radius: 20px;
   box-shadow:
-    0 2px 0 rgba(255, 255, 255, 0.6) inset,
-    0 44px 80px -48px rgba(31, 27, 22, 0.34);
+    0 2px 0 color-mix(in srgb, var(--emboss) 60%, transparent) inset,
+    0 44px 80px -48px color-mix(in srgb, var(--shade) 34%, transparent);
 }
 
 .landing-browser-bar {
   height: 2.2rem;
-  border-bottom: 1px solid rgba(31, 27, 22, 0.08);
-  background: rgba(248, 241, 226, 0.7);
+  border-bottom: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
+  background: color-mix(in srgb, var(--color-paper-soft) 70%, transparent);
 }
 
 .landing-sidebar-card,
 .landing-board-card {
-  background: rgba(250, 243, 223, 0.7);
-  border: 1px solid rgba(31, 27, 22, 0.06);
+  background: color-mix(in srgb, var(--color-paper-soft) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 6%, transparent);
   border-radius: 14px;
 }
 
@@ -1348,8 +1571,8 @@ body {
     color-mix(in srgb, var(--note-color) 45%, var(--color-paper-3));
   border-radius: 2px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 18px 36px -20px rgba(31, 27, 22, 0.5);
+    0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent) inset,
+    0 18px 36px -20px color-mix(in srgb, var(--shade) 50%, transparent);
   animation: persona-note-pop 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @keyframes persona-note-pop {
@@ -1442,8 +1665,8 @@ body {
     color-mix(in srgb, var(--suggestion-color) 45%, var(--color-paper-3));
   border-radius: 2px;
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 18px 36px -20px rgba(31, 27, 22, 0.5);
+    0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent) inset,
+    0 18px 36px -20px color-mix(in srgb, var(--shade) 50%, transparent);
   animation: persona-note-pop 0.18s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -1460,7 +1683,7 @@ body {
 .approval-stamp-overlay img {
   animation: stamp-thunk 1.2s cubic-bezier(0.18, 1.4, 0.4, 1) forwards;
   transform-origin: center;
-  filter: drop-shadow(0 8px 18px rgba(139, 47, 36, 0.35));
+  filter: drop-shadow(0 8px 18px color-mix(in srgb, var(--color-vermilion-2) 35%, transparent));
 }
 @keyframes stamp-thunk {
   0% {
@@ -1574,9 +1797,9 @@ body {
   max-width: 15.5rem;
   padding: 0.6rem 0.8rem;
   background: var(--color-paper-soft);
-  border: 1px solid rgba(31, 27, 22, 0.2);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
   border-radius: 2px;
-  box-shadow: 0 14px 28px -18px rgba(31, 27, 22, 0.5);
+  box-shadow: 0 14px 28px -18px color-mix(in srgb, var(--shade) 50%, transparent);
 }
 .landing-annotation .tag {
   font-family: var(--font-typewriter);
@@ -1635,48 +1858,53 @@ body {
  * Paper primitives — shared across landing variants
  *   .paper-sheet      : aged newsprint with grain + foxing
  *   .paper-foxed      : adds little browned spots
- *   .paper-deckle     : torn/deckle bottom edge
  *   .paper-rule       : thin double rule, ink
  *   .ink-bleed        : letterpress-style soft ink halo
  *   .stamp-tilt       : rubber-stamp rotation utility
  * ───────────────────────────────────────────────────────────── */
+.stamp-tilt {
+  transform: rotate(-6deg);
+}
+.stamp-tilt-r {
+  transform: rotate(4deg);
+}
 .paper-sheet {
   position: relative;
-  background-color: #f5ecd6;
+  background-color: var(--color-paper);
   background-image:
     radial-gradient(
       circle at 18% 22%,
-      rgba(122, 84, 38, 0.06) 0,
+      color-mix(in srgb, var(--foxing-base) 6%, transparent) 0,
       transparent 38%
     ),
     radial-gradient(
       circle at 82% 78%,
-      rgba(122, 84, 38, 0.05) 0,
+      color-mix(in srgb, var(--foxing-base) 5%, transparent) 0,
       transparent 42%
     ),
     radial-gradient(
       circle at 50% 50%,
-      rgba(255, 248, 220, 0.6) 0,
+      color-mix(in srgb, var(--color-paper-soft) 60%, transparent) 0,
       transparent 60%
     ),
     repeating-linear-gradient(
       135deg,
-      rgba(31, 27, 22, 0.018) 0 2px,
+      color-mix(in srgb, var(--color-ink) 1.8%, transparent) 0 2px,
       transparent 2px 6px
     ),
     radial-gradient(
       circle at 30% 40%,
-      rgba(31, 27, 22, 0.04) 0 1px,
+      color-mix(in srgb, var(--color-ink) 4%, transparent) 0 1px,
       transparent 1.4px
     ),
     radial-gradient(
       circle at 70% 60%,
-      rgba(31, 27, 22, 0.035) 0 1px,
+      color-mix(in srgb, var(--color-ink) 3.5%, transparent) 0 1px,
       transparent 1.4px
     ),
     radial-gradient(
       circle at 15% 85%,
-      rgba(31, 27, 22, 0.03) 0 1px,
+      color-mix(in srgb, var(--color-ink) 3%, transparent) 0 1px,
       transparent 1.4px
     );
   background-size:
@@ -1688,8 +1916,8 @@ body {
     7px 7px,
     9px 9px;
   box-shadow:
-    inset 0 0 60px rgba(122, 84, 38, 0.08),
-    inset 0 0 0 1px rgba(31, 27, 22, 0.04);
+    inset 0 0 60px color-mix(in srgb, var(--foxing-base) 8%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, var(--shade) 4%, transparent);
 }
 .paper-foxed::after {
   content: "";
@@ -1699,123 +1927,35 @@ body {
   background-image:
     radial-gradient(
       circle at 12% 18%,
-      rgba(140, 90, 36, 0.18) 0 1.2px,
+      color-mix(in srgb, var(--foxing-base) 18%, transparent) 0 1.2px,
       transparent 2.5px
     ),
     radial-gradient(
       circle at 88% 32%,
-      rgba(140, 90, 36, 0.16) 0 0.9px,
+      color-mix(in srgb, var(--foxing-base) 16%, transparent) 0 0.9px,
       transparent 2px
     ),
     radial-gradient(
       circle at 24% 78%,
-      rgba(140, 90, 36, 0.14) 0 1.4px,
+      color-mix(in srgb, var(--foxing-base) 14%, transparent) 0 1.4px,
       transparent 2.8px
     ),
     radial-gradient(
       circle at 76% 88%,
-      rgba(140, 90, 36, 0.18) 0 1px,
+      color-mix(in srgb, var(--foxing-base) 18%, transparent) 0 1px,
       transparent 2.2px
     ),
     radial-gradient(
       circle at 50% 50%,
-      rgba(140, 90, 36, 0.12) 0 0.8px,
+      color-mix(in srgb, var(--foxing-base) 12%, transparent) 0 0.8px,
       transparent 2px
     );
   opacity: 0.7;
   mix-blend-mode: multiply;
 }
-.paper-deckle {
-  --deckle-color: #f5ecd6;
-  position: relative;
-}
-.paper-deckle::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -10px;
-  height: 14px;
-  background:
-    radial-gradient(circle at 5% 0, var(--deckle-color) 6px, transparent 7px) 0
-      0/14px 14px repeat-x,
-    radial-gradient(circle at 50% 6px, var(--deckle-color) 8px, transparent 9px)
-      7px 0/22px 14px repeat-x;
-  filter: drop-shadow(0 2px 1px rgba(31, 27, 22, 0.08));
-}
-.paper-rule {
-  border: 0;
-  height: 5px;
-  background: linear-gradient(
-    to bottom,
-    var(--color-ink) 0 1px,
-    transparent 1px 3px,
-    var(--color-ink) 3px 4px,
-    transparent 4px
-  );
-  opacity: 0.65;
-}
-.paper-rule.thin {
-  height: 1px;
-  background: var(--color-ink);
-  opacity: 0.35;
-}
-.ink-bleed {
-  text-shadow:
-    0 0 0.4px currentColor,
-    0.3px 0.3px 0 rgba(31, 27, 22, 0.18),
-    -0.2px -0.2px 0 rgba(31, 27, 22, 0.08);
-}
-.stamp-tilt {
-  transform: rotate(-6deg);
-}
-.stamp-tilt-r {
-  transform: rotate(4deg);
-}
-
-/* Halftone — old printed-image dot pattern */
-.halftone {
-  background-image: radial-gradient(
-    circle,
-    rgba(31, 27, 22, 0.55) 0 1px,
-    transparent 1.4px
-  );
-  background-size: 4px 4px;
-}
-
-/* Variant switcher bar (shown above the landing) */
-.variant-bar {
-  position: fixed;
-  top: 12px;
-  right: 12px;
-  z-index: 100;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px;
-  border-radius: 999px;
-  background: rgba(245, 236, 214, 0.92);
-  border: 1px solid rgba(31, 27, 22, 0.12);
-  box-shadow: 0 12px 30px -18px rgba(31, 27, 22, 0.4);
-  font-family: var(--font-typewriter);
-  font-size: 0.65rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-}
-.variant-bar a {
-  padding: 6px 12px;
-  border-radius: 999px;
-  color: var(--color-ink-muted);
-  text-decoration: none;
-}
-.variant-bar a.active {
-  background: var(--color-ink);
-  color: var(--color-paper);
-}
-
 /* ─── Variant A — Broadsheet ─────────────────────────────── */
 .broadsheet {
-  background-color: #f5ecd6;
+  background-color: var(--color-paper);
   min-height: 100vh;
 }
 .broadsheet-page {
@@ -1885,7 +2025,7 @@ body {
 .broadsheet-cols {
   column-count: 3;
   column-gap: 2.25rem;
-  column-rule: 1px solid rgba(31, 27, 22, 0.18);
+  column-rule: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
   font-family: var(--font-serif);
   font-size: 1rem;
   line-height: 1.7;
@@ -1973,322 +2113,6 @@ body {
   border: 1px solid var(--color-ink);
 }
 
-/* ─── Variant B — Letterpress Quarterly ───────────────────── */
-.quarterly {
-  min-height: 100vh;
-  background: radial-gradient(
-    ellipse at top,
-    #f8efd9 0%,
-    #efe3c4 60%,
-    #e6d8b3 100%
-  );
-  padding: 3rem 1rem 5rem;
-}
-.quarterly-cover {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 4.5rem 3rem 5rem;
-  text-align: center;
-  position: relative;
-  border: 1px solid rgba(31, 27, 22, 0.18);
-  background: rgba(248, 240, 218, 0.85);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 60px 100px -60px rgba(31, 27, 22, 0.5);
-}
-.quarterly-cover::before {
-  content: "";
-  position: absolute;
-  inset: 16px;
-  border: 1px solid rgba(31, 27, 22, 0.22);
-  pointer-events: none;
-}
-.quarterly-edition {
-  font-family: var(--font-typewriter);
-  font-size: 0.75rem;
-  letter-spacing: 0.36em;
-  text-transform: uppercase;
-  color: var(--color-vermilion);
-  margin: 0;
-}
-.quarterly-title {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-style: italic;
-  font-size: clamp(3.5rem, 8vw, 6rem);
-  line-height: 0.9;
-  letter-spacing: -0.02em;
-  color: var(--color-ink);
-  margin: 1rem 0 0.4rem;
-}
-.quarterly-subtitle {
-  font-family: var(--font-display);
-  font-weight: 400;
-  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
-  line-height: 1.25;
-  color: var(--color-ink-light);
-  margin: 0.5rem auto 0;
-  max-width: 28rem;
-}
-.quarterly-rule {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  margin: 2rem 0;
-  color: var(--color-vermilion);
-}
-.quarterly-rule .line {
-  flex: 0 0 60px;
-  height: 1px;
-  background: var(--color-ink);
-}
-.quarterly-rule .ornament {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
-}
-.quarterly-deck {
-  font-family: var(--font-serif);
-  font-size: 1.05rem;
-  line-height: 1.75;
-  color: var(--color-ink-light);
-  max-width: 32rem;
-  margin: 0 auto;
-}
-.quarterly-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2.25rem;
-}
-.quarterly-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.95rem 1.6rem;
-  font-family: var(--font-typewriter);
-  font-size: 0.7rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  border: 1px solid var(--color-ink);
-  background: var(--color-ink);
-  color: var(--color-paper);
-  cursor: pointer;
-}
-.quarterly-button.ghost {
-  background: transparent;
-  color: var(--color-ink);
-}
-.quarterly-button:hover {
-  background: var(--color-vermilion);
-  border-color: var(--color-vermilion);
-  color: var(--color-paper);
-}
-.quarterly-section {
-  max-width: 720px;
-  margin: 4rem auto 0;
-  text-align: center;
-}
-.quarterly-section h2 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(1.6rem, 3vw, 2.25rem);
-  letter-spacing: -0.01em;
-  color: var(--color-ink);
-  margin: 0 0 0.5rem;
-}
-.quarterly-section .kicker {
-  font-family: var(--font-typewriter);
-  font-size: 0.7rem;
-  letter-spacing: 0.34em;
-  text-transform: uppercase;
-  color: var(--color-vermilion);
-  margin-bottom: 0.5rem;
-}
-.quarterly-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 2rem 2.5rem;
-  margin-top: 3rem;
-  text-align: left;
-}
-.quarterly-entry {
-  position: relative;
-  padding-left: 2.5rem;
-}
-.quarterly-entry .numeral {
-  position: absolute;
-  left: 0;
-  top: -0.1rem;
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  color: var(--color-vermilion);
-  font-style: italic;
-}
-.quarterly-entry h3 {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 1.2rem;
-  margin: 0 0 0.35rem;
-  color: var(--color-ink);
-}
-.quarterly-entry p {
-  font-family: var(--font-serif);
-  font-size: 0.92rem;
-  line-height: 1.65;
-  color: var(--color-ink-light);
-  margin: 0;
-}
-
-/* ─── Variant C — Telegram Gazette ────────────────────────── */
-.telegram {
-  min-height: 100vh;
-  background: #f4ecd8;
-  padding: 2.5rem 1.5rem 4rem;
-  font-family: var(--font-typewriter);
-}
-.telegram-sheet {
-  max-width: 760px;
-  margin: 0 auto;
-  background: #fbf4dc;
-  padding: 3rem 3rem 3.5rem;
-  border: 1px solid rgba(31, 27, 22, 0.22);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 30px 60px -40px rgba(31, 27, 22, 0.45);
-  position: relative;
-}
-.telegram-stamp {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
-  font-family: var(--font-typewriter);
-  font-size: 0.6rem;
-  letter-spacing: 0.3em;
-  border: 2px solid var(--color-vermilion);
-  color: var(--color-vermilion);
-  padding: 0.35rem 0.6rem;
-  text-transform: uppercase;
-  transform: rotate(-7deg);
-  background: rgba(193, 39, 45, 0.04);
-}
-.telegram-header {
-  text-align: center;
-  border-bottom: 2px solid var(--color-ink);
-  padding-bottom: 1rem;
-  margin-bottom: 1.5rem;
-}
-.telegram-header .from {
-  font-size: 0.65rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--color-ink-muted);
-}
-.telegram-header h1 {
-  font-family: var(--font-typewriter);
-  font-size: clamp(1.6rem, 3.5vw, 2.4rem);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  margin: 0.4rem 0 0;
-  color: var(--color-ink);
-}
-.telegram-meta {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem 1.5rem;
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--color-ink-muted);
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px dashed rgba(31, 27, 22, 0.3);
-}
-.telegram-meta strong {
-  display: block;
-  color: var(--color-ink);
-  font-weight: 700;
-  font-size: 0.8rem;
-  letter-spacing: 0.14em;
-  margin-top: 0.15rem;
-}
-.telegram-body {
-  font-family: var(--font-typewriter);
-  font-size: 1.05rem;
-  line-height: 1.85;
-  color: var(--color-ink);
-  letter-spacing: 0.005em;
-}
-.telegram-body p {
-  margin: 0 0 1.25em;
-}
-.telegram-body p::before {
-  content: "";
-}
-.telegram-stop {
-  display: inline-block;
-  font-weight: 700;
-  letter-spacing: 0.24em;
-  color: var(--color-vermilion);
-  margin: 0 0.35em;
-}
-.telegram-list {
-  list-style: none;
-  margin: 1.5rem 0;
-  padding: 0;
-  display: grid;
-  gap: 0.6rem;
-}
-.telegram-list li {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 0.85rem;
-  font-size: 0.95rem;
-  letter-spacing: 0.01em;
-}
-.telegram-list .num {
-  color: var(--color-vermilion);
-  font-weight: 700;
-}
-.telegram-actions {
-  margin-top: 2.25rem;
-  padding-top: 1.25rem;
-  border-top: 2px solid var(--color-ink);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.85rem;
-  align-items: center;
-  justify-content: space-between;
-}
-.telegram-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.85rem 1.4rem;
-  font-family: var(--font-typewriter);
-  font-size: 0.7rem;
-  letter-spacing: 0.28em;
-  text-transform: uppercase;
-  background: var(--color-ink);
-  color: var(--color-paper);
-  border: 0;
-  cursor: pointer;
-}
-.telegram-button.ghost {
-  background: transparent;
-  color: var(--color-ink);
-  border: 1px dashed var(--color-ink);
-}
-.telegram-signoff {
-  text-align: right;
-  font-size: 0.68rem;
-  letter-spacing: 0.32em;
-  text-transform: uppercase;
-  color: var(--color-ink-muted);
-  margin-top: 1.5rem;
-}
-
 /* ── Reduced motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .press,
@@ -2323,8 +2147,8 @@ body {
   border-radius: 4px;
   background: var(--color-editor-bg);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.6) inset,
-    0 30px 80px -45px rgba(31, 27, 22, 0.4);
+    0 1px 0 color-mix(in srgb, var(--emboss) 60%, transparent) inset,
+    0 30px 80px -45px color-mix(in srgb, var(--shade) 40%, transparent);
   overflow: hidden;
 }
 /* Masthead strip — the editor chrome, with a centred printer's rule. */
@@ -2470,7 +2294,7 @@ body {
   }
   100% {
     text-shadow: 0.5px 0.5px 0px
-      color-mix(in srgb, var(--color-ink) 12%, transparent);
+      color-mix(in srgb, var(--shade) 12%, transparent);
   }
 }
 
@@ -2542,12 +2366,12 @@ body {
 .page-turn:hover {
   transform: translateY(-2px);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 8px 20px -12px rgba(31, 27, 22, 0.35);
+    0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent) inset,
+    0 8px 20px -12px color-mix(in srgb, var(--shade) 35%, transparent);
 }
 .page-turn:active {
   transform: translateY(0px);
-  box-shadow: 0 2px 8px -6px rgba(31, 27, 22, 0.2);
+  box-shadow: 0 2px 8px -6px color-mix(in srgb, var(--shade) 20%, transparent);
 }
 
 /* Blinking typewriter caret */
@@ -2870,12 +2694,12 @@ a {
    Override against the persona color by switching the code chip to a
    translucent ink and letting links pick up the inverse highlight. */
 .comment-markdown-on-color code {
-  background: rgba(244, 236, 216, 0.18);
+  background: color-mix(in srgb, var(--color-paper) 18%, transparent);
   color: var(--color-paper);
 }
 .comment-markdown-on-color a {
   color: var(--color-paper);
-  text-decoration-color: rgba(244, 236, 216, 0.6);
+  text-decoration-color: color-mix(in srgb, var(--color-paper) 60%, transparent);
 }
 
 /* ── The composer ─────────────────────────────────────────────────
@@ -2896,13 +2720,13 @@ a {
   transition:
     border-color 0.18s ease,
     box-shadow 0.18s ease;
-  box-shadow: 0 1px 2px rgba(31, 27, 22, 0.04);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--shade) 4%, transparent);
 }
 .composer:focus-within {
   border-color: var(--color-vermilion);
   box-shadow:
-    0 0 0 3px rgba(193, 39, 45, 0.12),
-    0 2px 10px -6px rgba(31, 27, 22, 0.35);
+    0 0 0 3px color-mix(in srgb, var(--color-vermilion) 12%, transparent),
+    0 2px 10px -6px color-mix(in srgb, var(--shade) 35%, transparent);
 }
 .composer[data-recording="true"] {
   border-color: var(--color-vermilion);
@@ -2970,7 +2794,7 @@ a {
 .composer-send:hover:not(:disabled) {
   background: var(--color-vermilion-2);
   border-color: var(--color-vermilion-2);
-  box-shadow: 0 4px 14px -8px rgba(156, 26, 31, 0.6);
+  box-shadow: 0 4px 14px -8px color-mix(in srgb, var(--color-vermilion-2) 60%, transparent);
 }
 .composer-send:active:not(:disabled) {
   transform: translateY(1px) scale(0.97);

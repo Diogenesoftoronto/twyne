@@ -28,11 +28,12 @@ import {
 import {
   activeMentionQuery,
   applyMention,
+  filterMentionables,
   mentionedIn,
   type Mentionable,
 } from "../../utils/mentions";
 import { renderMarkdown } from "../../utils/markdown";
-import { MentionDropdown } from "../ui/mention-dropdown";
+import { MentionDropdown, mentionOptionId } from "../ui/mention-dropdown";
 import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
 import { VoiceRecorder, type VoiceCapture } from "../ui/voice-recorder";
@@ -77,6 +78,8 @@ interface CommentsStore {
   mentionTarget: "new" | string | null;
   /** The partial name typed after "@". */
   mentionQuery: string;
+  /** Keyboard-highlighted candidate within the open dropdown. */
+  mentionIndex: number;
 }
 
 interface CommentsPanelProps {
@@ -91,6 +94,46 @@ interface CommentsPanelProps {
    * shared, and the @-mention flow picks them up with no further changes.
    */
   collaborators?: Mentionable[];
+}
+
+/** DOM id of the textarea a mention dropdown belongs to. */
+function mentionInputId(target: "new" | string): string {
+  return `margin-note-${target}`;
+}
+
+/** DOM id of the dropdown itself, for `aria-activedescendant`. */
+function mentionListId(target: "new" | string): string {
+  return `mention-list-${target}`;
+}
+
+/**
+ * Put the caret back where `applyMention` left it. The textarea's value is
+ * driven by the store, so the browser resets the caret to the end on
+ * re-render — we have to restore it on the next frame, once Qwik has
+ * flushed. Without this, tagging someone mid-sentence throws you to the end
+ * of the note.
+ */
+function restoreMentionCaret(target: "new" | string, caret: number): void {
+  if (typeof document === "undefined") return;
+  requestAnimationFrame(() => {
+    const el = document.getElementById(
+      mentionInputId(target),
+    ) as HTMLTextAreaElement | null;
+    if (!el) return;
+    el.focus();
+    el.setSelectionRange(caret, caret);
+  });
+}
+
+/**
+ * Should this blur close the mention dropdown? Clicking a suggestion blurs
+ * the textarea, and tearing the panel down at that moment is what used to
+ * swallow the selection — so ignore blurs that land inside the dropdown.
+ */
+function blurLeavesMentionUi(event: FocusEvent): boolean {
+  const next = event.relatedTarget;
+  if (!(next instanceof Element)) return true;
+  return !next.closest("[data-mention-dropdown]");
 }
 
 function commentProviderError(operation: string): AppError {
@@ -144,6 +187,7 @@ export const CommentsPanel = component$(
       ghostsOnly: false,
       mentionTarget: null,
       mentionQuery: "",
+      mentionIndex: 0,
     });
 
     // eslint-disable-next-line qwik/no-use-visible-task
@@ -506,30 +550,84 @@ export const CommentsPanel = component$(
         <div class="px-4 py-4 border-b border-[var(--color-paper-3)]">
           <div class="relative">
             <textarea
+              id={mentionInputId("new")}
               value={store.newCommentText}
               aria-label="New margin note"
+              role="combobox"
+              aria-expanded={store.mentionTarget === "new"}
+              aria-controls={mentionListId("new")}
+              aria-activedescendant={
+                store.mentionTarget === "new"
+                  ? mentionOptionId(
+                      mentionListId("new"),
+                      filterMentionables(mentionables, store.mentionQuery)[
+                        store.mentionIndex
+                      ]?.id ?? "",
+                    )
+                  : undefined
+              }
               onInput$={(e) => {
-                const value = (e.target as HTMLTextAreaElement).value;
-                store.newCommentText = value;
-                const q = activeMentionQuery(value);
+                const el = e.target as HTMLTextAreaElement;
+                store.newCommentText = el.value;
+                const q = activeMentionQuery(el.value, el.selectionStart);
                 if (q !== null) {
                   store.mentionTarget = "new";
                   store.mentionQuery = q;
+                  store.mentionIndex = 0;
                 } else if (store.mentionTarget === "new") {
                   store.mentionTarget = null;
                 }
               }}
               onKeyDown$={(e) => {
-                if (e.key === "Escape" && store.mentionTarget === "new") {
-                  store.mentionTarget = null;
-                  return;
+                const el = e.target as HTMLTextAreaElement;
+                if (store.mentionTarget === "new") {
+                  const candidates = filterMentionables(
+                    mentionables,
+                    store.mentionQuery,
+                  );
+                  if (e.key === "Escape") {
+                    store.mentionTarget = null;
+                    return;
+                  }
+                  if (candidates.length > 0) {
+                    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                      e.preventDefault();
+                      const step = e.key === "ArrowDown" ? 1 : -1;
+                      store.mentionIndex =
+                        (store.mentionIndex + step + candidates.length) %
+                        candidates.length;
+                      return;
+                    }
+                    // Plain Enter picks the highlighted name; Mod+Enter still
+                    // files the note, so the submit shortcut keeps working.
+                    if (
+                      (e.key === "Enter" && !e.metaKey && !e.ctrlKey) ||
+                      e.key === "Tab"
+                    ) {
+                      e.preventDefault();
+                      const item = candidates[store.mentionIndex];
+                      if (item) {
+                        const applied = applyMention(
+                          store.newCommentText,
+                          item.name,
+                          el.selectionStart,
+                        );
+                        store.newCommentText = applied.text;
+                        store.mentionTarget = null;
+                        restoreMentionCaret("new", applied.caret);
+                      }
+                      return;
+                    }
+                  }
                 }
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                   addComment();
                 }
               }}
-              onBlur$={() => {
-                if (store.mentionTarget === "new") store.mentionTarget = null;
+              onBlur$={(e) => {
+                if (store.mentionTarget === "new" && blurLeavesMentionUi(e)) {
+                  store.mentionTarget = null;
+                }
               }}
               placeholder={getCommentPlaceholder(brief)}
               class="w-full px-3 py-2 text-sm bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)] text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic"
@@ -538,15 +636,23 @@ export const CommentsPanel = component$(
             />
             {store.mentionTarget === "new" && (
               <MentionDropdown
+                id={mentionListId("new")}
                 items={mentionables}
                 query={store.mentionQuery}
+                activeIndex={store.mentionIndex}
                 size="md"
                 onSelect$={$((item: Mentionable) => {
-                  store.newCommentText = applyMention(
+                  const el = document.getElementById(
+                    mentionInputId("new"),
+                  ) as HTMLTextAreaElement | null;
+                  const applied = applyMention(
                     store.newCommentText,
                     item.name,
+                    el?.selectionStart ?? store.newCommentText.length,
                   );
+                  store.newCommentText = applied.text;
                   store.mentionTarget = null;
+                  restoreMentionCaret("new", applied.caret);
                 })}
               />
             )}
@@ -840,26 +946,84 @@ export const CommentsPanel = component$(
                   <div class="mt-2 space-y-2">
                     <div class="relative">
                       <textarea
+                        id={mentionInputId(comment.id)}
                         value={store.replyDrafts[comment.id] ?? ""}
                         aria-label="Reply to note"
+                        role="combobox"
+                        aria-expanded={store.mentionTarget === comment.id}
+                        aria-controls={mentionListId(comment.id)}
+                        aria-activedescendant={
+                          store.mentionTarget === comment.id
+                            ? mentionOptionId(
+                                mentionListId(comment.id),
+                                filterMentionables(
+                                  mentionables,
+                                  store.mentionQuery,
+                                )[store.mentionIndex]?.id ?? "",
+                              )
+                            : undefined
+                        }
                         onInput$={(e) => {
-                          const value = (e.target as HTMLTextAreaElement).value;
-                          store.replyDrafts[comment.id] = value;
-                          const q = activeMentionQuery(value);
+                          const el = e.target as HTMLTextAreaElement;
+                          store.replyDrafts[comment.id] = el.value;
+                          const q = activeMentionQuery(
+                            el.value,
+                            el.selectionStart,
+                          );
                           if (q !== null) {
                             store.mentionTarget = comment.id;
                             store.mentionQuery = q;
+                            store.mentionIndex = 0;
                           } else if (store.mentionTarget === comment.id) {
                             store.mentionTarget = null;
                           }
                         }}
                         onKeyDown$={(e) => {
-                          if (
-                            e.key === "Escape" &&
-                            store.mentionTarget === comment.id
-                          ) {
-                            store.mentionTarget = null;
-                            return;
+                          const el = e.target as HTMLTextAreaElement;
+                          if (store.mentionTarget === comment.id) {
+                            const candidates = filterMentionables(
+                              mentionables,
+                              store.mentionQuery,
+                            );
+                            if (e.key === "Escape") {
+                              store.mentionTarget = null;
+                              return;
+                            }
+                            if (candidates.length > 0) {
+                              if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                                e.preventDefault();
+                                const step = e.key === "ArrowDown" ? 1 : -1;
+                                store.mentionIndex =
+                                  (store.mentionIndex +
+                                    step +
+                                    candidates.length) %
+                                  candidates.length;
+                                return;
+                              }
+                              if (
+                                (e.key === "Enter" &&
+                                  !e.metaKey &&
+                                  !e.ctrlKey) ||
+                                e.key === "Tab"
+                              ) {
+                                e.preventDefault();
+                                const item = candidates[store.mentionIndex];
+                                if (item) {
+                                  const applied = applyMention(
+                                    store.replyDrafts[comment.id] ?? "",
+                                    item.name,
+                                    el.selectionStart,
+                                  );
+                                  store.replyDrafts[comment.id] = applied.text;
+                                  store.mentionTarget = null;
+                                  restoreMentionCaret(
+                                    comment.id,
+                                    applied.caret,
+                                  );
+                                }
+                                return;
+                              }
+                            }
                           }
                           if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                             void addReply(
@@ -868,9 +1032,13 @@ export const CommentsPanel = component$(
                             );
                           }
                         }}
-                        onBlur$={() => {
-                          if (store.mentionTarget === comment.id)
+                        onBlur$={(e) => {
+                          if (
+                            store.mentionTarget === comment.id &&
+                            blurLeavesMentionUi(e)
+                          ) {
                             store.mentionTarget = null;
+                          }
                         }}
                         placeholder="Annotate… (@ to tag an editor)"
                         class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
@@ -879,15 +1047,24 @@ export const CommentsPanel = component$(
                       />
                       {store.mentionTarget === comment.id && (
                         <MentionDropdown
+                          id={mentionListId(comment.id)}
                           items={mentionables}
                           query={store.mentionQuery}
+                          activeIndex={store.mentionIndex}
                           size="sm"
                           onSelect$={$((item: Mentionable) => {
-                            store.replyDrafts[comment.id] = applyMention(
-                              store.replyDrafts[comment.id] ?? "",
+                            const draft = store.replyDrafts[comment.id] ?? "";
+                            const el = document.getElementById(
+                              mentionInputId(comment.id),
+                            ) as HTMLTextAreaElement | null;
+                            const applied = applyMention(
+                              draft,
                               item.name,
+                              el?.selectionStart ?? draft.length,
                             );
+                            store.replyDrafts[comment.id] = applied.text;
                             store.mentionTarget = null;
+                            restoreMentionCaret(comment.id, applied.caret);
                           })}
                         />
                       )}

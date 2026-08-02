@@ -293,7 +293,7 @@ export const FindReplacePanel = component$<FindReplacePanelProps>((props) => {
         <p
           id="find-replace-error"
           role="alert"
-          style={{ margin: 0, color: "#9f2d20" }}
+          style={{ margin: 0, color: "var(--color-accent-red)" }}
         >
           {searchError.value}
         </p>

@@ -21,11 +21,16 @@ function levelFor(count: number): 0 | 1 | 2 | 3 | 4 {
   return 4;
 }
 
+/**
+ * A ramp from the paper rule up to full accent. Mixed rather than fixed so
+ * the heatmap re-inks itself with the active theme instead of staying a strip
+ * of warm orange on a cool or dark page.
+ */
 const LEVEL_COLORS = [
   "var(--color-paper-3)",
-  "#e8d5c4",
-  "#e0a97a",
-  "#d97b3f",
+  "color-mix(in srgb, var(--color-vermilion) 22%, var(--color-paper-3))",
+  "color-mix(in srgb, var(--color-vermilion) 48%, var(--color-paper-3))",
+  "color-mix(in srgb, var(--color-vermilion) 74%, var(--color-paper-3))",
   "var(--color-vermilion)",
 ];
 
