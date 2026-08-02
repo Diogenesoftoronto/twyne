@@ -3,7 +3,7 @@
   "checkpoint_id": "ee10437b180f",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 4,
+  "checkpoints_count": 5,
   "files_touched": [
     ".storybook/preview.ts",
     "convex/account.ts",
@@ -12,6 +12,7 @@
     "e2e/formatting.e2e.ts",
     "e2e/import.e2e.ts",
     "e2e/pagination.e2e.ts",
+    "src/components/citations/citations-panel.tsx",
     "src/components/comments/comments-panel.tsx",
     "src/components/editor/extensions/table-format.ts",
     "src/components/editor/find-replace-panel.tsx",
@@ -27,9 +28,13 @@
     "src/components/ui/mention-dropdown.tsx",
     "src/global.css",
     "src/root.tsx",
+    "src/routes/apparatus/index.tsx",
     "src/routes/editor/index.tsx",
     "src/routes/settings/index.tsx",
     "src/types/index.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/background-research.ts",
+    "src/utils/bibliography.ts",
     "src/utils/editor-commands.ts",
     "src/utils/exchange.ts",
     "src/utils/keybindings.ts",
@@ -53,13 +58,20 @@
       "compact_transcript": "/ee/10437b180f/1/transcript.jsonl",
       "content_hash": "/ee/10437b180f/1/content_hash.txt",
       "prompt": "/ee/10437b180f/1/prompt.txt"
+    },
+    {
+      "metadata": "/ee/10437b180f/2/metadata.json",
+      "transcript": "/ee/10437b180f/2/full.jsonl",
+      "compact_transcript": "/ee/10437b180f/2/transcript.jsonl",
+      "content_hash": "/ee/10437b180f/2/content_hash.txt",
+      "prompt": "/ee/10437b180f/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 555949,
+    "input_tokens": 816689,
     "cache_creation_tokens": 675077,
-    "cache_read_tokens": 115763029,
-    "output_tokens": 276909,
-    "api_call_count": 624
+    "cache_read_tokens": 121079125,
+    "output_tokens": 327108,
+    "api_call_count": 675
   }
 }
