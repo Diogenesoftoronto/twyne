@@ -46,6 +46,26 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_userId_folioId", ["userId", "folioId"]),
 
+  // Uploaded manuscript images. The editor stores the resolved URL in its
+  // document while this row preserves ownership and the underlying storage
+  // id so files can be looked up and deleted safely.
+  images: defineTable({
+    ownerId: v.string(),
+    folioId: v.string(),
+    storageId: v.id("_storage"),
+    contentType: v.union(
+      v.literal("image/gif"),
+      v.literal("image/jpeg"),
+      v.literal("image/png"),
+      v.literal("image/webp"),
+    ),
+    size: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_ownerId", ["ownerId"])
+    .index("by_ownerId_folioId", ["ownerId", "folioId"])
+    .index("by_storageId", ["storageId"]),
+
   // ── Per-day writing activity, for the public "days writing" heatmap on
   // the author profile page. Append-only-ish: one row per (userId, day),
   // upserted as the user writes. ──

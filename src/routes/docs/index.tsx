@@ -1,5 +1,9 @@
 import { component$, useStylesScoped$ } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { KeybindingList } from "../../components/editor/keybinding-list";
+import { keybindingList } from "../../utils/keybindings";
+
+const MANUAL_SHORTCUTS = keybindingList("mac");
 
 export default component$(() => {
   useStylesScoped$(`
@@ -168,8 +172,11 @@ export default component$(() => {
             <a href="#folios" class="toc-link">
               VIII. Folios, Export &amp; Share
             </a>
+            <a href="#manuscript-tools" class="toc-link">
+              IX. Manuscript Tools
+            </a>
             <a href="#shortcuts" class="toc-link">
-              IX. Keyboard Shortcuts
+              X. Keyboard Shortcuts
             </a>
           </div>
         </nav>
@@ -194,17 +201,33 @@ export default component$(() => {
             what success looks like, the editors have something to grip. Without
             it, even the cleverest feedback is fishing in the dark.
           </p>
-          <p class="doc-p">
-            The seven fields:
-          </p>
+          <p class="doc-p">The seven fields:</p>
           <ul class="doc-ul">
-            <li><strong>Working Title</strong> — A name the room can hold onto.</li>
-            <li><strong>Format</strong> — Essay, memo, chapter, dispatch, proposal…</li>
-            <li><strong>Audience</strong> — Name the actual reader, not a demographic.</li>
-            <li><strong>Goal</strong> — What should the piece accomplish?</li>
-            <li><strong>Tone</strong> — How should it feel, not just sound?</li>
-            <li><strong>Constraints</strong> — Sources to keep, jargon to avoid, anecdotes to protect.</li>
-            <li><strong>Success Signal</strong> — How will you know the draft has landed?</li>
+            <li>
+              <strong>Working Title</strong> — A name the room can hold onto.
+            </li>
+            <li>
+              <strong>Format</strong> — Essay, memo, chapter, dispatch,
+              proposal…
+            </li>
+            <li>
+              <strong>Audience</strong> — Name the actual reader, not a
+              demographic.
+            </li>
+            <li>
+              <strong>Goal</strong> — What should the piece accomplish?
+            </li>
+            <li>
+              <strong>Tone</strong> — How should it feel, not just sound?
+            </li>
+            <li>
+              <strong>Constraints</strong> — Sources to keep, jargon to avoid,
+              anecdotes to protect.
+            </li>
+            <li>
+              <strong>Success Signal</strong> — How will you know the draft has
+              landed?
+            </li>
           </ul>
           <div class="doc-callout">
             <p>
@@ -225,15 +248,15 @@ export default component$(() => {
           </p>
           <h2 class="doc-h2">The Room of Editors</h2>
           <p class="doc-lead">
-            Five resident voices. Each reads with a different lens. Together they
-            cover the ground a single editor can't.
+            Five resident voices. Each reads with a different lens. Together
+            they cover the ground a single editor can't.
           </p>
 
           <h3 class="doc-h3">Mlle. Sceptique — The Devil's Advocate</h3>
           <p class="doc-p">
             Hunts the unstated assumption, the soft claim, the argument that
-            quietly evades its strongest objection. When she speaks, listen — she
-            is testing whether your draft would survive a hostile reader.
+            quietly evades its strongest objection. When she speaks, listen —
+            she is testing whether your draft would survive a hostile reader.
           </p>
 
           <h3 class="doc-h3">Sœur Encourageante — The Patron of Strengths</h3>
@@ -252,9 +275,9 @@ export default component$(() => {
 
           <h3 class="doc-h3">M. Le Stylo — The Copy Chief</h3>
           <p class="doc-p">
-            Carries the blue pencil. Catches diction, rhythm, repetition, and any
-            sentence that does not earn its place. He is the one who will tell
-            you to cut your favourite line.
+            Carries the blue pencil. Catches diction, rhythm, repetition, and
+            any sentence that does not earn its place. He is the one who will
+            tell you to cut your favourite line.
           </p>
 
           <h3 class="doc-h3">Le Lecteur — The Target Reader</h3>
@@ -267,7 +290,10 @@ export default component$(() => {
           <div class="doc-callout">
             <p>
               <strong>Custom editors:</strong> Visit{" "}
-              <Link href="/personas" class="underline hover:text-[var(--color-vermilion)]">
+              <Link
+                href="/personas"
+                class="underline hover:text-[var(--color-vermilion)]"
+              >
                 the Room of Editors
               </Link>{" "}
               to add, edit, or rearrange your cast. Each editor needs a name, a
@@ -281,7 +307,10 @@ export default component$(() => {
             Each editor's voice is shaped by the model that reads for them. A
             careful, precise model makes Mme. Sceptique sharper. A warmer model
             makes Sœur Encourageante more generous. Go to{" "}
-            <Link href="/settings" class="underline hover:text-[var(--color-vermilion)]">
+            <Link
+              href="/settings"
+              class="underline hover:text-[var(--color-vermilion)]"
+            >
               Preferences
             </Link>{" "}
             to assign different models to different tasks — the room adapts.
@@ -308,19 +337,30 @@ export default component$(() => {
             a cold, honest picture of the draft's mechanical health.
           </p>
           <p class="doc-p">
-            The <strong>five judges</strong> are the same personas from the room,
-            but now they give a single integer score from 1 to 10 and a one-line
-            rationale. The rubric combines their scores with the static features
-            into an overall grade (A+ through F) and a short editorial note.
+            The <strong>five judges</strong> are the same personas from the
+            room, but now they give a single integer score from 1 to 10 and a
+            one-line rationale. The rubric combines their scores with the static
+            features into an overall grade (A+ through F) and a short editorial
+            note.
           </p>
-          <p class="doc-p">
-            Grading scale:
-          </p>
+          <p class="doc-p">Grading scale:</p>
           <ul class="doc-ul">
-            <li><strong class="text-[var(--color-accent-green)]">A range</strong> — Publishable or nearly so. Minor polish.</li>
-            <li><strong class="text-[var(--color-accent-blue)]">B range</strong> — Solid draft with clear, fixable issues.</li>
-            <li><strong class="text-[var(--color-accent-amber)]">C range</strong> — Doing the work but needs a real pass.</li>
-            <li><strong class="text-[var(--color-accent-red)]">D–F range</strong> — The important next pass is still ahead.</li>
+            <li>
+              <strong class="text-[var(--color-accent-green)]">A range</strong>{" "}
+              — Publishable or nearly so. Minor polish.
+            </li>
+            <li>
+              <strong class="text-[var(--color-accent-blue)]">B range</strong> —
+              Solid draft with clear, fixable issues.
+            </li>
+            <li>
+              <strong class="text-[var(--color-accent-amber)]">C range</strong>{" "}
+              — Doing the work but needs a real pass.
+            </li>
+            <li>
+              <strong class="text-[var(--color-accent-red)]">D–F range</strong>{" "}
+              — The important next pass is still ahead.
+            </li>
           </ul>
           <div class="doc-callout">
             <p>
@@ -371,8 +411,8 @@ export default component$(() => {
             prose.
           </p>
           <p class="doc-p">
-            The Apparatus has three jobs: find sources, save them, and cite them.
-            As you write, it detects DOIs, URLs, ISBNs, and author-year
+            The Apparatus has three jobs: find sources, save them, and cite
+            them. As you write, it detects DOIs, URLs, ISBNs, and author-year
             references automatically. You can also search for sources by query —
             the panel fetches a shortlist with title, author, publisher, and a
             snippet. Save what matters to your bibliography.
@@ -385,7 +425,10 @@ export default component$(() => {
           <div class="doc-callout">
             <p>
               The full Apparatus is available at{" "}
-              <Link href="/apparatus" class="underline hover:text-[var(--color-vermilion)]">
+              <Link
+                href="/apparatus"
+                class="underline hover:text-[var(--color-vermilion)]"
+              >
                 /apparatus
               </Link>
               . The right-panel citation tab shows a quick view of detected
@@ -409,7 +452,10 @@ export default component$(() => {
           </p>
           <p class="doc-p">
             <strong>Step 1: Add a provider.</strong> Go to{" "}
-            <Link href="/settings" class="underline hover:text-[var(--color-vermilion)]">
+            <Link
+              href="/settings"
+              class="underline hover:text-[var(--color-vermilion)]"
+            >
               Preferences
             </Link>{" "}
             and turn on "Bring Your Own Key." Add your OpenAI, Anthropic, or
@@ -420,17 +466,15 @@ export default component$(() => {
             <strong>Step 2: Pick models per feature.</strong> Not all tasks need
             the most expensive model. You might want Claude Sonnet for the full
             room convene (needs deep comprehension) and GPT-4o-mini for rubric
-            judges (simple scoring). The per-feature grid lets you assign exactly
-            that.
+            judges (simple scoring). The per-feature grid lets you assign
+            exactly that.
           </p>
           <p class="doc-p">
             <strong>Step 3: Test the connection.</strong> Each provider card has
             a "Test connection" button. It sends a cheap ping and shows latency.
             Green means go.
           </p>
-          <p class="doc-p">
-            Supported providers:
-          </p>
+          <p class="doc-p">Supported providers:</p>
           <ul class="doc-ul">
             <li>OpenAI (GPT-4o, GPT-4o-mini, o3-mini, …)</li>
             <li>Anthropic (Claude Sonnet, Claude Haiku, …)</li>
@@ -465,17 +509,17 @@ export default component$(() => {
             we don't want to.
           </p>
           <p class="doc-p">
-            <strong>Drafts and folios:</strong> Saved locally in your browser via
-            IndexedDB. If you sign in, they sync to your own Convex account for
-            cross-device access. They are not shared, sold, or used to train
+            <strong>Drafts and folios:</strong> Saved locally in your browser
+            via IndexedDB. If you sign in, they sync to your own Convex account
+            for cross-device access. They are not shared, sold, or used to train
             models.
           </p>
           <p class="doc-p">
             <strong>AI calls:</strong> When you BYOK, your draft text goes
             directly from your browser to the provider you chose (OpenAI,
             Anthropic, etc.). Twyne's servers never see the prompt or the
-            response. When you use the default server path, the call goes through
-            our Convex backend, but drafts are not retained.
+            response. When you use the default server path, the call goes
+            through our Convex backend, but drafts are not retained.
           </p>
           <p class="doc-p">
             <strong>Published pieces:</strong> Only what you explicitly publish
@@ -496,10 +540,10 @@ export default component$(() => {
             One project. Many drafts. Each lives in its own folio.
           </p>
           <p class="doc-p">
-            Folios are separate documents within the same project. You might have
-            a main draft, a scratch notes folio, and an outline. Switch between
-            them from the left drawer. Each folio keeps its own word count,
-            update time, and (optionally) its own layout settings.
+            Folios are separate documents within the same project. You might
+            have a main draft, a scratch notes folio, and an outline. Switch
+            between them from the left drawer. Each folio keeps its own word
+            count, update time, and (optionally) its own layout settings.
           </p>
           <p class="doc-p">
             <strong>Export</strong> your folio as Markdown, standalone HTML,
@@ -512,45 +556,57 @@ export default component$(() => {
           </p>
         </section>
 
-        {/* ── IX. Shortcuts ── */}
-        <section id="shortcuts" class="doc-section">
+        {/* ── IX. Manuscript tools ── */}
+        <section id="manuscript-tools" class="doc-section">
           <p
             class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
             style={{ fontFamily: "var(--font-typewriter)" }}
           >
             Section IX
           </p>
+          <h2 class="doc-h2">Manuscript Tools</h2>
+          <p class="doc-lead">
+            The manuscript surface now carries the structural tools of a full
+            word processor without hiding the draft behind panels.
+          </p>
+          <p class="doc-p">
+            Type <strong>/</strong> at the start of a block to open the command
+            menu. Use the outline to jump among headings, or drag a heading's
+            section handle to move that section and all of its subsections in
+            one undoable edit. Find and Replace supports whole words, case
+            sensitivity, and regular expressions.
+          </p>
+          <p class="doc-p">
+            Tables support a dimension picker, captions, row and column tools,
+            cell shading, alignment, borders, and reusable visual presets.
+            Images can be dropped, pasted, or selected from disk; selecting an
+            image reveals its alt text, caption, alignment, width, and upload
+            status. Online images are stored with the folio, while deliberately
+            offline work keeps an inline copy.
+          </p>
+          <p class="doc-p">
+            Inline and display equations accept LaTeX and render locally.
+            Footnotes and endnotes can be edited beside their references, and
+            the visible page header and footer can be edited directly in the
+            page bands. These structures remain portable in HTML and Markdown
+            exports.
+          </p>
+        </section>
+
+        {/* ── X. Shortcuts ── */}
+        <section id="shortcuts" class="doc-section">
+          <p
+            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
+            style={{ fontFamily: "var(--font-typewriter)" }}
+          >
+            Section X
+          </p>
           <h2 class="doc-h2">Keyboard Shortcuts</h2>
-          <div class="grid sm:grid-cols-2 gap-4">
-            <div>
-              <h3 class="doc-h3">Text formatting</h3>
-              <ul class="doc-ul">
-                <li>
-                  <span class="doc-kbd">⌘B</span> Bold
-                </li>
-                <li>
-                  <span class="doc-kbd">⌘I</span> Italic
-                </li>
-                <li>
-                  <span class="doc-kbd">⌘U</span> Underline
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 class="doc-h3">Editor commands</h3>
-              <ul class="doc-ul">
-                <li>
-                  <span class="doc-kbd">⌘Z</span> Undo
-                </li>
-                <li>
-                  <span class="doc-kbd">⌘⇧Z</span> Redo
-                </li>
-                <li>
-                  <span class="doc-kbd">⌘↵</span> Send reply / ask editor
-                </li>
-              </ul>
-            </div>
-          </div>
+          <p class="doc-p">
+            These are the macOS labels. Windows and Linux use Ctrl wherever the
+            list shows ⌘.
+          </p>
+          <KeybindingList entries={MANUAL_SHORTCUTS} />
         </section>
       </div>
     </div>

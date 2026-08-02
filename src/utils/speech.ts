@@ -72,16 +72,31 @@ export interface SpeakRequest {
   signedIn?: boolean;
 }
 
-export type SpeechStatus = "idle" | "loading" | "playing" | "error";
+export type SpeechStatus =
+  | "idle"
+  | "loading"
+  | "playing"
+  | "paused"
+  | "error";
 
 export interface SpeechState {
   status: SpeechStatus;
   /** Which `SpeakRequest.id` is active, when any. */
   id: string | null;
   error: AppError | null;
+  /** Seconds played, for a transport that shows progress. */
+  currentTime: number;
+  /** Clip length in seconds; 0 until the metadata has loaded. */
+  duration: number;
 }
 
-const state: SpeechState = { status: "idle", id: null, error: null };
+const state: SpeechState = {
+  status: "idle",
+  id: null,
+  error: null,
+  currentTime: 0,
+  duration: 0,
+};
 
 let audio: HTMLAudioElement | null = null;
 /** Content-addressed clip cache: `${voice}::${text}` → object URL. */
@@ -108,6 +123,10 @@ function setState(
   state.status = status;
   state.id = id;
   state.error = error;
+  if (status === "idle" || status === "error") {
+    state.currentTime = 0;
+    state.duration = 0;
+  }
   notify();
 }
 
@@ -252,6 +271,54 @@ export function stopSpeech(): void {
   setState("idle", null);
 }
 
+/**
+ * Hold the current clip where it is.
+ *
+ * Distinct from {@link stopSpeech}, which discards the position. A writer who
+ * pauses a five-minute reading to answer the door expects to come back to the
+ * same sentence, not to the top of the draft — and re-reading from the top
+ * would also re-bill the synthesis if the clip had fallen out of the cache.
+ */
+export function pauseSpeech(): void {
+  if (state.status !== "playing" || !audio) return;
+  audio.pause();
+  setState("paused", state.id);
+}
+
+/** Resume a paused clip. Safe to call when nothing is paused. */
+export function resumeSpeech(): void {
+  if (state.status !== "paused" || !audio) return;
+  const id = state.id;
+  void audio
+    .play()
+    .then(() => setState("playing", id))
+    .catch(() => {
+      // The gesture that paused it has long expired; ask for another.
+      setState("error", id, {
+        ...createAppError("PERMISSION_DENIED", {
+          source: "application",
+          recovery: { action: "retry", canRetry: true },
+          metadata: { feature: "voice-narration", operation: "playback" },
+        }),
+        message: "Your browser blocked playback. Press play again to allow it.",
+      });
+    });
+}
+
+/** Play/pause in one control, for a transport that has a single such button. */
+export function togglePauseSpeech(): void {
+  if (state.status === "playing") pauseSpeech();
+  else if (state.status === "paused") resumeSpeech();
+}
+
+/** Jump to a position, in seconds. Ignored when nothing is loaded. */
+export function seekSpeech(seconds: number): void {
+  if (!audio || !state.duration) return;
+  audio.currentTime = Math.max(0, Math.min(seconds, state.duration));
+  state.currentTime = audio.currentTime;
+  notify();
+}
+
 type Synthesis = {
   audio: Blob;
   provider: string;
@@ -332,16 +399,28 @@ async function synthesize(req: SpeakRequest): Promise<Synthesis> {
 }
 
 /**
- * Read a passage aloud. Pressing the same passage again stops it (so one
- * button is both play and stop); pressing a different one switches over.
+ * Read a passage aloud. Pressing the same passage again pauses or resumes it
+ * (so one button is play and pause); pressing a different one switches over.
  */
 export async function speak(req: SpeakRequest): Promise<void> {
   if (typeof window === "undefined") return;
 
-  // Same passage, already sounding → this press means "stop".
-  if (state.id === req.id && (state.status === "playing" || state.status === "loading")) {
-    stopSpeech();
-    return;
+  // Same passage, already sounding → this press means "pause". Not "stop":
+  // discarding the position on a second press makes a long reading impossible
+  // to interrupt without starting over.
+  if (state.id === req.id) {
+    if (state.status === "playing") {
+      pauseSpeech();
+      return;
+    }
+    if (state.status === "paused") {
+      resumeSpeech();
+      return;
+    }
+    if (state.status === "loading") {
+      stopSpeech();
+      return;
+    }
   }
 
   const text = req.text.trim();
@@ -353,28 +432,35 @@ export async function speak(req: SpeakRequest): Promise<void> {
 
   stopSpeech();
   const mine = ++generation;
-  const spoken = await withPersonaVoice(req);
-  // Key the cache on the voice that will actually be used, so two editors
-  // sharing a fallback name never collide on one clip.
-  const settings = await getCachedAiSettings();
-  const resolved = resolveFeatureConfig(settings, "voice-narration");
-  const override = settings.perFeature["voice-narration"];
-  const voice = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
-  const provider = resolved?.provider.id ?? "hosted";
-  const model = resolved?.model ?? "hosted";
-  const key = cacheKey(
-    text,
-    provider,
-    model,
-    voice,
-    override?.responseFormat ?? "mp3",
-    override?.speed,
-    spoken.instructions ?? override?.instructions,
-  );
 
+  // Everything from here is inside the try. Resolving the cast voice and
+  // reading the AI settings both used to happen *before* the state was set to
+  // loading and outside any catch, so a failure in either — an unreadable
+  // IndexedDB, settings that have never been written — rejected this promise
+  // with the UI still showing idle. The writer pressed read and got nothing
+  // at all, which looks exactly like a broken button.
   setState("loading", req.id);
 
   try {
+    const spoken = await withPersonaVoice(req);
+    // Key the cache on the voice that will actually be used, so two editors
+    // sharing a fallback name never collide on one clip.
+    const settings = await getCachedAiSettings();
+    const resolved = resolveFeatureConfig(settings, "voice-narration");
+    const override = settings.perFeature["voice-narration"];
+    const voice = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
+    const provider = resolved?.provider.id ?? "hosted";
+    const model = resolved?.model ?? "hosted";
+    const key = cacheKey(
+      text,
+      provider,
+      model,
+      voice,
+      override?.responseFormat ?? "mp3",
+      override?.speed,
+      spoken.instructions ?? override?.instructions,
+    );
+
     let url = cache.get(key);
     if (!url) {
       const result = await synthesize({ ...spoken, text });
@@ -389,6 +475,16 @@ export async function speak(req: SpeakRequest): Promise<void> {
     audio.src = url;
     audio.onended = () => {
       if (mine === generation) setState("idle", null);
+    };
+    audio.onloadedmetadata = () => {
+      if (mine !== generation || !audio) return;
+      state.duration = Number.isFinite(audio.duration) ? audio.duration : 0;
+      notify();
+    };
+    audio.ontimeupdate = () => {
+      if (mine !== generation || !audio) return;
+      state.currentTime = audio.currentTime;
+      notify();
     };
     audio.onerror = () => {
       if (mine !== generation) return;

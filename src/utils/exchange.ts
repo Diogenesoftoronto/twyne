@@ -18,7 +18,14 @@ import type {
   PersonaFeedback,
   RoomAnalysis,
 } from "../types";
-import { DEFAULT_LAYOUT, resolveMargins } from "../types";
+import {
+  CSS_PX_PER_IN,
+  DEFAULT_LAYOUT,
+  resolveMargins,
+  resolvePageSetup,
+} from "../types";
+import { remToPx } from "./css-units";
+import { htmlToMarkdown } from "./html-to-markdown";
 import {
   formatCitation,
   type BibEntry,
@@ -30,64 +37,40 @@ export type ExportFormat = "markdown" | "html" | "txt" | "twyne-backup";
 /* ── HTML helpers ──────────────────────────────────────────────── */
 
 export function stripHtml(html: string): string {
-  return html
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<\/(p|h[1-6]|li|blockquote|tr|div)>/gi, "\n")
-    .replace(/<br\s*\/?>(?=)/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/[ \t]+/g, " ")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+  return (
+    html
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      // A manual page break becomes a form feed — the ASCII character that has
+      // meant exactly this since the teletype, and the one thing a plain-text
+      // reader might actually act on. Matched before the generic tag strip, or
+      // the break would vanish without trace.
+      .replace(/<div[^>]*data-page-break[^>]*>\s*<\/div>/gi, "\n\f\n")
+      .replace(/<\/(p|h[1-6]|li|blockquote|tr|div)>/gi, "\n")
+      .replace(/<br\s*\/?>(?=)/gi, "\n")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/[ \t]+/g, " ")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim()
+  );
 }
 
-export function htmlToMarkdown(html: string): string {
-  // marked can render HTML too; we just need a stable conversion. We
-  // use a two-step dance: strip to text first, then run a small set of
-  // regex passes that pick out the headings, blockquotes, and lists.
-  const text = stripHtml(html);
-  const lines = text.split(/\n/);
-  const out: string[] = [];
-  let inList = false;
-  for (const raw of lines) {
-    const line = raw.trim();
-    if (!line) {
-      if (inList) {
-        inList = false;
-      }
-      out.push("");
-      continue;
-    }
-    // Headings — matched on the cleaned text by length and case.
-    if (/^#{1,6}\s+/.test(line)) {
-      out.push(line);
-      continue;
-    }
-    // List items the editor might have written as a paragraph starting
-    // with "•" or "-".
-    if (/^[-•*]\s+/.test(line)) {
-      inList = true;
-      out.push(line.replace(/^[-•*]\s+/, "- "));
-      continue;
-    }
-    if (/^\d+\.\s+/.test(line)) {
-      inList = true;
-      out.push(line);
-      continue;
-    }
-    out.push(line);
-  }
-  return out
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
+/**
+ * HTML → Markdown for the manuscript export.
+ *
+ * Lives in `html-to-markdown.ts` now. It replaced an implementation that
+ * called `stripHtml` on its first line, flattening every inline mark the
+ * writer had applied before the conversion even began — bold, italic,
+ * strikethrough, links and highlights all arrived in the exported file as
+ * plain prose. Re-exported here so the module's public surface is unchanged.
+ */
+export { htmlToMarkdown };
 
 function wrapStandaloneHtml(
   title: string,
@@ -106,8 +89,19 @@ function wrapStandaloneHtml(
     wide: "62rem",
   };
   const m = resolveMargins(layout);
+  const setup = resolvePageSetup(layout);
+  const paginated = setup.pagination === "paginated";
   const docWidth = widthMap[layout.width];
-  const docPageMargin = `${m.top}rem ${m.right}rem ${m.bottom}rem ${m.left}rem`;
+
+  // Margins go to `@page` in inches, converted through the same fixed 96px/in
+  // the print engine uses. The document below pins `html { font-size: 16px }`
+  // so this conversion is exact rather than dependent on whatever the
+  // browser's default text size happens to be.
+  const inches = (rem: number) => (remToPx(rem) / CSS_PX_PER_IN).toFixed(3);
+  const docPageMargin = `${inches(m.top)}in ${inches(m.right)}in ${inches(m.bottom)}in ${inches(m.left)}in`;
+  const pageSize = paginated
+    ? `${setup.paper === "a4" ? "A4" : setup.paper} ${setup.orientation}`
+    : "auto";
 
   const running = layout.runningHeader
     ? (options.header && options.header.trim()) ||
@@ -116,7 +110,10 @@ function wrapStandaloneHtml(
         : title)
     : options.header || "";
 
-  const footer = options.footer || (layout.pageNumbers ? "page" : "");
+  // No `counter(page)` fallback here: it never worked, and printing the
+  // literal word "page" once at the end of the manuscript is worse than
+  // printing nothing. See the note on exportPdf.
+  const footer = options.footer || "";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -124,17 +121,71 @@ function wrapStandaloneHtml(
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>${escapeHtml(title)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Special+Elite&display=swap" />
 <style>
   :root { color-scheme: light; }
-  @page { size: auto; margin: ${docPageMargin}; ${layout.pageNumbers ? "@bottom-center { content: counter(page); font-family: ui-monospace, monospace; font-size: 0.75rem; color: #6a5d4a; }" : ""} }
+  /* The sheet owns the margins. There is deliberately no margin or padding on
+     <body>: setting both stacks them, which silently doubled every printed
+     margin for as long as this exporter has existed. */
+  @page { size: ${pageSize}; margin: ${docPageMargin}; }
+  /* Pin the root size so the rem-denominated margins above convert to inches
+     exactly. On screen the editor leaves this alone, so a reader's text
+     scaling still works; a printed sheet is a physical object and does not
+     get to be 25% larger because of a browser preference. */
+  html { font-size: 16px; }
   body {
-    font-family: ui-serif, Georgia, "Times New Roman", serif;
-    max-width: ${docWidth};
-    margin: ${m.top}rem auto ${m.bottom}rem;
-    padding: 0 ${m.right}rem 0 ${m.left}rem;
+    font-family: "Lora", Georgia, "Times New Roman", serif;
+    ${paginated ? "max-width: none;" : `max-width: ${docWidth};`}
+    margin: 0;
+    padding: 0;
     line-height: 1.7;
     color: #1a1611;
     background: #fbf6ec;
+  }
+  /* Match the editor's own paragraph setting, so the print engine breaks
+     lines where the screen did. Without this the two disagree about
+     hyphenation and justification and every page drifts by a line. */
+  p {
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+  }
+  /* Mirror the screen engine's atomic-block contract: it never splits these,
+     so neither should the printer. The break-after rule on headings is the
+     print-side twin of the engine's keepWithNext. */
+  table, pre, img, blockquote, figure, .tableWrapper { break-inside: avoid; }
+  h1, h2, h3, [data-keep-with-next="true"] {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  p, li { orphans: 2; widows: 2; }
+  /* Highlights. A chosen colour arrives as an inline background-color; this
+     is only the fallback for a mark saved before the colour picker existed. */
+  mark { background-color: #f6e2a8; padding: 0; }
+  /* Match the editor's raised/lowered metrics rather than the browser's, so
+     a formula does not reflow between screen and paper. */
+  sup, sub { font-size: 0.72em; line-height: 0; position: relative; vertical-align: baseline; }
+  sup { top: -0.45em; }
+  sub { bottom: -0.22em; }
+  /* Alignment chosen on a paragraph beats the justified default above. */
+  p[style*="text-align"] { hyphens: manual; -webkit-hyphens: manual; }
+  /* A manual page break. The editor's node carries data-page-break so this
+     works on a manuscript opened outside Twyne too. */
+  [data-page-break], .twyne-page-break {
+    break-after: page;
+    height: 0;
+    margin: 0;
+    border: 0;
+  }
+  @media print {
+    /* Chrome repeats a fixed element on every printed page, which is the only
+       working way to get a running header. There is no equivalent for the
+       page number: counter(page) is readable only inside an @page margin box,
+       and Chrome implements neither the box nor the counter outside it. */
+    .twyne-chrome:not(.f) { position: fixed; top: 0; left: 0; right: 0; }
+    .twyne-page-spacer, .twyne-page-chrome { display: none !important; }
   }
   .twyne-chrome {
     display: flex; justify-content: space-between; align-items: baseline;
@@ -144,7 +195,7 @@ function wrapStandaloneHtml(
     margin-bottom: 2rem;
   }
   .twyne-chrome.f { border-top: 1px solid #c7b89c; border-bottom: none; margin: 2rem 0 0; }
-  h1, h2, h3 { font-family: ui-serif, Georgia, serif; font-weight: 600; }
+  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; }
   h1 { font-size: 2.1rem; margin-bottom: 1.4rem; }
   h2 { font-size: 1.4rem; margin-top: 2.2rem; }
   p { margin: 0 0 1.1rem; }
@@ -155,6 +206,46 @@ function wrapStandaloneHtml(
     font-style: italic;
   }
   hr { border: none; border-top: 1px solid #c7b89c; margin: 2rem 0; }
+  table {
+    width: 100%; border-collapse: collapse; margin: 1.25rem 0;
+    font-family: "DM Sans", Arial, sans-serif; font-size: 0.92rem;
+  }
+  table caption {
+    caption-side: top; padding: 0.35rem 0 0.6rem; text-align: left;
+    font-family: "Lora", Georgia, serif; font-size: 0.82rem;
+    font-style: italic; color: #6a5d4a;
+  }
+  table td, table th {
+    border: 1px solid #c7b89c; padding: 0.55em 0.8em;
+    text-align: left; vertical-align: top;
+  }
+  table th { background: #eee5d6; font-weight: 700; }
+  table[data-table-style="plain"] td,
+  table[data-table-style="plain"] th { border-color: transparent; }
+  table[data-table-style="grid"] td,
+  table[data-table-style="grid"] th { border: 1px solid #c7b89c; }
+  table[data-table-style="banded-rows"] tbody tr:nth-child(even) > td {
+    background: #f5ede0;
+  }
+  table[data-table-style="minimal"] td,
+  table[data-table-style="minimal"] th {
+    border-width: 0 0 1px; border-color: #c7b89c;
+  }
+  figure[data-type="image"] { margin: 1.4rem auto; max-width: 100%; }
+  figure[data-type="image"] img {
+    display: block; width: 100%; height: auto; max-width: 100%;
+  }
+  figure[data-type="image"] figcaption {
+    margin-top: 0.45rem; color: #6a5d4a; font-size: 0.78rem;
+    line-height: 1.4; text-align: center;
+  }
+  [data-math-display="inline"] {
+    font-family: "Times New Roman", serif; white-space: nowrap;
+  }
+  [data-math-display="block"] {
+    margin: 1rem 0; text-align: center; font-family: "Times New Roman", serif;
+    white-space: pre-wrap; break-inside: avoid;
+  }
   /* Match the editor's nesting: markers cycle by depth, and a list
      item's paragraph does not double-space the list. */
   ul, ol { padding-left: 1.6em; margin: 0 0 1.1rem; }
@@ -515,16 +606,23 @@ export function exportTwyneBackup(p: ExportPayload): string {
 /**
  * Export to PDF by printing the standalone HTML.
  *
- * No PDF library. The HTML export already carries the writer's page setup as
- * real `@page` rules — margins, and `counter(page)` for the page numbers — and
- * a print engine is the one renderer guaranteed to honour them. Bolting on
- * jsPDF or html2canvas would mean re-implementing pagination, and canvas-based
- * approaches rasterise the text, which loses selection, search and accessible
- * structure in the resulting file.
+ * No PDF library. The HTML export carries the writer's page setup as real
+ * `@page` rules — paper size, orientation and margins — and a print engine is
+ * the one renderer guaranteed to honour them. Bolting on jsPDF or html2canvas
+ * would mean re-implementing pagination, and canvas-based approaches rasterise
+ * the text, which loses selection, search and accessible structure.
+ *
+ * What the stylesheet cannot carry is the page number. `counter(page)` is
+ * readable only inside an `@page` margin box, and Chrome implements neither
+ * the margin-box selector nor the counter outside it — an earlier version of
+ * this exporter emitted `@bottom-center { content: counter(page) }` and it
+ * printed nothing, for years. A `position: fixed` header does repeat on every
+ * printed page, so the running header works; the number does not, and the
+ * honest fix is a second pass that runs the screen engine over the export
+ * document and writes literal numbers into it.
  *
  * The trade is that the writer passes through the browser's print dialog and
- * picks "Save as PDF" there. That dialog is also where paper size and
- * orientation live, which is where a writer would look for them anyway.
+ * picks "Save as PDF" there.
  *
  * Resolves once printing has been dispatched; it cannot observe whether the
  * writer completed or cancelled the save.

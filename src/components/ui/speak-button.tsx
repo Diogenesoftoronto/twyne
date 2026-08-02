@@ -2,7 +2,12 @@ import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
 import type { AiProviderType } from "../../types";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
-import { speak, speechState, stopSpeech } from "../../utils/speech";
+import {
+  speak,
+  speechState,
+  togglePauseSpeech,
+  type SpeechStatus,
+} from "../../utils/speech";
 
 interface SpeakButtonProps {
   /** The prose to read. */
@@ -41,7 +46,7 @@ interface SpeakButtonProps {
 export const SpeakButton = component$<SpeakButtonProps>((props) => {
   const clientSig = useConvexClient();
   const auth = useAuth();
-  const status = useSignal<"idle" | "loading" | "playing" | "error">("idle");
+  const status = useSignal<SpeechStatus>("idle");
   const errorMessage = useSignal("");
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -63,8 +68,10 @@ export const SpeakButton = component$<SpeakButtonProps>((props) => {
   });
 
   const toggle = $(async () => {
-    if (status.value === "playing" || status.value === "loading") {
-      stopSpeech();
+    // Pause rather than stop, so a long note can be interrupted and picked up
+    // where it left off instead of restarting from the first word.
+    if (status.value === "playing" || status.value === "paused") {
+      togglePauseSpeech();
       return;
     }
     await speak({
@@ -84,8 +91,10 @@ export const SpeakButton = component$<SpeakButtonProps>((props) => {
     status.value === "error"
       ? errorMessage.value || "Could not read this aloud"
       : status.value === "playing"
-        ? "Stop reading"
-        : `Read aloud${who}`;
+        ? "Pause reading"
+        : status.value === "paused"
+          ? "Resume reading"
+          : `Read aloud${who}`;
 
   return (
     <button
@@ -97,7 +106,7 @@ export const SpeakButton = component$<SpeakButtonProps>((props) => {
         color:
           status.value === "error"
             ? "var(--color-accent-red)"
-            : status.value === "playing"
+            : status.value === "playing" || status.value === "paused"
               ? "var(--color-vermilion)"
               : "var(--color-ink-muted)",
         borderRadius: "2px",

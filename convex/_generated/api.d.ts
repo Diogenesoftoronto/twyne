@@ -17,6 +17,7 @@ import type * as arizeTracing from "../arizeTracing.js";
 import type * as auth from "../auth.js";
 import type * as collaboration from "../collaboration.js";
 import type * as http from "../http.js";
+import type * as images from "../images.js";
 import type * as interviewStreams from "../interviewStreams.js";
 import type * as lib_applicationErrors from "../lib/applicationErrors.js";
 import type * as lib_creem from "../lib/creem.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   collaboration: typeof collaboration;
   http: typeof http;
+  images: typeof images;
   interviewStreams: typeof interviewStreams;
   "lib/applicationErrors": typeof lib_applicationErrors;
   "lib/creem": typeof lib_creem;

@@ -1,0 +1,144 @@
+@import "./katex.min.css";
+
+.twyne-math {
+  color: inherit;
+  font: inherit;
+}
+
+.twyne-math-inline {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: baseline;
+  border-radius: 0.2rem;
+  vertical-align: baseline;
+}
+
+.twyne-math-block {
+  display: block;
+  width: 100%;
+  margin-block: 1rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  text-align: center;
+}
+
+.twyne-math-render {
+  min-width: 0;
+}
+
+.twyne-math-loading,
+.twyne-math-empty,
+.twyne-math-error {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875em;
+}
+
+.twyne-math-loading,
+.twyne-math-empty {
+  color: color-mix(in srgb, currentColor 68%, transparent);
+}
+
+.twyne-math-error {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid #a84632;
+  border-radius: 0.25rem;
+  background: #fff2ee;
+  color: #742718;
+  text-align: left;
+  white-space: normal;
+}
+
+.twyne-math-error-source {
+  overflow-wrap: anywhere;
+}
+
+.twyne-math-source-editor {
+  display: flex;
+  min-width: min(28rem, 80vw);
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  border: 1px solid currentColor;
+  border-radius: 0.4rem;
+  background: Canvas;
+  color: CanvasText;
+  text-align: left;
+}
+
+.twyne-math-inline .twyne-math-source-editor {
+  display: inline-flex;
+  min-width: min(22rem, 70vw);
+  vertical-align: middle;
+}
+
+.twyne-math-source-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.twyne-math-source-input {
+  width: 100%;
+  resize: vertical;
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  background: Canvas;
+  color: CanvasText;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.twyne-math-source-input:focus-visible,
+.twyne-math-source-save:focus-visible,
+.twyne-math-source-cancel:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+.twyne-math-source-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.4rem;
+}
+
+.twyne-math-source-save,
+.twyne-math-source-cancel {
+  min-height: 2rem;
+  border: 1px solid currentColor;
+  border-radius: 0.25rem;
+  padding-inline: 0.65rem;
+  background: Canvas;
+  color: CanvasText;
+  font: inherit;
+  cursor: pointer;
+}
+
+.twyne-math-source-save {
+  background: CanvasText;
+  color: Canvas;
+}
+
+.ProseMirror-selectednode.twyne-math {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  .twyne-math-error {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+}

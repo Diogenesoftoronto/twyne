@@ -273,6 +273,82 @@ export interface LayoutSettings {
   pageNumbers: boolean;
   /** Show live margin/header/footer guide rules in the editor page. */
   showMarginGuides?: boolean;
+  /**
+   * Physical sheet the manuscript is set on. Absent on documents written
+   * before pagination existed; {@link resolvePageSetup} fills in Letter.
+   */
+  paper?: PaperSize;
+  /** Sheet orientation. Absent on pre-pagination documents — defaults to portrait. */
+  orientation?: Orientation;
+  /**
+   * Whether the editor renders discrete page sheets or one continuous
+   * column. Continuous is the pre-pagination behaviour and remains the
+   * escape hatch for very long manuscripts.
+   */
+  pagination?: PaginationMode;
+  /**
+   * Display unit for the ruler readout only. Margins are *stored* in rem
+   * regardless — this changes how they are shown, never how they are saved.
+   */
+  marginUnit?: MarginUnit;
+}
+
+export type PaperSize = "letter" | "a4" | "legal";
+export type Orientation = "portrait" | "landscape";
+export type PaginationMode = "paginated" | "continuous";
+export type MarginUnit = "rem" | "in" | "mm";
+
+/**
+ * Paper dimensions in inches. Physical rather than typographic, so a sheet
+ * is the same size no matter what the reader has done to their font size.
+ */
+export const PAPER_SIZE_IN: Record<PaperSize, { w: number; h: number }> = {
+  letter: { w: 8.5, h: 11 },
+  a4: { w: 8.2677, h: 11.6929 }, // 210 × 297 mm
+  legal: { w: 8.5, h: 14 },
+};
+
+/**
+ * CSS reference pixels per inch. Fixed by the CSS spec, and the value
+ * Chrome's print engine uses when it lays out `@page`. This is the single
+ * bridge between the rem-denominated margins the writer drags and the
+ * inch-denominated sheet they print on — every conversion between the two
+ * goes through here so the two units cannot drift apart.
+ */
+export const CSS_PX_PER_IN = 96;
+
+export interface ResolvedPageSetup {
+  paper: PaperSize;
+  orientation: Orientation;
+  pagination: PaginationMode;
+  marginUnit: MarginUnit;
+  /** Sheet width in inches, after orientation is applied. */
+  widthIn: number;
+  /** Sheet height in inches, after orientation is applied. */
+  heightIn: number;
+}
+
+/**
+ * Resolve the effective page setup for a layout.
+ *
+ * Every field is optional on {@link LayoutSettings} precisely so that a folio
+ * saved before pagination existed still opens: it deserializes with all four
+ * undefined and lands on Letter / portrait / paginated / rem. This is the
+ * same generational-fallback discipline {@link resolveMargins} documents.
+ */
+export function resolvePageSetup(layout: LayoutSettings): ResolvedPageSetup {
+  const paper = layout.paper ?? "letter";
+  const orientation = layout.orientation ?? "portrait";
+  const size = PAPER_SIZE_IN[paper] ?? PAPER_SIZE_IN.letter;
+  const landscape = orientation === "landscape";
+  return {
+    paper,
+    orientation,
+    pagination: layout.pagination ?? "paginated",
+    marginUnit: layout.marginUnit ?? "rem",
+    widthIn: landscape ? size.h : size.w,
+    heightIn: landscape ? size.w : size.h,
+  };
 }
 
 /**
@@ -330,14 +406,18 @@ export function resolveMargins(layout: LayoutSettings): ResolvedMargins {
 export const DEFAULT_LAYOUT: LayoutSettings = {
   width: "normal",
   margin: "normal",
-  marginX: 3,
-  marginLeft: 3,
-  marginRight: 3,
-  marginTop: 2.5,
-  marginBottom: 4,
+  marginX: 2,
+  marginLeft: 2,
+  marginRight: 2,
+  marginTop: 1,
+  marginBottom: 1,
   runningHeader: false,
   pageNumbers: true,
   showMarginGuides: false,
+  paper: "letter",
+  orientation: "portrait",
+  pagination: "paginated",
+  marginUnit: "rem",
 };
 
 export interface Comment {

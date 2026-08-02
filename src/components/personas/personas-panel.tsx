@@ -29,7 +29,7 @@ import type {
   PersonaMemo,
 } from "../../types";
 import { DEFAULT_ROOM_SETTINGS } from "../../types";
-import { loadDraftText, summarizeBrief } from "../../utils/anti-tabula-rasa";
+import { loadDraftText } from "../../utils/anti-tabula-rasa";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
 import { toAgentPersona } from "../../../convex/agentPrompts";
 import { loadPersonasFromIdb } from "../../utils/idb";
@@ -81,7 +81,6 @@ import {
 /* ── Types ──────────────────────────────────────────────────────── */
 
 interface PersonasStore {
-  activePersona: string | null;
   feedback: PersonaFeedback[];
   isGenerating: boolean;
   expandedFeedback: Set<string>;
@@ -289,7 +288,6 @@ export const PersonasPanel = component$(
   const clientSig = useConvexClient();
   const auth = useAuth();
   const store = useStore<PersonasStore>({
-    activePersona: null,
     feedback: [],
     isGenerating: false,
     expandedFeedback: new Set(),
@@ -398,32 +396,6 @@ export const PersonasPanel = component$(
       .feedback-enter { animation: none; }
     }
 
-    .portrait {
-      position: relative;
-      width: 100%;
-      padding: 0.4rem 0.55rem 0.5rem;
-      border: 1px solid var(--color-paper-3);
-      background: var(--color-paper);
-      border-radius: 2px;
-      transition: transform 0.15s ease, box-shadow 0.2s ease;
-      cursor: pointer;
-    }
-    .portrait::before {
-      content: "";
-      position: absolute;
-      inset: 3px;
-      border: 1px solid var(--color-paper-3);
-      pointer-events: none;
-      border-radius: 1px;
-    }
-    .portrait:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 14px -10px rgba(31,27,22,0.3);
-    }
-    .portrait.is-active {
-      box-shadow: 0 0 0 2px var(--frame-color, var(--color-vermilion));
-    }
-
     .portrait-icon {
       display: flex;
       align-items: center;
@@ -454,9 +426,17 @@ export const PersonasPanel = component$(
         0 10px 20px -12px rgba(31,27,22,0.45);
     }
 
-    .portrait:focus-visible {
-      outline: 2px solid var(--frame-color, var(--color-vermilion));
-      outline-offset: 2px;
+    .cast-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.35rem;
+      height: 1.35rem;
+      border: 1px solid var(--frame-color, var(--color-paper-3));
+      border-radius: 999px;
+      color: var(--frame-color, var(--color-ink));
+      background: var(--color-paper-soft);
+      font-size: 0.7rem;
     }
 
     .convene-btn {
@@ -464,8 +444,8 @@ export const PersonasPanel = component$(
       font-family: var(--font-typewriter);
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      font-size: 0.72rem;
-      padding: 0.7rem 1rem;
+      font-size: 0.6875rem;
+      padding: 0.55rem 0.75rem;
       background: var(--color-ink);
       color: var(--color-paper);
       border: 1px solid var(--color-ink);
@@ -479,32 +459,17 @@ export const PersonasPanel = component$(
     }
     .convene-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-    /* The room's two real actions differ in one way that matters more than
-       any other: one of them rewrites the writer's prose. So they are told
-       apart by weight and by a line of plain English under each, and the
-       one that edits is outlined rather than filled — it should read as a
-       deliberate second step, not as the twin of the button above it. */
     .room-btn-title {
       display: block;
       font-family: var(--font-typewriter);
-      letter-spacing: 0.18em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      font-size: 0.72rem;
-    }
-    .room-btn-sub {
-      display: block;
-      margin-top: 0.3rem;
-      font-family: var(--font-serif);
-      font-size: 0.75rem;
-      line-height: 1.35;
-      letter-spacing: 0;
-      text-transform: none;
-      opacity: 0.75;
+      font-size: 0.6875rem;
     }
 
     .markup-btn {
       width: 100%;
-      padding: 0.6rem 1rem;
+      padding: 0.55rem 0.75rem;
       background: var(--color-paper);
       color: var(--color-ink);
       border: 1px solid var(--color-ink-light);
@@ -521,7 +486,7 @@ export const PersonasPanel = component$(
     .room-btn-link {
       display: block;
       width: 100%;
-      padding: 0.35rem 0;
+      padding: 0.2rem 0;
       text-align: center;
       font-family: var(--font-typewriter);
       font-size: 0.6875rem;
@@ -1709,11 +1674,25 @@ export const PersonasPanel = component$(
 
   return (
     <>
-      <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
+      <div class="flex h-full min-h-0 flex-col overflow-y-auto bg-[var(--color-paper-2)]">
         {/* ── Header ─────────────────────────────────────────── */}
-        <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-          <div class="flex items-center justify-between gap-2">
-            <p class="dept-label">Tonight's Cast</p>
+        <div class="border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-3">
+          <div class="flex min-w-0 items-center justify-between gap-3">
+            <div class="min-w-0">
+              <h2
+                class="truncate text-lg text-[var(--color-ink)]"
+                style="font-family: var(--font-display); font-weight: 600;"
+              >
+                The Room of Editors
+              </h2>
+              <p
+                class="mt-0.5 truncate text-[0.7rem] text-[var(--color-ink-light)]"
+                style="font-family: var(--font-serif); font-style: italic;"
+              >
+                {brief?.answers.workingTitle || "Untitled project"}
+                {brief?.answers.format ? ` · ${brief.answers.format}` : ""}
+              </p>
+            </div>
             {store.lastProvider && (
               <span
                 class="provider-pill"
@@ -1730,18 +1709,6 @@ export const PersonasPanel = component$(
               </span>
             )}
           </div>
-          <h2
-            class="mt-0.5 text-xl text-[var(--color-ink)]"
-            style="font-family: var(--font-display); font-weight: 600;"
-          >
-            The Room of Editors
-          </h2>
-          <p
-            class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
-            style="font-family: var(--font-serif); font-style: italic;"
-          >
-            {summarizeBrief(brief)}
-          </p>
         </div>
 
         {/* ── Collapse toggle — hide the cast & controls to read notes ── */}
@@ -1760,8 +1727,8 @@ export const PersonasPanel = component$(
         >
           <span>
             {store.controlsCollapsed
-              ? "▸ show cast & controls"
-              : "▾ hide cast & controls"}
+              ? "▸ Show controls"
+              : "▾ Hide controls"}
           </span>
           {store.controlsCollapsed && store.feedback.length > 0 && (
             <span class="text-[var(--color-ink-muted)]">
@@ -1771,68 +1738,43 @@ export const PersonasPanel = component$(
           )}
         </button>
 
-        {/* ── The Cast — portraits ────────────────────────────── */}
+        {/* ── Cast and room controls ───────────────────────────── */}
         {!store.controlsCollapsed && (
-          <div class="px-4 pt-4 pb-3 border-b border-[var(--color-paper-3)]">
-            <div class="flex items-center justify-between mb-2">
-              <span class="dept-label" style="margin: 0;">
-                The Cast
-              </span>
-              <a
-                href="/personas"
-                class="text-[0.7rem] tracking-[0.14em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)] focus-ring"
-                style="font-family: var(--font-typewriter);"
-              >
-                Manage the cast →
-              </a>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2">
-              {store.personas.map((persona) => {
-                const active = store.activePersona === persona.id;
-                return (
-                  <button
-                    key={persona.id}
-                    onClick$={() => {
-                      store.activePersona = active ? null : persona.id;
-                    }}
-                    class={`portrait ${active ? "is-active" : ""}`}
-                    style={{ ["--frame-color" as never]: persona.color }}
-                    title={persona.description}
-                    aria-pressed={active}
-                  >
-                    <div class="flex items-center gap-2">
+          <div class="border-b border-[var(--color-paper-3)] px-3 pb-2.5 pt-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex min-w-0 items-center gap-2">
+                <span class="dept-label shrink-0" style="margin: 0;">
+                  Cast
+                </span>
+                <ul
+                  class="flex items-center gap-1"
+                  aria-label={`Current cast, ${store.personas.length} editors`}
+                >
+                  {store.personas.map((persona) => (
+                    <li key={persona.id}>
                       <span
-                        class="portrait-icon"
+                        class="cast-icon"
                         style={{ ["--frame-color" as never]: persona.color }}
+                        role="img"
+                        aria-label={`${persona.role}, ${persona.name}`}
+                        title={`${persona.role}: ${persona.name}`}
                       >
                         {persona.icon}
                       </span>
-                      <div class="text-left min-w-0">
-                        <p
-                          class="text-[0.7rem] tracking-[0.12em] uppercase truncate"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            color: persona.color,
-                          }}
-                        >
-                          {persona.role.replace(/^The /, "")}
-                        </p>
-                        <p
-                          class="text-xs truncate text-[var(--color-ink)]"
-                          style="font-family: var(--font-display); font-weight: 600;"
-                        >
-                          {persona.name}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <a
+                href="/personas"
+                class="focus-ring shrink-0 text-[0.65rem] uppercase tracking-[0.12em] text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
+                style="font-family: var(--font-typewriter);"
+              >
+                Edit cast →
+              </a>
             </div>
 
-            {/* ── The room's two actions, told apart by what comes back ── */}
-            <div class="mt-4 space-y-2">
+            <div class="mt-2 grid grid-cols-2 gap-2">
               <button
                 onClick$={requestFeedback}
                 disabled={store.isGenerating}
@@ -1844,13 +1786,7 @@ export const PersonasPanel = component$(
                     The room is reading…
                   </span>
                 ) : (
-                  <>
-                    <span class="room-btn-title">✦ Read my draft</span>
-                    <span class="room-btn-sub">
-                      Five editors leave short notes in the margin. Your text is
-                      untouched.
-                    </span>
-                  </>
+                  <span class="room-btn-title">✦ Get notes</span>
                 )}
               </button>
 
@@ -1861,21 +1797,15 @@ export const PersonasPanel = component$(
                   class="markup-btn"
                 >
                   {store.isMarkingUp ? (
-                    <span class="room-btn-title">
-                      The room is marking up…
-                    </span>
+                    <span class="room-btn-title">Proposing…</span>
                   ) : (
-                    <>
-                      <span class="room-btn-title">✎ Edit my draft</span>
-                      <span class="room-btn-sub">
-                        The room proposes rewrites you accept or reject — up to{" "}
-                        {store.roomSettings.maxProposals} this pass.
-                      </span>
-                    </>
+                    <span class="room-btn-title">✎ Propose edits</span>
                   )}
                 </button>
               )}
+            </div>
 
+            <div class="mt-1">
               <button
                 onClick$={() => {
                   if (store.analysis && !store.isAnalyzing) {
@@ -1889,10 +1819,10 @@ export const PersonasPanel = component$(
                 title="The same five editors, at length: a full-page memo each, then the room's synthesis. Opens full screen."
               >
                 {store.isAnalyzing
-                  ? "✦ writing the full analysis…"
+                  ? "✦ Writing analysis…"
                   : store.analysis
-                    ? "❡ open the full analysis ↗"
-                    : "❡ full analysis ↗"}
+                    ? "❡ Open full analysis ↗"
+                    : "❡ Run full analysis ↗"}
               </button>
             </div>
 
@@ -1902,7 +1832,7 @@ export const PersonasPanel = component$(
                 close the next passing note is, without having to ask. */}
             {store.backgroundRoom && store.backgroundRoom.status !== "off" && (
               <p
-                class="mt-2 flex items-center gap-1.5 text-[10px] tracking-[0.12em] uppercase text-[var(--color-ink-muted)]"
+                class="mt-1 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em] text-[var(--color-ink-muted)]"
                 style="font-family: var(--font-typewriter);"
                 role="status"
               >
@@ -1928,7 +1858,7 @@ export const PersonasPanel = component$(
               </p>
             )}
 
-            <div class="mt-2 flex items-center justify-between">
+            <div class="mt-1.5 flex items-center justify-between">
               <button
                 onClick$={() => {
                   store.settingsOpen = !store.settingsOpen;
@@ -1956,13 +1886,13 @@ export const PersonasPanel = component$(
             </div>
 
             {store.settingsOpen && (
-              <div class="mt-2 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-3 space-y-3">
+              <div class="mt-1.5 space-y-2 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-2.5">
                 <div>
                   <p
                     class="text-[10px] uppercase tracking-[0.14em] text-[var(--color-ink-light)] mb-1"
                     style="font-family: var(--font-typewriter);"
                   >
-                    How much the room edits
+                    Edit scope
                   </p>
                   <div class="flex gap-1">
                     {(
@@ -1980,7 +1910,7 @@ export const PersonasPanel = component$(
                         }`}
                         style="font-family: var(--font-typewriter);"
                       >
-                        {lvl}
+                        {lvl === "comments" ? "Notes only" : lvl}
                       </button>
                     ))}
                   </div>
@@ -2003,19 +1933,15 @@ export const PersonasPanel = component$(
                     />
                   </label>
                   <p
-                    class="mt-1 text-[10px] leading-4 text-[var(--color-ink-muted)]"
+                    class="mt-0.5 text-[10px] leading-4 text-[var(--color-ink-muted)]"
                     style="font-family: var(--font-serif);"
                   >
-                    The room leaves a short note after every {
-                      WORD_DELTA_THRESHOLD
-                    }{" "}
-                    new words, once you pause. Turn this off to write in silence
-                    until you ask.
+                    Adds notes after {WORD_DELTA_THRESHOLD} new words.
                   </p>
                 </div>
                 <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
                   <span style="font-family: var(--font-typewriter);">
-                    Max edits / pass
+                    Edits per pass
                   </span>
                   <input
                     type="number"
@@ -2036,7 +1962,7 @@ export const PersonasPanel = component$(
                 </label>
                 <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
                   <span style="font-family: var(--font-typewriter);">
-                    Max large edits
+                    Paragraph edits
                   </span>
                   <input
                     type="number"
@@ -2065,9 +1991,10 @@ export const PersonasPanel = component$(
                 compact
                 title={
                   store.conveneError.source === "validation"
-                    ? "Draft readiness check"
+                    ? "Draft too short"
                     : undefined
                 }
+                showReference={store.conveneError.source !== "validation"}
                 recoveryLabel={
                   store.conveneError.source === "validation"
                     ? undefined
@@ -2142,7 +2069,7 @@ export const PersonasPanel = component$(
         )}
 
         {/* ── Marginalia — feedback feed ──────────────────────── */}
-        <div class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+        <div class="flex-1 space-y-3 px-4 py-3">
           {/* Notes being written, above the filed ones. Each editor fills
               their own card as they go, so the wait is spent reading rather
               than watching a spinner. These are not notes yet: no reply box,
@@ -2211,33 +2138,24 @@ export const PersonasPanel = component$(
           )}
 
           {store.feedback.length === 0 && !store.isGenerating && (
-            <div class="text-center py-10 px-4">
+            <div class="px-4 py-6 text-center">
               <p
-                class="text-3xl"
+                class="text-xl"
                 style="font-family: var(--font-display); color: var(--color-vermilion);"
               >
                 ❦
               </p>
               <p
-                class="mt-3 text-sm text-[var(--color-ink-light)]"
+                class="mt-2 text-sm text-[var(--color-ink-light)]"
                 style="font-family: var(--font-serif); font-style: italic;"
               >
-                The room awaits the manuscript.
-              </p>
-              <p
-                class="mt-1.5 text-[0.7rem] tracking-[0.14em] uppercase text-[var(--color-ink-light)]"
-                style="font-family: var(--font-typewriter);"
-              >
-                Write a few paragraphs, then convene.
+                No notes yet. Write a few paragraphs, then get notes.
               </p>
             </div>
           )}
 
           {(() => {
-            const filtered = store.feedback.filter(
-              (f) =>
-                !store.activePersona || f.personaId === store.activePersona,
-            );
+            const filtered = store.feedback;
             // When grouped, reduce to one entry per persona (the latest).
             const items: PersonaFeedback[] = store.groupByPersona
               ? Array.from(

@@ -134,17 +134,25 @@ export class Twyne {
   }
 
   /**
-   * Full CI gate: lint → typecheck → test → build → package.
-   * Throws on the first failing stage; returns a summary when everything passes.
+   * Full CI gate.
+   *
+   * Lint, typecheck, and unit tests read the same installed source but do not
+   * share output directories, so Dagger can evaluate them in parallel.
+   * Packaging remains behind all three quality gates: it performs the Qwik
+   * client and SSR builds, whose generated manifests/output must stay
+   * serialized until those directories are explicitly isolated.
    */
   @func()
   async all(
     @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
     source: Directory,
   ): Promise<string> {
-    await this.lint(source);
-    await this.typecheck(source);
-    await this.test(source);
+    await Promise.all([
+      this.lint(source),
+      this.typecheck(source),
+      this.test(source),
+    ]);
+
     // Building the package also covers `build`.
     await this.package(source).sync();
     return "✓ twyne ci: lint, typecheck, test, build, package all passed";

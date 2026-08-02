@@ -11,6 +11,14 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
  *
  * The presence data is pushed in via the `setRemoteCursors` command, called
  * by the editor whenever the Convex presence subscription updates.
+ *
+ * The caret's `height: 1.4em` is load-bearing for pagination. It is smaller
+ * than the manuscript's 1.8 line-height, so a remote caret cannot grow a line
+ * box, which is why `setRemoteCursors` — a transaction that does not change
+ * the document — never needs to trigger a remeasure. Make the caret taller
+ * and every page break in the folio starts shifting whenever a collaborator
+ * moves their cursor. `.remote-cursor { max-height: 1.4em }` in global.css
+ * pins the invariant from the other side.
  */
 
 export interface RemoteCursor {
