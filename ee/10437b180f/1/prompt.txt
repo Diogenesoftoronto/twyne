@@ -1,0 +1,29 @@
+hi
+
+---
+
+I had this conversation with a user about some changes that might be helpful for that application, let's draft a plan together about them: tryingET — 14:01
+where is the hotkey for spellchecking?! 😉
+
+also something doesnt work with the marginalia. I tried to select a I guess editor via @ and then mouse. after selecting it just dropped the selected name and only the @ returned.
+also added a table. and now I cannot get rid of it (2nd row was deleteable via button) but not the first one.
+Dio the Debugger [UnAI],  — 14:04
+Ah I am pushing an update for tables as we speak
+Dio the Debugger [UnAI],  — 14:04
+Thank you I will see what the fix is
+Dio the Debugger [UnAI],  — 14:06
+No hot key for spell check. I don't actually have any spell check. I was more thinking about editing in higher levels for things rather than grammar and spelling. Which a lot of browsers capture these days. I also figure many people use grammarly which I am not trying to compete with. That said do you think it's a core feature I should add?
+tryingET — 14:06
+also I would need a custom theme in some way. my eyes are hurting from looking at this theme
+Dio the Debugger [UnAI],  — 14:06
+You want dark mode?
+tryingET — 14:07
+I think basic spelling from the browser should be accessible via hotkeys. so you can be hands off.. (i dont know how this would work)
+no, I am a light mode person. but the colors just dont work for me. 😉
+Dio the Debugger [UnAI],  — 14:07
+Oof unfortunate
+I'll think about theming it's difficult to get colour palettes work for everyone. ___ I had some questions about somethings for example I don't know how i would get spell check working with bindings and stuff in the browser but I think this is a good idea if possible. The other thing is themeing, we could add it in preferences but we need a pallete to chose and see if it works maybe just a few themes make sense? though custimization in the palette would be priority.
+
+---
+
+i think we can skip the spell check for now doesn't seem like it makes sense. let's tackle the other stuff
