@@ -5,13 +5,12 @@
   "branch": "main",
   "checkpoints_count": 12,
   "files_touched": [
+    "CHANGELOG.md",
     "bun.lock",
     "convex/agents.ts",
-    "docs/changes/dossier-ux-cleanup.md",
     "package.json",
     "src/components/onboarding/anti-tabula-rasa.tsx",
     "src/components/onboarding/conversational-interview.tsx",
-    "src/components/onboarding/dossier-top-bar.tsx",
     "src/routes/dossier/create/index.tsx",
     "src/routes/dossier/refine/index.tsx",
     "src/utils/ai-client.ts",
@@ -90,11 +89,11 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 3026680,
+    "input_tokens": 3011031,
     "cache_creation_tokens": 588062,
-    "cache_read_tokens": 147951882,
-    "output_tokens": 464874,
-    "api_call_count": 913
+    "cache_read_tokens": 147457226,
+    "output_tokens": 460716,
+    "api_call_count": 898
   },
   "combined_attribution": {
     "calculated_at": "2026-08-02T01:10:14.759614835Z",
