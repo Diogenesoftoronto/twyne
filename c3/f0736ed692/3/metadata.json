@@ -1,0 +1,56 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "c3f0736ed692",
+  "session_id": "ses_0400da1d3ffeeiMP7mv86AAzWB",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-02T01:15:50.484529857Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    ".dagger/src/index.ts",
+    "convex/_generated/api.d.ts",
+    "convex/schema.ts",
+    "skills-lock.json",
+    "src/components/editor/extensions/mark-anchor-widgets.ts",
+    "src/components/editor/extensions/remote-cursors.ts",
+    "src/components/editor/test-harness.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/personas/personas-panel.tsx",
+    "src/components/ui/application-notice.tsx",
+    "src/components/ui/speak-button.tsx",
+    "src/global.css",
+    "src/routes/docs/index.tsx",
+    "src/routes/personas/index.tsx",
+    "src/types/index.ts",
+    "src/utils/exchange.ts",
+    "src/utils/page-margins.test.ts",
+    "src/utils/speech.ts"
+  ],
+  "agent": "OpenCode",
+  "model": "neuralwatt/glm-5.2",
+  "turn_id": "a0a2736f6b31",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 45334,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 351104,
+    "output_tokens": 3619,
+    "api_call_count": 9
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-02T01:15:50.468630449Z",
+    "agent_lines": 2573,
+    "agent_removed": 742,
+    "human_added": 18523,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 21096,
+    "total_lines_changed": 21840,
+    "agent_percentage": 15.178571428571427,
+    "metric_version": 2
+  }
+}
