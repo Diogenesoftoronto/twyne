@@ -3,7 +3,7 @@
   "checkpoint_id": "d4ab05d2d931",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 4,
   "files_touched": [
     "src/components/onboarding/anti-tabula-rasa.tsx"
   ],
@@ -14,13 +14,20 @@
       "compact_transcript": "/d4/ab05d2d931/0/transcript.jsonl",
       "content_hash": "/d4/ab05d2d931/0/content_hash.txt",
       "prompt": "/d4/ab05d2d931/0/prompt.txt"
+    },
+    {
+      "metadata": "/d4/ab05d2d931/1/metadata.json",
+      "transcript": "/d4/ab05d2d931/1/full.jsonl",
+      "compact_transcript": "/d4/ab05d2d931/1/transcript.jsonl",
+      "content_hash": "/d4/ab05d2d931/1/content_hash.txt",
+      "prompt": "/d4/ab05d2d931/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 281197,
+    "input_tokens": 1911347,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 13998336,
-    "output_tokens": 40531,
-    "api_call_count": 112
+    "cache_read_tokens": 36339670,
+    "output_tokens": 107494,
+    "api_call_count": 232
   }
 }

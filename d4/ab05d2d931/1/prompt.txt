@@ -1,0 +1,45 @@
+continue
+
+---
+
+skip vet
+
+---
+
+.
+
+---
+
+Execute docs/editor-parallel-build-graph.md  preserving the existing dirty working tree and respecting its ownership boundaries.
+
+---
+
+Implement Wave 1 OL — Document outline/TOC exactly per docs/editor-parallel-build-graph.md. Ownership ONLY: src/utils/document-outline.ts, src/components/editor/document-outline.tsx, focused tests. Do not edit central editor, route layout, protected/shared/dirty files. You are not alone; never revert others. Produce stable hierarchy including skipped levels and duplicate stable identifiers, navigation component that focuses heading, and TOC payload. Run focused tests/typecheck, report paths and uncertainties.
+
+---
+
+Implement Wave 1 NT — Inline footnotes/endnotes exactly per docs/editor-parallel-build-graph.md. Ownership ONLY new note NodeView or inline note-popover component, note editing utilities, focused tests. Do not edit existing endnote-node.ts unless absolutely required; if it is protected by existing dirty ownership, instead expose adapters around it. Must not edit central editor/export/protected/shared/dirty files. You are not alone; no reverts. Support edit beside reference, kind conversion, delete, navigate; Escape focus return; derived numbering; HTML round-trip. Run focused tests/typecheck and report paths.
+
+---
+
+Implement Wave 1 FR — Find and Replace exactly per docs/editor-parallel-build-graph.md. Ownership is ONLY: src/utils/find-replace.ts, src/components/editor/extensions/find-replace.ts, src/components/editor/find-replace-panel.tsx, and focused tests for those files. Do not edit protected shared files, package files, or any pre-existing dirty files. You are not alone in the codebase; do not revert others' changes. Build pure match finder, ProseMirror decoration plugin, Qwik UI, next/previous/replace/replace-all commands. Case-sensitive, whole-word, optional regex, counter/wraparound, decorations must not alter HTML/history. Run focused tests/typecheck if feasible. Edit files directly and report paths and verification.
+
+---
+
+Implement Wave 1 MA — LaTeX math exactly per docs/editor-parallel-build-graph.md. Ownership ONLY new math extension, math source editor, isolated KaTeX-specific styles/assets, unit/render tests. Do NOT edit package files/global.css/central editor/export/protected or dirty files. Assume coordinator will install dependencies; if dependency absent, design extension using dynamic peer import or isolated API and clearly report needed packages. You are not alone; no reverts. Inline+block nodes, click-to-edit raw LaTeX, portable HTML, invalid recoverable state, keyboard editable, block atomic. Run focused tests/typecheck.
+
+---
+
+Implement Wave 1 HF — Inline headers/footers exactly per docs/editor-parallel-build-graph.md. Ownership ONLY a new header/footer inline editor component plus page-furniture editing tests. Must NOT edit page-chrome.tsx, central editor, global css, or protected/pre-existing dirty files. You are not alone; no reverts. Expose callbacks/contracts for existing folio layout events, predictable keyboard focus/cancel, empty restores fallback. Run focused tests/typecheck and report paths.
+
+---
+
+Implement Wave 1 TC — Table core UX exactly per docs/editor-parallel-build-graph.md. Ownership ONLY new table insertion grid, floating table toolbar, table-format extension/attributes/utilities, focused tests. Do NOT edit central editor/shared color picker/export/protected/pre-existing dirty files. You are not alone; no reverts. N-by-M insert, actions with disabled availability, width/alignment/distribute, captions/style attrs round trip; expose integration contract. Run focused tests/typecheck.
+
+---
+
+Implement Wave 2 DR — Section drag/reorder exactly per docs/editor-parallel-build-graph.md, consuming the completed src/utils/document-outline.ts contract. Ownership ONLY new section move/reorder utility, new drag-handle extension or component, and focused tests. Do NOT edit document-outline implementation, central editor, protected/shared/pre-existing dirty files. You are not alone; no reverts. One undoable transaction, nested section moves with parent, invalid self-drops rejected. Run focused tests/typecheck and report paths.
+
+---
+
+Implement Wave 1 IB — Image backend exactly per docs/editor-parallel-build-graph.md. FIRST read convex/_generated/ai/guidelines.md. Ownership ONLY convex/images.ts, required source schema additions, ownership/security tests. Do NOT edit generated Convex files, frontend, protected shared files, or any other pre-existing dirty files. You are not alone in the codebase; do not revert others. Deliver upload URL mutation, durable file metadata record, authorized lookup and deletion; every operation checks ownership; reject unsupported type and oversize uploads; deletion removes metadata and stored file. Run focused tests/typecheck where feasible. Report exact files changed and codegen needed.
