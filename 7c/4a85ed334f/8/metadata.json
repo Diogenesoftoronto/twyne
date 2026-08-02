@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "7c4a85ed334f",
+  "session_id": "019fbf5f-5c59-7c92-baa4-f7fcd56d3620",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-02T20:27:16.874434511Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/neat-fair-glow.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "e5cbbc88f54e",
+  "checkpoint_transcript_start": 99,
+  "transcript_lines_at_start": 99,
+  "compact_transcript_start": 19,
+  "initial_attribution": {
+    "calculated_at": "2026-08-02T20:27:16.6897243Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 2,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 2,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
