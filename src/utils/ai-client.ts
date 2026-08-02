@@ -2267,6 +2267,8 @@ export interface InterviewTurnRequest {
   messages: InterviewMessage[];
   mode: InterviewMode;
   currentBrief: ProjectBrief | null;
+  /** Manuscript text carried over from the dossier refinery's "Start over". */
+  startingMaterial?: string | null;
 }
 
 export interface InterviewDossierDraft {
@@ -2385,6 +2387,7 @@ export async function runClientInterviewTurn(
     const lastUser = [...request.messages]
       .reverse()
       .find((m) => m.author === "writer");
+    const startingMaterial = request.startingMaterial?.trim() ?? "";
     const system = [
       "You are a kind, incisive editorial interviewer helping a writer build a project dossier.",
       "Ask one question at a time. Keep it short. You are building a writer's room: identify the piece, reader, goal, tone, constraints, success signal, and what kind of advisors/editors the writer wants around it.",
@@ -2392,6 +2395,9 @@ export async function runClientInterviewTurn(
       "When the dossier is complete enough for review, respond only with `SYNTHESIZE:` followed by the same JSON shape. Put requested advisors/editors into constraints or goal until the product has a dedicated advisor schema.",
       request.mode === "refine" && request.currentBrief
         ? `Existing dossier: ${JSON.stringify(request.currentBrief.answers)} — refine it, don't restart.`
+        : "",
+      startingMaterial
+        ? `The writer has already drafted the following manuscript. Read it before asking — orient the dossier around what is already on the page rather than starting from a blank brief.\n\n--- BEGIN MANUSCRIPT ---\n${startingMaterial}\n--- END MANUSCRIPT ---`
         : "",
     ]
       .filter(Boolean)

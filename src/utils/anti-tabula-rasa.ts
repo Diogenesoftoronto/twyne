@@ -10,6 +10,14 @@ import { loadBriefFromIdb, saveBriefToIdb } from "./idb";
 
 export const BRIEF_STORAGE_KEY = "twyne-project-brief";
 export const DRAFT_STORAGE_KEY = "twyne-document";
+/**
+ * One-shot slot for the manuscript text that should travel with a writer
+ * when they hit "Start over" on the dossier refinery. The refine route
+ * stashes the current folio content here before routing to /dossier/create,
+ * and the create route reads it on hydration to seed the next interview's
+ * starting-material field. Either side clears it once consumed.
+ */
+export const STARTING_MATERIAL_KEY = "twyne-starting-material";
 
 export const DEFAULT_INTERVIEW_ANSWERS: ProjectInterviewAnswers = {
   workingTitle: "Untitled project",
@@ -127,6 +135,33 @@ export function saveDraftHtml(html: string): void {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(DRAFT_STORAGE_KEY, html);
+  } catch {
+    // storage unavailable
+  }
+}
+
+export function loadStartingMaterial(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return localStorage.getItem(STARTING_MATERIAL_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+export function saveStartingMaterial(material: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STARTING_MATERIAL_KEY, material);
+  } catch {
+    // storage unavailable
+  }
+}
+
+export function clearStartingMaterial(): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.removeItem(STARTING_MATERIAL_KEY);
   } catch {
     // storage unavailable
   }

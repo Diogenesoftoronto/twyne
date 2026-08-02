@@ -9,6 +9,7 @@ import { useNavigate } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
+import { DossierTopBar } from "../../../components/onboarding/dossier-top-bar";
 import { AuthPanel } from "../../../components/auth/auth-panel";
 import { useAuth } from "../../../utils/auth-context";
 import type {
@@ -21,7 +22,9 @@ import type {
 import {
   buildImportedMaterialDocument,
   buildStarterDocument,
+  clearStartingMaterial,
   createProjectBrief,
+  loadStartingMaterial,
   saveProjectBriefForFolio,
 } from "../../../utils/anti-tabula-rasa";
 import {
@@ -42,6 +45,7 @@ interface OnboardingStore {
   formAttachments: DossierAttachment[];
   folioId: string | null;
   folioName: string;
+  initialMaterial: string;
 }
 
 /**
@@ -65,6 +69,7 @@ export default component$(() => {
     formAttachments: [],
     folioId: null,
     folioName: "",
+    initialMaterial: "",
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -84,6 +89,11 @@ export default component$(() => {
       null;
     store.folioId = folio?.id ?? null;
     store.folioName = folio?.name ?? "";
+    // Pull the manuscript text the refine page stashed when the writer hit
+    // "Start over", then clear it so a subsequent ordinary /dossier/create
+    // visit doesn't see a stale carry-over.
+    store.initialMaterial = loadStartingMaterial();
+    clearStartingMaterial();
     store.hydrated = true;
   });
 
@@ -148,10 +158,6 @@ export default component$(() => {
     },
   );
 
-  const onCancel$ = $(() => {
-    void nav(store.folioId ? "/editor/" : "/");
-  });
-
   if (!store.hydrated) {
     return (
       <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
@@ -213,34 +219,57 @@ export default component$(() => {
 
   if (store.style === "conversational") {
     return (
-      <ConversationalInterview
-        mode="first-run"
-        onComplete$={({ answers, attachments, probes }) =>
-          completeOnboarding$(answers, undefined, undefined, attachments, probes)
-        }
-        onCancel$={$(() => {
-          store.style = "form";
-        })}
-        onUseForm$={({ answers, attachments }) => {
-          store.formAnswers = answers;
-          store.formAttachments = attachments;
-          store.style = "form";
-        }}
-        cancelLabel="Use form"
-      />
+      <div class="min-h-screen bg-[var(--color-paper)]">
+        <DossierTopBar
+          backHref={store.folioId ? "/editor/" : "/"}
+          backLabel={store.folioId ? "Back to desk" : "Back home"}
+          mode={store.style}
+          switchHref=""
+          showStartOver={false}
+          onSwitch$={$(() => {
+            store.style = "form";
+          })}
+          onStartOver$={$(() => {})}
+        />
+        <ConversationalInterview
+          mode="first-run"
+          initialMaterial={store.initialMaterial}
+          onComplete$={({ answers, attachments, probes }) =>
+            completeOnboarding$(answers, undefined, undefined, attachments, probes)
+          }
+          onUseForm$={({ answers, attachments }) => {
+            store.formAnswers = answers;
+            store.formAttachments = attachments;
+            store.style = "form";
+          }}
+        />
+      </div>
     );
   }
 
   return (
-    <AntiTabulaRasa
-      mode="first-run"
-      initialAnswers={
-        store.formAnswers as ProjectInterviewAnswers | null | undefined
-      }
-      initialAttachments={store.formAttachments}
-      onSubmit$={completeOnboarding$}
-      onCancel$={onCancel$}
-    />
+    <div class="min-h-screen bg-[var(--color-paper)]">
+      <DossierTopBar
+        backHref={store.folioId ? "/editor/" : "/"}
+        backLabel={store.folioId ? "Back to desk" : "Back home"}
+        mode={store.style}
+        switchHref=""
+        showStartOver={false}
+        onSwitch$={$(() => {
+          store.style = "conversational";
+        })}
+        onStartOver$={$(() => {})}
+      />
+      <AntiTabulaRasa
+        mode="first-run"
+        initialAnswers={
+          store.formAnswers as ProjectInterviewAnswers | null | undefined
+        }
+        initialAttachments={store.formAttachments}
+        initialMaterial={store.initialMaterial}
+        onSubmit$={completeOnboarding$}
+      />
+    </div>
   );
 });
 
