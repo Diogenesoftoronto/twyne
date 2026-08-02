@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.8.42",
+  "checkpoint_id": "08c97392592d",
+  "session_id": "019fbf5d-6b13-75b3-b86e-1624612bc7f9",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-02T20:21:22.73471943Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/proud-dry-finch.md",
+    ".bumpy/pure-amber-kite.md",
+    "CHANGELOG.md",
+    "package.json"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "410c0bb28e62",
+  "checkpoint_transcript_start": 24,
+  "transcript_lines_at_start": 24,
+  "compact_transcript_start": 4,
+  "initial_attribution": {
+    "calculated_at": "2026-08-02T20:21:22.562678749Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 7,
+    "human_removed": 1,
+    "total_committed": 0,
+    "total_lines_changed": 8,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
