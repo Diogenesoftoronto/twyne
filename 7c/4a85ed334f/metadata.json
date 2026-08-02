@@ -3,7 +3,7 @@
   "checkpoint_id": "7c4a85ed334f",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 9,
+  "checkpoints_count": 10,
   "files_touched": [
     ".bumpy/neat-fair-glow.md"
   ],
@@ -55,6 +55,13 @@
       "transcript": "/7c/4a85ed334f/6/full.jsonl",
       "compact_transcript": "/7c/4a85ed334f/6/transcript.jsonl",
       "content_hash": "/7c/4a85ed334f/6/content_hash.txt",
+      "prompt": ""
+    },
+    {
+      "metadata": "/7c/4a85ed334f/7/metadata.json",
+      "transcript": "/7c/4a85ed334f/7/full.jsonl",
+      "compact_transcript": "/7c/4a85ed334f/7/transcript.jsonl",
+      "content_hash": "/7c/4a85ed334f/7/content_hash.txt",
       "prompt": ""
     }
   ],
