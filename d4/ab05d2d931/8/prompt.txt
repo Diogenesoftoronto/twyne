@@ -1,0 +1,8 @@
+"I just fixed four bugs you flagged in /home/diogenes/Projects/twyne/docs/changes/dossier-ux-cleanup.md:
+1. Wired initialMaterial into AntiTabulaRasa's store (existingMaterial: initialMaterial ?? '')
+2. Added initialMaterial={store.initialMaterial} to the ConversationalInterview JSX in /dossier/create
+3. Injected request.startingMaterial into the BYOK runClientInterviewTurn system prompt
+4. Stored plain text in saveStartingMaterial instead of raw HTML
+5. Dropped the dead onCancel$ prop on ConversationalInterviewProps
+
+Re-verify these are actually fixed by reading the relevant lines. Be terse. Also flag any new issues you spot."

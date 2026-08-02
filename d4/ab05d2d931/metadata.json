@@ -3,7 +3,7 @@
   "checkpoint_id": "d4ab05d2d931",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 10,
+  "checkpoints_count": 11,
   "files_touched": [
     "convex/agents.ts",
     "docs/changes/dossier-ux-cleanup.md",
@@ -71,13 +71,20 @@
       "compact_transcript": "/d4/ab05d2d931/7/transcript.jsonl",
       "content_hash": "/d4/ab05d2d931/7/content_hash.txt",
       "prompt": "/d4/ab05d2d931/7/prompt.txt"
+    },
+    {
+      "metadata": "/d4/ab05d2d931/8/metadata.json",
+      "transcript": "/d4/ab05d2d931/8/full.jsonl",
+      "compact_transcript": "/d4/ab05d2d931/8/transcript.jsonl",
+      "content_hash": "/d4/ab05d2d931/8/content_hash.txt",
+      "prompt": "/d4/ab05d2d931/8/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2871819,
+    "input_tokens": 2917153,
     "cache_creation_tokens": 588062,
-    "cache_read_tokens": 147419594,
-    "output_tokens": 451492,
-    "api_call_count": 899
+    "cache_read_tokens": 147770698,
+    "output_tokens": 455111,
+    "api_call_count": 908
   }
 }
