@@ -1,0 +1,12 @@
+"Commit ALL remaining uncommitted work in the working tree (103 paths: ~80 untracked, ~28 modified, all visible via 'git status -s'). Do NOT scope, do NOT try to split — just commit everything as-is in one commit. 
+
+The previous commit on main is the 0.8.0 release (two commits: feat + Version Twyne). The version is already at 0.8.0. 
+
+Steps:
+1. Run 'bun run build.types' and 'bun test' to confirm everything still passes. If a pre-existing flake is the only failure, that's fine — note it and continue.
+2. 'git add -A' to stage all 103 paths.
+3. 'git status -s | head -5' and 'git status -s | wc -l' to confirm what's staged.
+4. Commit with a single feat: message. Title <72 chars. Body explains why a single catch-up commit. Use HEREDOC + Crush Co-authored-by attribution. Mention the dossier UX cleanup as a notable piece if it helps, but the commit is fundamentally a 'commit the work that accumulated in the working tree' commit.
+5. After the commit, the working tree should be clean. Confirm with 'git status'.
+6. Do NOT bump the version. Do NOT run release:version. The 0.8.0 version is already on main. Do NOT push.
+7. Be terse in your output — just commands and outcomes."
