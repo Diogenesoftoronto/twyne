@@ -87,6 +87,13 @@ interface ConversationalInterviewProps {
   mode: "first-run" | "refine";
   initialBrief?: ProjectBrief;
   initialAttachments?: DossierAttachment[];
+  /**
+   * Manuscript text carried over from the dossier refinery's "Start over"
+   * flow. When present, the opening turn reads it as starting context so the
+   * AI orients its first question around what the writer has already drafted
+   * rather than starting cold.
+   */
+  initialMaterial?: string;
   onComplete$: PropFunction<
     (payload: {
       answers: ProjectInterviewAnswers;
@@ -94,8 +101,6 @@ interface ConversationalInterviewProps {
       probes: DossierProbe[];
     }) => void
   >;
-  onCancel$?: PropFunction<() => void>;
-  cancelLabel?: string;
   onUseForm$?: PropFunction<
     (payload: {
       answers: Partial<ProjectInterviewAnswers>;
@@ -285,6 +290,7 @@ export const ConversationalInterview = component$(
               messages: store.messages,
               mode: props.mode,
               currentBrief: props.initialBrief ?? null,
+              startingMaterial: props.initialMaterial ?? null,
             },
             settings,
             (update) => {
@@ -323,6 +329,7 @@ export const ConversationalInterview = component$(
                 messages: store.messages,
                 mode: props.mode,
                 currentBrief: props.initialBrief ?? null,
+                startingMaterial: props.initialMaterial ?? null,
                 streamId,
               },
             )) as InterviewTurnResult | null;
@@ -445,22 +452,6 @@ export const ConversationalInterview = component$(
       });
     });
 
-    const cancelOrUseForm = $(() => {
-      store.requestVersion += 1;
-      if (props.onUseForm$) {
-        props.onUseForm$({
-          answers:
-            store.synthesis?.brief ??
-            store.liveDraft?.brief ??
-            props.initialBrief?.answers ??
-            {},
-          attachments: store.attachments,
-        });
-        return;
-      }
-      props.onCancel$?.();
-    });
-
     const dismissError = $(() => {
       store.error = null;
     });
@@ -541,18 +532,6 @@ export const ConversationalInterview = component$(
                 : "Begin with a one-liner."}
             </h1>
           </div>
-          {props.onCancel$ && (
-            <button
-              onClick$={cancelOrUseForm}
-              class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-sm"
-              style={{
-                fontFamily: "var(--font-typewriter)",
-                letterSpacing: "0.1em",
-              }}
-            >
-              {props.cancelLabel ?? "Cancel"}
-            </button>
-          )}
         </header>
 
         {/* Thread */}

@@ -3,6 +3,8 @@ import { useNavigate, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
+import { DossierTopBar } from "../../../components/onboarding/dossier-top-bar";
+import { ThemedDialog } from "../../../components/ui/themed-dialog";
 import type {
   DossierAttachment,
   DossierProbe,
@@ -21,12 +23,16 @@ import {
   loadAiSettingsFromIdb,
   loadFolioContentFromIdb,
   loadWriterSettingsFromIdb,
+  saveDraftHtmlToIdb,
 } from "../../../utils/idb";
-import { loadDraftHtml } from "../../../utils/anti-tabula-rasa";
 import {
   createProjectBrief,
+  htmlToPlainText,
+  loadDraftHtml,
   loadProjectBriefForFolio,
+  saveDraftHtml,
   saveProjectBriefForFolio,
+  saveStartingMaterial,
 } from "../../../utils/anti-tabula-rasa";
 
 interface RefiningStore {
@@ -41,6 +47,8 @@ interface RefiningStore {
   formAnswers: Partial<ProjectInterviewAnswers> | null;
   formAttachments: DossierAttachment[];
   folioId: string | null;
+  startOverOpen: boolean;
+  startOverBusy: boolean;
 }
 
 /**
@@ -65,6 +73,8 @@ export default component$(() => {
     formAnswers: null,
     formAttachments: [],
     folioId: null,
+    startOverOpen: false,
+    startOverBusy: false,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -177,6 +187,45 @@ export default component$(() => {
     }
   });
 
+  // The "Start over" affordance is the only destructive action on this page,
+  // so it sits in its own confirm dialog rather than alongside the other top
+  // bar buttons. Confirming wipes the dossier's answers (the brief row stays
+  // so we don't orphan attachments and notes), stashes the existing manuscript
+  // text as the next interview's starting material, and routes to /dossier/
+  // create so the writer re-files from a blank slate without losing their draft.
+  const confirmStartOver = $(async () => {
+    if (!store.brief || !store.folioId) return;
+    store.startOverBusy = true;
+    try {
+      const blank: ProjectInterviewAnswers = {
+        workingTitle: "",
+        format: "",
+        audience: "",
+        goal: "",
+        tone: "",
+        constraints: "",
+        successSignal: "",
+      };
+      const next = createProjectBrief(blank, null, [], []);
+      await saveProjectBriefForFolio(store.folioId, next);
+      // Both sources are HTML (the live folio body and the localStorage
+      // draft fallback). Strip to prose before carrying it across — the
+      // form's existing-material textarea and the AI prompt both want text,
+      // not markup. `htmlToPlainText` is idempotent on already-plain input.
+      const manuscript = store.draftText || loadDraftHtml();
+      const plain = htmlToPlainText(manuscript).trim();
+      if (plain) saveStartingMaterial(plain);
+      store.brief = next;
+      store.formAnswers = null;
+      store.formAttachments = [];
+      const query = `?folio=${encodeURIComponent(store.folioId)}`;
+      void nav(`/dossier/create/${query}`);
+    } finally {
+      store.startOverBusy = false;
+      store.startOverOpen = false;
+    }
+  });
+
   if (!store.hydrated) {
     return (
       <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
@@ -221,34 +270,20 @@ export default component$(() => {
 
   return (
     <div class="min-h-screen bg-[var(--color-paper)]">
-      <div class="px-4 py-2 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/80 backdrop-blur-sm flex items-center justify-between">
-        <Link
-          href="/editor/"
-          class="text-[var(--color-ink-light)] hover:text-[var(--color-ink)] text-sm flex items-center gap-1.5"
-          style={{ fontFamily: "var(--font-typewriter)" }}
-        >
-          <span aria-hidden="true">←</span> Back to desk
-        </Link>
-        {store.style === "form" && (
-          <div
-            class="flex items-center gap-3 text-[0.65rem] tracking-[0.18em] uppercase"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            <span class="text-[var(--color-ink-muted)]">Mode:</span>
-            <span class="rounded-full bg-[var(--color-vermilion)] px-3 py-1 text-white">
-              Form
-            </span>
-            <button
-              onClick$={() => {
-                store.style = "conversational";
-              }}
-              class="px-3 py-1 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
-            >
-              Conversation
-            </button>
-          </div>
-        )}
-      </div>
+      <DossierTopBar
+        backHref="/editor/"
+        backLabel="Back to desk"
+        mode={store.style}
+        switchHref=""
+        showStartOver
+        onSwitch$={$(() => {
+          store.style =
+            store.style === "form" ? "conversational" : "form";
+        })}
+        onStartOver$={$(() => {
+          store.startOverOpen = true;
+        })}
+      />
 
       {store.style === "form" && (
         <div class="px-4 py-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
@@ -377,7 +412,6 @@ export default component$(() => {
               : store.brief.attachments
           }
           onSubmit$={onFormSubmit}
-          onCancel$={$(() => void nav("/editor/"))}
         />
       ) : (
         <ConversationalInterview
@@ -385,7 +419,6 @@ export default component$(() => {
           initialBrief={store.brief}
           initialAttachments={store.brief.attachments}
           onComplete$={onConversationComplete}
-          onCancel$={$(() => void nav("/editor/"))}
           onUseForm$={({ answers, attachments }) => {
             store.formAnswers = answers;
             store.formAttachments = attachments;
@@ -393,6 +426,21 @@ export default component$(() => {
           }}
         />
       )}
+
+      <ThemedDialog
+        open={store.startOverOpen}
+        title="Start the dossier over?"
+        message="The brief, attachments, and probes will be cleared so you can rebuild the dossier from scratch. The manuscript text you've already written is kept — it will be inserted as the starting material when you re-file the dossier."
+        confirmLabel="Start over"
+        cancelLabel="Keep the dossier"
+        tone="danger"
+        confirmDisabled={store.startOverBusy}
+        busy={store.startOverBusy}
+        onCancel$={$(() => {
+          store.startOverOpen = false;
+        })}
+        onConfirm$={confirmStartOver}
+      />
     </div>
   );
 });

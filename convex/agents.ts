@@ -582,7 +582,9 @@ const INTERVIEW_FIELDS = [
 function interviewSystemPrompt(
   mode: "first-run" | "refine",
   currentBrief: ProjectBrief | null,
+  startingMaterial: string | null = null,
 ): string {
+  const trimmed = startingMaterial?.trim();
   return [
     "You are a kind, incisive editorial interviewer helping a writer build a project dossier.",
     "Ask one question at a time. Keep it short. You are building a writer's room: identify the piece, reader, goal, tone, constraints, success signal, and what kind of advisors/editors the writer wants around it.",
@@ -598,6 +600,9 @@ function interviewSystemPrompt(
     "When the dossier is complete enough for review, respond only with `SYNTHESIZE:` followed by the same JSON shape as DOSSIER. Put requested advisors/editors into constraints or goal until the product has a dedicated advisor schema.",
     mode === "refine" && currentBrief
       ? `Existing dossier: ${JSON.stringify(currentBrief.answers)} — refine it, don't restart.`
+      : "",
+    trimmed
+      ? `The writer has already drafted the following manuscript. Read it before asking — orient the dossier around what is already on the page rather than starting from a blank brief.\n\n--- BEGIN MANUSCRIPT ---\n${trimmed}\n--- END MANUSCRIPT ---`
       : "",
   ]
     .filter(Boolean)
@@ -725,6 +730,14 @@ export const runInterviewTurn = action({
     mode: v.union(v.literal("first-run"), v.literal("refine")),
     currentBrief: briefValidator,
     streamId: v.optional(v.string()),
+    /**
+     * Manuscript text the writer has already drafted, surfaced by the
+     * dossier refinery's "Start over" flow. When present, the system
+     * prompt reads it as the starting context for the conversation so the
+     * AI asks questions that fit the work-in-progress instead of
+     * rediscovering it from scratch.
+     */
+    startingMaterial: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<InterviewTurnResult> => {
     const identity = await ctx.auth.getUserIdentity();
@@ -749,6 +762,7 @@ export const runInterviewTurn = action({
         system: interviewSystemPrompt(
           args.mode,
           (args.currentBrief ?? null) as ProjectBrief | null,
+          args.startingMaterial ?? null,
         ),
         prompt: transcript,
         temperature,

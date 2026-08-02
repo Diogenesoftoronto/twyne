@@ -139,6 +139,12 @@ const STEPS: InterviewStep[] = [
 interface AntiTabulaRasaProps {
   initialAnswers?: ProjectInterviewAnswers | null;
   initialAttachments?: DossierAttachment[];
+  /**
+   * Existing manuscript text to seed the "starting material" field with. Set
+   * by `Start over` so a writer who wipes the dossier does not lose what
+   * they already wrote — it travels with them into the next interview.
+   */
+  initialMaterial?: string;
   mode?: InterviewMode;
   /** Preferred submit path. Falls back to the legacy global event if omitted. */
   onSubmit$?: PropFunction<
@@ -150,16 +156,15 @@ interface AntiTabulaRasaProps {
       probes?: DossierProbe[],
     ) => void
   >;
-  onCancel$?: PropFunction<() => void>;
 }
 
 export const AntiTabulaRasa = component$(
   ({
     initialAnswers,
     initialAttachments,
+    initialMaterial,
     mode = "first-run",
     onSubmit$,
-    onCancel$,
   }: AntiTabulaRasaProps) => {
     const store = useStore<{
       step: number;
@@ -181,7 +186,7 @@ export const AntiTabulaRasa = component$(
         ...initialAnswers,
       } as ProjectInterviewAnswers,
       attachments: initialAttachments ?? [],
-      existingMaterial: "",
+      existingMaterial: initialMaterial ?? "",
       importedFilename: "",
       submitting: false,
       submitError: "",
@@ -488,15 +493,6 @@ export const AntiTabulaRasa = component$(
                       />
                     </div>
                   </div>
-                  {onCancel$ && mode === "refine" && (
-                    <button
-                      onClick$={onCancel$}
-                      class="text-sm text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                      style="font-family: var(--font-typewriter); letter-spacing: 0.18em; text-transform: uppercase;"
-                    >
-                      Close
-                    </button>
-                  )}
                 </div>
 
                 <div class="flex-1">
