@@ -3,6 +3,25 @@
 
 
 
+
+## 0.9.0
+<sub>2026-08-02</sub>
+
+-  *(minor)*
+  A single consolidation commit lands the work that had accumulated in the working tree — broad surface area, no one headline feature, but the manuscript gained a real math layer, real tables, and a find-replace that stays open while you edit.
+
+  **Math, in the page.** KaTeX fonts and a math node extension render equations inline, with a math-render path that handles the block form. The fonts ship locally so rendering does not depend on a CDN, and the same renderer is exercised by its own test.
+
+  **Tables you can shape.** A table-format extension and a cell formatter drive a floating toolbar, so cell alignment and borders are a click rather than a hand-edited attribute. The toolbar and the section-reorder extension share a test shape, and both carry their own suites.
+
+  **Find-and-replace that lives in the editor.** The find-replace panel and its extension stay mounted while you keep typing, so a replace does not throw away your cursor's place in the draft. It has a test that drives the replace path end to end.
+
+  **Dossier UX cleanup, keybindings, slash commands.** The dossier interview flow is tidied, a keybinding list surfaces what the editor will actually do, and a slash-command extension opens an action menu from the keyboard. Sections can be reordered, and the order is stored on the document rather than painted on the screen.
+
+  **Image upload, palette, form-probes.** Images land through an image-node extension with an inspector, the Convex images function stores them, and a typographic palette and form-probe utilities round out the surface. A section-reorder test, a table-cell-format test, and a typography-options module with its own test back the new behaviour.
+
+  The shape of the release is a broad catch-up rather than a single feature, so it goes out as a minor.
+
 ## 0.8.0
 <sub>2026-08-02</sub>
 
