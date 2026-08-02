@@ -4,6 +4,12 @@
 
 
 
+
+## 0.10.0
+<sub>2026-08-02</sub>
+
+-  *(minor)* - Theme engine, background research, editor and mention improvements
+
 ## 0.9.0
 <sub>2026-08-02</sub>
 
