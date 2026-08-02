@@ -3,9 +3,17 @@
   "checkpoint_id": "d4ab05d2d931",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 7,
+  "checkpoints_count": 8,
   "files_touched": [
-    "src/components/onboarding/anti-tabula-rasa.tsx"
+    "convex/agents.ts",
+    "docs/changes/dossier-ux-cleanup.md",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/conversational-interview.tsx",
+    "src/components/onboarding/dossier-top-bar.tsx",
+    "src/routes/dossier/create/index.tsx",
+    "src/routes/dossier/refine/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/anti-tabula-rasa.ts"
   ],
   "sessions": [
     {
@@ -42,13 +50,20 @@
       "compact_transcript": "/d4/ab05d2d931/4/transcript.jsonl",
       "content_hash": "/d4/ab05d2d931/4/content_hash.txt",
       "prompt": "/d4/ab05d2d931/4/prompt.txt"
+    },
+    {
+      "metadata": "/d4/ab05d2d931/5/metadata.json",
+      "transcript": "/d4/ab05d2d931/5/full.jsonl",
+      "compact_transcript": "/d4/ab05d2d931/5/transcript.jsonl",
+      "content_hash": "/d4/ab05d2d931/5/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
-    "input_tokens": 2791649,
+    "input_tokens": 2811709,
     "cache_creation_tokens": 588062,
-    "cache_read_tokens": 145341194,
-    "output_tokens": 408873,
-    "api_call_count": 853
+    "cache_read_tokens": 146719242,
+    "output_tokens": 414525,
+    "api_call_count": 884
   }
 }
