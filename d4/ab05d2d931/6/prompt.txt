@@ -1,0 +1,32 @@
+"Release prep. The working tree has a lot of pre-existing in-progress work mixed with the dossier UX cleanup I want to release. I need a clean dossier-only commit.
+
+Files that are CLEAN dossier-only (safe to git add wholesale):
+- src/utils/anti-tabula-rasa.ts (utility, not the component)
+- src/components/onboarding/conversational-interview.tsx
+- src/components/onboarding/dossier-top-bar.tsx (NEW FILE)
+- src/routes/dossier/create/index.tsx
+- src/routes/dossier/refine/index.tsx
+- src/utils/ai-client.ts
+- convex/agents.ts
+- docs/changes/dossier-ux-cleanup.md (NEW FILE)
+
+File that is MIXED with pre-existing in-progress probe refactor:
+- src/components/onboarding/anti-tabula-rasa.tsx (dossier hunks + probe-error refactor hunks)
+
+Steps:
+1. Run 'bun run build.types' and 'bun test' to confirm everything still passes.
+2. Stage the clean files above with 'git add <path>'.
+3. For anti-tabula-rasa.tsx, use 'git add -p' or 'git add --patch' to stage ONLY the dossier hunks. The dossier hunks are:
+   - +imports lines that mention initialMaterial or DossierAttachmentsEditor (NOT the application-errors/form-probes/ApplicationNotice block at top of file)
+   - the new initialMaterial?: string prop on AntiTabulaRasaProps
+   - removing onCancel$ from the props interface
+   - adding initialMaterial to the destructured args
+   - removing onCancel$ from the destructured args
+   - initialMaterial: initialMaterial ?? '' instead of '' for existingMaterial
+   - removing the inline {onCancel$ && mode === 'refine' && ( <button>Close</button> )} block
+   DO NOT stage the application-errors/ApplicationNotice/form-probes hunks — those belong to a separate in-progress effort.
+4. git status to confirm what's staged.
+5. Commit with a feat: message following <git_message_quality> — title in 72 chars, body explains why not what, no code identifiers, no internal jargon. Use the HEREDOC commit format from <git_commits> with the Crush attribution.
+6. Run 'bun run release:status' to check what bumpy says about state, then 'bun run release:version' to do the bump. The repo's convention is the empty-bump-file + Version Twyne pair, which bumpy handles.
+7. Do NOT push.
+8. Be terse in your output — just show commands and outcomes."
