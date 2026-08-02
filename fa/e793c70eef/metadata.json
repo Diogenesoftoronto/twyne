@@ -3,7 +3,7 @@
   "checkpoint_id": "fae793c70eef",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 5,
+  "checkpoints_count": 6,
   "files_touched": [
     "src/routes/dossier/refine/index.tsx"
   ],
@@ -28,6 +28,13 @@
       "compact_transcript": "/fa/e793c70eef/2/transcript.jsonl",
       "content_hash": "/fa/e793c70eef/2/content_hash.txt",
       "prompt": "/fa/e793c70eef/2/prompt.txt"
+    },
+    {
+      "metadata": "/fa/e793c70eef/3/metadata.json",
+      "transcript": "/fa/e793c70eef/3/full.jsonl",
+      "compact_transcript": "/fa/e793c70eef/3/transcript.jsonl",
+      "content_hash": "/fa/e793c70eef/3/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
