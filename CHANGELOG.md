@@ -1,6 +1,36 @@
 # Changelog
 
 
+
+
+## 0.8.0
+<sub>2026-08-02</sub>
+
+-  *(minor)*
+  The dossier interview remembers what the writer already wrote.
+
+  **Start over stops being destructive.** Wiping the dossier used to wipe
+  the manuscript too. The "starting material" field now seeds from
+  `initialMaterial`, which the "Start over" path carries forward into the
+  next interview, so nothing already on the page is lost. The interviewer
+  also receives that existing manuscript as context so its follow-up
+  questions are oriented around what exists rather than a blank brief.
+
+  **No more orphan Close button.** The inline Cancel/Close button on the
+  refinery view duplicated the browser back button and the top bar's own
+  navigation. It and the `onCancel$` prop are gone, simplifying the
+  component surface; the parent routes control their own exit paths.
+
+  **A shared top bar.** A single `DossierTopBar` replaces per-route
+  header markup so both create and refine show the same progress
+  indicator and title.
+
+## 0.7.0
+<sub>2026-08-02</sub>
+
+-  *(minor)*
+  Dossier UX cleanup: shared top bar with persistent Form/Conversation mode switch and Start-over (carries the manuscript forward into /dossier/create), plus removal of redundant in-body Close/Cancel exit buttons across dossier routes.
+
 ## 0.6.0
 <sub>2026-08-01</sub>
 
