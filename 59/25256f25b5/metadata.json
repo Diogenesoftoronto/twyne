@@ -3,7 +3,7 @@
   "checkpoint_id": "5925256f25b5",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 19,
+  "checkpoints_count": 20,
   "files_touched": [
     "CHANGELOG.md",
     "package.json"
@@ -126,6 +126,13 @@
       "transcript": "/59/25256f25b5/16/full.jsonl",
       "compact_transcript": "/59/25256f25b5/16/transcript.jsonl",
       "content_hash": "/59/25256f25b5/16/content_hash.txt",
+      "prompt": ""
+    },
+    {
+      "metadata": "/59/25256f25b5/17/metadata.json",
+      "transcript": "/59/25256f25b5/17/full.jsonl",
+      "compact_transcript": "/59/25256f25b5/17/transcript.jsonl",
+      "content_hash": "/59/25256f25b5/17/content_hash.txt",
       "prompt": ""
     }
   ],
