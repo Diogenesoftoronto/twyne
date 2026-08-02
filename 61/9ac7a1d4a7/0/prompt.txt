@@ -1,0 +1,251 @@
+I noticed some issues with the dept. of particulars in the form, there are no questions that are rendering here and I think it might have to do with a failure in my connection to an llm, in that case i think that this page needs to tell me that there is something wrong here. right now it doesn't. surface the error give the user an option to correct it. that is the general development philosophy.
+
+---
+
+[vite] connected from window 7d914753-4c58-4c1d-a724-534a318954e8:67:11
+[vite] new window visibility visible 7d914753-4c58-4c1d-a724-534a318954e8:63:12
+[vite] ping successful 7d914753-4c58-4c1d-a724-534a318954e8:69:12
+Layout was forced before the page was fully loaded. If stylesheets are not yet loaded this may cause a flash of unstyled content. contentscript.js:14083:438213
+Window.fullScreen attribute is deprecated and will be removed in the future. contentscript.js:14083:438213
+InstallTrigger is deprecated and will be removed in the future. contentscript.js:14083:438213
+onmozfullscreenchange is deprecated. contentscript.js:14083:438213
+onmozfullscreenerror is deprecated. contentscript.js:14083:438213
+MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 close listeners added. Use emitter.setMaxListeners() to increase limit
+    u moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    addListener moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    on moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14082
+    once moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    pipe moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    B moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    D moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    P moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    M moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    I moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+contentscript.js:14083:34262
+MaxListenersExceededWarning: Possible EventEmitter memory leak detected. 11 end listeners added. Use emitter.setMaxListeners() to increase limit
+    u moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    addListener moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    on moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14082
+    O moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    B moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    D moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    P moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    M moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    I moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14063
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+    <anonymous> moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/contentscript.js:14083
+contentscript.js:14083:34262
+ObjectMultiplex - orphaned data for stream "background-liveness" 2 contentscript.js:14083:439689
+⭐️ Qwik Dev SSR Mode App is running in SSR development mode!
+ - Additional JS is loaded by Vite for debugging and live reloading
+ - Rendering performance might not be optimal
+ - Delayed interactivity because prefetching is disabled
+ - Vite dev bundles do not represent production output
+
+Production build can be tested running 'npm run preview' editor:799:13
+🔍 Qwik Click-To-Source Hold-press the 'Alt' key and click a component to jump directly to the source code in your IDE! editor:1355:13
+[vite] connecting... client:733:9
+[vite] connected. client:827:12
+[atproto] initSession failed TypeError: Invalid loopback client ID: Invalid "redirect_uri" query parameter: Use of "localhost" hostname is not allowed (RFC 8252), use a loopback IP such as "127.0.0.1" instead
+    parseOAuthLoopbackClientId http://localhost:5173/node_modules/.vite/deps/chunk-WSSY75MT.js?v=959cb395:327
+    parseAtprotoLoopbackClientId http://localhost:5173/node_modules/.vite/deps/chunk-WSSY75MT.js?v=959cb395:422
+    atprotoLoopbackClientMetadata http://localhost:5173/node_modules/.vite/deps/chunk-WSSY75MT.js?v=959cb395:434
+    clientPromise http://localhost:5173/src/utils/atproto.ts:46
+atproto.ts:75:17
+[tiptap warn]: Duplicate extension names found: ['link', 'underline']. This can lead to issues. chunk-M6XETPRC.js:2389:13
+Error restoring session o: Transport request timed out
+    i moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:4
+    o moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:4
+    request moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:1
+    s moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:7
+Caused by: undefined
+inpage.js;:4:10741
+Error restoring session o: Transport request timed out
+    i moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:4
+    o moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:4
+    request moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:1
+    s moz-extension://cb669de0-a5f0-4de1-9e63-5ff8480a89a7/scripts/inpage.js;:7
+Caused by: undefined
+inpage.js;:17:4697
+[vite] connected from window d68dc387-60c8-4509-a000-bb786882814c:67:11
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility hidden d68dc387-60c8-4509-a000-bb786882814c:63:12
+[vite] new window visibility visible d68dc387-60c8-4509-a000-bb786882814c:63:12
+Loading failed for the module with source “http://localhost:5173/src/components/editor/twyne-editor.tsx_TwyneEditor_component_div_div_div_button_onClick_21_q0NKsB20tnQ.js”. twyne-editor.REDACTED.js
+qrl TwyneEditor_component_div_div_div_button_onClick_21_q0NKsB20tnQ failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/editor/twyne-editor.tsx_TwyneEditor_component_div_div_div_button_onClick_21_q0NKsB20tnQ.js core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/editor/twyne-editor.tsx_TwyneEditor_component_div_div_div_button_onClick_21_q0NKsB20tnQ.js
+Loading failed for the module with source “http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108”. speech-transport.tsx_SpeechTransport_component_OkSirD0aFqA.js
+qrl SpeechTransport_component_primary_V2wnLqmWHYA failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108 core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+qrl SpeechTransport_component_primary_V2wnLqmWHYA failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+    primary speech-transport.tsx:73
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+    primary speech-transport.tsx:73
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+speech-transport.tsx_SpeechTransport_component_OkSirD0aFqA.js:27:46
+qrl SpeechTransport_component_primary_V2wnLqmWHYA failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+    primary speech-transport.tsx:73
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+    primary speech-transport.tsx:73
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+speech-transport.tsx_SpeechTransport_component_OkSirD0aFqA.js:27:46
+qrl SpeechTransport_component_primary_V2wnLqmWHYA failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+    primary speech-transport.tsx:73
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+    primary speech-transport.tsx:73
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+speech-transport.tsx_SpeechTransport_component_OkSirD0aFqA.js:27:46
+qrl SpeechTransport_component_primary_V2wnLqmWHYA failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+    primary speech-transport.tsx:73
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/ui/speech-transport.tsx_SpeechTransport_component_primary_V2wnLqmWHYA.js?t=1785606503108
+    primary speech-transport.tsx:73
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    processDocumentEvent (index):151
+speech-transport.tsx_SpeechTransport_component_OkSirD0aFqA.js:27:46
+Loading failed for the module with source “http://localhost:5173/src/components/auth/account-menu.tsx_AccountMenu_component_useOnDocument_1_zuJNMnpk09k.js”. account-menu.tsx_AccountMenu_component_wjDR0iykBUs.js
+qrl AccountMenu_component_useOnDocument_1_zuJNMnpk09k failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/auth/account-menu.tsx_AccountMenu_component_useOnDocument_1_zuJNMnpk09k.js core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/auth/account-menu.tsx_AccountMenu_component_useOnDocument_1_zuJNMnpk09k.js
+qrl AccountMenu_component_useOnDocument_1_zuJNMnpk09k failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/auth/account-menu.tsx_AccountMenu_component_useOnDocument_1_zuJNMnpk09k.js
+    AccountMenu_component_wjDR0iykBUs account-menu.tsx:97
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    broadcast (index):22
+    broadcast (index):21
+    processDocumentEvent (index):149
+core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/auth/account-menu.tsx_AccountMenu_component_useOnDocument_1_zuJNMnpk09k.js
+    AccountMenu_component_wjDR0iykBUs account-menu.tsx:97
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    broadcast (index):22
+    broadcast (index):21
+    processDocumentEvent (index):149
+account-menu.tsx_AccountMenu_component_wjDR0iykBUs.js:50:55
+qrl AccountMenu_component_useOnDocument_1_zuJNMnpk09k failed to load TypeError: error loading dynamically imported module: http://localhost:5173/src/components/auth/account-menu.tsx_AccountMenu_component_useOnDocument_1_zuJNMnpk09k.js
+    AccountMenu_component_wjDR0iykBUs account-menu.tsx:97
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    broadcast (index):22
+    broadcast (index):21
+    processDocumentEvent (index):149
+core.prod.mjs:5506:21
+Uncaught (in promise) TypeError: error loading dynamically imported module: http://localhost:5173/src/components/auth/account-menu.tsx_AccountMenu_component_useOnDocument_1_zuJNMnpk09k.js
+    AccountMenu_component_wjDR0iykBUs account-menu.tsx:97
+    resolve core.prod.mjs:5500
+    resolveLazy core.prod.mjs:5509
+    invokeFn core.prod.mjs:5511
+    dispatch (index):55
+    broadcast (index):22
+    broadcast (index):21
+    processDocumentEvent (index):149
+account-menu.tsx_AccountMenu_component_wjDR0iykBUs.js:50:55
+Unknown pseudo-class or pseudo-element ‘-webkit-scrollbar’.  Ruleset ignored due to bad selector. editor:169:22
+Ruleset ignored due to bad selector. editor:183:47
+Error in parsing value for ‘-webkit-text-size-adjust’.  Declaration dropped. global.css:97:31
+Unknown property ‘twyne’.  Declaration dropped. global.css:1872:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1875:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1878:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1881:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1884:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1887:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1890:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1893:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1896:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1899:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1902:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1905:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1908:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1911:11
+Unknown property ‘twyne’.  Declaration dropped. global.css:1914:11
+Error in parsing value for ‘contain’.  Declaration dropped. editor:26:31
+Source map error: Error: URL constructor:  is not a valid URL.
+Stack in the worker:resolveSourceMapURL@resource://devtools/client/shared/source-map-loader/utils/fetchSourceMap.js:56:22
+getOriginalURLs@resource://devtools/client/shared/source-map-loader/source-map.js:75:24
+workerHandler/</<@resource://devtools/client/shared/worker-utils.js:115:52
+workerHandler/<@resource://devtools/client/shared/worker-utils.js:113:13
+
+Resource URL: wasm:http://localhost:5173/node_modules/.vite/deps/chunk-BO6EC3C6.js?v=959cb395%20line%2014310%20%3E%20WebAssembly.Module
+Source Map URL: null
+
+---
+
+[Image #1] because this section is not scrollable and hard to view you can only see all the content in 75% of the screen size which is terrible. we want this to fit in the 100% view, to do that we have to i think remove the cast buttons to click on each. also we need to decrease the amount of text here, not all of it is necessary, the buttons have a ton of text on them we can get rid of
