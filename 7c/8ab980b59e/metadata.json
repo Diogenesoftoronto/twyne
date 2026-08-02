@@ -3,7 +3,7 @@
   "checkpoint_id": "7c8ab980b59e",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 24,
+  "checkpoints_count": 25,
   "files_touched": [
     ".bumpy/pure-amber-kite.md"
   ],
@@ -160,6 +160,13 @@
       "transcript": "/7c/8ab980b59e/21/full.jsonl",
       "compact_transcript": "/7c/8ab980b59e/21/transcript.jsonl",
       "content_hash": "/7c/8ab980b59e/21/content_hash.txt",
+      "prompt": ""
+    },
+    {
+      "metadata": "/7c/8ab980b59e/22/metadata.json",
+      "transcript": "/7c/8ab980b59e/22/full.jsonl",
+      "compact_transcript": "/7c/8ab980b59e/22/transcript.jsonl",
+      "content_hash": "/7c/8ab980b59e/22/content_hash.txt",
       "prompt": ""
     }
   ],
