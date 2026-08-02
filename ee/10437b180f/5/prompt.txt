@@ -1,0 +1,1 @@
+hey i noticed that there was an issue with the table modal being directly obscuring the table, i would need it to be moved slightly above the table.
