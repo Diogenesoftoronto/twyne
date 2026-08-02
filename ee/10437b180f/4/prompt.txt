@@ -1,0 +1,1 @@
+hey take a look at the auto research i want to understand how it actually works, my expectation is that is supposed to be looking for claims and things in what i have written to cite so that i have an autobiblio for example if i talk about a movie or a put some quote it finds who said it or the movie i was talking about
