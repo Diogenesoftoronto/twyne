@@ -1,0 +1,1 @@
+"Read /home/diogenes/Projects/twyne/docs/changes/dossier-ux-cleanup.md then verify the change descriptions against the actual code in the files listed under 'Files touched'. Flag any mismatches, missing cases, or sketchy behaviour (race conditions, broken edge cases, undocumented behaviour). Don't suggest stylistic improvements — focus on correctness. Be terse."
