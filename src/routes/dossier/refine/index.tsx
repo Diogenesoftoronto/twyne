@@ -32,6 +32,7 @@ import {
   saveProjectBriefForFolio,
   saveStartingMaterial,
 } from "../../../utils/anti-tabula-rasa";
+import { captureProductEvent } from "../../../utils/product-analytics";
 
 interface RefiningStore {
   brief: ProjectBrief | null;
@@ -100,8 +101,14 @@ export default component$(() => {
       probes?: DossierProbe[],
     ) => {
       if (!store.brief || !store.folioId) return;
-      const next = createProjectBrief(answers, store.brief, attachments, probes);
+      const next = createProjectBrief(
+        answers,
+        store.brief,
+        attachments,
+        probes,
+      );
       void saveProjectBriefForFolio(store.folioId, next);
+      void captureProductEvent("dossier_completed", { mode: "refine" });
       void nav("/editor/");
     },
   );
@@ -117,8 +124,14 @@ export default component$(() => {
       probes: DossierProbe[];
     }) => {
       if (!store.brief || !store.folioId) return;
-      const next = createProjectBrief(answers, store.brief, attachments, probes);
+      const next = createProjectBrief(
+        answers,
+        store.brief,
+        attachments,
+        probes,
+      );
       void saveProjectBriefForFolio(store.folioId, next);
+      void captureProductEvent("dossier_completed", { mode: "refine" });
       void nav("/editor/");
     },
   );
@@ -275,8 +288,7 @@ export default component$(() => {
         switchHref=""
         showStartOver
         onSwitch$={$(() => {
-          store.style =
-            store.style === "form" ? "conversational" : "form";
+          store.style = store.style === "form" ? "conversational" : "form";
         })}
         onStartOver$={$(() => {
           store.startOverOpen = true;

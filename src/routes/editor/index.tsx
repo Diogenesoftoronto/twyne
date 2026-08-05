@@ -67,6 +67,12 @@ import {
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { migrateLegacyEditorialArtifacts } from "../../utils/folio-workspace";
+import {
+  captureProductEvent,
+  countDraftWords,
+  crossedDraftMilestones,
+  wordCountBucket,
+} from "../../utils/product-analytics";
 
 type RightPanel = "personas" | "rubric" | "comments" | "citations";
 
@@ -225,6 +231,9 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
+    const lastWordCounts = new Map<string, number>();
+    const editedFolios = new Set<string>();
+
     (async () => {
       try {
         const legacyBrief = loadProjectBrief();
@@ -279,6 +288,17 @@ export default component$(() => {
           store.brief = legacyBrief;
         }
         store.hydrated = true;
+
+        const openedFolio = store.folios.find(
+          (folio) => folio.id === store.activeFolioId,
+        );
+        if (openedFolio) {
+          lastWordCounts.set(openedFolio.id, countDraftWords(store.editorSeed));
+          void captureProductEvent("folio_opened", {
+            source: "editor",
+            folio_type: openedFolio.type,
+          });
+        }
 
         // Surface the local-only sign-in nudge unless it was dismissed before.
         const dismissed = await loadMetaFromIdb<boolean>(
@@ -359,6 +379,30 @@ export default component$(() => {
       const html = (e as CustomEvent).detail as string;
       saveDraftHtml(html);
       if (store.activeFolioId) {
+        const folioId = store.activeFolioId;
+        const currentWordCount = countDraftWords(html);
+        const previousWordCount =
+          lastWordCounts.get(folioId) ?? currentWordCount;
+
+        if (!editedFolios.has(folioId)) {
+          editedFolios.add(folioId);
+          void captureProductEvent("draft_milestone_reached", {
+            milestone: "first_edit",
+            word_count_bucket: wordCountBucket(currentWordCount),
+          });
+        }
+        for (const milestone of crossedDraftMilestones(
+          previousWordCount,
+          currentWordCount,
+        )) {
+          if (milestone === "first_edit") continue;
+          void captureProductEvent("draft_milestone_reached", {
+            milestone,
+            word_count_bucket: wordCountBucket(currentWordCount),
+          });
+        }
+        lastWordCounts.set(folioId, currentWordCount);
+
         void saveFolioContentToIdb(store.activeFolioId, html);
         const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
         if (idx >= 0) {
@@ -370,6 +414,16 @@ export default component$(() => {
     };
     window.addEventListener("twyne:content", contentHandler);
     cleanup(() => window.removeEventListener("twyne:content", contentHandler));
+
+    const loadFolioHandler = (e: Event) => {
+      if (!store.activeFolioId) return;
+      const html = (e as CustomEvent).detail as string;
+      lastWordCounts.set(store.activeFolioId, countDraftWords(html));
+    };
+    window.addEventListener("twyne:load-folio", loadFolioHandler);
+    cleanup(() =>
+      window.removeEventListener("twyne:load-folio", loadFolioHandler),
+    );
 
     // ── Persist layout (width, margin, running header, page numbers) ──
     const layoutHandler = (e: Event) => {
@@ -568,6 +622,10 @@ export default component$(() => {
     store.activity = panelActivity();
     saveDraftHtml(content);
     await saveActiveFolioIdToIdb(folio.id);
+    void captureProductEvent("folio_opened", {
+      source: "editor",
+      folio_type: folio.type,
+    });
     window.dispatchEvent(
       new CustomEvent("twyne:load-folio", { detail: content }),
     );
@@ -610,10 +668,12 @@ export default component$(() => {
       saveFolioContentToIdb(newFolio.id, ""),
       saveActiveFolioIdToIdb(newFolio.id),
     ]);
+    void captureProductEvent("folio_created", {
+      source: "editor",
+      folio_type: newFolio.type,
+    });
     markDirty();
-    await nav(
-      `/dossier/create/?folio=${encodeURIComponent(newFolio.id)}`,
-    );
+    await nav(`/dossier/create/?folio=${encodeURIComponent(newFolio.id)}`);
   });
 
   const panelTabs: PanelTab[] = [
