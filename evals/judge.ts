@@ -43,6 +43,8 @@ interface DatasetRow {
 interface RunOutput {
   case_id: string;
   output: string;
+  /** Optional production `$ai_trace_id` when a sample was exported from PostHog. */
+  trace_id?: string;
 }
 interface Verdict {
   label: string;
@@ -51,6 +53,7 @@ interface Verdict {
 }
 interface CaseScore {
   case_id: string;
+  trace_id?: string;
   persona: string;
   faithfulness: Verdict;
   helpfulness: Verdict;
@@ -163,6 +166,7 @@ async function main(): Promise<void> {
       );
       scores.push({
         case_id: run.case_id,
+        trace_id: run.trace_id,
         persona: row.persona,
         faithfulness,
         helpfulness,

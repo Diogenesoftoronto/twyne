@@ -84,6 +84,8 @@ export interface AgentResponse {
   text: string;
   type: FeedbackType;
   provider: "rivet" | "anthropic" | "openai" | "portkey" | "local";
+  /** Stable handle shared by PostHog feedback and the generation event. */
+  traceId?: string;
   /** Soft signal of how confident the model is in the answer (0-1). */
   confidence?: number;
   /**
@@ -337,7 +339,9 @@ function attachmentsBlock(brief: ProjectBrief | null): string {
     if (remainingTotal <= 0) {
       return `${header}\n  Excerpt omitted to keep prompt size bounded.`;
     }
-    const excerpt = attachment.text.trim().slice(0, Math.min(500, remainingTotal));
+    const excerpt = attachment.text
+      .trim()
+      .slice(0, Math.min(500, remainingTotal));
     remainingTotal -= excerpt.length;
     const suffix =
       attachment.text.trim().length > excerpt.length

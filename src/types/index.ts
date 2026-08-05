@@ -57,6 +57,8 @@ export interface PersonaFeedback {
   personaName: string;
   personaColor: string;
   feedback: string;
+  /** PostHog AI generation handle used to attach contextual feedback. */
+  traceId?: string;
   paragraphIndex?: number;
   timestamp: number;
   type: "encouragement" | "suggestion" | "critique" | "perspective";

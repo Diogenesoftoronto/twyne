@@ -19,11 +19,12 @@ import {
   isOpenInferenceSpan,
   OpenInferenceSimpleSpanProcessor,
 } from "@arizeai/openinference-vercel";
+import type { SpanExporter } from "@opentelemetry/sdk-trace-base";
+import type { ReadableSpan } from "@opentelemetry/sdk-trace-base";
 
 const ARIZE_API_KEY = process.env.ARIZE_API_KEY;
 const ARIZE_SPACE_ID = process.env.ARIZE_SPACE_ID;
-const ARIZE_PROJECT_NAME =
-  process.env.ARIZE_PROJECT_NAME ?? "twyne";
+const ARIZE_PROJECT_NAME = process.env.ARIZE_PROJECT_NAME ?? "twyne";
 // Arize is region-sharded. The OTLP host is region-specific
 // (otlp.<region>.arize.com); the US default would silently 401 a CA space.
 // Override the full endpoint, or just the region, via env.
@@ -32,9 +33,38 @@ const ARIZE_OTLP_ENDPOINT =
   process.env.ARIZE_OTLP_ENDPOINT ??
   `https://otlp.${ARIZE_REGION}.arize.com/v1/traces`;
 
-export const tracingEnabled = Boolean(
-  ARIZE_API_KEY && ARIZE_SPACE_ID,
-);
+export const tracingEnabled = Boolean(ARIZE_API_KEY && ARIZE_SPACE_ID);
+
+const ARIZE_CAPTURE_CONTENT = process.env.ARIZE_CAPTURE_CONTENT === "true";
+
+const sensitiveAttribute =
+  /(^|[._])(input|output|prompt|response|message|content)([._]|$)/i;
+
+function redactSpan(span: ReadableSpan): ReadableSpan {
+  const attributes = Object.fromEntries(
+    Object.entries(span.attributes).map(([key, value]) =>
+      sensitiveAttribute.test(key) ? [key, "[redacted]"] : [key, value],
+    ),
+  );
+  return {
+    ...span,
+    attributes: {
+      ...attributes,
+      "twyne.content_redacted": true,
+    },
+  };
+}
+
+function privacySafeExporter(delegate: SpanExporter): SpanExporter {
+  if (ARIZE_CAPTURE_CONTENT) return delegate;
+  return {
+    export(spans, resultCallback) {
+      delegate.export(spans.map(redactSpan), resultCallback);
+    },
+    shutdown: () => delegate.shutdown(),
+    forceFlush: () => delegate.forceFlush?.() ?? Promise.resolve(),
+  };
+}
 
 let provider: NodeTracerProvider | null = null;
 
@@ -46,13 +76,15 @@ if (tracingEnabled) {
     }),
     spanProcessors: [
       new OpenInferenceSimpleSpanProcessor({
-        exporter: new OTLPTraceExporter({
-          url: ARIZE_OTLP_ENDPOINT,
-          headers: {
-            "arize-space-id": ARIZE_SPACE_ID as string,
-            "arize-api-key": ARIZE_API_KEY as string,
-          },
-        }),
+        exporter: privacySafeExporter(
+          new OTLPTraceExporter({
+            url: ARIZE_OTLP_ENDPOINT,
+            headers: {
+              "arize-space-id": ARIZE_SPACE_ID as string,
+              "arize-api-key": ARIZE_API_KEY as string,
+            },
+          }),
+        ),
         spanFilter: isOpenInferenceSpan,
         reparentOrphanedSpans: true,
       }),

@@ -20,12 +20,7 @@
 import { action, type ActionCtx } from "./_generated/server";
 import { makeFunctionReference } from "convex/server";
 import { v } from "convex/values";
-import {
-  generateText,
-  stepCountIs,
-  streamText,
-  type LanguageModel,
-} from "ai";
+import { generateText, stepCountIs, streamText, type LanguageModel } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { createOpenAI, openai } from "@ai-sdk/openai";
 import {
@@ -73,6 +68,11 @@ import {
 import "./arizeTracing";
 import { tracingEnabled, flushArize } from "./arizeTracing";
 import { captureServerAiGeneration } from "./posthog";
+import type { ServerAiObservabilityContext } from "./posthog";
+import {
+  createAiTraceId,
+  normalizeAiUsage,
+} from "../src/utils/ai-deterministic-evals";
 import {
   countWords,
   MIN_EDITOR_WORDS,
@@ -270,18 +270,18 @@ async function runLlm(
     | "persona-reply"
     | "persona-analysis" = "persona-feedback",
   maxTokens = 380,
+  observability?: ServerAiObservabilityContext,
 ): Promise<AgentResponse> {
   const system = buildSystemPrompt(req.persona);
   const user = buildUserPrompt(req);
   const fallbackType: FeedbackType = defaultTypeForPersona(req.persona);
   const temperature =
-    req.persona.temperature ??
-    (provider.label === "openai" ? 0.6 : 0.4);
+    req.persona.temperature ?? (provider.label === "openai" ? 0.6 : 0.4);
   const start = Date.now();
   const { tools, getAnchor } = buildQuoteTools(req.draftText);
 
   try {
-    const { text } = await generateText({
+    const first = await generateText({
       model: provider.model,
       system,
       prompt: user,
@@ -300,6 +300,8 @@ async function runLlm(
         },
       },
     });
+    let text = first.text;
+    let usage = normalizeAiUsage(first.totalUsage);
     let visibleText = stripReasoningTags(text);
     // Any reply that reached for the reasoning channel is discarded and asked
     // again, not merely stripped: a note with the model's thinking bleeding
@@ -324,6 +326,7 @@ async function runLlm(
           },
         },
       });
+      usage = normalizeAiUsage(retry.totalUsage) ?? usage;
       const retryVisible = stripReasoningTags(retry.text);
       visibleText =
         (!hasReasoningTags(retry.text) && retryVisible) ||
@@ -331,7 +334,7 @@ async function runLlm(
         retryVisible ||
         removeReasoningTagMarkers(retry.text);
     }
-    await captureServerAiGeneration({
+    const traceId = await captureServerAiGeneration({
       feature,
       provider: provider.label,
       model: provider.modelId,
@@ -341,6 +344,8 @@ async function runLlm(
       temperature,
       maxTokens,
       spanName: feature,
+      usage,
+      observability,
     });
 
     const cleaned = visibleText.trim();
@@ -349,6 +354,7 @@ async function runLlm(
       text: cleaned || "(no response)",
       type: classifyType(cleaned, fallbackType),
       provider: provider.label,
+      traceId,
       anchor: getAnchor() ?? req.anchor,
     };
   } catch (err) {
@@ -361,6 +367,7 @@ async function runLlm(
       temperature,
       maxTokens,
       spanName: feature,
+      observability,
       error: err,
     });
     await flushArize();
@@ -493,9 +500,7 @@ const probeValidator = v.object({
   max: v.optional(v.number()),
   minLabel: v.optional(v.string()),
   maxLabel: v.optional(v.string()),
-  answer: v.optional(
-    v.union(v.string(), v.array(v.string()), v.number()),
-  ),
+  answer: v.optional(v.union(v.string(), v.array(v.string()), v.number())),
   relatesTo: v.optional(v.string()),
 });
 
@@ -544,6 +549,7 @@ type InterviewTurnResult =
       probe?: DossierProbe;
       provider: string;
       model: string;
+      traceId?: string;
     }
   | {
       kind: "synthesis";
@@ -553,6 +559,7 @@ type InterviewTurnResult =
       >;
       provider: string;
       model: string;
+      traceId?: string;
     };
 
 const INTERVIEW_FIELDS = [
@@ -643,6 +650,7 @@ function parseInterviewTurnResult(
   provider: string,
   model: string,
   messages: InterviewMessage[],
+  traceId?: string,
 ): InterviewTurnResult {
   const visibleText = stripReasoningTags(text);
   if (!visibleText.trim()) {
@@ -659,6 +667,7 @@ function parseInterviewTurnResult(
         confidence: draft.confidence,
         provider,
         model,
+        traceId,
       };
     }
     throw applicationError("malformed_response");
@@ -716,6 +725,7 @@ function parseInterviewTurnResult(
     probe: probe ?? undefined,
     provider,
     model,
+    traceId,
   };
 }
 
@@ -756,6 +766,13 @@ export const runInterviewTurn = action({
       .join("\n");
     const temperature = provider.label === "openai" ? 0.6 : 0.4;
     const maxTokens = 420;
+    const traceId = createAiTraceId("interview-turn");
+    const start = Date.now();
+    const input = JSON.stringify({
+      mode: args.mode,
+      transcript,
+      startingMaterial: args.startingMaterial,
+    });
     try {
       const generation = {
         model: provider.model,
@@ -779,6 +796,7 @@ export const runInterviewTurn = action({
         },
       };
       let text: string;
+      let usage;
       if (args.streamId) {
         let rawText = "";
         let nativeReasoning = "";
@@ -804,6 +822,7 @@ export const runInterviewTurn = action({
           }
         }
         text = await streamed.text;
+        usage = normalizeAiUsage(await streamed.totalUsage);
         const finalSnapshot = createInterviewStreamSnapshot(
           text,
           nativeReasoning,
@@ -815,16 +834,54 @@ export const runInterviewTurn = action({
           status: "complete",
         });
       } else {
-        ({ text } = await generateText(generation));
+        const result = await generateText(generation);
+        text = result.text;
+        usage = normalizeAiUsage(result.totalUsage);
       }
+      await captureServerAiGeneration({
+        feature: "interview-turn",
+        provider: provider.label,
+        model: provider.modelId,
+        generationInput: input,
+        output: text,
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "interview-turn",
+        usage,
+        observability: {
+          distinctId: identity.tokenIdentifier,
+          traceId,
+        },
+        evalSignals: {
+          twyne_interview_mode: args.mode,
+          twyne_any_protocol_markers: ["DOSSIER:", "PROBE:", "SYNTHESIZE:"],
+        },
+      });
       await flushArize();
       return parseInterviewTurnResult(
         text,
         provider.label,
         provider.modelId,
         args.messages as InterviewMessage[],
+        traceId,
       );
     } catch (error) {
+      await captureServerAiGeneration({
+        feature: "interview-turn",
+        provider: provider.label,
+        model: provider.modelId,
+        generationInput: input,
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "interview-turn",
+        observability: {
+          distinctId: identity.tokenIdentifier,
+          traceId,
+        },
+        error,
+      });
       if (args.streamId) {
         await ctx
           .runMutation(writeInterviewStreamReference, {
@@ -888,6 +945,14 @@ export const runPersona = action({
         v.literal("rewrite-suggestion"),
       ),
     ),
+    observability: v.optional(
+      v.object({
+        anonymousId: v.optional(v.string()),
+        sessionId: v.optional(v.string()),
+        folioId: v.optional(v.string()),
+        editorialActionId: v.optional(v.string()),
+      }),
+    ),
   },
   handler: async (ctx, args): Promise<AgentResponse> => {
     const identity = await ctx.auth.getUserIdentity();
@@ -918,7 +983,7 @@ export const runPersona = action({
           "Write a little more before asking an editor to read the draft.",
       });
     }
-    return runHostedAgent(ctx, req);
+    return runHostedAgent(ctx, req, args.observability);
   },
 });
 
@@ -1111,6 +1176,14 @@ export const conveneRoom = action({
     newMaterial: v.optional(v.string()),
     /** Prose digest of how the draft has been moving. */
     trajectory: v.optional(v.string()),
+    observability: v.optional(
+      v.object({
+        anonymousId: v.optional(v.string()),
+        sessionId: v.optional(v.string()),
+        folioId: v.optional(v.string()),
+        editorialActionId: v.optional(v.string()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -1159,6 +1232,7 @@ export const conveneRoom = action({
           req,
           "persona-feedback",
           args.newMaterial ? 220 : 380,
+          { ...args.observability, distinctId: identity.tokenIdentifier },
         );
       } catch (err) {
         throw reportedApplicationError(
@@ -1193,6 +1267,14 @@ export const analyzeRoom = action({
     brief: briefValidator,
     draftText: v.string(),
     writerProfile: writerProfileValidator,
+    observability: v.optional(
+      v.object({
+        anonymousId: v.optional(v.string()),
+        sessionId: v.optional(v.string()),
+        folioId: v.optional(v.string()),
+        editorialActionId: v.optional(v.string()),
+      }),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -1229,7 +1311,10 @@ export const analyzeRoom = action({
           instruction: "analyze",
         };
         try {
-          const r = await runLlm(provider, req, "persona-analysis", 1600);
+          const r = await runLlm(provider, req, "persona-analysis", 1600, {
+            ...args.observability,
+            distinctId: identity.tokenIdentifier,
+          });
           return { personaId: persona.id, ...r };
         } catch (err) {
           throw reportedApplicationError(
@@ -2110,7 +2195,8 @@ Respond as JSON, and only JSON, in this exact shape:
       });
       await flushArize();
       const parsed = parseSuggestedCriteria(stripReasoningTags(text));
-      if (parsed.length > 0) return { criteria: parsed, provider: provider.label };
+      if (parsed.length > 0)
+        return { criteria: parsed, provider: provider.label };
       throw applicationError("malformed_response");
     } catch (err) {
       if (err instanceof Error && err.name === "ConvexError") throw err;
@@ -2144,7 +2230,8 @@ function parseSuggestedCriteria(
       const list = Array.isArray(parsed.criteria) ? parsed.criteria : [];
       const out = list
         .map((c) => ({
-          label: typeof c.label === "string" ? c.label.trim().slice(0, 120) : "",
+          label:
+            typeof c.label === "string" ? c.label.trim().slice(0, 120) : "",
           description:
             typeof c.description === "string"
               ? c.description.trim().slice(0, 400)
@@ -2278,6 +2365,7 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
 async function runHostedAgent(
   ctx: ActionCtx,
   req: AgentRequest,
+  observability?: ServerAiObservabilityContext,
 ): Promise<AgentResponse> {
   const feature =
     req.userMessage || req.priorMessages?.length
@@ -2290,7 +2378,11 @@ async function runHostedAgent(
     });
   }
   try {
-    return await runLlm(provider, req, feature);
+    const identity = await ctx.auth.getUserIdentity();
+    return await runLlm(provider, req, feature, 380, {
+      ...observability,
+      distinctId: identity?.tokenIdentifier,
+    });
   } catch (err) {
     throw reportedApplicationError(
       `agents.${feature}`,

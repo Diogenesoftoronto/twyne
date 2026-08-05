@@ -68,6 +68,11 @@ import {
 } from "./desktop-bridge";
 import { captureAiGeneration } from "./ai-evals";
 import {
+  createAiTraceId,
+  normalizeAiUsage,
+  type AiUsage,
+} from "./ai-deterministic-evals";
+import {
   createVisibleTextFilter,
   hasReasoningTags,
   removeReasoningTagMarkers,
@@ -656,9 +661,9 @@ async function runOnce({
   tools?: ToolSet;
   stopWhen?: ReturnType<typeof stepCountIs>;
   onText?: StreamText;
-}): Promise<{ text: string }> {
+}): Promise<{ text: string; usage?: AiUsage }> {
   if (!onText) {
-    return generateText({
+    const result = await generateText({
       model,
       system,
       prompt,
@@ -666,6 +671,7 @@ async function runOnce({
       maxOutputTokens,
       ...(tools ? { tools, stopWhen } : {}),
     });
+    return { text: result.text, usage: normalizeAiUsage(result.totalUsage) };
   }
 
   const result = streamText({
@@ -683,7 +689,10 @@ async function runOnce({
     if (visible !== null) onText(visible);
   }
 
-  return { text: await result.text };
+  return {
+    text: await result.text,
+    usage: normalizeAiUsage(await result.totalUsage),
+  };
 }
 
 async function generateTrackedText({
@@ -693,9 +702,11 @@ async function generateTrackedText({
   system,
   prompt,
   spanName,
+  traceId,
   evalSignals,
   tools,
   onText,
+  onTrace,
 }: {
   feature: AiFeature;
   resolved: {
@@ -713,8 +724,13 @@ async function generateTrackedText({
   tools?: ToolSet;
   /** Stream the answer as it arrives. See {@link StreamText}. */
   onText?: StreamText;
+  onTrace?: (traceId: string) => void;
+  /** Reuse a caller-owned trace when a streaming branch needs manual capture. */
+  traceId?: string;
 }): Promise<string> {
   const start = performance.now();
+  const generationTraceId = traceId ?? createAiTraceId(feature);
+  onTrace?.(generationTraceId);
   // When tools are present the model needs at least one extra step after the
   // tool result to write its visible answer.
   const stopWhen = tools ? stepCountIs(3) : undefined;
@@ -730,7 +746,9 @@ async function generateTrackedText({
       onText,
     });
   try {
-    const { text } = await run(prompt);
+    const first = await run(prompt);
+    const text = first.text;
+    let usage = first.usage;
     let cleaned = stripReasoningTags(text);
     // Any reply that reached for the reasoning channel is thrown away and
     // asked again — not just one that strips to nothing. A model that thinks
@@ -745,6 +763,7 @@ async function generateTrackedText({
       // again rather than two answers spliced together.
       onText?.("");
       const retry = await run(retryPrompt);
+      usage = retry.usage ?? usage;
       const retryCleaned = stripReasoningTags(retry.text);
       cleaned =
         (!hasReasoningTags(retry.text) && retryCleaned) ||
@@ -766,6 +785,8 @@ async function generateTrackedText({
       temperature: resolved.temperature,
       maxTokens: resolved.maxTokens,
       spanName,
+      traceId: generationTraceId,
+      usage,
       evalSignals,
     });
     return cleaned;
@@ -780,6 +801,7 @@ async function generateTrackedText({
       temperature: resolved.temperature,
       maxTokens: resolved.maxTokens,
       spanName,
+      traceId: generationTraceId,
       error: err,
       evalSignals,
     });
@@ -957,6 +979,7 @@ export async function runClientAgent(
     const user = buildUserPrompt(req);
     const fallbackType = defaultTypeForPersona(req.persona.id);
     const { tools, getAnchor } = buildQuoteTools(req.draftText);
+    let traceId: string | undefined;
 
     const text = await generateTrackedText({
       feature,
@@ -971,6 +994,9 @@ export async function runClientAgent(
       },
       tools,
       onText,
+      onTrace: (nextTraceId) => {
+        traceId = nextTraceId;
+      },
     });
 
     const cleaned = text.trim();
@@ -984,6 +1010,7 @@ export async function runClientAgent(
       text: cleaned,
       type: classifyType(cleaned, fallbackType),
       provider: resolved.provider.type as AgentResponse["provider"],
+      traceId,
       anchor,
     };
   } catch (err) {
@@ -1202,6 +1229,7 @@ async function runFishAudioTranscribe(args: {
   model: string;
   audio: Blob;
 }): Promise<VoiceTranscribeResult | null> {
+  const start = performance.now();
   try {
     const form = new FormData();
     form.append("audio", args.audio, `note.${blobExtension(args.audio.type)}`);
@@ -1219,12 +1247,28 @@ async function runFishAudioTranscribe(args: {
       );
     }
     const data = (await res.json()) as { text?: string };
-    return {
-      text: typeof data.text === "string" ? data.text.trim() : "",
+    const text = typeof data.text === "string" ? data.text.trim() : "";
+    const traceId = await captureVoiceTranscription({
       provider: "fishaudio",
       model: args.model,
+      audio: args.audio,
+      output: text,
+      latencyMs: performance.now() - start,
+    });
+    return {
+      text,
+      provider: "fishaudio",
+      model: args.model,
+      traceId,
     };
   } catch (err) {
+    await captureVoiceTranscription({
+      provider: "fishaudio",
+      model: args.model,
+      audio: args.audio,
+      latencyMs: performance.now() - start,
+      error: err,
+    });
     reportApplicationDiagnostic("twyne:ai-client:fishaudio-transcribe", err);
     return null;
   }
@@ -1291,6 +1335,7 @@ async function runDirectAudioTranscribe(args: {
 }): Promise<VoiceTranscribeResult | null> {
   const model = await createModel(args.provider, args.model);
   if (!model) return null;
+  const start = performance.now();
   try {
     const needsWavOrMp3 =
       args.provider.type === "openai" ||
@@ -1324,12 +1369,30 @@ async function runDirectAudioTranscribe(args: {
       temperature: 0.1,
       maxOutputTokens: 1200,
     });
+    const traceId = await captureVoiceTranscription({
+      provider: args.provider.type,
+      model: args.model,
+      audio: args.audio,
+      prompt: args.prompt,
+      output: result.text.trim(),
+      latencyMs: performance.now() - start,
+      usage: normalizeAiUsage(result.totalUsage),
+    });
     return {
       text: result.text.trim(),
       provider: args.provider.type,
       model: args.model,
+      traceId,
     };
   } catch (err) {
+    await captureVoiceTranscription({
+      provider: args.provider.type,
+      model: args.model,
+      audio: args.audio,
+      prompt: args.prompt,
+      latencyMs: performance.now() - start,
+      error: err,
+    });
     reportApplicationDiagnostic(
       "twyne:ai-client:direct-audio-transcribe",
       err,
@@ -1354,6 +1417,43 @@ export interface VoiceTranscribeResult {
   text: string;
   provider: string;
   model: string;
+  traceId?: string;
+}
+
+async function captureVoiceTranscription({
+  provider,
+  model,
+  audio,
+  prompt,
+  output,
+  latencyMs,
+  usage,
+  error,
+}: {
+  provider: string;
+  model: string;
+  audio: Blob;
+  prompt?: string;
+  output?: string;
+  latencyMs: number;
+  usage?: AiUsage;
+  error?: unknown;
+}): Promise<string> {
+  return captureAiGeneration({
+    feature: "voice-transcription",
+    provider,
+    model,
+    prompt: JSON.stringify({
+      audioBytes: audio.size,
+      audioType: audio.type,
+      hasPrompt: !!prompt?.trim(),
+    }),
+    output,
+    latencyMs,
+    usage,
+    error,
+    evalSignals: { twyne_audio_input: true },
+  });
 }
 
 /**
@@ -1407,6 +1507,7 @@ export async function runClientVoiceTranscribe(
       : "https://api.openai.com/v1";
 
   try {
+    const start = performance.now();
     const form = new FormData();
     form.append("file", req.audio, `note.${blobExtension(req.audio.type)}`);
     form.append("model", resolved.model);
@@ -1427,12 +1528,30 @@ export async function runClientVoiceTranscribe(
       );
     }
     const data = (await res.json()) as { text?: string };
-    return {
-      text: typeof data.text === "string" ? data.text.trim() : "",
+    const text = typeof data.text === "string" ? data.text.trim() : "";
+    const traceId = await captureVoiceTranscription({
       provider: resolved.provider.type,
       model: resolved.model,
+      audio: req.audio,
+      prompt: req.prompt,
+      output: text,
+      latencyMs: performance.now() - start,
+    });
+    return {
+      text,
+      provider: resolved.provider.type,
+      model: resolved.model,
+      traceId,
     };
   } catch (err) {
+    await captureVoiceTranscription({
+      provider: resolved.provider.type,
+      model: resolved.model,
+      audio: req.audio,
+      prompt: req.prompt,
+      latencyMs: 0,
+      error: err,
+    });
     reportApplicationDiagnostic("twyne:ai-client:voice-transcribe", err);
     return null;
   }
@@ -2363,6 +2482,7 @@ export type InterviewTurnResult =
       probe?: DossierProbe;
       provider: string;
       model: string;
+      traceId?: string;
     }
   | {
       kind: "synthesis";
@@ -2372,6 +2492,7 @@ export type InterviewTurnResult =
       >;
       provider: string;
       model: string;
+      traceId?: string;
     };
 
 const INTERVIEW_FIELDS = [
@@ -2451,6 +2572,9 @@ export async function runClientInterviewTurn(
       }),
     };
   }
+  const generationTraceId = createAiTraceId("interview-turn");
+  const generationStart = performance.now();
+  let generationPrompt = "";
   try {
     const lastUser = [...request.messages]
       .reverse()
@@ -2473,12 +2597,13 @@ export async function runClientInterviewTurn(
     const transcript = request.messages
       .map((m) => `${m.author === "writer" ? "Writer" : "You"}: ${m.text}`)
       .join("\n");
+    generationPrompt = transcript;
     let text: string;
     if (onUpdate) {
       const streamed = streamText({
         model,
         system,
-        prompt: transcript,
+        prompt: generationPrompt,
         temperature: cfg.temperature,
         maxOutputTokens: cfg.maxTokens,
       });
@@ -2496,6 +2621,25 @@ export async function runClientInterviewTurn(
         }
       }
       text = await streamed.text;
+      await captureAiGeneration({
+        feature: "interview-turn",
+        provider: cfg.provider.type,
+        model: cfg.model,
+        system,
+        prompt: transcript,
+        output: text,
+        latencyMs: performance.now() - generationStart,
+        temperature: cfg.temperature,
+        maxTokens: cfg.maxTokens,
+        spanName: "interview_turn",
+        traceId: generationTraceId,
+        usage: normalizeAiUsage(await streamed.totalUsage),
+        evalSignals: {
+          twyne_interview_mode: request.mode,
+          twyne_message_count: request.messages.length,
+          twyne_any_protocol_markers: ["DOSSIER:", "PROBE:", "SYNTHESIZE:"],
+        },
+      });
     } else {
       text = await generateTrackedText({
         feature: "interview-turn",
@@ -2504,6 +2648,7 @@ export async function runClientInterviewTurn(
         system,
         prompt: transcript,
         spanName: "interview_turn",
+        traceId: generationTraceId,
         evalSignals: {
           twyne_interview_mode: request.mode,
           twyne_message_count: request.messages.length,
@@ -2533,6 +2678,7 @@ export async function runClientInterviewTurn(
           confidence: draft.confidence,
           provider: cfg.provider.name,
           model: cfg.model,
+          traceId: generationTraceId,
         });
       }
       return {
@@ -2560,6 +2706,7 @@ export async function runClientInterviewTurn(
             : {},
           provider: cfg.provider.name,
           model: cfg.model,
+          traceId: generationTraceId,
         });
       } catch {
         return {
@@ -2608,8 +2755,27 @@ export async function runClientInterviewTurn(
       probe: probe ?? undefined,
       provider: cfg.provider.name,
       model: cfg.model,
+      traceId: generationTraceId,
     });
   } catch (err) {
+    if (onUpdate) {
+      await captureAiGeneration({
+        feature: "interview-turn",
+        provider: cfg.provider.type,
+        model: cfg.model,
+        prompt: generationPrompt,
+        latencyMs: performance.now() - generationStart,
+        temperature: cfg.temperature,
+        maxTokens: cfg.maxTokens,
+        spanName: "interview_turn",
+        traceId: generationTraceId,
+        error: err,
+        evalSignals: {
+          twyne_interview_mode: request.mode,
+          twyne_message_count: request.messages.length,
+        },
+      });
+    }
     return failureResult(err, {
       source: "provider",
       metadata: {
