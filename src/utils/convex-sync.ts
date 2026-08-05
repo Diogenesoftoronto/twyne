@@ -16,7 +16,7 @@ import {
   loadDraftHtmlFromIdb,
   loadFoliosFromIdb,
   loadPersonasFromIdb,
-  loadFolioContentFromIdb,
+  loadFolioContentSnapshotFromIdb,
   loadActiveFolioIdFromIdb,
   loadAllBriefsFromIdb,
   saveFoliosToIdb,
@@ -28,11 +28,7 @@ import {
   saveRubricResultToIdb,
   clearIdbStore,
 } from "./idb";
-import {
-  persistToIdb,
-  readFileAsJson,
-  writeFileAsJson,
-} from "./lix";
+import { persistToIdb, readFileAsJson, writeFileAsJson } from "./lix";
 import { normalizeApplicationError } from "./application-errors";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
 
@@ -79,6 +75,7 @@ interface SyncedSnapshot {
     personaColor: string;
     type: "encouragement" | "suggestion" | "critique" | "perspective";
     feedback: string;
+    traceId?: string;
     anchor?: string;
     briefTitle?: string;
     createdAt: number;
@@ -122,7 +119,7 @@ interface SyncState {
 interface LocalSnapshot {
   briefs: Array<{ folioId: string; brief: ProjectBrief }>;
   folios: Folio[];
-  folioContent: Array<{ folioId: string; html: string }>;
+  folioContent: Array<{ folioId: string; html: string; updatedAt: number }>;
   customPersonas: Persona[] | null;
   personaNotes: PersonaFeedback[];
   personaReplies: PersonaReply[];
@@ -353,11 +350,19 @@ async function buildLocalSnapshot(): Promise<LocalSnapshot> {
   const ids = new Set<string>(folios.map((f) => f.id));
   if (activeFolioId) ids.add(activeFolioId);
 
-  const folioContent: Array<{ folioId: string; html: string }> = [];
+  const folioContent: Array<{
+    folioId: string;
+    html: string;
+    updatedAt: number;
+  }> = [];
   for (const id of ids) {
     if (!id) continue;
-    const html = await loadFolioContentFromIdb(id);
-    folioContent.push({ folioId: id, html });
+    const content = await loadFolioContentSnapshotFromIdb(id);
+    folioContent.push({
+      folioId: id,
+      html: content?.html ?? "",
+      updatedAt: content?.updatedAt ?? 0,
+    });
   }
 
   const customPersonas = (await loadPersonasFromIdb()) as Persona[];
@@ -402,7 +407,10 @@ async function pushLocalSnapshot(): Promise<void> {
     await state.client.mutation(api.sync.pushAll, {
       briefs: snap.briefs,
       folios: snap.folios,
-      folioContent: snap.folioContent,
+      folioContent: snap.folioContent.map(({ folioId, html }) => ({
+        folioId,
+        html,
+      })),
       customPersonas: snap.customPersonas ?? undefined,
       personaNotes: snap.personaNotes.map((n) => ({
         folioId: n.folioId ?? "",
@@ -412,6 +420,7 @@ async function pushLocalSnapshot(): Promise<void> {
         personaColor: n.personaColor,
         type: n.type,
         feedback: n.feedback,
+        traceId: n.traceId,
         anchor: n.anchor,
         briefTitle: n.briefTitle,
         createdAt: n.timestamp,
@@ -555,9 +564,7 @@ async function mergeFromRemote(
     const activeFolioId = await loadActiveFolioIdFromIdb();
     const targetFolioId = activeFolioId ?? local.folios[0]?.id;
     const alreadyFiled = targetFolioId
-      ? local.briefs.find(
-          (candidate) => candidate.folioId === targetFolioId,
-        )
+      ? local.briefs.find((candidate) => candidate.folioId === targetFolioId)
       : null;
     if (
       targetFolioId &&
@@ -580,10 +587,7 @@ async function mergeFromRemote(
   // Folio content — per-folio, newer-wins.
   for (const fc of remote.folioContent) {
     const localEntry = local.folioContent.find((l) => l.folioId === fc.folioId);
-    const localStamp = localEntry
-      ? (await loadFolioContentFromIdb(fc.folioId)).length // best-effort
-      : "";
-    if (localEntry === undefined || localStamp === "") {
+    if (!localEntry || fc.updatedAt > localEntry.updatedAt) {
       await saveFolioContentToIdb(fc.folioId, fc.html);
     }
   }
@@ -651,18 +655,9 @@ async function mergeFromRemote(
     const localRubric = local.rubricResults.find(
       (entry) => entry.folioId === folioId,
     )?.result;
-    if (
-      !localRubric ||
-      remoteRubric.updatedAt > (localRubric.timestamp ?? 0)
-    ) {
-      await saveRubricLocally(
-        { ...remoteRubric.result, folioId },
-        folioId,
-      );
-      await saveRubricResultToIdb(
-        { ...remoteRubric.result, folioId },
-        folioId,
-      );
+    if (!localRubric || remoteRubric.updatedAt > (localRubric.timestamp ?? 0)) {
+      await saveRubricLocally({ ...remoteRubric.result, folioId }, folioId);
+      await saveRubricResultToIdb({ ...remoteRubric.result, folioId }, folioId);
     }
   }
 
@@ -721,8 +716,7 @@ export async function savePersonaNoteLocally(
 ): Promise<void> {
   if (typeof window === "undefined" || !folioId) return;
   const path = folioArtifactPath(folioId, "persona-notes.json");
-  const current =
-    (await readFileAsJson<PersonaFeedback[]>(path)) ?? [];
+  const current = (await readFileAsJson<PersonaFeedback[]>(path)) ?? [];
   const noteId = note.noteId ?? `pn-${note.personaId}-${note.timestamp}`;
   const filtered = current.filter((n) => (n.noteId ?? "") !== noteId);
   const stored: PersonaFeedback = {
@@ -761,8 +755,7 @@ export async function addPersonaReplyLocally(
 ): Promise<void> {
   if (typeof window === "undefined" || !folioId) return;
   const path = folioArtifactPath(folioId, "persona-replies.json");
-  const current =
-    (await readFileAsJson<PersonaReply[]>(path)) ?? [];
+  const current = (await readFileAsJson<PersonaReply[]>(path)) ?? [];
   current.push({ ...reply, folioId });
   await writeFileAsJson(path, current);
   markDirty();
