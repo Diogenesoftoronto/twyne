@@ -3,7 +3,7 @@
   "checkpoint_id": "b61d94102c7c",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 10,
+  "checkpoints_count": 11,
   "files_touched": [
     ".bumpy/still-warm-press.md"
   ],
@@ -77,13 +77,20 @@
       "compact_transcript": "/b6/1d94102c7c/9/transcript.jsonl",
       "content_hash": "/b6/1d94102c7c/9/content_hash.txt",
       "prompt": "/b6/1d94102c7c/9/prompt.txt"
+    },
+    {
+      "metadata": "/b6/1d94102c7c/10/metadata.json",
+      "transcript": "/b6/1d94102c7c/10/full.jsonl",
+      "compact_transcript": "/b6/1d94102c7c/10/transcript.jsonl",
+      "content_hash": "/b6/1d94102c7c/10/content_hash.txt",
+      "prompt": "/b6/1d94102c7c/10/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2603121,
+    "input_tokens": 3033989,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 58184704,
-    "output_tokens": 75439,
-    "api_call_count": 354
+    "cache_read_tokens": 64470016,
+    "output_tokens": 84118,
+    "api_call_count": 388
   }
 }
