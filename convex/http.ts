@@ -54,6 +54,227 @@ const http = httpRouter();
 
 authComponent.registerRoutes(http, createAuth, { cors: true });
 
+/* ── CLI / MCP integration API ─────────────────────────────────────
+ * The local tools use a personal bearer token created from Settings. The
+ * database stores only its SHA-256 digest; after resolving that digest here,
+ * every operation runs through an internal function with the verified owner.
+ */
+
+const INTEGRATION_INCLUDES = new Set([
+  "content",
+  "brief",
+  "feedback",
+  "rubric",
+  "suggestions",
+  "citations",
+]);
+const DEFAULT_INTEGRATION_INCLUDES = [...INTEGRATION_INCLUDES];
+const MAX_INTEGRATION_BODY_BYTES = 2 * 1024 * 1024;
+
+function integrationJson(data: unknown, status = 200): Response {
+  return Response.json(data, {
+    status,
+    headers: { "cache-control": "no-store" },
+  });
+}
+
+function integrationError(message: string, status: number): Response {
+  return integrationJson({ ok: false, error: message }, status);
+}
+
+function integrationPublicError(error: unknown): string {
+  const message =
+    (error instanceof Error ? error.message : "")
+      .split("\n", 1)[0]
+      ?.replace(/^.*Uncaught Error:\s*/, "")
+      .trim() ?? "";
+  const safeFragments = [
+    "is required",
+    "must be",
+    "characters or fewer",
+    "changed since it was read",
+    "can hold at most",
+    "At most 100 citations",
+    "Each citation",
+  ];
+  return safeFragments.some((fragment) => message.includes(fragment))
+    ? message
+    : "Integration request failed";
+}
+
+function integrationRecord(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function integrationString(value: unknown, field: string): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`${field} is required`);
+  }
+  return value.trim();
+}
+
+async function integrationTokenHash(token: string): Promise<string> {
+  const digest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode(token),
+  );
+  return Array.from(new Uint8Array(digest), (byte) =>
+    byte.toString(16).padStart(2, "0"),
+  ).join("");
+}
+
+http.route({
+  path: "/api/integrations/v1",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const authorization = request.headers.get("authorization") ?? "";
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.slice("Bearer ".length).trim()
+      : "";
+    if (!token.startsWith("twyne_pat_")) {
+      return integrationError("A Twyne access token is required", 401);
+    }
+
+    const contentLength = Number(request.headers.get("content-length") ?? "0");
+    if (contentLength > MAX_INTEGRATION_BODY_BYTES) {
+      return integrationError("Request body is too large", 413);
+    }
+    const raw = await request.text();
+    if (new TextEncoder().encode(raw).byteLength > MAX_INTEGRATION_BODY_BYTES) {
+      return integrationError("Request body is too large", 413);
+    }
+    let body: Record<string, unknown> | null = null;
+    try {
+      body = integrationRecord(JSON.parse(raw));
+    } catch {
+      return integrationError("Request body must be valid JSON", 400);
+    }
+    if (!body) return integrationError("Request body must be an object", 400);
+
+    const auth = await ctx.runQuery(internal.integrations.authenticate, {
+      tokenHash: await integrationTokenHash(token),
+    });
+    if (!auth)
+      return integrationError("Access token is invalid or revoked", 401);
+
+    try {
+      let data: unknown;
+      switch (body.operation) {
+        case "folios.list":
+          data = await ctx.runQuery(internal.integrations.listFolios, {
+            userId: auth.userId,
+          });
+          break;
+        case "folios.get": {
+          const requested = Array.isArray(body.include)
+            ? body.include.filter(
+                (value): value is string =>
+                  typeof value === "string" && INTEGRATION_INCLUDES.has(value),
+              )
+            : DEFAULT_INTEGRATION_INCLUDES;
+          data = await ctx.runQuery(internal.integrations.getFolio, {
+            userId: auth.userId,
+            folioId: integrationString(body.folioId, "folioId"),
+            include: requested as Array<
+              | "content"
+              | "brief"
+              | "feedback"
+              | "rubric"
+              | "suggestions"
+              | "citations"
+            >,
+          });
+          break;
+        }
+        case "folios.put": {
+          const folio = integrationRecord(body.folio);
+          if (!folio) throw new Error("folio must be an object");
+          data = await ctx.runMutation(internal.integrations.putFolio, {
+            userId: auth.userId,
+            folio: {
+              id: typeof folio.id === "string" ? folio.id : undefined,
+              name: integrationString(folio.name, "folio.name"),
+              type:
+                folio.type === "draft" ||
+                folio.type === "notes" ||
+                folio.type === "outline"
+                  ? folio.type
+                  : undefined,
+              createdAt:
+                typeof folio.createdAt === "number"
+                  ? folio.createdAt
+                  : undefined,
+              updatedAt:
+                typeof folio.updatedAt === "number"
+                  ? folio.updatedAt
+                  : undefined,
+              layout: folio.layout,
+              header:
+                typeof folio.header === "string" ? folio.header : undefined,
+              footer:
+                typeof folio.footer === "string" ? folio.footer : undefined,
+            },
+            html: typeof body.html === "string" ? body.html : undefined,
+            brief: body.brief,
+            expectedUpdatedAt:
+              typeof body.expectedUpdatedAt === "number"
+                ? body.expectedUpdatedAt
+                : undefined,
+          });
+          break;
+        }
+        case "feedback.get":
+          data = await ctx.runQuery(internal.integrations.getFeedback, {
+            userId: auth.userId,
+            folioId: integrationString(body.folioId, "folioId"),
+          });
+          break;
+        case "citations.list":
+          data = await ctx.runQuery(internal.integrations.listCitations, {
+            userId: auth.userId,
+            folioId:
+              typeof body.folioId === "string" ? body.folioId : undefined,
+            search: typeof body.search === "string" ? body.search : undefined,
+          });
+          break;
+        case "citations.put":
+          if (!Array.isArray(body.entries)) {
+            throw new Error("entries must be an array");
+          }
+          data = await ctx.runMutation(internal.integrations.putCitations, {
+            userId: auth.userId,
+            folioId: integrationString(body.folioId, "folioId"),
+            entries: body.entries,
+          });
+          break;
+        case "folios.search":
+          data = await ctx.runQuery(internal.integrations.searchFolios, {
+            userId: auth.userId,
+            search: integrationString(body.search, "search"),
+            limit:
+              typeof body.limit === "number" && Number.isFinite(body.limit)
+                ? body.limit
+                : 20,
+          });
+          break;
+        default:
+          return integrationError("Unknown operation", 400);
+      }
+      return integrationJson({ ok: true, data });
+    } catch (error) {
+      const message = integrationPublicError(error);
+      const status = message.includes("changed since it was read")
+        ? 409
+        : message === "Integration request failed"
+          ? 500
+          : 400;
+      return integrationError(message, status);
+    }
+  }),
+});
+
 /* ── Creem payment webhook ──────────────────────────────────────────
  * Creem POSTs subscription lifecycle events here. We verify the
  * `creem-signature` header (HMAC-SHA256 over the raw body with

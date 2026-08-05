@@ -84,6 +84,7 @@ export class Twyne {
   ): Promise<string> {
     return this.install(source)
       .withExec(["bun", "run", "build.types"])
+      .withExec(["bun", "run", "tools:check"])
       .stdout();
   }
 
@@ -93,7 +94,10 @@ export class Twyne {
     @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
     source: Directory,
   ): Promise<string> {
-    return this.install(source).withExec(["bun", "test"]).stdout();
+    return this.install(source)
+      .withExec(["bun", "test"])
+      .withExec(["bun", "run", "tools:test"])
+      .stdout();
   }
 
   /**
@@ -105,7 +109,9 @@ export class Twyne {
     @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
     source: Directory,
   ): Directory {
-    const built = this.install(source).withExec(["bun", "run", "build"]);
+    const built = this.install(source)
+      .withExec(["bun", "run", "tools:build"])
+      .withExec(["bun", "run", "build"]);
     return dag
       .directory()
       .withDirectory("dist", built.directory("/app/dist"))
@@ -124,6 +130,7 @@ export class Twyne {
   ): File {
     const tarball = `release/twyne-${version}.tar.gz`;
     return this.install(source)
+      .withExec(["bun", "run", "tools:build"])
       .withExec(["bun", "run", "build"])
       .withExec([
         "sh",

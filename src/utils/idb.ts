@@ -45,7 +45,7 @@ const APPARATUS_SETTINGS_STORAGE_KEY = "twyne.apparatus-settings.current";
 const WRITER_SETTINGS_META_KEY = "writer-settings";
 const APPARATUS_SETTINGS_META_KEY = "apparatus-settings";
 
-interface FolioContent {
+export interface FolioContentSnapshot {
   folioId: string;
   html: string;
   updatedAt: number;
@@ -128,12 +128,10 @@ function hasWindow(): boolean {
   return typeof window !== "undefined";
 }
 
-function getLocalStorage():
-  | {
-      getItem: (key: string) => string | null;
-      setItem: (key: string, value: string) => void;
-    }
-  | null {
+function getLocalStorage(): {
+  getItem: (key: string) => string | null;
+  setItem: (key: string, value: string) => void;
+} | null {
   if (typeof globalThis.localStorage !== "undefined") {
     return globalThis.localStorage;
   }
@@ -308,19 +306,26 @@ export async function deleteFolioFromIdb(id: string): Promise<void> {
 export async function loadFolioContentFromIdb(
   folioId: string,
 ): Promise<string> {
-  if (!isBrowser()) return "";
+  return (await loadFolioContentSnapshotFromIdb(folioId))?.html ?? "";
+}
+
+/** Read both the manuscript and its local revision stamp for sync conflicts. */
+export async function loadFolioContentSnapshotFromIdb(
+  folioId: string,
+): Promise<FolioContentSnapshot | null> {
+  if (!isBrowser()) return null;
   try {
     const db = await openDb();
     const rec =
-      (await reqAsPromise<FolioContent | undefined>(
+      (await reqAsPromise<FolioContentSnapshot | undefined>(
         db
           .transaction("folio-content")
           .objectStore("folio-content")
           .get(folioId),
       )) ?? null;
-    return rec?.html ?? "";
+    return rec;
   } catch {
-    return "";
+    return null;
   }
 }
 
@@ -330,7 +335,11 @@ export async function saveFolioContentToIdb(
 ): Promise<void> {
   if (!isBrowser()) return;
   try {
-    const rec: FolioContent = { folioId, html, updatedAt: Date.now() };
+    const rec: FolioContentSnapshot = {
+      folioId,
+      html,
+      updatedAt: Date.now(),
+    };
     await reqAsPromise(
       (await openDb())
         .transaction("folio-content", "readwrite")
@@ -399,9 +408,8 @@ export async function loadAllBriefsFromIdb(): Promise<
       db.transaction("brief").objectStore("brief").getAll(),
     );
     return records
-      .filter(
-        (record): record is BriefRecord & { brief: ProjectBrief } =>
-          Boolean(record.folioId && record.brief),
+      .filter((record): record is BriefRecord & { brief: ProjectBrief } =>
+        Boolean(record.folioId && record.brief),
       )
       .map((record) => ({
         folioId: record.folioId,
@@ -494,7 +502,8 @@ export async function savePersonasToIdb(personas: Persona[]): Promise<void> {
 /* ── Writer settings (single record, key="current") ───────────── */
 
 export async function loadWriterSettingsFromIdb(): Promise<WriterSettings> {
-  if (!getLocalStorage() && !hasIndexedDb()) return { ...DEFAULT_WRITER_SETTINGS };
+  if (!getLocalStorage() && !hasIndexedDb())
+    return { ...DEFAULT_WRITER_SETTINGS };
   const local = readLocalStorageJson<unknown>(WRITER_SETTINGS_STORAGE_KEY);
   if (local) return normalizeWriterSettings(local);
   if (hasIndexedDb()) {
@@ -790,10 +799,7 @@ interface VoiceNoteRecord {
   updatedAt: number;
 }
 
-export async function saveVoiceNoteBlob(
-  id: string,
-  blob: Blob,
-): Promise<void> {
+export async function saveVoiceNoteBlob(id: string, blob: Blob): Promise<void> {
   if (!isBrowser()) return;
   const rec: VoiceNoteRecord = { id, blob, updatedAt: Date.now() };
   await tx("voice-notes", "readwrite", (t) => {

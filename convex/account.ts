@@ -35,6 +35,11 @@ export const deleteAccount = mutation({
     deleted.briefs = await deleteByUserId(ctx, "briefs", userId);
     deleted.folios = await deleteByUserId(ctx, "folios", userId);
     deleted.folioContent = await deleteByUserId(ctx, "folioContent", userId);
+    deleted.integrationTokens = await deleteByUserId(
+      ctx,
+      "integrationTokens",
+      userId,
+    );
     deleted.customPersonas = await deleteByUserId(
       ctx,
       "customPersonas",

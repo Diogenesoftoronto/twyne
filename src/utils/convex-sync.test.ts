@@ -162,6 +162,11 @@ mock.module("./idb", () => ({
   loadAllBriefsFromIdb: async () => [],
   loadActiveFolioIdFromIdb: async () => "f1",
   loadFolioContentFromIdb: async () => SAMPLE_HTML,
+  loadFolioContentSnapshotFromIdb: async () => ({
+    folioId: "f1",
+    html: SAMPLE_HTML,
+    updatedAt: 2,
+  }),
   loadPersonasFromIdb: async () => [],
   loadDraftHtmlFromIdb: async () => "",
   loadLixBlobFromIdb: async () => lixBlobFromIdb,

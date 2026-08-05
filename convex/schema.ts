@@ -46,6 +46,18 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_userId_folioId", ["userId", "folioId"]),
 
+  // Personal tokens for the CLI and local MCP server. Only a SHA-256 digest
+  // is persisted; the clear-text token is returned once when it is created.
+  integrationTokens: defineTable({
+    userId: v.string(),
+    tokenHash: v.string(),
+    prefix: v.string(),
+    name: v.string(),
+    createdAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_tokenHash", ["tokenHash"]),
+
   // Uploaded manuscript images. The editor stores the resolved URL in its
   // document while this row preserves ownership and the underlying storage
   // id so files can be looked up and deleted safely.
