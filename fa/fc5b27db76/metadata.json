@@ -1,0 +1,19 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "fafc5b27db76",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fa/fc5b27db76/0/metadata.json",
+      "transcript": "/fa/fc5b27db76/0/full.jsonl",
+      "compact_transcript": "/fa/fc5b27db76/0/transcript.jsonl",
+      "content_hash": "/fa/fc5b27db76/0/content_hash.txt",
+      "prompt": "/fa/fc5b27db76/0/prompt.txt"
+    }
+  ]
+}
