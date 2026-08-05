@@ -3,7 +3,7 @@
   "checkpoint_id": "fca6920a691a",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 6,
+  "checkpoints_count": 7,
   "files_touched": [
     "convex/_generated/api.d.ts",
     "convex/schema.ts"
@@ -50,13 +50,20 @@
       "compact_transcript": "/fc/a6920a691a/5/transcript.jsonl",
       "content_hash": "/fc/a6920a691a/5/content_hash.txt",
       "prompt": "/fc/a6920a691a/5/prompt.txt"
+    },
+    {
+      "metadata": "/fc/a6920a691a/6/metadata.json",
+      "transcript": "/fc/a6920a691a/6/full.jsonl",
+      "compact_transcript": "/fc/a6920a691a/6/transcript.jsonl",
+      "content_hash": "/fc/a6920a691a/6/content_hash.txt",
+      "prompt": "/fc/a6920a691a/6/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1441771,
+    "input_tokens": 1738281,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 76614144,
-    "output_tokens": 177808,
-    "api_call_count": 643
+    "cache_read_tokens": 91981568,
+    "output_tokens": 208837,
+    "api_call_count": 758
   }
 }
