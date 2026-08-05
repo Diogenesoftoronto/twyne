@@ -12,7 +12,9 @@ Twyne is a writer-first editing room. It opens with an anti-tabula-rasa intervie
 - **Citation detection** for URLs, DOIs, ISBNs, author-year citations, and footnote markers.
 - **Comments** panel for review notes and threaded replies.
 - **Apparatus** research panel (pluggable providers) for searching and pulling sources while writing.
-- **Convex** backend for sync, with **Better Auth** (passkeys) sign-in and **ATProto / standard.site** publishing.
+- **Convex** backend for sync, with **Better Auth** (passkeys) sign-in and
+  writer-owned **ATProto / Standard.site** publishing, including canonical
+  Twyne readers and publication/document verification links.
 - BYOK AI: bring your own key in Settings, stored in your browser and never sent to a server.
 - Installable PWA with brand favicons and per-article OpenGraph share cards.
 
@@ -27,7 +29,7 @@ elsewhere isn't silent.
 
 Convening the room is deliberate and expensive — five model calls over the
 whole manuscript. Alongside it, a background pass runs on a narrower brief:
-once you've written **~300 net new words** *and* stopped typing for **two
+once you've written **~300 net new words** _and_ stopped typing for **two
 minutes**, all five editors read **only the new paragraphs**, plus a digest of
 how the draft has been moving.
 
@@ -36,10 +38,10 @@ sit on top — a five-minute floor between passes and a per-session cap — beca
 this runs without you asking. Turn it off with **Read as I write** in the room
 settings.
 
-The same digest goes along when you *do* press Convene, so the deliberate pass
+The same digest goes along when you _do_ press Convene, so the deliberate pass
 knows the trajectory rather than re-reading a cold snapshot.
 
-### The rubric grades against *this* piece
+### The rubric grades against _this_ piece
 
 The static feature scorer measures shape — sentence-length variance,
 type-token ratio, paragraph balance. It never reads the brief, so fluent prose
@@ -59,12 +61,12 @@ pass is recorded, so the panel shows the run of grades rather than a snapshot.
 
 ## Voice
 
-| What | Needs |
-| --- | --- |
+| What                                       | Needs                                             |
+| ------------------------------------------ | ------------------------------------------------- |
 | Hear an editor, memo, or review read aloud | BYOK speech provider, or Twyne-hosted voice (Pro) |
-| Read the selection (or whole draft) aloud | same |
-| Record a spoken margin note | microphone + BYOK or hosted **transcription** |
-| Answer the interview out loud | same |
+| Read the selection (or whole draft) aloud  | same                                              |
+| Record a spoken margin note                | microphone + BYOK or hosted **transcription**     |
+| Answer the interview out loud              | same                                              |
 
 Each of the five editors has their own voice, per provider — Fish Audio names
 voices by id and OpenAI by name, so the mapping is per-provider rather than one
