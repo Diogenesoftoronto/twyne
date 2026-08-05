@@ -1,0 +1,5 @@
+i want a twyne mcp so that people can insert folios and stuff and export things they have written and stuff also see the critiques for stuff too. would make bulk import and export easy. also make a cli. make sure there are only 15 tools max
+
+---
+
+auto citation and stuff make sense too, like i should be able to get the feedback from stuff fast and stuff you know
