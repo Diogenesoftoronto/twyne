@@ -3,7 +3,7 @@
   "checkpoint_id": "ae85e3a07b64",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 16,
+  "checkpoints_count": 17,
   "files_touched": [
     "README.md",
     "public/docs/index.html.md",
@@ -124,6 +124,13 @@
       "compact_transcript": "/ae/85e3a07b64/14/transcript.jsonl",
       "content_hash": "/ae/85e3a07b64/14/content_hash.txt",
       "prompt": "/ae/85e3a07b64/14/prompt.txt"
+    },
+    {
+      "metadata": "/ae/85e3a07b64/15/metadata.json",
+      "transcript": "/ae/85e3a07b64/15/full.jsonl",
+      "compact_transcript": "/ae/85e3a07b64/15/transcript.jsonl",
+      "content_hash": "/ae/85e3a07b64/15/content_hash.txt",
+      "prompt": "/ae/85e3a07b64/15/prompt.txt"
     }
   ],
   "token_usage": {
