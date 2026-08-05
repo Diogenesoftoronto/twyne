@@ -3,10 +3,25 @@
   "checkpoint_id": "fca6920a691a",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 39,
+  "checkpoints_count": 40,
   "files_touched": [
+    ".env.example",
     "convex/_generated/api.d.ts",
-    "convex/schema.ts"
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "convex/aiFeedback.ts",
+    "convex/arizeTracing.ts",
+    "convex/posthog.ts",
+    "convex/schema.ts",
+    "convex/sync.ts",
+    "docs/ai-observability.md",
+    "evals/judge.ts",
+    "src/components/personas/personas-panel.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/ai-deterministic-evals.ts",
+    "src/utils/ai-evals.test.ts",
+    "src/utils/ai-evals.ts"
   ],
   "sessions": [
     {
@@ -274,13 +289,20 @@
       "compact_transcript": "/fc/a6920a691a/37/transcript.jsonl",
       "content_hash": "/fc/a6920a691a/37/content_hash.txt",
       "prompt": "/fc/a6920a691a/37/prompt.txt"
+    },
+    {
+      "metadata": "/fc/a6920a691a/38/metadata.json",
+      "transcript": "/fc/a6920a691a/38/full.jsonl",
+      "compact_transcript": "/fc/a6920a691a/38/transcript.jsonl",
+      "content_hash": "/fc/a6920a691a/38/content_hash.txt",
+      "prompt": "/fc/a6920a691a/38/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 9180440,
+    "input_tokens": 9949823,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 323682816,
-    "output_tokens": 717614,
-    "api_call_count": 2386
+    "cache_read_tokens": 357011200,
+    "output_tokens": 801847,
+    "api_call_count": 2678
   }
 }
