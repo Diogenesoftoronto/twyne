@@ -1,0 +1,93 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "fca6920a691a",
+  "session_id": "019fcae2-5b64-7043-a051-bf6bdbf65596",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-05T19:49:34.882486614Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/schema.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "5214e7dc593c",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 295496,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 17756672,
+    "output_tokens": 33951,
+    "api_call_count": 127
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-05T19:49:34.430504128Z",
+    "agent_lines": 37,
+    "agent_removed": 0,
+    "human_added": 2981,
+    "human_modified": 14,
+    "human_removed": 0,
+    "total_committed": 3018,
+    "total_lines_changed": 5005,
+    "agent_percentage": 0.7392607392607392,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 3955,
+      "user_lines_removed": 186,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "README.md": 11,
+        "bun.lock": 132,
+        "convex/_generated/api.d.ts": 2,
+        "convex/account.ts": 5,
+        "convex/http.ts": 217,
+        "convex/integrations.test.ts": 155,
+        "convex/integrations.ts": 507,
+        "convex/schema.ts": 12,
+        "package.json": 3,
+        "packages/twyne-tools/package.json": 49,
+        "packages/twyne-tools/src/archive.ts": 303,
+        "packages/twyne-tools/src/cli.ts": 360,
+        "packages/twyne-tools/src/client.ts": 159,
+        "packages/twyne-tools/src/config.ts": 158,
+        "packages/twyne-tools/src/index.ts": 4,
+        "packages/twyne-tools/src/types.ts": 76,
+        "packages/twyne-tools/tsconfig.json": 20,
+        "public/docs/index.html.md": 5,
+        "src/components/folio/folio-menu.tsx": 46,
+        "src/routes/[...standardSiteVerification]/index.ts": 59,
+        "src/routes/at/[did]/[publication]/[document]/index.tsx": 166,
+        "src/routes/at/[did]/[publication]/index.tsx": 159,
+        "src/routes/docs/index.tsx": 7,
+        "src/routes/settings/index.tsx": 265,
+        "src/utils/convex-sync.test.ts": 5,
+        "src/utils/convex-sync.ts": 25,
+        "src/utils/idb.ts": 26,
+        "src/utils/standard-site-paths.test.ts": 59,
+        "src/utils/standard-site-paths.ts": 98,
+        "src/utils/standard-site-reader.server.test.ts": 122,
+        "src/utils/standard-site-reader.server.ts": 366,
+        "src/utils/standard-site.test.ts": 106,
+        "src/utils/standard-site.ts": 268
+      },
+      "user_removed_per_file": {
+        "README.md": 9,
+        "bun.lock": 18,
+        "package.json": 1,
+        "src/components/folio/folio-menu.tsx": 3,
+        "src/utils/convex-sync.ts": 33,
+        "src/utils/idb.ts": 20,
+        "src/utils/standard-site.ts": 102
+      }
+    }
+  ]
+}
