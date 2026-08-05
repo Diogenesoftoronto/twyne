@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { buildAiGenerationProperties } from "./ai-evals";
+import { evaluateAiOutput } from "./ai-deterministic-evals";
 import { FALLBACK_FEATURES, setRuntimeFeatures } from "./feature-flags";
 
 afterEach(() => {
@@ -21,6 +22,8 @@ describe("AI eval event payloads", () => {
       temperature: 0.2,
       maxTokens: 220,
       traceId: "trace-1",
+      contentMode: "full",
+      usage: { inputTokens: 12, outputTokens: 8 },
       spanName: "rubric_judge",
       evalSignals: {
         twyne_expected_format: "json_score_rationale",
@@ -36,6 +39,8 @@ describe("AI eval event payloads", () => {
       $ai_temperature: 0.2,
       $ai_max_tokens: 220,
       $ai_is_error: false,
+      $ai_input_tokens: 12,
+      $ai_output_tokens: 8,
       twyne_feature: "rubric-judge",
       twyne_runtime_pricing_flag: true,
       twyne_runtime_local_ai_flag: true,
@@ -77,6 +82,7 @@ describe("AI eval event payloads", () => {
       prompt: longText,
       output: longText,
       latencyMs: 1,
+      contentMode: "full",
     });
 
     const input = props.$ai_input as Array<{ content: string }>;
@@ -85,5 +91,53 @@ describe("AI eval event payloads", () => {
     expect(input[0].content.length).toBeLessThan(longText.length);
     expect(input[0].content.endsWith("[truncated]")).toBe(true);
     expect(choices[0].content.endsWith("[truncated]")).toBe(true);
+  });
+
+  test("redacts manuscript content by default", () => {
+    const props = buildAiGenerationProperties({
+      feature: "persona-feedback",
+      provider: "openai",
+      model: "gpt-4o",
+      prompt: "Private manuscript passage",
+      output: "Private model response",
+      latencyMs: 10,
+    });
+
+    expect(props.twyne_content_mode).toBe("redacted");
+    expect(props.$ai_input).toEqual([{ role: "user", content: "[redacted]" }]);
+    expect(props.$ai_output_choices).toEqual([
+      { role: "assistant", content: "[redacted]" },
+    ]);
+  });
+});
+
+describe("deterministic AI checks", () => {
+  test("validates score/rationale output and range", () => {
+    expect(
+      evaluateAiOutput({
+        output: JSON.stringify({ score: 11, rationale: "Too high" }),
+        evalSignals: { twyne_expected_format: "json_score_rationale" },
+      }),
+    ).toMatchObject({
+      structuredOutput: false,
+      scoreRange: false,
+      status: "fail",
+    });
+  });
+
+  test("checks required protocol markers and source integrity", () => {
+    expect(
+      evaluateAiOutput({
+        output: "A conclusion [1]",
+        evalSignals: {
+          twyne_required_protocol_markers: ["conclusion"],
+          twyne_requires_sources: true,
+        },
+      }),
+    ).toMatchObject({
+      protocol: true,
+      citationIntegrity: true,
+      status: "pass",
+    });
   });
 });

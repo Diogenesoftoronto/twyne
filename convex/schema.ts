@@ -101,6 +101,7 @@ export default defineSchema({
       v.literal("perspective"),
     ),
     feedback: v.string(),
+    traceId: v.optional(v.string()),
     anchor: v.optional(v.string()),
     briefTitle: v.optional(v.string()),
     createdAt: v.number(),
@@ -108,6 +109,40 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_userId_folioId", ["userId", "folioId"])
     .index("by_userId_noteId", ["userId", "noteId"]),
+
+  // Trace-linked feedback is the durable review queue. Negative feedback is
+  // pending human review; positive feedback is retained for cohort analysis.
+  aiFeedback: defineTable({
+    userId: v.string(),
+    traceId: v.string(),
+    spanId: v.optional(v.string()),
+    feature: v.string(),
+    sentiment: v.union(v.literal("positive"), v.literal("negative")),
+    reason: v.optional(
+      v.union(
+        v.literal("grounding"),
+        v.literal("usefulness"),
+        v.literal("tone"),
+        v.literal("incorrect"),
+        v.literal("too_long"),
+        v.literal("other"),
+      ),
+    ),
+    comment: v.optional(v.string()),
+    folioId: v.optional(v.string()),
+    sessionId: v.optional(v.string()),
+    editorialActionId: v.optional(v.string()),
+    reviewStatus: v.union(
+      v.literal("not_required"),
+      v.literal("pending"),
+      v.literal("in_review"),
+      v.literal("resolved"),
+    ),
+    createdAt: v.number(),
+  })
+    .index("by_traceId", ["traceId"])
+    .index("by_reviewStatus_createdAt", ["reviewStatus", "createdAt"])
+    .index("by_userId_createdAt", ["userId", "createdAt"]),
 
   // ── Threaded replies to persona notes, optionally re-prompting the agent. ──
   personaReplies: defineTable({

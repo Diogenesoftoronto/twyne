@@ -247,6 +247,7 @@ export const putPersonaNote = mutation({
       v.literal("perspective"),
     ),
     feedback: v.string(),
+    traceId: v.optional(v.string()),
     anchor: v.optional(v.string()),
     briefTitle: v.optional(v.string()),
   },
@@ -262,6 +263,7 @@ export const putPersonaNote = mutation({
       await ctx.db.patch(existing._id, {
         folioId: args.folioId,
         feedback: args.feedback,
+        traceId: args.traceId,
         type: args.type,
         anchor: args.anchor,
       });
@@ -276,6 +278,7 @@ export const putPersonaNote = mutation({
       personaColor: args.personaColor,
       type: args.type,
       feedback: args.feedback,
+      traceId: args.traceId,
       anchor: args.anchor,
       briefTitle: args.briefTitle,
       createdAt: Date.now(),
@@ -623,6 +626,7 @@ export const pushAll = mutation({
           personaColor: v.string(),
           type: v.string(),
           feedback: v.string(),
+          traceId: v.optional(v.string()),
           anchor: v.optional(v.string()),
           briefTitle: v.optional(v.string()),
           createdAt: v.number(),
@@ -750,6 +754,7 @@ export const pushAll = mutation({
           await ctx.db.patch(existing._id, {
             folioId: n.folioId,
             feedback: n.feedback,
+            traceId: n.traceId,
             type: n.type as
               | "encouragement"
               | "suggestion"
@@ -775,6 +780,7 @@ export const pushAll = mutation({
               | "critique"
               | "perspective",
             feedback: n.feedback,
+            traceId: n.traceId,
             anchor: n.anchor,
             briefTitle: n.briefTitle,
             createdAt: n.createdAt,
@@ -937,6 +943,7 @@ export const pullAll = query({
         personaColor: n.personaColor,
         type: n.type,
         feedback: n.feedback,
+        traceId: n.traceId,
         anchor: n.anchor,
         briefTitle: n.briefTitle,
         createdAt: n.createdAt,
