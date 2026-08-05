@@ -1,0 +1,69 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "fca6920a691a",
+  "session_id": "019fcad0-3982-77a0-9b9f-4aaca0937af1",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-05T19:49:13.864140245Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/schema.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "78679e3ec019",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 367713,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 22412800,
+    "output_tokens": 58217,
+    "api_call_count": 189
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-05T19:49:13.741045042Z",
+    "agent_lines": 37,
+    "agent_removed": 0,
+    "human_added": 2981,
+    "human_modified": 14,
+    "human_removed": 0,
+    "total_committed": 3032,
+    "total_lines_changed": 5005,
+    "agent_percentage": 0.7392607392607392,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1472,
+      "user_lines_removed": 114,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "README.md": 11,
+        "public/docs/index.html.md": 5,
+        "src/components/folio/folio-menu.tsx": 46,
+        "src/routes/[...standardSiteVerification]/index.ts": 59,
+        "src/routes/at/[did]/[publication]/[document]/index.tsx": 166,
+        "src/routes/at/[did]/[publication]/index.tsx": 159,
+        "src/routes/docs/index.tsx": 7,
+        "src/utils/standard-site-paths.test.ts": 59,
+        "src/utils/standard-site-paths.ts": 98,
+        "src/utils/standard-site-reader.server.test.ts": 122,
+        "src/utils/standard-site-reader.server.ts": 366,
+        "src/utils/standard-site.test.ts": 106,
+        "src/utils/standard-site.ts": 268
+      },
+      "user_removed_per_file": {
+        "README.md": 9,
+        "src/components/folio/folio-menu.tsx": 3,
+        "src/utils/standard-site.ts": 102
+      }
+    }
+  ]
+}
