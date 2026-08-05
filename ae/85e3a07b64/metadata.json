@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "ae85e3a07b64",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "README.md",
+    "public/docs/index.html.md",
+    "src/components/folio/folio-menu.tsx",
+    "src/routes/[...standardSiteVerification]/index.ts",
+    "src/routes/at/[did]/[publication]/[document]/index.tsx",
+    "src/routes/at/[did]/[publication]/index.tsx",
+    "src/routes/docs/index.tsx",
+    "src/utils/standard-site-paths.test.ts",
+    "src/utils/standard-site-paths.ts",
+    "src/utils/standard-site-reader.server.test.ts",
+    "src/utils/standard-site-reader.server.ts",
+    "src/utils/standard-site.test.ts",
+    "src/utils/standard-site.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ae/85e3a07b64/0/metadata.json",
+      "transcript": "/ae/85e3a07b64/0/full.jsonl",
+      "compact_transcript": "/ae/85e3a07b64/0/transcript.jsonl",
+      "content_hash": "/ae/85e3a07b64/0/content_hash.txt",
+      "prompt": "/ae/85e3a07b64/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 618394,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 17787392,
+    "output_tokens": 64384,
+    "api_call_count": 168
+  }
+}

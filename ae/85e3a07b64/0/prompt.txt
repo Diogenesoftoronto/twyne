@@ -1,0 +1,13 @@
+hey i have a question here can you post standard.site like posts from twyne to other sites? does twyne have a way for you to publish to other domains and stuff?
+
+---
+
+get standard site ready you can use the sessame cli for this
+
+---
+
+.
+
+---
+
+.
