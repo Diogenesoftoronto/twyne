@@ -19,6 +19,7 @@ import type { AppError } from "../../types/application-errors";
 import { normalizeApplicationError } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { ApplicationNotice } from "../ui/application-notice";
+import { captureProductEvent } from "../../utils/product-analytics";
 
 /**
  * The Editor's Office sign-in panel.
@@ -137,6 +138,7 @@ export const AuthPanel = component$(() => {
   const handlePasskeySignIn = $(async () => {
     store.usingPasskey = true;
     store.error = null;
+    void captureProductEvent("sign_in_started", { method: "passkey" });
     try {
       // No `autoFill` here: this is the explicit "use a passkey" button, so we
       // want the modal WebAuthn prompt to open immediately. `autoFill: true`
@@ -164,9 +166,14 @@ export const AuthPanel = component$(() => {
           result.error,
           { operation: "passkey-sign-in" },
         );
-        store.error = normalizeApplicationError(result.error, {
+        const normalized = normalizeApplicationError(result.error, {
           source: "auth",
           metadata: { operation: "passkey-sign-in" },
+        });
+        store.error = normalized;
+        void captureProductEvent("sign_in_failed", {
+          method: "passkey",
+          error_code: normalized.code,
         });
       } else {
         setPreferredMethod(store.email, "passkey");
@@ -175,9 +182,14 @@ export const AuthPanel = component$(() => {
       reportApplicationDiagnostic("twyne:auth:passkey-sign-in", error, {
         operation: "passkey-sign-in",
       });
-      store.error = normalizeApplicationError(error, {
+      const normalized = normalizeApplicationError(error, {
         source: "auth",
         metadata: { operation: "passkey-sign-in" },
+      });
+      store.error = normalized;
+      void captureProductEvent("sign_in_failed", {
+        method: "passkey",
+        error_code: normalized.code,
       });
     } finally {
       store.usingPasskey = false;
@@ -206,6 +218,7 @@ export const AuthPanel = component$(() => {
     }
     store.verifyingOtp = true;
     store.error = null;
+    void captureProductEvent("sign_in_started", { method: "email_otp" });
     try {
       const result = await (authClient.signIn as any).emailOtp({
         email: store.email,
@@ -215,9 +228,14 @@ export const AuthPanel = component$(() => {
         reportApplicationDiagnostic("twyne:auth:verify-otp", result.error, {
           operation: "verify-otp",
         });
-        store.error = normalizeApplicationError(result.error, {
+        const normalized = normalizeApplicationError(result.error, {
           source: "auth",
           metadata: { operation: "verify-otp" },
+        });
+        store.error = normalized;
+        void captureProductEvent("sign_in_failed", {
+          method: "email_otp",
+          error_code: normalized.code,
         });
         return;
       }
@@ -228,9 +246,14 @@ export const AuthPanel = component$(() => {
       reportApplicationDiagnostic("twyne:auth:verify-otp", error, {
         operation: "verify-otp",
       });
-      store.error = normalizeApplicationError(error, {
+      const normalized = normalizeApplicationError(error, {
         source: "auth",
         metadata: { operation: "verify-otp" },
+      });
+      store.error = normalized;
+      void captureProductEvent("sign_in_failed", {
+        method: "email_otp",
+        error_code: normalized.code,
       });
     } finally {
       store.verifyingOtp = false;
@@ -301,6 +324,7 @@ export const AuthPanel = component$(() => {
       return;
     }
     store.usingBluesky = true;
+    void captureProductEvent("sign_in_started", { method: "bluesky" });
     try {
       // Redirects to the Bluesky consent screen and completes on return.
       await signInWithBluesky(handle);
@@ -308,9 +332,14 @@ export const AuthPanel = component$(() => {
       reportApplicationDiagnostic("twyne:auth:atproto-sign-in", error, {
         operation: "atproto-sign-in",
       });
-      store.error = normalizeApplicationError(error, {
+      const normalized = normalizeApplicationError(error, {
         source: "auth",
         metadata: { operation: "atproto-sign-in" },
+      });
+      store.error = normalized;
+      void captureProductEvent("sign_in_failed", {
+        method: "bluesky",
+        error_code: normalized.code,
       });
       store.usingBluesky = false;
     }

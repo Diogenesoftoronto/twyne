@@ -5,10 +5,11 @@ import { AccountMenu } from "../auth/account-menu";
 import { useAuth } from "../../utils/auth-context";
 import ImgGriffinMark from "~/media/assets/griffin-mark.svg?jsx";
 import ImgApprovalStamp from "~/media/approval-stamp.svg?jsx";
+import type { LandingCtaLocation } from "../../utils/product-analytics";
 
 interface LandingPageProps {
-  onStartBrief$: PropFunction<() => void>;
-  onSkipToEditor$?: PropFunction<() => void>;
+  onStartBrief$: PropFunction<(location: LandingCtaLocation) => void>;
+  onSkipToEditor$?: PropFunction<(location: LandingCtaLocation) => void>;
 }
 
 /** Where the Electrobun desktop builds are published (GitHub Releases). */
@@ -106,7 +107,10 @@ export const LandingPage = component$<LandingPageProps>(
                   Sign in
                 </Link>
               )}
-              <button onClick$={onStartBrief$} class="broadsheet-cta">
+              <button
+                onClick$={() => onStartBrief$("header")}
+                class="broadsheet-cta"
+              >
                 {signedIn ? "Open the desk" : "Start writing"}
               </button>
             </div>
@@ -124,12 +128,15 @@ export const LandingPage = component$<LandingPageProps>(
               every draft against it.
             </p>
             <div class="landing-rise-3 mt-9 flex flex-wrap items-center justify-center gap-3">
-              <button onClick$={onStartBrief$} class="broadsheet-cta">
+              <button
+                onClick$={() => onStartBrief$("hero")}
+                class="broadsheet-cta"
+              >
                 Start your brief →
               </button>
               {onSkipToEditor$ && (
                 <button
-                  onClick$={onSkipToEditor$}
+                  onClick$={() => onSkipToEditor$("hero")}
                   class="broadsheet-cta secondary"
                 >
                   Skip to the editor
@@ -239,12 +246,15 @@ export const LandingPage = component$<LandingPageProps>(
                   tool in the room knows what you are writing and who it is for.
                 </p>
                 <div class="mt-9 flex flex-wrap justify-center gap-3">
-                  <button onClick$={onStartBrief$} class="broadsheet-cta">
+                  <button
+                    onClick$={() => onStartBrief$("footer")}
+                    class="broadsheet-cta"
+                  >
                     Start your brief →
                   </button>
                   {onSkipToEditor$ && (
                     <button
-                      onClick$={onSkipToEditor$}
+                      onClick$={() => onSkipToEditor$("footer")}
                       class="broadsheet-cta secondary"
                     >
                       Skip to the editor

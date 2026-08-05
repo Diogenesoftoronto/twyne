@@ -16,6 +16,7 @@ import {
   setRuntimeFeatures,
   type FeatureFlags,
 } from "./feature-flags";
+import { buildPostHogInitOptions } from "./posthog-config";
 
 interface FeatureFlagState {
   flags: FeatureFlags;
@@ -25,6 +26,12 @@ interface FeatureFlagState {
 }
 
 type PostHogClient = typeof posthog;
+
+export interface PostHogIdentityContext {
+  distinctId?: string;
+  anonymousId?: string;
+  sessionId?: string;
+}
 
 export const FeatureFlagContext = createContextId<Signal<FeatureFlagState>>(
   "twyne.feature-flags",
@@ -57,16 +64,14 @@ async function getPostHogClient(): Promise<PostHogClient | null> {
   clientPromise ??= import("posthog-js").then((mod) => {
     const client = mod.default;
     if (!initialized) {
-      client.init(config.key, {
-        api_host: config.host,
-        defaults: "2026-01-30",
-        autocapture: config.capture,
-        capture_pageview: config.capture,
-        capture_pageleave: config.capture,
-        disable_session_recording: !config.capture,
-        opt_out_capturing_by_default: !config.capture,
-        flag_keys: Object.values(POSTHOG_FEATURE_FLAG_KEYS),
-      });
+      client.init(
+        config.key,
+        buildPostHogInitOptions({
+          host: config.host,
+          capture: config.capture,
+          flagKeys: Object.values(POSTHOG_FEATURE_FLAG_KEYS),
+        }),
+      );
       initialized = true;
     }
     return client;
@@ -75,13 +80,64 @@ async function getPostHogClient(): Promise<PostHogClient | null> {
   return clientPromise;
 }
 
+function optionalString(value: unknown): string | undefined {
+  return typeof value === "string" && value ? value : undefined;
+}
+
+export async function getPostHogIdentityContext(): Promise<PostHogIdentityContext> {
+  const client = await getPostHogClient();
+  if (!client) return {};
+  return {
+    distinctId: optionalString(client.get_distinct_id()),
+    anonymousId: optionalString(client.get_property("$device_id")),
+    sessionId: optionalString(client.get_session_id()),
+  };
+}
+
 export async function capturePostHogEvent(
   event: string,
   properties: Record<string, unknown>,
 ): Promise<void> {
   const client = await getPostHogClient();
   if (!client) return;
-  client.capture(event, properties);
+  const identity = await getPostHogIdentityContext();
+  client.capture(event, {
+    ...properties,
+    ...(event === "$ai_generation" && !properties.$ai_session_id
+      ? { $ai_session_id: identity.sessionId }
+      : {}),
+    twyne_distinct_id: identity.distinctId,
+    twyne_anonymous_id: identity.anonymousId,
+    twyne_session_id: identity.sessionId,
+  });
+}
+
+/**
+ * Display the specifically configured progress survey after a meaningful
+ * milestone. An explicit survey name prevents a future unrelated survey from
+ * interrupting the editor; an unset name keeps this integration inert.
+ */
+export async function maybeDisplayProgressSurvey(
+  milestone: "dossier_completed" | "draft_exported",
+): Promise<void> {
+  const surveyName = optionalString(
+    import.meta.env.PUBLIC_POSTHOG_PROGRESS_SURVEY_NAME as string | undefined,
+  );
+  if (!surveyName) return;
+
+  const client = await getPostHogClient();
+  if (!client) return;
+
+  client.getActiveMatchingSurveys((surveys) => {
+    const survey = surveys.find((candidate) => candidate.name === surveyName);
+    if (!survey) return;
+    client.displaySurvey(survey.id, {
+      displayType: "popover",
+      ignoreConditions: false,
+      ignoreDelay: false,
+      properties: { twyne_milestone: milestone },
+    });
+  });
 }
 
 function readFlags(client: PostHogClient): FeatureFlags {
@@ -153,18 +209,35 @@ export const PostHogProvider = component$(() => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ track }) => {
     track(() => auth.value.user?.id);
+    track(() => auth.value.user?.email);
+    track(() => auth.value.user?.name);
     track(() => auth.value.loading);
+    track(() => auth.value.provider);
 
     const client = await getPostHogClient();
     if (!client || auth.value.loading) return;
 
     if (auth.value.user) {
+      const previousUserId = client.get_property("$user_id");
+      if (previousUserId && previousUserId !== auth.value.user.id) {
+        client.reset();
+      }
       client.identify(auth.value.user.id, {
         email: auth.value.user.email,
         name: auth.value.user.name,
-        authProvider: auth.value.provider,
+        auth_provider: auth.value.provider,
       });
-    } else {
+
+      if (previousUserId !== auth.value.user.id) {
+        client.capture("sign_in_completed", {
+          analytics_version: 1,
+          provider: auth.value.provider ?? "convex",
+        });
+      }
+    } else if (client.get_property("$user_id")) {
+      // `reset()` creates a fresh anonymous id. Only do that when an
+      // identified session actually ended; resetting every anonymous page
+      // load made the same returning writer look like a brand-new person.
       client.reset();
     }
   });

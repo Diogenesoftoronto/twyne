@@ -37,6 +37,7 @@ import {
   saveFoliosToIdb,
 } from "../../../utils/idb";
 import { markDirty } from "../../../utils/convex-sync";
+import { captureProductEvent } from "../../../utils/product-analytics";
 
 interface OnboardingStore {
   hydrated: boolean;
@@ -119,6 +120,10 @@ export default component$(() => {
         const folios = await loadFoliosFromIdb();
         await saveFoliosToIdb([...folios, folio]);
         await saveActiveFolioIdToIdb(folio.id);
+        void captureProductEvent("folio_created", {
+          source: "onboarding",
+          folio_type: folio.type,
+        });
         folioId = folio.id;
         folioName = folio.name;
         store.folioId = folio.id;
@@ -154,6 +159,7 @@ export default component$(() => {
         );
       }
       markDirty();
+      void captureProductEvent("dossier_completed", { mode: "first_run" });
       briefDone.value = true;
     },
   );
@@ -235,7 +241,13 @@ export default component$(() => {
           mode="first-run"
           initialMaterial={store.initialMaterial}
           onComplete$={({ answers, attachments, probes }) =>
-            completeOnboarding$(answers, undefined, undefined, attachments, probes)
+            completeOnboarding$(
+              answers,
+              undefined,
+              undefined,
+              attachments,
+              probes,
+            )
           }
           onUseForm$={({ answers, attachments }) => {
             store.formAnswers = answers;

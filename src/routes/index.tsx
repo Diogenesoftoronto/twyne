@@ -9,6 +9,10 @@ import {
   saveFoliosToIdb,
   saveActiveFolioIdToIdb,
 } from "../utils/idb";
+import {
+  captureProductEvent,
+  type LandingCtaLocation,
+} from "../utils/product-analytics";
 
 /**
  * The landing page. Twyne-style: a magazine broadsheet the writer
@@ -26,11 +30,16 @@ export default component$(() => {
   // page — and every link on it — unreachable for anyone who had ever written
   // anything. The desk is one click away in the header instead.
 
-  const startBrief = $(() => {
-    void nav(auth.value.user ? "/dossier/create/" : "/onboarding/");
+  const startBrief = $((location: LandingCtaLocation) => {
+    const signedIn = Boolean(auth.value.user);
+    void captureProductEvent("landing_cta_clicked", {
+      location,
+      destination: signedIn ? "dossier" : "onboarding",
+    });
+    void nav(signedIn ? "/dossier/create/" : "/onboarding/");
   });
 
-  const skipToEditor = $(async () => {
+  const skipToEditor = $(async (location: LandingCtaLocation) => {
     // Going straight to the desk without an interview: make sure there's a
     // folio to write into so /editor doesn't bounce back to onboarding.
     const folios = await loadFoliosFromIdb();
@@ -44,7 +53,15 @@ export default component$(() => {
       };
       await saveFoliosToIdb([folio]);
       await saveActiveFolioIdToIdb(folio.id);
+      void captureProductEvent("folio_created", {
+        source: "landing",
+        folio_type: folio.type,
+      });
     }
+    void captureProductEvent("landing_cta_clicked", {
+      location,
+      destination: "editor",
+    });
     void nav("/editor/");
   });
 
