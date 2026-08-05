@@ -30,8 +30,10 @@ import { useAuth } from "../../utils/auth-context";
 import { getAgent } from "../../utils/atproto";
 import {
   ensurePublication,
+  loadPublishedDocument,
   publishDocument,
   type PublishResult,
+  unpublishDocument,
 } from "../../utils/standard-site";
 import type { Folio, ProjectBrief } from "../../types";
 import type { AppError } from "../../types/application-errors";
@@ -41,6 +43,7 @@ import {
   normalizeApplicationError,
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import { captureProductEvent } from "../../utils/product-analytics";
 
 /**
  * The folio's "File" menu. Sits in the editor toolbar and gives the
@@ -79,7 +82,6 @@ interface FolioMenuProps {
     (r: ImportResult) => void
   >;
 }
-
 
 /**
  * Compose the public reader URL for a published piece. Uses the first-class
@@ -173,6 +175,20 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     }
   });
 
+  // Restore the locally-known PDS record when the writer changes folios or
+  // reopens the share panel. The PDS remains the source of truth; IDB only
+  // remembers the record key needed for update/delete controls.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track }) => {
+    track(() => auth.value.provider);
+    track(() => props.activeFolioId);
+    if (auth.value.provider !== "atproto" || !props.activeFolioId) {
+      pdsResult.value = null;
+      return;
+    }
+    pdsResult.value = await loadPublishedDocument(props.activeFolioId);
+  });
+
   /**
    * The page setup travels with the payload — without `layout` the exporter
    * silently fell back to DEFAULT_LAYOUT, so a writer who had set their own
@@ -195,6 +211,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       const payload = await buildExportPayload();
       menuOpen.value = false;
       await exportPdf(payload);
+      void captureProductEvent("draft_exported", { format: "pdf" });
     } catch (err) {
       reportApplicationDiagnostic("twyne:folio:export-pdf", err, {
         operation: "export",
@@ -221,6 +238,9 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               : "twyne.json";
       downloadBlob(blob, safeFilename(props.activeFolioName, ext));
       menuOpen.value = false;
+      void captureProductEvent("draft_exported", {
+        format: format === "twyne-backup" ? "twyne_backup" : format,
+      });
     } catch (err) {
       reportApplicationDiagnostic("twyne:folio:export", err, {
         operation: "export",
@@ -254,6 +274,10 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         await saveFoliosToIdb([...folios, folio]);
         await saveFolioContentToIdb(folio.id, result.html);
         await saveActiveFolioIdToIdb(folio.id);
+        void captureProductEvent("folio_created", {
+          source: "import",
+          folio_type: folio.type,
+        });
       }
       dialog.value = null;
       if (props.onImported$) {
@@ -350,6 +374,9 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         shareNotice.value =
           "You're not in the blog roster — published as a private share instead.";
       }
+      void captureProductEvent("draft_published", {
+        destination: result.kind === "blog" ? "twyne_blog" : "twyne_share",
+      });
     } catch (err) {
       reportApplicationDiagnostic("twyne:folio:publish", err, {
         operation: "publish",
@@ -437,18 +464,21 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           updatedAt: Date.now(),
         } as Folio);
       const pubName =
-        props.brief?.answers.workingTitle ||
+        auth.value.atproto?.displayName ||
+        auth.value.atproto?.handle ||
         props.authorName ||
         "My Twyne publication";
       const publication = await ensurePublication(agent, {
         name: pubName,
-        url: window.location.origin,
       });
       pdsResult.value = await publishDocument(agent, {
         folio,
         html,
         brief: props.brief,
         publication,
+      });
+      void captureProductEvent("draft_published", {
+        destination: "standard_site",
       });
     } catch (err) {
       reportApplicationDiagnostic("twyne:folio:publish-pds", err, {
@@ -457,6 +487,27 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       pdsError.value = normalizeApplicationError(err, {
         source: "provider",
         metadata: { operation: "publish-pds", provider: "atproto" },
+      });
+    } finally {
+      pdsBusy.value = false;
+    }
+  });
+
+  const doUnpublishPds = $(async () => {
+    if (!props.activeFolioId) return;
+    pdsBusy.value = true;
+    pdsError.value = null;
+    try {
+      const agent = await getAgent();
+      await unpublishDocument(agent, props.activeFolioId);
+      pdsResult.value = null;
+    } catch (err) {
+      reportApplicationDiagnostic("twyne:folio:unpublish-pds", err, {
+        operation: "unpublish-pds",
+      });
+      pdsError.value = normalizeApplicationError(err, {
+        source: "provider",
+        metadata: { operation: "unpublish-pds", provider: "atproto" },
       });
     } finally {
       pdsBusy.value = false;
@@ -811,6 +862,13 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                         disabled={pdsBusy.value}
                       >
                         {pdsBusy.value ? "Updating…" : "Re-publish (update)"}
+                      </button>
+                      <button
+                        class="btn-paper text-xs w-full"
+                        onClick$={doUnpublishPds}
+                        disabled={pdsBusy.value}
+                      >
+                        {pdsBusy.value ? "Removing…" : "Unpublish from PDS"}
                       </button>
                     </div>
                   ) : (

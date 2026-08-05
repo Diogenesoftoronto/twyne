@@ -554,6 +554,13 @@ export default component$(() => {
             <strong>Share</strong> a public reading view of any folio. Anyone
             with the link can read it; no one can edit it. Unpublish instantly.
           </p>
+          <p class="doc-p">
+            <strong>Publish to your PDS</strong> after signing in with Bluesky
+            or another ATProto provider. Twyne files a Standard.site publication
+            and document in your own repository, serves a verifiable public
+            reading page, and updates the same record when you re-publish.
+            Unpublishing removes the document from your PDS.
+          </p>
         </section>
 
         {/* ── IX. Manuscript tools ── */}
