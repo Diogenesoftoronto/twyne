@@ -5,6 +5,48 @@
 
 
 
+
+## 0.11.0
+<sub>2026-08-05</sub>
+
+-  *(minor)*
+  Twyne grows a way out of the browser, a canonical home for published work, and
+  an honest account of what its editors are doing — none of it at the cost of the
+  draft leaving the machine it was written on.
+
+  **The room, from your own tools.** A `twyne` CLI and a `twyne-mcp` server talk
+  to a single token-scoped endpoint, so folios, feedback, and citations are
+  reachable from a terminal or from another agent. Personal access tokens are
+  created in Settings and stored only as a SHA-256 digest — the token itself is
+  shown once and never again. Every operation resolves that digest and then runs
+  bound to the verified owner, so a token cannot reach anyone else's work. Writes
+  carry the revision they read: a folio that moved in the meantime comes back as
+  a conflict rather than quietly overwriting the newer draft.
+
+  **Published pieces get an address.** Publishing files a Standard.site
+  publication and document in the writer's own ATProto repository, and Twyne now
+  serves the matching reading pages, so a published piece has a canonical,
+  verifiable home instead of only a record in a PDS. The share panel remembers
+  the record key locally, which is what makes re-publishing and unpublishing work
+  on a later visit; the PDS stays the source of truth.
+
+  **Observability that redacts by default.** Every generation returns the trace
+  id that produced it, and that id rides along on the persona note, so a
+  thumbs-up or thumbs-down attaches to the exact generation rather than to a
+  guess. Negative feedback becomes a pending review queue. Both exporters redact
+  content unless it is explicitly turned on: Arize spans blank their input and
+  output attributes and mark themselves redacted, and PostHog serializes AI
+  content in redacted mode. Token usage and deterministic eval signals scored
+  locally travel instead of the prose.
+
+  **Product analytics with an allowlist.** Events go through one typed contract
+  that stamps a version and drops any property not on that event's allowlist.
+  Draft prose never leaves the browser — word counts are bucketed, folio names
+  and ids are not carried, and only stable error codes are sent, never raw
+  messages.
+
+  New surface rather than a change in behaviour, so it goes out as a minor.
+
 ## 0.10.0
 <sub>2026-08-02</sub>
 
