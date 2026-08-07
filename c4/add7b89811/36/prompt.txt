@@ -1,0 +1,65 @@
+Area                        Current state                            Missing
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   PostHog AI observability    $ai_generation events are arriving       No automated evaluations, score
+                                                                        definitions, review queues, provider,
+                                                                        or trace-linked feedback
+  ──────────────────────────  ───────────────────────────────────────  ────────────────────────────────────────
+   Surveys                     None                                     Live PostHog project has zero surveys;
+                                                                        application has no survey integration
+  ──────────────────────────  ───────────────────────────────────────  ────────────────────────────────────────
+   Arize                       Live twyne project and server tracing    Continuous evaluator/task status is
+                               exist                                    unverified; installed ax client is
+                                                                        incompatible with the current API
+                                                                        response
+  ──────────────────────────  ───────────────────────────────────────  ────────────────────────────────────────
+   Offline evals               Substantial repository harness exists    Results are disconnected from
+                                                                        production traces, releases, and
+                                                                        product outcomes
+
+  Key technical problems:
+
+  - Server generations use the hard-coded identity convex-server, so AI quality cannot be joined to
+    authenticated users, retention, folios, or survey responses: convex/posthog.ts:74.
+
+  - PostHog traces have no AI session ID, token counts, or cost information.
+  - “Eval signals” in src/utils/ai-evals.ts:39 are only event properties—not actual judges or scores.
+  - Client coverage is incomplete. The streamed interview path bypasses tracked generation capture: src/utils/
+    ai-client.ts:2478. Direct audio transcription also bypasses it.
+
+  - Inputs and outputs can include up to 6,000 characters of manuscript content. That needs an explicit
+    privacy/redaction policy before broadening evaluation access.
+
+  - The repository already has useful offline suites—grounding, helpfulness, rubric behavior, interviews,
+    apparatus selection, and robustness—starting with evals/judge.ts:2 and the scripts in package.json:53. They
+    are not connected to production monitoring.
+
+  The next integration should be:
+
+  1. Propagate authenticated distinct ID, anonymous ID, folio/session ID, and editorial-action ID through every
+     generation.
+
+  2. Add deterministic checks for structured output, valid scoring ranges, protocol adherence, and citation/
+     source integrity.
+
+  3. Backfill a small production sample with grounding/helpfulness judges, review the explanations, then enable
+     sampled continuous evaluation.
+
+  4. Add contextual feedback immediately after AI output: thumbs up/down plus reason chips, linked to the exact
+     trace.
+
+  5. Add a lightweight “Did this help you make progress?” survey after meaningful milestones such as dossier
+     completion or export—not a generic early NPS interruption.
+
+  6. Build the real quality funnel:
+
+  AI requested → generation succeeded → eval passed → user marked helpful → revision/export completed → user
+  returned
+
+  7. Route failed evaluations, negative feedback, and high-value error traces into a human review queue.
+
+  The live PostHog project currently shows zero evaluations, zero scores, zero queues, and zero surveys, so
+  this remains genuinely unfinished. I made no additional changes during this audit.
+
+---
+
+.
