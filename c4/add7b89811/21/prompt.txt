@@ -1,0 +1,56 @@
+hey there is really limited integration of posthog into the application here are some insights from the post hog application on some things needed and we also need better product understanding with funnels and other stuff: Here's the full picture. The data confirms your suspicion – tracking is significantly broken. Here's what's happening and why:
+
+---
+
+🔍 What the data shows
+
+Last 30 days:
+
+- ~95 total pageviews across the entire site
+- The homepage / dominates with 69 views – the editor /editor/ only has 11
+- /pricing/ had 2 visits, /settings/ 2, /signin/ 2
+- Only 3 $identify calls total – meaning virtually everyone using the app is anonymous and untracked
+
+The most telling signal: On almost every single day, pageviews = unique users. That means each person appears to only visit one page per session – which is impossible if they're actually using the app.
+
+---
+
+🐛 The two root causes
+
+1. SPA navigation isn't being tracked
+
+PostHog's JavaScript SDK automatically captures pageview events on page load. The problem with single-page apps is that page loads don't happen beyond the initial one – meaning user navigation inside the app isn't tracked at all.
+
+So when a user loads the homepage and then navigates to the editor, PostHog only sees the homepage visit. Every subsequent page they visit is invisible.
+
+The fix: You can opt-in to tracking SPA navigation by setting the defaults config option to the most recent date when initializing PostHog. Recent defaults set capture_pageview: 'history_change', which captures SPA navigation using the browser history API.
+
+For Next.js app router, the recommended approach is to use a PostHogProvider component initialized with updated defaults – see the SPA pageview tracking tutorial (https://posthog.com/tutorials/single-page-app-pageviews) for the exact setup.
+
+2. Users aren't being identified after sign-in
+
+Only 2 users were identified in the past 30 days. This means everyone who signs in and uses the editor is being tracked as an anonymous visitor with a random ID. When they come back the next day, PostHog sees them as a brand new person.
+
+The fix: Call posthog.identify() after a user successfully signs in:
+
+posthog.identify(user.id, {
+ email: user.email,
+ name: user.name,
+})
+
+This should happen in your auth callback / sign-in success handler. See the Next.js identify example (https://posthog.com/questions/next-js-app-directory-client-side-tracking-identify-example) for how to wire this up in the app router.
+
+---
+
+📋 What to fix first
+
+Priority | Fix | Impact
+🔴 High | Enable SPA pageview capture (capture_pageview: 'history_change') | Will immediately reveal real usage – editor visits, feature usage, navigation paths
+🔴 High | Call posthog.identify() on sign-in | You'll start tracking returning users, sessions, and retention properly
+🟡 Medium | Mark your own account as a test account | Filters your dev activity out of stats
+
+Once these two fixes are in, you should see a dramatic jump in tracked events and you'll finally be able to answer questions like "how many Discord users came and actually used the editor?"
+
+---
+
+what about integrations with ai evals, surveys etc?
