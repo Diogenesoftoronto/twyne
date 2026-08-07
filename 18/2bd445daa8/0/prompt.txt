@@ -1,0 +1,33 @@
+hey can review and see ready for new commit?
+
+---
+
+hey can review and see ready for new release?
+
+---
+
+tell me more about the per delta here i don't understand that one that mech. the streamid what is it really for? errors or anything nt suure why it exists? is there an actual reasoning stream that shows in the components etc? do prettier stuff and draft bump.
+
+---
+
+wokay so let's confirm i understand we are writing something to db for every chunk of the author's writing?
+
+---
+
+okay fix this then
+
+---
+
+fix these
+
+---
+
+some of the mermaid diagrams aren't rendering for the artifact the four sequence push and five editors at once. the other things that do schema migrations i would like you to force through i want these issues fixed before we really scale
+
+---
+
+no claude in chrome
+
+---
+
+push changes to prod now
