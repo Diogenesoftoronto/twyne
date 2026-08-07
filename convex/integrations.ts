@@ -1,5 +1,6 @@
 /** Authenticated data boundary for Twyne's CLI and local MCP server. */
 import { v } from "convex/values";
+import { readCollection, writeCollection } from "./lib/collections";
 import {
   internalMutation,
   internalQuery,
@@ -146,11 +147,8 @@ export const listFolios = internalQuery({
   args: { userId: v.string() },
   returns: v.array(v.any()),
   handler: async (ctx, { userId }) => {
-    const row = await ctx.db
-      .query("folios")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    return Array.isArray(row?.folios) ? row.folios : [];
+    const { items } = await readCollection(ctx, "folioEntries", userId);
+    return items;
   },
 });
 
@@ -162,13 +160,10 @@ export const getFolio = internalQuery({
   },
   returns: v.any(),
   handler: async (ctx, { userId, folioId, include }) => {
-    const foliosRow = await ctx.db
-      .query("folios")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    const folio = (foliosRow?.folios ?? []).find(
-      (candidate: { id?: unknown }) => candidate?.id === folioId,
-    );
+    const { items } = await readCollection(ctx, "folioEntries", userId);
+    const folio = items.find(
+      (candidate) => (candidate as { id?: unknown })?.id === folioId,
+    ) as Record<string, unknown> | undefined;
     if (!folio) return null;
 
     const wanted = new Set(include);
@@ -230,13 +225,13 @@ export const getFolio = internalQuery({
         .collect();
     }
     if (wanted.has("citations")) {
-      const row = await ctx.db
-        .query("bibliographies")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first();
-      bundle.citations = (row?.entries ?? []).filter(
-        (entry: { folioId?: unknown }) =>
-          !entry?.folioId || entry.folioId === folioId,
+      const { items } = await readCollection(
+        ctx,
+        "bibliographyEntries",
+        userId,
+      );
+      bundle.citations = (items as Array<{ folioId?: unknown }>).filter(
+        (entry) => !entry?.folioId || entry.folioId === folioId,
       );
     }
     return bundle;
@@ -260,13 +255,9 @@ export const putFolio = internalMutation({
         `Folio name must be ${MAX_FOLIO_NAME_LENGTH} characters or fewer`,
       );
     }
-    const foliosRow = await ctx.db
-      .query("folios")
-      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .first();
-    const folios = Array.isArray(foliosRow?.folios)
-      ? [...foliosRow.folios]
-      : [];
+    const folios = [
+      ...(await readCollection(ctx, "folioEntries", args.userId)).items,
+    ] as Array<Record<string, unknown>>;
     const id = args.folio.id?.trim() || crypto.randomUUID();
     const index = folios.findIndex(
       (candidate: { id?: unknown }) => candidate?.id === id,
@@ -300,15 +291,7 @@ export const putFolio = internalMutation({
     if (index >= 0) folios[index] = next;
     else folios.push(next);
 
-    if (foliosRow) {
-      await ctx.db.patch(foliosRow._id, { folios, updatedAt: now });
-    } else {
-      await ctx.db.insert("folios", {
-        userId: args.userId,
-        folios,
-        updatedAt: now,
-      });
-    }
+    await writeCollection(ctx, "folioEntries", args.userId, folios);
     if (args.html !== undefined) {
       const row = await ctx.db
         .query("folioContent")
@@ -395,12 +378,9 @@ export const listCitations = internalQuery({
   },
   returns: v.array(v.any()),
   handler: async (ctx, { userId, folioId, search }) => {
-    const row = await ctx.db
-      .query("bibliographies")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+    const { items } = await readCollection(ctx, "bibliographyEntries", userId);
     const needle = search?.trim().toLowerCase();
-    return (row?.entries ?? []).filter((entry: Record<string, unknown>) => {
+    return (items as Array<Record<string, unknown>>).filter((entry) => {
       if (folioId && entry.folioId && entry.folioId !== folioId) return false;
       if (!needle) return true;
       return [
@@ -427,11 +407,9 @@ export const putCitations = internalMutation({
     if (entries.length > 100) {
       throw new Error("At most 100 citations may be saved at once");
     }
-    const row = await ctx.db
-      .query("bibliographies")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    const merged = [...(row?.entries ?? [])];
+    const merged = [
+      ...(await readCollection(ctx, "bibliographyEntries", userId)).items,
+    ] as Array<Record<string, unknown>>;
     for (const raw of entries) {
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
         throw new Error("Each citation must be an object");
@@ -450,15 +428,7 @@ export const putCitations = internalMutation({
       if (index >= 0) merged[index] = { ...merged[index], ...entry };
       else merged.push(entry);
     }
-    const now = Date.now();
-    if (row) await ctx.db.patch(row._id, { entries: merged, updatedAt: now });
-    else {
-      await ctx.db.insert("bibliographies", {
-        userId,
-        entries: merged,
-        updatedAt: now,
-      });
-    }
+    await writeCollection(ctx, "bibliographyEntries", userId, merged);
     return { saved: entries.length };
   },
 });
@@ -469,19 +439,16 @@ export const searchFolios = internalQuery({
   handler: async (ctx, { userId, search, limit }) => {
     const needle = search.trim().toLowerCase();
     if (!needle) return [];
-    const foliosRow = await ctx.db
-      .query("folios")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+    const { items } = await readCollection(ctx, "folioEntries", userId);
     const results: Array<Record<string, unknown>> = [];
-    for (const folio of (foliosRow?.folios ?? []).slice(
-      0,
-      MAX_FOLIOS_PER_ACCOUNT,
-    )) {
+    for (const candidate of items.slice(0, MAX_FOLIOS_PER_ACCOUNT)) {
+      const folio = candidate as Record<string, unknown>;
+      const folioId = typeof folio.id === "string" ? folio.id : null;
+      if (!folioId) continue;
       const content = await ctx.db
         .query("folioContent")
         .withIndex("by_userId_folioId", (q) =>
-          q.eq("userId", userId).eq("folioId", folio.id),
+          q.eq("userId", userId).eq("folioId", folioId),
         )
         .first();
       const text = (content?.html ?? "")

@@ -5,14 +5,34 @@ const REASONING_TAG_PROBE = /<\/?\s*think(?:ing)?\b[^>]*\/?\s*>/i;
 /**
  * Did the model reach for the reasoning channel at all?
  *
- * Callers use this to throw the whole reply away and ask again rather than
- * salvage it. Stripping recovers the visible half of a well-formed answer,
- * but a model that narrated its thinking mid-sentence leaves prose with the
- * seams showing — and an editor's note is short enough that a second call is
- * cheaper than a bad one.
+ * A predicate, not a policy. Reasoning is an expected mode — some models open
+ * a `<think>` block on every turn by template — so nothing here should be read
+ * as grounds for discarding a reply. Generation paths regenerate only when
+ * {@link stripReasoningTags} leaves nothing visible.
+ *
+ * Kept for the places that genuinely need to know: the eval harness, which
+ * counts how often a candidate model reasons and whether a tag ever leaks past
+ * the stripper into text a reader would see.
  */
 export function hasReasoningTags(text: string): boolean {
   return REASONING_TAG_PROBE.test(text);
+}
+
+/**
+ * Drop a trailing fragment that could still become a reasoning tag.
+ *
+ * Tags arrive split across chunk boundaries, so a chunk ending in `<th` is
+ * ambiguous: it becomes `<think>` or it becomes prose. Painting it and
+ * retracting it a moment later flickers, so mid-stream we withhold it. Only
+ * meaningful while text is still arriving — a finished string has no next
+ * chunk, and whatever trails it is what the model meant.
+ */
+export function trimPartialReasoningTag(visible: string): string {
+  const partial = visible.match(
+    /<(?:(?:\/\s*)?t(?:h(?:i(?:n(?:k(?:i(?:n(?:g)?)?)?)?)?)?)?)?$/i,
+  );
+  if (partial?.index === undefined) return visible;
+  return visible.slice(0, partial.index).trim();
 }
 
 /**
@@ -30,15 +50,7 @@ export function createVisibleTextFilter(): (delta: string) => string | null {
   let shown = "";
   return (delta: string) => {
     raw += delta;
-    let visible = stripReasoningTags(raw);
-    if (!hasReasoningTags(raw)) {
-      // A tag may be split across chunks. Do not paint a trailing prefix that
-      // could still become `<think>` or `</thinking>` on the next chunk.
-      const partialTag = visible.match(/<(?:(?:\/\s*)?t(?:h(?:i(?:n(?:k(?:i(?:n(?:g)?)?)?)?)?)?)?)?$/i);
-      if (partialTag?.index !== undefined) {
-        visible = visible.slice(0, partialTag.index).trim();
-      }
-    }
+    const visible = trimPartialReasoningTag(stripReasoningTags(raw));
     if (visible === shown) return null;
     shown = visible;
     return visible;
@@ -49,8 +61,9 @@ export function createVisibleTextFilter(): (delta: string) => string | null {
  * Last resort: drop the tag markers and keep everything between them.
  *
  * Only for when both the first reply and its regeneration strip to nothing —
- * a note with the model's thinking in it still beats a blank card, but the
- * literal `<think>` must never reach the page.
+ * an unclosed block that swallowed the answer, usually a generation the token
+ * budget cut short. A note with the model's thinking in it still beats a blank
+ * card, but the literal `<think>` must never reach the page.
  */
 export function removeReasoningTagMarkers(text: string): string {
   return text.replace(REASONING_TAG_PATTERN, "").trim();

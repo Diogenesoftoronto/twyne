@@ -22,6 +22,7 @@
 
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { readCollection, writeCollection } from "./lib/collections";
 
 /* ── Identity helpers ───────────────────────────────────────────── */
 
@@ -84,10 +85,14 @@ export const getFolios = query({
   args: {},
   handler: async (ctx) => {
     const userId = await requireIdentity(ctx);
-    return await ctx.db
-      .query("folios")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+    // Shape preserved from when this was one document, so callers that read
+    // `.folios` off the result keep working.
+    const { items, updatedAt } = await readCollection(
+      ctx,
+      "folioEntries",
+      userId,
+    );
+    return { userId, folios: items, updatedAt };
   },
 });
 
@@ -95,20 +100,7 @@ export const putFolios = mutation({
   args: { folios: v.array(v.any()) },
   handler: async (ctx, { folios }) => {
     const userId = await requireIdentity(ctx);
-    const existing = await ctx.db
-      .query("folios")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    const now = Date.now();
-    if (existing) {
-      await ctx.db.patch(existing._id, { folios, updatedAt: now });
-      return existing._id;
-    }
-    return await ctx.db.insert("folios", {
-      userId,
-      folios,
-      updatedAt: now,
-    });
+    return await writeCollection(ctx, "folioEntries", userId, folios);
   },
 });
 
@@ -184,10 +176,12 @@ export const getCustomPersonas = query({
   args: {},
   handler: async (ctx) => {
     const userId = await requireIdentity(ctx);
-    return await ctx.db
-      .query("customPersonas")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
+    const { items, updatedAt } = await readCollection(
+      ctx,
+      "personaEntries",
+      userId,
+    );
+    return { userId, personas: items, updatedAt };
   },
 });
 
@@ -195,20 +189,7 @@ export const putCustomPersonas = mutation({
   args: { personas: v.array(v.any()) },
   handler: async (ctx, { personas }) => {
     const userId = await requireIdentity(ctx);
-    const existing = await ctx.db
-      .query("customPersonas")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    const now = Date.now();
-    if (existing) {
-      await ctx.db.patch(existing._id, { personas, updatedAt: now });
-      return existing._id;
-    }
-    return await ctx.db.insert("customPersonas", {
-      userId,
-      personas,
-      updatedAt: now,
-    });
+    return await writeCollection(ctx, "personaEntries", userId, personas);
   },
 });
 
@@ -680,23 +661,11 @@ export const pushAll = mutation({
       }
     }
 
+    // The three array sections are always sent whole when they are sent at
+    // all, so each is authoritative: an item absent from the array has been
+    // deleted, and `writeCollection` removes its row.
     if (args.folios !== undefined) {
-      const existing = await ctx.db
-        .query("folios")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first();
-      if (existing) {
-        await ctx.db.patch(existing._id, {
-          folios: args.folios,
-          updatedAt: now,
-        });
-      } else {
-        await ctx.db.insert("folios", {
-          userId,
-          folios: args.folios,
-          updatedAt: now,
-        });
-      }
+      await writeCollection(ctx, "folioEntries", userId, args.folios);
     }
 
     if (args.folioContent) {
@@ -724,22 +693,7 @@ export const pushAll = mutation({
     }
 
     if (args.customPersonas !== undefined) {
-      const existing = await ctx.db
-        .query("customPersonas")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first();
-      if (existing) {
-        await ctx.db.patch(existing._id, {
-          personas: args.customPersonas,
-          updatedAt: now,
-        });
-      } else {
-        await ctx.db.insert("customPersonas", {
-          userId,
-          personas: args.customPersonas,
-          updatedAt: now,
-        });
-      }
+      await writeCollection(ctx, "personaEntries", userId, args.customPersonas);
     }
 
     if (args.personaNotes) {
@@ -790,13 +744,20 @@ export const pushAll = mutation({
     }
 
     if (args.personaReplies) {
+      // One read for the whole batch. Collecting inside the loop made a sync
+      // quadratic in the number of replies a writer had ever received, and
+      // past a few hundred it stopped being slow and started exceeding the
+      // transaction's read limit — taking the draft up with it.
+      const existing = await ctx.db
+        .query("personaReplies")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect();
+      const known = new Set(existing.map((row) => row.replyId));
       for (const r of args.personaReplies) {
-        const existing = await ctx.db
-          .query("personaReplies")
-          .withIndex("by_userId", (q) => q.eq("userId", userId))
-          .collect();
-        const dup = existing.find((row) => row.replyId === r.replyId);
-        if (!dup) {
+        if (!known.has(r.replyId)) {
+          // Guard the rest of the batch too: a payload may carry the same
+          // reply twice.
+          known.add(r.replyId);
           await ctx.db.insert("personaReplies", {
             userId,
             folioId: r.folioId,
@@ -838,22 +799,12 @@ export const pushAll = mutation({
     }
 
     if (args.bibliography !== undefined) {
-      const existing = await ctx.db
-        .query("bibliographies")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first();
-      if (existing) {
-        await ctx.db.patch(existing._id, {
-          entries: args.bibliography,
-          updatedAt: now,
-        });
-      } else {
-        await ctx.db.insert("bibliographies", {
-          userId,
-          entries: args.bibliography,
-          updatedAt: now,
-        });
-      }
+      await writeCollection(
+        ctx,
+        "bibliographyEntries",
+        userId,
+        args.bibliography,
+      );
     }
 
     return { ok: true, syncedAt: now };
@@ -884,18 +835,12 @@ export const pullAll = query({
         .query("briefs")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
         .collect(),
-      ctx.db
-        .query("folios")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first(),
+      readCollection(ctx, "folioEntries", userId),
       ctx.db
         .query("folioContent")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
         .collect(),
-      ctx.db
-        .query("customPersonas")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first(),
+      readCollection(ctx, "personaEntries", userId),
       ctx.db
         .query("personaNotes")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
@@ -908,10 +853,7 @@ export const pullAll = query({
         .query("rubricResults")
         .withIndex("by_userId", (q) => q.eq("userId", userId))
         .collect(),
-      ctx.db
-        .query("bibliographies")
-        .withIndex("by_userId", (q) => q.eq("userId", userId))
-        .first(),
+      readCollection(ctx, "bibliographyEntries", userId),
     ]);
 
     return {
@@ -926,15 +868,18 @@ export const pullAll = query({
         briefs.find((row) => row.folioId === undefined)?.brief ?? null,
       legacyBriefUpdatedAt:
         briefs.find((row) => row.folioId === undefined)?.updatedAt ?? 0,
-      folios: folios?.folios ?? [],
-      foliosUpdatedAt: folios?.updatedAt ?? 0,
+      folios: folios.items,
+      foliosUpdatedAt: folios.updatedAt,
       folioContent: folioContent.map((fc) => ({
         folioId: fc.folioId,
         html: fc.html,
         updatedAt: fc.updatedAt,
       })),
-      customPersonas: customPersonas?.personas ?? null,
-      customPersonasUpdatedAt: customPersonas?.updatedAt ?? 0,
+      // Null still means "this user has no persona record at all", which is
+      // what the browser's merge distinguishes from an empty board.
+      customPersonas:
+        customPersonas.updatedAt === 0 ? null : customPersonas.items,
+      customPersonasUpdatedAt: customPersonas.updatedAt,
       personaNotes: personaNotes.map((n) => ({
         folioId: n.folioId,
         noteId: n.noteId,
@@ -963,8 +908,8 @@ export const pullAll = query({
         result: rubric.result,
         updatedAt: rubric.updatedAt,
       })),
-      bibliography: bibliography?.entries ?? [],
-      bibliographyUpdatedAt: bibliography?.updatedAt ?? 0,
+      bibliography: bibliography.items,
+      bibliographyUpdatedAt: bibliography.updatedAt,
     };
   },
 });

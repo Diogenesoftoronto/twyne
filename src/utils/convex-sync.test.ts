@@ -56,6 +56,8 @@ const SAMPLE_FOLIOS = [
   { id: "f1", name: "Draft", type: "draft", createdAt: 1, updatedAt: 2 },
 ];
 const SAMPLE_HTML = "<p>hello from the folio</p>";
+/** The draft as it currently stands locally. Tests move it to model typing. */
+let folioHtml = SAMPLE_HTML;
 const SAMPLE_BIBLIOGRAPHY: BibEntry[] = [
   {
     id: "bib-1",
@@ -161,10 +163,10 @@ mock.module("./idb", () => ({
   loadFoliosFromIdb: async () => SAMPLE_FOLIOS,
   loadAllBriefsFromIdb: async () => [],
   loadActiveFolioIdFromIdb: async () => "f1",
-  loadFolioContentFromIdb: async () => SAMPLE_HTML,
+  loadFolioContentFromIdb: async () => folioHtml,
   loadFolioContentSnapshotFromIdb: async () => ({
     folioId: "f1",
-    html: SAMPLE_HTML,
+    html: folioHtml,
     updatedAt: 2,
   }),
   loadPersonasFromIdb: async () => [],
@@ -303,6 +305,7 @@ afterEach(() => {
   writtenLixFiles.length = 0;
   localStorageShim.clear();
   lixBlobFromIdb = null;
+  folioHtml = SAMPLE_HTML;
 });
 
 afterAll(() => {
@@ -330,16 +333,77 @@ describe("folio sync (convex-sync)", () => {
   test("sends folios and their content through to the backend", async () => {
     const client = makeClient();
     setConvexSyncContext(client as never, "user-1");
-    await tick(); // let the background sign-in push settle
-    client.mutationCalls.length = 0; // isolate the explicit flush below
-
-    await flushNow();
+    await tick(); // the sign-in push is the one that carries everything
 
     expect(client.mutationCalls.length).toBe(1);
     const payload = client.mutationCalls[0];
     expect(payload.folios).toEqual(SAMPLE_FOLIOS);
     expect(payload.folioContent).toEqual([
       { folioId: "f1", html: SAMPLE_HTML },
+    ]);
+  });
+
+  test("a flush with nothing changed never reaches the server", async () => {
+    const client = makeClient();
+    setConvexSyncContext(client as never, "user-unchanged");
+    await tick();
+    expect(client.mutationCalls.length).toBe(1);
+
+    // The old behaviour: every four seconds of typing rewrote every folio,
+    // every note and every reply, whether or not any of them had moved.
+    await flushNow();
+    await flushNow();
+
+    expect(client.mutationCalls.length).toBe(1);
+  });
+
+  test("a changed draft is sent without the folios that did not change", async () => {
+    const client = makeClient();
+    setConvexSyncContext(client as never, "user-typing");
+    await tick();
+
+    folioHtml = "<p>hello from the folio, revised</p>";
+    await flushNow();
+
+    expect(client.mutationCalls.length).toBe(2);
+    const payload = client.mutationCalls[1];
+    expect(payload.folioContent).toEqual([
+      { folioId: "f1", html: "<p>hello from the folio, revised</p>" },
+    ]);
+    // Untouched sections are absent rather than empty: `pushAll` leaves a
+    // missing argument alone, and that is what makes a partial push safe.
+    expect(payload.folios).toBeUndefined();
+    expect(payload.bibliography).toBeUndefined();
+    expect(payload.personaNotes).toBeUndefined();
+  });
+
+  test("a push that failed is carried by the next one, not forgotten", async () => {
+    const calls: Array<Record<string, unknown>> = [];
+    let failing = true;
+    const client = {
+      query: async () => null,
+      mutation: async (_ref: unknown, args: Record<string, unknown>) => {
+        calls.push(args);
+        if (failing) throw new Error("network down");
+        return null;
+      },
+    };
+
+    setConvexSyncContext(client as never, "user-offline");
+    await tick();
+    expect(calls.length).toBe(1);
+
+    // The server never acknowledged that payload, so the next push has to
+    // assume it holds nothing — diffing against an unlanded push is how a
+    // draft goes missing.
+    failing = false;
+    folioHtml = "<p>written while the network was down</p>";
+    await flushNow();
+
+    expect(calls.length).toBe(2);
+    expect(calls[1].folios).toEqual(SAMPLE_FOLIOS);
+    expect(calls[1].folioContent).toEqual([
+      { folioId: "f1", html: "<p>written while the network was down</p>" },
     ]);
   });
 
@@ -366,9 +430,6 @@ describe("folio sync (convex-sync)", () => {
     const client = makeClient();
     setConvexSyncContext(client as never, "user-3");
     await tick();
-    client.mutationCalls.length = 0;
-
-    await flushNow();
 
     expect(client.mutationCalls[0].bibliography).toEqual(SAMPLE_BIBLIOGRAPHY);
   });

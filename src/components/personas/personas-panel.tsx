@@ -43,6 +43,11 @@ import {
   saveRoomSettingsLocally,
 } from "../../utils/convex-sync";
 import {
+  snapshotFromRecord,
+  textSnapshot,
+  type GenerationStreamSnapshot,
+} from "../../utils/generation-stream";
+import {
   runClientAgent,
   runClientRewrite,
   runClientRoomSynthesis,
@@ -107,15 +112,16 @@ interface PersonasStore {
   repliesByNote: Record<string, PersonaReply[]>;
   /**
    * Notes still being written, keyed by persona id, and the reply still being
-   * written, keyed by note id. Both hold the visible text so far.
+   * written, keyed by note id. Both hold the stream snapshot so far — text,
+   * reasoning, and which of the two is currently arriving.
    *
    * Kept apart from `feedback` and `repliesByNote` on purpose: those are the
    * record, persisted and synced, and a half-finished sentence does not
    * belong in a record. They are rendered beside it and cleared the moment
    * the real thing lands.
    */
-  streamingNotes: Record<string, string>;
-  streamingReplies: Record<string, string>;
+  streamingNotes: Record<string, GenerationStreamSnapshot>;
+  streamingReplies: Record<string, GenerationStreamSnapshot>;
   /** The room's verdict as it is being written, during a full analysis. */
   streamingSynthesis: string;
   /** When true, group feedback by persona (latest + count). */
@@ -674,10 +680,10 @@ export const PersonasPanel = component$(
                   // Each editor writes into their own slot, so five of them
                   // filling in at once reads as five people at a table rather
                   // than one queue.
-                  (partial) => {
+                  (snapshot) => {
                     store.streamingNotes = {
                       ...store.streamingNotes,
-                      [p.id]: partial,
+                      [p.id]: snapshot,
                     };
                   },
                 );
@@ -733,19 +739,23 @@ export const PersonasPanel = component$(
         if (responses.length === 0 && !hasByok && client) {
           try {
             const personasForServer = store.personas.map(toAgentPersona);
-            const result = (await client.action(api.agents.conveneRoom, {
-              personas: personasForServer,
-              brief: brief ?? null,
-              draftText,
-              writerProfile: store.writerProfile,
-              trajectory,
-              observability: {
-                anonymousId: posthogIdentity.anonymousId,
-                sessionId: posthogIdentity.sessionId,
-                folioId: activeFolioId,
-                editorialActionId: "convene-room",
+            // Watch the hosted notes being written. Same cards, same store as
+            // the BYOK path fills — the panel cannot tell which one ran.
+            const streamId = crypto.randomUUID();
+            const unsubscribe = client.onUpdate(
+              api.personaNoteStreams.list,
+              { streamId },
+              (rows) => {
+                if (!rows) return;
+                const next = { ...store.streamingNotes };
+                for (const row of rows) {
+                  next[row.personaId] = snapshotFromRecord(row);
+                }
+                store.streamingNotes = next;
               },
-            })) as Array<{
+              () => undefined,
+            );
+            let result: Array<{
               personaId: string;
               text: string;
               type: PersonaFeedback["type"];
@@ -753,6 +763,27 @@ export const PersonasPanel = component$(
               anchor?: string;
               traceId?: string;
             }>;
+            try {
+              result = (await client.action(api.agents.conveneRoom, {
+                personas: personasForServer,
+                brief: brief ?? null,
+                draftText,
+                writerProfile: store.writerProfile,
+                trajectory,
+                streamId,
+                observability: {
+                  anonymousId: posthogIdentity.anonymousId,
+                  sessionId: posthogIdentity.sessionId,
+                  folioId: activeFolioId,
+                  editorialActionId: "convene-room",
+                },
+              })) as typeof result;
+            } finally {
+              unsubscribe();
+              void client
+                .mutation(api.personaNoteStreams.clear, { streamId })
+                .catch(() => undefined);
+            }
             if (
               result.some(
                 (response) =>
@@ -978,10 +1009,10 @@ export const PersonasPanel = component$(
                 // The analysis is the longest wait in the app. The modal only
                 // opens when all five memos are in, so the progress belongs
                 // here, in the panel the writer is already looking at.
-                (partial) => {
+                (snapshot) => {
                   store.streamingNotes = {
                     ...store.streamingNotes,
-                    [p.id]: partial,
+                    [p.id]: snapshot,
                   };
                 },
               );
@@ -1015,8 +1046,8 @@ export const PersonasPanel = component$(
             brief ?? null,
             settings,
             store.writerProfile,
-            (partial) => {
-              store.streamingSynthesis = partial;
+            (snapshot) => {
+              store.streamingSynthesis = snapshot.text;
             },
           );
           if (!synth || !synth.text.trim()) {
@@ -1243,7 +1274,7 @@ export const PersonasPanel = component$(
           store.isReplying = true;
           store.streamingReplies = {
             ...store.streamingReplies,
-            [noteId]: "",
+            [noteId]: textSnapshot("", "running"),
           };
           window.dispatchEvent(
             new CustomEvent("twyne:persona-replying", {
@@ -1284,14 +1315,18 @@ export const PersonasPanel = component$(
                   // The reply lands in two places at once — the panel's thread
                   // and the inline card in the manuscript — so the partial goes
                   // out on the same event bus the finished one uses.
-                  (partial) => {
+                  (snapshot) => {
                     store.streamingReplies = {
                       ...store.streamingReplies,
-                      [noteId]: partial,
+                      [noteId]: snapshot,
                     };
                     window.dispatchEvent(
                       new CustomEvent("twyne:persona-reply-stream", {
-                        detail: { noteId, text: partial, author: persona.name },
+                        detail: {
+                          noteId,
+                          text: snapshot.text,
+                          author: persona.name,
+                        },
                       }),
                     );
                   },
@@ -2162,7 +2197,19 @@ export const PersonasPanel = component$(
               than watching a spinner. These are not notes yet: no reply box,
               no strike, nothing to act on until they are filed. */}
             {store.personas
-              .filter((p) => (store.streamingNotes[p.id] ?? "").trim())
+              .filter((p) => {
+                // Anything arriving counts, including reasoning. A model that
+                // thinks before it writes has an empty `text` for its first
+                // several seconds; keying the card on text alone left the
+                // panel blank for exactly as long as the model was working.
+                const s = store.streamingNotes[p.id];
+                if (!s) return false;
+                return (
+                  s.status === "running" ||
+                  !!s.text.trim() ||
+                  !!s.reasoning.trim()
+                );
+              })
               .map((persona) => (
                 <div
                   key={`streaming-${persona.id}`}
@@ -2187,14 +2234,39 @@ export const PersonasPanel = component$(
                         color: persona.color,
                       }}
                     >
-                      writing…
+                      {store.streamingNotes[persona.id].activePart ===
+                      "reasoning"
+                        ? "thinking…"
+                        : "writing…"}
                     </p>
                   </div>
+                  {/* The model's scratch work, folded away. Offered rather
+                    than shown: it is how the note was arrived at, not the
+                    note, and the room speaks in finished sentences. */}
+                  {store.streamingNotes[persona.id].reasoning.trim() && (
+                    <details class="mt-1.5">
+                      <summary
+                        class="cursor-pointer text-[0.65rem] tracking-[0.14em] uppercase text-[var(--color-ink-muted)]"
+                        style="font-family: var(--font-typewriter);"
+                      >
+                        {store.streamingNotes[persona.id].activePart ===
+                        "reasoning"
+                          ? "thinking"
+                          : "thought"}
+                      </summary>
+                      <p
+                        class="mt-1 whitespace-pre-wrap border-l pl-2 text-[0.7rem] leading-4 text-[var(--color-ink-muted)]"
+                        style="font-family: var(--font-typewriter); border-color: var(--color-rule);"
+                      >
+                        {store.streamingNotes[persona.id].reasoning}
+                      </p>
+                    </details>
+                  )}
                   <div
                     class="comment-markdown mt-1.5 text-[0.85rem] leading-5 text-[var(--color-ink-light)]"
                     style="font-family: var(--font-serif);"
                     dangerouslySetInnerHTML={renderMarkdown(
-                      store.streamingNotes[persona.id] ?? "",
+                      store.streamingNotes[persona.id].text,
                     )}
                   />
                 </div>
@@ -2495,12 +2567,14 @@ export const PersonasPanel = component$(
                               {/* The reply as it is written. The pulse is only
                               for the gap before the first words arrive. */}
                               {(
-                                store.streamingReplies[feedback.noteId] ?? ""
+                                store.streamingReplies[feedback.noteId]?.text ??
+                                ""
                               ).trim() ? (
                                 <div
                                   class="comment-markdown mt-0.5"
                                   dangerouslySetInnerHTML={renderMarkdown(
-                                    store.streamingReplies[feedback.noteId],
+                                    store.streamingReplies[feedback.noteId]
+                                      .text,
                                   )}
                                 />
                               ) : (

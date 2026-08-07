@@ -1,7 +1,42 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+/**
+ * One item of a per-user collection.
+ *
+ * Three collections — folios, custom personas, bibliography entries — used to
+ * live as an array inside a single document each. Every edit rewrote the whole
+ * document, and the collection could never outgrow Convex's 1MB document cap.
+ * These tables replace that arrangement with a row per item.
+ *
+ * The field and index names are deliberately identical across all three, so a
+ * single accessor in `lib/collections.ts` can serve them and they cannot drift
+ * apart. `item` stays `v.any()` for the same reason the arrays did: adding a
+ * field to a folio should not need a migration.
+ */
+const collectionEntry = {
+  userId: v.string(),
+  /** The item's own id, as the client models it. Unique per user per table. */
+  itemId: v.string(),
+  item: v.any(),
+  /** Position in the collection, so the array round-trips in its own order. */
+  order: v.number(),
+  updatedAt: v.number(),
+};
+
 export default defineSchema({
+  folioEntries: defineTable(collectionEntry)
+    .index("by_userId", ["userId"])
+    .index("by_userId_itemId", ["userId", "itemId"]),
+
+  personaEntries: defineTable(collectionEntry)
+    .index("by_userId", ["userId"])
+    .index("by_userId_itemId", ["userId", "itemId"]),
+
+  bibliographyEntries: defineTable(collectionEntry)
+    .index("by_userId", ["userId"])
+    .index("by_userId_itemId", ["userId", "itemId"]),
+
   // ── Per-user state, synced from the browser on sign-up and on every change. ──
   briefs: defineTable({
     userId: v.string(),
@@ -29,7 +64,34 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_userId", ["userId"])
-    .index("by_userId_streamId", ["userId", "streamId"]),
+    .index("by_userId_streamId", ["userId", "streamId"])
+    // The browser clears its own rows when a turn settles. This is for the
+    // turns whose browser never came back — a closed tab, a lost connection —
+    // so the sweep can find them by age instead of scanning the table.
+    .index("by_updatedAt", ["updatedAt"]),
+
+  // The same arrangement for hosted persona notes, keyed by persona so five
+  // editors can fill their own cards at once. Without this the server path
+  // delivered a note in one silent jump, which on a reasoning model means a
+  // blank card for as long as the model thinks.
+  personaNoteStreams: defineTable({
+    userId: v.string(),
+    streamId: v.string(),
+    personaId: v.string(),
+    text: v.string(),
+    reasoning: v.string(),
+    phase: v.union(v.literal("reasoning"), v.literal("answer")),
+    status: v.union(
+      v.literal("running"),
+      v.literal("complete"),
+      v.literal("error"),
+    ),
+    updatedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_streamId", ["userId", "streamId"])
+    .index("by_userId_streamId_personaId", ["userId", "streamId", "personaId"])
+    .index("by_updatedAt", ["updatedAt"]),
 
   folios: defineTable({
     userId: v.string(),
