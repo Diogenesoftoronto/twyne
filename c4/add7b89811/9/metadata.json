@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "c4add7b89811",
+  "session_id": "019fcae3-dfc7-7750-856a-d693803e13cf",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-07T04:26:10.384783757Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/account.ts",
+    "convex/schema.ts",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/convex-sync.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "8c12de5ab2e9",
+  "checkpoint_transcript_start": 15,
+  "transcript_lines_at_start": 15,
+  "compact_transcript_start": 3,
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-07T04:26:10.045104717Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 3259,
+    "human_modified": 52,
+    "human_removed": 0,
+    "total_committed": 3259,
+    "total_lines_changed": 4432,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
