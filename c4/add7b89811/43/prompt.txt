@@ -1,0 +1,9 @@
+hey for the free mode and people not signed in I would love to use lfm2.5 2.6b model for tasks but i want to see evals with this first, because i want to see if this inbrowser model can successfully call all the tools and give decent analysis
+
+---
+
+/review
+
+---
+
+.
