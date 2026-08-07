@@ -3,7 +3,7 @@
   "checkpoint_id": "c4add7b89811",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 31,
+  "checkpoints_count": 32,
   "files_touched": [
     "convex/_generated/api.d.ts",
     "convex/account.ts",
@@ -221,6 +221,13 @@
       "compact_transcript": "/c4/add7b89811/29/transcript.jsonl",
       "content_hash": "/c4/add7b89811/29/content_hash.txt",
       "prompt": "/c4/add7b89811/29/prompt.txt"
+    },
+    {
+      "metadata": "/c4/add7b89811/30/metadata.json",
+      "transcript": "/c4/add7b89811/30/full.jsonl",
+      "compact_transcript": "/c4/add7b89811/30/transcript.jsonl",
+      "content_hash": "/c4/add7b89811/30/content_hash.txt",
+      "prompt": "/c4/add7b89811/30/prompt.txt"
     }
   ],
   "token_usage": {
