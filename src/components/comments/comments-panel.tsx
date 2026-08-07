@@ -37,7 +37,11 @@ import { MentionDropdown, mentionOptionId } from "../ui/mention-dropdown";
 import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
 import { VoiceRecorder, type VoiceCapture } from "../ui/voice-recorder";
-import { formatDuration, readVoiceNote, storeVoiceNote } from "../../utils/voice-notes";
+import {
+  formatDuration,
+  readVoiceNote,
+  storeVoiceNote,
+} from "../../utils/voice-notes";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
@@ -393,8 +397,8 @@ export const CommentsPanel = component$(
                   instruction: "elaborate",
                 },
                 settings,
-                (partial) => {
-                  store.streamingEditorReply = partial;
+                (snapshot) => {
+                  store.streamingEditorReply = snapshot.text;
                 },
               );
               if (res && res.text.trim() && res.provider !== "local") {
@@ -906,8 +910,7 @@ export const CommentsPanel = component$(
                         style={{
                           borderColor:
                             store.personas.find(
-                              (persona) =>
-                                persona.id === store.askPersonaId,
+                              (persona) => persona.id === store.askPersonaId,
                             )?.color ?? "var(--color-paper-3)",
                           fontFamily: "var(--font-serif)",
                         }}
@@ -990,7 +993,10 @@ export const CommentsPanel = component$(
                               return;
                             }
                             if (candidates.length > 0) {
-                              if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                              if (
+                                e.key === "ArrowDown" ||
+                                e.key === "ArrowUp"
+                              ) {
                                 e.preventDefault();
                                 const step = e.key === "ArrowDown" ? 1 : -1;
                                 store.mentionIndex =
@@ -1253,7 +1259,9 @@ const VoiceNotePlayback = component$<{
       <button
         onClick$={toggle}
         class="icon-btn text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-        aria-label={playing.value ? "Pause the recording" : "Play the recording"}
+        aria-label={
+          playing.value ? "Pause the recording" : "Play the recording"
+        }
         title={playing.value ? "Pause" : "Play the recording"}
       >
         {playing.value ? "❚❚" : "▶"}

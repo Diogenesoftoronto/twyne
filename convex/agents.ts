@@ -54,7 +54,6 @@ import type {
 } from "../src/types";
 import { normalizeProbe } from "../src/utils/dossier-probes";
 import {
-  hasReasoningTags,
   removeReasoningTagMarkers,
   stripReasoningTags,
 } from "../src/utils/reasoning-tags";
@@ -92,6 +91,12 @@ import {
   reportedApplicationError,
 } from "./lib/applicationErrors";
 import { createInterviewStreamSnapshot } from "../src/utils/interview-stream";
+import {
+  createGenerationStreamAccumulator,
+  createPublishGate,
+  type GenerationStreamSnapshot,
+} from "../src/utils/generation-stream";
+import { internal } from "./_generated/api";
 
 /* ── Provider selection ─────────────────────────────────────────── */
 
@@ -262,6 +267,92 @@ function classifyType(text: string, fallback: FeedbackType): FeedbackType {
 
 /* ── LLM call wrapper ───────────────────────────────────────────── */
 
+/**
+ * How often a generation in flight republishes itself, at most. Ten times a
+ * second reads as continuous to someone watching the words appear, and it is
+ * the difference between a convened room costing a few hundred writes and
+ * costing a few thousand.
+ */
+const STREAM_PUBLISH_INTERVAL_MS = 100;
+
+/**
+ * Where a hosted note publishes itself while it is still being written.
+ * Absent means the caller wants the old one-shot behaviour.
+ */
+interface NoteStreamTarget {
+  ctx: ActionCtx;
+  userId: string;
+  streamId: string;
+  personaId: string;
+}
+
+/**
+ * Run a generation with `streamText`, publishing snapshots to the panel as
+ * they arrive.
+ *
+ * Returns the same `{ text, totalUsage }` shape `generateText` gives back, so
+ * everything downstream — the empty-result retry, tracing, anchor capture — is
+ * identical whether or not anyone was watching. Reads `fullStream` rather than
+ * `textStream` for the same reason the client does: providers with a native
+ * reasoning channel emit `reasoning-delta` parts, while OpenAI-compatible
+ * endpoints inline `<think>` in the text, and both have to reach the reader as
+ * reasoning rather than as prose or as nothing.
+ */
+async function streamNote(
+  target: NoteStreamTarget,
+  generation: Parameters<typeof streamText>[0],
+): Promise<{ text: string; totalUsage: unknown }> {
+  const accumulator = createGenerationStreamAccumulator();
+  const worthWriting = createPublishGate(STREAM_PUBLISH_INTERVAL_MS);
+
+  const publish = async (
+    snapshot: GenerationStreamSnapshot,
+    status: "running" | "complete" | "error",
+  ) => {
+    if (!worthWriting({ ...snapshot, status })) return;
+    await target.ctx.runMutation(internal.personaNoteStreams.write, {
+      userId: target.userId,
+      streamId: target.streamId,
+      personaId: target.personaId,
+      text: snapshot.text,
+      reasoning: snapshot.reasoning,
+      phase: snapshot.activePart === "reasoning" ? "reasoning" : "answer",
+      status,
+    });
+  };
+
+  const streamed = streamText(generation);
+  for await (const part of streamed.fullStream) {
+    switch (part.type) {
+      case "text-delta":
+        await publish(
+          accumulator.push({ type: "text-delta", text: part.text }),
+          "running",
+        );
+        break;
+      case "reasoning-start":
+        await publish(accumulator.push({ type: "reasoning-start" }), "running");
+        break;
+      case "reasoning-delta":
+        await publish(
+          accumulator.push({ type: "reasoning-delta", text: part.text }),
+          "running",
+        );
+        break;
+      case "reasoning-end":
+        await publish(accumulator.push({ type: "reasoning-end" }), "running");
+        break;
+      default:
+        break;
+    }
+  }
+
+  const text = await streamed.text;
+  const totalUsage = await streamed.totalUsage;
+  await publish(accumulator.push({ type: "finish" }), "complete");
+  return { text, totalUsage };
+}
+
 async function runLlm(
   provider: ProviderConfig,
   req: AgentRequest,
@@ -271,6 +362,7 @@ async function runLlm(
     | "persona-analysis" = "persona-feedback",
   maxTokens = 380,
   observability?: ServerAiObservabilityContext,
+  stream?: NoteStreamTarget,
 ): Promise<AgentResponse> {
   const system = buildSystemPrompt(req.persona);
   const user = buildUserPrompt(req);
@@ -281,7 +373,7 @@ async function runLlm(
   const { tools, getAnchor } = buildQuoteTools(req.draftText);
 
   try {
-    const first = await generateText({
+    const generation = {
       model: provider.model,
       system,
       prompt: user,
@@ -299,18 +391,22 @@ async function runLlm(
           model: provider.modelId,
         },
       },
-    });
+    };
+    const first = stream
+      ? await streamNote(stream, generation)
+      : await generateText(generation);
     let text = first.text;
     let usage = normalizeAiUsage(first.totalUsage);
     let visibleText = stripReasoningTags(text);
-    // Any reply that reached for the reasoning channel is discarded and asked
-    // again, not merely stripped: a note with the model's thinking bleeding
-    // through it reads worse than one that cost a second call.
-    if (!visibleText || hasReasoningTags(text)) {
+    // Reasoning is a mode, not a defect. The thinking is already stripped from
+    // what the reader sees, so a model that thinks first has cost us nothing.
+    // Only regenerate when nothing visible survived — an unclosed block, which
+    // in practice means the token budget cut the generation short.
+    if (!visibleText) {
       const retry = await generateText({
         model: provider.model,
         system,
-        prompt: `${user}\n\nRespond with your note as plain visible text. Do not place your whole answer inside <think> tags.`,
+        prompt: `${user}\n\nClose your <think> block, then write the note.`,
         temperature,
         maxOutputTokens: maxTokens,
         tools,
@@ -327,12 +423,10 @@ async function runLlm(
         },
       });
       usage = normalizeAiUsage(retry.totalUsage) ?? usage;
-      const retryVisible = stripReasoningTags(retry.text);
+      // Still nothing visible: keep the model's words with the tag markers
+      // removed, so the card is never blank.
       visibleText =
-        (!hasReasoningTags(retry.text) && retryVisible) ||
-        visibleText ||
-        retryVisible ||
-        removeReasoningTagMarkers(retry.text);
+        stripReasoningTags(retry.text) || removeReasoningTagMarkers(retry.text);
     }
     const traceId = await captureServerAiGeneration({
       feature,
@@ -406,17 +500,14 @@ async function runPlainLlm(
     });
   const { text } = await gen(user);
   let visible = stripReasoningTags(text);
-  if (!visible || hasReasoningTags(text)) {
+  // Only an empty result is worth a second call — see runLlm.
+  if (!visible) {
     const retry = await gen(
-      `${user}\n\nRespond with plain visible text. Do not place your whole answer inside <think> tags.`,
+      `${user}\n\nClose your <think> block, then write your answer.`,
       "retry",
     );
-    const retryVisible = stripReasoningTags(retry.text);
     visible =
-      (!hasReasoningTags(retry.text) && retryVisible) ||
-      visible ||
-      retryVisible ||
-      removeReasoningTagMarkers(retry.text);
+      stripReasoningTags(retry.text) || removeReasoningTagMarkers(retry.text);
   }
   await flushArize();
   return visible.trim();
@@ -800,6 +891,7 @@ export const runInterviewTurn = action({
       if (args.streamId) {
         let rawText = "";
         let nativeReasoning = "";
+        const worthWriting = createPublishGate(STREAM_PUBLISH_INTERVAL_MS);
         const streamed = streamText(generation);
         for await (const part of streamed.fullStream) {
           if (part.type === "text-delta") rawText += part.text;
@@ -813,6 +905,7 @@ export const runInterviewTurn = action({
               rawText,
               nativeReasoning,
             );
+            if (!worthWriting({ ...snapshot, status: "running" })) continue;
             await ctx.runMutation(writeInterviewStreamReference, {
               userId: identity.subject || identity.tokenIdentifier,
               streamId: args.streamId,
@@ -953,6 +1046,9 @@ export const runPersona = action({
         editorialActionId: v.optional(v.string()),
       }),
     ),
+    // Present when the panel is watching. The note then publishes itself into
+    // `personaNoteStreams` as it is written instead of landing in one jump.
+    streamId: v.optional(v.string()),
   },
   handler: async (ctx, args): Promise<AgentResponse> => {
     const identity = await ctx.auth.getUserIdentity();
@@ -983,7 +1079,7 @@ export const runPersona = action({
           "Write a little more before asking an editor to read the draft.",
       });
     }
-    return runHostedAgent(ctx, req, args.observability);
+    return runHostedAgent(ctx, req, args.observability, args.streamId);
   },
 });
 
@@ -1184,6 +1280,9 @@ export const conveneRoom = action({
         editorialActionId: v.optional(v.string()),
       }),
     ),
+    // Present when the panel is watching. Each editor then fills their own
+    // card as they write, rather than five notes appearing at once at the end.
+    streamId: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -1233,6 +1332,14 @@ export const conveneRoom = action({
           "persona-feedback",
           args.newMaterial ? 220 : 380,
           { ...args.observability, distinctId: identity.tokenIdentifier },
+          args.streamId
+            ? {
+                ctx,
+                userId: identity.subject || identity.tokenIdentifier,
+                streamId: args.streamId,
+                personaId: persona.id,
+              }
+            : undefined,
         );
       } catch (err) {
         throw reportedApplicationError(
@@ -2366,6 +2473,7 @@ async function runHostedAgent(
   ctx: ActionCtx,
   req: AgentRequest,
   observability?: ServerAiObservabilityContext,
+  streamId?: string,
 ): Promise<AgentResponse> {
   const feature =
     req.userMessage || req.priorMessages?.length
@@ -2379,10 +2487,17 @@ async function runHostedAgent(
   }
   try {
     const identity = await ctx.auth.getUserIdentity();
-    return await runLlm(provider, req, feature, 380, {
-      ...observability,
-      distinctId: identity?.tokenIdentifier,
-    });
+    const userId = identity?.subject || identity?.tokenIdentifier;
+    return await runLlm(
+      provider,
+      req,
+      feature,
+      380,
+      { ...observability, distinctId: identity?.tokenIdentifier },
+      streamId && userId
+        ? { ctx, userId, streamId, personaId: req.persona.id }
+        : undefined,
+    );
   } catch (err) {
     throw reportedApplicationError(
       `agents.${feature}`,

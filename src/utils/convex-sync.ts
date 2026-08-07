@@ -102,8 +102,17 @@ interface SyncedSnapshot {
 interface SyncState {
   client: ConvexSyncClient | null;
   userId: string | null;
-  /** Cached local snapshot, used to detect changes and build push payloads. */
-  lastSnapshot: LocalSnapshot | null;
+  /**
+   * The payload the server is known to hold, as last acknowledged.
+   *
+   * Every push is diffed against this, so a keystroke in one folio does not
+   * rewrite the drafts of the others. It is set only after `pushAll` returns:
+   * a push that threw left the server behind, and the next one has to carry
+   * everything since the last success rather than only what changed after it.
+   * Null means "assume the server has nothing", which is the honest starting
+   * position on sign-in and the one that seeds an empty account.
+   */
+  lastPushed: PushPayload | null;
   /** Whether the active user has any remote state to merge from. */
   hydratedFromRemote: boolean;
   /** Last push that succeeded, epoch ms. Drives the "synced Xs ago" line. */
@@ -127,10 +136,30 @@ interface LocalSnapshot {
   bibliography: BibEntry[];
 }
 
+/**
+ * A local snapshot in the shape `sync.pushAll` accepts.
+ *
+ * Kept separate from {@link LocalSnapshot} because this is the thing worth
+ * remembering between pushes: comparing what we are about to send against what
+ * we last sent is only meaningful if both are in the same shape. Fields the
+ * mapping drops — a folio's local `updatedAt`, say — would otherwise report a
+ * change on every save that the server never sees.
+ */
+type PushPayload = ReturnType<typeof buildPushPayload>;
+
+/**
+ * The subset of a payload actually worth sending. Every section is optional
+ * because `pushAll` leaves a missing argument alone — which is what makes a
+ * partial push safe rather than a partial overwrite.
+ */
+type PushChanges = {
+  [K in keyof PushPayload]?: NonNullable<PushPayload[K]>;
+};
+
 const state: SyncState = {
   client: null,
   userId: null,
-  lastSnapshot: null,
+  lastPushed: null,
   hydratedFromRemote: false,
   lastSyncedAt: null,
   lastErrorAt: null,
@@ -241,7 +270,7 @@ export function setConvexSyncContext(client: ConvexSyncClient, userId: string) {
 export function clearConvexSyncContext() {
   state.client = null;
   state.userId = null;
-  state.lastSnapshot = null;
+  state.lastPushed = null;
   state.hydratedFromRemote = false;
   state.lastSyncedAt = null;
   state.lastErrorAt = null;
@@ -395,49 +424,146 @@ async function buildLocalSnapshot(): Promise<LocalSnapshot> {
   };
 }
 
+/** Everything the server could be told, in the shape it accepts. */
+function buildPushPayload(snap: LocalSnapshot) {
+  return {
+    briefs: snap.briefs,
+    folios: snap.folios,
+    folioContent: snap.folioContent.map(({ folioId, html }) => ({
+      folioId,
+      html,
+    })),
+    customPersonas: snap.customPersonas,
+    personaNotes: snap.personaNotes.map((n) => ({
+      folioId: n.folioId ?? "",
+      noteId: n.noteId ?? `pn-${n.personaId}-${n.timestamp}`,
+      personaId: n.personaId,
+      personaName: n.personaName,
+      personaColor: n.personaColor,
+      type: n.type,
+      feedback: n.feedback,
+      traceId: n.traceId,
+      anchor: n.anchor,
+      briefTitle: n.briefTitle,
+      createdAt: n.timestamp,
+    })),
+    personaReplies: snap.personaReplies.map((r) => ({
+      folioId: r.folioId ?? "",
+      replyId: r.id,
+      noteId: r.noteId,
+      author: r.author,
+      authorKind: r.authorKind,
+      personaId: r.personaId,
+      text: r.text,
+      createdAt: r.timestamp,
+    })),
+    rubricResults: snap.rubricResults,
+    bibliography: snap.bibliography,
+  };
+}
+
+/**
+ * Compared by serialization rather than by reference or by `updatedAt`.
+ *
+ * The rows come from IndexedDB and are rebuilt the same way every time, so
+ * key order is stable and this is reliable in the direction that matters: two
+ * different values never compare equal. The worst a false difference can do is
+ * send a row that did not need sending, which is what the old code did to
+ * every row on every push.
+ */
+function serialize(value: unknown): string {
+  return JSON.stringify(value ?? null);
+}
+
+/** Rows whose content differs from the last acknowledged push. */
+function changedRows<T>(
+  next: T[],
+  previous: T[] | undefined,
+  identify: (row: T) => string,
+): T[] {
+  if (!previous) return next;
+  const before = new Map(
+    previous.map((row) => [identify(row), serialize(row)]),
+  );
+  return next.filter((row) => before.get(identify(row)) !== serialize(row));
+}
+
+/**
+ * Sections the server replaces wholesale go up entire or not at all; sections
+ * it upserts row by row go up as only the rows that moved. `undefined` means
+ * "leave this alone", which is how `pushAll` reads a missing argument.
+ *
+ * Returns null when there is nothing to say.
+ */
+function diffPushPayload(
+  next: PushPayload,
+  previous: PushPayload | null,
+): PushChanges | null {
+  const briefs = changedRows(next.briefs, previous?.briefs, (b) => b.folioId);
+  const folioContent = changedRows(
+    next.folioContent,
+    previous?.folioContent,
+    (c) => c.folioId,
+  );
+  const personaNotes = changedRows(
+    next.personaNotes,
+    previous?.personaNotes,
+    (n) => n.noteId,
+  );
+  const personaReplies = changedRows(
+    next.personaReplies,
+    previous?.personaReplies,
+    (r) => r.replyId,
+  );
+  const rubricResults = changedRows(
+    next.rubricResults,
+    previous?.rubricResults,
+    (r) => r.folioId,
+  );
+  const foliosMoved = serialize(next.folios) !== serialize(previous?.folios);
+  const personasMoved =
+    serialize(next.customPersonas) !== serialize(previous?.customPersonas);
+  const bibliographyMoved =
+    serialize(next.bibliography) !== serialize(previous?.bibliography);
+
+  const nothingMoved =
+    briefs.length === 0 &&
+    folioContent.length === 0 &&
+    personaNotes.length === 0 &&
+    personaReplies.length === 0 &&
+    rubricResults.length === 0 &&
+    !foliosMoved &&
+    !personasMoved &&
+    !bibliographyMoved;
+  if (nothingMoved) return null;
+
+  return {
+    briefs: briefs.length ? briefs : undefined,
+    folios: foliosMoved ? next.folios : undefined,
+    folioContent: folioContent.length ? folioContent : undefined,
+    customPersonas:
+      personasMoved && next.customPersonas ? next.customPersonas : undefined,
+    personaNotes: personaNotes.length ? personaNotes : undefined,
+    personaReplies: personaReplies.length ? personaReplies : undefined,
+    rubricResults: rubricResults.length ? rubricResults : undefined,
+    bibliography: bibliographyMoved ? next.bibliography : undefined,
+  };
+}
+
 async function pushLocalSnapshot(): Promise<void> {
   if (!state.client || !state.userId) return;
   if (typeof window === "undefined") return;
   state.pushing = true;
   notifyStatusChange();
   try {
-    const snap = await buildLocalSnapshot();
-    state.lastSnapshot = snap;
-
-    await state.client.mutation(api.sync.pushAll, {
-      briefs: snap.briefs,
-      folios: snap.folios,
-      folioContent: snap.folioContent.map(({ folioId, html }) => ({
-        folioId,
-        html,
-      })),
-      customPersonas: snap.customPersonas ?? undefined,
-      personaNotes: snap.personaNotes.map((n) => ({
-        folioId: n.folioId ?? "",
-        noteId: n.noteId ?? `pn-${n.personaId}-${n.timestamp}`,
-        personaId: n.personaId,
-        personaName: n.personaName,
-        personaColor: n.personaColor,
-        type: n.type,
-        feedback: n.feedback,
-        traceId: n.traceId,
-        anchor: n.anchor,
-        briefTitle: n.briefTitle,
-        createdAt: n.timestamp,
-      })),
-      personaReplies: snap.personaReplies.map((r) => ({
-        folioId: r.folioId ?? "",
-        replyId: r.id,
-        noteId: r.noteId,
-        author: r.author,
-        authorKind: r.authorKind,
-        personaId: r.personaId,
-        text: r.text,
-        createdAt: r.timestamp,
-      })),
-      rubricResults: snap.rubricResults,
-      bibliography: snap.bibliography,
-    });
+    const payload = buildPushPayload(await buildLocalSnapshot());
+    const changes = diffPushPayload(payload, state.lastPushed);
+    if (changes) {
+      await state.client.mutation(api.sync.pushAll, changes);
+      // Only now is the server known to hold this. A push that threw leaves
+      // `lastPushed` where it was, so the next one carries the whole gap.
+      state.lastPushed = payload;
+    }
     // Success: clear the error and stamp the synced time.
     state.lastSyncedAt = Date.now();
     state.lastErrorAt = null;
@@ -473,8 +599,11 @@ async function handleUserChanged(
 
   // Always start by building a fresh local snapshot — that's what we'll
   // push if the server is empty.
+  //
+  // Deliberately does not prime `lastPushed`: nothing here has reached the
+  // server yet, and claiming otherwise would let the diff conclude there is
+  // nothing to send on exactly the path that seeds an empty account.
   const local = await buildLocalSnapshot();
-  state.lastSnapshot = local;
 
   // Read the flag before we do anything else. The flag is set on first
   // push of local data, so subsequent sign-ins know not to push again.

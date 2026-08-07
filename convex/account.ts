@@ -34,6 +34,20 @@ export const deleteAccount = mutation({
     // ── Synced app data (per-user, keyed by userId). ──
     deleted.briefs = await deleteByUserId(ctx, "briefs", userId);
     deleted.folios = await deleteByUserId(ctx, "folios", userId);
+    // The row-per-item tables that replaced the three single-document
+    // collections. Missing one here would leave a deleted account's work
+    // behind, so they sit next to the legacy tables they superseded.
+    deleted.folioEntries = await deleteByUserId(ctx, "folioEntries", userId);
+    deleted.personaEntries = await deleteByUserId(
+      ctx,
+      "personaEntries",
+      userId,
+    );
+    deleted.bibliographyEntries = await deleteByUserId(
+      ctx,
+      "bibliographyEntries",
+      userId,
+    );
     deleted.folioContent = await deleteByUserId(ctx, "folioContent", userId);
     deleted.integrationTokens = await deleteByUserId(
       ctx,

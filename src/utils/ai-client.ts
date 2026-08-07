@@ -73,11 +73,15 @@ import {
   type AiUsage,
 } from "./ai-deterministic-evals";
 import {
-  createVisibleTextFilter,
-  hasReasoningTags,
   removeReasoningTagMarkers,
   stripReasoningTags,
 } from "./reasoning-tags";
+import {
+  createFrameCoalescer,
+  createGenerationStreamAccumulator,
+  textSnapshot,
+  type GenerationStreamSnapshot,
+} from "./generation-stream";
 import {
   extractFirstJsonObject,
   extractTaggedJson,
@@ -624,24 +628,27 @@ function audioMimeType(format: string): string {
 }
 
 /**
- * Called as an answer arrives, with the visible text *so far* — not the delta.
+ * Called as an answer arrives, with everything known *so far* — not the delta.
  *
- * A cumulative string rather than a diff because every consumer is rendering
- * a paragraph, not appending to a terminal: it makes the reasoning filter
- * below possible (a `<think>` that opens mid-answer retracts the text it was
- * about to show), it makes a discarded-and-regenerated answer a simple reset
- * to `""`, and it makes a dropped or out-of-order call harmless.
+ * Cumulative rather than a diff because every consumer is rendering a
+ * paragraph, not appending to a terminal: it lets a `<think>` opening
+ * mid-answer retract the text it was about to show, makes a retry a simple
+ * reset, and makes a dropped or out-of-order call harmless.
+ *
+ * The snapshot carries reasoning separately from text, so a model that thinks
+ * before answering can say so on screen instead of leaving a blank card.
  */
-export type StreamText = (visibleSoFar: string) => void;
+export type StreamText = (snapshot: GenerationStreamSnapshot) => void;
 
 /**
  * One attempt at an answer, streamed when someone is listening.
  *
- * The reasoning filter runs over the accumulated raw text on every chunk
- * rather than over the chunk itself. Tags arrive split across chunk
- * boundaries, and an unclosed `<think>` has to hide everything after it —
- * neither is knowable from a delta alone. Re-stripping a note-sized string a
- * few dozen times costs nothing next to the network call producing it.
+ * Reads `fullStream` rather than `textStream` because reasoning reaches us two
+ * different ways and both have to land in the same place: providers with a
+ * native reasoning channel emit `reasoning-delta` parts, while most
+ * OpenAI-compatible endpoints inline `<think>` in the text. The accumulator
+ * reconciles them; `textStream` would silently drop the first kind and leak
+ * the second.
  */
 async function runOnce({
   model,
@@ -683,11 +690,39 @@ async function runOnce({
     ...(tools ? { tools, stopWhen } : {}),
   });
 
-  const visibleText = createVisibleTextFilter();
-  for await (const delta of result.textStream) {
-    const visible = visibleText(delta);
-    if (visible !== null) onText(visible);
+  // Provider events arrive per token; components should not re-render per
+  // token. The coalescer delivers the latest snapshot once per frame.
+  const accumulator = createGenerationStreamAccumulator();
+  const coalescer = createFrameCoalescer(onText);
+  for await (const part of result.fullStream) {
+    switch (part.type) {
+      case "text-delta":
+        coalescer.push(
+          accumulator.push({ type: "text-delta", text: part.text }),
+        );
+        break;
+      case "reasoning-start":
+        coalescer.push(accumulator.push({ type: "reasoning-start" }));
+        break;
+      case "reasoning-delta":
+        coalescer.push(
+          accumulator.push({ type: "reasoning-delta", text: part.text }),
+        );
+        break;
+      case "reasoning-end":
+        coalescer.push(accumulator.push({ type: "reasoning-end" }));
+        break;
+      case "error":
+        coalescer.push(accumulator.push({ type: "error" }));
+        break;
+      default:
+        break;
+    }
   }
+  // Deliver the last frame before the caller's closing snapshot, so the two
+  // cannot arrive out of order.
+  coalescer.push(accumulator.push({ type: "finish" }));
+  coalescer.flush();
 
   return {
     text: await result.text,
@@ -750,30 +785,26 @@ async function generateTrackedText({
     const text = first.text;
     let usage = first.usage;
     let cleaned = stripReasoningTags(text);
-    // Any reply that reached for the reasoning channel is thrown away and
-    // asked again — not just one that strips to nothing. A model that thinks
-    // out loud mid-note leaves prose with the seams showing, and stripping
-    // only hides the tags, not the damage. Regenerate once with a nudge to
-    // answer outside the channel; if that comes back empty too, keep the
-    // best text we have so the card is never blank.
-    if (!cleaned || hasReasoningTags(text)) {
-      const retryPrompt = `${prompt}\n\nRespond with your note as plain visible text. Do not place your whole answer inside <think> tags.`;
-      // The discarded attempt may already have painted the screen. Blank it
-      // before the second one starts writing, so the reader sees a note begin
-      // again rather than two answers spliced together.
-      onText?.("");
+    // Reasoning is a mode, not a defect: a model that thinks before answering
+    // has done nothing wrong, and the thinking is already stripped from what
+    // the reader sees. Only regenerate when nothing visible survived — an
+    // unclosed block, usually a generation truncated by the token budget —
+    // because that is the one case where there is no note to file.
+    if (!cleaned) {
+      const retryPrompt = `${prompt}\n\nClose your <think> block, then write the note.`;
+      // The empty attempt may already have painted a thinking state. Reset it
+      // so the reader sees a note begin rather than two answers spliced.
+      onText?.(textSnapshot("", "running"));
       const retry = await run(retryPrompt);
       usage = retry.usage ?? usage;
-      const retryCleaned = stripReasoningTags(retry.text);
+      // Still nothing visible after a second attempt: keep the model's words
+      // with the tag markers removed, so the card is never blank.
       cleaned =
-        (!hasReasoningTags(retry.text) && retryCleaned) ||
-        cleaned ||
-        retryCleaned ||
-        removeReasoningTagMarkers(retry.text);
+        stripReasoningTags(retry.text) || removeReasoningTagMarkers(retry.text);
     }
     // Streaming is best-effort progress, but the last callback is a contract:
     // it must exactly match the text the caller is about to file.
-    onText?.(cleaned);
+    onText?.(textSnapshot(cleaned));
     await captureAiGeneration({
       feature,
       provider: resolved.provider.type,

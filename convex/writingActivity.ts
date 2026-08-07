@@ -10,6 +10,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { normalizeHandle } from "./profiles";
+import { readCollection } from "./lib/collections";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
 
 async function requireIdentity(ctx: {
@@ -38,9 +39,7 @@ export const recordActivity = mutation({
     const now = Date.now();
     const existing = await ctx.db
       .query("writingActivity")
-      .withIndex("by_userId_day", (q) =>
-        q.eq("userId", userId).eq("day", day),
-      )
+      .withIndex("by_userId_day", (q) => q.eq("userId", userId).eq("day", day))
       .unique();
 
     if (existing) {
@@ -75,13 +74,8 @@ export const getPublicActivity = query({
       .withIndex("by_userId", (q) => q.eq("userId", userId))
       .collect();
 
-    const folioRow = await ctx.db
-      .query("folios")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    const folioCount = Array.isArray(folioRow?.folios)
-      ? folioRow.folios.length
-      : 0;
+    const folioCount = (await readCollection(ctx, "folioEntries", userId)).items
+      .length;
 
     return {
       days: days.map((d) => ({ day: d.day, count: d.count })),
