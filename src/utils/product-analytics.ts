@@ -60,11 +60,13 @@ export type DraftExportFormat =
   | "markdown"
   | "html"
   | "txt"
+  | "docx"
   | "twyne_backup";
 export type DraftPublishDestination =
   | "twyne_share"
   | "twyne_blog"
   | "atproto"
+  | "micropub"
   | "standard_site";
 export type DossierMode = "first_run" | "refine";
 export type AnalyticsAiProvider = AiProviderType | "hosted" | "none";

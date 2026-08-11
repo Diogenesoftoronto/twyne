@@ -1,0 +1,6 @@
+output,feedback,query,draft
+"Login Issues","correct","can't log in","I forgot my password and cannot access the site."
+"Password Reset","correct","reset email never arrived","I clicked the reset link but no email."
+"Billing Inquiry","too eager; should ask one question at a time","I was double-charged on order #4471.","Bought a widget on Apr 2 and again on Apr 3 — that's the issue."
+"Unrelated","correct","do you take cash?","The store website doesn't mention it."
+"Billing Inquiry","correct","refund stuck","Stripe shows pending since Tuesday."

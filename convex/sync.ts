@@ -21,7 +21,7 @@
  */
 
 import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { readCollection, writeCollection } from "./lib/collections";
 
 /* ── Identity helpers ───────────────────────────────────────────── */
@@ -589,6 +589,7 @@ export const putAppearance = mutation({
  */
 export const pushAll = mutation({
   args: {
+    expectedRevision: v.optional(v.number()),
     briefs: v.optional(
       v.array(v.object({ folioId: v.string(), brief: v.any() })),
     ),
@@ -632,10 +633,36 @@ export const pushAll = mutation({
       v.array(v.object({ folioId: v.string(), result: v.any() })),
     ),
     bibliography: v.optional(v.array(v.any())),
+    removedBriefFolioIds: v.optional(v.array(v.string())),
+    removedFolioContentIds: v.optional(v.array(v.string())),
+    removedPersonaNoteIds: v.optional(v.array(v.string())),
+    removedPersonaReplyIds: v.optional(v.array(v.string())),
+    removedRubricFolioIds: v.optional(v.array(v.string())),
   },
+  returns: v.object({
+    ok: v.literal(true),
+    syncedAt: v.number(),
+    revision: v.number(),
+  }),
   handler: async (ctx, args) => {
     const userId = await requireIdentity(ctx);
     const now = Date.now();
+    const syncHead = await ctx.db
+      .query("syncHeads")
+      .withIndex("by_userId", (q) => q.eq("userId", userId))
+      .unique();
+    const currentRevision = syncHead?.revision ?? 0;
+    if (
+      args.expectedRevision !== undefined &&
+      args.expectedRevision !== currentRevision
+    ) {
+      throw new ConvexError({
+        code: "SYNC_CONFLICT",
+        message: "This workspace changed on another device.",
+        expectedRevision: args.expectedRevision,
+        currentRevision,
+      });
+    }
 
     if (args.briefs) {
       for (const dossier of args.briefs) {
@@ -661,9 +688,25 @@ export const pushAll = mutation({
       }
     }
 
+    if (args.removedBriefFolioIds) {
+      for (const folioId of args.removedBriefFolioIds) {
+        const existing = await ctx.db
+          .query("briefs")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", folioId),
+          )
+          .first();
+        if (existing) await ctx.db.delete(existing._id);
+      }
+    }
+
     // The three array sections are always sent whole when they are sent at
     // all, so each is authoritative: an item absent from the array has been
-    // deleted, and `writeCollection` removes its row.
+    // deleted, and `writeCollection` removes its row. The row-upserted
+    // sections cannot claim the same, which is why the writer sends the
+    // `removed*` lists — a folio that no longer appears in the whole-folio
+    // array also leaves the server for its content, brief, notes and rubric
+    // result via those lists.
     if (args.folios !== undefined) {
       await writeCollection(ctx, "folioEntries", userId, args.folios);
     }
@@ -689,6 +732,18 @@ export const pushAll = mutation({
             updatedAt: now,
           });
         }
+      }
+    }
+
+    if (args.removedFolioContentIds) {
+      for (const folioId of args.removedFolioContentIds) {
+        const existing = await ctx.db
+          .query("folioContent")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", folioId),
+          )
+          .first();
+        if (existing) await ctx.db.delete(existing._id);
       }
     }
 
@@ -743,6 +798,19 @@ export const pushAll = mutation({
       }
     }
 
+    if (args.removedPersonaNoteIds) {
+      // One read for the whole batch, mirroring the reply upsert below —
+      // per-note queries inside the loop would be quadratic in a long history.
+      const existing = await ctx.db
+        .query("personaNotes")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect();
+      const wanted = new Set(args.removedPersonaNoteIds);
+      for (const row of existing) {
+        if (wanted.has(row.noteId)) await ctx.db.delete(row._id);
+      }
+    }
+
     if (args.personaReplies) {
       // One read for the whole batch. Collecting inside the loop made a sync
       // quadratic in the number of replies a writer had ever received, and
@@ -773,6 +841,18 @@ export const pushAll = mutation({
       }
     }
 
+    if (args.removedPersonaReplyIds) {
+      // Batch read, same shape as the upsert above.
+      const existing = await ctx.db
+        .query("personaReplies")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .collect();
+      const wanted = new Set(args.removedPersonaReplyIds);
+      for (const row of existing) {
+        if (wanted.has(row.replyId)) await ctx.db.delete(row._id);
+      }
+    }
+
     if (args.rubricResults !== undefined) {
       for (const rubric of args.rubricResults) {
         const existing = await ctx.db
@@ -798,6 +878,18 @@ export const pushAll = mutation({
       }
     }
 
+    if (args.removedRubricFolioIds) {
+      for (const folioId of args.removedRubricFolioIds) {
+        const existing = await ctx.db
+          .query("rubricResults")
+          .withIndex("by_userId_folioId", (q) =>
+            q.eq("userId", userId).eq("folioId", folioId),
+          )
+          .first();
+        if (existing) await ctx.db.delete(existing._id);
+      }
+    }
+
     if (args.bibliography !== undefined) {
       await writeCollection(
         ctx,
@@ -807,7 +899,13 @@ export const pushAll = mutation({
       );
     }
 
-    return { ok: true, syncedAt: now };
+    const revision = currentRevision + 1;
+    if (syncHead) {
+      await ctx.db.patch(syncHead._id, { revision, updatedAt: now });
+    } else {
+      await ctx.db.insert("syncHeads", { userId, revision, updatedAt: now });
+    }
+    return { ok: true as const, syncedAt: now, revision };
   },
 });
 
@@ -818,6 +916,7 @@ export const pushAll = mutation({
  */
 export const pullAll = query({
   args: {},
+  returns: v.any(),
   handler: async (ctx) => {
     const userId = await requireIdentity(ctx);
 
@@ -830,6 +929,7 @@ export const pullAll = query({
       personaReplies,
       rubricResults,
       bibliography,
+      syncHead,
     ] = await Promise.all([
       ctx.db
         .query("briefs")
@@ -854,9 +954,14 @@ export const pullAll = query({
         .withIndex("by_userId", (q) => q.eq("userId", userId))
         .collect(),
       readCollection(ctx, "bibliographyEntries", userId),
+      ctx.db
+        .query("syncHeads")
+        .withIndex("by_userId", (q) => q.eq("userId", userId))
+        .unique(),
     ]);
 
     return {
+      syncRevision: syncHead?.revision ?? 0,
       briefs: briefs
         .filter((row) => row.folioId)
         .map((row) => ({

@@ -10,13 +10,15 @@ import { Link, useNavigate } from "@builder.io/qwik-city";
 import { ProjectBriefCard } from "../../components/brief/project-brief-card";
 import { AccountMenu } from "../../components/auth/account-menu";
 import { FolioMenu } from "../../components/folio/folio-menu";
-import type { ProjectBrief, Folio } from "../../types";
+import type { ProjectBrief, Folio, DraftContentDetail } from "../../types";
 import {
-  loadDraftHtml,
+  clearCrashMirror,
+  loadLegacyDraftHtml,
   loadProjectBrief,
   loadProjectBriefForFolio,
+  readCrashMirror,
   saveProjectBriefForFolio,
-  saveDraftHtml,
+  writeCrashMirror,
 } from "../../utils/anti-tabula-rasa";
 import {
   loadFoliosFromIdb,
@@ -67,6 +69,8 @@ import {
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { migrateLegacyEditorialArtifacts } from "../../utils/folio-workspace";
+import { createRevisionSnapshot } from "../../utils/revision-history";
+import { getDraftBlocks } from "../../utils/lix";
 import {
   captureProductEvent,
   countDraftWords,
@@ -138,6 +142,8 @@ interface LayoutStore {
   signInToastDismissed: boolean;
   /** When set, the editor joins a multiplayer session. */
   sharedLixId: string | null;
+  /** Server-authoritative role for the active shared document. */
+  sharedRole: "owner" | "editor" | "commenter" | null;
   /** True while joining a shared document is in progress. */
   joiningShared: boolean;
   /** Structured error if joining failed. */
@@ -208,7 +214,9 @@ export default component$(() => {
   const store = useStore<LayoutStore>({
     rightPanel: "personas",
     leftSidebarOpen: false,
-    rightPanelOpen: true,
+    // Begin with the manuscript, not the entire editorial apparatus. The
+    // board remains one click away and retains its unread badges.
+    rightPanelOpen: false,
     panelsBeforeZen: null,
     zenActive: false,
     hydrated: false,
@@ -223,6 +231,7 @@ export default component$(() => {
     // Default true to avoid a flash before the meta flag loads.
     signInToastDismissed: true,
     sharedLixId: null,
+    sharedRole: null,
     joiningShared: false,
     joinError: null,
     workspaceError: null,
@@ -239,9 +248,12 @@ export default component$(() => {
         const legacyBrief = loadProjectBrief();
         const folios = await loadFoliosFromIdb();
         const activeFolioId = await loadActiveFolioIdFromIdb();
+        const requestedSharedId = new URLSearchParams(
+          window.location.search,
+        ).get("shared");
 
         // No dossier yet → the writer belongs in onboarding first.
-        if (!legacyBrief && folios.length === 0) {
+        if (!legacyBrief && folios.length === 0 && !requestedSharedId) {
           void nav("/dossier/create/");
           return;
         }
@@ -249,7 +261,7 @@ export default component$(() => {
         // Migration: old storage had a single draft. If we have a brief but no
         // folios, create a Folio I from the legacy draft key.
         if (legacyBrief && folios.length === 0) {
-          const legacyDraft = loadDraftHtml();
+          const legacyDraft = loadLegacyDraftHtml();
           const draftFolio: Folio = {
             id: crypto.randomUUID(),
             name: legacyBrief.answers.workingTitle || "Current draft",
@@ -260,7 +272,6 @@ export default component$(() => {
           await saveFoliosToIdb([draftFolio]);
           await saveFolioContentToIdb(draftFolio.id, legacyDraft);
           await saveActiveFolioIdToIdb(draftFolio.id);
-          saveDraftHtml(legacyDraft);
           store.folios = [draftFolio];
           store.activeFolioId = draftFolio.id;
           store.editorSeed = legacyDraft;
@@ -269,8 +280,16 @@ export default component$(() => {
         } else if (folios.length > 0) {
           store.folios = folios;
           store.activeFolioId = activeFolioId ?? folios[0].id;
-          store.editorSeed = await loadFolioContentFromIdb(store.activeFolioId);
-          saveDraftHtml(store.editorSeed);
+          const stored = await loadFolioContentFromIdb(store.activeFolioId);
+          // If the tab went away before the last IndexedDB write committed,
+          // the crash mirror holds the newer copy. When the write did land the
+          // two are identical, so preferring the mirror is always safe.
+          const rescued = readCrashMirror(store.activeFolioId);
+          store.editorSeed = rescued ?? stored;
+          if (rescued && rescued !== stored) {
+            await saveFolioContentToIdb(store.activeFolioId, rescued);
+          }
+          clearCrashMirror();
         }
 
         store.brief = await loadProjectBriefForFolio(store.activeFolioId);
@@ -311,57 +330,6 @@ export default component$(() => {
           accountOpen.value = true;
         }
 
-        // Arriving via a shared-document invite link (?shared=<lixId>).
-        const sharedId = new URLSearchParams(window.location.search).get(
-          "shared",
-        );
-        if (sharedId && clientSig.value && auth.value.user) {
-          store.joiningShared = true;
-          store.joinError = null;
-          try {
-            const client = clientSig.value;
-            // Accept pending invitation for this lixId (no-op if none).
-            try {
-              await client.mutation(api.collaboration.acceptInvitation, {
-                lixId: sharedId,
-              });
-            } catch {
-              // May have already accepted, or no pending invite — that's fine.
-            }
-            const meta = await client.query(
-              api.collaboration.getSharedLixMeta,
-              {
-                lixId: sharedId,
-              },
-            );
-            if (meta) {
-              const { joinSharedLix } = await import(
-                "../../utils/collaboration"
-              );
-              await joinSharedLix(client, sharedId);
-              store.sharedLixId = sharedId;
-              store.activeFolioId = meta.folioId;
-              store.editorSeed = "";
-            } else {
-              store.joinError = createAppError("PERMISSION_DENIED", {
-                source: "convex",
-                metadata: { operation: "join-shared-document" },
-              });
-            }
-          } catch (err) {
-            reportApplicationDiagnostic(
-              "twyne:editor:join-shared-document",
-              err,
-              { operation: "join-shared-document" },
-            );
-            store.joinError = normalizeApplicationError(err, {
-              source: "convex",
-              metadata: { operation: "join-shared-document" },
-            });
-          } finally {
-            store.joiningShared = false;
-          }
-        }
       } catch (err) {
         reportApplicationDiagnostic("twyne:editor:open-workspace", err, {
           operation: "open-workspace",
@@ -374,13 +342,78 @@ export default component$(() => {
       }
     })();
 
+    // ── Coalesced local persistence ────────────────────────────────────
+    // `twyne:content` already arrives coalesced from the editor, so this only
+    // needs to absorb bursts from non-typing sources (folio metadata edits)
+    // and to force a flush when the tab is hidden so a quick close never
+    // drops the tail.
+    //
+    // Nothing here writes localStorage. That write was synchronous, carried
+    // the entire manuscript, and — being a single global key rather than a
+    // folio-scoped one — was clobbered by whichever folio saved last.
+    // Folio-scoped IndexedDB is the store of record.
+    const LOCAL_PERSIST_DEBOUNCE_MS = 400;
+    let localPersistTimer: number | null = null;
+    let pendingDraftHtml: string | null = null;
+    let pendingDraftFolioId: string | null = null;
+    let folioArrayDirty = false;
+
+    const flushLocalPersist = (leaving = false) => {
+      localPersistTimer = null;
+      if (pendingDraftHtml !== null && pendingDraftFolioId !== null) {
+        const [html, folioId] = [pendingDraftHtml, pendingDraftFolioId];
+        pendingDraftHtml = null;
+        pendingDraftFolioId = null;
+        // On the way out the IndexedDB write may not get to commit, so leave a
+        // synchronous copy behind first. During normal typing this is skipped.
+        if (leaving) writeCrashMirror(folioId, html);
+        void saveFolioContentToIdb(folioId, html).then(() => {
+          clearCrashMirror();
+          void createRevisionSnapshot({
+            folioId,
+            html,
+            source: "automatic",
+          });
+          // "Saved Xs ago" means on disk, so stamp it only once IDB commits.
+          window.dispatchEvent(new CustomEvent("twyne:draft-saved"));
+        });
+      }
+      if (folioArrayDirty) {
+        folioArrayDirty = false;
+        void saveFoliosToIdb(store.folios);
+      }
+    };
+
+    const scheduleLocalPersist = () => {
+      if (localPersistTimer !== null) return;
+      localPersistTimer = window.setTimeout(
+        flushLocalPersist,
+        LOCAL_PERSIST_DEBOUNCE_MS,
+      );
+    };
+
+    const flushLocalPersistNow = (leaving = false) => {
+      if (localPersistTimer !== null) {
+        window.clearTimeout(localPersistTimer);
+        localPersistTimer = null;
+      }
+      flushLocalPersist(leaving);
+    };
+
+    const onLocalPersistPageHide = () => {
+      // The editor flushes its own derive on the same event, which re-enters
+      // `contentHandler` synchronously; that handler flushes directly when the
+      // page is hidden, so this does not depend on listener ordering.
+      flushLocalPersistNow(true);
+    };
+
     // ── Save editor content to the active folio ──
     const contentHandler = (e: Event) => {
-      const html = (e as CustomEvent).detail as string;
-      saveDraftHtml(html);
+      const { html, wordCount: currentWordCount } = (
+        e as CustomEvent<DraftContentDetail>
+      ).detail;
       if (store.activeFolioId) {
         const folioId = store.activeFolioId;
-        const currentWordCount = countDraftWords(html);
         const previousWordCount =
           lastWordCounts.get(folioId) ?? currentWordCount;
 
@@ -403,17 +436,36 @@ export default component$(() => {
         }
         lastWordCounts.set(folioId, currentWordCount);
 
-        void saveFolioContentToIdb(store.activeFolioId, html);
-        const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
+        const idx = store.folios.findIndex((f) => f.id === folioId);
         if (idx >= 0) {
           store.folios[idx].updatedAt = Date.now();
-          void saveFoliosToIdb(store.folios);
+          folioArrayDirty = true;
         }
-        markDirty();
+        pendingDraftHtml = html;
+        pendingDraftFolioId = folioId;
+        // When the editor flushes its derive because the page is going away,
+        // there is no later tick to coalesce into — write it out now.
+        if (document.visibilityState === "hidden") {
+          flushLocalPersistNow(true);
+        } else {
+          scheduleLocalPersist();
+        }
+        markDirty(["folioContent", "folios"]);
       }
     };
     window.addEventListener("twyne:content", contentHandler);
     cleanup(() => window.removeEventListener("twyne:content", contentHandler));
+
+    // A hidden tab is a reliable cue that the writer is leaving — flush the
+    // pending draft synchronously instead of waiting on the coalesce window.
+    window.addEventListener("pagehide", onLocalPersistPageHide);
+    cleanup(() => {
+      window.removeEventListener("pagehide", onLocalPersistPageHide);
+      if (localPersistTimer !== null) {
+        window.clearTimeout(localPersistTimer);
+        localPersistTimer = null;
+      }
+    });
 
     const loadFolioHandler = (e: Event) => {
       if (!store.activeFolioId) return;
@@ -436,8 +488,9 @@ export default component$(() => {
         layout: next,
         updatedAt: Date.now(),
       };
-      void saveFoliosToIdb(store.folios);
-      markDirty();
+      folioArrayDirty = true;
+      scheduleLocalPersist();
+      markDirty(["folios"]);
     };
     window.addEventListener("twyne:layout", layoutHandler);
     cleanup(() => window.removeEventListener("twyne:layout", layoutHandler));
@@ -453,8 +506,9 @@ export default component$(() => {
         header: text,
         updatedAt: Date.now(),
       };
-      void saveFoliosToIdb(store.folios);
-      markDirty();
+      folioArrayDirty = true;
+      scheduleLocalPersist();
+      markDirty(["folios"]);
     };
     const footerHandler = (e: Event) => {
       const text = (e as CustomEvent).detail as string;
@@ -466,8 +520,9 @@ export default component$(() => {
         footer: text,
         updatedAt: Date.now(),
       };
-      void saveFoliosToIdb(store.folios);
-      markDirty();
+      folioArrayDirty = true;
+      scheduleLocalPersist();
+      markDirty(["folios"]);
     };
     window.addEventListener("twyne:header", headerHandler);
     window.addEventListener("twyne:footer", footerHandler);
@@ -520,14 +575,13 @@ export default component$(() => {
     cleanup(() => window.removeEventListener("resize", onWindowResize));
 
     const onDraftContent = (e: Event) => {
-      const html = (e as CustomEvent).detail as string;
-      const plain = html
-        .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-      onDraftChanged(plain);
-      // The room needs paragraph breaks preserved; research does not.
-      onDraftChangedForRoom(paragraphTextFromHtml(html));
+      // `text` arrives with blocks already separated by a blank line, which is
+      // exactly what the room's paragraph splitter wants. Research wants it
+      // flattened. Both used to be reconstructed from `html` by ~15 chained
+      // regexes, each allocating another copy of the whole manuscript.
+      const { text } = (e as CustomEvent<DraftContentDetail>).detail;
+      onDraftChanged(text.replace(/\s+/g, " ").trim());
+      onDraftChangedForRoom(text);
     };
     window.addEventListener("twyne:content", onDraftContent);
 
@@ -548,12 +602,98 @@ export default component$(() => {
     };
     window.addEventListener("twyne:panel-activity", onActivity);
 
+    const onRemoteSync = async () => {
+      const folios = await loadFoliosFromIdb();
+      const storedActive = await loadActiveFolioIdFromIdb();
+      const activeFolioId = folios.some(
+        (folio) => folio.id === store.activeFolioId,
+      )
+        ? store.activeFolioId
+        : storedActive && folios.some((folio) => folio.id === storedActive)
+          ? storedActive
+          : (folios[0]?.id ?? null);
+      const [content, brief] = activeFolioId
+        ? await Promise.all([
+            loadFolioContentFromIdb(activeFolioId),
+            loadProjectBriefForFolio(activeFolioId),
+          ])
+        : ["", null];
+      store.folios = folios;
+      store.activeFolioId = activeFolioId;
+      store.editorSeed = content;
+      store.brief = brief;
+      store.folioKey += 1;
+      store.activity = panelActivity();
+      window.dispatchEvent(
+        new CustomEvent("twyne:load-folio", { detail: content }),
+      );
+    };
+    window.addEventListener("twyne:remote-sync", onRemoteSync);
+
     cleanup(() => {
       stopActivity();
       window.removeEventListener("twyne:panel-activity", onActivity);
       window.removeEventListener("twyne:content", onDraftContent);
       window.removeEventListener("twyne:persona-reply", onPersonaReply);
+      window.removeEventListener("twyne:remote-sync", onRemoteSync);
     });
+  });
+
+  // A shared link must survive both first-use onboarding and the asynchronous
+  // auth bootstrap. Tracking the signed-in user resumes the join as soon as
+  // authentication completes instead of requiring a reload.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track }) => {
+    const userId = track(() => auth.value.user?.id);
+    const client = track(() => clientSig.value);
+    const sharedId = new URLSearchParams(window.location.search).get("shared");
+    if (!sharedId || store.sharedLixId === sharedId || store.joiningShared) {
+      return;
+    }
+    if (!userId || !client) {
+      accountOpen.value = true;
+      return;
+    }
+
+    store.joiningShared = true;
+    store.joinError = null;
+    try {
+      try {
+        await client.mutation(api.collaboration.acceptInvitation, {
+          lixId: sharedId,
+        });
+      } catch {
+        // Reopening an already-accepted link is valid. The role lookup below
+        // distinguishes that case from an invitation the writer cannot use.
+      }
+      const meta = await client.query(api.collaboration.getSharedLixMeta, {
+        lixId: sharedId,
+      });
+      if (!meta) {
+        store.joinError = createAppError("PERMISSION_DENIED", {
+          source: "convex",
+          metadata: { operation: "join-shared-document" },
+        });
+        return;
+      }
+      const { joinSharedLix } = await import("../../utils/collaboration");
+      await joinSharedLix(client, sharedId);
+      const sharedBlocks = await getDraftBlocks(meta.folioId);
+      store.sharedLixId = sharedId;
+      store.sharedRole = meta.role;
+      store.activeFolioId = meta.folioId;
+      store.editorSeed = sharedBlocks.map((block) => block.html).join("");
+    } catch (err) {
+      reportApplicationDiagnostic("twyne:editor:join-shared-document", err, {
+        operation: "join-shared-document",
+      });
+      store.joinError = normalizeApplicationError(err, {
+        source: "convex",
+        metadata: { operation: "join-shared-document" },
+      });
+    } finally {
+      store.joiningShared = false;
+    }
   });
 
   // Each folio owns its own research and editorial-room process. Tracking the
@@ -617,10 +757,10 @@ export default component$(() => {
     store.brief = brief;
     store.editorSeed = content;
     store.sharedLixId = null;
+    store.sharedRole = null;
     store.activeFolioId = folio.id;
     store.folioKey += 1;
     store.activity = panelActivity();
-    saveDraftHtml(content);
     await saveActiveFolioIdToIdb(folio.id);
     void captureProductEvent("folio_opened", {
       source: "editor",
@@ -656,12 +796,12 @@ export default component$(() => {
     store.brief = null;
     store.editorSeed = "";
     store.sharedLixId = null;
+    store.sharedRole = null;
     store.activeFolioId = newFolio.id;
     store.folioKey += 1;
     store.activity = panelActivity();
     store.newFolioFormOpen = false;
     store.confirmNukeOpen = false;
-    saveDraftHtml("");
 
     await Promise.all([
       saveFoliosToIdb(nextFolios),
@@ -1168,12 +1308,12 @@ export default component$(() => {
                     store.brief = brief;
                     store.editorSeed = content;
                     store.sharedLixId = null;
+                    store.sharedRole = null;
                     store.activeFolioId = folioId;
                     // Remount the editor so Tiptap re-seeds from the import
                     // rather than diffing against the document it replaced.
                     store.folioKey += 1;
                     store.activity = panelActivity();
-                    saveDraftHtml(content);
                     markDirty();
                     window.dispatchEvent(
                       new CustomEvent("twyne:load-folio", { detail: content }),
@@ -1187,8 +1327,12 @@ export default component$(() => {
                       store.folios.find((f) => f.id === store.activeFolioId)
                         ?.name ?? "Untitled"
                     }
-                    onShared$={$((lixId: string) => {
+                    onShared$={$((lixId: string, draftHtml?: string) => {
+                      if (draftHtml !== undefined) {
+                        store.editorSeed = draftHtml;
+                      }
                       store.sharedLixId = lixId;
+                      store.sharedRole = "owner";
                     })}
                   />
                 )}
@@ -1253,7 +1397,7 @@ export default component$(() => {
             {/* Editor */}
             <div class="flex-1 min-w-0 overflow-auto bg-[var(--color-paper-soft)]">
               <TwyneEditor
-                key={`editor-${store.activeFolioId ?? "none"}-${store.folioKey}`}
+                key={`editor-${store.activeFolioId ?? "none"}-${store.sharedLixId ?? "solo"}-${store.folioKey}`}
                 initialContent={store.editorSeed}
                 activeFolioId={store.activeFolioId ?? undefined}
                 activeFolio={
@@ -1263,6 +1407,7 @@ export default component$(() => {
                 }
                 brief={store.brief}
                 sharedLixId={store.sharedLixId ?? undefined}
+                readOnly={store.sharedRole === "commenter"}
               />
             </div>
 

@@ -56,6 +56,13 @@ export interface SpeakRequest {
   /** Voice direction — a persona's lore paragraph works well here. */
   instructions?: string;
   /**
+   * Display name for a transport that announces what it is reading, e.g.
+   * "Marguerite" while stepping through the room. Not used to resolve a voice
+   * — that is `author`'s job — because the two differ: the room's verdict is
+   * labelled "The Room's Verdict" and has no author in the cast at all.
+   */
+  label?: string;
+  /**
    * Who is speaking, by name. The editor's inline cards read their author out
    * of a DOM attribute and have no persona object to hand, so the voice
    * fields above are filled in from the cast when only a name is known.
@@ -88,6 +95,19 @@ export interface SpeechState {
   currentTime: number;
   /** Clip length in seconds; 0 until the metadata has loaded. */
   duration: number;
+  /**
+   * Who started this reading, when a whole queue was handed over at once. A
+   * transport that owns a queue matches on this instead of `id`, since `id`
+   * moves from passage to passage as the queue advances and would otherwise
+   * leave the transport looking idle the moment it got past the first one.
+   */
+  ownerId: string | null;
+  /** Position within the queue, 0-based. */
+  queueIndex: number;
+  /** Passages queued: 1 for a lone reading, 0 when idle. */
+  queueLength: number;
+  /** Display name of the passage being read, when the caller gave one. */
+  label: string | null;
 }
 
 const state: SpeechState = {
@@ -96,13 +116,28 @@ const state: SpeechState = {
   error: null,
   currentTime: 0,
   duration: 0,
+  ownerId: null,
+  queueIndex: 0,
+  queueLength: 0,
+  label: null,
 };
 
 let audio: HTMLAudioElement | null = null;
 /** Content-addressed clip cache: `${voice}::${text}` → object URL. */
 const cache = new Map<string, string>();
+/**
+ * Synthesis calls in flight, keyed the same way as the cache. Prefetching the
+ * next passage means a clip can be half-synthesised at the moment the writer
+ * skips to it; without this the same paragraph would be sent to the provider
+ * twice and billed twice.
+ */
+const inFlight = new Map<string, Promise<string>>();
 /** Guards against a slow request landing after the writer moved on. */
 let generation = 0;
+/** The passages to read, in order. A lone reading is a queue of one. */
+let queue: SpeakRequest[] = [];
+let queueIndex = 0;
+let queueOwner: string | null = null;
 
 export function speechState(): SpeechState {
   return { ...state };
@@ -123,6 +158,10 @@ function setState(
   state.status = status;
   state.id = id;
   state.error = error;
+  state.ownerId = queueOwner;
+  state.queueIndex = queue.length ? queueIndex : 0;
+  state.queueLength = queue.length;
+  state.label = queue[queueIndex]?.label ?? queue[queueIndex]?.author ?? null;
   if (status === "idle" || status === "error") {
     state.currentTime = 0;
     state.duration = 0;
@@ -261,13 +300,26 @@ export function unlockSpeechPlayback(): void {
   }
 }
 
-/** Stop whatever is playing. Safe to call when nothing is. */
-export function stopSpeech(): void {
+/**
+ * Silence the element and invalidate anything in flight, without touching the
+ * queue. Advancing from one passage to the next needs exactly this: the old
+ * clip must stop the instant the new one is asked for, or the writer hears the
+ * tail of Marguerite under the first seconds of the next editor.
+ */
+function haltPlayback(): void {
   generation += 1;
   if (audio) {
     audio.pause();
     audio.currentTime = 0;
   }
+}
+
+/** Stop whatever is playing and abandon the queue. Safe to call when idle. */
+export function stopSpeech(): void {
+  haltPlayback();
+  queue = [];
+  queueIndex = 0;
+  queueOwner = null;
   setState("idle", null);
 }
 
@@ -309,6 +361,42 @@ export function resumeSpeech(): void {
 export function togglePauseSpeech(): void {
   if (state.status === "playing") pauseSpeech();
   else if (state.status === "paused") resumeSpeech();
+}
+
+/**
+ * Owner id for a reading of the whole room, so a transport keeps hold of the
+ * queue as it moves from one editor's memo to the next. Shared by the two
+ * places the analysis is shown — the panel's modal and the full page — which
+ * are never on screen at once, and which should behave identically.
+ */
+export const ANALYSIS_READING_ID = "analysis-room";
+
+/** Is there another passage after the current one? */
+export function hasNextSpeech(): boolean {
+  return queueIndex < queue.length - 1;
+}
+
+/** Skip to the next passage. Ignored at the end of the queue. */
+export function nextSpeech(): void {
+  if (!hasNextSpeech()) return;
+  queueIndex += 1;
+  void playCurrent();
+}
+
+/**
+ * Back to the start of this passage, or to the previous one when barely into
+ * it. The three-second grace is the convention every music player uses, and it
+ * is what makes the control usable: the common press is "say that again", not
+ * "go back an editor".
+ */
+export function previousSpeech(): void {
+  if (!queue.length) return;
+  if (state.currentTime > 3 || queueIndex === 0) {
+    seekSpeech(0);
+    return;
+  }
+  queueIndex -= 1;
+  void playCurrent();
 }
 
 /** Jump to a position, in seconds. Ignored when nothing is loaded. */
@@ -399,6 +487,73 @@ async function synthesize(req: SpeakRequest): Promise<Synthesis> {
 }
 
 /**
+ * The object URL for a passage, synthesising it if this is the first ask.
+ *
+ * Split out of the playback path so the next passage in a queue can be
+ * prepared while the current one is still sounding. Both callers go through
+ * the same cache and the same in-flight map, which is what keeps a skip
+ * during a prefetch from paying for the same paragraph twice.
+ */
+async function resolveClip(req: SpeakRequest): Promise<string> {
+  const text = req.text.trim();
+  const spoken = await withPersonaVoice(req);
+  // Key the cache on the voice that will actually be used, so two editors
+  // sharing a fallback name never collide on one clip.
+  const settings = await getCachedAiSettings();
+  const resolved = resolveFeatureConfig(settings, "voice-narration");
+  const override = settings.perFeature["voice-narration"];
+  const voice = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
+  const key = cacheKey(
+    text,
+    resolved?.provider.id ?? "hosted",
+    resolved?.model ?? "hosted",
+    voice,
+    override?.responseFormat ?? "mp3",
+    override?.speed,
+    spoken.instructions ?? override?.instructions,
+  );
+
+  const cached = cache.get(key);
+  if (cached) {
+    // Re-insert so the clip counts as recently used. Eviction walks insertion
+    // order, and without this a long queue could revoke the object URL of the
+    // very clip that is playing.
+    cache.delete(key);
+    cache.set(key, cached);
+    return cached;
+  }
+
+  const pending = inFlight.get(key);
+  if (pending) return pending;
+
+  const work = synthesize({ ...spoken, text })
+    .then((result) => {
+      const url = URL.createObjectURL(result.audio);
+      remember(key, url);
+      return url;
+    })
+    .finally(() => {
+      inFlight.delete(key);
+    });
+  inFlight.set(key, work);
+  return work;
+}
+
+/**
+ * Start synthesising the next passage while this one plays.
+ *
+ * Without it every editor in the room is followed by a silence the length of a
+ * synthesis call, which reads as the queue having finished. A failure here is
+ * deliberately swallowed: the passage is synthesised again when it comes
+ * round, and *that* attempt reports properly.
+ */
+function prefetchNext(): void {
+  const upcoming = queue[queueIndex + 1];
+  if (!upcoming?.text.trim()) return;
+  void resolveClip(upcoming).catch(() => {});
+}
+
+/**
  * Read a passage aloud. Pressing the same passage again pauses or resumes it
  * (so one button is play and pause); pressing a different one switches over.
  */
@@ -423,15 +578,48 @@ export async function speak(req: SpeakRequest): Promise<void> {
     }
   }
 
-  const text = req.text.trim();
-  if (!text) return;
+  await speakQueue([req]);
+}
+
+/**
+ * Read several passages in turn — the room's memos, one editor after another.
+ *
+ * Each passage keeps its own voice, so the queue is a list of ordinary
+ * requests rather than one concatenated blob of text: that is what lets the
+ * writer skip an editor, and what keeps five voices from being flattened into
+ * one. `ownerId` lets a transport claim the whole queue, since the active id
+ * moves on with every passage.
+ */
+export async function speakQueue(
+  requests: SpeakRequest[],
+  options: { startIndex?: number; ownerId?: string } = {},
+): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  const items = requests.filter((r) => r.text.trim());
+  if (!items.length) return;
 
   // Still synchronous, so the press counts as a user gesture. Everything below
   // this line is too late to claim playback permission.
   unlockSpeechPlayback();
 
-  stopSpeech();
-  const mine = ++generation;
+  haltPlayback();
+  queue = items;
+  queueIndex = Math.min(Math.max(options.startIndex ?? 0, 0), items.length - 1);
+  queueOwner = options.ownerId ?? null;
+  await playCurrent();
+}
+
+/** Play whatever `queueIndex` points at, from the top. */
+async function playCurrent(): Promise<void> {
+  const req = queue[queueIndex];
+  if (!req) {
+    stopSpeech();
+    return;
+  }
+
+  haltPlayback();
+  const mine = generation;
 
   // Everything from here is inside the try. Resolving the cast voice and
   // reading the AI settings both used to happen *before* the state was set to
@@ -442,39 +630,22 @@ export async function speak(req: SpeakRequest): Promise<void> {
   setState("loading", req.id);
 
   try {
-    const spoken = await withPersonaVoice(req);
-    // Key the cache on the voice that will actually be used, so two editors
-    // sharing a fallback name never collide on one clip.
-    const settings = await getCachedAiSettings();
-    const resolved = resolveFeatureConfig(settings, "voice-narration");
-    const override = settings.perFeature["voice-narration"];
-    const voice = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
-    const provider = resolved?.provider.id ?? "hosted";
-    const model = resolved?.model ?? "hosted";
-    const key = cacheKey(
-      text,
-      provider,
-      model,
-      voice,
-      override?.responseFormat ?? "mp3",
-      override?.speed,
-      spoken.instructions ?? override?.instructions,
-    );
-
-    let url = cache.get(key);
-    if (!url) {
-      const result = await synthesize({ ...spoken, text });
-      if (mine !== generation) return; // the writer moved on
-      url = URL.createObjectURL(result.audio);
-      remember(key, url);
-    }
-    if (mine !== generation) return;
+    const url = await resolveClip(req);
+    if (mine !== generation) return; // the writer moved on
 
     audio = audio ?? new Audio();
     audio.muted = false;
     audio.src = url;
     audio.onended = () => {
-      if (mine === generation) setState("idle", null);
+      if (mine !== generation) return;
+      // On to the next editor. The queue is abandoned only at the end, so the
+      // transport keeps its position and its skip controls throughout.
+      if (hasNextSpeech()) {
+        queueIndex += 1;
+        void playCurrent();
+        return;
+      }
+      stopSpeech();
     };
     audio.onloadedmetadata = () => {
       if (mine !== generation || !audio) return;
@@ -498,7 +669,10 @@ export async function speak(req: SpeakRequest): Promise<void> {
       );
     };
     await audio.play();
-    if (mine === generation) setState("playing", req.id);
+    if (mine === generation) {
+      setState("playing", req.id);
+      prefetchNext();
+    }
   } catch (err) {
     if (mine !== generation) return;
     // A blocked play() is not a provider failure, and telling the writer to

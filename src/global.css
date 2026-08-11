@@ -1255,17 +1255,10 @@ body {
  * Compositor's stick, on a narrow screen
  *
  * The toolbar carries around forty controls in seven groups. Left
- * to wrap, that is six stacked rows on a phone — roughly a third
- * of the viewport, in an app whose entire product is vertical
- * space for prose. Below `sm` it becomes one horizontally
- * scrolling row instead.
- *
- * Groups never split or squash: `flex: none` keeps each control
- * at its natural width so a scroll never lands mid-group, and
- * scroll-snap parks the strip on a group boundary. The scrollbar
- * is deliberately left visible — it is the affordance, and the
- * one thing the floating table toolbar was missing when writers
- * could not find "Delete table".
+ * to wrap, that is six stacked rows on a phone. Compact mode keeps
+ * the manuscript dominant; expanded mode wraps into a bounded,
+ * vertically scrolling tray. Neither mode should make the whole
+ * composing room scroll sideways.
  * ───────────────────────────────────────────────────────────── */
 .twyne-toolbar > * {
   flex: none;
@@ -1273,13 +1266,23 @@ body {
 
 @media (max-width: 639px) {
   .twyne-toolbar {
-    scroll-snap-type: x proximity;
-    overscroll-behavior-x: contain;
-    scrollbar-width: thin;
-    scrollbar-color: var(--color-paper-3) transparent;
+    flex-wrap: wrap;
+    overflow-x: hidden;
+    min-width: 0;
   }
-  .twyne-toolbar > * {
-    scroll-snap-align: start;
+  .twyne-toolbar.is-compact > :nth-child(n + 5):not(.mobile-tool-toggle) {
+    display: none;
+  }
+  .twyne-toolbar.is-expanded {
+    max-height: min(45vh, 18rem);
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+  .twyne-toolbar .mobile-tool-toggle {
+    margin-left: auto;
+    width: auto;
+    padding-inline: 0.65rem;
+    font-size: 0.68rem;
   }
   /* Touch targets. 0.25rem of padding is fine for a mouse and not for a
      thumb; this brings each control to a 34px box without changing the

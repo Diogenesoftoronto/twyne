@@ -163,6 +163,15 @@ function isLoopbackOrigin(value: string): boolean {
 
 function trustedOrigins(origin: string): string[] {
   const origins = new Set<string>([origin]);
+  if (isLoopbackOrigin(origin)) {
+    const url = new URL(origin);
+    const port = url.port ? `:${url.port}` : "";
+    // ATProto OAuth must return to an IP-literal loopback URI (RFC 8252),
+    // while Vite commonly starts at localhost. Trust both representations of
+    // the same local development service so the callback can use 127.0.0.1.
+    origins.add(`http://localhost${port}`);
+    origins.add(`http://127.0.0.1${port}`);
+  }
   if (isTwyneProductionOrigin(origin)) {
     for (const prodOrigin of TWYNE_PRODUCTION_ORIGINS) {
       origins.add(prodOrigin);

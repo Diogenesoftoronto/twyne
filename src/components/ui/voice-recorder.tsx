@@ -44,9 +44,12 @@ interface RecorderStore {
   phase: "idle" | "recording" | "transcribing" | "review";
   elapsedMs: number;
   level: number;
+  paused: boolean;
   transcript: string;
   error: AppError | null;
   handle: NoSerialize<RecorderHandle> | null;
+  /** Lets the writer stop an in-flight transcription. */
+  transcribeAbort: NoSerialize<AbortController> | null;
   captured: NoSerialize<{ blob: Blob; mimeType: string; durationMs: number }> | null;
 }
 
@@ -66,9 +69,11 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
     phase: "idle",
     elapsedMs: 0,
     level: 0,
+    paused: false,
     transcript: "",
     error: null,
     handle: null,
+    transcribeAbort: null,
     captured: null,
   });
 
@@ -77,10 +82,11 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
     supported.value = canRecord();
     track(() => store.phase);
     if (store.phase !== "recording") return;
-    // Drive the timer and the level meter while recording.
-    const started = Date.now();
+    // Drive the timer and the level meter while recording. The handle counts
+    // active audio, so a pause freezes the elapsed — wall clock never slips
+    // into the label or the recording budget.
     const timer = setInterval(() => {
-      store.elapsedMs = Date.now() - started;
+      store.elapsedMs = store.handle?.elapsed() ?? 0;
       store.level = store.handle?.level() ?? 0;
     }, 100);
     cleanup(() => clearInterval(timer));
@@ -92,12 +98,25 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
       const handle = await startRecording();
       store.handle = noSerialize(handle);
       store.elapsedMs = 0;
+      store.paused = false;
       store.phase = "recording";
     } catch (err) {
       store.error = normalizeApplicationError(err, {
         source: "application",
         metadata: { feature: "voice-notes", operation: "record" },
       });
+    }
+  });
+
+  const pause = $(() => {
+    const handle = store.handle;
+    if (!handle) return;
+    if (store.paused) {
+      handle.resume();
+      store.paused = false;
+    } else {
+      handle.pause();
+      store.paused = true;
     }
   });
 
@@ -108,33 +127,44 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
     store.handle = null;
     store.captured = noSerialize(recording);
     store.phase = "transcribing";
+    const abort = new AbortController();
+    store.transcribeAbort = noSerialize(abort);
     try {
       const { text } = await transcribeRecording({
         blob: recording.blob,
         mimeType: recording.mimeType,
         client: clientSig.value ?? null,
         prompt: props.transcriptionHint,
+        signal: abort.signal,
       });
+      // The writer pressed Cancel while the words were being set down.
+      if (store.phase !== "transcribing") return;
       store.transcript = text;
       store.phase = "review";
     } catch (err) {
       // The recording survives a failed transcription — the writer can still
-      // keep the audio and type the note themselves.
+      // keep the audio, or start again if they stopped it themselves.
+      if (store.phase !== "transcribing" || abort.signal.aborted) return;
       store.error = normalizeApplicationError(err, {
         source: "provider",
         metadata: { feature: "voice-notes", operation: "transcribe" },
       });
       store.transcript = "";
       store.phase = "review";
+    } finally {
+      store.transcribeAbort = null;
     }
   });
 
   const discard = $(() => {
     store.handle?.cancel();
     store.handle = null;
+    store.transcribeAbort?.abort();
+    store.transcribeAbort = null;
     store.captured = null;
     store.transcript = "";
     store.error = null;
+    store.paused = false;
     store.phase = "idle";
   });
 
@@ -193,7 +223,14 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
           >
             {formatDuration(store.elapsedMs)}
           </span>
-          <LevelMeter level={store.level} />
+          <LevelMeter level={store.paused ? 0 : store.level} />
+          <button
+            onClick$={pause}
+            class="btn-press text-[11px] px-2 py-0.5"
+            title={store.paused ? "Resume recording" : "Pause recording"}
+          >
+            {store.paused ? "Resume" : "Pause"}
+          </button>
           <button
             onClick$={finish}
             class="btn-press text-[11px] px-2 py-0.5"
@@ -212,13 +249,21 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
       )}
 
       {store.phase === "transcribing" && (
-        <p
-          class="text-xs text-[var(--color-ink-muted)]"
-          style="font-family: var(--font-typewriter); letter-spacing: 0.1em;"
-          role="status"
-        >
-          Setting down what you said…
-        </p>
+        <div class="flex items-center gap-2" role="status">
+          <p
+            class="text-xs text-[var(--color-ink-muted)]"
+            style="font-family: var(--font-typewriter); letter-spacing: 0.1em;"
+          >
+            Setting down what you said…
+          </p>
+          <button
+            onClick$={discard}
+            class="text-[10px] uppercase tracking-[0.12em] text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] focus-ring"
+            style="font-family: var(--font-typewriter);"
+          >
+            Cancel
+          </button>
+        </div>
       )}
 
       {store.phase === "review" && (

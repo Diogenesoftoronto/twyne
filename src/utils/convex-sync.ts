@@ -20,17 +20,24 @@ import {
   loadActiveFolioIdFromIdb,
   loadAllBriefsFromIdb,
   saveFoliosToIdb,
+  deleteFolioFromIdb,
   saveBriefToIdb,
+  deleteBriefFromIdb,
   saveFolioContentToIdb,
+  deleteFolioContentFromIdb,
   savePersonasToIdb,
   saveDraftHtmlToIdb,
   loadRubricResultFromIdb,
   saveRubricResultToIdb,
+  deleteRubricResultFromIdb,
+  saveActiveFolioIdToIdb,
+  clearActiveFolioIdFromIdb,
   clearIdbStore,
 } from "./idb";
 import { persistToIdb, readFileAsJson, writeFileAsJson } from "./lix";
 import { normalizeApplicationError } from "./application-errors";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
+import { createRevisionTask } from "./revision-history";
 
 /**
  * Browser ↔ Convex sync for the per-user data. The local IndexedDB
@@ -51,9 +58,10 @@ import { reportApplicationDiagnostic } from "./application-diagnostics";
  * 4 seconds. A final flush runs on `pagehide`.
  */
 
-type ConvexSyncClient = Pick<ConvexClient, "query" | "mutation">;
+type ConvexSyncClient = Pick<ConvexClient, "query" | "mutation" | "onUpdate">;
 
 interface SyncedSnapshot {
+  syncRevision: number;
   briefs: Array<{
     folioId: string;
     brief: ProjectBrief;
@@ -113,6 +121,8 @@ interface SyncState {
    * position on sign-in and the one that seeds an empty account.
    */
   lastPushed: PushPayload | null;
+  /** Optimistic-concurrency revision returned by the last pull or push. */
+  remoteRevision: number | null;
   /** Whether the active user has any remote state to merge from. */
   hydratedFromRemote: boolean;
   /** Last push that succeeded, epoch ms. Drives the "synced Xs ago" line. */
@@ -123,6 +133,17 @@ interface SyncState {
   lastErrorMessage: string | null;
   /** True while a push is in flight. */
   pushing: boolean;
+  /** The locally-known snapshot, recency-per-section. Sections are only
+   * rebuilt when they go dirty, so a keystroke in one folio never re-reads
+   * the manuscript of every other folio. Null until the first build. */
+  lastSnapshot: LocalSnapshot | null;
+  /**
+   * Winner set of sections that changed since the last push. `markDirty`
+   * without arguments marks every section (the safe default); callers that
+   * know exactly what moved — the editor's content flush, say — mark only
+   * the section they touched.
+   */
+  dirtySections: Set<PushSection>;
 }
 
 interface LocalSnapshot {
@@ -135,6 +156,20 @@ interface LocalSnapshot {
   rubricResults: Array<{ folioId: string; result: RubricResult }>;
   bibliography: BibEntry[];
 }
+
+/** A top-level slice of the snapshot that can go dirty and be rebuilt alone. */
+type PushSection = keyof LocalSnapshot;
+
+const ALL_PUSH_SECTIONS: readonly PushSection[] = [
+  "briefs",
+  "folios",
+  "folioContent",
+  "customPersonas",
+  "personaNotes",
+  "personaReplies",
+  "rubricResults",
+  "bibliography",
+];
 
 /**
  * A local snapshot in the shape `sync.pushAll` accepts.
@@ -151,23 +186,42 @@ type PushPayload = ReturnType<typeof buildPushPayload>;
  * The subset of a payload actually worth sending. Every section is optional
  * because `pushAll` leaves a missing argument alone — which is what makes a
  * partial push safe rather than a partial overwrite.
+ *
+ * The row-upserted sections also carry a removal list: rows the server was
+ * last told about but the snapshot no longer contains. `pushAll` deletes
+ * exactly those, which is the channel by which a deleted note, reply, brief
+ * or manuscript stops pinging back as a ghost on the next sign-in.
  */
 type PushChanges = {
   [K in keyof PushPayload]?: NonNullable<PushPayload[K]>;
+} & {
+  expectedRevision?: number;
+  removedBriefFolioIds?: string[];
+  removedFolioContentIds?: string[];
+  removedPersonaNoteIds?: string[];
+  removedPersonaReplyIds?: string[];
+  removedRubricFolioIds?: string[];
 };
 
 const state: SyncState = {
   client: null,
   userId: null,
   lastPushed: null,
+  remoteRevision: null,
   hydratedFromRemote: false,
   lastSyncedAt: null,
   lastErrorAt: null,
   lastErrorMessage: null,
   pushing: false,
+  lastSnapshot: null,
+  dirtySections: new Set<PushSection>(ALL_PUSH_SECTIONS),
 };
 
 let pushTimer: ReturnType<typeof setTimeout> | null = null;
+/** Set when a push is requested while one is already in flight. */
+let pushAgainWhenDone = false;
+let remoteUnsubscribe: (() => void) | null = null;
+let remoteApplyChain: Promise<void> = Promise.resolve();
 const PUSH_DEBOUNCE_MS = 4_000;
 const SIGN_UP_PUSH_FLAG = "twyne:signed-up-once";
 const BIBLIOGRAPHY_PATH = "/bibliography.json";
@@ -250,6 +304,8 @@ export function subscribeSyncStatus(
 /* ── Public surface ─────────────────────────────────────────────── */
 
 export function setConvexSyncContext(client: ConvexSyncClient, userId: string) {
+  remoteUnsubscribe?.();
+  remoteUnsubscribe = null;
   state.client = client;
   const previousUserId = state.userId;
   state.userId = userId;
@@ -257,25 +313,46 @@ export function setConvexSyncContext(client: ConvexSyncClient, userId: string) {
   state.lastSyncedAt = null;
   state.lastErrorAt = null;
   state.lastErrorMessage = null;
+  // A different user's local state may be sitting in IndexedDB still (account
+  // swap); never reuse their cached snapshot or ratify their dirty sections,
+  // and never diff against a payload that was acknowledged for someone else.
+  state.lastSnapshot = null;
+  state.lastPushed = null;
+  state.remoteRevision = null;
+  for (const section of ALL_PUSH_SECTIONS) state.dirtySections.add(section);
 
   // Fire and forget — we don't want the auth path to await the hydration.
   if (previousUserId !== userId) {
-    void handleUserChanged(previousUserId, userId).catch((err) => {
-      setSyncFailure(err, "hydrate");
-      notifyStatusChange();
-    });
+    void handleUserChanged(previousUserId, userId)
+      .then(() => {
+        if (state.client === client && state.userId === userId) {
+          startRemoteSubscription(client, userId);
+        }
+      })
+      .catch((err) => {
+        setSyncFailure(err, "hydrate");
+        notifyStatusChange();
+      });
+  } else {
+    startRemoteSubscription(client, userId);
   }
 }
 
 export function clearConvexSyncContext() {
+  remoteUnsubscribe?.();
+  remoteUnsubscribe = null;
   state.client = null;
   state.userId = null;
   state.lastPushed = null;
+  state.remoteRevision = null;
   state.hydratedFromRemote = false;
   state.lastSyncedAt = null;
   state.lastErrorAt = null;
   state.lastErrorMessage = null;
   state.pushing = false;
+  pushAgainWhenDone = false;
+  state.lastSnapshot = null;
+  for (const section of ALL_PUSH_SECTIONS) state.dirtySections.add(section);
   if (pushTimer) {
     clearTimeout(pushTimer);
     pushTimer = null;
@@ -286,10 +363,19 @@ export function clearConvexSyncContext() {
 /**
  * Mark local state as dirty. A debounced push will fire shortly after.
  * Safe to call frequently.
+ *
+ * Passing one or more {@link PushSection}s limits the next rebuild to those
+ * slices of IndexedDB; omitting them marks every section (the safe default —
+ * callers that can't say exactly what moved should keep using it).
  */
-export function markDirty(): void {
+export function markDirty(sections?: Iterable<PushSection>): void {
   if (!state.userId || !state.client) return;
   recordWritingActivity();
+  if (sections) {
+    for (const section of sections) state.dirtySections.add(section);
+  } else {
+    for (const section of ALL_PUSH_SECTIONS) state.dirtySections.add(section);
+  }
   if (pushTimer) return; // already scheduled
   pushTimer = setTimeout(() => {
     pushTimer = null;
@@ -323,6 +409,10 @@ export async function flushNow(): Promise<void> {
     clearTimeout(pushTimer);
     pushTimer = null;
   }
+  // A flush signals the tab is going away — never trust the dirty cache to
+  // cover it. Rebuild every section so a change whose `markDirty` raced the
+  // teardown is still reconciled against the server.
+  for (const section of ALL_PUSH_SECTIONS) state.dirtySections.add(section);
   await pushLocalSnapshot();
 }
 
@@ -369,59 +459,159 @@ export async function loadFromConvex(): Promise<Blob | null> {
 
 /* ── Internal: build local snapshot, decide push vs pull ─────────── */
 
-async function buildLocalSnapshot(): Promise<LocalSnapshot> {
-  const briefs = (await loadAllBriefsFromIdb()).map(({ folioId, brief }) => ({
-    folioId,
-    brief,
-  }));
+/**
+ * Load one section of the local snapshot from IndexedDB/Lix. Sections are
+ * rebuilt independently so a keystroke in one folio never re-reads the
+ * manuscripts (or notes, replies, rubric results) of every other folio.
+ */
+async function loadSnapshotSection(
+  section: PushSection,
+  folioIds: Set<string>,
+): Promise<LocalSnapshot[PushSection]> {
+  switch (section) {
+    case "briefs":
+      return (await loadAllBriefsFromIdb()).map(({ folioId, brief }) => ({
+        folioId,
+        brief,
+      }));
+    case "folios":
+      return loadFoliosFromIdb();
+    case "folioContent": {
+      const rows: LocalSnapshot["folioContent"] = [];
+      for (const id of folioIds) {
+        if (!id) continue;
+        const content = await loadFolioContentSnapshotFromIdb(id);
+        rows.push({
+          folioId: id,
+          html: content?.html ?? "",
+          updatedAt: content?.updatedAt ?? 0,
+        });
+      }
+      return rows;
+    }
+    case "customPersonas":
+      return (await loadPersonasFromIdb()) as Persona[];
+    case "personaNotes": {
+      const notes: PersonaFeedback[] = [];
+      for (const id of folioIds) {
+        if (!id) continue;
+        notes.push(...(await loadPersonaNotesLocally(id)));
+      }
+      return notes;
+    }
+    case "personaReplies": {
+      const replies: PersonaReply[] = [];
+      for (const id of folioIds) {
+        if (!id) continue;
+        replies.push(...(await loadPersonaRepliesLocally(id)));
+      }
+      return replies;
+    }
+    case "rubricResults": {
+      const rubricResults: LocalSnapshot["rubricResults"] = [];
+      for (const id of folioIds) {
+        if (!id) continue;
+        const rubric = await loadRubricResultFromIdb(id);
+        if (rubric) rubricResults.push({ folioId: id, result: rubric });
+      }
+      return rubricResults;
+    }
+    case "bibliography": {
+      const bibliography =
+        (await readFileAsJson<BibEntry[]>(BIBLIOGRAPHY_PATH)) ?? [];
+      return Array.isArray(bibliography) ? bibliography : [];
+    }
+  }
+}
+
+/** Load the folio ids that scope the per-folio sections. */
+async function loadFolioIds(): Promise<Set<string>> {
   const folios = await loadFoliosFromIdb();
   const activeFolioId = await loadActiveFolioIdFromIdb();
   const ids = new Set<string>(folios.map((f) => f.id));
   if (activeFolioId) ids.add(activeFolioId);
+  return ids;
+}
 
-  const folioContent: Array<{
-    folioId: string;
-    html: string;
-    updatedAt: number;
-  }> = [];
-  for (const id of ids) {
-    if (!id) continue;
-    const content = await loadFolioContentSnapshotFromIdb(id);
-    folioContent.push({
-      folioId: id,
-      html: content?.html ?? "",
-      updatedAt: content?.updatedAt ?? 0,
-    });
-  }
-
-  const customPersonas = (await loadPersonasFromIdb()) as Persona[];
-  const notes: PersonaFeedback[] = [];
-  const replies: PersonaReply[] = [];
-  const rubricResults: Array<{ folioId: string; result: RubricResult }> = [];
-  for (const folioId of ids) {
-    if (!folioId) continue;
-    const [folioNotes, folioReplies, rubric] = await Promise.all([
-      loadPersonaNotesLocally(folioId),
-      loadPersonaRepliesLocally(folioId),
-      loadRubricResultFromIdb(folioId),
-    ]);
-    notes.push(...folioNotes);
-    replies.push(...folioReplies);
-    if (rubric) rubricResults.push({ folioId, result: rubric });
-  }
-  const bibliography =
-    (await readFileAsJson<BibEntry[]>(BIBLIOGRAPHY_PATH)) ?? [];
-
-  return {
-    briefs,
-    folios,
-    folioContent,
-    customPersonas,
-    personaNotes: notes,
-    personaReplies: replies,
-    rubricResults,
-    bibliography: Array.isArray(bibliography) ? bibliography : [],
+/**
+ * Build a snapshot from IndexedDB/Lix.
+ *
+ * `sections` selects which slices are freshly read; every other slice is
+ * carried over from `state.lastSnapshot`. A null cache forces a full build
+ * (the honest starting position on sign-in).
+ */
+async function buildLocalSnapshot(
+  sections?: Iterable<PushSection>,
+): Promise<LocalSnapshot> {
+  const wanted = new Set(sections ?? ALL_PUSH_SECTIONS);
+  const previous = state.lastSnapshot;
+  const cached = previous ?? {
+    briefs: [],
+    folios: [],
+    folioContent: [],
+    customPersonas: null,
+    personaNotes: [],
+    personaReplies: [],
+    rubricResults: [],
+    bibliography: [],
   };
+
+  const next: LocalSnapshot = { ...cached };
+  const folioIds = await loadFolioIds();
+  // A carried-over section may reference folios that no longer exist (the
+  // cache is only invalidated for the sections that moved). Orphaned rows must
+  // not ride along: they are exactly the ghosts a later pull would resurrect.
+  // Rows with no folio at all are legacy/global and stay.
+  next.briefs = next.briefs.filter((b) => {
+    const folioId = b.folioId ?? "";
+    return folioId === "" || folioIds.has(folioId);
+  });
+  next.folioContent = next.folioContent.filter((c) => {
+    const folioId = c.folioId ?? "";
+    return folioId === "" || folioIds.has(folioId);
+  });
+  next.personaNotes = next.personaNotes.filter((n) => {
+    const folioId = n.folioId ?? "";
+    return folioId === "" || folioIds.has(folioId);
+  });
+  next.personaReplies = next.personaReplies.filter((r) => {
+    const folioId = r.folioId ?? "";
+    return folioId === "" || folioIds.has(folioId);
+  });
+  next.rubricResults = next.rubricResults.filter((r) => {
+    const folioId = r.folioId ?? "";
+    return folioId === "" || folioIds.has(folioId);
+  });
+  for (const section of wanted) {
+    const value = await loadSnapshotSection(section, folioIds);
+    switch (section) {
+      case "briefs":
+        next.briefs = value as LocalSnapshot["briefs"];
+        break;
+      case "folios":
+        next.folios = value as LocalSnapshot["folios"];
+        break;
+      case "folioContent":
+        next.folioContent = value as LocalSnapshot["folioContent"];
+        break;
+      case "customPersonas":
+        next.customPersonas = value as LocalSnapshot["customPersonas"];
+        break;
+      case "personaNotes":
+        next.personaNotes = value as LocalSnapshot["personaNotes"];
+        break;
+      case "personaReplies":
+        next.personaReplies = value as LocalSnapshot["personaReplies"];
+        break;
+      case "rubricResults":
+        next.rubricResults = value as LocalSnapshot["rubricResults"];
+        break;
+      case "bibliography":
+        next.bibliography = value as LocalSnapshot["bibliography"];
+        break;
+    }
+  }
+  return next;
 }
 
 /** Everything the server could be told, in the shape it accepts. */
@@ -489,6 +679,23 @@ function changedRows<T>(
 }
 
 /**
+ * Rows present in the last acknowledged push but missing from the next
+ * snapshot. These were deleted locally and have to be told to leave the server
+ * too — a section that only ever upserts would otherwise keep them forever.
+ */
+function removedRows<T>(
+  next: T[],
+  previous: T[] | undefined,
+  identify: (row: T) => string,
+): string[] {
+  if (!previous) return [];
+  const keys = new Set(next.map(identify));
+  return previous
+    .filter((row) => !keys.has(identify(row)))
+    .map((row) => identify(row));
+}
+
+/**
  * Sections the server replaces wholesale go up entire or not at all; sections
  * it upserts row by row go up as only the rows that moved. `undefined` means
  * "leave this alone", which is how `pushAll` reads a missing argument.
@@ -520,6 +727,31 @@ function diffPushPayload(
     previous?.rubricResults,
     (r) => r.folioId,
   );
+  const removedBriefFolioIds = removedRows(
+    next.briefs,
+    previous?.briefs,
+    (b) => b.folioId,
+  );
+  const removedFolioContentIds = removedRows(
+    next.folioContent,
+    previous?.folioContent,
+    (c) => c.folioId,
+  );
+  const removedPersonaNoteIds = removedRows(
+    next.personaNotes,
+    previous?.personaNotes,
+    (n) => n.noteId,
+  );
+  const removedPersonaReplyIds = removedRows(
+    next.personaReplies,
+    previous?.personaReplies,
+    (r) => r.replyId,
+  );
+  const removedRubricFolioIds = removedRows(
+    next.rubricResults,
+    previous?.rubricResults,
+    (r) => r.folioId,
+  );
   const foliosMoved = serialize(next.folios) !== serialize(previous?.folios);
   const personasMoved =
     serialize(next.customPersonas) !== serialize(previous?.customPersonas);
@@ -532,6 +764,11 @@ function diffPushPayload(
     personaNotes.length === 0 &&
     personaReplies.length === 0 &&
     rubricResults.length === 0 &&
+    removedBriefFolioIds.length === 0 &&
+    removedFolioContentIds.length === 0 &&
+    removedPersonaNoteIds.length === 0 &&
+    removedPersonaReplyIds.length === 0 &&
+    removedRubricFolioIds.length === 0 &&
     !foliosMoved &&
     !personasMoved &&
     !bibliographyMoved;
@@ -547,32 +784,84 @@ function diffPushPayload(
     personaReplies: personaReplies.length ? personaReplies : undefined,
     rubricResults: rubricResults.length ? rubricResults : undefined,
     bibliography: bibliographyMoved ? next.bibliography : undefined,
+    removedBriefFolioIds: removedBriefFolioIds.length
+      ? removedBriefFolioIds
+      : undefined,
+    removedFolioContentIds: removedFolioContentIds.length
+      ? removedFolioContentIds
+      : undefined,
+    removedPersonaNoteIds: removedPersonaNoteIds.length
+      ? removedPersonaNoteIds
+      : undefined,
+    removedPersonaReplyIds: removedPersonaReplyIds.length
+      ? removedPersonaReplyIds
+      : undefined,
+    removedRubricFolioIds: removedRubricFolioIds.length
+      ? removedRubricFolioIds
+      : undefined,
   };
 }
 
 async function pushLocalSnapshot(): Promise<void> {
   if (!state.client || !state.userId) return;
   if (typeof window === "undefined") return;
+  // Never run two pushes concurrently. `pushTimer` is cleared before the async
+  // body runs, so a `markDirty` mid-push can arm a second one — and both would
+  // diff against the same `state.lastPushed`, with whichever mutation resolved
+  // last winning the write-back. A slow earlier push could then re-ratify a
+  // payload a later push had already superseded, and every subsequent diff
+  // would consider the difference already sent. Queue instead.
+  if (state.pushing) {
+    pushAgainWhenDone = true;
+    return;
+  }
   state.pushing = true;
   notifyStatusChange();
+  const dirty = state.dirtySections;
+  state.dirtySections = new Set<PushSection>();
   try {
-    const payload = buildPushPayload(await buildLocalSnapshot());
+    // Rebuild only the sections that moved since the last push. The diff
+    // against `lastPushed` is still against the full payload, so a clean
+    // section reports "unchanged" and gets skipped on the wire.
+    const snapshot = await buildLocalSnapshot(dirty);
+    const payload = buildPushPayload(snapshot);
     const changes = diffPushPayload(payload, state.lastPushed);
     if (changes) {
-      await state.client.mutation(api.sync.pushAll, changes);
+      const result = await state.client.mutation(api.sync.pushAll, {
+        ...changes,
+        expectedRevision: state.remoteRevision ?? undefined,
+      });
       // Only now is the server known to hold this. A push that threw leaves
       // `lastPushed` where it was, so the next one carries the whole gap.
       state.lastPushed = payload;
+      if (result && typeof result.revision === "number") {
+        state.remoteRevision = result.revision;
+      }
     }
+    state.lastSnapshot = snapshot;
     // Success: clear the error and stamp the synced time.
     state.lastSyncedAt = Date.now();
     state.lastErrorAt = null;
     state.lastErrorMessage = null;
   } catch (err) {
+    if (isSyncConflict(err)) {
+      await reconcileSyncConflict();
+      pushAgainWhenDone = true;
+      return;
+    }
+    // The snapshots may not have reached the server — keep those sections
+    // dirty so the next push rebuilds rather than skips exactly them.
+    if (dirty) {
+      for (const section of dirty) state.dirtySections.add(section);
+    }
     setSyncFailure(err, "push-all");
   } finally {
     state.pushing = false;
     notifyStatusChange();
+    if (pushAgainWhenDone) {
+      pushAgainWhenDone = false;
+      void pushLocalSnapshot();
+    }
   }
 }
 
@@ -626,6 +915,7 @@ async function handleUserChanged(
     state.hydratedFromRemote = true;
     return;
   }
+  state.remoteRevision = remote.syncRevision;
 
   // Merge: for each top-level slice, take whichever side is newer by
   // `updatedAt`. Newer-wins is the simplest sane policy without a CRDT.
@@ -655,6 +945,212 @@ async function handleUserChanged(
   state.hydratedFromRemote = true;
   // After hydration, push any local deltas back up.
   void pushLocalSnapshot();
+}
+
+function startRemoteSubscription(
+  client: ConvexSyncClient,
+  userId: string,
+): void {
+  if (typeof client.onUpdate !== "function") return;
+  remoteUnsubscribe?.();
+  remoteUnsubscribe = client.onUpdate(
+    api.sync.pullAll,
+    {},
+    (snapshot) => {
+      if (!snapshot || state.client !== client || state.userId !== userId) {
+        return;
+      }
+      remoteApplyChain = remoteApplyChain
+        .then(() => handleRemoteSnapshot(snapshot as SyncedSnapshot))
+        .catch((err) => {
+          setSyncFailure(err, "remote-update");
+          notifyStatusChange();
+        });
+    },
+    (err) => {
+      if (state.client !== client || state.userId !== userId) return;
+      setSyncFailure(err, "remote-subscription");
+      notifyStatusChange();
+    },
+  );
+}
+
+async function handleRemoteSnapshot(remote: SyncedSnapshot): Promise<void> {
+  if (remote.syncRevision <= (state.remoteRevision ?? -1)) return;
+
+  // Unsent local work remains authoritative. Keeping the older revision here
+  // deliberately makes the pending push conflict, which enters the tested
+  // pull, merge, and retry path instead of silently accepting remote changes.
+  if (state.pushing || state.dirtySections.size > 0) return;
+
+  const local = await buildLocalSnapshot();
+  await replaceFromRemote(local, remote);
+  const replaced = await buildLocalSnapshot();
+  state.remoteRevision = remote.syncRevision;
+  state.lastSnapshot = replaced;
+  state.lastPushed = buildPushPayload(replaced);
+  state.lastSyncedAt = Date.now();
+  state.lastErrorAt = null;
+  state.lastErrorMessage = null;
+  window.dispatchEvent(
+    new CustomEvent("twyne:remote-sync", {
+      detail: { revision: remote.syncRevision, reason: "subscription" },
+    }),
+  );
+  notifyStatusChange();
+}
+
+/** Replace a clean local cache with the authoritative remote snapshot. Unlike
+ * sign-in conflict merging, this path mirrors deletions as well as additions. */
+async function replaceFromRemote(
+  local: LocalSnapshot,
+  remote: SyncedSnapshot,
+): Promise<void> {
+  const remoteFolioIds = new Set(remote.folios.map((folio) => folio.id));
+  for (const folio of local.folios) {
+    if (!remoteFolioIds.has(folio.id)) await deleteFolioFromIdb(folio.id);
+  }
+  await saveFoliosToIdb(remote.folios);
+
+  const remoteBriefIds = new Set(remote.briefs.map((entry) => entry.folioId));
+  for (const entry of local.briefs) {
+    if (!remoteBriefIds.has(entry.folioId)) {
+      await deleteBriefFromIdb(entry.folioId);
+    }
+  }
+  for (const entry of remote.briefs) {
+    await saveBriefToIdb(entry.folioId, entry.brief);
+    await writeFileAsJson(`/folios/${entry.folioId}/brief.json`, entry.brief);
+  }
+
+  const remoteContentIds = new Set(
+    remote.folioContent.map((entry) => entry.folioId),
+  );
+  for (const entry of local.folioContent) {
+    if (!remoteContentIds.has(entry.folioId)) {
+      await deleteFolioContentFromIdb(entry.folioId);
+    }
+  }
+  for (const entry of remote.folioContent) {
+    await saveFolioContentToIdb(entry.folioId, entry.html);
+  }
+
+  await savePersonasToIdb(remote.customPersonas ?? []);
+
+  const notesByFolio = new Map<string, PersonaFeedback[]>();
+  for (const folio of local.folios) notesByFolio.set(folio.id, []);
+  for (const note of remote.personaNotes) {
+    const folioId = note.folioId;
+    if (!folioId) continue;
+    notesByFolio.set(folioId, [
+      ...(notesByFolio.get(folioId) ?? []),
+      { ...note, folioId, timestamp: note.createdAt },
+    ]);
+  }
+  for (const [folioId, notes] of notesByFolio) {
+    await writeFileAsJson(folioArtifactPath(folioId, "persona-notes.json"), notes);
+  }
+
+  const repliesByFolio = new Map<string, PersonaReply[]>();
+  for (const folio of local.folios) repliesByFolio.set(folio.id, []);
+  for (const reply of remote.personaReplies) {
+    const folioId = reply.folioId;
+    if (!folioId) continue;
+    repliesByFolio.set(folioId, [
+      ...(repliesByFolio.get(folioId) ?? []),
+      {
+        id: reply.replyId,
+        folioId,
+        noteId: reply.noteId,
+        author: reply.author,
+        authorKind: reply.authorKind,
+        personaId: reply.personaId,
+        text: reply.text,
+        timestamp: reply.createdAt,
+      },
+    ]);
+  }
+  for (const [folioId, replies] of repliesByFolio) {
+    await writeFileAsJson(
+      folioArtifactPath(folioId, "persona-replies.json"),
+      replies,
+    );
+  }
+
+  const remoteRubricIds = new Set(
+    remote.rubricResults.flatMap((entry) =>
+      entry.folioId ? [entry.folioId] : [],
+    ),
+  );
+  for (const entry of local.rubricResults) {
+    if (!remoteRubricIds.has(entry.folioId)) {
+      await deleteRubricResultFromIdb(entry.folioId);
+      await writeFileAsJson(
+        folioArtifactPath(entry.folioId, "rubric-result.json"),
+        null,
+      );
+    }
+  }
+  for (const entry of remote.rubricResults) {
+    if (!entry.folioId) continue;
+    const result = { ...entry.result, folioId: entry.folioId };
+    await saveRubricResultToIdb(result, entry.folioId);
+    await writeFileAsJson(
+      folioArtifactPath(entry.folioId, "rubric-result.json"),
+      result,
+    );
+  }
+
+  await writeFileAsJson(BIBLIOGRAPHY_PATH, remote.bibliography ?? []);
+
+  const activeFolioId = await loadActiveFolioIdFromIdb();
+  if (!activeFolioId || !remoteFolioIds.has(activeFolioId)) {
+    if (remote.folios[0]) {
+      await saveActiveFolioIdToIdb(remote.folios[0].id);
+    } else {
+      await clearActiveFolioIdFromIdb();
+    }
+  }
+  await persistToIdb();
+}
+
+function isSyncConflict(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const candidate = error as {
+    data?: { code?: unknown };
+    message?: unknown;
+  };
+  return (
+    candidate.data?.code === "SYNC_CONFLICT" ||
+    (typeof candidate.message === "string" &&
+      candidate.message.includes("SYNC_CONFLICT"))
+  );
+}
+
+/**
+ * A stale device never retries its rejected payload blindly. Pull the current
+ * server snapshot, merge it with the still-authoritative local session, then
+ * queue one full optimistic push against the revision just observed.
+ */
+async function reconcileSyncConflict(): Promise<void> {
+  if (!state.client || !state.userId) return;
+  const local = await buildLocalSnapshot();
+  const remote = (await state.client.query(
+    api.sync.pullAll,
+    {},
+  )) as SyncedSnapshot;
+  await mergeFromRemote(local, remote);
+  state.remoteRevision = remote.syncRevision;
+  state.lastPushed = null;
+  state.lastSnapshot = null;
+  for (const section of ALL_PUSH_SECTIONS) state.dirtySections.add(section);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("twyne:remote-sync", {
+        detail: { revision: remote.syncRevision, reason: "conflict" },
+      }),
+    );
+  }
 }
 
 function setSyncFailure(error: unknown, operation: string): void {
@@ -799,6 +1295,10 @@ async function mergeFromRemote(
       await writeFileAsJson(BIBLIOGRAPHY_PATH, merged);
     }
   }
+
+  // Everything we merged back into IndexedDB/Lix must be re-read on the next
+  // push; otherwise the section cache would ratify stale pre-merge rows.
+  for (const section of ALL_PUSH_SECTIONS) state.dirtySections.add(section);
 }
 
 function lastFoliosUpdate(folios: Folio[]): number {
@@ -835,6 +1335,15 @@ function sameJson(a: unknown, b: unknown): boolean {
 
 /* ── Public: explicit helpers for panels to use ─────────────────── */
 
+/** Save the custom editorial board locally and queue its single sync path. */
+export async function saveCustomPersonasLocally(
+  personas: Persona[],
+): Promise<void> {
+  if (typeof window === "undefined") return;
+  await savePersonasToIdb(personas);
+  markDirty(["customPersonas"]);
+}
+
 /**
  * Save a persona feedback note. Persists locally and queues a push.
  */
@@ -856,7 +1365,16 @@ export async function savePersonaNoteLocally(
   };
   filtered.push(stored);
   await writeFileAsJson(path, filtered);
-  markDirty();
+  if (stored.type === "critique" || stored.type === "suggestion") {
+    await createRevisionTask({
+      folioId,
+      title: stored.feedback.slice(0, 140),
+      detail: stored.anchor,
+      source: "feedback",
+      sourceId: noteId,
+    });
+  }
+  markDirty(["personaNotes"]);
 }
 
 export async function loadPersonaNotesLocally(
@@ -875,7 +1393,7 @@ export async function clearPersonaNotesLocally(
 ): Promise<void> {
   if (typeof window === "undefined" || !folioId) return;
   await writeFileAsJson(folioArtifactPath(folioId, "persona-notes.json"), []);
-  markDirty();
+  markDirty(["personaNotes"]);
 }
 
 export async function addPersonaReplyLocally(
@@ -887,7 +1405,7 @@ export async function addPersonaReplyLocally(
   const current = (await readFileAsJson<PersonaReply[]>(path)) ?? [];
   current.push({ ...reply, folioId });
   await writeFileAsJson(path, current);
-  markDirty();
+  markDirty(["personaReplies"]);
 }
 
 export async function loadPersonaRepliesLocally(
@@ -910,7 +1428,7 @@ export async function saveRubricLocally(
     ...result,
     folioId,
   });
-  markDirty();
+  markDirty(["rubricResults"]);
 }
 
 export async function loadRubricLocally(
@@ -936,6 +1454,15 @@ export async function saveSuggestionLocally(
   const filtered = current.filter((s) => s.id !== suggestion.id);
   filtered.push({ ...suggestion, folioId });
   await writeFileAsJson(path, filtered);
+  await createRevisionTask({
+    folioId,
+    title:
+      suggestion.rationale ||
+      `Review ${suggestion.personaName}'s proposed edit`,
+    detail: suggestion.replacement,
+    source: "suggestion",
+    sourceId: suggestion.id,
+  });
   markDirty();
 }
 
@@ -987,26 +1514,37 @@ export async function loadRoomSettingsLocally(): Promise<RoomSettings> {
  * Convenience: the persona panel can ask the orchestrator to "strike the
  * room" (clear the notes). Local + queued push.
  */
-export async function strikeRoomLocally(): Promise<void> {
-  if (typeof window === "undefined") return;
-  await writeFileAsJson("/persona-notes.json", []);
-  await writeFileAsJson("/persona-replies.json", []);
+export async function strikeRoomLocally(folioId: string): Promise<void> {
+  if (typeof window === "undefined" || !folioId) return;
+  const notesPath = folioArtifactPath(folioId, "persona-notes.json");
+  const repliesPath = folioArtifactPath(folioId, "persona-replies.json");
+
+  // Read the note ids *before* clearing. This used to write `[]` first and
+  // then read the file it had just emptied, so the removal loop always saw
+  // zero notes and every note survived on the server — a strike that struck
+  // nothing. Enumerate, then clear, then tell the server.
+  const notes = (await readFileAsJson<PersonaFeedback[]>(notesPath)) ?? [];
+  const noteIds = notes.map((n) => n.noteId).filter((id): id is string => !!id);
+
+  await writeFileAsJson(notesPath, []);
+  await writeFileAsJson(repliesPath, []);
+
   if (state.client && state.userId) {
     try {
-      const notes =
-        (await readFileAsJson<PersonaFeedback[]>("/persona-notes.json")) ?? [];
-      for (const n of notes) {
-        if (n.noteId) {
-          await state.client.mutation(api.sync.removePersonaNote, {
-            noteId: n.noteId,
-          });
-        }
-      }
-    } catch {
-      // ignore
+      await Promise.all(
+        noteIds.map((noteId) =>
+          state.client!.mutation(api.sync.removePersonaNote, { noteId }),
+        ),
+      );
+    } catch (err) {
+      // The local clear stands regardless; the section stays dirty below so
+      // the next push reconciles the removals through the deletion channel.
+      reportApplicationDiagnostic("twyne:sync:strike-room", err, {
+        operation: "strike-room",
+      });
     }
   }
-  markDirty();
+  markDirty(["personaNotes", "personaReplies"]);
 }
 
 /** Reset all local state. Used on sign-out if the user wants a clean slate. */

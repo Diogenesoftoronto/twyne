@@ -16,10 +16,14 @@ class FakeAudio {
   static instances: FakeAudio[] = [];
   src = "";
   currentTime = 0;
+  duration = 0;
+  muted = false;
   paused = true;
   playCount = 0;
   onended: (() => void) | null = null;
   onerror: (() => void) | null = null;
+  ontimeupdate: (() => void) | null = null;
+  onloadedmetadata: (() => void) | null = null;
 
   constructor() {
     FakeAudio.instances.push(this);
@@ -220,6 +224,207 @@ describe("speak", () => {
     expect(speakModule.speechState().id).toBe("note-1");
     await speakModule.speak({ id: "note-2", text: "two" });
     expect(speakModule.speechState().id).toBe("note-2");
+  });
+});
+
+/**
+ * Reading the room aloud, one editor after another. The invariants that matter
+ * are that each passage keeps its own identity as the queue moves (so the
+ * memo's own button lights up in step with the transport), that a skip never
+ * pays for the same synthesis twice, and that the end of the queue is a
+ * clean idle rather than a transport stuck showing "5 of 5".
+ */
+describe("speakQueue", () => {
+  /** Wait for the manager to reach a state, rather than guessing at ticks. */
+  async function settle(
+    predicate: () => boolean,
+    what: string,
+  ): Promise<void> {
+    for (let i = 0; i < 200; i++) {
+      if (predicate()) return;
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    }
+    throw new Error(`timed out waiting for ${what}`);
+  }
+
+  /**
+   * Sounding, not merely selected. The active id changes the moment a passage
+   * starts loading, which is before its audio handlers are installed — a test
+   * that drives those handlers has to wait for playback proper.
+   */
+  async function playing(id: string): Promise<void> {
+    const s = speakModule.speechState;
+    await settle(
+      () => s().id === id && s().status === "playing",
+      `${id} to be playing`,
+    );
+  }
+
+  /** A hosted client that succeeds, recording what it was asked to say. */
+  function hostedClient(): { client: never; said: string[] } {
+    const said: string[] = [];
+    const client = {
+      action: async (_ref: unknown, args: { text: string }) => {
+        said.push(args.text);
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    };
+    return { client: client as never, said };
+  }
+
+  function room(client: never) {
+    return [
+      { id: "memo-1", text: "one", label: "Marguerite", client, signedIn: true },
+      { id: "memo-2", text: "two", label: "Inés", client, signedIn: true },
+      { id: "memo-3", text: "three", label: "Auden", client, signedIn: true },
+    ];
+  }
+
+  test("starts at the first passage and reports its place in the queue", async () => {
+    const { client } = hostedClient();
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+
+    const s = speakModule.speechState();
+    expect(s.status).toBe("playing");
+    expect(s.id).toBe("memo-1");
+    expect(s.ownerId).toBe("room");
+    expect(s.queueIndex).toBe(0);
+    expect(s.queueLength).toBe(3);
+    expect(s.label).toBe("Marguerite");
+  });
+
+  test("moves to the next editor when a passage ends", async () => {
+    const { client } = hostedClient();
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+
+    FakeAudio.instances[0].onended?.();
+    await playing("memo-2");
+
+    const s = speakModule.speechState();
+    expect(s.queueIndex).toBe(1);
+    expect(s.label).toBe("Inés");
+    expect(s.ownerId).toBe("room");
+  });
+
+  test("returns to idle and drops the queue after the last passage", async () => {
+    const { client } = hostedClient();
+    await speakModule.speakQueue([room(client)[0]], { ownerId: "room" });
+
+    FakeAudio.instances[0].onended?.();
+    await settle(
+      () => speakModule.speechState().status === "idle",
+      "the queue to finish",
+    );
+
+    const s = speakModule.speechState();
+    expect(s.id).toBeNull();
+    expect(s.ownerId).toBeNull();
+    expect(s.queueLength).toBe(0);
+  });
+
+  test("skips forward, and does nothing at the end of the queue", async () => {
+    const { client } = hostedClient();
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+
+    speakModule.nextSpeech();
+    await playing("memo-2");
+    speakModule.nextSpeech();
+    await playing("memo-3");
+
+    expect(speakModule.hasNextSpeech()).toBe(false);
+    speakModule.nextSpeech();
+    expect(speakModule.speechState().id).toBe("memo-3");
+  });
+
+  /**
+   * The music-player convention: back means "say that again" until you are
+   * only a moment in, and only then means "back an editor".
+   */
+  test("previous restarts the passage when well into it, and steps back when not", async () => {
+    const { client } = hostedClient();
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+    speakModule.nextSpeech();
+    await playing("memo-2");
+
+    const el = FakeAudio.instances[0];
+    el.currentTime = 12;
+    el.ontimeupdate?.();
+    speakModule.previousSpeech();
+    expect(speakModule.speechState().id).toBe("memo-2");
+
+    el.currentTime = 1;
+    el.ontimeupdate?.();
+    speakModule.previousSpeech();
+    await playing("memo-1");
+  });
+
+  test("prepares the next passage while the current one plays", async () => {
+    const { client, said } = hostedClient();
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+
+    await settle(() => said.includes("two"), "the second passage to be prepared");
+    // Still on the first: the prefetch must not disturb what is sounding.
+    expect(speakModule.speechState().id).toBe("memo-1");
+    expect(said).not.toContain("three");
+  });
+
+  test("a skip mid-prefetch does not synthesise the same passage twice", async () => {
+    const said: string[] = [];
+    const gates = new Map<string, () => void>();
+    const client = {
+      action: async (_ref: unknown, args: { text: string }) => {
+        said.push(args.text);
+        await new Promise<void>((resolve) => gates.set(args.text, resolve));
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    } as never;
+
+    const started = speakModule.speakQueue(room(client), { ownerId: "room" });
+    await settle(() => gates.has("one"), "the first synthesis to begin");
+    gates.get("one")!();
+    await started;
+
+    await settle(() => gates.has("two"), "the prefetch to begin");
+    // Skip while that prefetch is still open — the naive implementation sends
+    // the same paragraph to the provider again, and bills for it again.
+    speakModule.nextSpeech();
+    gates.get("two")!();
+    await playing("memo-2");
+
+    expect(said.filter((t) => t === "two")).toHaveLength(1);
+  });
+
+  test("reading a single passage abandons a queue that was running", async () => {
+    const { client } = hostedClient();
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+
+    await speakModule.speak({
+      id: "solo",
+      text: "on its own",
+      client,
+      signedIn: true,
+    });
+
+    const s = speakModule.speechState();
+    expect(s.id).toBe("solo");
+    expect(s.ownerId).toBeNull();
+    expect(s.queueLength).toBe(1);
+    expect(speakModule.hasNextSpeech()).toBe(false);
+  });
+
+  test("skips empty passages rather than stalling on them", async () => {
+    const { client } = hostedClient();
+    await speakModule.speakQueue(
+      [
+        { id: "blank", text: "   ", client, signedIn: true },
+        { id: "memo-1", text: "one", label: "Marguerite", client, signedIn: true },
+      ],
+      { ownerId: "room" },
+    );
+
+    const s = speakModule.speechState();
+    expect(s.id).toBe("memo-1");
+    expect(s.queueLength).toBe(1);
   });
 });
 

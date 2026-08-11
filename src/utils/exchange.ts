@@ -32,7 +32,12 @@ import {
   type CitationStyle,
 } from "./bibliography";
 
-export type ExportFormat = "markdown" | "html" | "txt" | "twyne-backup";
+export type ExportFormat =
+  | "markdown"
+  | "html"
+  | "txt"
+  | "docx"
+  | "twyne-backup";
 
 /* ── HTML helpers ──────────────────────────────────────────────── */
 
@@ -680,7 +685,133 @@ export async function exportPdf(payload: ExportPayload): Promise<void> {
   }
 }
 
+/** Build a genuine OOXML Word document. The heavy DOCX runtime is loaded only
+ * when requested so ordinary writing sessions do not pay for it. */
+export async function exportDocx(payload: ExportPayload): Promise<Blob> {
+  if (typeof DOMParser === "undefined") {
+    throw new Error("Word export requires a browser document parser.");
+  }
+  const { Document, HeadingLevel, Packer, Paragraph, TextRun } = await import(
+    "docx"
+  );
+  const parsed = new DOMParser().parseFromString(
+    `<html><body>${stripEditorMarks(payload.html)}</body></html>`,
+    "text/html",
+  );
+
+  const runsFor = (element: Element): InstanceType<typeof TextRun>[] => {
+    const runs: InstanceType<typeof TextRun>[] = [];
+    const walk = (
+      node: Node,
+      marks: {
+        bold?: boolean;
+        italics?: boolean;
+        underline?: boolean;
+        strike?: boolean;
+        superScript?: boolean;
+        subScript?: boolean;
+      } = {},
+    ) => {
+      if (node.nodeType === 3) {
+        const text = node.textContent ?? "";
+        if (text) {
+          const { underline, ...otherMarks } = marks;
+          runs.push(
+            new TextRun({
+              text,
+              ...otherMarks,
+              ...(underline ? { underline: {} } : {}),
+            }),
+          );
+        }
+        return;
+      }
+      if (node.nodeType !== 1) return;
+      const nodeElement = node as Element;
+      if (nodeElement.tagName === "BR") {
+        runs.push(new TextRun({ break: 1 }));
+        return;
+      }
+      const tag = nodeElement.tagName.toLowerCase();
+      const next = {
+        ...marks,
+        bold: marks.bold || tag === "strong" || tag === "b",
+        italics: marks.italics || tag === "em" || tag === "i",
+        underline: marks.underline || tag === "u",
+        strike: marks.strike || tag === "s" || tag === "del",
+        superScript: marks.superScript || tag === "sup",
+        subScript: marks.subScript || tag === "sub",
+      };
+      for (const child of Array.from(nodeElement.childNodes)) walk(child, next);
+    };
+    for (const child of Array.from(element.childNodes)) walk(child);
+    return runs;
+  };
+
+  const children: InstanceType<typeof Paragraph>[] = [
+    new Paragraph({
+      text: payload.title,
+      heading: HeadingLevel.TITLE,
+    }),
+  ];
+  const parsedBody =
+    parsed.body ?? (parsed.getElementsByTagName("body")[0] as HTMLElement);
+  const bodyElements = Array.from(
+    parsedBody.children ?? parsedBody.childNodes,
+  ).filter((node): node is Element => node.nodeType === 1);
+  for (const element of bodyElements) {
+    const tag = element.tagName.toLowerCase();
+    const heading =
+      tag === "h1"
+        ? HeadingLevel.HEADING_1
+        : tag === "h2"
+          ? HeadingLevel.HEADING_2
+          : tag === "h3"
+            ? HeadingLevel.HEADING_3
+            : undefined;
+    if (tag === "ul" || tag === "ol") {
+      const items = Array.from(element.children ?? element.childNodes).filter(
+        (node): node is Element =>
+          node.nodeType === 1 &&
+          (node as Element).tagName.toLowerCase() === "li",
+      );
+      for (const [index, item] of items.entries()) {
+        const itemRuns = runsFor(item);
+        children.push(
+          new Paragraph({
+            children:
+              tag === "ol"
+                ? [new TextRun(`${index + 1}. `), ...itemRuns]
+                : itemRuns,
+            bullet: tag === "ul" ? { level: 0 } : undefined,
+          }),
+        );
+      }
+      continue;
+    }
+    if (tag === "div" && element.hasAttribute("data-page-break")) {
+      children.push(new Paragraph({ pageBreakBefore: true }));
+      continue;
+    }
+    children.push(
+      new Paragraph({
+        children: runsFor(element),
+        heading,
+        style: tag === "blockquote" ? "Quote" : undefined,
+      }),
+    );
+  }
+
+  const document = new Document({ sections: [{ children }] });
+  return new Blob([await Packer.toBlob(document)], {
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  });
+}
+
 export function exportAs(format: ExportFormat, payload: ExportPayload): Blob {
+  if (format === "docx") {
+    throw new Error("Use exportDocx() for the asynchronous Word export.");
+  }
   const mime =
     format === "markdown"
       ? "text/markdown"
@@ -763,6 +894,7 @@ export function detectFormatFromFilename(filename: string): ExportFormat {
   if (lower.endsWith(".md") || lower.endsWith(".markdown")) return "markdown";
   if (lower.endsWith(".html") || lower.endsWith(".htm")) return "html";
   if (lower.endsWith(".txt")) return "txt";
+  if (lower.endsWith(".docx")) return "docx";
   if (lower.endsWith(".twyne.json") || lower.endsWith(".json")) {
     return "twyne-backup";
   }
@@ -770,8 +902,25 @@ export function detectFormatFromFilename(filename: string): ExportFormat {
 }
 
 export async function importAs(file: File): Promise<ImportResult> {
-  const text = await file.text();
   const format = detectFormatFromFilename(file.name);
+
+  if (format === "docx") {
+    const mammoth = await import("mammoth/mammoth.browser");
+    const result = await mammoth.convertToHtml({
+      arrayBuffer: await file.arrayBuffer(),
+    });
+    const html = result.value;
+    const title =
+      html
+        .match(/<h1[^>]*>(.*?)<\/h1>/i)?.[1]
+        ?.replace(/<[^>]+>/g, "")
+        .trim() ||
+      file.name.replace(/\.docx$/i, "") ||
+      "Imported piece";
+    return { title, html };
+  }
+
+  const text = await file.text();
 
   if (format === "twyne-backup") {
     let parsed: any;

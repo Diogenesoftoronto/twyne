@@ -6,7 +6,12 @@ import {
   $,
 } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
-import type { DetectedCitation, Folio, ProjectBrief } from "../../types";
+import type { DetectedCitation, Folio, ProjectBrief, SourceCanvas as SourceCanvasState } from "../../types";
+import { SourceCanvas } from "../../components/canvas/source-canvas";
+import { useConvexClient } from "../../utils/convex-context";
+import { layoutCanvas } from "../../utils/canvas-layout";
+import { emptyCanvas, loadSourceCanvas, saveSourceCanvas, seedCanvasFromFolio } from "../../utils/source-canvas";
+import { extractPendingSources } from "../../utils/source-extract";
 import { detectCitations } from "../../utils/citations";
 import {
   type BibEntry,
@@ -33,16 +38,26 @@ import {
   type ResearchProgressItem,
 } from "../../utils/background-research";
 import { targetKindLabel } from "../../utils/research-targets";
+import type { McpResourceInfo } from "../../utils/mcp-client";
+import {
+  listMcpDocuments,
+  mcpConvexClient,
+  readMcpResource,
+} from "../../utils/mcp-research";
 import {
   hasConfiguredAiProvider,
   runClientCitationFormat,
   runClientSourceSummarize,
   runClientMissingSourceDetect,
+  runClientSourceMap,
 } from "../../utils/ai-client";
 import { loadAiSettingsFromIdb } from "../../utils/idb";
 import type { AiSettings, SourceSummarizeResult } from "../../types";
 
 interface ApparatusStore {
+  viewMode: "list" | "canvas";
+  canvas: SourceCanvasState;
+  canvasStatus: string;
   bibliography: BibEntry[];
   citations: DetectedCitation[];
   style: CitationStyle;
@@ -84,6 +99,8 @@ interface ApparatusStore {
     provider: string;
   } | null;
   aiScanningMissing: boolean;
+  /** Documents exposed by the writer's MCP servers, listed but not read. */
+  mcpDocuments: Array<{ server: string; resource: McpResourceInfo }>;
 }
 
 const STYLE_OPTIONS: ReadonlyArray<{ value: CitationStyle; label: string }> = [
@@ -93,7 +110,11 @@ const STYLE_OPTIONS: ReadonlyArray<{ value: CitationStyle; label: string }> = [
 ];
 
 export default component$(() => {
+  const convexClient = useConvexClient();
   const store = useStore<ApparatusStore>({
+    viewMode: "list",
+    canvas: emptyCanvas(""),
+    canvasStatus: "",
     bibliography: [],
     citations: [],
     style: "mla",
@@ -124,6 +145,61 @@ export default component$(() => {
     addedCitationIds: {},
     aiMissingSources: null,
     aiScanningMissing: false,
+    mcpDocuments: [],
+  });
+
+  const runCanvasExtraction = $(async () => {
+    if (!store.activeFolio || !store.aiSettings || !convexClient.value) return;
+    const entries = store.bibliography.filter((entry) => !entry.folioId || entry.folioId === store.activeFolio?.id);
+    if (!entries.length) return;
+    try {
+      const seeded = seedCanvasFromFolio(store.canvas, { folioId: store.activeFolio.id, bibliography: entries });
+      store.canvas = { ...seeded, nodes: layoutCanvas(seeded.nodes, seeded.clusters) };
+      const next = await extractPendingSources({
+        entries,
+        canvas: store.canvas,
+        client: convexClient.value,
+        settings: store.aiSettings,
+        onCanvas: (canvas) => { store.canvas = canvas; },
+        onProgress: (progress) => {
+          store.canvasStatus = progress.phase === "fetching" ? "Fetching source…" : progress.phase === "composing" ? "Writing cards…" : progress.phase === "error" ? (progress.message ?? "Extraction failed") : "Cards ready";
+        },
+      });
+      store.canvas = next;
+      await saveSourceCanvas(next);
+    } catch {
+      // The progress callback preserves a recoverable message beside the board.
+    }
+  });
+
+  const mapCanvas = $(async () => {
+    if (!store.aiSettings || !store.activeFolio) return;
+    store.canvasStatus = "Mapping connections…";
+    const html = await loadFolioContentFromIdb(store.activeFolio.id);
+    const result = await runClientSourceMap({
+      draftText: html.replace(/<[^>]+>/g, " "),
+      brief: "",
+      nodes: store.canvas.nodes.map((node) => ({ id: node.id, title: node.title, text: node.ouiLang ?? node.annotation?.relevance ?? "" })),
+    }, store.aiSettings);
+    if (!result) { store.canvasStatus = "Mapping failed. Check the AI provider in Settings."; return; }
+    const { applyMapping } = await import("../../utils/source-canvas");
+    const mapped = applyMapping(store.canvas, result);
+    store.canvas = { ...mapped, nodes: layoutCanvas(mapped.nodes, mapped.clusters) };
+    await saveSourceCanvas(store.canvas);
+    store.canvasStatus = "Connections mapped";
+  });
+
+  // Automatic extraction starts after the folio, sources, client, and model
+  // are all hydrated. A landed background source also changes the bibliography
+  // length, re-entering this small debounced pass.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const sourceCount = track(() => store.bibliography.length);
+    const folioId = track(() => store.activeFolio?.id);
+    const client = track(() => convexClient.value);
+    if (!sourceCount || !folioId || !client) return;
+    const timer = window.setTimeout(() => void runCanvasExtraction(), 900);
+    cleanup(() => window.clearTimeout(timer));
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -138,11 +214,32 @@ export default component$(() => {
     store.activeFolio =
       folios.find((folio) => folio.id === activeFolioId) ?? folios[0] ?? null;
     if (store.activeFolio) {
+      const loadedCanvas = await loadSourceCanvas(store.activeFolio.id);
+      const seeded = seedCanvasFromFolio(loadedCanvas, {
+        folioId: store.activeFolio.id,
+        bibliography: store.bibliography.filter((entry) => !entry.folioId || entry.folioId === store.activeFolio?.id),
+      });
+      store.canvas = { ...seeded, nodes: layoutCanvas(seeded.nodes, seeded.clusters) };
+      await saveSourceCanvas(store.canvas);
       const html = await loadFolioContentFromIdb(store.activeFolio.id);
       const text = html.replace(/<[^>]+>/g, " ");
       store.citations = detectCitations(text);
     }
     store.aiSettings = await loadAiSettingsFromIdb();
+
+    // Knowledge bases are listed, not read: listing is one round trip per
+    // server, while reading every document on page load would not be.
+    if (apparatusSettings.mcpServers.some((s) => s.enabled && s.useResources)) {
+      try {
+        store.mcpDocuments = await listMcpDocuments(
+          apparatusSettings,
+          mcpConvexClient(),
+        );
+      } catch {
+        // An unreachable server is reported in Settings, not here.
+      }
+    }
+
     if (
       store.aiEnhanceCitations &&
       hasConfiguredAiProvider(store.aiSettings) &&
@@ -302,6 +399,36 @@ export default component$(() => {
     store.embedProvider = null;
   });
 
+  /**
+   * Read one MCP document into the existing source overlay.
+   *
+   * The overlay is built around a url, and a resource uri is not one (it may be
+   * `file://`, `notes://`, anything the server chose), so the markdown is set
+   * directly and the iframe path is skipped.
+   */
+  const openMcpDocument = $(async (uri: string) => {
+    const settings = await loadApparatusSettingsFromIdb();
+    store.embedUrl = uri;
+    store.embedTitle = uri;
+    store.embedMarkdown = null;
+    store.embedProvider = "mcp";
+    store.embedLoading = true;
+    try {
+      const doc = await readMcpResource(uri, settings, mcpConvexClient());
+      if (doc) {
+        store.embedTitle = doc.title;
+        store.embedMarkdown = doc.text;
+      } else {
+        store.embedMarkdown = "That document could not be read.";
+      }
+    } catch (error) {
+      store.embedMarkdown =
+        error instanceof Error ? error.message : String(error);
+    } finally {
+      store.embedLoading = false;
+    }
+  });
+
   const copyAll = $(async () => {
     const text = store.bibliography
       .map((b) => formatCitation(b, store.style))
@@ -457,6 +584,11 @@ export default component$(() => {
           >
             ← Back to desk
           </Link>
+        </div>
+
+        <div class="style-toggle mb-5" aria-label="Apparatus view">
+          <button type="button" aria-pressed={store.viewMode === "list"} onClick$={() => { store.viewMode = "list"; }}>List</button>
+          <button type="button" aria-pressed={store.viewMode === "canvas"} onClick$={() => { store.viewMode = "canvas"; }}>Canvas</button>
         </div>
 
         {/* Status card — live snapshot of the background watcher. */}
@@ -691,6 +823,9 @@ export default component$(() => {
           )}
         </section>
 
+        {store.viewMode === "canvas" ? (
+          <SourceCanvas canvas={store.canvas} status={store.canvasStatus} onMap$={mapCanvas} onRetry$={runCanvasExtraction} onChange$={(canvas) => { store.canvas = canvas; void saveSourceCanvas(canvas); }} />
+        ) : (
         <div class="grid lg:grid-cols-[1fr_1.4fr] gap-6">
           {/* Left: sources found by the agents. */}
           <section>
@@ -1041,6 +1176,7 @@ export default component$(() => {
             </div>
           </section>
         </div>
+        )}
 
         {/* Missing citations — AI scans the draft for claims that need sourcing. */}
         {store.flagMissingSources && (
@@ -1134,6 +1270,67 @@ export default component$(() => {
           </section>
         )}
 
+        {/* Knowledge bases — documents the writer's MCP servers expose. */}
+        {store.mcpDocuments.length > 0 && (
+          <section class="mt-6">
+            <div class="mb-2">
+              <h2
+                class="text-base font-semibold"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Knowledge bases
+              </h2>
+              <p
+                class="text-[0.7rem] text-[var(--color-ink-muted)] mt-0.5"
+                style={{ fontFamily: "var(--font-typewriter)" }}
+              >
+                Documents from your connected MCP servers. Open one to read it
+                alongside the draft.
+              </p>
+            </div>
+            <div class="space-y-1">
+              {store.mcpDocuments.map((doc) => (
+                <div
+                  key={`${doc.server}:${doc.resource.uri}`}
+                  class="flex items-baseline justify-between gap-3 py-1 border-b border-[var(--color-paper-3)]"
+                >
+                  <div class="min-w-0">
+                    <button
+                      onClick$={() => openMcpDocument(doc.resource.uri)}
+                      disabled={doc.resource.template}
+                      class="text-sm text-left hover:text-[var(--color-vermilion)] disabled:opacity-50 disabled:hover:text-inherit truncate"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                      title={
+                        doc.resource.template
+                          ? "This is a template — it needs arguments Twyne does not have yet."
+                          : doc.resource.uri
+                      }
+                    >
+                      {doc.resource.title ||
+                        doc.resource.name ||
+                        doc.resource.uri}
+                    </button>
+                    {doc.resource.description && (
+                      <p
+                        class="text-[0.65rem] text-[var(--color-ink-muted)] truncate"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        {doc.resource.description}
+                      </p>
+                    )}
+                  </div>
+                  <span
+                    class="text-[0.6rem] uppercase tracking-[0.15em] text-[var(--color-ink-light)] shrink-0"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    {doc.server}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Embed overlay */}
         {store.embedUrl && (
           <div
@@ -1193,6 +1390,15 @@ export default component$(() => {
                   >
                     Loading…
                   </p>
+                ) : store.embedMarkdown !== null ? (
+                  // MCP documents arrive as text, and their uri is often not
+                  // something a browser can navigate to (file://, notes://).
+                  <pre
+                    class="text-sm whitespace-pre-wrap leading-relaxed"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    {store.embedMarkdown}
+                  </pre>
                 ) : (
                   <iframe
                     src={store.embedUrl}

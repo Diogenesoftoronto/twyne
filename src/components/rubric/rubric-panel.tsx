@@ -23,7 +23,9 @@ import {
   loadRubricResultFromIdb,
   saveRubricResultToIdb,
   loadAiSettingsFromIdb,
+  loadFolioContentFromIdb,
 } from "../../utils/idb";
+import { createRevisionSnapshot } from "../../utils/revision-history";
 import type { AiSettings } from "../../types";
 import {
   hasConfiguredAiProvider,
@@ -530,6 +532,14 @@ export const RubricPanel = component$(
           },
           activeFolioId,
         );
+        const revisionHtml = await loadFolioContentFromIdb(activeFolioId);
+        await createRevisionSnapshot({
+          folioId: activeFolioId,
+          html: revisionHtml,
+          label: `Rubric pass · ${result.overallScore}/100`,
+          source: "rubric",
+          force: true,
+        });
       } finally {
         store.isAnalyzing = false;
       }

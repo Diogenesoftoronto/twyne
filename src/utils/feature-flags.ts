@@ -7,7 +7,7 @@
  * `posthog-context.tsx` or `getRuntimeFeatures()` in non-component utilities.
  */
 
-function flag(value: unknown): boolean {
+export function flag(value: unknown): boolean {
   return value === "true" || value === "1";
 }
 

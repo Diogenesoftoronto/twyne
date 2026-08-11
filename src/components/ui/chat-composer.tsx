@@ -43,8 +43,11 @@ interface ComposerStore {
   phase: "idle" | "recording" | "transcribing";
   elapsedMs: number;
   level: number;
+  paused: boolean;
   error: AppError | null;
   handle: NoSerialize<RecorderHandle> | null;
+  /** Lets the writer stop an in-flight transcription. */
+  transcribeAbort: NoSerialize<AbortController> | null;
 }
 
 /**
@@ -76,8 +79,10 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
     phase: "idle",
     elapsedMs: 0,
     level: 0,
+    paused: false,
     error: null,
     handle: null,
+    transcribeAbort: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -85,9 +90,9 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
     canDictate.value = props.allowVoice !== false && canRecord();
     track(() => store.phase);
     if (store.phase !== "recording") return;
-    const started = Date.now();
+    // The handle counts active audio, so a pause freezes the elapsed.
     const timer = setInterval(() => {
-      store.elapsedMs = Date.now() - started;
+      store.elapsedMs = store.handle?.elapsed() ?? 0;
       store.level = store.handle?.level() ?? 0;
     }, 100);
     cleanup(() => clearInterval(timer));
@@ -117,6 +122,7 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
       const handle = await startRecording();
       store.handle = noSerialize(handle);
       store.elapsedMs = 0;
+      store.paused = false;
       store.phase = "recording";
     } catch (err) {
       store.error = normalizeApplicationError(err, {
@@ -126,19 +132,35 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
     }
   });
 
+  const pauseRecording = $(() => {
+    const handle = store.handle;
+    if (!handle) return;
+    if (store.paused) {
+      handle.resume();
+      store.paused = false;
+    } else {
+      handle.pause();
+      store.paused = true;
+    }
+  });
+
   const finishRecording = $(async () => {
     const handle = store.handle;
     if (!handle) return;
     const recording = await handle.stop();
     store.handle = null;
     store.phase = "transcribing";
+    const abort = new AbortController();
+    store.transcribeAbort = noSerialize(abort);
     try {
       const { text } = await transcribeRecording({
         blob: recording.blob,
         mimeType: recording.mimeType,
         client: clientSig.value ?? null,
         prompt: props.transcriptionHint,
+        signal: abort.signal,
       });
+      if (store.phase !== "transcribing") return;
       const spoken = text.trim();
       if (spoken) {
         const existing = props.value.trim();
@@ -147,19 +169,25 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
       store.phase = "idle";
       inputRef.value?.focus();
     } catch (err) {
+      if (store.phase !== "transcribing" || abort.signal.aborted) return;
       store.error = normalizeApplicationError(err, {
         source: "provider",
         metadata: { feature: "voice-notes", operation: "transcribe" },
       });
       store.phase = "idle";
+    } finally {
+      store.transcribeAbort = null;
     }
   });
 
   const discardRecording = $(() => {
     store.handle?.cancel();
     store.handle = null;
+    store.transcribeAbort?.abort();
+    store.transcribeAbort = null;
     store.phase = "idle";
     store.elapsedMs = 0;
+    store.paused = false;
   });
 
   const recording = store.phase === "recording";
@@ -217,7 +245,15 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
                 <span class="composer-elapsed">
                   {formatDuration(store.elapsedMs)}
                 </span>
-                <LevelMeter level={store.level} />
+                <LevelMeter level={store.paused ? 0 : store.level} />
+                <button
+                  type="button"
+                  onClick$={pauseRecording}
+                  class="btn-press text-[11px] px-2 py-0.5"
+                  title={store.paused ? "Resume recording" : "Pause recording"}
+                >
+                  {store.paused ? "Resume" : "Pause"}
+                </button>
                 <button
                   type="button"
                   onClick$={finishRecording}
@@ -236,13 +272,22 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
                 </button>
               </div>
             ) : store.phase === "transcribing" ? (
-              <span
-                class="text-[0.65rem] uppercase tracking-[0.14em] text-[var(--color-ink-muted)]"
-                style="font-family: var(--font-typewriter);"
-                role="status"
-              >
-                Setting down what you said…
-              </span>
+              <div class="flex items-center gap-2" role="status">
+                <span
+                  class="text-[0.65rem] uppercase tracking-[0.14em] text-[var(--color-ink-muted)]"
+                  style="font-family: var(--font-typewriter);"
+                >
+                  Setting down what you said…
+                </span>
+                <button
+                  type="button"
+                  onClick$={discardRecording}
+                  class="focus-ring text-[10px] uppercase tracking-[0.12em] text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                  style="font-family: var(--font-typewriter);"
+                >
+                  Cancel
+                </button>
+              </div>
             ) : (
               <>
                 {canDictate.value && (

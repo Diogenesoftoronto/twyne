@@ -145,23 +145,91 @@ describe.serial("idb preference localStorage fallback", () => {
       defaultCitationStyle: "apa",
       aiEnhanceCitations: true,
       flagMissingSources: true,
-      researchProvider: "tinyfish",
-      tinyFishApiKey: "tf-test",
-      tinyFishMaxResults: 12,
-      mcpEndpointUrl: "",
-      mcpToolName: "search",
-      mcpBearerToken: "",
+      researchProvider: "search-api",
+      searchBackend: {
+        id: "exa",
+        apiKey: "exa-test",
+        baseUrl: "",
+        resultsPath: "",
+      },
+      maxResults: 12,
+      mcpServers: [
+        {
+          id: "mcp-1",
+          label: "Vault",
+          url: "https://vault.example.com/mcp",
+          transport: "http",
+          bearerToken: "secret",
+          enabled: true,
+          connection: "auto",
+          searchToolName: "",
+          exposeToModel: true,
+          useResources: true,
+        },
+      ],
     });
     expect(await loadApparatusSettingsFromIdb()).toEqual({
       defaultCitationStyle: "apa",
       aiEnhanceCitations: true,
       flagMissingSources: true,
-      researchProvider: "tinyfish",
-      tinyFishApiKey: "tf-test",
-      tinyFishMaxResults: 12,
-      mcpEndpointUrl: "",
-      mcpToolName: "search",
-      mcpBearerToken: "",
+      researchProvider: "search-api",
+      searchBackend: {
+        id: "exa",
+        apiKey: "exa-test",
+        baseUrl: "",
+        resultsPath: "",
+      },
+      maxResults: 12,
+      mcpServers: [
+        {
+          id: "mcp-1",
+          label: "Vault",
+          url: "https://vault.example.com/mcp",
+          transport: "http",
+          bearerToken: "secret",
+          enabled: true,
+          connection: "auto",
+          searchToolName: "",
+          exposeToModel: true,
+          useResources: true,
+        },
+      ],
+    });
+
+    // Settings written before search backends and multi-server MCP existed:
+    // the TinyFish-shaped keys must survive into the new shape rather than
+    // silently resetting a writer's configured provider.
+    installStorage();
+    localStorage.setItem(
+      "twyne.apparatus-settings.current",
+      JSON.stringify({
+        defaultCitationStyle: "chicago",
+        aiEnhanceCitations: true,
+        flagMissingSources: false,
+        researchProvider: "tinyfish",
+        tinyFishApiKey: "tf-legacy",
+        tinyFishMaxResults: 15,
+        mcpEndpointUrl: "https://old.example.com/mcp",
+        mcpToolName: "web_search",
+        mcpBearerToken: "legacy-token",
+      }),
+    );
+    const migrated = await loadApparatusSettingsFromIdb();
+    expect(migrated.researchProvider).toBe("search-api");
+    expect(migrated.searchBackend).toEqual({
+      id: "tinyfish",
+      apiKey: "tf-legacy",
+      baseUrl: "",
+      resultsPath: "",
+    });
+    expect(migrated.maxResults).toBe(15);
+    expect(migrated.mcpServers).toHaveLength(1);
+    expect(migrated.mcpServers[0]).toMatchObject({
+      url: "https://old.example.com/mcp",
+      bearerToken: "legacy-token",
+      searchToolName: "web_search",
+      enabled: true,
+      connection: "auto",
     });
 
     installStorage();
@@ -238,16 +306,20 @@ describe.serial("idb preference localStorage fallback", () => {
         feedbackNotes: "",
       },
     });
-    expect(await loadApparatusSettingsFromIdb()).toEqual({
+    const localMigrated = await loadApparatusSettingsFromIdb();
+    expect(localMigrated).toMatchObject({
       defaultCitationStyle: "chicago",
       aiEnhanceCitations: true,
       flagMissingSources: true,
       researchProvider: "web-mcp",
-      tinyFishApiKey: "tf-local",
-      tinyFishMaxResults: 20,
-      mcpEndpointUrl: "http://127.0.0.1:8787/mcp",
-      mcpToolName: "web_search",
-      mcpBearerToken: "mcp-local",
+      // Out-of-range values still clamp after migration.
+      maxResults: 20,
+      searchBackend: { id: "tinyfish", apiKey: "tf-local" },
+    });
+    expect(localMigrated.mcpServers[0]).toMatchObject({
+      url: "http://127.0.0.1:8787/mcp",
+      bearerToken: "mcp-local",
+      searchToolName: "web_search",
     });
 
     installStorage();
@@ -282,11 +354,14 @@ describe.serial("idb preference localStorage fallback", () => {
       aiEnhanceCitations: true,
       flagMissingSources: false,
       researchProvider: "hosted",
-      tinyFishApiKey: "",
-      tinyFishMaxResults: 8,
-      mcpEndpointUrl: "",
-      mcpToolName: "search",
-      mcpBearerToken: "",
+      searchBackend: {
+        id: "tinyfish",
+        apiKey: "",
+        baseUrl: "",
+        resultsPath: "",
+      },
+      maxResults: 8,
+      mcpServers: [],
     });
   });
 });

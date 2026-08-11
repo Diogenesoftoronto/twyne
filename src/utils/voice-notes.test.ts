@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { afterAll, afterEach, beforeEach, describe, expect, setSystemTime, test } from "bun:test";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
 const originalWindow = globalThis.window;
@@ -19,12 +19,28 @@ class FakeMediaRecorder {
     return FakeMediaRecorder.supported.has(type);
   }
   state = "inactive";
+  onstop: (() => void) | null = null;
+  ondataavailable: ((e: unknown) => void) | null = null;
+  constructor() {
+    (globalThis as Record<string, unknown>).__lastFakeRecorder = this;
+  }
   start() {
+    this.state = "recording";
+  }
+  pause() {
+    this.state = "paused";
+  }
+  resume() {
     this.state = "recording";
   }
   stop() {
     this.state = "inactive";
+    this.onstop?.();
   }
+}
+
+function lastRecorder(): FakeMediaRecorder {
+  return (globalThis as Record<string, unknown>).__lastFakeRecorder as FakeMediaRecorder;
 }
 
 function installBrowserGlobals(overrides: Record<string, unknown> = {}) {
@@ -61,6 +77,7 @@ beforeEach(async () => {
 afterEach(() => {
   delete (globalThis as Record<string, unknown>).MediaRecorder;
   delete (globalThis as Record<string, unknown>).navigator;
+  delete (globalThis as Record<string, unknown>).__lastFakeRecorder;
 });
 
 afterAll(() => {
@@ -154,6 +171,88 @@ describe("transcribeRecording", () => {
       .catch((e) => e);
     expect(err.code).toBe("CONFIGURATION_ERROR");
     expect(err.recovery.action).toBe("choose-provider");
+  });
+
+  test("an already-aborted signal stops before any provider work", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const err = await voiceNotes
+      .transcribeRecording({
+        blob: new Blob(["x"], { type: "audio/webm" }),
+        mimeType: "audio/webm",
+        client: null,
+        signal: controller.signal,
+      })
+      .catch((e) => e);
+    expect(err.name).toBe("AbortError");
+    expect(err.code).toBe(20);
+  });
+});
+
+describe("pause, resume, and elapsed", () => {
+  const fakeStart = Date.UTC(2026, 0, 1);
+  let realSetTimeout: typeof globalThis.setTimeout;
+  let now = fakeStart;
+
+  beforeEach(() => {
+    realSetTimeout = globalThis.setTimeout;
+    // The auto-stop arms a real 3-minute timer; without a browser to fire it,
+    // a pending timer would keep the runner alive. Swallow it and drive the
+    // clock through setSystemTime instead.
+    (globalThis as Record<string, unknown>).setTimeout = (() =>
+      0) as unknown as typeof setTimeout;
+    setSystemTime(fakeStart);
+    now = fakeStart;
+  });
+
+  afterEach(() => {
+    globalThis.setTimeout = realSetTimeout;
+  });
+
+  const advance = (ms: number) => {
+    now += ms;
+    setSystemTime(now);
+  };
+
+  /**
+   * The recording budget and the labels count audio, not wall clock. A
+   * writer who pauses mid-thought must not lose their time budget, and the
+   * elapsed shown while paused must not creep.
+   */
+  test("elapsed freezes while paused and continues after resume", async () => {
+    const handle = await voiceNotes.startRecording();
+    expect(handle.paused()).toBe(false);
+    expect(lastRecorder().state).toBe("recording");
+
+    advance(5_000);
+    const beforePause = handle.elapsed();
+    expect(beforePause).toBeGreaterThan(0);
+
+    handle.pause();
+    expect(handle.paused()).toBe(true);
+    expect(lastRecorder().state).toBe("paused");
+    advance(3_000);
+    expect(handle.elapsed()).toBe(beforePause);
+
+    handle.resume();
+    expect(handle.paused()).toBe(false);
+    expect(lastRecorder().state).toBe("recording");
+    advance(2_000);
+    expect(handle.elapsed()).toBeGreaterThan(beforePause);
+  });
+
+  test("stopping while paused keeps the audio taken so far", async () => {
+    const handle = await voiceNotes.startRecording();
+    advance(4_000);
+    handle.pause();
+    advance(6_000);
+    handle.resume();
+    advance(1_000);
+    const recording = await handle.stop();
+    expect(recording.blob).toBeInstanceOf(Blob);
+    expect(recording.durationMs).toBeGreaterThanOrEqual(5_000);
+    expect(recording.durationMs).toBeLessThan(10_000);
+    expect(lastRecorder().state).toBe("inactive");
   });
 });
 

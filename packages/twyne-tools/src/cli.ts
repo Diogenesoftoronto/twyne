@@ -19,6 +19,11 @@ import {
   writeConfig,
 } from "./config.js";
 import {
+  runSdkAuthCommand,
+  type SdkAuthAction,
+  type SdkProvider,
+} from "./provider-auth.js";
+import {
   FOLIO_INCLUDES,
   type CitationEntry,
   type FolioInclude,
@@ -43,6 +48,9 @@ Usage:
   twyne auth login --url URL [--token TOKEN]
   twyne auth status
   twyne auth logout
+  twyne provider login codex|anthropic
+  twyne provider status codex|anthropic
+  twyne provider logout codex|anthropic
   twyne folio list [--json]
   twyne folio get ID [--include content,brief,feedback,rubric,suggestions,citations]
   twyne folio create --name NAME [--type draft|notes|outline] [--file FILE] [--brief FILE]
@@ -57,6 +65,9 @@ Usage:
 Credentials are read from TWYNE_API_URL + TWYNE_ACCESS_TOKEN first, then from
 the chmod-0600 config written by auth login. Login prompts securely when a
 token is not supplied, and also accepts one on stdin.
+
+Provider sign-in delegates to the official local CLI (codex or ant). Its SDK
+then reuses that CLI-owned credential; Twyne never copies or stores the token.
 `;
 
 function println(stream: Pick<NodeJS.WriteStream, "write">, value = ""): void {
@@ -238,6 +249,24 @@ async function authCommand(args: string[], io: CliIo): Promise<void> {
     return;
   }
   throw new Error("Usage: twyne auth login|status|logout");
+}
+
+function parseSdkProvider(value: string | undefined): SdkProvider {
+  if (value === "codex" || value === "anthropic") return value;
+  throw new Error("provider must be codex or anthropic");
+}
+
+async function providerCommand(args: string[], io: CliIo): Promise<void> {
+  const action = args.shift();
+  if (action !== "login" && action !== "status" && action !== "logout") {
+    throw new Error("Usage: twyne provider login|status|logout codex|anthropic");
+  }
+  const parsed = commandArgs(args, {});
+  const provider = parseSdkProvider(parsed.positionals[0]);
+  if (parsed.positionals.length > 1) {
+    throw new Error("provider commands accept exactly one provider");
+  }
+  await runSdkAuthCommand(provider, action as SdkAuthAction, io.env);
 }
 
 async function folioCommand(args: string[], io: CliIo): Promise<void> {
@@ -474,6 +503,7 @@ export async function runCli(
   }
   try {
     if (command === "auth") await authCommand(args, io);
+    else if (command === "provider") await providerCommand(args, io);
     else if (command === "folio") await folioCommand(args, io);
     else if (command === "feedback") await feedbackCommand(args, io);
     else if (command === "citations") await citationsCommand(args, io);

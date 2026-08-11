@@ -4,6 +4,7 @@ import { internal } from "./_generated/api";
 import { authComponent, createAuth } from "./auth";
 import { parseCreemEvent } from "./lib/creem";
 import { reportError } from "./lib/errors";
+import { tokenIdentifierFromIssuerAndSubject } from "./lib/authIdentity";
 
 /* ── Shared-Lix auth helpers ───────────────────────────────────────
  * The /lsp/* routes are hit by the Lix SDK's sync process, which uses raw
@@ -12,8 +13,8 @@ import { reportError } from "./lib/errors";
  * Better-Auth-Cookie header) and only let accepted collaborators read or
  * write a shared document. */
 
-/** Verify the caller's better-auth session and return their user id. */
-async function getAuthenticatedUserId(
+/** Verify the caller's Better Auth session and return its Convex identity key. */
+async function getAuthenticatedTokenIdentifier(
   ctx: any,
   request: Request,
 ): Promise<string | null> {
@@ -32,7 +33,10 @@ async function getAuthenticatedUserId(
       headers,
       query: { disableCookieCache: true },
     });
-    return session?.user?.id ?? null;
+    return tokenIdentifierFromIssuerAndSubject(
+      process.env.CONVEX_SITE_URL,
+      session?.user?.id,
+    );
   } catch {
     return null;
   }
@@ -440,7 +444,7 @@ for (const path of LSP_ROUTES) {
         return new Response("missing lix_id", { status: 400 });
       }
 
-      const userId = await getAuthenticatedUserId(ctx, request);
+      const userId = await getAuthenticatedTokenIdentifier(ctx, request);
       if (!userId) {
         return new Response("unauthorized", { status: 401 });
       }

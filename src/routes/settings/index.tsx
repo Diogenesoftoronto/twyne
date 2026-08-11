@@ -16,14 +16,28 @@ import type {
   AiFeatureOverride,
   AiModelModalities,
   ApparatusSettings,
+  McpServerConfig,
+  SearchBackendConfig,
+  SearchBackendId,
   WriterSettings,
   WriterProfile,
 } from "../../types";
 import {
   DEFAULT_AI_SETTINGS,
   DEFAULT_APPARATUS_SETTINGS,
+  DEFAULT_MCP_SERVER,
   PROVIDER_METAS,
 } from "../../types";
+import {
+  SEARCH_BACKEND_IDS,
+  SEARCH_BACKENDS,
+} from "../../utils/research-backends";
+import type { ConvexClient } from "convex/browser";
+import {
+  connectMcpServer,
+  type McpServerHandle,
+} from "../../utils/mcp-client";
+import { pickSearchTool } from "../../utils/mcp-research";
 import {
   loadAiSettingsFromIdb,
   saveAiSettingsToIdb,
@@ -39,8 +53,19 @@ import {
   resolveFeatureConfig,
   normalizeAiSettings,
   stripManagedDesktopLocalProvider,
+  stripManagedSupertonicProvider,
 } from "../../utils/ai-client";
 import { LOCAL_PROVIDER_ID } from "../../utils/desktop-bridge";
+import {
+  BROWSER_TTS_BUNDLE_BYTES,
+  BROWSER_TTS_MANIFEST_FILES,
+  BROWSER_TTS_PROVIDER_ID,
+} from "../../utils/browser-inference";
+import {
+  modelDownloadState,
+  onModelDownload,
+  type ModelDownloadState,
+} from "../../utils/models-cache";
 import { useFeatureFlags } from "../../utils/posthog-context";
 import { captureProductEvent } from "../../utils/product-analytics";
 import type { AppError } from "../../types/application-errors";
@@ -76,6 +101,19 @@ import {
   type ModelsDevProvider,
 } from "../../utils/models-dev";
 
+/** A compact, human bytes label for progress reads. */
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return "0 B";
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit += 1;
+  }
+  return `${value.toFixed(unit === 0 ? 0 : 1)} ${units[unit]}`;
+}
+
 /* ── Types ──────────────────────────────────────────────────────── */
 
 interface SettingsStore {
@@ -89,6 +127,7 @@ interface SettingsStore {
   newProviderName: string;
   newProviderKey: string;
   newProviderBaseUrl: string;
+  newProviderApiMode: "chat" | "responses";
   providerSearch: string;
   modelsDevProviders: ModelsDevProvider[];
   modelsDevError: AppError | null;
@@ -100,6 +139,10 @@ interface SettingsStore {
   >;
   discoveringProviderId: string | null;
   providerModelErrors: Record<string, AppError | undefined>;
+  /* browser voice download */
+  supertonicStatus: ModelDownloadState | null;
+  supertonicDownloading: boolean;
+  supertonicError: AppError | null;
   /* editing */
   editingProviderId: string | null;
   editKey: string;
@@ -114,11 +157,12 @@ interface SettingsStore {
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
   researchProvider: ApparatusSettings["researchProvider"];
-  tinyFishApiKey: string;
-  tinyFishMaxResults: number;
-  mcpEndpointUrl: string;
-  mcpToolName: string;
-  mcpBearerToken: string;
+  searchBackend: SearchBackendConfig;
+  maxResults: number;
+  mcpServers: McpServerConfig[];
+  /** Per-server connection report from "Test", keyed by server id. */
+  mcpProbes: Record<string, string>;
+  mcpProbeBusy: string | null;
   /* account deletion (danger zone) */
   deletingAccount: boolean;
   accountToast: string | null;
@@ -181,6 +225,8 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "citation-format": "Citation Format",
   "source-summarize": "Source Summarize",
   "source-detect-missing": "Missing Source Detection",
+  "source-extract": "Source Canvas Extraction",
+  "source-map": "Source Canvas Mapping",
   "research-web-search": "Apparatus Web Search",
   "research-extract": "Auto-Research (claim finding)",
   "interview-turn": "Conversational Interview",
@@ -207,6 +253,10 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "source-summarize": "AI summarizes saved sources for your bibliography.",
   "source-detect-missing":
     "AI detects claims in your draft that need citations.",
+  "source-extract":
+    "Reads fetched source text and composes structured cards on the research canvas.",
+  "source-map":
+    "Relates research cards to the draft and draws thematic connections.",
   "research-web-search":
     "The Apparatus asks a model endpoint with web-search support for source candidates.",
   "research-extract":
@@ -229,6 +279,19 @@ function isTinkerProvider(provider: AiProviderConfig): boolean {
   return (
     provider.baseUrl?.toLowerCase().includes("tinker.thinkingmachines.dev") ??
     false
+  );
+}
+
+function supportsOpenAiApiMode(provider: AiProviderConfig): boolean {
+  return (
+    provider.type === "openai" ||
+    provider.type === "openai-compatible" ||
+    provider.type === "deepseek" ||
+    provider.type === "openrouter" ||
+    provider.type === "ollama" ||
+    provider.type === "zai" ||
+    provider.type === "minimax" ||
+    provider.type === "litert"
   );
 }
 
@@ -281,12 +344,54 @@ function buildApparatusSettings(store: SettingsStore): ApparatusSettings {
     aiEnhanceCitations: store.aiEnhanceCitations,
     flagMissingSources: store.flagMissingSources,
     researchProvider: store.researchProvider,
-    tinyFishApiKey: store.tinyFishApiKey,
-    tinyFishMaxResults: store.tinyFishMaxResults,
-    mcpEndpointUrl: store.mcpEndpointUrl,
-    mcpToolName: store.mcpToolName,
-    mcpBearerToken: store.mcpBearerToken,
+    searchBackend: { ...store.searchBackend },
+    maxResults: store.maxResults,
+    mcpServers: store.mcpServers.map((s) => ({ ...s })),
   };
+}
+
+/**
+ * Connect to one server and describe what came back.
+ *
+ * Discovery is the whole point of the Test button: an MCP server's tool names
+ * are not guessable, and the writer needs to see them to know whether to name
+ * one as the search tool. It also reports the route taken, because "this only
+ * works relayed" explains why it needs a sign-in.
+ */
+async function probeMcpServer(
+  config: McpServerConfig,
+  convex: ConvexClient | null,
+): Promise<string> {
+  if (!config.url.trim()) return "Add a URL first.";
+  let handle: McpServerHandle | null = null;
+  try {
+    handle = await connectMcpServer(config, convex);
+    const lines: string[] = [];
+    lines.push(
+      `Connected${handle.serverName ? ` to ${handle.serverName}` : ""} (${
+        handle.route === "relay" ? "relayed through Twyne" : "direct"
+      }).`,
+    );
+    lines.push(
+      handle.tools.length
+        ? `Tools: ${handle.tools.map((t) => t.name).join(", ")}`
+        : "No tools exposed.",
+    );
+    const chosen = pickSearchTool(handle);
+    if (chosen && !config.searchToolName.trim()) {
+      lines.push(`Twyne would search with "${chosen.name}".`);
+    }
+    lines.push(
+      handle.resources.length
+        ? `Documents: ${handle.resources.length}`
+        : "No documents exposed.",
+    );
+    return lines.join("\n");
+  } catch (error) {
+    return error instanceof Error ? error.message : String(error);
+  } finally {
+    await handle?.close();
+  }
 }
 
 /* ── Component ──────────────────────────────────────────────────── */
@@ -308,6 +413,7 @@ export default component$(() => {
     newProviderName: "",
     newProviderKey: "",
     newProviderBaseUrl: "",
+    newProviderApiMode: "chat",
     providerSearch: "",
     modelsDevProviders: [],
     modelsDevError: null,
@@ -316,6 +422,9 @@ export default component$(() => {
     testResults: {},
     discoveringProviderId: null,
     providerModelErrors: {},
+    supertonicStatus: null,
+    supertonicDownloading: false,
+    supertonicError: null,
     editingProviderId: null,
     editKey: "",
     openFeature: null,
@@ -323,11 +432,11 @@ export default component$(() => {
     aiEnhanceCitations: DEFAULT_APPARATUS_SETTINGS.aiEnhanceCitations,
     flagMissingSources: DEFAULT_APPARATUS_SETTINGS.flagMissingSources,
     researchProvider: DEFAULT_APPARATUS_SETTINGS.researchProvider,
-    tinyFishApiKey: DEFAULT_APPARATUS_SETTINGS.tinyFishApiKey,
-    tinyFishMaxResults: DEFAULT_APPARATUS_SETTINGS.tinyFishMaxResults,
-    mcpEndpointUrl: DEFAULT_APPARATUS_SETTINGS.mcpEndpointUrl,
-    mcpToolName: DEFAULT_APPARATUS_SETTINGS.mcpToolName,
-    mcpBearerToken: DEFAULT_APPARATUS_SETTINGS.mcpBearerToken,
+    searchBackend: { ...DEFAULT_APPARATUS_SETTINGS.searchBackend },
+    maxResults: DEFAULT_APPARATUS_SETTINGS.maxResults,
+    mcpServers: [],
+    mcpProbes: {},
+    mcpProbeBusy: null,
     writerStyle: "form",
     writerProfile: {
       displayName: "",
@@ -411,11 +520,9 @@ export default component$(() => {
     store.aiEnhanceCitations = apparatus.aiEnhanceCitations;
     store.flagMissingSources = apparatus.flagMissingSources;
     store.researchProvider = apparatus.researchProvider;
-    store.tinyFishApiKey = apparatus.tinyFishApiKey;
-    store.tinyFishMaxResults = apparatus.tinyFishMaxResults;
-    store.mcpEndpointUrl = apparatus.mcpEndpointUrl;
-    store.mcpToolName = apparatus.mcpToolName;
-    store.mcpBearerToken = apparatus.mcpBearerToken;
+    store.searchBackend = { ...apparatus.searchBackend };
+    store.maxResults = apparatus.maxResults;
+    store.mcpServers = apparatus.mcpServers.map((s) => ({ ...s }));
     store.modelsDevProviders = catalog;
     store.theme = readThemePreference();
     store.themeCustomOpen = Boolean(store.theme.custom);
@@ -465,9 +572,69 @@ export default component$(() => {
     );
   });
 
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    const unsubscribe = onModelDownload(BROWSER_TTS_PROVIDER_ID, (state) => {
+      store.supertonicStatus = { ...state };
+      store.supertonicDownloading = state.phase === "downloading";
+      if (state.phase === "error") {
+        store.supertonicError = createAppError("NETWORK_UNAVAILABLE", {
+          source: "fetch",
+          recovery: { action: "retry", canRetry: true },
+          metadata: {
+            feature: "voice-narration",
+            operation: "download",
+          },
+        });
+      } else if (store.supertonicError) {
+        store.supertonicError = null;
+      }
+    });
+    void modelDownloadState(BROWSER_TTS_PROVIDER_ID, BROWSER_TTS_MANIFEST_FILES)
+      .then((state) => {
+        store.supertonicStatus = { ...state };
+      })
+      .catch(() => {});
+    cleanup(() => unsubscribe());
+  });
+
+  const downloadSupertonic = $(async () => {
+    if (store.supertonicDownloading) return;
+    store.supertonicDownloading = true;
+    store.supertonicError = null;
+    try {
+      const { downloadSupertonicPack } = await import(
+        "../../utils/supertonic-tts"
+      );
+      await downloadSupertonicPack();
+      store.toast = "Voice pack downloaded";
+    } catch (err) {
+      store.supertonicError = normalizeApplicationError(err, {
+        source: "fetch",
+        metadata: {
+          feature: "voice-narration",
+          operation: "download",
+        },
+      });
+    } finally {
+      store.supertonicDownloading = false;
+    }
+  });
+
+  const clearSupertonic = $(async () => {
+    const { clearSupertonicPack } = await import("../../utils/supertonic-tts");
+    await clearSupertonicPack();
+    store.supertonicStatus = null;
+    store.toast = "Voice pack removed";
+  });
+
   const persist = $(async () => {
     store.saving = true;
-    const settings = stripManagedDesktopLocalProvider(store.settings);
+    // Managed providers (desktop LiteRT, browser Supertonic) are re-injected
+    // on load, so strip them before persisting the writer's actual choices.
+    const settings = stripManagedSupertonicProvider(
+      stripManagedDesktopLocalProvider(store.settings),
+    );
     await saveAiSettingsToIdb(settings);
     const defaultProvider = settings.providers.find(
       (provider) => provider.id === settings.defaultProviderId,
@@ -511,11 +678,9 @@ export default component$(() => {
     store.aiEnhanceCitations = settings.aiEnhanceCitations;
     store.flagMissingSources = settings.flagMissingSources;
     store.researchProvider = settings.researchProvider;
-    store.tinyFishApiKey = settings.tinyFishApiKey;
-    store.tinyFishMaxResults = settings.tinyFishMaxResults;
-    store.mcpEndpointUrl = settings.mcpEndpointUrl;
-    store.mcpToolName = settings.mcpToolName;
-    store.mcpBearerToken = settings.mcpBearerToken;
+    store.searchBackend = { ...settings.searchBackend };
+    store.maxResults = settings.maxResults;
+    store.mcpServers = settings.mcpServers.map((s) => ({ ...s }));
     await saveApparatusSettingsToIdb(settings);
     store.toast = "Preferences saved";
     setTimeout(() => (store.toast = null), 1800);
@@ -669,6 +834,7 @@ export default component$(() => {
         "language",
       ).map((model) => model.id),
       modelModalities: catalogModelModalities(catalogProvider),
+      apiMode: store.newProviderApiMode,
     };
 
     store.settings = {
@@ -681,6 +847,7 @@ export default component$(() => {
     store.newProviderName = "";
     store.newProviderKey = "";
     store.newProviderBaseUrl = "";
+    store.newProviderApiMode = "chat";
     store.providerSearch = "";
     store.modelsDevProviderId = null;
     await persist();
@@ -737,6 +904,18 @@ export default component$(() => {
     };
     void persist();
   });
+
+  const updateProviderApiMode = $(
+    (id: string, apiMode: "chat" | "responses") => {
+      store.settings = {
+        ...store.settings,
+        providers: store.settings.providers.map((provider) =>
+          provider.id === id ? { ...provider, apiMode } : provider,
+        ),
+      };
+      void persist();
+    },
+  );
 
   const runTest = $(async (config: AiProviderConfig) => {
     store.testingProviderId = config.id;
@@ -1725,6 +1904,10 @@ export default component$(() => {
                 <div class="space-y-3">
                   {store.settings.providers.map((p) => {
                     const isManagedLocal = p.id === LOCAL_PROVIDER_ID;
+                    const isManagedBrowserVoice =
+                      p.id === BROWSER_TTS_PROVIDER_ID;
+                    const isManagedVoice =
+                      isManagedLocal || isManagedBrowserVoice;
                     return (
                       <div
                         key={p.id}
@@ -1771,6 +1954,19 @@ export default component$(() => {
                                   }}
                                 >
                                   desktop
+                                </span>
+                              )}
+                              {isManagedBrowserVoice && (
+                                <span
+                                  class="text-[0.6rem] tracking-[0.15em] uppercase px-1.5 py-0.5 border"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                    borderColor: "var(--color-accent-green)",
+                                    color: "var(--color-accent-green)",
+                                    borderRadius: "1px",
+                                  }}
+                                >
+                                  on device
                                 </span>
                               )}
                             </div>
@@ -1848,7 +2044,7 @@ export default component$(() => {
                               </div>
                             ) : (
                               <div class="mt-2 flex flex-wrap items-center gap-2">
-                                {!isManagedLocal && (
+                                {!isManagedVoice && (
                                   <button
                                     onClick$={() => {
                                       store.editingProviderId = p.id;
@@ -1862,44 +2058,49 @@ export default component$(() => {
                                     Change key
                                   </button>
                                 )}
-                                <button
-                                  onClick$={() => runTest(p)}
-                                  disabled={store.testingProviderId === p.id}
-                                  class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent-green)] disabled:opacity-40"
-                                  style={{
-                                    fontFamily: "var(--font-typewriter)",
-                                  }}
-                                >
-                                  {store.testingProviderId === p.id
-                                    ? "Testing…"
-                                    : "Test connection"}
-                                </button>
-                                <button
-                                  onClick$={() => refreshProviderModels(p.id)}
-                                  disabled={
-                                    store.discoveringProviderId === p.id
-                                  }
-                                  class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] disabled:opacity-40"
-                                  style={{
-                                    fontFamily: "var(--font-typewriter)",
-                                  }}
-                                >
-                                  {store.discoveringProviderId === p.id
-                                    ? "Loading models…"
-                                    : "Refresh models"}
-                                </button>
-                                {store.settings.defaultProviderId !== p.id && (
+                                {!isManagedBrowserVoice && (
                                   <button
-                                    onClick$={() => setDefaultProvider(p.id)}
-                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                                    onClick$={() => runTest(p)}
+                                    disabled={store.testingProviderId === p.id}
+                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent-green)] disabled:opacity-40"
                                     style={{
                                       fontFamily: "var(--font-typewriter)",
                                     }}
                                   >
-                                    Set as default
+                                    {store.testingProviderId === p.id
+                                      ? "Testing…"
+                                      : "Test connection"}
                                   </button>
                                 )}
-                                {!isManagedLocal && (
+                                {!isManagedBrowserVoice && (
+                                  <button
+                                    onClick$={() => refreshProviderModels(p.id)}
+                                    disabled={
+                                      store.discoveringProviderId === p.id
+                                    }
+                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] disabled:opacity-40"
+                                    style={{
+                                      fontFamily: "var(--font-typewriter)",
+                                    }}
+                                  >
+                                    {store.discoveringProviderId === p.id
+                                      ? "Loading models…"
+                                      : "Refresh models"}
+                                  </button>
+                                )}
+                                {!isManagedBrowserVoice &&
+                                  store.settings.defaultProviderId !== p.id && (
+                                    <button
+                                      onClick$={() => setDefaultProvider(p.id)}
+                                      class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                                      style={{
+                                        fontFamily: "var(--font-typewriter)",
+                                      }}
+                                    >
+                                      Set as default
+                                    </button>
+                                  )}
+                                {!isManagedVoice && (
                                   <button
                                     onClick$={() => removeProvider(p.id)}
                                     class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
@@ -1911,6 +2112,36 @@ export default component$(() => {
                                   </button>
                                 )}
                               </div>
+                            )}
+
+                            {supportsOpenAiApiMode(p) && !isManagedVoice && (
+                              <label class="mt-3 block max-w-xs">
+                                <span
+                                  class="block text-[0.6rem] tracking-[0.16em] uppercase text-[var(--color-ink-muted)] mb-1"
+                                  style={{ fontFamily: "var(--font-typewriter)" }}
+                                >
+                                  Generation API
+                                </span>
+                                <select
+                                  value={p.apiMode ?? "chat"}
+                                  onChange$={(event) =>
+                                    updateProviderApiMode(
+                                      p.id,
+                                      (event.target as HTMLSelectElement)
+                                        .value as "chat" | "responses",
+                                    )
+                                  }
+                                  class="w-full px-2 py-1.5 text-xs border border-[var(--color-paper-3)] bg-[var(--color-paper)] text-[var(--color-ink)] focus:outline-none focus:border-[var(--color-vermilion)]"
+                                  style={{ fontFamily: "var(--font-typewriter)" }}
+                                >
+                                  <option value="chat">Chat Completions</option>
+                                  <option value="responses">Responses API</option>
+                                </select>
+                                <span class="mt-1 block text-[0.6rem] text-[var(--color-ink-muted)]">
+                                  Choose Responses for OpenAI and compatible
+                                  gateways that expose <code>/responses</code>.
+                                </span>
+                              </label>
                             )}
 
                             {store.testResults[p.id] && (
@@ -1956,6 +2187,90 @@ export default component$(() => {
                                     />
                                   ) : null;
                                 })()}
+                              </div>
+                            )}
+
+                            {isManagedBrowserVoice && (
+                              <div class="mt-3 p-3 border border-dashed border-[var(--color-paper-3)]">
+                                <div class="flex items-center justify-between gap-2">
+                                  <p
+                                    class="text-[0.65rem] text-[var(--color-ink-muted)]"
+                                    style={{ fontFamily: "var(--font-display)" }}
+                                  >
+                                    On-device voice
+                                  </p>
+                                  {store.supertonicStatus?.phase === "ready" ? (
+                                    <button
+                                      onClick$={clearSupertonic}
+                                      class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                                      style={{
+                                        fontFamily: "var(--font-typewriter)",
+                                      }}
+                                    >
+                                      Remove pack
+                                    </button>
+                                  ) : (
+                                    <button
+                                      onClick$={downloadSupertonic}
+                                      disabled={store.supertonicDownloading}
+                                      class="btn-press text-xs"
+                                    >
+                                      {store.supertonicDownloading
+                                        ? "Downloading…"
+                                        : "Download pack"}
+                                    </button>
+                                  )}
+                                </div>
+                                {store.supertonicDownloading &&
+                                  store.supertonicStatus && (
+                                    <div class="mt-2">
+                                      <div class="h-1 w-full bg-[var(--color-paper-3)]">
+                                        <div
+                                          class="h-full bg-[var(--color-vermilion)] transition-[width]"
+                                          style={{
+                                            width: `${Math.round(
+                                              (store.supertonicStatus.progress *
+                                                100) as number,
+                                            )}%`,
+                                          }}
+                                        />
+                                      </div>
+                                      <p
+                                        class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                        }}
+                                      >
+                                        {formatBytes(
+                                          store.supertonicStatus
+                                            .downloadedBytes,
+                                        )}{" "}
+                                        of{" "}
+                                        {formatBytes(
+                                          store.supertonicStatus.totalBytes,
+                                        )}
+                                      </p>
+                                    </div>
+                                  )}
+                                <p
+                                  class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                                  style={{ fontFamily: "var(--font-typewriter)" }}
+                                >
+                                  {store.supertonicStatus?.phase === "ready"
+                                    ? "Ready — reading works offline."
+                                    : `${formatBytes(
+                                        BROWSER_TTS_BUNDLE_BYTES,
+                                      )} downloaded once, then voiced entirely in this browser with no key or network.`}
+                                </p>
+                                {store.supertonicError && (
+                                  <div class="mt-2">
+                                    <ApplicationNotice
+                                      error={store.supertonicError}
+                                      compact
+                                      onRecovery$={downloadSupertonic}
+                                    />
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>
@@ -2163,6 +2478,36 @@ export default component$(() => {
                               borderRadius: "2px",
                             }}
                           />
+                        </div>
+                      )}
+
+                      {supportsOpenAiApiMode({
+                        id: "new-provider",
+                        name: store.newProviderName,
+                        type: store.newProviderType as AiProviderConfig["type"],
+                        apiKey: store.newProviderKey,
+                        defaultModel: "",
+                      }) && (
+                        <div>
+                          <label
+                            class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          >
+                            Generation API
+                          </label>
+                          <select
+                            value={store.newProviderApiMode}
+                            onChange$={(event) => {
+                              store.newProviderApiMode = (
+                                event.target as HTMLSelectElement
+                              ).value as "chat" | "responses";
+                            }}
+                            class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          >
+                            <option value="chat">Chat Completions</option>
+                            <option value="responses">Responses API</option>
+                          </select>
                         </div>
                       )}
 
@@ -3015,13 +3360,13 @@ export default component$(() => {
                       }}
                     >
                       <option value="hosted">Hosted Twyne search</option>
-                      <option value="tinyfish">
-                        TinyFish key in this browser
+                      <option value="search-api">
+                        Search API key in this browser
                       </option>
                       <option value="model-web-search">
                         Model endpoint web search
                       </option>
-                      <option value="web-mcp">Web-search MCP endpoint</option>
+                      <option value="web-mcp">Your MCP servers</option>
                     </select>
                     <p
                       class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
@@ -3043,12 +3388,12 @@ export default component$(() => {
                       type="number"
                       min={1}
                       max={20}
-                      value={store.tinyFishMaxResults}
+                      value={store.maxResults}
                       onInput$={(e) => {
                         const next = Number(
                           (e.target as HTMLInputElement).value,
                         );
-                        store.tinyFishMaxResults = Math.max(
+                        store.maxResults = Math.max(
                           1,
                           Math.min(20, Number.isFinite(next) ? next : 8),
                         );
@@ -3066,40 +3411,148 @@ export default component$(() => {
                     />
                   </div>
 
-                  {store.researchProvider === "tinyfish" && (
-                    <div>
-                      <label
-                        class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        TinyFish API key
-                      </label>
-                      <input
-                        type="password"
-                        value={store.tinyFishApiKey}
-                        onInput$={(e) => {
-                          store.tinyFishApiKey = (
-                            e.target as HTMLInputElement
-                          ).value;
-                        }}
-                        onBlur$={() => {
-                          void persistApparatusSettings(
-                            buildApparatusSettings(store),
-                          );
-                        }}
-                        placeholder="tf-..."
-                        class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          borderRadius: "2px",
-                        }}
-                      />
-                      <p
-                        class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        Stored in this browser and sent directly to TinyFish.
-                      </p>
+                  {store.researchProvider === "search-api" && (
+                    <div class="space-y-3">
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Search service
+                        </label>
+                        <select
+                          value={store.searchBackend.id}
+                          onChange$={(e) => {
+                            store.searchBackend = {
+                              ...store.searchBackend,
+                              id: (e.target as HTMLSelectElement)
+                                .value as SearchBackendId,
+                            };
+                            void persistApparatusSettings(
+                              buildApparatusSettings(store),
+                            );
+                          }}
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        >
+                          {SEARCH_BACKEND_IDS.map((id) => (
+                            <option key={id} value={id}>
+                              {SEARCH_BACKENDS[id].label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          API key
+                        </label>
+                        <input
+                          type="password"
+                          value={store.searchBackend.apiKey}
+                          onInput$={(e) => {
+                            store.searchBackend = {
+                              ...store.searchBackend,
+                              apiKey: (e.target as HTMLInputElement).value,
+                            };
+                          }}
+                          onBlur$={() => {
+                            void persistApparatusSettings(
+                              buildApparatusSettings(store),
+                            );
+                          }}
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        />
+                        <p
+                          class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Stored in this browser and sent directly to{" "}
+                          {SEARCH_BACKENDS[store.searchBackend.id].keyHint}.
+                        </p>
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Endpoint URL
+                          {store.searchBackend.id === "custom"
+                            ? ""
+                            : " (optional)"}
+                        </label>
+                        <input
+                          value={store.searchBackend.baseUrl}
+                          onInput$={(e) => {
+                            store.searchBackend = {
+                              ...store.searchBackend,
+                              baseUrl: (e.target as HTMLInputElement).value,
+                            };
+                          }}
+                          onBlur$={() => {
+                            void persistApparatusSettings(
+                              buildApparatusSettings(store),
+                            );
+                          }}
+                          placeholder={
+                            SEARCH_BACKENDS[store.searchBackend.id]
+                              .defaultUrl || "https://example.com/search"
+                          }
+                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            borderRadius: "2px",
+                          }}
+                        />
+                      </div>
+                      {store.searchBackend.id === "custom" && (
+                        <div>
+                          <label
+                            class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          >
+                            Results path (optional)
+                          </label>
+                          <input
+                            value={store.searchBackend.resultsPath}
+                            onInput$={(e) => {
+                              store.searchBackend = {
+                                ...store.searchBackend,
+                                resultsPath: (e.target as HTMLInputElement)
+                                  .value,
+                              };
+                            }}
+                            onBlur$={() => {
+                              void persistApparatusSettings(
+                                buildApparatusSettings(store),
+                              );
+                            }}
+                            placeholder="data.results"
+                            class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                            style={{
+                              fontFamily: "var(--font-typewriter)",
+                              borderRadius: "2px",
+                            }}
+                          />
+                          <p
+                            class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          >
+                            Where the result array sits in the response. Left
+                            blank, Twyne looks for the first array of objects
+                            with a url.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -3113,94 +3566,261 @@ export default component$(() => {
                       enabled.
                     </p>
                   )}
-
-                  {store.researchProvider === "web-mcp" && (
-                    <div class="space-y-3">
-                      <div>
-                        <label
-                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
-                          style={{ fontFamily: "var(--font-typewriter)" }}
-                        >
-                          MCP endpoint URL
-                        </label>
-                        <input
-                          value={store.mcpEndpointUrl}
-                          onInput$={(e) => {
-                            store.mcpEndpointUrl = (
-                              e.target as HTMLInputElement
-                            ).value;
-                          }}
-                          onBlur$={() => {
-                            void persistApparatusSettings(
-                              buildApparatusSettings(store),
-                            );
-                          }}
-                          placeholder="http://127.0.0.1:8787/mcp"
-                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            borderRadius: "2px",
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
-                          style={{ fontFamily: "var(--font-typewriter)" }}
-                        >
-                          Tool name
-                        </label>
-                        <input
-                          value={store.mcpToolName}
-                          onInput$={(e) => {
-                            store.mcpToolName = (
-                              e.target as HTMLInputElement
-                            ).value;
-                          }}
-                          onBlur$={() => {
-                            void persistApparatusSettings(
-                              buildApparatusSettings(store),
-                            );
-                          }}
-                          placeholder="search"
-                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            borderRadius: "2px",
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <label
-                          class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
-                          style={{ fontFamily: "var(--font-typewriter)" }}
-                        >
-                          Bearer token
-                        </label>
-                        <input
-                          type="password"
-                          value={store.mcpBearerToken}
-                          onInput$={(e) => {
-                            store.mcpBearerToken = (
-                              e.target as HTMLInputElement
-                            ).value;
-                          }}
-                          onBlur$={() => {
-                            void persistApparatusSettings(
-                              buildApparatusSettings(store),
-                            );
-                          }}
-                          placeholder="Optional"
-                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            borderRadius: "2px",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
                 </div>
+              </div>
+            </section>
+
+            {/* ── MCP servers ── */}
+            <section class="folio p-5">
+              <h2
+                class="text-base font-semibold mb-1"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                Knowledge bases
+              </h2>
+              <p
+                class="text-[0.65rem] text-[var(--color-ink-muted)] leading-relaxed mb-4"
+                style={{ fontFamily: "var(--font-typewriter)" }}
+              >
+                Connect MCP servers — a documentation search, a notes vault, a
+                company wiki. Their tools answer claim checks when the research
+                provider above is set to your MCP servers, and their documents
+                are readable as sources either way.
+              </p>
+
+              <div class="space-y-4">
+                {store.mcpServers.map((server, index) => (
+                  <div
+                    key={server.id}
+                    class="border border-[var(--color-paper-3)] p-3 space-y-2"
+                    style={{ borderRadius: "2px" }}
+                  >
+                    <div class="flex items-center gap-2">
+                      <input
+                        value={server.label}
+                        onInput$={(e) => {
+                          store.mcpServers[index] = {
+                            ...server,
+                            label: (e.target as HTMLInputElement).value,
+                          };
+                        }}
+                        onBlur$={() => {
+                          void persistApparatusSettings(
+                            buildApparatusSettings(store),
+                          );
+                        }}
+                        placeholder="Name"
+                        class="flex-1 text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          borderRadius: "2px",
+                        }}
+                      />
+                      <label
+                        class="flex items-center gap-1 text-[0.6rem] uppercase tracking-[0.15em] text-[var(--color-ink-light)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={server.enabled}
+                          onChange$={(e) => {
+                            store.mcpServers[index] = {
+                              ...server,
+                              enabled: (e.target as HTMLInputElement).checked,
+                            };
+                            void persistApparatusSettings(
+                              buildApparatusSettings(store),
+                            );
+                          }}
+                        />
+                        On
+                      </label>
+                      <button
+                        type="button"
+                        onClick$={() => {
+                          store.mcpServers = store.mcpServers.filter(
+                            (s) => s.id !== server.id,
+                          );
+                          void persistApparatusSettings(
+                            buildApparatusSettings(store),
+                          );
+                        }}
+                        class="text-[0.6rem] uppercase tracking-[0.15em] text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    <input
+                      value={server.url}
+                      onInput$={(e) => {
+                        store.mcpServers[index] = {
+                          ...server,
+                          url: (e.target as HTMLInputElement).value,
+                        };
+                      }}
+                      onBlur$={() => {
+                        void persistApparatusSettings(
+                          buildApparatusSettings(store),
+                        );
+                      }}
+                      placeholder="https://example.com/mcp"
+                      class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                      style={{
+                        fontFamily: "var(--font-typewriter)",
+                        borderRadius: "2px",
+                      }}
+                    />
+
+                    <input
+                      type="password"
+                      value={server.bearerToken}
+                      onInput$={(e) => {
+                        store.mcpServers[index] = {
+                          ...server,
+                          bearerToken: (e.target as HTMLInputElement).value,
+                        };
+                      }}
+                      onBlur$={() => {
+                        void persistApparatusSettings(
+                          buildApparatusSettings(store),
+                        );
+                      }}
+                      placeholder="Bearer token (optional)"
+                      class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                      style={{
+                        fontFamily: "var(--font-typewriter)",
+                        borderRadius: "2px",
+                      }}
+                    />
+
+                    <div class="flex flex-wrap items-center gap-3">
+                      <select
+                        value={server.connection}
+                        onChange$={(e) => {
+                          store.mcpServers[index] = {
+                            ...server,
+                            connection: (e.target as HTMLSelectElement)
+                              .value as McpServerConfig["connection"],
+                          };
+                          void persistApparatusSettings(
+                            buildApparatusSettings(store),
+                          );
+                        }}
+                        class="text-xs px-2 py-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)]"
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          borderRadius: "2px",
+                        }}
+                      >
+                        <option value="auto">Direct, then relay</option>
+                        <option value="direct">Direct only</option>
+                        <option value="proxy">Relay through Twyne</option>
+                      </select>
+
+                      <input
+                        value={server.searchToolName}
+                        onInput$={(e) => {
+                          store.mcpServers[index] = {
+                            ...server,
+                            searchToolName: (e.target as HTMLInputElement)
+                              .value,
+                          };
+                        }}
+                        onBlur$={() => {
+                          void persistApparatusSettings(
+                            buildApparatusSettings(store),
+                          );
+                        }}
+                        placeholder="Search tool (auto)"
+                        class="text-xs px-2 py-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          borderRadius: "2px",
+                        }}
+                      />
+
+                      <label
+                        class="flex items-center gap-1 text-[0.6rem] uppercase tracking-[0.15em] text-[var(--color-ink-light)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={server.exposeToModel}
+                          onChange$={(e) => {
+                            store.mcpServers[index] = {
+                              ...server,
+                              exposeToModel: (e.target as HTMLInputElement)
+                                .checked,
+                            };
+                            void persistApparatusSettings(
+                              buildApparatusSettings(store),
+                            );
+                          }}
+                        />
+                        Offer tools while writing
+                      </label>
+
+                      <button
+                        type="button"
+                        disabled={store.mcpProbeBusy === server.id}
+                        onClick$={async () => {
+                          store.mcpProbeBusy = server.id;
+                          store.mcpProbes = {
+                            ...store.mcpProbes,
+                            [server.id]: "Connecting…",
+                          };
+                          const report = await probeMcpServer(
+                            store.mcpServers[index],
+                            convexClientSig.value ?? null,
+                          );
+                          store.mcpProbes = {
+                            ...store.mcpProbes,
+                            [server.id]: report,
+                          };
+                          store.mcpProbeBusy = null;
+                        }}
+                        class="text-[0.6rem] uppercase tracking-[0.15em] px-2 py-1 border border-[var(--color-paper-3)] hover:border-[var(--color-vermilion)] disabled:opacity-50"
+                        style={{
+                          fontFamily: "var(--font-typewriter)",
+                          borderRadius: "2px",
+                        }}
+                      >
+                        {store.mcpProbeBusy === server.id ? "…" : "Test"}
+                      </button>
+                    </div>
+
+                    {store.mcpProbes[server.id] && (
+                      <p
+                        class="text-[0.6rem] text-[var(--color-ink-muted)] leading-relaxed whitespace-pre-line"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        {store.mcpProbes[server.id]}
+                      </p>
+                    )}
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  onClick$={() => {
+                    store.mcpServers = [
+                      ...store.mcpServers,
+                      {
+                        ...DEFAULT_MCP_SERVER,
+                        id: `mcp-${crypto.randomUUID().slice(0, 8)}`,
+                      },
+                    ];
+                  }}
+                  class="text-[0.65rem] uppercase tracking-[0.15em] px-3 py-1.5 border border-[var(--color-paper-3)] hover:border-[var(--color-vermilion)]"
+                  style={{
+                    fontFamily: "var(--font-typewriter)",
+                    borderRadius: "2px",
+                  }}
+                >
+                  Add server
+                </button>
               </div>
             </section>
 

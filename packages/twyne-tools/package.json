@@ -23,6 +23,18 @@
     "./archive": {
       "types": "./dist/archive.d.ts",
       "import": "./dist/archive.js"
+    },
+    "./anthropic": {
+      "types": "./dist/anthropic.d.ts",
+      "import": "./dist/anthropic.js"
+    },
+    "./codex": {
+      "types": "./dist/codex.d.ts",
+      "import": "./dist/codex.js"
+    },
+    "./provider-auth": {
+      "types": "./dist/provider-auth.d.ts",
+      "import": "./dist/provider-auth.js"
     }
   },
   "files": [
@@ -39,7 +51,21 @@
     "marked": "^18.0.5",
     "zod": "^4.4.3"
   },
+  "peerDependencies": {
+    "@anthropic-ai/sdk": "^0.116.0",
+    "@openai/codex-sdk": "^0.147.0"
+  },
+  "peerDependenciesMeta": {
+    "@anthropic-ai/sdk": {
+      "optional": true
+    },
+    "@openai/codex-sdk": {
+      "optional": true
+    }
+  },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.116.0",
+    "@openai/codex-sdk": "^0.147.0",
     "@types/node": "^25.0.0",
     "typescript": "^5.4.5"
   },

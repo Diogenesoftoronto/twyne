@@ -226,6 +226,32 @@ describeConvex("migration off the single-document collections", () => {
 });
 
 describeConvex("pushAll and pullAll over the new storage", () => {
+  test("rejects a stale bulk push without overwriting the current revision", async () => {
+    const { user } = setup();
+    const first = await user.mutation(api.sync.pushAll, {
+      expectedRevision: 0,
+      folios: [folio("f1", "Draft")],
+    });
+    expect(first.revision).toBe(1);
+
+    await expect(
+      user.mutation(api.sync.pushAll, {
+        expectedRevision: 0,
+        folios: [folio("f1", "Stale draft", 2)],
+      }),
+    ).rejects.toThrow("SYNC_CONFLICT");
+
+    const unchanged = await user.query(api.sync.pullAll, {});
+    expect(unchanged.syncRevision).toBe(1);
+    expect(unchanged.folios).toEqual([folio("f1", "Draft")]);
+
+    const second = await user.mutation(api.sync.pushAll, {
+      expectedRevision: 1,
+      folios: [folio("f1", "Reconciled draft", 3)],
+    });
+    expect(second.revision).toBe(2);
+  });
+
   test("a full snapshot round-trips every collection", async () => {
     const { user } = setup();
     await user.mutation(api.sync.pushAll, {

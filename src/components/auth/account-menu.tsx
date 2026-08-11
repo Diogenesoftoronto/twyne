@@ -3,6 +3,7 @@ import {
   component$,
   useOnDocument,
   useSignal,
+  useStore,
   useVisibleTask$,
   type Signal,
 } from "@builder.io/qwik";
@@ -19,6 +20,21 @@ interface AccountMenuProps {
    * it. When omitted, the menu manages its own open state internally.
    */
   open?: Signal<boolean>;
+}
+
+interface PendingInvitation {
+  lixId: string;
+  folioName: string;
+  role: "editor" | "commenter";
+  invitedAt: number;
+}
+
+interface SharedFolio {
+  lixId: string;
+  folioId: string;
+  folioName: string;
+  role: "editor" | "commenter";
+  updatedAt: number;
 }
 
 /**
@@ -40,20 +56,47 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
   const internalOpen = useSignal(false);
   const profileAvatarUrl = useSignal<string | null>(null);
   const profileDisplay = useSignal<string | null>(null);
+  const invitations = useStore<PendingInvitation[]>([]);
+  const sharedFolios = useStore<SharedFolio[]>([]);
+  const invitationError = useSignal<string | null>(null);
+  const invitationBusy = useSignal<string | null>(null);
   // Pick the effective signal once. Signals are serializable across the QRL
   // boundary, so handlers can use `menuOpen.value` directly (closures can't).
   const menuOpen = open ?? internalOpen;
   const rootRef = useSignal<HTMLElement>();
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(async ({ track }) => {
+  useVisibleTask$(async ({ track, cleanup }) => {
     const userId = track(() => auth.value.user?.id);
     const provider = track(() => auth.value.provider);
     const client = track(() => convexClient.value);
 
     profileAvatarUrl.value = null;
     profileDisplay.value = null;
+    invitations.splice(0, invitations.length);
+    sharedFolios.splice(0, sharedFolios.length);
     if (!userId || provider !== "convex" || !client) return;
+
+    const replaceInvitations = (pending: PendingInvitation[]) => {
+      invitations.splice(0, invitations.length, ...pending);
+    };
+    const replaceSharedFolios = (shared: SharedFolio[]) => {
+      sharedFolios.splice(0, sharedFolios.length, ...shared);
+    };
+    const unsubscribeInvitations = client.onUpdate(
+      api.collaboration.listPendingInvitations,
+      {},
+      replaceInvitations,
+      () => undefined,
+    );
+    const unsubscribeShared = client.onUpdate(
+      api.collaboration.listSharedWithMe,
+      {},
+      replaceSharedFolios,
+      () => undefined,
+    );
+    cleanup(unsubscribeInvitations);
+    cleanup(unsubscribeShared);
 
     try {
       const row = (await client.query(api.profiles.getMyHandle, {})) as {
@@ -65,6 +108,22 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
       profileDisplay.value = row?.displayName || row?.handle || null;
     } catch {
       // The profile query is an enhancement; keep the session-backed display.
+    }
+  });
+
+  const rejectInvitation = $(async (lixId: string) => {
+    const client = convexClient.value;
+    if (!client) return;
+    invitationBusy.value = lixId;
+    invitationError.value = null;
+    try {
+      await client.mutation(api.collaboration.rejectInvitation, { lixId });
+      const index = invitations.findIndex((invite) => invite.lixId === lixId);
+      if (index >= 0) invitations.splice(index, 1);
+    } catch {
+      invitationError.value = "Could not decline that invitation. Try again.";
+    } finally {
+      invitationBusy.value = null;
     }
   });
 
@@ -186,7 +245,113 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
             >
               ❦ The Manual
             </button>
+            <button
+              type="button"
+              class="w-full text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+              style={{ fontFamily: "var(--font-display)" }}
+              onClick$={() => {
+                menuOpen.value = false;
+                void nav("/revisions/");
+              }}
+            >
+              Revision desk
+            </button>
+            <button
+              type="button"
+              class="w-full text-left text-sm text-[var(--color-ink)] hover:text-[var(--color-vermilion)] py-1.5 px-2 focus-ring"
+              style={{ fontFamily: "var(--font-display)" }}
+              onClick$={() => {
+                menuOpen.value = false;
+                void nav("/privacy-ledger/");
+              }}
+            >
+              Privacy ledger
+            </button>
           </div>
+          {invitations.length > 0 && (
+            <section class="space-y-2 border-b border-[var(--color-paper-3)] pb-3">
+              <p
+                class="px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-light)]"
+                style={{ fontFamily: "var(--font-sans)" }}
+              >
+                Invitations
+              </p>
+              {invitations.map((invitation) => (
+                <div
+                  key={invitation.lixId}
+                  class="rounded-sm bg-[var(--color-paper-soft)] px-2.5 py-2"
+                >
+                  <p class="truncate text-sm text-[var(--color-ink)]">
+                    {invitation.folioName}
+                  </p>
+                  <p class="mt-0.5 text-[11px] text-[var(--color-ink-light)]">
+                    Invited as {invitation.role}
+                  </p>
+                  <div class="mt-2 flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="text-xs font-semibold text-[var(--color-vermilion)] hover:underline disabled:opacity-50"
+                      disabled={invitationBusy.value === invitation.lixId}
+                      onClick$={() => {
+                        menuOpen.value = false;
+                        void nav(
+                          `/editor?shared=${encodeURIComponent(invitation.lixId)}`,
+                        );
+                      }}
+                    >
+                      Open
+                    </button>
+                    <button
+                      type="button"
+                      class="text-xs text-[var(--color-ink-light)] hover:text-[var(--color-ink)] disabled:opacity-50"
+                      disabled={invitationBusy.value === invitation.lixId}
+                      onClick$={() => rejectInvitation(invitation.lixId)}
+                    >
+                      Decline
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {invitationError.value && (
+                <p
+                  class="px-2 text-xs text-[var(--color-vermilion)]"
+                  role="alert"
+                >
+                  {invitationError.value}
+                </p>
+              )}
+            </section>
+          )}
+          {sharedFolios.length > 0 && (
+            <section class="space-y-1 border-b border-[var(--color-paper-3)] pb-3">
+              <p
+                class="px-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[var(--color-ink-light)]"
+                style={{ fontFamily: "var(--font-sans)" }}
+              >
+                Shared with me
+              </p>
+              {sharedFolios.map((folio) => (
+                <button
+                  key={folio.lixId}
+                  type="button"
+                  class="block w-full rounded-sm px-2.5 py-2 text-left hover:bg-[var(--color-paper-soft)] focus-ring"
+                  onClick$={() => {
+                    menuOpen.value = false;
+                    void nav(
+                      `/editor?shared=${encodeURIComponent(folio.lixId)}`,
+                    );
+                  }}
+                >
+                  <span class="block truncate text-sm text-[var(--color-ink)]">
+                    {folio.folioName}
+                  </span>
+                  <span class="mt-0.5 block text-[11px] text-[var(--color-ink-light)]">
+                    {folio.role === "editor" ? "Can edit" : "Can comment"}
+                  </span>
+                </button>
+              ))}
+            </section>
+          )}
           <AuthPanel />
         </div>
       )}

@@ -32,6 +32,7 @@ import type * as lib_notorganic from "../lib/notorganic.js";
 import type * as lib_rateLimit from "../lib/rateLimit.js";
 import type * as lixBlobs from "../lixBlobs.js";
 import type * as lixRelay from "../lixRelay.js";
+import type * as mcp from "../mcp.js";
 import type * as payments from "../payments.js";
 import type * as personaNoteStreams from "../personaNoteStreams.js";
 import type * as posthog from "../posthog.js";
@@ -80,6 +81,7 @@ declare const fullApi: ApiFromModules<{
   "lib/rateLimit": typeof lib_rateLimit;
   lixBlobs: typeof lixBlobs;
   lixRelay: typeof lixRelay;
+  mcp: typeof mcp;
   payments: typeof payments;
   personaNoteStreams: typeof personaNoteStreams;
   posthog: typeof posthog;
