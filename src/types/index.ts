@@ -531,7 +531,24 @@ export interface DocumentMeta {
   wordCount: number;
   characterCount: number;
   readingTime: number;
-  lastEdited: number;
+}
+
+/**
+ * Payload of the `twyne:content` event.
+ *
+ * Everything here is derived once, from the ProseMirror document, at the point
+ * the editor already has it in hand. Listeners must not re-derive prose or
+ * word counts by running regexes back over `html` — that used to happen three
+ * separate times per keystroke, each allocating a fresh copy of the entire
+ * manuscript.
+ */
+export interface DraftContentDetail {
+  /** Serialized manuscript HTML — the form that gets persisted. */
+  html: string;
+  /** Plain text, blocks separated by a blank line (Tiptap's default). */
+  text: string;
+  /** Word count over `text`. */
+  wordCount: number;
 }
 
 export interface ProjectInterviewAnswers {
@@ -555,6 +572,132 @@ export interface DossierAttachment {
   /** Required one-line note on why this matters to the piece. */
   why: string;
   addedAt: number;
+}
+
+/**
+ * ── Source canvas ────────────────────────────────────────────────────────────
+ *
+ * The spatial view of a folio's research: every source, every attachment, and
+ * every answered brief field as a card the writer can arrange, with typed
+ * edges showing how they bear on each other.
+ *
+ * The canvas is a *projection*, never a store of record. `BibEntry[]` stays
+ * authoritative for sources and `ProjectBrief` for the brief; a node holds only
+ * layout, the model's annotation, and the composed card interior, and points at
+ * its owner by id. A node whose owner has been deleted is dropped on load and
+ * never resurrected — which is why every id field below is a back-reference and
+ * none of them is a copy.
+ */
+export type CanvasNodeKind =
+  | "source" // a BibEntry
+  | "excerpt" // one extracted section of a source
+  | "brief" // one answered ProjectBrief field
+  | "attachment" // a DossierAttachment
+  | "note"; // the writer's own free card
+
+/**
+ * How two cards bear on each other. `manual` is the writer's own untyped line;
+ * everything else is the model's reading and carries `origin: "model"`.
+ */
+export type EdgeKind =
+  | "supports"
+  | "complicates"
+  | "contradicts"
+  | "extends"
+  | "same-topic"
+  | "manual";
+
+/** The model's reading of how one card bears on the draft as it stands. */
+export interface CanvasAnnotation {
+  /** Prose: what this card does for the piece. */
+  relevance: string;
+  /**
+   * Verbatim draft passage this speaks to. A plain string with no ProseMirror
+   * position — exactly as fragile as `ResearchTargetRef.anchor`, and for the
+   * same reason: there is no citation mark to anchor to yet. Edit the sentence
+   * and the association is lost. Treated as a display hint, never as a link.
+   */
+  draftAnchor?: string;
+  stance?: "supports" | "complicates" | "contradicts" | "background";
+  /** 1–5. How much this ought to matter to the writer right now. */
+  score?: number;
+}
+
+export interface CanvasNode {
+  id: string;
+  folioId: string;
+  kind: CanvasNodeKind;
+
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+
+  /** BibEntry.id — set on "source" and on every "excerpt" beneath it. */
+  sourceId?: string;
+  /** The "source" node an "excerpt" belongs to. */
+  parentId?: string;
+  attachmentId?: string;
+  /** A key of ProjectBrief["answers"]. */
+  briefField?: string;
+
+  title: string;
+  /**
+   * OpenUI Lang for this card's interior, composed by the model from the
+   * component library in `src/components/canvas/openui/library.ts`. The model
+   * picks the shape (table, flow, quote, comparison…) that fits the material;
+   * it never authors canvas geometry.
+   */
+  ouiLang?: string;
+  /** Document order within the parent source. */
+  order?: number;
+
+  annotation?: CanvasAnnotation;
+  cluster?: string;
+  collapsed?: boolean;
+  /**
+   * The writer has moved or resized this card, so auto-layout must treat it as
+   * a fixed obstacle and never reposition it.
+   */
+  pinned?: boolean;
+  /**
+   * This card is mid-compose: the renderer is painting a partial AST. Streaming
+   * nodes are never written to the Lix blob, so a reload mid-stream cannot
+   * strand a half-parsed card on disk.
+   */
+  streaming?: boolean;
+  createdAt: number;
+}
+
+export interface CanvasEdge {
+  id: string;
+  from: string;
+  to: string;
+  kind: EdgeKind;
+  /** A few words on the relation, shown along the path. */
+  label?: string;
+  origin: "model" | "writer";
+}
+
+export interface CanvasCluster {
+  id: string;
+  label: string;
+  /** 0–360, used for the column tint. Stable across re-maps. */
+  hue?: number;
+}
+
+export interface SourceCanvas {
+  version: 1;
+  folioId: string;
+  nodes: CanvasNode[];
+  edges: CanvasEdge[];
+  clusters: CanvasCluster[];
+  viewport: { x: number; y: number; zoom: number };
+  /** Width of the REFERENCE inspector, in px. Writer-draggable. */
+  inspectorWidth: number;
+  /** Full-bleed mode: inspector hidden, stage takes the viewport. */
+  expanded: boolean;
+  lastMappedAt?: number;
 }
 
 /**
@@ -758,6 +901,11 @@ export type AiProviderType =
   // Voice only: Fish Audio speaks and transcribes but is not an LLM, so it
   // never counts as a provider for persona/rubric work.
   | "fishaudio"
+  // Voice only, spoken in the browser: Supertonic runs fully on-device via
+  // WebGPU/WASM (transformers.js) with the model downloaded once. No key, no
+  // server, no account — the free/offline voice. Auto-registered by the
+  // browser bridge, never configured by hand.
+  | "supertonic"
   // Desktop-only: native LiteRT (Gemma 4 E4B) served on loopback by the
   // Electrobun shell. Auto-registered, never added by hand — see desktop-bridge.
   | "litert";
@@ -774,6 +922,8 @@ export interface AiProviderConfig {
   availableModels?: string[];
   /** Modality metadata for models discovered from models.dev. */
   modelModalities?: Record<string, AiModelModalities>;
+  /** OpenAI-compatible text-generation wire protocol. Defaults to chat. */
+  apiMode?: "chat" | "responses";
 }
 
 export interface AiModelModalities {
@@ -795,6 +945,15 @@ export type AiFeature =
   | "citation-format"
   | "source-summarize"
   | "source-detect-missing"
+  /**
+   * Composes a source's text into canvas cards as OpenUI Lang. Unlike its
+   * siblings this has no prompt file: the system prompt is generated from the
+   * component library by `generateSystemPrompt`, so adding a card shape means
+   * adding a component rather than editing prose.
+   */
+  | "source-extract"
+  /** Annotates, clusters, and draws edges between canvas cards. */
+  | "source-map"
   | "research-web-search"
   | "research-extract"
   | "interview-turn"
@@ -833,22 +992,101 @@ export const DEFAULT_WRITER_SETTINGS: WriterSettings = {
 };
 
 export type ApparatusCitationStyle = "mla" | "apa" | "chicago";
+
+/**
+ * Where claim-checking searches go.
+ *
+ *  - hosted:           Twyne's own service, using the server's provider key.
+ *  - search-api:       a search API called straight from this browser (BYOK),
+ *                      configured by `searchBackend`.
+ *  - model-web-search: the writer's own model provider, with web search on.
+ *  - web-mcp:          tools discovered from the writer's MCP servers.
+ */
 export type ApparatusResearchProvider =
   | "hosted"
-  | "tinyfish"
+  | "search-api"
   | "model-web-search"
   | "web-mcp";
+
+/**
+ * Search APIs Twyne knows how to speak without configuration. "custom" covers
+ * anything else that returns JSON: give it a URL and where the results live.
+ */
+export type SearchBackendId =
+  | "tinyfish"
+  | "exa"
+  | "tavily"
+  | "brave"
+  | "serper"
+  | "custom";
+
+export interface SearchBackendConfig {
+  id: SearchBackendId;
+  apiKey: string;
+  /** Overrides the adapter's built-in endpoint. Required for "custom". */
+  baseUrl: string;
+  /**
+   * "custom" only: dotted path to the results array in the response
+   * (e.g. "data.results"). Empty means search the response for the first
+   * array of objects that carry a url.
+   */
+  resultsPath: string;
+}
+
+export const DEFAULT_SEARCH_BACKEND: SearchBackendConfig = {
+  id: "tinyfish",
+  apiKey: "",
+  baseUrl: "",
+  resultsPath: "",
+};
+
+/** Streamable HTTP is the current spec transport; SSE is the deprecated one. */
+export type McpTransportKind = "http" | "sse";
+
+/**
+ * How to reach the server. Most hosted MCP servers send no CORS headers, so
+ * "auto" tries the browser first (token stays on the device) and relays through
+ * Convex only once a direct attempt has failed.
+ */
+export type McpConnectionMode = "auto" | "direct" | "proxy";
+
+export interface McpServerConfig {
+  id: string;
+  label: string;
+  url: string;
+  transport: McpTransportKind;
+  bearerToken: string;
+  enabled: boolean;
+  connection: McpConnectionMode;
+  /** Tool that answers apparatus claim searches. Empty means auto-detect. */
+  searchToolName: string;
+  /** Offer this server's tools to the model while drafting. */
+  exposeToModel: boolean;
+  /** Treat this server's resources as citable knowledge-base material. */
+  useResources: boolean;
+}
+
+export const DEFAULT_MCP_SERVER: Omit<McpServerConfig, "id"> = {
+  label: "",
+  url: "",
+  transport: "http",
+  bearerToken: "",
+  enabled: true,
+  connection: "auto",
+  searchToolName: "",
+  exposeToModel: false,
+  useResources: true,
+};
 
 export interface ApparatusSettings {
   defaultCitationStyle: ApparatusCitationStyle;
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
   researchProvider: ApparatusResearchProvider;
-  tinyFishApiKey: string;
-  tinyFishMaxResults: number;
-  mcpEndpointUrl: string;
-  mcpToolName: string;
-  mcpBearerToken: string;
+  searchBackend: SearchBackendConfig;
+  /** Sources requested per claim, whichever provider answers. */
+  maxResults: number;
+  mcpServers: McpServerConfig[];
 }
 
 export const DEFAULT_APPARATUS_SETTINGS: ApparatusSettings = {
@@ -856,11 +1094,9 @@ export const DEFAULT_APPARATUS_SETTINGS: ApparatusSettings = {
   aiEnhanceCitations: true,
   flagMissingSources: false,
   researchProvider: "hosted",
-  tinyFishApiKey: "",
-  tinyFishMaxResults: 8,
-  mcpEndpointUrl: "",
-  mcpToolName: "search",
-  mcpBearerToken: "",
+  searchBackend: { ...DEFAULT_SEARCH_BACKEND },
+  maxResults: 8,
+  mcpServers: [],
 };
 
 export interface AiFeatureOverride {
@@ -912,6 +1148,7 @@ export interface ProviderMeta {
 /** Provider types that do speech but not language. */
 export const VOICE_ONLY_PROVIDER_TYPES: ReadonlyArray<AiProviderType> = [
   "fishaudio",
+  "supertonic",
 ];
 
 export const PROVIDER_METAS: ProviderMeta[] = [
@@ -999,6 +1236,15 @@ export const PROVIDER_METAS: ProviderMeta[] = [
     // transcription model and is kept available for voice notes.
     defaultModels: ["s2-pro", "s1", "asr-1"],
     needsBaseUrl: false,
+    voiceOnly: true,
+  },
+  {
+    type: "supertonic",
+    label: "Browser — offline voice (Supertonic)",
+    defaultModels: ["supertonic-tts"],
+    needsBaseUrl: false,
+    apiKeyOptional: true,
+    defaultApiKey: "local",
     voiceOnly: true,
   },
 ];

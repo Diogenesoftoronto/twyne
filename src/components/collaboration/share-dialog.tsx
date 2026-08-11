@@ -11,6 +11,7 @@ import { useAuth } from "../../utils/auth-context";
 import { api } from "../../../convex/_generated/api";
 import {
   promoteToShared,
+  requestActiveDraftSnapshot,
   startPresence,
   stopPresence,
   stopWatchingRemote,
@@ -55,7 +56,7 @@ export const ShareDialog = component$(
   (props: {
     folioId: string;
     folioName: string;
-    onShared$?: PropFunction<(lixId: string) => void>;
+    onShared$?: PropFunction<(lixId: string, draftHtml?: string) => void>;
     onUnshared$?: PropFunction<() => void>;
   }) => {
     const clientSig = useConvexClient();
@@ -146,14 +147,16 @@ export const ShareDialog = component$(
       store.sharing = true;
       store.error = null;
       try {
+        const draftHtml = requestActiveDraftSnapshot(props.folioId);
         const { lixId } = await promoteToShared(
           client,
           props.folioId,
           props.folioName,
+          draftHtml,
         );
         store.lixId = lixId;
         store.shared = true;
-        props.onShared$?.(lixId);
+        props.onShared$?.(lixId, draftHtml);
         startPresence(client, lixId, auth.value.user?.email);
       } catch (error) {
         reportApplicationDiagnostic("twyne:collaboration:share", error, {
@@ -181,17 +184,20 @@ export const ShareDialog = component$(
       store.inviteMsg = null;
       store.inviteError = null;
       try {
-        const result = await client.mutation(
+        const result = await client.action(
           api.collaboration.inviteCollaborator,
           {
             lixId: store.lixId,
+            folioName: props.folioName,
             email,
             role: store.inviteRole,
           },
         );
         store.inviteMsg = result.alreadyInvited
           ? "Already invited."
-          : `Invitation sent to ${email}.`;
+          : result.emailDelivered
+            ? `Invitation emailed to ${email}.`
+            : `Invitation created for ${email}. Copy the invite link to deliver it.`;
         store.inviteEmail = "";
         // Refresh collaborator list.
         const collabs = await client.query(api.collaboration.getCollaborators, {

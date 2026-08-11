@@ -24,6 +24,7 @@ import type { Editor } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 import type {
   DocumentMeta,
+  DraftContentDetail,
   Folio,
   LayoutSettings,
   PersonaNotePayload,
@@ -58,6 +59,7 @@ import {
   type TextCase,
 } from "../../utils/typography-options";
 import { speak } from "../../utils/speech";
+import { createRevisionSnapshot } from "../../utils/revision-history";
 
 /**
  * The reading the toolbar owns. Stable rather than derived from the
@@ -114,7 +116,7 @@ import {
 } from "../../utils/reconcile-comments";
 import { bindNetworkStatusEvents } from "../../utils/convex-sync";
 import {
-  computeDocumentMeta,
+  applyDocumentMeta,
   formatWordCount,
   readingTimeLabel,
 } from "../../utils/document";
@@ -145,6 +147,8 @@ import { Pagination, type PaginationInfo } from "./extensions/pagination";
 import { ParagraphFormat } from "./extensions/paragraph-format";
 import { SyncDot, LastSavedLine } from "./sync-indicator";
 import {
+  DRAFT_SNAPSHOT_REQUEST,
+  type DraftSnapshotRequest,
   startPresence,
   stopPresence,
   updateCursor,
@@ -257,7 +261,6 @@ export interface EditorNote {
 
 export interface EditorStore {
   editor: Editor | null;
-  content: string;
   meta: DocumentMeta;
   isDragOver: boolean;
   isAnalysisRunning: boolean;
@@ -336,6 +339,8 @@ export interface EditorStore {
    * which painting page frames is worth doing.
    */
   paginationActive: boolean;
+  /** Mobile progressive disclosure for the compositor's full tool set. */
+  mobileToolbarExpanded: boolean;
 }
 
 /** The popover for a writer-authored inline comment, anchored to its mark. */
@@ -361,6 +366,8 @@ interface TwyneEditorProps {
   brief?: import("../../types").ProjectBrief | null;
   /** When set, the editor joins a multiplayer session (presence + remote cursors + sync). */
   sharedLixId?: string;
+  /** Commenters can inspect and discuss a shared folio without editing it. */
+  readOnly?: boolean;
 }
 
 /**
@@ -399,18 +406,17 @@ export const TwyneEditor = component$(
     activeFolio,
     brief,
     sharedLixId,
+    readOnly = false,
   }: TwyneEditorProps) => {
     const clientSig = useConvexClient();
     const auth = useAuth();
     const store = useStore<EditorStore>({
       editor: null,
-      content: "",
       meta: {
         title: "Untitled",
         wordCount: 0,
         characterCount: 0,
         readingTime: 1,
-        lastEdited: Date.now(),
       },
       isDragOver: false,
       isAnalysisRunning: false,
@@ -481,6 +487,7 @@ export const TwyneEditor = component$(
       currentKeepWithNext: false,
       pageCount: 1,
       paginationActive: false,
+      mobileToolbarExpanded: false,
     });
 
     useStyles$(`
@@ -664,21 +671,124 @@ export const TwyneEditor = component$(
           },
         };
         store.imageUploadAdapter = noSerialize(imageUploadAdapter);
-        // Debounced mirror of the manuscript into Lix key_value blocks, so
-        // editor branches (proposed edits) have real content to fork from.
+        // ── The update path ────────────────────────────────────────────────
+        //
+        // `onUpdate` fires on every keystroke, so nothing O(document) may run
+        // in it directly. Two schedulers sit behind it:
+        //
+        //   scheduleLiveMeta  throttled, cheap  — keeps the word count moving
+        //                                         while the writer types
+        //   scheduleDerive    debounced, heavy  — one `getHTML()` feeding
+        //                                         persistence, comments, the
+        //                                         Lix mirror and citations
+        //
+        // `getHTML()` is a full DOMSerializer pass over the manuscript and is
+        // the most expensive call in the path, so it belongs in the second
+        // group only. The debounce carries a max-wait so a writer who never
+        // pauses still gets persisted on a bounded schedule.
+        const LIVE_META_THROTTLE_MS = 200;
+        const DERIVE_DEBOUNCE_MS = 500;
+        const DERIVE_MAX_WAIT_MS = 2500;
+
+        let liveMetaTimer: ReturnType<typeof setTimeout> | null = null;
+        const scheduleLiveMeta = (e: Editor) => {
+          if (liveMetaTimer) return; // leading-edge throttle: counts keep moving
+          liveMetaTimer = setTimeout(() => {
+            liveMetaTimer = null;
+            applyDocumentMeta(store.meta, e.getText());
+          }, LIVE_META_THROTTLE_MS);
+        };
+
+        let deriveTimer: ReturnType<typeof setTimeout> | null = null;
+        let deriveDeadline = 0;
+        const runDerive = (e: Editor) => {
+          if (deriveTimer) clearTimeout(deriveTimer);
+          deriveTimer = null;
+          deriveDeadline = 0;
+
+          const text = e.getText();
+          const html = e.getHTML();
+
+          applyDocumentMeta(store.meta, text);
+          reconcileCommentsDebounced(html);
+          mirrorDraft(html);
+
+          const citations = detectCitations(text);
+          if (citations.length > 0) {
+            window.dispatchEvent(
+              new CustomEvent("twyne:citations", { detail: citations }),
+            );
+          }
+
+          // Consumers read the derived fields off the detail. None of them
+          // should run regexes back over `html` to recover prose or counts.
+          window.dispatchEvent(
+            new CustomEvent<DraftContentDetail>("twyne:content", {
+              detail: { html, text, wordCount: store.meta.wordCount },
+            }),
+          );
+        };
+        const scheduleDerive = (e: Editor) => {
+          const now = Date.now();
+          if (!deriveDeadline) deriveDeadline = now + DERIVE_MAX_WAIT_MS;
+          if (now >= deriveDeadline) {
+            runDerive(e);
+            return;
+          }
+          if (deriveTimer) clearTimeout(deriveTimer);
+          deriveTimer = setTimeout(
+            () => runDerive(e),
+            Math.min(DERIVE_DEBOUNCE_MS, deriveDeadline - now),
+          );
+        };
+        cleanup(() => {
+          if (liveMetaTimer) clearTimeout(liveMetaTimer);
+          if (deriveTimer) clearTimeout(deriveTimer);
+        });
+
+        // A debounce that never fires is lost work. If the writer closes the
+        // tab mid-window, derive now so the route can persist the last
+        // keystrokes — it flushes straight to disk once the page is hidden.
+        const flushDerive = () => {
+          if (deriveTimer) runDerive(editor);
+        };
+        window.addEventListener("pagehide", flushDerive);
+        document.addEventListener("visibilitychange", flushDerive);
+        cleanup(() => {
+          window.removeEventListener("pagehide", flushDerive);
+          document.removeEventListener("visibilitychange", flushDerive);
+        });
+
+        // The route stamps this once content is actually on disk locally.
+        const onDraftSaved = () => {
+          store.lastSavedAt = Date.now();
+        };
+        window.addEventListener("twyne:draft-saved", onDraftSaved);
+        cleanup(() =>
+          window.removeEventListener("twyne:draft-saved", onDraftSaved),
+        );
+
+        // Mirror of the manuscript into Lix key_value blocks, so editor
+        // branches (proposed edits) have real content to fork from.
+        //
+        // Only a shared session needs a *continuous* mirror: `watchRemoteChanges`
+        // is the sole reader, and it only runs when `sharedLixId` is set. Solo
+        // writers were paying for a full DOMParser re-parse plus one SQLite
+        // round trip per block, on the main thread, every time they paused
+        // typing — to populate rows nobody read. The accept-suggestion flow
+        // syncs on demand right before it needs the blocks, so it stays correct
+        // either way.
         let mirrorTimer: ReturnType<typeof setTimeout> | null = null;
         const mirrorDraft = (html: string) => {
+          if (!sharedLixId) return;
           if (mirrorTimer) clearTimeout(mirrorTimer);
           mirrorTimer = setTimeout(() => {
-            void syncDraftToLix(store.activeFolioId, html).then(() => {
-              // Stamp the "Saved Xs ago" line. The mirror only
-              // writes when there's actual content; we treat
-              // that as the source of truth for "your changes
-              // are on disk locally".
-              store.lastSavedAt = Date.now();
-            });
+            void syncDraftToLix(store.activeFolioId, html);
           }, 1200);
         };
+        cleanup(() => {
+          if (mirrorTimer) clearTimeout(mirrorTimer);
+        });
 
         // Reconciliation of writer comments against the current
         // document. Debounced to avoid walking the doc on every
@@ -705,6 +815,7 @@ export const TwyneEditor = component$(
         };
         const editor = new Editor({
           element: el,
+          editable: !readOnly,
           extensions: [
             StarterKit.configure({
               heading: { levels: [1, 2, 3] },
@@ -818,25 +929,28 @@ export const TwyneEditor = component$(
             },
           },
           onUpdate: ({ editor: e }) => {
-            const text = e.getText();
-            const html = e.getHTML();
-            store.content = html;
-            store.meta = computeDocumentMeta(text);
-            mirrorDraft(html);
-            reconcileCommentsDebounced(html);
-
-            const citations = detectCitations(text);
-            if (citations.length > 0) {
-              window.dispatchEvent(
-                new CustomEvent("twyne:citations", { detail: citations }),
-              );
-            }
-
-            window.dispatchEvent(
-              new CustomEvent("twyne:content", { detail: html }),
-            );
+            scheduleLiveMeta(e);
+            scheduleDerive(e);
           },
         });
+
+        // Sharing must serialize the exact document Tiptap owns, including
+        // edits still inside the route's persistence debounce. The share
+        // control requests this snapshot synchronously immediately before it
+        // mirrors and serializes Lix.
+        const provideDraftSnapshot = (event: Event) => {
+          const detail = (event as CustomEvent<DraftSnapshotRequest>).detail;
+          if (detail.folioId === store.activeFolioId) {
+            detail.html = editor.getHTML();
+          }
+        };
+        window.addEventListener(DRAFT_SNAPSHOT_REQUEST, provideDraftSnapshot);
+        cleanup(() =>
+          window.removeEventListener(
+            DRAFT_SNAPSHOT_REQUEST,
+            provideDraftSnapshot,
+          ),
+        );
 
         const refreshActive = () => {
           const { from, to } = editor.state.selection;
@@ -896,7 +1010,9 @@ export const TwyneEditor = component$(
           store.canUndo = editor.can().undo();
           store.canRedo = editor.can().redo();
         };
-        editor.on("selectionUpdate", refreshActive);
+        // `transaction` already covers selection-only changes, so registering
+        // `selectionUpdate` too just ran this — and its four `editor.can()`
+        // dry-run transactions — a second time per keystroke.
         editor.on("transaction", refreshActive);
 
         // Walk the doc for endnote/footnote atoms so the bottom-of-manuscript
@@ -916,13 +1032,33 @@ export const TwyneEditor = component$(
           });
           store.notes = notes;
         };
-        editor.on("update", refreshNotes);
-        refreshNotes();
 
         const refreshOutline = () => {
           store.outline = buildDocumentOutline(editor.state.doc);
         };
-        editor.on("transaction", refreshOutline);
+
+        // The outline rail, the notes panel and the diagram renderer each walk
+        // or re-render the whole document. None of them has to keep up with
+        // the keyboard — they only have to be right once the writer pauses.
+        // Previously all three ran on every transaction, so moving the caret
+        // through a long manuscript re-walked it twice and re-ran Mermaid.
+        const STRUCTURE_DEBOUNCE_MS = 300;
+        let structureTimer: ReturnType<typeof setTimeout> | null = null;
+        const scheduleStructureRefresh = () => {
+          if (structureTimer) clearTimeout(structureTimer);
+          structureTimer = setTimeout(() => {
+            structureTimer = null;
+            refreshOutline();
+            refreshNotes();
+            renderMermaid();
+          }, STRUCTURE_DEBOUNCE_MS);
+        };
+        editor.on("update", scheduleStructureRefresh);
+        cleanup(() => {
+          if (structureTimer) clearTimeout(structureTimer);
+        });
+
+        refreshNotes();
         refreshOutline();
 
         const refreshSlashMenu = () => {
@@ -942,11 +1078,20 @@ export const TwyneEditor = component$(
         refreshSlashMenu();
 
         // Seed the colophon (word count, folios) from the loaded draft.
-        store.meta = computeDocumentMeta(editor.getText());
+        applyDocumentMeta(store.meta, editor.getText());
 
         // ── Mermaid rendering ──
         mermaid.initialize({ startOnLoad: false, theme: "base" });
-        const renderMermaid = () => {
+        function renderMermaid() {
+          // Most manuscripts contain no diagram at all; there is no reason to
+          // schedule a frame and hand Mermaid the document to scan for one.
+          let hasDiagram = false;
+          editor.state.doc.descendants((node) => {
+            if (hasDiagram) return false;
+            if (node.type.name === "mermaidDiagram") hasDiagram = true;
+            return !hasDiagram;
+          });
+          if (!hasDiagram) return;
           requestAnimationFrame(() => {
             mermaid
               .run({ querySelector: ".twyne-mermaid-diagram" })
@@ -954,9 +1099,8 @@ export const TwyneEditor = component$(
                 // Mermaid syntax errors are benign; leave the source visible.
               });
           });
-        };
+        }
         renderMermaid();
-        editor.on("update", renderMermaid);
 
         // ── Multiplayer: presence + remote cursors + remote content sync ──
         if (sharedLixId && clientSig.value) {
@@ -1402,7 +1546,7 @@ export const TwyneEditor = component$(
         const onLoadFolio = (e: Event) => {
           const content = (e as CustomEvent).detail as string;
           editor.commands.setContent(content, { emitUpdate: false });
-          store.meta = computeDocumentMeta(editor.getText());
+          applyDocumentMeta(store.meta, editor.getText());
         };
         window.addEventListener("twyne:load-folio", onLoadFolio);
 
@@ -1795,6 +1939,14 @@ export const TwyneEditor = component$(
       const editor = store.editor;
       if (!pop || !editor) return;
       store.suggestionPopover = { ...pop, busy: true };
+
+      await createRevisionSnapshot({
+        folioId: store.activeFolioId,
+        html: editor.getHTML(),
+        label: `Before accepting ${pop.author}'s suggestion`,
+        source: "feedback",
+        force: true,
+      });
 
       const range = findSuggestionRange(editor, pop.id);
       if (range) {
@@ -2591,6 +2743,15 @@ export const TwyneEditor = component$(
 
     return (
       <div class="flex flex-1 flex-col min-h-0">
+        {readOnly && (
+          <div
+            class="border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-2 text-xs text-[var(--color-ink-light)]"
+            role="status"
+          >
+            Commenter access. You can read and discuss this folio, but only its
+            owner and editors can change the manuscript.
+          </div>
+        )}
         {/* Sticky chrome stack: toolbar plus whichever inline input bar is
             active (image, note, comment, mermaid). All live in one sticky
             wrapper so the active bar always sits flush under the toolbar
@@ -2601,7 +2762,7 @@ export const TwyneEditor = component$(
         >
         {/* ── Toolbar (compositor's stick) ───────────────── */}
         <div
-          class="twyne-toolbar flex items-center gap-1 px-2 sm:px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] flex-nowrap overflow-x-auto sm:flex-wrap sm:overflow-x-visible"
+          class={`twyne-toolbar ${store.mobileToolbarExpanded ? "is-expanded" : "is-compact"} flex items-center gap-1 px-2 sm:px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] sm:flex-wrap sm:overflow-x-visible`}
           style="font-family: var(--font-typewriter);"
           role="toolbar"
           aria-label="Formatting"
@@ -3524,6 +3685,16 @@ export const TwyneEditor = component$(
               </div>
             )}
           </div>
+          <button
+            type="button"
+            class="mobile-tool-toggle tool-btn sm:hidden"
+            aria-expanded={store.mobileToolbarExpanded}
+            onClick$={() => {
+              store.mobileToolbarExpanded = !store.mobileToolbarExpanded;
+            }}
+          >
+            {store.mobileToolbarExpanded ? "Fewer tools" : "More tools"}
+          </button>
         </div>
 
         {store.showFindReplace && (

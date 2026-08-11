@@ -9,6 +9,7 @@
  * exactly the models that can least afford it.
  */
 import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { createRequire } from "node:module";
 import type { AiSettings } from "../types";
 import type { AgentRequest } from "../../convex/agentPrompts";
 
@@ -16,7 +17,23 @@ import type { AgentRequest } from "../../convex/agentPrompts";
 let replies: string[] = [];
 let calls: { prompt: string }[] = [];
 
+// These mocks are process-global under Bun's full-suite worker, so re-register
+// them for this file and keep them to a narrow override: spread the real
+// modules so any other file co-located in the worker still sees a complete
+// module, and count on a later mock.module() registration replacing this one.
+const realAi = await import(
+  `${createRequire(import.meta.url).resolve("ai")}?ai-client-reasoning-test-real`
+);
+const realAiEvals = await import(
+  `${createRequire(import.meta.url).resolve("./ai-evals")}?ai-client-reasoning-test-real`
+);
+
+// Spread the real SDK so only the two functions under test are stubbed: any
+// other file in the same worker still sees a complete `ai` module instead of
+// a partial stand-in, and a later mock.module() registration replaces this
+// one anyway.
 mock.module("ai", () => ({
+  ...realAi,
   generateText: async ({ prompt }: { prompt: string }) => {
     calls.push({ prompt });
     return {
@@ -29,17 +46,22 @@ mock.module("ai", () => ({
   streamText: () => {
     throw new Error("streamText not used in these tests");
   },
-  stepCountIs: (n: number) => n,
-  tool: (definition: unknown) => definition,
-  jsonSchema: (schema: unknown) => schema,
 }));
 
-// Keep the trace exporter out of it — these tests are about call counts.
+// Keep the trace exporter out of it — these tests are about call counts —
+// while preserving every other export for files that share this worker.
 mock.module("./ai-evals", () => ({
+  ...realAiEvals,
   captureAiGeneration: async () => undefined,
 }));
 
-const { runClientAgent } = await import("./ai-client");
+// `ai-orchestrator.test.ts` also mocks ./ai-client process-globally, so a
+// plain `./ai-client` import here can resolve to that mock instead of the
+// real module. Import a private instance — same pattern ai-orchestrator.test.ts
+// and ai-client-browser.test.ts use to stay immune to cross-file mocks.
+const { runClientAgent } = await import(
+  `./ai-client?ai-client-reasoning-test=${Date.now()}`
+);
 
 const DRAFT =
   "Most companies treat AI like a vending machine. You put a prompt in, and a polished paragraph comes out. The paragraph never disappoints anyone.";

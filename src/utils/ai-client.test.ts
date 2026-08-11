@@ -1,17 +1,36 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import { afterEach, describe, expect, mock, test } from "bun:test";
+import { createRequire } from "node:module";
 import { PROVIDER_METAS } from "../types";
 import type { AiFeature, AiProviderConfig, AiSettings } from "../types";
-import {
+
+// `ai-client-reasoning.test.ts` stubs the `ai` SDK process-globally under
+// Bun's full-suite worker, so the import graph below can resolve to that
+// generateText stub instead of the real SDK. Re-register a pass-through mock
+// here — a later mock.module() registration replaces an earlier one, so this
+// file always sees the real SDK no matter which files ran before it.
+const realAi = await import(
+  `${createRequire(import.meta.url).resolve("ai")}?ai-client-test-real`
+);
+mock.module("ai", () => ({ ...realAi }));
+
+// `ai-orchestrator.test.ts` mocks ./ai-client process-globally under Bun's
+// full-suite worker, so a plain `./ai-client` import here can resolve to that
+// three-export mock instead of the real module. Import a private instance —
+// same pattern ai-orchestrator.test.ts and ai-client-browser.test.ts use to
+// stay immune to cross-file mocks.
+const {
   discoverProviderModels,
   hasConfiguredAiProvider,
   hasConfiguredVoiceProvider,
   parseCitationFormatResult,
   parseMissingSourceResult,
+  parseSourceMapResult,
   providerSupportsFeature,
   resolveFeatureConfig,
   runClientVoiceTranscribe,
   runClientVoiceSpeech,
-} from "./ai-client";
+  usesOpenAiResponsesApi,
+} = await import(`./ai-client?ai-client-test=${Date.now()}`);
 
 const ALL_FEATURES: AiFeature[] = [
   "persona-feedback",
@@ -24,9 +43,38 @@ const ALL_FEATURES: AiFeature[] = [
   "citation-format",
   "source-summarize",
   "source-detect-missing",
+  "source-extract",
+  "source-map",
   "interview-turn",
   "dossier-check",
 ];
+
+describe("source map parsing", () => {
+  test("drops unknown nodes and malformed relationships", () => {
+    const result = parseSourceMapResult(
+      JSON.stringify({
+        annotations: [
+          { nodeId: "a", relevance: "Supports the opening claim", stance: "supports", score: 9 },
+          { nodeId: "missing", relevance: "Invented" },
+        ],
+        clusters: [{ id: "theme", label: "Opening claim" }],
+        clusterOf: { a: "theme", missing: "theme", b: "unknown" },
+        edges: [
+          { from: "a", to: "b", kind: "supports" },
+          { from: "a", to: "missing", kind: "supports" },
+          { from: "a", to: "b", kind: "teleports" },
+        ],
+      }),
+      new Set(["a", "b"]),
+      "test",
+    );
+    expect(result?.annotations.a.score).toBe(5);
+    expect(result?.annotations.missing).toBeUndefined();
+    expect(result?.clusterOf).toEqual({ a: "theme" });
+    expect(result?.edges).toHaveLength(1);
+    expect(result?.edges[0].origin).toBe("model");
+  });
+});
 
 function makeSettings(overrides: Partial<AiSettings> = {}): AiSettings {
   return {
@@ -49,6 +97,12 @@ function makeSettings(overrides: Partial<AiSettings> = {}): AiSettings {
 }
 
 describe("ai-client provider resolution", () => {
+  test("opts into Responses API explicitly and keeps existing providers on chat", () => {
+    expect(usesOpenAiResponsesApi({})).toBe(false);
+    expect(usesOpenAiResponsesApi({ apiMode: "chat" })).toBe(false);
+    expect(usesOpenAiResponsesApi({ apiMode: "responses" })).toBe(true);
+  });
+
   test("treats configured providers as active even when advancedMode is false", () => {
     const settings = makeSettings({ advancedMode: false });
 

@@ -128,6 +128,8 @@ function buildDecorations(
           Decoration.widget(safePos, () => {
             const el = document.createElement("span");
             el.className = "remote-cursor";
+            el.dataset.collaborator = c.displayName;
+            el.setAttribute("aria-label", `${c.displayName}'s cursor`);
             el.style.cssText = `position:relative;display:inline-block;width:2px;height:1.4em;background:${c.color};vertical-align:text-bottom;margin-left:-1px;`;
             const label = document.createElement("span");
             label.style.cssText = `position:absolute;top:-1.2em;left:0;white-space:nowrap;font-size:9px;line-height:1;padding:1px 4px;border-radius:2px;background:${c.color};color:#fff;font-family:var(--font-typewriter,monospace);pointer-events:none;`;

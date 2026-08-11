@@ -25,6 +25,15 @@ const collectionEntry = {
 };
 
 export default defineSchema({
+  // Optimistic concurrency head for the bulk browser snapshot. Every push
+  // compares the revision it last pulled with this row before writing, so two
+  // open devices cannot silently ratify stale state over one another.
+  syncHeads: defineTable({
+    userId: v.string(),
+    revision: v.number(),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"]),
+
   folioEntries: defineTable(collectionEntry)
     .index("by_userId", ["userId"])
     .index("by_userId_itemId", ["userId", "itemId"]),

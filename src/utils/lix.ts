@@ -10,7 +10,14 @@
  * the rest of the app uses.
  */
 
-import { openLixInMemory, createVersion, switchVersion, mergeVersion, toBlob } from "@lix-js/sdk";
+import {
+  closeLix,
+  openLixInMemory,
+  createVersion,
+  switchVersion,
+  mergeVersion,
+  toBlob,
+} from "@lix-js/sdk";
 import { plugin as jsonPlugin } from "@lix-js/plugin-json";
 import type { LixChangeProposal, LixVersion } from "../types";
 import { loadLixBlobFromIdb, saveLixBlobToIdb } from "./idb";
@@ -22,34 +29,74 @@ export const COMMENTS_PATH = "/comments.json";
 const PROPOSAL_PREFIX = "twyne-proposal";
 const AUTOSAVE_INTERVAL_MS = 5_000;
 
-let _lix: Awaited<ReturnType<typeof openLixInMemory>> | null = null;
-let _lixPromise: Promise<Awaited<ReturnType<typeof openLixInMemory>>> | null = null;
+type LixInstance = Awaited<ReturnType<typeof openLixInMemory>>;
+
+let _lix: LixInstance | null = null;
+let _lixPromise: Promise<LixInstance> | null = null;
+let _lixGeneration = 0;
 let _autosaveTimer: ReturnType<typeof setInterval> | null = null;
 let _dirty = false;
 
-export async function getLix() {
+export async function getLix(): Promise<LixInstance> {
   if (_lix) return _lix;
   if (_lixPromise) return _lixPromise;
 
-  _lixPromise = (async () => {
+  const generation = _lixGeneration;
+  const opening: Promise<LixInstance> = (async () => {
     const existingBlob = await loadLixBlobFromIdb();
 
-    _lix = await openLixInMemory({
+    const opened = await openLixInMemory({
       blob: existingBlob ?? undefined,
       providePlugins: [jsonPlugin as unknown as any],
-      keyValues: [{ key: "lix-sync", value: "false" }],
+      keyValues: [{ key: "lix_sync", value: "false" }],
     });
 
+    // A shared document may have replaced the singleton while IndexedDB and
+    // SQLite were still opening. Never let that older local instance win the
+    // race and silently become active again.
+    if (generation !== _lixGeneration) {
+      await closeLix({ lix: opened });
+      return getLix();
+    }
+
+    _lix = opened;
     startAutosave();
 
-    return _lix;
+    return opened;
   })();
+  _lixPromise = opening;
 
-  _lixPromise.catch(() => {
-    _lixPromise = null; // allow retry on next call
+  opening.catch(() => {
+    if (_lixPromise === opening) {
+      _lixPromise = null; // allow retry on next call
+    }
   });
 
-  return _lixPromise;
+  return opening;
+}
+
+/**
+ * Install an already-opened Lix as the one app-wide instance.
+ *
+ * Joining used to leave the shared database in a local variable while every
+ * reader and writer continued using the original local singleton. Swapping it
+ * here makes the editor, proposal helpers, autosave, and remote polling all
+ * observe the same database. Cached mirror state belongs to the old database
+ * and must be cleared with it.
+ */
+export async function replaceLix(next: LixInstance): Promise<void> {
+  const previous = _lix;
+  _lixGeneration += 1;
+  _lix = next;
+  _lixPromise = Promise.resolve(next);
+  _dirty = false;
+  mirroredBlocks.clear();
+  mirroredOrder.clear();
+  startAutosave();
+
+  if (previous && previous !== next) {
+    await closeLix({ lix: previous });
+  }
 }
 
 function markDirty() {
@@ -168,15 +215,67 @@ export function splitBlocks(html: string): DraftBlock[] {
 }
 
 /**
+ * What we last wrote to Lix, per folio: block id → html, plus the serialized
+ * order. Lets a mirror skip blocks the writer did not touch.
+ *
+ * Safe between singleton replacements because `replaceLix()` clears both
+ * caches when a joined database becomes active. If a remote change-set
+ * overwrites a block underneath us, the local html is by definition unchanged
+ * too, so skipping the write is the correct outcome — the remote value wins,
+ * which is the point of pulling it.
+ */
+const mirroredBlocks = new Map<string, Map<string, string>>();
+const mirroredOrder = new Map<string, string>();
+
+/**
  * Mirror the live manuscript into Lix key_value entries on the current
- * version. Called from the editor's debounced autosave. Overwrites all block
- * keys and the order list for the folio.
+ * version, writing only what actually moved.
+ *
+ * This used to `await` a SELECT-then-UPDATE per top-level block, in sequence.
+ * Lix is SQLite compiled to WASM running on the main thread, and the JSON
+ * change-control plugin records a change row per write — so a 300-paragraph
+ * manuscript cost 600 serialized statements and 300 change records on every
+ * autosave. `await` yielded to the microtask queue between them but the CPU
+ * work stayed on the main thread, which is what made typing stutter after a
+ * pause. Now it is one DELETE plus one batched INSERT covering only the
+ * changed blocks, and it returns without touching the database at all when
+ * nothing changed.
  */
 export async function syncDraftToLix(folioId: string, html: string): Promise<void> {
   if (!folioId) return;
   const blocks = splitBlocks(html);
-  for (const b of blocks) await kvUpsert(blockKey(folioId, b.id), b.html);
-  await kvUpsert(orderKey(folioId), JSON.stringify(blocks.map((b) => b.id)));
+  const next = new Map(blocks.map((b) => [b.id, b.html]));
+  const previous = mirroredBlocks.get(folioId);
+  const order = JSON.stringify(blocks.map((b) => b.id));
+
+  const changed = previous
+    ? blocks.filter((b) => previous.get(b.id) !== b.html)
+    : blocks;
+  const removed = previous
+    ? [...previous.keys()].filter((id) => !next.has(id))
+    : [];
+  const orderChanged = mirroredOrder.get(folioId) !== order;
+
+  if (!changed.length && !removed.length && !orderChanged) return;
+
+  const lix = await getLix();
+  const staleKeys = [
+    ...changed.map((b) => blockKey(folioId, b.id)),
+    ...removed.map((id) => blockKey(folioId, id)),
+    ...(orderChanged ? [orderKey(folioId)] : []),
+  ];
+  await lix.db.deleteFrom("key_value").where("key", "in", staleKeys).execute();
+
+  const rows = [
+    ...changed.map((b) => ({ key: blockKey(folioId, b.id), value: b.html })),
+    ...(orderChanged ? [{ key: orderKey(folioId), value: order }] : []),
+  ];
+  if (rows.length) {
+    await lix.db.insertInto("key_value").values(rows).execute();
+  }
+
+  mirroredBlocks.set(folioId, next);
+  mirroredOrder.set(folioId, order);
   markDirty();
 }
 

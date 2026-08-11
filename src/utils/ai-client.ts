@@ -30,6 +30,9 @@ import type {
   AiFeature,
   AiProviderConfig,
   AiFeatureOverride,
+  CanvasAnnotation,
+  CanvasCluster,
+  CanvasEdge,
   ResearchTarget,
 } from "../types";
 import { VOICE_ONLY_PROVIDER_TYPES } from "../types";
@@ -59,6 +62,28 @@ import {
   type MemoForSynthesis,
 } from "../../convex/agentPrompts";
 import { buildQuoteTools } from "../../convex/agentTools";
+import { loadApparatusSettingsFromIdb } from "./idb";
+
+/**
+ * The writer's MCP tools, if any server is marked "offer tools while writing".
+ *
+ * Imported lazily so the MCP SDK stays out of the bundle for everyone who has
+ * not connected a server, and failure-tolerant: an unreachable knowledge base
+ * should cost a persona its extra tools, not its note.
+ */
+async function loadMcpTools(): Promise<ToolSet> {
+  try {
+    const settings = await loadApparatusSettingsFromIdb();
+    const wanted = settings.mcpServers.some(
+      (s) => s.enabled && s.exposeToModel && s.url.trim(),
+    );
+    if (!wanted) return {};
+    const { buildMcpToolSet, mcpConvexClient } = await import("./mcp-research");
+    return await buildMcpToolSet(settings, mcpConvexClient());
+  } catch {
+    return {};
+  }
+}
 import type { DossierProbe, ProjectBrief as ProjectBriefType } from "../types";
 import { normalizeProbe } from "./dossier-probes";
 import {
@@ -66,6 +91,11 @@ import {
   LOCAL_MODEL_ID,
   LOCAL_PROVIDER_ID,
 } from "./desktop-bridge";
+import {
+  BROWSER_TTS_MODEL_ID,
+  BROWSER_TTS_PROVIDER_ID,
+  isBrowserTtsSupported,
+} from "./browser-inference";
 import { captureAiGeneration } from "./ai-evals";
 import {
   createAiTraceId,
@@ -105,6 +135,7 @@ import {
 } from "./application-errors";
 import type { ApplicationResult } from "../types/application-errors";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
+import { prompt as renderNamed, renderPrompt } from "./prompts";
 
 /* ── Provider factory ───────────────────────────────────────────── */
 
@@ -117,6 +148,26 @@ function isOpenAiCompatibleProvider(type: AiProviderConfig["type"]): boolean {
     type === "zai" ||
     type === "minimax"
   );
+}
+
+/** Whether this provider should use the newer OpenAI Responses API. */
+export function usesOpenAiResponsesApi(
+  config: Pick<AiProviderConfig, "apiMode">,
+): boolean {
+  return config.apiMode === "responses";
+}
+
+function openAiLanguageModel(
+  provider: {
+    chat(modelId: string): LanguageModel;
+    responses(modelId: string): LanguageModel;
+  },
+  config: Pick<AiProviderConfig, "apiMode">,
+  modelId: string,
+): LanguageModel {
+  return usesOpenAiResponsesApi(config)
+    ? provider.responses(modelId)
+    : provider.chat(modelId);
 }
 
 const TINKER_HOST = "tinker.thinkingmachines.dev";
@@ -151,6 +202,9 @@ const VOICE_FEATURES: ReadonlySet<AiFeature> = new Set<AiFeature>([
   "voice-transcription",
 ]);
 
+/** Voice-only providers that can also transcribe (ASR), not just narrate. */
+const VOICE_ASR_PROVIDERS: ReadonlySet<string> = new Set(["fishaudio"]);
+
 /** Can this provider serve the requested speech feature? */
 function supportsVoiceFeature(
   type: AiProviderConfig["type"],
@@ -167,14 +221,16 @@ function supportsVoiceFeature(
   // Audio-capable language models can transcribe by reading the recording as
   // a file. Google and local/OpenAI-compatible multimodal models use that
   // path; Anthropic-compatible endpoints are intentionally excluded because
-  // the Messages API does not define an audio content block.
+  // the Messages API does not define an audio content block. Voice-only
+  // providers must implement ASR explicitly (fishaudio does; the browser's
+  // Supertonic voice is synthesis-only).
   return (
     type === "openai" ||
     isOpenAiCompatibleProvider(type) ||
     (provider ? isTinkerProviderConfig(provider) : false) ||
     type === "google" ||
     type === "litert" ||
-    isVoiceOnlyProvider(type)
+    (isVoiceOnlyProvider(type) && VOICE_ASR_PROVIDERS.has(type))
   );
 }
 
@@ -207,13 +263,13 @@ async function createModel(
         apiKey: config.apiKey,
         baseURL: tinkerRelayBaseUrl(),
       });
-      return tinker.chat(modelId);
+      return openAiLanguageModel(tinker, config, modelId);
     }
     switch (config.type) {
       case "openai": {
         const { createOpenAI } = await import("@ai-sdk/openai");
         const openai = createOpenAI({ apiKey: config.apiKey });
-        return openai.chat(modelId);
+        return openAiLanguageModel(openai, config, modelId);
       }
       case "anthropic": {
         const { createAnthropic } = await import("@ai-sdk/anthropic");
@@ -241,7 +297,7 @@ async function createModel(
           apiKey: config.apiKey,
           baseURL: config.baseUrl,
         });
-        return openai.chat(modelId);
+        return openAiLanguageModel(openai, config, modelId);
       }
       case "deepseek":
       case "openrouter":
@@ -253,9 +309,10 @@ async function createModel(
           apiKey: config.apiKey || "local",
           baseURL: config.baseUrl,
         });
-        return openai.chat(modelId);
+        return openAiLanguageModel(openai, config, modelId);
       }
       case "fishaudio":
+      case "supertonic":
         // Voice only — there is no language model to build. Callers fall back
         // to the server path, which is the correct behaviour.
         return null;
@@ -268,7 +325,7 @@ async function createModel(
           apiKey: config.apiKey || "local",
           baseURL: config.baseUrl,
         });
-        return openai.chat(modelId);
+        return openAiLanguageModel(openai, config, modelId);
       }
       default:
         return null;
@@ -292,7 +349,8 @@ export function resolveFeatureConfig(
   provider: AiProviderConfig;
   model: string;
   temperature: number;
-  maxTokens: number;
+  /** Only set when the writer asked for a cap in Settings. */
+  maxTokens?: number;
 } | null {
   const normalized = normalizeAiSettings(settings);
   if (normalized.providers.length === 0) {
@@ -327,7 +385,7 @@ export function resolveFeatureConfig(
     provider,
     model: override?.model ?? defaultModelForFeature(feature, provider),
     temperature: override?.temperature ?? defaultTemperature(feature),
-    maxTokens: override?.maxTokens ?? defaultMaxTokens(feature),
+    maxTokens: override?.maxTokens ?? defaultMaxTokens(),
   };
 }
 
@@ -462,6 +520,12 @@ function defaultTemperature(feature: AiFeature): number {
       return 0.3;
     case "source-detect-missing":
       return 0.2;
+    // Extraction transcribes a source into cards; it should not invent. Map
+    // reads across cards for relationships, which wants a little more room.
+    case "source-extract":
+      return 0.1;
+    case "source-map":
+      return 0.3;
     case "research-web-search":
     case "research-extract":
       return 0.2;
@@ -470,40 +534,29 @@ function defaultTemperature(feature: AiFeature): number {
   }
 }
 
-function defaultMaxTokens(feature: AiFeature): number {
-  switch (feature) {
-    case "persona-feedback":
-      return 380;
-    case "persona-reply":
-      return 320;
-    case "persona-rewrite":
-      return 320;
-    case "persona-analysis":
-      return 1400;
-    case "room-synthesis":
-      return 1200;
-    case "rubric-judge":
-      return 220;
-    case "rubric-review":
-      return 1200;
-    case "voice-narration":
-    case "voice-transcription":
-      return 0;
-    case "comment-reply":
-      return 280;
-    case "citation-format":
-      return 180;
-    case "source-summarize":
-      return 200;
-    case "source-detect-missing":
-      return 350;
-    case "research-web-search":
-      return 900;
-    case "research-extract":
-      return 1600;
-    default:
-      return 300;
-  }
+/**
+ * Twyne sets no output ceiling of its own.
+ *
+ * There used to be a per-feature table of token budgets here — 380 for a
+ * persona note, 320 for a reply, and so on — sized against how long the
+ * visible answer ought to run. That reasoning was wrong in a way that only
+ * shows up on models that think before they answer: the budget is spent on the
+ * thinking too, and when it runs out mid-thought the answer never arrives. The
+ * reply then strips to nothing and the panel files a template in its place,
+ * which does not look like a failure. It looks like an editor with nothing
+ * useful to say.
+ *
+ * A ceiling was never what kept notes short — the prompts do that. All it did
+ * was truncate the cases it should have protected. So there is no default:
+ * `maxOutputTokens` goes unset and each provider applies its own model
+ * maximum, which costs nothing extra, since generation is billed on what a
+ * model actually writes rather than on what it was permitted to.
+ *
+ * A writer who wants a hard cap can still set one per feature in Settings, and
+ * that override is honoured below.
+ */
+function defaultMaxTokens(): number | undefined {
+  return undefined;
 }
 
 /* ── Public: generate speech client-side (BYOK) ─────────────────── */
@@ -563,6 +616,21 @@ export async function runClientVoiceSpeech(
       responseFormat,
       speed,
     });
+  }
+
+  if (resolved.provider.type === "supertonic") {
+    const { synthesizeSupertonic } = await import("./supertonic-tts");
+    const result = await synthesizeSupertonic(input, {
+      voice,
+      speed: typeof speed === "number" ? speed : undefined,
+    });
+    return {
+      audio: result.audio,
+      provider: "supertonic",
+      model: result.model,
+      voice: result.voice ?? voice,
+      responseFormat: result.responseFormat,
+    };
   }
 
   const baseURL =
@@ -664,7 +732,8 @@ async function runOnce({
   system?: string;
   prompt: string;
   temperature: number;
-  maxOutputTokens: number;
+  /** Undefined leaves the ceiling to the provider's model maximum. */
+  maxOutputTokens?: number;
   tools?: ToolSet;
   stopWhen?: ReturnType<typeof stepCountIs>;
   onText?: StreamText;
@@ -748,7 +817,7 @@ async function generateTrackedText({
     provider: AiProviderConfig;
     model: string;
     temperature: number;
-    maxTokens: number;
+    maxTokens?: number;
   };
   model: LanguageModel;
   system?: string;
@@ -768,7 +837,10 @@ async function generateTrackedText({
   onTrace?.(generationTraceId);
   // When tools are present the model needs at least one extra step after the
   // tool result to write its visible answer.
-  const stopWhen = tools ? stepCountIs(3) : undefined;
+  // The quote tool needs one round trip; MCP tools can chain (search, then
+  // read the document it found), so give a larger budget when they are present.
+  const toolCount = tools ? Object.keys(tools).length : 0;
+  const stopWhen = tools ? stepCountIs(toolCount > 1 ? 6 : 3) : undefined;
   const run = (userPrompt: string) =>
     runOnce({
       model,
@@ -1009,7 +1081,10 @@ export async function runClientAgent(
     const system = buildSystemPrompt(req.persona);
     const user = buildUserPrompt(req);
     const fallbackType = defaultTypeForPersona(req.persona.id);
-    const { tools, getAnchor } = buildQuoteTools(req.draftText);
+    const { tools: quoteTools, getAnchor } = buildQuoteTools(req.draftText);
+    // A persona can consult the writer's own knowledge bases while drafting a
+    // note, but only from servers explicitly marked for it in Settings.
+    const tools = { ...quoteTools, ...(await loadMcpTools()) };
     let traceId: string | undefined;
 
     const text = await generateTrackedText({
@@ -1259,6 +1334,7 @@ async function runFishAudioTranscribe(args: {
   provider: AiProviderConfig;
   model: string;
   audio: Blob;
+  signal?: AbortSignal;
 }): Promise<VoiceTranscribeResult | null> {
   const start = performance.now();
   try {
@@ -1269,6 +1345,7 @@ async function runFishAudioTranscribe(args: {
     const res = await fetch(`${FISH_AUDIO_BASE}/v1/asr`, {
       method: "POST",
       headers: { authorization: `Bearer ${args.provider.apiKey}` },
+      signal: args.signal,
       body: form,
     });
     if (!res.ok) {
@@ -1363,6 +1440,7 @@ async function runDirectAudioTranscribe(args: {
   model: string;
   audio: Blob;
   prompt?: string;
+  signal?: AbortSignal;
 }): Promise<VoiceTranscribeResult | null> {
   const model = await createModel(args.provider, args.model);
   if (!model) return null;
@@ -1376,8 +1454,7 @@ async function runDirectAudioTranscribe(args: {
     const audio = await prepareDirectAudio(args.audio, needsWavOrMp3);
     const result = await generateText({
       model,
-      system:
-        "You are a transcription service. Return only the spoken words. Preserve meaningful punctuation, but do not add commentary, summaries, speaker labels, or guesses.",
+      system: renderNamed("transcription-system"),
       messages: [
         {
           role: "user",
@@ -1398,7 +1475,9 @@ async function runDirectAudioTranscribe(args: {
         },
       ],
       temperature: 0.1,
-      maxOutputTokens: 1200,
+      abortSignal: args.signal,
+      // Unset, like everywhere else: a long dictation should come back whole
+      // rather than stop mid-sentence at a number chosen in advance.
     });
     const traceId = await captureVoiceTranscription({
       provider: args.provider.type,
@@ -1496,6 +1575,7 @@ async function captureVoiceTranscription({
 export async function runClientVoiceTranscribe(
   req: VoiceTranscribeRequest,
   settings: AiSettings,
+  opts?: { signal?: AbortSignal },
 ): Promise<VoiceTranscribeResult | null> {
   const resolved = resolveFeatureConfig(settings, "voice-transcription");
   if (!resolved) return null;
@@ -1519,6 +1599,7 @@ export async function runClientVoiceTranscribe(
       provider: resolved.provider,
       model: resolved.model,
       audio: req.audio,
+      signal: opts?.signal,
     });
   }
 
@@ -1528,6 +1609,7 @@ export async function runClientVoiceTranscribe(
       model: resolved.model,
       audio: req.audio,
       prompt: req.prompt,
+      signal: opts?.signal,
     });
   }
 
@@ -1550,6 +1632,7 @@ export async function runClientVoiceTranscribe(
     const res = await fetch(`${baseURL}/audio/transcriptions`, {
       method: "POST",
       headers: { authorization: `Bearer ${resolved.provider.apiKey}` },
+      signal: opts?.signal,
       body: form,
     });
     if (!res.ok) {
@@ -1802,6 +1885,9 @@ export async function testProvider(
     if (!model) {
       return { ok: false, latencyMs: 0, error: "Failed to create model" };
     }
+    // The one deliberate ceiling left in the codebase. This is a reachability
+    // probe, not an answer anyone reads — it only has to not throw — so it
+    // stays as small as possible rather than billing for a real generation.
     await generateText({
       model,
       prompt: "Say 'ok' and nothing else.",
@@ -1999,15 +2085,15 @@ export async function runClientCitationFormat(
   if (!model) return null;
 
   try {
-    const system = `You are a meticulous research librarian. Your only job is to take a messy, informal, or incomplete citation and return a clean, properly formatted bibliographic entry. Extract all available fields (title, author, year, URL, DOI, publisher). If information is missing, leave that field blank. Respond as JSON only.`;
+    const system = renderNamed("citation-format-system");
 
-    const user = `FORMAT THIS CITATION in ${req.style.toUpperCase()} style.
-
-Raw citation: "${req.rawText}"
-${req.context ? `Context from draft: ${req.context}` : ""}
-
-Respond with JSON only:
-{"title": "<title>", "author": "<author if known>", "year": "<year if known>", "date": "<publication date if known>", "url": "<url if known>", "doi": "<doi if known>", "publisher": "<publisher if known>", "formatted": "<full ${req.style} citation>"}`;
+    const user = renderNamed("citation-format-user", {
+      style: req.style,
+      rawText: req.rawText,
+      contextBlock: req.context
+        ? renderNamed("blocks/citation-format-context", { context: req.context })
+        : "",
+    });
 
     const text = await generateTrackedText({
       feature: "citation-format",
@@ -2044,6 +2130,131 @@ export interface SourceSummarizeResult {
   provider: string;
 }
 
+export interface SourceExtractRequest {
+  title: string;
+  author?: string;
+  url?: string;
+  markdown: string;
+}
+
+export async function runClientSourceExtract(
+  req: SourceExtractRequest,
+  settings: AiSettings,
+  onText?: StreamText,
+): Promise<string | null> {
+  const resolved = resolveFeatureConfig(settings, "source-extract");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  try {
+    const { canvasSystemPrompt } = await import("../components/canvas/openui/library");
+    const prompt = [
+      `Source title: ${req.title}`,
+      req.author ? `Author: ${req.author}` : "",
+      req.url ? `Source URL: ${req.url}` : "",
+      "Source text:",
+      req.markdown,
+    ].filter(Boolean).join("\n");
+    return await generateTrackedText({
+      feature: "source-extract",
+      resolved,
+      model,
+      system: canvasSystemPrompt(),
+      prompt,
+      spanName: "source_extract",
+      onText,
+      evalSignals: { twyne_source_chars: req.markdown.length, twyne_expected_format: "openui_lang" },
+    });
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:source-extract", err);
+    return null;
+  }
+}
+
+export interface SourceMapRequest {
+  draftText: string;
+  brief: string;
+  nodes: Array<{ id: string; title: string; text: string }>;
+}
+
+export interface SourceMapResult {
+  annotations: Record<string, CanvasAnnotation>;
+  clusterOf: Record<string, string>;
+  clusters: CanvasCluster[];
+  edges: CanvasEdge[];
+  provider: string;
+}
+
+export function parseSourceMapResult(text: string, knownNodeIds: ReadonlySet<string>, provider: string): SourceMapResult | null {
+  try {
+    const stripped = stripReasoningTags(text).trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+    const raw = JSON.parse(extractFirstJsonObject(stripped) ?? stripped) as Record<string, unknown>;
+    const annotations: Record<string, CanvasAnnotation> = {};
+    for (const item of Array.isArray(raw.annotations) ? raw.annotations : []) {
+      if (!item || typeof item !== "object") continue;
+      const row = item as Record<string, unknown>;
+      if (!knownNodeIds.has(String(row.nodeId)) || typeof row.relevance !== "string") continue;
+      const stance = ["supports", "complicates", "contradicts", "background"].includes(String(row.stance))
+        ? (row.stance as CanvasAnnotation["stance"])
+        : "background";
+      annotations[String(row.nodeId)] = {
+        relevance: row.relevance.trim(), stance,
+        draftAnchor: typeof row.draftAnchor === "string" ? row.draftAnchor.trim() || undefined : undefined,
+        score: typeof row.score === "number" ? Math.min(5, Math.max(1, Math.round(row.score))) : undefined,
+      };
+    }
+    const clusters: CanvasCluster[] = (Array.isArray(raw.clusters) ? raw.clusters : [])
+      .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+      .filter((item) => typeof item.id === "string" && typeof item.label === "string")
+      .slice(0, 7)
+      .map((item) => ({ id: String(item.id), label: String(item.label), hue: typeof item.hue === "number" ? item.hue : undefined }));
+    const clusterIds = new Set(clusters.map((cluster) => cluster.id));
+    const clusterOf: Record<string, string> = {};
+    if (raw.clusterOf && typeof raw.clusterOf === "object") {
+      for (const [nodeId, clusterId] of Object.entries(raw.clusterOf)) {
+        if (knownNodeIds.has(nodeId) && clusterIds.has(String(clusterId))) clusterOf[nodeId] = String(clusterId);
+      }
+    }
+    const allowedKinds = new Set(["supports", "complicates", "contradicts", "extends", "same-topic"]);
+    const edges: CanvasEdge[] = (Array.isArray(raw.edges) ? raw.edges : [])
+      .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
+      .filter((item) => knownNodeIds.has(String(item.from)) && knownNodeIds.has(String(item.to)) && allowedKinds.has(String(item.kind)))
+      .map((item, index) => ({
+        id: typeof item.id === "string" ? item.id : `model:${index}:${item.from}:${item.to}`,
+        from: String(item.from), to: String(item.to), kind: String(item.kind) as CanvasEdge["kind"],
+        label: typeof item.label === "string" ? item.label.trim() || undefined : undefined,
+        origin: "model" as const,
+      }));
+    return { annotations, clusterOf, clusters, edges, provider };
+  } catch {
+    return null;
+  }
+}
+
+export async function runClientSourceMap(req: SourceMapRequest, settings: AiSettings): Promise<SourceMapResult | null> {
+  const resolved = resolveFeatureConfig(settings, "source-map");
+  if (!resolved) return null;
+  const model = await createModel(resolved.provider, resolved.model);
+  if (!model) return null;
+  try {
+    const text = await generateTrackedText({
+      feature: "source-map", resolved, model,
+      system: renderNamed("source-map-system"),
+      prompt: renderPrompt(renderNamed("source-map-user"), {
+        draft: req.draftText || "(No draft text yet.)",
+        brief: req.brief || "(No project brief yet.)",
+        nodes: JSON.stringify(req.nodes),
+      }),
+      spanName: "source_map",
+      evalSignals: { twyne_canvas_nodes: req.nodes.length, twyne_expected_format: "json_source_map" },
+    });
+    return parseSourceMapResult(text, new Set(req.nodes.map((node) => node.id)), resolved.provider.type);
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:source-map", err);
+    return null;
+  }
+}
+
 export async function runClientSourceSummarize(
   req: SourceSummarizeRequest,
   settings: AiSettings,
@@ -2055,21 +2266,18 @@ export async function runClientSourceSummarize(
   if (!model) return null;
 
   try {
-    const system = `You are a research assistant tasked with summarizing sources for a writer. Given only the title (and optionally URL/author) of a source, infer what the source likely covers and provide a concise summary. Be honest about what you can and cannot know without reading the full text. Respond as JSON only.`;
+    const system = renderNamed("source-summarize-system");
 
-    const user = `SUMMARIZE THIS SOURCE for a writer's bibliography.
-
-Title: ${req.title}
-${req.author ? `Author: ${req.author}` : ""}
-${req.url ? `URL: ${req.url}` : ""}
-
-Based on the title${req.url ? " and domain" : ""}, provide:
-1. A 1-2 sentence summary of what this source likely argues or covers
-2. 2-3 key claims or findings (inferred from the title/context)
-3. A relevance score (1-10) for academic writing
-
-Respond with JSON only:
-{"summary": "<1-2 sentences>", "keyClaims": ["<claim 1>", "<claim 2>"], "relevanceScore": <1-10>}`;
+    const user = renderPrompt(renderNamed("source-summarize-user"), {
+      title: req.title,
+      authorLine: req.author
+        ? renderNamed("blocks/source-summarize-author", { author: req.author })
+        : "",
+      urlLine: req.url
+        ? renderNamed("blocks/source-summarize-url", { url: req.url })
+        : "",
+      domainSuffix: req.url ? " and domain" : "",
+    });
 
     const text = await generateTrackedText({
       feature: "source-summarize",
@@ -2180,28 +2388,18 @@ export async function runClientMissingSourceDetect(
   if (!model) return null;
 
   try {
-    const system = `You are a scholarly fact-checker reading a draft. Your job is to identify claims, statistics, or assertions that clearly need a citation or source but don't have one. Be conservative: only flag claims that are specific, factual, or research-backed (not opinions or common knowledge). Respond as JSON only.`;
+    const system = renderNamed("missing-source-detector-system");
 
     const existingBlock = req.existingSources.length
-      ? `Already-cited sources (do NOT flag claims that reference these):\n${req.existingSources.map((s) => `- ${s}`).join("\n")}`
-      : "No sources have been cited yet.";
+      ? renderNamed("blocks/missing-source-existing", {
+          sourceLines: req.existingSources.map((s) => `- ${s}`).join("\n"),
+        })
+      : renderNamed("blocks/missing-source-existing-empty");
 
-    const user = `DETECT MISSING CITATIONS in this draft.
-
-${existingBlock}
-
-Draft:
-"""
-${req.draftText.slice(0, 3000)}
-"""
-
-Identify up to 5 claims that need citations. For each:
-1. The exact claim text (quote it)
-2. Why it needs a source
-3. A suggested search query to find a source
-
-Respond with JSON only:
-{"claims": [{"claim": "<quoted claim>", "reason": "<why it needs citation>", "suggestedQuery": "<search query>"}]}`;
+    const user = renderNamed("missing-source-detector-user", {
+      existingBlock,
+      draftExcerpt: req.draftText.slice(0, 3000),
+    });
 
     const text = await generateTrackedText({
       feature: "source-detect-missing",
@@ -2406,10 +2604,22 @@ export function normalizeAiSettings(
         providers: partial.providers ?? [],
         perFeature: partial.perFeature ?? {},
       };
-  return withDesktopLocalProvider(stripManagedDesktopLocalProvider(base));
+  return withBrowserSupertonicProvider(
+    withDesktopLocalProvider(stripManagedLocalProviders(base)),
+  );
 }
 
-/** Remove the transient desktop-local provider before persisting settings. */
+/** Remove all transient auto-injected local providers before persisting. */
+function stripManagedLocalProviders(settings: AiSettings): AiSettings {
+  return stripManagedSupertonicProvider(
+    stripManagedDesktopLocalProvider(settings),
+  );
+}
+
+/**
+ * Remove the transient desktop-local provider before persisting settings.
+ * Kept public — the settings route strips it before saving.
+ */
 export function stripManagedDesktopLocalProvider(
   settings: AiSettings,
 ): AiSettings {
@@ -2431,6 +2641,66 @@ export function stripManagedDesktopLocalProvider(
     providers,
     defaultProviderId,
     perFeature,
+  };
+}
+
+/**
+ * The browser's on-device voice (Supertonic) is injected exactly like the
+ * desktop LiteRT model: a managed provider the writer never configures by
+ * hand. It is stripped on persist and re-injected on every load, so its
+ * presence in settings keeps signalling "the browser can speak for free."
+ *
+ * Unlike the desktop model it never claims the default slot — the writer's
+ * own narration provider (if any) must keep winning — and it only exists on
+ * browsers that can actually run on-device inference.
+ */
+export function stripManagedSupertonicProvider(
+  settings: AiSettings,
+): AiSettings {
+  const providers = settings.providers.filter(
+    (p) => p.id !== BROWSER_TTS_PROVIDER_ID,
+  );
+  const perFeature = Object.fromEntries(
+    Object.entries(settings.perFeature).filter(
+      ([, override]) => override?.providerId !== BROWSER_TTS_PROVIDER_ID,
+    ),
+  ) as AiSettings["perFeature"];
+
+  return {
+    ...settings,
+    providers,
+    perFeature,
+  };
+}
+
+/**
+ * Inject the browser voice provider when this browser can run on-device TTS.
+ * No-op elsewhere (SSR, old browsers), and it never takes the default slot.
+ */
+function withBrowserSupertonicProvider(settings: AiSettings): AiSettings {
+  if (!isBrowserTtsSupported()) return settings;
+
+  const provider: AiProviderConfig = {
+    id: BROWSER_TTS_PROVIDER_ID,
+    name: "Browser — offline voice",
+    type: "supertonic",
+    apiKey: "browser",
+    defaultModel: BROWSER_TTS_MODEL_ID,
+    availableModels: [BROWSER_TTS_MODEL_ID],
+  };
+  const providers = settings.providers.some(
+    (p) => p.id === BROWSER_TTS_PROVIDER_ID,
+  )
+    ? settings.providers.map((p) =>
+        p.id === BROWSER_TTS_PROVIDER_ID ? provider : p,
+      )
+    : [...settings.providers, provider];
+
+  return {
+    ...settings,
+    providers,
+    // Don't claim the default slot: the writer's own keyed provider wins.
+    defaultProviderId: settings.defaultProviderId,
   };
 }
 

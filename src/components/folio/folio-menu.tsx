@@ -9,6 +9,8 @@ import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import {
   exportAs,
+  exportDocx,
+  exportHtml,
   exportPdf,
   downloadBlob,
   safeFilename,
@@ -44,6 +46,7 @@ import {
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { captureProductEvent } from "../../utils/product-analytics";
+import { publishViaMicropub } from "../../utils/micropub";
 
 /**
  * The folio's "File" menu. Sits in the editor toolbar and gives the
@@ -116,6 +119,11 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   const pdsError = useSignal<AppError | null>(null);
   const pdsResult = useSignal<PublishResult | null>(null);
   const pdsCopyState = useSignal<"idle" | "copied">("idle");
+  const micropubEndpoint = useSignal("");
+  const micropubToken = useSignal("");
+  const micropubBusy = useSignal(false);
+  const micropubResult = useSignal<string | null>(null);
+  const micropubError = useSignal<AppError | null>(null);
 
   const store = useStore({ menuOpen: false });
   void store; // reserved for future menu state
@@ -227,7 +235,10 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     fileError.value = null;
     try {
       const payload = await buildExportPayload();
-      const blob = exportAs(format, payload);
+      const blob =
+        format === "docx"
+          ? await exportDocx(payload)
+          : exportAs(format, payload);
       const ext =
         format === "markdown"
           ? "md"
@@ -235,7 +246,9 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             ? "html"
             : format === "txt"
               ? "txt"
-              : "twyne.json";
+              : format === "docx"
+                ? "docx"
+                : "twyne.json";
       downloadBlob(blob, safeFilename(props.activeFolioName, ext));
       menuOpen.value = false;
       void captureProductEvent("draft_exported", {
@@ -532,6 +545,40 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     }
   });
 
+  const doPublishMicropub = $(async () => {
+    micropubBusy.value = true;
+    micropubError.value = null;
+    micropubResult.value = null;
+    try {
+      const payload = await buildExportPayload();
+      const standalone = exportHtml(payload);
+      const article =
+        standalone.match(/<article>([\s\S]*?)<\/article>/i)?.[1] ??
+        payload.html;
+      const result = await publishViaMicropub({
+        endpoint: micropubEndpoint.value,
+        token: micropubToken.value,
+        title: payload.title,
+        html: article,
+      });
+      micropubToken.value = "";
+      micropubResult.value = result.url ?? "Published successfully.";
+      void captureProductEvent("draft_published", {
+        destination: "micropub",
+      });
+    } catch (err) {
+      reportApplicationDiagnostic("twyne:folio:publish-micropub", err, {
+        operation: "publish-micropub",
+      });
+      micropubError.value = normalizeApplicationError(err, {
+        source: "provider",
+        metadata: { operation: "publish-micropub" },
+      });
+    } finally {
+      micropubBusy.value = false;
+    }
+  });
+
   return (
     <div class="relative" data-folio-menu>
       <button
@@ -558,6 +605,10 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             onClick$={() => doExport("markdown")}
           />
           <MenuItem label="Standalone HTML" onClick$={() => doExport("html")} />
+          <MenuItem
+            label="Microsoft Word (.docx)"
+            onClick$={() => doExport("docx")}
+          />
           <MenuItem label="Plain text" onClick$={() => doExport("txt")} />
           <MenuItem
             label="Twyne backup (.json)"
@@ -621,10 +672,10 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               class="mt-2 text-[13px] leading-5 text-[var(--color-ink-light)]"
               style="font-family: var(--font-serif);"
             >
-              Accepts <code>.md</code>, <code>.markdown</code>,{" "}
-              <code>.html</code>, <code>.htm</code>, <code>.txt</code>, and
-              Twyne backups (<code>.twyne.json</code>). The file becomes the
-              active folio.
+              Accepts <code>.docx</code>, <code>.md</code>,{" "}
+              <code>.markdown</code>, <code>.html</code>, <code>.htm</code>,{" "}
+              <code>.txt</code>, and Twyne backups (<code>.twyne.json</code>).
+              The file becomes the active folio.
             </p>
 
             <label
@@ -633,7 +684,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             >
               <input
                 type="file"
-                accept=".md,.markdown,.html,.htm,.txt,.json,text/markdown,text/html,text/plain,application/json"
+                accept=".docx,.md,.markdown,.html,.htm,.txt,.json,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/markdown,text/html,text/plain,application/json"
                 class="sr-only"
                 onChange$={async (e) => {
                   const file = (e.target as HTMLInputElement).files?.[0];
@@ -683,7 +734,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           }}
         >
           <div
-            class="folio p-5 w-[30rem] max-w-[92vw]"
+            class="folio max-h-[90vh] w-[30rem] max-w-[92vw] overflow-y-auto p-5"
             role="dialog"
             aria-modal="true"
             aria-label="Share this piece"
@@ -803,6 +854,30 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               </div>
             )}
 
+            <div class="mt-5 border-t border-dashed border-[var(--color-paper-3)] pt-4">
+              <p class="dept-label">Your own domain</p>
+              <h4
+                class="mt-1 text-[15px] text-[var(--color-ink)]"
+                style="font-family: var(--font-display); font-weight: 600;"
+              >
+                Download a site-ready page
+              </h4>
+              <p class="mt-2 text-[12px] leading-5 text-[var(--color-ink-light)]">
+                Twyne packages the piece as one complete HTML file with its
+                reading layout, print styles, notes, and bibliography. Rename
+                it <code>index.html</code>, upload it to your web host, and use
+                that host's domain or DNS settings. No Twyne account or runtime
+                is required for the published page.
+              </p>
+              <button
+                type="button"
+                class="btn-paper mt-3 w-full text-xs"
+                onClick$={() => doExport("html")}
+              >
+                Download page for my domain
+              </button>
+            </div>
+
             <div class="mt-5 pt-4 border-t border-dashed border-[var(--color-paper-3)]">
               <p class="dept-label">Your own repo</p>
               <h4
@@ -912,6 +987,93 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                 </p>
               )}
             </div>
+
+            <form
+              class="mt-5 border-t border-dashed border-[var(--color-paper-3)] pt-4"
+              preventdefault:submit
+              onSubmit$={doPublishMicropub}
+            >
+              <p class="dept-label">Your publishing system</p>
+              <h4
+                class="mt-1 text-[15px] text-[var(--color-ink)]"
+                style="font-family: var(--font-display); font-weight: 600;"
+              >
+                Publish with Micropub
+              </h4>
+              <p class="mt-2 text-[12px] leading-5 text-[var(--color-ink-light)]">
+                Works with WordPress, Ghost, IndieWeb sites, and newsletter
+                tools that provide a Micropub endpoint. Your token is used for
+                this request only and is not saved by Twyne.
+              </p>
+              <label class="field-label mt-3" for="micropub-endpoint">
+                Endpoint
+              </label>
+              <input
+                id="micropub-endpoint"
+                class="field-input w-full text-xs"
+                type="url"
+                value={micropubEndpoint.value}
+                placeholder="https://example.com/micropub"
+                onInput$={(_, element) => {
+                  micropubEndpoint.value = element.value;
+                }}
+              />
+              <label class="field-label mt-3" for="micropub-token">
+                Access token
+              </label>
+              <input
+                id="micropub-token"
+                class="field-input w-full text-xs"
+                type="password"
+                autocomplete="off"
+                value={micropubToken.value}
+                onInput$={(_, element) => {
+                  micropubToken.value = element.value;
+                }}
+              />
+              <button
+                type="submit"
+                class="btn-press mt-3 w-full"
+                disabled={
+                  micropubBusy.value ||
+                  !micropubEndpoint.value.trim() ||
+                  !micropubToken.value.trim()
+                }
+              >
+                {micropubBusy.value ? "Publishing…" : "Publish via Micropub"}
+              </button>
+              {micropubResult.value && (
+                <p
+                  class="mt-3 break-all text-xs text-[var(--color-sage)]"
+                  role="status"
+                >
+                  {micropubResult.value.startsWith("http") ? (
+                    <a
+                      href={micropubResult.value}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="underline"
+                    >
+                      Open published post ↗
+                    </a>
+                  ) : (
+                    micropubResult.value
+                  )}
+                </p>
+              )}
+              {micropubError.value && (
+                <div class="mt-3">
+                  <ApplicationNotice
+                    error={micropubError.value}
+                    compact
+                    onRetry$={doPublishMicropub}
+                    onDismiss$={$(() => {
+                      micropubError.value = null;
+                    })}
+                  />
+                </div>
+              )}
+            </form>
 
             <div class="mt-4 flex justify-end">
               <button

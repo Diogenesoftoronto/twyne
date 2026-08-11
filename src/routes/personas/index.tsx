@@ -15,10 +15,11 @@ import {
   buildVoicePreview as sharedVoicePreview,
   toAgentPersona,
 } from "../../../convex/agentPrompts";
-import { loadPersonasFromIdb, savePersonasToIdb } from "../../utils/idb";
+import { loadPersonasFromIdb } from "../../utils/idb";
 import { INK_SWATCHES } from "../../utils/palette";
 import {
   loadRoomSettingsLocally,
+  saveCustomPersonasLocally,
   saveRoomSettingsLocally,
 } from "../../utils/convex-sync";
 
@@ -217,18 +218,7 @@ export default component$(() => {
 
   const persistPersonas = $(async (next: Persona[]) => {
     store.personas = next;
-    await savePersonasToIdb(next);
-    // Mirror to Convex so the board travels with the writer.
-    const client = clientSig.value;
-    if (client) {
-      try {
-        await client.mutation(api.sync.putCustomPersonas, {
-          personas: next,
-        });
-      } catch {
-        // sync will retry; IDB is the source of truth locally.
-      }
-    }
+    await saveCustomPersonasLocally(next);
   });
 
   const persistSettings = $(async (next: RoomSettings) => {
@@ -349,7 +339,7 @@ export default component$(() => {
   });
 
   const doReset = $(async () => {
-    await savePersonasToIdb(DEFAULT_PERSONAS);
+    await saveCustomPersonasLocally(DEFAULT_PERSONAS);
     store.personas = DEFAULT_PERSONAS;
     store.showResetConfirm = false;
   });

@@ -18,8 +18,8 @@
  */
 import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
-import { getLix, persistToIdb } from "./lix";
-import { openLixInMemory, toBlob } from "@lix-js/sdk";
+import { getLix, persistToIdb, replaceLix, syncDraftToLix } from "./lix";
+import { closeLix, openLixInMemory, toBlob } from "@lix-js/sdk";
 
 const PRESENCE_INTERVAL_MS = 3000;
 const PRESENCE_STALE_MS = 30_000;
@@ -27,6 +27,28 @@ const PRESENCE_STALE_MS = 30_000;
 let _presenceTimer: ReturnType<typeof setInterval> | null = null;
 let _currentLixId: string | null = null;
 let _presenceOnHide: (() => void) | null = null;
+
+export const DRAFT_SNAPSHOT_REQUEST = "twyne:request-draft-snapshot";
+
+export interface DraftSnapshotRequest {
+  folioId: string;
+  html?: string;
+}
+
+/** Read the canonical HTML directly from the mounted Tiptap editor. */
+export function requestActiveDraftSnapshot(folioId: string): string {
+  if (typeof window === "undefined") {
+    throw new Error("The manuscript editor is not available.");
+  }
+  const detail: DraftSnapshotRequest = { folioId };
+  window.dispatchEvent(
+    new CustomEvent<DraftSnapshotRequest>(DRAFT_SNAPSHOT_REQUEST, { detail }),
+  );
+  if (detail.html === undefined) {
+    throw new Error("The manuscript is still opening. Try sharing again.");
+  }
+  return detail.html;
+}
 
 /**
  * Promote a local folio to a shared, server-hosted Lix instance.
@@ -36,7 +58,12 @@ export async function promoteToShared(
   client: ConvexClient,
   folioId: string,
   folioName: string,
+  draftHtml: string,
 ): Promise<{ lixId: string; serverUrl: string }> {
+  // A solo editor does not continuously mirror into Lix. Seed its exact,
+  // current Tiptap document before serializing so the first shared blob can
+  // never lag behind IndexedDB or an editor debounce.
+  await syncDraftToLix(folioId, draftHtml);
   const lix = await getLix();
   await persistToIdb();
   const blob = await toBlob({ lix });
@@ -80,8 +107,8 @@ export async function promoteToShared(
 }
 
 /**
- * Join a shared Lix document. Fetches the blob from the server and opens it
- * locally with sync enabled. Returns the opened Lix instance.
+ * Join a shared Lix document. Fetches the blob, opens it with sync enabled,
+ * and installs it as the app-wide singleton. Returns the sync server URL.
  */
 export async function joinSharedLix(
   client: ConvexClient,
@@ -115,17 +142,29 @@ export async function joinSharedLix(
       (await import("@lix-js/plugin-json")).plugin as unknown as any,
     ],
   });
+  let installed = false;
+  try {
+    // Set the server URL so Lix knows where to sync.
+    const serverUrl = `${baseUrl}/lsp`;
+    await lix.db
+      .insertInto("key_value")
+      .values({ key: "lix_server_url", value: serverUrl })
+      .onConflict((oc: any) => oc.doUpdateSet({ value: serverUrl }))
+      .execute();
 
-  // Set the server URL so Lix knows where to sync.
-  const serverUrl = `${baseUrl}/lsp`;
-  await lix.db
-    .insertInto("key_value")
-    .values({ key: "lix_server_url", value: serverUrl })
-    .onConflict((oc: any) => oc.doUpdateSet({ value: serverUrl }))
-    .execute();
+    // All Lix-backed readers and writers resolve through the singleton in
+    // lix.ts. Installing the joined instance is what actually moves the
+    // editor onto the shared document.
+    await replaceLix(lix);
+    installed = true;
+    await persistToIdb();
 
-  _currentLixId = lixId;
-  return { serverUrl };
+    _currentLixId = lixId;
+    return { serverUrl };
+  } catch (error) {
+    if (!installed) await closeLix({ lix });
+    throw error;
+  }
 }
 
 /* ── Remote → local sync ────────────────────────────────────────── */

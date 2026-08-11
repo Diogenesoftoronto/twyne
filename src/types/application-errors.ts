@@ -39,6 +39,7 @@ export type AppErrorRecoveryAction =
   | "check-connection"
   | "check-configuration"
   | "choose-provider"
+  | "download-required"
   | "contact-support"
   | "none";
 

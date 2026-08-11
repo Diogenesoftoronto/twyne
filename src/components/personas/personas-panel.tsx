@@ -69,6 +69,8 @@ import {
 } from "../../utils/draft-thresholds";
 import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
+import { SpeechTransport } from "../ui/speech-transport";
+import { ANALYSIS_READING_ID, speakQueue } from "../../utils/speech";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
@@ -844,37 +846,6 @@ export const PersonasPanel = component$(
           };
           feedbackList.push(fb);
           await savePersonaNoteLocally(fb, brief, activeFolioId);
-
-          // Server-side push (best-effort, no-op if not signed in).
-          const c =
-            auth.value.provider === "convex" && auth.value.user
-              ? clientSig.value
-              : null;
-          if (c) {
-            try {
-              await c.mutation(api.sync.putPersonaNote, {
-                folioId: activeFolioId,
-                noteId,
-                personaId: r.personaId,
-                personaName: persona.name,
-                personaColor: persona.color,
-                type: r.type,
-                feedback: r.text,
-                traceId: r.traceId,
-                anchor,
-                briefTitle: brief?.answers.workingTitle,
-              });
-            } catch (err) {
-              reportApplicationDiagnostic(
-                "twyne:personas:sync-persona-note",
-                err,
-                {
-                  feature: "personas",
-                  operation: "sync-persona-note",
-                },
-              );
-            }
-          }
         }
 
         store.feedback = feedbackList;
@@ -1169,6 +1140,50 @@ export const PersonasPanel = component$(
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
+    /**
+     * Read the whole room aloud, each editor in their own voice, the verdict
+     * last. Individual memos already have their own speak buttons; this exists
+     * for the writer who wants to hear the analysis rather than read it, and
+     * who should not have to hunt for the next speaker icon five times.
+     *
+     * Each memo keeps its own id, so the memo's own button lights up as the
+     * queue reaches it — the two controls stay in agreement.
+     */
+    const readRoomAloud = $(async () => {
+      const analysis = store.analysis;
+      if (!analysis) return;
+
+      const items = analysis.memos.map((memo) => {
+        const persona = store.personas.find((p) => p.id === memo.personaId);
+        return {
+          id: `analysis-memo-${memo.personaId}`,
+          text: memo.text,
+          voice: persona?.speechVoice,
+          voices: persona?.speechVoices,
+          instructions: persona?.voice,
+          label: memo.personaName,
+          client: clientSig.value ?? null,
+          signedIn: Boolean(auth.value.user),
+        };
+      });
+
+      // The verdict is what the room settled on, so it reads last.
+      if (analysis.synthesis) {
+        items.push({
+          id: "analysis-synthesis",
+          text: analysis.synthesis,
+          voice: undefined,
+          voices: undefined,
+          instructions: undefined,
+          label: "The Room's Verdict",
+          client: clientSig.value ?? null,
+          signedIn: Boolean(auth.value.user),
+        });
+      }
+
+      await speakQueue(items, { ownerId: ANALYSIS_READING_ID });
+    });
+
     /* ── Reply flow ────────────────────────────────────────────── */
 
     const openReply = $((noteId: string) => {
@@ -1222,27 +1237,6 @@ export const PersonasPanel = component$(
         store.repliesByNote = { ...store.repliesByNote, [noteId]: updated };
         void emitReplyThread(noteId);
         await addPersonaReplyLocally(userReply, activeFolioId);
-        const client =
-          auth.value.provider === "convex" && auth.value.user
-            ? clientSig.value
-            : null;
-        if (client) {
-          try {
-            await client.mutation(api.sync.addPersonaReply, {
-              folioId: activeFolioId,
-              noteId,
-              replyId: userReply.id,
-              author: userReply.author,
-              authorKind: "user",
-              text: userReply.text,
-            });
-          } catch (err) {
-            reportApplicationDiagnostic("twyne:personas:sync-user-reply", err, {
-              feature: "personas",
-              operation: "sync-user-reply",
-            });
-          }
-        }
         store.replyDraft = "";
         store.replyNoteId = null;
         store.replyingTo = null;
@@ -1453,29 +1447,6 @@ export const PersonasPanel = component$(
             };
             void emitReplyThread(noteId);
             await addPersonaReplyLocally(personaReply, activeFolioId);
-
-            if (c) {
-              try {
-                await c.mutation(api.sync.addPersonaReply, {
-                  folioId: activeFolioId,
-                  noteId,
-                  replyId: personaReply.id,
-                  author: personaReply.author,
-                  authorKind: "persona",
-                  personaId: personaReply.personaId,
-                  text: personaReply.text,
-                });
-              } catch (err) {
-                reportApplicationDiagnostic(
-                  "twyne:personas:sync-persona-reply",
-                  err,
-                  {
-                    feature: "personas",
-                    operation: "sync-persona-reply",
-                  },
-                );
-              }
-            }
           } finally {
             store.isReplying = false;
             // Clear the in-flight text before announcing the end of the reply:
@@ -1785,7 +1756,7 @@ export const PersonasPanel = component$(
       store.replyNoteId = null;
       store.replyingTo = null;
       window.dispatchEvent(new CustomEvent("twyne:clear-persona-notes"));
-      await strikeRoomLocally();
+      if (activeFolioId) await strikeRoomLocally(activeFolioId);
     });
 
     return (
@@ -2713,6 +2684,11 @@ export const PersonasPanel = component$(
                   )}
                 </div>
                 <div class="flex items-center gap-4">
+                  <SpeechTransport
+                    id={ANALYSIS_READING_ID}
+                    onPlay$={readRoomAloud}
+                    playLabel="Read the whole room aloud, each editor in turn"
+                  />
                   <Link
                     href="/analysis/"
                     class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"

@@ -6,7 +6,12 @@ import type {
 } from "../types";
 import { markDirty as markSyncDirty } from "./convex-sync";
 import { BRIEF_PATH, writeFileAsJson } from "./lix";
-import { loadBriefFromIdb, saveBriefToIdb } from "./idb";
+import {
+  loadActiveFolioIdFromIdb,
+  loadBriefFromIdb,
+  loadFolioContentFromIdb,
+  saveBriefToIdb,
+} from "./idb";
 
 export const BRIEF_STORAGE_KEY = "twyne-project-brief";
 export const DRAFT_STORAGE_KEY = "twyne-document";
@@ -118,7 +123,32 @@ export function normalizeProjectBrief(
   };
 }
 
-export function loadDraftHtml(): string {
+/**
+ * Read the live draft.
+ *
+ * The store of record is folio-scoped IndexedDB. There used to be a parallel
+ * mirror in a single global `localStorage` key, written synchronously on a
+ * timer while the writer typed — it blocked the main thread, carried the whole
+ * manuscript, and because it was one key for all folios it held whichever
+ * folio happened to save last. It is gone; this reads the active folio.
+ */
+export async function loadDraftHtml(): Promise<string> {
+  if (typeof window === "undefined") return "";
+  const folioId = await loadActiveFolioIdFromIdb();
+  if (!folioId) return "";
+  return (await loadFolioContentFromIdb(folioId)) || "";
+}
+
+export async function loadDraftText(): Promise<string> {
+  return htmlToPlainText(await loadDraftHtml());
+}
+
+/**
+ * The pre-folio draft key. Read once by the editor's migration path to seed
+ * "Folio I" for writers who last opened Twyne before folios existed. Nothing
+ * writes this key any more.
+ */
+export function loadLegacyDraftHtml(): string {
   if (typeof window === "undefined") return "";
   try {
     return localStorage.getItem(DRAFT_STORAGE_KEY) || "";
@@ -127,16 +157,61 @@ export function loadDraftHtml(): string {
   }
 }
 
-export function loadDraftText(): string {
-  return htmlToPlainText(loadDraftHtml());
+/* ── Crash mirror ───────────────────────────────────────────────────────
+ *
+ * IndexedDB is the store of record, but a write started as the tab is closing
+ * is not guaranteed to commit — the browser can tear the page down first.
+ * localStorage is synchronous, so a write there does survive.
+ *
+ * That is the *only* reason this exists, so it is written exactly once per
+ * departure (`pagehide` / tab hidden) rather than on a typing timer, and it is
+ * scoped to a folio so it cannot overwrite a different manuscript the way the
+ * old single global draft key did.
+ */
+const CRASH_MIRROR_KEY = "twyne:draft-crash-mirror";
+
+interface CrashMirror {
+  folioId: string;
+  html: string;
+  savedAt: number;
 }
 
-export function saveDraftHtml(html: string): void {
+/** Synchronously stash the manuscript on the way out. Safe to call often. */
+export function writeCrashMirror(folioId: string, html: string): void {
+  if (typeof window === "undefined" || !folioId) return;
+  try {
+    const entry: CrashMirror = { folioId, html, savedAt: Date.now() };
+    localStorage.setItem(CRASH_MIRROR_KEY, JSON.stringify(entry));
+  } catch {
+    // Quota or private mode — the IndexedDB write is still the main path.
+  }
+}
+
+/**
+ * The stashed manuscript for `folioId`, if the last departure left one.
+ *
+ * Returns it whenever it exists: it was written *after* the IndexedDB write
+ * was issued, so either that write landed (and the two agree, making this a
+ * no-op) or it did not (and this is the only surviving copy).
+ */
+export function readCrashMirror(folioId: string): string | null {
+  if (typeof window === "undefined" || !folioId) return null;
+  try {
+    const raw = localStorage.getItem(CRASH_MIRROR_KEY);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as CrashMirror;
+    return entry.folioId === folioId ? entry.html : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearCrashMirror(): void {
   if (typeof window === "undefined") return;
   try {
-    localStorage.setItem(DRAFT_STORAGE_KEY, html);
+    localStorage.removeItem(CRASH_MIRROR_KEY);
   } catch {
-    // storage unavailable
+    // nothing to clear
   }
 }
 

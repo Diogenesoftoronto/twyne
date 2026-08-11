@@ -7,6 +7,10 @@
 
 Both clients use Twyne's authenticated `POST /api/integrations/v1` boundary. The access token belongs to the local user and is never sent anywhere except the configured Twyne URL.
 
+The package also exposes local Codex and Anthropic SDK adapters. They are
+separate from Twyne account authentication: each adapter reuses the credential
+owned by its provider's official CLI.
+
 ## Install and authenticate
 
 Requires Node.js 20 or newer.
@@ -27,6 +31,35 @@ twyne auth status
 ```
 
 The environment variables must be supplied together and take precedence over the config file.
+
+## Provider SDK sign-in
+
+Install the SDK you intend to use, then sign in through its official local CLI:
+
+```sh
+npm install @twyne/tools @openai/codex-sdk @anthropic-ai/sdk
+twyne provider login codex
+twyne provider login anthropic
+
+twyne provider status codex
+twyne provider status anthropic
+```
+
+Codex opens the ChatGPT sign-in flow and stores its own credential. Anthropic
+delegates to `ant auth login`, which creates an Anthropic profile consumed by
+the SDK. `twyne provider logout codex|anthropic` delegates sign-out to the same
+official CLI. Twyne does not copy provider tokens into its own config.
+
+```ts
+import { runAnthropicTask, runCodexTask } from "@twyne/tools";
+
+const codex = await runCodexTask("Review this repository", {
+  workingDirectory: process.cwd(),
+});
+const claude = await runAnthropicTask("Outline this chapter", {
+  profile: "default",
+});
+```
 
 ## CLI
 

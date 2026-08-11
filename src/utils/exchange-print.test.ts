@@ -19,7 +19,6 @@ function payload(overrides: Partial<ExportPayload> = {}): ExportPayload {
       wordCount: 2,
       characterCount: 10,
       readingTime: 1,
-      lastEdited: Date.now(),
     },
     marginalia: [],
     ...overrides,

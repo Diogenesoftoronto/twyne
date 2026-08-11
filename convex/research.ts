@@ -38,55 +38,205 @@ export interface FetchedSource {
   embeddable: boolean;
 }
 
-/* ── TinyFish provider (default) ──────────────────────────────── */
+/* ── Hosted search provider ───────────────────────────────────── */
 
-const TINYFISH_SEARCH_URL = "https://api.search.tinyfish.ai/v1/search";
-const TINYFISH_FETCH_URL = "https://api.fetch.tinyfish.ai/v1/fetch";
+/**
+ * Which upstream the hosted path calls, chosen by env so the deployment can
+ * change vendors without a code change:
+ *
+ *   RESEARCH_PROVIDER   tinyfish | exa | tavily | brave | serper | custom
+ *   RESEARCH_API_KEY    the key for that provider
+ *   RESEARCH_SEARCH_URL overrides the built-in endpoint (required for custom)
+ *   RESEARCH_FETCH_URL  url→markdown endpoint, if the provider has one
+ *
+ * TINYFISH_API_KEY is still honoured so existing deployments keep working.
+ */
 
-async function tinyfishSearch(
+type ProviderId = "tinyfish" | "exa" | "tavily" | "brave" | "serper" | "custom";
+
+interface ProviderSpec {
+  searchUrl: string;
+  fetchUrl?: string;
+  /** Build the search request for this vendor. */
+  search: (
+    key: string,
+    query: string,
+    context: string,
+    limit: number,
+  ) => { url: string; init: RequestInit };
+  /** Where the hits sit in the response. */
+  path: (body: unknown) => unknown;
+}
+
+const PROVIDERS: Record<ProviderId, ProviderSpec> = {
+  tinyfish: {
+    searchUrl: "https://api.search.tinyfish.ai/v1/search",
+    fetchUrl: "https://api.fetch.tinyfish.ai/v1/fetch",
+    search: (key, query, context, limit) => ({
+      url: providerSearchUrl("https://api.search.tinyfish.ai/v1/search"),
+      init: jsonPost({ authorization: `Bearer ${key}` }, {
+        query,
+        context,
+        num_results: limit,
+      }),
+    }),
+    path: (b) => (b as { results?: unknown })?.results,
+  },
+  exa: {
+    searchUrl: "https://api.exa.ai/search",
+    fetchUrl: "https://api.exa.ai/contents",
+    search: (key, query, _context, limit) => ({
+      url: providerSearchUrl("https://api.exa.ai/search"),
+      init: jsonPost({ "x-api-key": key }, {
+        query,
+        numResults: limit,
+        type: "auto",
+        contents: { text: { maxCharacters: 600 } },
+      }),
+    }),
+    path: (b) => (b as { results?: unknown })?.results,
+  },
+  tavily: {
+    searchUrl: "https://api.tavily.com/search",
+    fetchUrl: "https://api.tavily.com/extract",
+    search: (key, query, _context, limit) => ({
+      url: providerSearchUrl("https://api.tavily.com/search"),
+      init: jsonPost({ authorization: `Bearer ${key}` }, {
+        query,
+        max_results: limit,
+        search_depth: "advanced",
+      }),
+    }),
+    path: (b) => (b as { results?: unknown })?.results,
+  },
+  brave: {
+    searchUrl: "https://api.search.brave.com/res/v1/web/search",
+    search: (key, query, _context, limit) => {
+      const url = new URL(
+        providerSearchUrl("https://api.search.brave.com/res/v1/web/search"),
+      );
+      url.searchParams.set("q", query);
+      url.searchParams.set("count", String(limit));
+      return {
+        url: url.toString(),
+        init: {
+          method: "GET",
+          headers: { accept: "application/json", "x-subscription-token": key },
+        },
+      };
+    },
+    path: (b) => (b as { web?: { results?: unknown } })?.web?.results,
+  },
+  serper: {
+    searchUrl: "https://google.serper.dev/search",
+    search: (key, query, _context, limit) => ({
+      url: providerSearchUrl("https://google.serper.dev/search"),
+      init: jsonPost({ "x-api-key": key }, { q: query, num: limit }),
+    }),
+    path: (b) => (b as { organic?: unknown })?.organic,
+  },
+  custom: {
+    searchUrl: "",
+    search: (key, query, context, limit) => ({
+      url: providerSearchUrl(""),
+      init: jsonPost(key ? { authorization: `Bearer ${key}` } : {}, {
+        query,
+        context,
+        max_results: limit,
+      }),
+    }),
+    path: (b) => {
+      const rec = (b ?? {}) as Record<string, unknown>;
+      for (const key of ["results", "sources", "data", "items", "hits"]) {
+        if (Array.isArray(rec[key])) return rec[key];
+      }
+      return Array.isArray(b) ? b : undefined;
+    },
+  },
+};
+
+function jsonPost(
+  headers: Record<string, string>,
+  body: unknown,
+): RequestInit {
+  return {
+    method: "POST",
+    headers: { "content-type": "application/json", ...headers },
+    body: JSON.stringify(body),
+  };
+}
+
+function providerSearchUrl(fallback: string): string {
+  return process.env.RESEARCH_SEARCH_URL?.trim() || fallback;
+}
+
+function providerId(): ProviderId {
+  const raw = (process.env.RESEARCH_PROVIDER ?? "tinyfish").trim().toLowerCase();
+  return raw in PROVIDERS ? (raw as ProviderId) : "tinyfish";
+}
+
+/** The configured key, falling back to the original TinyFish-only variable. */
+export function researchApiKey(): string {
+  return (
+    process.env.RESEARCH_API_KEY?.trim() ||
+    process.env.TINYFISH_API_KEY?.trim() ||
+    ""
+  );
+}
+
+function normalize(value: unknown, limit: number): Source[] {
+  if (!Array.isArray(value)) return [];
+  const out: Source[] = [];
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue;
+    const r = item as Record<string, unknown>;
+    const url = typeof r.url === "string" ? r.url.trim() : "";
+    if (!url) continue;
+    const str = (...keys: string[]): string | undefined => {
+      for (const key of keys) {
+        const v = r[key];
+        if (typeof v === "string" && v.trim()) return v.trim();
+      }
+      return undefined;
+    };
+    out.push({
+      title: str("title", "name") ?? "(untitled)",
+      url,
+      snippet: str("snippet", "description", "text", "content", "summary") ?? "",
+      author: str("author", "byline"),
+      publisher: str("publisher", "source", "site"),
+      date: str("date", "published", "publishedDate"),
+    });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+async function providerSearch(
   query: string,
   context: string,
 ): Promise<Source[]> {
-  const key = process.env.TINYFISH_API_KEY;
-  if (!key) return [];
+  const key = researchApiKey();
+  const spec = PROVIDERS[providerId()];
+  if (!key && providerId() !== "custom") return [];
   try {
-    const res = await fetch(TINYFISH_SEARCH_URL, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({ query, context, num_results: 8 }),
-    });
+    const { url, init } = spec.search(key, query, context, 8);
+    if (!url) return [];
+    const res = await fetch(url, init);
     if (!res.ok) return [];
-    const data = (await res.json()) as {
-      results?: Array<{
-        title?: string;
-        url?: string;
-        snippet?: string;
-        author?: string;
-        publisher?: string;
-        date?: string;
-      }>;
-    };
-    return (data.results ?? []).map((r) => ({
-      title: r.title ?? "(untitled)",
-      url: r.url ?? "",
-      snippet: r.snippet ?? "",
-      author: r.author,
-      publisher: r.publisher,
-      date: r.date,
-    }));
+    return normalize(spec.path(await res.json()), 8);
   } catch {
     return [];
   }
 }
 
-async function tinyfishFetch(url: string): Promise<FetchedSource | null> {
-  const key = process.env.TINYFISH_API_KEY;
-  if (!key) return null;
+async function providerFetch(url: string): Promise<FetchedSource | null> {
+  const key = researchApiKey();
+  const spec = PROVIDERS[providerId()];
+  const endpoint = process.env.RESEARCH_FETCH_URL?.trim() || spec.fetchUrl;
+  if (!key || !endpoint) return null;
   try {
-    const res = await fetch(TINYFISH_FETCH_URL, {
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -101,6 +251,7 @@ async function tinyfishFetch(url: string): Promise<FetchedSource | null> {
       publisher?: string;
       date?: string;
       markdown?: string;
+      text?: string;
       embeddable?: boolean;
     };
     return {
@@ -108,7 +259,7 @@ async function tinyfishFetch(url: string): Promise<FetchedSource | null> {
       author: data.author,
       publisher: data.publisher,
       date: data.date,
-      markdown: data.markdown ?? "",
+      markdown: data.markdown ?? data.text ?? "",
       embeddable: data.embeddable ?? false,
     };
   } catch {
@@ -133,8 +284,8 @@ function localSearch(query: string, context: string): Source[] {
       title: `Local stub: ${query}`,
       url: `https://example.invalid/${slug}`,
       snippet: trimmed
-        ? `Set TINYFISH_API_KEY for live results. Echo of your context: ${trimmed}`
-        : "Set TINYFISH_API_KEY to enable live research. This is a local stub.",
+        ? `Set RESEARCH_API_KEY for live results. Echo of your context: ${trimmed}`
+        : "Set RESEARCH_API_KEY to enable live research. This is a local stub.",
       publisher: "Twyne local",
     },
     {
@@ -151,7 +302,7 @@ function localSearch(query: string, context: string): Source[] {
 function localFetch(url: string): FetchedSource {
   return {
     title: url,
-    markdown: `# ${url}\n\n_Live fetch disabled. Set TINYFISH_API_KEY to pull clean markdown from this URL._`,
+    markdown: `# ${url}\n\n_Live fetch disabled. Set RESEARCH_API_KEY to pull clean markdown from this URL._`,
     embeddable: false,
   };
 }
@@ -185,8 +336,8 @@ export const searchSources = action({
       });
     }
 
-    if (identity && process.env.TINYFISH_API_KEY) {
-      const r = await tinyfishSearch(args.query, args.context ?? "");
+    if (identity && researchApiKey()) {
+      const r = await providerSearch(args.query, args.context ?? "");
       if (r.length > 0) return { results: r, provider: "tinyfish" };
     }
     return {
@@ -213,8 +364,8 @@ export const fetchSource = action({
         ...(isPro ? RATE_LIMITS.research : RATE_LIMITS.researchFree),
       });
     }
-    if (identity && process.env.TINYFISH_API_KEY) {
-      const r = await tinyfishFetch(args.url);
+    if (identity && researchApiKey()) {
+      const r = await providerFetch(args.url);
       if (r) return { ...r, provider: "tinyfish" };
     }
     return { ...localFetch(args.url), provider: "local" };

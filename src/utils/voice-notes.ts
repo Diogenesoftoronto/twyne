@@ -61,6 +61,14 @@ export interface RecorderHandle {
   stop: () => Promise<Recording>;
   /** Abandon the recording and release the microphone. */
   cancel: () => void;
+  /** Pause the recording, keeping the microphone warm. */
+  pause: () => void;
+  /** Resume a paused recording. */
+  resume: () => void;
+  /** True while paused mid-recording. */
+  paused: () => boolean;
+  /** Recording time so far, excluding paused time. */
+  elapsed: () => number;
   /** Current input level, 0-1, for a live meter. */
   level: () => number;
 }
@@ -120,12 +128,23 @@ export async function startRecording(): Promise<RecorderHandle> {
   }
 
   const startedAt = Date.now();
+  let totalPausedMs = 0;
+  let pausedAt: number | null = null;
   recorder.start();
 
   const release = () => {
     for (const track of stream.getTracks()) track.stop();
     void audioContext?.close().catch(() => {});
   };
+
+  /** Recorded time so far, excluding pauses. The cap and the labels both
+   *  count audio, not wall clock: a long pause before a short thought should
+   *  not silently eat the recording budget. */
+  const activeTime = (now = Date.now()): number =>
+    now -
+    startedAt -
+    totalPausedMs -
+    (pausedAt === null ? 0 : now - pausedAt);
 
   let autoStop: ReturnType<typeof setTimeout> | null = null;
 
@@ -136,7 +155,7 @@ export async function startRecording(): Promise<RecorderHandle> {
         release();
         resolve({
           blob: new Blob(chunks, { type: mimeType || "audio/webm" }),
-          durationMs: Date.now() - startedAt,
+          durationMs: activeTime(),
           mimeType: mimeType || "audio/webm",
         });
       };
@@ -144,11 +163,24 @@ export async function startRecording(): Promise<RecorderHandle> {
         finish();
         return;
       }
+      // A paused recorder keeps its buffer; resume first so nothing already
+      // said is dropped when the writer stops.
+      if (recorder.state === "paused") recorder.resume();
       recorder.onstop = finish;
       recorder.stop();
     });
 
-  autoStop = setTimeout(() => void stop(), MAX_RECORDING_MS);
+  const armAutoStop = () => {
+    if (autoStop) clearTimeout(autoStop);
+    autoStop = null;
+    const remaining = MAX_RECORDING_MS - activeTime();
+    if (remaining <= 0) {
+      void stop();
+      return;
+    }
+    autoStop = setTimeout(() => void stop(), remaining);
+  };
+  armAutoStop();
 
   return {
     stop,
@@ -160,6 +192,26 @@ export async function startRecording(): Promise<RecorderHandle> {
       }
       release();
     },
+    pause: () => {
+      if (recorder.state !== "recording" || pausedAt !== null) return;
+      if (autoStop) {
+        clearTimeout(autoStop);
+        autoStop = null;
+      }
+      pausedAt = Date.now();
+      recorder.pause();
+    },
+    resume: () => {
+      if (recorder.state !== "paused" || pausedAt === null) return;
+      totalPausedMs += Date.now() - pausedAt;
+      pausedAt = null;
+      recorder.resume();
+      // The budget counts audio only, so the clock starts again where it left
+      // off rather than having run on through the pause.
+      armAutoStop();
+    },
+    paused: () => pausedAt !== null,
+    elapsed: activeTime,
     level: () => {
       if (!analyser || !levelData) return 0;
       analyser.getByteFrequencyData(levelData);
@@ -203,6 +255,41 @@ async function blobToBase64(blob: Blob): Promise<string> {
   return btoa(binary);
 }
 
+/** A standard AbortError, without assuming DOMException exists (unit tests). */
+function createAbortError(): Error {
+  try {
+    return new DOMException("The transcription was stopped.", "AbortError");
+  } catch {
+    const err = new Error("The transcription was stopped.");
+    err.name = "AbortError";
+    return err;
+  }
+}
+
+/**
+ * Let a caller cancel while a non-abortable promise (the Convex action has no
+ * signal support) is still in flight. The network call keeps running server
+ * side, but the writer is freed the moment they press stop.
+ */
+function abortable<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted) return Promise.reject(createAbortError());
+  return new Promise<T>((resolve, reject) => {
+    const onAbort = () => reject(createAbortError());
+    signal.addEventListener("abort", onAbort, { once: true });
+    promise.then(
+      (value) => {
+        signal.removeEventListener("abort", onAbort);
+        resolve(value);
+      },
+      (error) => {
+        signal.removeEventListener("abort", onAbort);
+        reject(error);
+      },
+    );
+  });
+}
+
 /**
  * Turn a recording into text. BYOK first, then the Pro-gated hosted endpoint.
  * Throws a structured {@link AppError} when neither is reachable, so the
@@ -214,7 +301,10 @@ export async function transcribeRecording(args: {
   client?: ConvexClient | null;
   /** Terms likely to appear — the brief's title and audience work well. */
   prompt?: string;
+  /** Lets the writer stop an in-flight transcription. */
+  signal?: AbortSignal;
 }): Promise<TranscriptionOutcome> {
+  if (args.signal?.aborted) throw createAbortError();
   const settings = await getCachedAiSettings();
 
   // Gate on a voice-capable provider, not a language one: a writer with only
@@ -223,6 +313,7 @@ export async function transcribeRecording(args: {
     const result = await runClientVoiceTranscribe(
       { audio: args.blob, prompt: args.prompt },
       settings,
+      { signal: args.signal },
     );
     if (result?.text) {
       return { text: result.text, provider: `client-${result.provider}` };
@@ -230,11 +321,14 @@ export async function transcribeRecording(args: {
   }
 
   if (args.client) {
-    const res = (await args.client.action(api.voice.transcribeSpeech, {
-      audioBase64: await blobToBase64(args.blob),
-      mimeType: args.mimeType,
-      prompt: args.prompt,
-    })) as { text: string; provider: string };
+    const res = (await abortable(
+      args.client.action(api.voice.transcribeSpeech, {
+        audioBase64: await blobToBase64(args.blob),
+        mimeType: args.mimeType,
+        prompt: args.prompt,
+      }),
+      args.signal,
+    )) as { text: string; provider: string };
     return { text: res.text, provider: res.provider };
   }
 

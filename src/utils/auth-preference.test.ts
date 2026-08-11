@@ -22,20 +22,26 @@ const originalWindow = globalThis.window;
 const originalLocalStorage = globalThis.localStorage;
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 
+type StorageShim = {
+  getItem: (k: string) => string | null;
+  setItem: (k: string, v: string) => void;
+  removeItem: (k: string) => void;
+};
+
 function installStorage(): void {
   const store: Record<string, string> = {};
-  const localStorage = {
-    getItem: (k: string) => (k in store ? store[k] : null),
-    setItem: (k: string, v: string) => {
+  installStorageShim({
+    getItem: (k) => (k in store ? store[k] : null),
+    setItem: (k, v) => {
       store[k] = v;
     },
-    removeItem: (k: string) => {
+    removeItem: (k) => {
       delete store[k];
     },
-    clear: () => {
-      for (const k of Object.keys(store)) delete store[k];
-    },
-  };
+  });
+}
+
+function installStorageShim(localStorage: StorageShim): void {
   Object.defineProperty(globalThis, "window", {
     configurable: true,
     writable: true,
@@ -158,5 +164,121 @@ describe("auth-preference", () => {
     // fall back to OTP and stop offering passkey on this device.
     clearPreferredMethod("writer@example.com");
     expect(getPreferredMethod("writer@example.com") === "passkey").toBe(false);
+  });
+
+  test("persists under the namespaced storage key", () => {
+    installStorage();
+    setPreferredMethod("writer@example.com", "passkey");
+    expect(
+      g.window!.localStorage.getItem("twyne.auth.preferredMethod"),
+    ).not.toBeNull();
+    expect(g.window!.localStorage.getItem("")).toBeNull();
+  });
+
+  test("is a no-op when accessing localStorage throws", () => {
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      writable: true,
+      value: {},
+    });
+    Object.defineProperty(globalThis.window, "localStorage", {
+      configurable: true,
+      get() {
+        throw new Error("blocked");
+      },
+    });
+    expect(getPreferredMethod("writer@example.com")).toBeNull();
+  });
+
+  test("keeps an empty stored blob untouched", () => {
+    installStorage();
+    g.window!.localStorage.setItem("twyne.auth.preferredMethod", "");
+    expect(getPreferredMethod("writer@example.com")).toBeNull();
+    expect(g.window!.localStorage.getItem("twyne.auth.preferredMethod")).toBe(
+      "",
+    );
+  });
+
+  test("ignores a non-object stored blob when writing", () => {
+    installStorage();
+    g.window!.localStorage.setItem("twyne.auth.preferredMethod", "[]");
+    setPreferredMethod("writer@example.com", "passkey");
+    expect(getPreferredMethod("writer@example.com")).toBe("passkey");
+  });
+
+  test("ignores a primitive stored blob when writing", () => {
+    installStorage();
+    g.window!.localStorage.setItem("twyne.auth.preferredMethod", '"hello"');
+    expect(() =>
+      setPreferredMethod("writer@example.com", "passkey"),
+    ).not.toThrow();
+    expect(getPreferredMethod("writer@example.com")).toBe("passkey");
+  });
+
+  test("wipes a corrupted blob even when writes fail", () => {
+    const store: Record<string, string> = {
+      "twyne.auth.preferredMethod": "{not json",
+    };
+    installStorageShim({
+      getItem: (k) => (k in store ? store[k] : null),
+      setItem: () => {
+        throw new Error("quota");
+      },
+      removeItem: (k) => {
+        delete store[k];
+      },
+    });
+    setPreferredMethod("writer@example.com", "passkey");
+    expect(
+      g.window!.localStorage.getItem("twyne.auth.preferredMethod"),
+    ).toBeNull();
+  });
+
+  test("attempts to wipe corrupted data even when removal fails", () => {
+    let removeAttempted = false;
+    installStorageShim({
+      getItem: (k) =>
+        k === "twyne.auth.preferredMethod" ? "{not json" : null,
+      setItem: () => {},
+      removeItem: () => {
+        removeAttempted = true;
+        throw new Error("locked");
+      },
+    });
+    expect(getPreferredMethod("writer@example.com")).toBeNull();
+    expect(removeAttempted).toBe(true);
+  });
+
+  test("lowercases keys via the same mapping for read and write", () => {
+    installStorage();
+    setPreferredMethod("a\u00df@example.com", "otp");
+    // "ß".toUpperCase() is "SS", so an uppercasing normalization would
+    // collide "aß@…" with "ass@…"; lowercasing keeps them apart.
+    expect(getPreferredMethod("ass@example.com")).toBeNull();
+  });
+
+  test("returns null for a blank email even if a stored key matches", () => {
+    installStorage();
+    g.window!.localStorage.setItem(
+      "twyne.auth.preferredMethod",
+      '{"":"passkey"}',
+    );
+    expect(getPreferredMethod("   ")).toBeNull();
+  });
+
+  test("never writes for a blank email", () => {
+    installStorage();
+    setPreferredMethod("   ", "passkey");
+    expect(
+      g.window!.localStorage.getItem("twyne.auth.preferredMethod"),
+    ).toBeNull();
+  });
+
+  test("never writes when clearing a blank email", () => {
+    installStorage();
+    clearPreferredMethod("   ");
+    expect(
+      g.window!.localStorage.getItem("twyne.auth.preferredMethod"),
+    ).toBeNull();
   });
 });

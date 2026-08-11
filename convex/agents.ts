@@ -96,6 +96,7 @@ import {
   createPublishGate,
   type GenerationStreamSnapshot,
 } from "../src/utils/generation-stream";
+import { prompt as renderNamed } from "../src/utils/prompts";
 import { internal } from "./_generated/api";
 
 /* ── Provider selection ─────────────────────────────────────────── */
@@ -268,6 +269,23 @@ function classifyType(text: string, fallback: FeedbackType): FeedbackType {
 /* ── LLM call wrapper ───────────────────────────────────────────── */
 
 /**
+ * Twyne sets no output ceiling.
+ *
+ * These call sites used to carry per-feature budgets — 380 tokens for a note,
+ * 200 for a judge — sized against how long the visible answer ought to run.
+ * On a model that thinks before it answers the budget is spent on the thinking
+ * too, and when it runs out mid-thought the answer never arrives: the reply
+ * strips to nothing and a template is filed in its place. Nothing about that
+ * looks like a failure to the writer.
+ *
+ * The ceiling was never what kept an answer short — the prompts do that — so
+ * leaving it unset costs nothing. Each provider falls back to its own model
+ * maximum, and generation is billed on what a model writes rather than on what
+ * it was permitted to write.
+ */
+const NO_OUTPUT_CEILING = undefined;
+
+/**
  * How often a generation in flight republishes itself, at most. Ten times a
  * second reads as continuous to someone watching the words appear, and it is
  * the difference between a convened room costing a few hundred writes and
@@ -360,7 +378,7 @@ async function runLlm(
     | "persona-feedback"
     | "persona-reply"
     | "persona-analysis" = "persona-feedback",
-  maxTokens = 380,
+  maxTokens: number | undefined = NO_OUTPUT_CEILING,
   observability?: ServerAiObservabilityContext,
   stream?: NoteStreamTarget,
 ): Promise<AgentResponse> {
@@ -478,7 +496,7 @@ async function runPlainLlm(
   provider: ProviderConfig,
   system: string,
   user: string,
-  maxTokens: number,
+  maxTokens: number | undefined,
   feature: string,
 ): Promise<string> {
   const gen = async (prompt: string, suffix?: string) =>
@@ -683,28 +701,21 @@ function interviewSystemPrompt(
   startingMaterial: string | null = null,
 ): string {
   const trimmed = startingMaterial?.trim();
-  return [
-    "You are a kind, incisive editorial interviewer helping a writer build a project dossier.",
-    "Ask one question at a time. Keep it short. You are building a writer's room: identify the piece, reader, goal, tone, constraints, success signal, and what kind of advisors/editors the writer wants around it.",
-    'After every ordinary question, append `DOSSIER:` followed by JSON { "brief": { workingTitle, format, audience, goal, tone, constraints, successSignal }, "confidence": { field: "high" | "medium" | "low" } }. Only include fields you can reasonably infer.',
-    "",
-    "SOMETIMES A QUESTION IS BETTER ASKED AS A CONTROL THAN AS PROSE. When the writer's last answer was vague, hedged, or covered two possibilities at once, and a typed question would pin it down in one tap, append `PROBE:` followed by JSON for exactly one of:",
-    '  { "kind": "choice", "prompt": "<question>", "options": ["<2-6 options>"], "relatesTo": "<brief field>" }',
-    '  { "kind": "multi", "prompt": "<question>", "options": ["<2-6 options>"], "relatesTo": "<brief field>" }',
-    '  { "kind": "blanks", "prompt": "<instruction>", "template": "<a sentence with ___ where the writer fills in>", "relatesTo": "<brief field>" }',
-    '  { "kind": "scale", "prompt": "<question>", "min": 1, "max": 5, "minLabel": "<what 1 means>", "maxLabel": "<what 5 means>", "relatesTo": "<brief field>" }',
-    "Rules for probes: at most one per turn, and only when it genuinely narrows something. Never ask a probe whose answer you already have. Options must be concrete and mutually distinct — not 'clear / unclear'. `relatesTo` must be one of workingTitle, format, audience, goal, tone, constraints, successSignal. Still write your question text as normal prose above the tag; the probe is how they answer it, not a replacement for asking.",
-    "",
-    "When the dossier is complete enough for review, respond only with `SYNTHESIZE:` followed by the same JSON shape as DOSSIER. Put requested advisors/editors into constraints or goal until the product has a dedicated advisor schema.",
+  const refineAppendix =
     mode === "refine" && currentBrief
-      ? `Existing dossier: ${JSON.stringify(currentBrief.answers)} — refine it, don't restart.`
-      : "",
-    trimmed
-      ? `The writer has already drafted the following manuscript. Read it before asking — orient the dossier around what is already on the page rather than starting from a blank brief.\n\n--- BEGIN MANUSCRIPT ---\n${trimmed}\n--- END MANUSCRIPT ---`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
+      ? renderNamed("blocks/refine-appendix", {
+          dossierJson: JSON.stringify(currentBrief.answers),
+        })
+      : "";
+  const manuscriptAppendix = trimmed
+    ? renderNamed("blocks/manuscript-appendix", { manuscript: trimmed })
+    : "";
+  const base = renderNamed("interview-system", {
+    refineAppendix,
+    manuscriptAppendix,
+  });
+  // Drop an empty trailing newline if neither appendix supplied.
+  return base.replace(/\n+$/g, "\n");
 }
 
 function normalizeInterviewDossierDraft(value: unknown) {
@@ -856,7 +867,7 @@ export const runInterviewTurn = action({
       .map((m) => `${m.author === "writer" ? "Writer" : "You"}: ${m.text}`)
       .join("\n");
     const temperature = provider.label === "openai" ? 0.6 : 0.4;
-    const maxTokens = 420;
+    const maxTokens = NO_OUTPUT_CEILING;
     const traceId = createAiTraceId("interview-turn");
     const start = Date.now();
     const input = JSON.stringify({
@@ -1180,7 +1191,7 @@ export const suggestRewrite = action({
     try {
       const start = Date.now();
       const temperature = persona.temperature ?? 0.4;
-      const maxTokens = 320;
+      const maxTokens = NO_OUTPUT_CEILING;
       const { text } = await generateText({
         model: provider.model,
         system,
@@ -1330,7 +1341,7 @@ export const conveneRoom = action({
           provider,
           req,
           "persona-feedback",
-          args.newMaterial ? 220 : 380,
+          NO_OUTPUT_CEILING,
           { ...args.observability, distinctId: identity.tokenIdentifier },
           args.streamId
             ? {
@@ -1449,7 +1460,7 @@ export const analyzeRoom = action({
         provider,
         buildSynthesisSystemPrompt(),
         buildSynthesisPrompt(memoInput, brief, args.writerProfile),
-        1400,
+        NO_OUTPUT_CEILING,
         "persona-analysis:synthesis",
       );
     } catch (err) {
@@ -1517,7 +1528,7 @@ export const reviewRubric = action({
           brief,
           draftText: args.draftText,
         }),
-        1400,
+        NO_OUTPUT_CEILING,
         "rubric-review",
       );
       return { review, provider: provider.label };
@@ -1554,6 +1565,9 @@ export const judgeDraft = action({
     }
 
     const system = buildSystemPrompt(persona);
+    const rubricSuffix = renderNamed("blocks/persona-rubric-judge-suffix", {
+      personaName: persona.name,
+    });
     const user =
       buildUserPrompt({
         persona,
@@ -1561,19 +1575,13 @@ export const judgeDraft = action({
         draftText: args.draftText,
         instruction: "feedback",
       }) +
-      `
-
-JUDGE TASK: As ${persona.name}, give the draft a single integer score from 1 to 10. A score of 5 means "the draft is doing the work for the stated audience and goal but has clear, fixable issues." A score of 7 means "the draft is in good shape and the issues are minor." A score of 9 means "publishable as-is." Be honest; most first drafts are in the 3-5 range.
-
-Do not reward confident-sounding bullshit. Penalize generic filler, repeated paragraphs, unsupported universal claims, vibes without evidence, fake specificity, and any passage that sounds polished while dodging the stated audience/goal.
-
-Respond as JSON, and only JSON, in this exact shape:
-{"score": <integer 1-10>, "rationale": "<one sentence, your voice>"}`;
+      "\n" +
+      rubricSuffix;
 
     try {
       const start = Date.now();
       const temperature = persona.temperature ?? 0.2;
-      const maxTokens = 220;
+      const maxTokens = NO_OUTPUT_CEILING;
       const { text } = await generateText({
         model: provider.model,
         system,
@@ -1675,7 +1683,7 @@ export const judgeEvidence = action({
     try {
       const start = Date.now();
       const temperature = 0.2;
-      const maxTokens = 200;
+      const maxTokens = NO_OUTPUT_CEILING;
       const { text } = await generateText({
         model: provider.model,
         system,
@@ -1774,7 +1782,7 @@ export const judgeIntegrity = action({
     try {
       const start = Date.now();
       const temperature = 0.2;
-      const maxTokens = 200;
+      const maxTokens = NO_OUTPUT_CEILING;
       const { text } = await generateText({
         model: provider.model,
         system,
@@ -1926,22 +1934,17 @@ export const judgeSufficiency = action({
 
     const goal = brief?.answers.goal || "no goal stated in the brief";
     const audience = brief?.answers.audience || "a general reader";
-    const system = `You are a rigorous developmental editor. You judge exactly one thing: whether a draft develops ENOUGH on-topic material — evidence, examples, reasoning, scenes, argumentation — to actually earn its stated thesis or goal. A draft can be clean, well-organized prose and still fail this if it asserts its point without building the case, drifts off-topic, or stops short of the goal. Do not reward confident assertion in place of development.`;
-    const user = `GOAL: ${goal}
-AUDIENCE: ${audience}
-
-DRAFT:
-${args.draftText}
-
-JUDGE TASK: Give an integer score from 1 to 10 for whether the draft develops enough on-topic material to justify reaching its stated goal. 1 means mostly assertion, filler, or off-topic drift; 10 means the development fully earns the goal. Most first drafts land 3-6.
-
-Respond as JSON, and only JSON, in this exact shape:
-{"score": <integer 1-10>, "rationale": "<one sentence>"}`;
+    const system = renderNamed("sufficiency-judge-system");
+    const user = renderNamed("sufficiency-judge-user", {
+      goal,
+      audience,
+      draftText: args.draftText,
+    });
 
     try {
       const start = Date.now();
       const temperature = 0.2;
-      const maxTokens = 200;
+      const maxTokens = NO_OUTPUT_CEILING;
       const { text } = await generateText({
         model: provider.model,
         system,
@@ -2070,7 +2073,7 @@ export const judgeTargetFit = action({
     try {
       const start = Date.now();
       const temperature = 0.2;
-      const maxTokens = 200;
+      const maxTokens = NO_OUTPUT_CEILING;
       const { text } = await generateText({
         model: provider.model,
         system,
@@ -2191,7 +2194,7 @@ export const judgeCustomCriterion = action({
         system,
         prompt: user,
         temperature: 0.2,
-        maxOutputTokens: 220,
+        maxOutputTokens: NO_OUTPUT_CEILING,
         experimental_telemetry: {
           isEnabled: tracingEnabled,
           functionId: "rubric_judge_custom",
@@ -2289,7 +2292,7 @@ Respond as JSON, and only JSON, in this exact shape:
         system,
         prompt: user,
         temperature: 0.5,
-        maxOutputTokens: 600,
+        maxOutputTokens: NO_OUTPUT_CEILING,
         experimental_telemetry: {
           isEnabled: tracingEnabled,
           functionId: "rubric_suggest_criteria",
@@ -2411,7 +2414,7 @@ Do not reward confident-sounding bullshit. Penalize generic filler, repeated par
 Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voice>"}`;
           const start = Date.now();
           const temperature = 0.2;
-          const maxTokens = 200;
+          const maxTokens = NO_OUTPUT_CEILING;
           const { text } = await generateText({
             model: provider.model,
             system,
@@ -2492,7 +2495,7 @@ async function runHostedAgent(
       provider,
       req,
       feature,
-      380,
+      NO_OUTPUT_CEILING,
       { ...observability, distinctId: identity?.tokenIdentifier },
       streamId && userId
         ? { ctx, userId, streamId, personaId: req.persona.id }

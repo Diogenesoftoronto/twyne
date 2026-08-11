@@ -38,6 +38,8 @@ import {
   runClientResearchExtract,
   runClientResearchWebSearch,
 } from "./ai-client";
+import { searchMcpServers, setMcpConvexClient } from "./mcp-research";
+import { runSearchBackend, searchBackend } from "./research-backends";
 import { loadAiSettingsFromIdb, loadApparatusSettingsFromIdb } from "./idb";
 import {
   type BibEntry,
@@ -389,6 +391,9 @@ export function startBackgroundResearch(args: {
   folioId: string | null;
 }): void {
   activeClient = args.client;
+  // Share the client with the MCP layer, which also needs it for the relay
+  // from call sites that never receive one (the drafting tool loop).
+  setMcpConvexClient(args.client);
   activeBrief = args.brief;
   activeFolioId = args.folioId;
   recentTargetKeys = new Set();
@@ -512,9 +517,7 @@ async function runOnce(draftText: string, force = false): Promise<void> {
   }
 }
 
-/* ── Provider routing (tinyfish / model / mcp / hosted) ────────── */
-
-const TINYFISH_SEARCH_URL = "https://api.search.tinyfish.ai/v1/search";
+/* ── Provider routing (search API / model / MCP / hosted) ──────── */
 
 async function searchForTarget(
   target: ResearchTarget,
@@ -560,54 +563,36 @@ async function searchWithConfiguredProvider(
   settings: ApparatusSettings,
 ): Promise<SearchOutcome | null> {
   switch (settings.researchProvider) {
-    case "tinyfish":
-      return searchTinyFish(query, context, settings);
+    case "search-api":
+      return searchViaBackend(query, context, settings);
     case "model-web-search":
       return searchModelEndpoint(query, context, settings);
     case "web-mcp":
-      return searchWebMcp(query, context, settings);
+      return searchViaMcp(query, context, settings);
     case "hosted":
     default:
       return null;
   }
 }
 
-async function searchTinyFish(
+async function searchViaBackend(
   query: string,
   context: string,
   settings: ApparatusSettings,
 ): Promise<SearchOutcome | null> {
-  const key = settings.tinyFishApiKey.trim();
-  if (!key) {
+  const adapter = searchBackend(settings.searchBackend.id);
+  try {
+    const res = await runSearchBackend(
+      { query, context, maxResults: settings.maxResults },
+      settings.searchBackend,
+    );
+    if (!res.ok) return { ok: false, message: res.message };
+    return { ok: true, provider: `${adapter.id}:byok`, results: res.results };
+  } catch (err) {
     return {
       ok: false,
-      message: "No TinyFish API key — add one in Settings to search claims.",
+      message: errorMessage(err, `${adapter.label} search failed.`),
     };
-  }
-  try {
-    const res = await fetch(TINYFISH_SEARCH_URL, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        query,
-        context,
-        num_results: settings.tinyFishMaxResults,
-      }),
-    });
-    if (!res.ok) {
-      return {
-        ok: false,
-        message: `TinyFish returned HTTP ${res.status}. Check the key or retry.`,
-      };
-    }
-    const data = (await res.json()) as { results?: unknown };
-    const results = normalizeSources(data.results, settings.tinyFishMaxResults);
-    return { ok: true, provider: "tinyfish:byok", results };
-  } catch (err) {
-    return { ok: false, message: errorMessage(err, "TinyFish search failed.") };
   }
 }
 
@@ -628,7 +613,7 @@ async function searchModelEndpoint(
       {
         query,
         context,
-        maxResults: settings.tinyFishMaxResults,
+        maxResults: settings.maxResults,
         instructions:
           "Only return sources that demonstrably support the quoted claim. Prefer the exact source of the quote when the query asks for one.",
       },
@@ -647,123 +632,30 @@ async function searchModelEndpoint(
   }
 }
 
-async function searchWebMcp(
+async function searchViaMcp(
   query: string,
   context: string,
   settings: ApparatusSettings,
 ): Promise<SearchOutcome | null> {
-  const endpoint = settings.mcpEndpointUrl.trim();
-  const toolName = settings.mcpToolName.trim() || "search";
-  if (!endpoint) {
+  if (!settings.mcpServers.some((s) => s.enabled && s.url.trim())) {
     return {
       ok: false,
-      message: "No MCP endpoint in Settings — add one to search claims.",
+      message: "No MCP servers in Settings — add one to search claims.",
     };
   }
   try {
-    const headers: Record<string, string> = {
-      "content-type": "application/json",
-    };
-    const token = settings.mcpBearerToken.trim();
-    if (token) headers.authorization = `Bearer ${token}`;
-    const res = await fetch(endpoint, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        jsonrpc: "2.0",
-        id: `twyne-${Date.now()}`,
-        method: "tools/call",
-        params: {
-          name: toolName,
-          arguments: {
-            query,
-            context,
-            max_results: settings.tinyFishMaxResults,
-          },
-        },
-      }),
-    });
-    if (!res.ok) {
+    const res = await searchMcpServers({ query, context }, settings, activeClient);
+    if (!res.results.length) {
       return {
         ok: false,
-        message: `MCP tool (${toolName}) returned HTTP ${res.status}.`,
+        message:
+          res.warnings[0] ?? "The MCP servers returned no sources for that claim.",
       };
     }
-    const data = await res.json();
-    const results = normalizeMcpSources(data, settings.tinyFishMaxResults);
-    return { ok: true, provider: `mcp:${toolName}`, results };
+    return { ok: true, provider: res.provider, results: res.results };
   } catch (err) {
     return { ok: false, message: errorMessage(err, "MCP search failed.") };
   }
-}
-
-function normalizeMcpSources(value: unknown, maxResults: number): Source[] {
-  const direct = normalizeSources(value, maxResults);
-  if (direct.length) return direct;
-  if (!value || typeof value !== "object") return [];
-  const rec = value as Record<string, unknown>;
-  for (const key of ["results", "sources", "data"]) {
-    const fromKey = normalizeSources(rec[key], maxResults);
-    if (fromKey.length) return fromKey;
-  }
-  const result = rec.result;
-  if (result && typeof result === "object") {
-    const fromResult = normalizeMcpSources(result, maxResults);
-    if (fromResult.length) return fromResult;
-    const content = (result as Record<string, unknown>).content;
-    if (Array.isArray(content)) {
-      for (const item of content) {
-        if (!item || typeof item !== "object") continue;
-        const text = (item as Record<string, unknown>).text;
-        if (typeof text !== "string") continue;
-        try {
-          const parsed = JSON.parse(text);
-          const fromText = normalizeMcpSources(parsed, maxResults);
-          if (fromText.length) return fromText;
-        } catch {
-          // Ignore non-JSON text content.
-        }
-      }
-    }
-  }
-  return [];
-}
-
-function normalizeSources(value: unknown, maxResults: number): Source[] {
-  if (!Array.isArray(value)) return [];
-  return value
-    .map((item) => {
-      if (!item || typeof item !== "object") return null;
-      const rec = item as Record<string, unknown>;
-      const url = typeof rec.url === "string" ? rec.url.trim() : "";
-      if (!/^https?:\/\//i.test(url)) return null;
-      const title = typeof rec.title === "string" ? rec.title.trim() : "";
-      const source: Source = {
-        title: title || url,
-        url,
-        snippet:
-          typeof rec.snippet === "string" && rec.snippet.trim()
-            ? rec.snippet.trim()
-            : typeof rec.summary === "string" && rec.summary.trim()
-              ? rec.summary.trim()
-              : "Source returned by the configured research provider.",
-      };
-      if (typeof rec.author === "string" && rec.author.trim()) {
-        source.author = rec.author.trim();
-      }
-      if (typeof rec.publisher === "string" && rec.publisher.trim()) {
-        source.publisher = rec.publisher.trim();
-      }
-      if (typeof rec.date === "string" && rec.date.trim()) {
-        source.date = rec.date.trim();
-      }
-      if (typeof rec.why === "string" && rec.why.trim()) {
-        source.why = rec.why.trim();
-      }
-      return source;
-    })
-    .filter((source): source is Source => source !== null)
-    .slice(0, maxResults);
 }
 
 async function persistTarget(

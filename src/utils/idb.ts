@@ -20,25 +20,34 @@ import type {
   Folio,
   AiSettings,
   WriterSettings,
+  ApparatusResearchProvider,
   ApparatusSettings,
+  McpServerConfig,
   Persona,
   RubricResult,
   RoomAnalysis,
   ProjectBrief,
+  SearchBackendConfig,
+  SearchBackendId,
 } from "../types";
 import {
   DEFAULT_APPARATUS_SETTINGS,
+  DEFAULT_MCP_SERVER,
+  DEFAULT_SEARCH_BACKEND,
   DEFAULT_WRITER_PROFILE,
   DEFAULT_WRITER_SETTINGS,
 } from "../types";
+import { SEARCH_BACKEND_IDS } from "./research-backends";
 
 const DB_NAME = "twyne";
 /**
- * Bumped to 2 to add the `voice-notes` store. The upgrade handler creates
- * every store conditionally, so this is purely additive for existing writers:
+ * Bumped to 2 to add the `voice-notes` store; bumped to 3 to add the
+ * `models` store that holds downloaded on-device model files (the Supertonic
+ * voice pack now, any future local model). The upgrade handler creates every
+ * store conditionally, so this is purely additive for existing writers:
  * nothing already in the database is touched.
  */
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const AI_SETTINGS_STORAGE_KEY = "twyne.ai-settings.current";
 const WRITER_SETTINGS_STORAGE_KEY = "twyne.writer-settings.current";
 const APPARATUS_SETTINGS_STORAGE_KEY = "twyne.apparatus-settings.current";
@@ -105,6 +114,10 @@ function openDb(): Promise<IDBDatabase> {
       // that live on the comments they are attached to.
       if (!db.objectStoreNames.contains("voice-notes")) {
         db.createObjectStore("voice-notes", { keyPath: "id" });
+      }
+      // v3: downloaded on-device model files, keyed by their remote URL.
+      if (!db.objectStoreNames.contains("models")) {
+        db.createObjectStore("models", { keyPath: "id" });
       }
     };
     req.onsuccess = () => resolve(req.result);
@@ -204,11 +217,17 @@ function normalizeApparatusSettings(value: unknown): ApparatusSettings {
     return { ...DEFAULT_APPARATUS_SETTINGS };
   }
   const v = value as Partial<ApparatusSettings>;
-  const maxResults =
-    typeof v.tinyFishMaxResults === "number" &&
-    Number.isFinite(v.tinyFishMaxResults)
-      ? Math.round(v.tinyFishMaxResults)
-      : DEFAULT_APPARATUS_SETTINGS.tinyFishMaxResults;
+  const legacy = value as Record<string, unknown>;
+  // `tinyFishMaxResults` was always the generic per-claim cap, despite the name.
+  const rawMax =
+    typeof v.maxResults === "number"
+      ? v.maxResults
+      : typeof legacy.tinyFishMaxResults === "number"
+        ? legacy.tinyFishMaxResults
+        : DEFAULT_APPARATUS_SETTINGS.maxResults;
+  const maxResults = Number.isFinite(rawMax)
+    ? Math.round(rawMax)
+    : DEFAULT_APPARATUS_SETTINGS.maxResults;
   return {
     defaultCitationStyle:
       v.defaultCitationStyle === "apa" ||
@@ -218,24 +237,121 @@ function normalizeApparatusSettings(value: unknown): ApparatusSettings {
         : DEFAULT_APPARATUS_SETTINGS.defaultCitationStyle,
     aiEnhanceCitations: v.aiEnhanceCitations === true,
     flagMissingSources: v.flagMissingSources === true,
-    researchProvider:
-      v.researchProvider === "tinyfish" ||
-      v.researchProvider === "model-web-search" ||
-      v.researchProvider === "web-mcp"
-        ? v.researchProvider
-        : DEFAULT_APPARATUS_SETTINGS.researchProvider,
-    tinyFishApiKey:
-      typeof v.tinyFishApiKey === "string" ? v.tinyFishApiKey : "",
-    tinyFishMaxResults: Math.max(1, Math.min(20, maxResults)),
-    mcpEndpointUrl:
-      typeof v.mcpEndpointUrl === "string" ? v.mcpEndpointUrl : "",
-    mcpToolName:
-      typeof v.mcpToolName === "string" && v.mcpToolName.trim()
-        ? v.mcpToolName
-        : DEFAULT_APPARATUS_SETTINGS.mcpToolName,
-    mcpBearerToken:
-      typeof v.mcpBearerToken === "string" ? v.mcpBearerToken : "",
+    researchProvider: normalizeResearchProvider(v.researchProvider),
+    searchBackend: normalizeSearchBackend(value),
+    maxResults: Math.max(1, Math.min(20, maxResults)),
+    mcpServers: normalizeMcpServers(value),
   };
+}
+
+function normalizeResearchProvider(value: unknown): ApparatusResearchProvider {
+  // "tinyfish" was the old name for the browser-side search path, back when
+  // TinyFish was the only backend it could speak to.
+  if (value === "tinyfish") return "search-api";
+  if (
+    value === "search-api" ||
+    value === "model-web-search" ||
+    value === "web-mcp" ||
+    value === "hosted"
+  ) {
+    return value;
+  }
+  return DEFAULT_APPARATUS_SETTINGS.researchProvider;
+}
+
+function normalizeSearchBackend(value: unknown): SearchBackendConfig {
+  const rec = value as Record<string, unknown>;
+  const raw = rec.searchBackend;
+  if (raw && typeof raw === "object") {
+    const b = raw as Partial<SearchBackendConfig>;
+    return {
+      id: SEARCH_BACKEND_IDS.includes(b.id as SearchBackendId)
+        ? (b.id as SearchBackendId)
+        : DEFAULT_SEARCH_BACKEND.id,
+      apiKey: typeof b.apiKey === "string" ? b.apiKey : "",
+      baseUrl: typeof b.baseUrl === "string" ? b.baseUrl.trim() : "",
+      resultsPath:
+        typeof b.resultsPath === "string" ? b.resultsPath.trim() : "",
+    };
+  }
+  return {
+    ...DEFAULT_SEARCH_BACKEND,
+    apiKey:
+      typeof rec.tinyFishApiKey === "string" ? rec.tinyFishApiKey : "",
+  };
+}
+
+function normalizeMcpServer(value: unknown, index: number): McpServerConfig | null {
+  if (!value || typeof value !== "object") return null;
+  const v = value as Partial<McpServerConfig>;
+  const url = typeof v.url === "string" ? v.url.trim() : "";
+  if (!/^https?:\/\//i.test(url)) return null;
+  const id =
+    typeof v.id === "string" && v.id.trim() ? v.id.trim() : `mcp-${index + 1}`;
+  return {
+    id,
+    label:
+      typeof v.label === "string" && v.label.trim()
+        ? v.label.trim().slice(0, 80)
+        : hostLabel(url),
+    url,
+    transport: v.transport === "sse" ? "sse" : "http",
+    bearerToken: typeof v.bearerToken === "string" ? v.bearerToken : "",
+    // Absent means enabled: a server someone bothered to add is on by default.
+    enabled: v.enabled !== false,
+    connection:
+      v.connection === "direct" || v.connection === "proxy"
+        ? v.connection
+        : "auto",
+    searchToolName:
+      typeof v.searchToolName === "string" ? v.searchToolName.trim() : "",
+    exposeToModel: v.exposeToModel === true,
+    useResources: v.useResources !== false,
+  };
+}
+
+function hostLabel(url: string): string {
+  try {
+    return new URL(url).host;
+  } catch {
+    return "MCP server";
+  }
+}
+
+/**
+ * Reads the server list, migrating the old single-endpoint shape
+ * (mcpEndpointUrl / mcpToolName / mcpBearerToken) into the first entry.
+ */
+function normalizeMcpServers(value: unknown): McpServerConfig[] {
+  const rec = value as Record<string, unknown>;
+  const raw = rec.mcpServers;
+  if (Array.isArray(raw)) {
+    const servers: McpServerConfig[] = [];
+    const seen = new Set<string>();
+    raw.forEach((entry, index) => {
+      const server = normalizeMcpServer(entry, index);
+      if (!server || seen.has(server.id)) return;
+      seen.add(server.id);
+      servers.push(server);
+    });
+    if (servers.length) return servers;
+  }
+  const legacyUrl =
+    typeof rec.mcpEndpointUrl === "string" ? rec.mcpEndpointUrl.trim() : "";
+  if (!/^https?:\/\//i.test(legacyUrl)) return [];
+  const legacyTool =
+    typeof rec.mcpToolName === "string" ? rec.mcpToolName.trim() : "";
+  return [
+    {
+      ...DEFAULT_MCP_SERVER,
+      id: "mcp-1",
+      label: hostLabel(legacyUrl),
+      url: legacyUrl,
+      bearerToken:
+        typeof rec.mcpBearerToken === "string" ? rec.mcpBearerToken : "",
+      searchToolName: legacyTool === "search" ? "" : legacyTool,
+    },
+  ];
 }
 
 async function tx<T>(
@@ -345,6 +461,22 @@ export async function saveFolioContentToIdb(
         .transaction("folio-content", "readwrite")
         .objectStore("folio-content")
         .put(rec),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function deleteFolioContentFromIdb(
+  folioId: string,
+): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await reqAsPromise(
+      (await openDb())
+        .transaction("folio-content", "readwrite")
+        .objectStore("folio-content")
+        .delete(folioId),
     );
   } catch {
     /* ignore */
@@ -464,6 +596,20 @@ export async function saveActiveFolioIdToIdb(id: string): Promise<void> {
         .transaction("meta", "readwrite")
         .objectStore("meta")
         .put(rec),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+export async function clearActiveFolioIdFromIdb(): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await reqAsPromise(
+      (await openDb())
+        .transaction("meta", "readwrite")
+        .objectStore("meta")
+        .delete("active-folio-id"),
     );
   } catch {
     /* ignore */
@@ -646,6 +792,22 @@ export async function saveRubricResultToIdb(
   }
 }
 
+export async function deleteRubricResultFromIdb(
+  folioId?: string | null,
+): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await reqAsPromise(
+      (await openDb())
+        .transaction("meta", "readwrite")
+        .objectStore("meta")
+        .delete(folioMetaKey("rubric-result", folioId)),
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function loadRoomAnalysisFromIdb(
   folioId?: string | null,
 ): Promise<RoomAnalysis | null> {
@@ -790,6 +952,83 @@ export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
 }
 
 /* ── Lix blob (the versioned draft store) ───────────────────────── */
+
+/* ── Downloaded on-device model files ───────────────────────────── */
+
+export interface ModelFileRecord {
+  id: string;
+  blob: Blob;
+  bytes: number;
+  updatedAt: number;
+}
+
+/** Save a downloaded model file under its remote URL as the key. */
+export async function saveModelFileToIdb(
+  id: string,
+  blob: Blob,
+): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    const rec: ModelFileRecord = {
+      id,
+      blob,
+      bytes: blob.size,
+      updatedAt: Date.now(),
+    };
+    await reqAsPromise(
+      (await openDb())
+        .transaction("models", "readwrite")
+        .objectStore("models")
+        .put(rec),
+    );
+  } catch {
+    // A cache write failure must not fail a download the caller awaited.
+  }
+}
+
+export async function loadModelFileFromIdb(
+  id: string,
+): Promise<Blob | null> {
+  if (!isBrowser()) return null;
+  try {
+    const db = await openDb();
+    const rec = await reqAsPromise<ModelFileRecord | undefined>(
+      db.transaction("models").objectStore("models").get(id),
+    );
+    return rec?.blob instanceof Blob ? rec.blob : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function listModelFilesFromIdb(prefix: string): Promise<
+  ModelFileRecord[]
+> {
+  if (!isBrowser()) return [];
+  try {
+    const db = await openDb();
+    const all = await reqAsPromise<ModelFileRecord[]>(
+      db.transaction("models").objectStore("models").getAll(),
+    );
+    return all.filter((rec) => rec.id.startsWith(prefix));
+  } catch {
+    return [];
+  }
+}
+
+export async function deleteModelFileFromIdb(id: string): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await reqAsPromise(
+      (await openDb())
+        .transaction("models", "readwrite")
+        .objectStore("models")
+        .delete(id),
+    );
+  } catch {
+    /* ignore */
+  }
+}
 
 /* ── Voice notes (recorded audio, kept beside its transcript) ───── */
 

@@ -1,4 +1,5 @@
 import { afterAll, afterEach, describe, expect, mock, test } from "bun:test";
+import { createRequire } from "node:module";
 import type { AiSettings } from "../types";
 
 const mockState: {
@@ -30,7 +31,17 @@ mock.module("./idb", () => ({
   loadAiSettingsFromIdb: async () => mockState.settings,
 }));
 
+// Spread the real module and override only the three functions this test
+// controls. A stub with three exports breaks as soon as anything else in the
+// module graph statically imports another ai-client function — speech.ts,
+// background-room.ts and voice-notes.ts all reach into it — and a leaked
+// mock is process-global under Bun's full-suite worker, so it takes every
+// co-located file down with it rather than one test.
+const realAiClient = await import(
+  `${createRequire(import.meta.url).resolve("./ai-client")}?ai-orchestrator-test-real`
+);
 mock.module("./ai-client", () => ({
+  ...realAiClient,
   hasConfiguredAiProvider: (settings: AiSettings | null) =>
     Boolean(settings?.providers?.length),
   normalizeAiSettings: (settings: AiSettings | null) =>

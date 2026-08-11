@@ -39,8 +39,32 @@ function isLoopback(): boolean {
   return h === "localhost" || h === "127.0.0.1" || h === "[::1]" || h === "::1";
 }
 
+function needsIpLiteralLoopback(): boolean {
+  const h = window.location.hostname;
+  return h === "localhost" || h === "[::1]" || h === "::1";
+}
+
+function ipLiteralPageUrl(): string {
+  const url = new URL(window.location.href);
+  url.hostname = "127.0.0.1";
+  url.protocol = "http:";
+  return url.href;
+}
+
 function oauthOrigin(): string {
-  return window.location.origin;
+  const url = new URL(window.location.origin);
+  // RFC 8252 requires an IP literal for loopback OAuth redirects. Browsers
+  // treat localhost and 127.0.0.1 as different origins, so keep this mapping
+  // in one place and make the callback land on the standards-compliant form.
+  if (
+    url.hostname === "localhost" ||
+    url.hostname === "[::1]" ||
+    url.hostname === "::1"
+  ) {
+    url.hostname = "127.0.0.1";
+    url.protocol = "http:";
+  }
+  return url.origin;
 }
 
 function oauthCallbackUrl(): string {
@@ -93,6 +117,10 @@ let activeOAuthSession: any = null;
  */
 export async function initSession(): Promise<AtprotoSession | null> {
   if (!isBrowser()) return null;
+  // The ATProto browser client refuses to initialize on a localhost hostname.
+  // Do not emit a known, unactionable warning during ordinary local writing;
+  // signInWithBluesky performs the one-time move to the IP-literal origin.
+  if (needsIpLiteralLoopback()) return null;
   try {
     const client = await getOAuthClient();
     const result = await client.init();
@@ -120,6 +148,10 @@ export async function signInWithBluesky(handle: string): Promise<void> {
   const trimmed = handle?.trim();
   if (!trimmed) {
     throw new Error("Add your Bluesky handle (e.g. alice.bsky.social) first.");
+  }
+  if (needsIpLiteralLoopback()) {
+    window.location.replace(ipLiteralPageUrl());
+    return;
   }
   const client = await getOAuthClient();
   await client.signIn(trimmed, { redirect_uri: oauthCallbackUrl() });

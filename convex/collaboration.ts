@@ -27,7 +27,9 @@ import {
 } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
 import { userIsPro } from "./lib/entitlement";
+import { Resend } from "resend";
 
 const PRESENCE_COLORS = [
   "#c1272d",
@@ -167,15 +169,22 @@ export const shareFolio = action({
 
 /* ── Invitations ────────────────────────────────────────────────── */
 
-export const inviteCollaborator = mutation({
+const collaboratorRole = v.union(v.literal("editor"), v.literal("commenter"));
+
+export const createInvitation = internalMutation({
   args: {
     lixId: v.string(),
     email: v.string(),
-    role: v.union(v.literal("editor"), v.literal("commenter")),
+    role: collaboratorRole,
+    invitedBy: v.string(),
   },
+  returns: v.object({
+    alreadyInvited: v.boolean(),
+    role: collaboratorRole,
+    invitationId: v.union(v.id("collaborators"), v.null()),
+  }),
   handler: async (ctx, args) => {
-    const identity = await requireIdentity(ctx);
-    await requireRole(ctx, args.lixId, identity.tokenIdentifier, ["owner"]);
+    await requireRole(ctx, args.lixId, args.invitedBy, ["owner"]);
 
     const email = args.email.trim().toLowerCase();
     if (!email || !email.includes("@")) {
@@ -200,20 +209,141 @@ export const inviteCollaborator = mutation({
         )
         .first();
       if (existing) {
-        return { alreadyInvited: true, role: existing.role };
+        return {
+          alreadyInvited: true,
+          role: existing.role as "editor" | "commenter",
+          invitationId: null,
+        };
       }
     }
 
-    await ctx.db.insert("collaborators", {
+    const invitationId = await ctx.db.insert("collaborators", {
       lixId: args.lixId,
       userId: inviteeUserId ?? email,
       role: args.role,
       status: "pending",
-      invitedBy: identity.tokenIdentifier,
+      invitedBy: args.invitedBy,
       invitedAt: Date.now(),
     });
 
-    return { alreadyInvited: false };
+    return { alreadyInvited: false, role: args.role, invitationId };
+  },
+});
+
+export const removeUndeliveredInvitation = internalMutation({
+  args: {
+    invitationId: v.id("collaborators"),
+    invitedBy: v.string(),
+  },
+  returns: v.boolean(),
+  handler: async (ctx, args) => {
+    const invitation = await ctx.db.get("collaborators", args.invitationId);
+    if (
+      !invitation ||
+      invitation.status !== "pending" ||
+      invitation.invitedBy !== args.invitedBy
+    ) {
+      return false;
+    }
+    await ctx.db.delete("collaborators", invitation._id);
+    return true;
+  },
+});
+
+function inviteOrigin(): string {
+  return (process.env.SITE_URL ?? "https://www.twyne.love").replace(/\/$/, "");
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+export const inviteCollaborator = action({
+  args: {
+    lixId: v.string(),
+    folioName: v.string(),
+    email: v.string(),
+    role: collaboratorRole,
+  },
+  returns: v.object({
+    alreadyInvited: v.boolean(),
+    role: collaboratorRole,
+    emailDelivered: v.boolean(),
+  }),
+  handler: async (ctx, args) => {
+    const identity = await requireIdentity(ctx);
+    const invitation: {
+      alreadyInvited: boolean;
+      role: "editor" | "commenter";
+      invitationId: Id<"collaborators"> | null;
+    } = await ctx.runMutation(internal.collaboration.createInvitation, {
+      lixId: args.lixId,
+      email: args.email,
+      role: args.role,
+      invitedBy: identity.tokenIdentifier,
+    });
+
+    if (invitation.alreadyInvited || !invitation.invitationId) {
+      return {
+        alreadyInvited: true,
+        role: invitation.role,
+        emailDelivered: false,
+      };
+    }
+
+    const rollback = async () => {
+      await ctx.runMutation(
+        internal.collaboration.removeUndeliveredInvitation,
+        {
+          invitationId: invitation.invitationId!,
+          invitedBy: identity.tokenIdentifier,
+        },
+      );
+    };
+    const apiKey = process.env.RESEND_API_KEY;
+    const origin = inviteOrigin();
+    if (!apiKey) {
+      if (origin.startsWith("http://localhost")) {
+        console.log(
+          `[twyne-collaboration] Invite for ${args.email}: ${origin}/editor?shared=${encodeURIComponent(args.lixId)}`,
+        );
+        return {
+          alreadyInvited: false,
+          role: invitation.role,
+          emailDelivered: false,
+        };
+      }
+      await rollback();
+      throw new Error("Collaboration email delivery is not configured.");
+    }
+
+    const inviteUrl = `${origin}/editor?shared=${encodeURIComponent(args.lixId)}`;
+    const sender =
+      process.env.RESEND_FROM_EMAIL ?? "Twyne <support@twyne.love>";
+    const inviter = identity.email ?? "A Twyne writer";
+    const resend = new Resend(apiKey);
+    const { error } = await resend.emails.send({
+      from: sender,
+      to: args.email.trim().toLowerCase(),
+      subject: `${inviter} invited you to edit “${args.folioName}” in Twyne`,
+      text: `${inviter} invited you to join “${args.folioName}” as ${args.role}.\n\nOpen the shared folio: ${inviteUrl}\n\nYou can ignore this email if you were not expecting it.`,
+      html: `<p><strong>${escapeHtml(inviter)}</strong> invited you to join <strong>${escapeHtml(args.folioName)}</strong> as ${escapeHtml(args.role)}.</p><p><a href="${escapeHtml(inviteUrl)}">Open the shared folio</a></p><p>If you were not expecting this invitation, you can ignore this email.</p>`,
+    });
+    if (error) {
+      await rollback();
+      throw new Error("Failed to deliver the collaboration invitation.");
+    }
+
+    return {
+      alreadyInvited: false,
+      role: invitation.role,
+      emailDelivered: true,
+    };
   },
 });
 
@@ -264,6 +394,55 @@ export const rejectInvitation = mutation({
       await ctx.db.patch(invite._id, { status: "rejected" });
     }
     return { ok: true };
+  },
+});
+
+/** Pending invitations for the signed-in writer, including invites sent before
+ * they created their Twyne account and therefore addressed to their email. */
+export const listPendingInvitations = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await requireIdentity(ctx);
+    const keys = [
+      identity.tokenIdentifier,
+      identity.email?.trim().toLowerCase(),
+    ].filter((value): value is string => Boolean(value));
+    const rows = (
+      await Promise.all(
+        keys.map((userId) =>
+          ctx.db
+            .query("collaborators")
+            .withIndex("by_userId", (q) => q.eq("userId", userId))
+            .collect(),
+        ),
+      )
+    )
+      .flat()
+      .filter((row) => row.status === "pending");
+
+    const uniqueRows = [...new Map(rows.map((row) => [row._id, row])).values()];
+    const invitations = await Promise.all(
+      uniqueRows.map(async (row) => {
+        const doc = await ctx.db
+          .query("sharedLixBlobs")
+          .withIndex("by_lixId", (q) => q.eq("lixId", row.lixId))
+          .first();
+        return doc
+          ? {
+              lixId: row.lixId,
+              folioName: doc.folioName,
+              role: row.role as "editor" | "commenter",
+              invitedAt: row.invitedAt,
+            }
+          : null;
+      }),
+    );
+    return invitations
+      .filter(
+        (invitation): invitation is NonNullable<typeof invitation> =>
+          invitation !== null,
+      )
+      .sort((a, b) => b.invitedAt - a.invitedAt);
   },
 });
 
