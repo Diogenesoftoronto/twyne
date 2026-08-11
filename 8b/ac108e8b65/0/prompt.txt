@@ -1,0 +1,13 @@
+I want you to support responses api, and also add codex and anthropic sdk support for sign in
+
+---
+
+do these sign in layers not allow people to sign in using these services?
+
+---
+
+.
+
+---
+
+okay what about the agents dk, the goal really is that i want people to be able to oauth sign in to use their subs
