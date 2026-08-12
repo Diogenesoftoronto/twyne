@@ -33,7 +33,8 @@ const {
 const originalIndexedDb = g.indexedDB;
 const localStorageStore: Record<string, string> = {};
 const localStorageShim = {
-  getItem: (k: string) => (k in localStorageStore ? localStorageStore[k] : null),
+  getItem: (k: string) =>
+    k in localStorageStore ? localStorageStore[k] : null,
   setItem: (k: string, v: string) => {
     localStorageStore[k] = v;
   },
@@ -145,6 +146,7 @@ describe.serial("idb preference localStorage fallback", () => {
       defaultCitationStyle: "apa",
       aiEnhanceCitations: true,
       flagMissingSources: true,
+      autoInsertFootnotes: true,
       researchProvider: "search-api",
       searchBackend: {
         id: "exa",
@@ -172,6 +174,7 @@ describe.serial("idb preference localStorage fallback", () => {
       defaultCitationStyle: "apa",
       aiEnhanceCitations: true,
       flagMissingSources: true,
+      autoInsertFootnotes: true,
       researchProvider: "search-api",
       searchBackend: {
         id: "exa",
@@ -353,6 +356,7 @@ describe.serial("idb preference localStorage fallback", () => {
       defaultCitationStyle: "apa",
       aiEnhanceCitations: true,
       flagMissingSources: false,
+      autoInsertFootnotes: false,
       researchProvider: "hosted",
       searchBackend: {
         id: "tinyfish",

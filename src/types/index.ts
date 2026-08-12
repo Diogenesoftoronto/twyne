@@ -477,6 +477,24 @@ export interface DetectedCitation {
   metadata?: Record<string, string>;
 }
 
+/** Request from the Apparatus to place a source beside its supporting claim. */
+export interface CitationInsertionDetail {
+  sourceId: string;
+  text: string;
+  /** Verbatim draft passage the research source was found for. */
+  anchor?: string;
+  /** Used only when the bibliography entry was created from an inline URL. */
+  sourceUrl?: string;
+  /** Manual insertion may use a selected passage when no saved anchor exists. */
+  allowSelectionFallback?: boolean;
+}
+
+export interface CitationInsertionResult {
+  sourceId: string;
+  inserted: boolean;
+  reason?: "anchor-not-found" | "select-passage";
+}
+
 /**
  * What kind of thing in a draft the Apparatus decides needs backing up.
  * The extractor (not a regex) chooses this per passage — works include
@@ -924,7 +942,36 @@ export interface AiProviderConfig {
   modelModalities?: Record<string, AiModelModalities>;
   /** OpenAI-compatible text-generation wire protocol. Defaults to chat. */
   apiMode?: "chat" | "responses";
+  /**
+   * How hard to think, per model id.
+   *
+   * Keyed by model rather than set once for the provider because thinking is
+   * a model capability, not an account one: the same key reaches both a
+   * reasoning model and a plain one, and sending a thinking parameter to the
+   * plain one is an API error, not a no-op. An absent entry sends nothing,
+   * which is what makes an un-dialled model safe by default.
+   */
+  modelReasoning?: Record<string, AiModelReasoningSetting>;
+  /** Capability metadata fetched from models.dev for offline-safe rendering. */
+  modelReasoningOptions?: Record<string, AiModelReasoningOption[]>;
 }
+
+/**
+ * The thinking dial, in the writer's words rather than any one provider's.
+ * `"off"` is a request, not an absence: on a reasoning model, asking it not
+ * to think and saying nothing at all are different instructions.
+ */
+export type AiReasoningEffort = "low" | "medium" | "high" | "xhigh" | "max";
+
+export type AiModelReasoningOption =
+  | { type: "effort"; values: Array<AiReasoningEffort | null> }
+  | { type: "toggle" }
+  | { type: "budget_tokens"; min: number; max: number };
+
+export type AiModelReasoningSetting =
+  | { type: "effort"; value: AiReasoningEffort }
+  | { type: "toggle"; value: boolean }
+  | { type: "budget_tokens"; value: number };
 
 export interface AiModelModalities {
   input: string[];
@@ -1082,6 +1129,8 @@ export interface ApparatusSettings {
   defaultCitationStyle: ApparatusCitationStyle;
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
+  /** Insert newly researched sources as footnotes at their draft anchors. */
+  autoInsertFootnotes: boolean;
   researchProvider: ApparatusResearchProvider;
   searchBackend: SearchBackendConfig;
   /** Sources requested per claim, whichever provider answers. */
@@ -1093,6 +1142,7 @@ export const DEFAULT_APPARATUS_SETTINGS: ApparatusSettings = {
   defaultCitationStyle: "mla",
   aiEnhanceCitations: true,
   flagMissingSources: false,
+  autoInsertFootnotes: false,
   researchProvider: "hosted",
   searchBackend: { ...DEFAULT_SEARCH_BACKEND },
   maxResults: 8,

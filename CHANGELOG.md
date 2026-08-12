@@ -8,6 +8,29 @@
 
 
 
+
+## 0.14.0
+<sub>2026-08-12</sub>
+
+-  *(minor)*
+  Twyne 0.14 makes the writing room calmer to use and easier to understand.
+
+  **Editorial help stays in the room.** Grammar, citations, rubrics, comments,
+  and research panels now share clearer states and recovery paths, while the
+  editor keeps the writer's draft visible and intact during asynchronous work.
+
+  **Speech becomes a real reading aid.** Voice notes and persona playback can be
+  queued, replayed, moved forward or backward, and followed through the draft
+  with sentence-level highlighting.
+
+  **Settings now explain themselves through behavior.** Provider validation,
+  reasoning effort, runtime scaling, model selection, and site configuration are
+  wired through explicit controls with safer local defaults and useful feedback
+  when a provider or capability is unavailable.
+
+  This is a broad usability and editorial workflow improvement, so it ships as
+  a minor release.
+
 ## 0.13.0
 <sub>2026-08-11</sub>
 

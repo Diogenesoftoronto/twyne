@@ -23,6 +23,8 @@ import { Superscript } from "@tiptap/extension-superscript";
 import type { Editor } from "@tiptap/core";
 import { TextSelection } from "@tiptap/pm/state";
 import type {
+  CitationInsertionDetail,
+  CitationInsertionResult,
   DocumentMeta,
   DraftContentDetail,
   Folio,
@@ -130,6 +132,7 @@ import { FindReplace } from "./extensions/find-replace";
 import { MathExtensions } from "./extensions/math";
 import { SectionReorder } from "./extensions/section-reorder";
 import { FindReplacePanel } from "./find-replace-panel";
+import { GrammarPanel } from "./grammar-panel";
 import { ShortcutDialog } from "./shortcut-dialog";
 import { TextModal } from "../ui/text-modal";
 import { EDITOR_KEYBINDINGS, chordMatches } from "../../utils/keybindings";
@@ -307,6 +310,7 @@ export interface EditorStore {
   exportingPdf: boolean;
   /** Coordinator-owned navigation and help surfaces. */
   showFindReplace: boolean;
+  showGrammar: boolean;
   showShortcutDialog: boolean;
   showOutline: boolean;
   outline: DocumentOutlineModel;
@@ -451,6 +455,7 @@ export const TwyneEditor = component$(
       layoutPanelMaxH: 544,
       exportingPdf: false,
       showFindReplace: false,
+      showGrammar: false,
       showShortcutDialog: false,
       showOutline: false,
       outline: {
@@ -1566,13 +1571,63 @@ export const TwyneEditor = component$(
         };
         window.addEventListener("twyne:request-draft-html", onRequestDraftHtml);
 
-        // ── Drop a citation at the cursor as an endnote marker ──
-        const onInsertText = (e: Event) => {
-          const text = (e as CustomEvent).detail as string;
-          if (!text) return;
-          editor.chain().focus().setEndnote({ text }).insertContent(" ").run();
+        // ── Place a citation beside the passage it actually supports ──
+        const onInsertCitation = (event: Event) => {
+          const detail = (event as CustomEvent<CitationInsertionDetail>)
+            .detail;
+          if (!detail?.sourceId || !detail.text) return;
+
+          let target = detail.anchor
+            ? findTextRange(editor.state.doc, detail.anchor)
+            : null;
+          if (!target && detail.sourceUrl) {
+            target = findTextRange(editor.state.doc, detail.sourceUrl);
+          }
+          if (
+            !target &&
+            detail.allowSelectionFallback &&
+            !editor.state.selection.empty
+          ) {
+            target = {
+              from: editor.state.selection.from,
+              to: editor.state.selection.to,
+            };
+          }
+
+          if (!target) {
+            window.dispatchEvent(
+              new CustomEvent<CitationInsertionResult>(
+                "twyne:citation-inserted",
+                {
+                  detail: {
+                    sourceId: detail.sourceId,
+                    inserted: false,
+                    reason: detail.anchor
+                      ? "anchor-not-found"
+                      : "select-passage",
+                  },
+                },
+              ),
+            );
+            return;
+          }
+
+          const inserted = editor
+            .chain()
+            .focus()
+            .setTextSelection(target.to)
+            .setFootnote({ text: detail.text })
+            .run();
+          window.dispatchEvent(
+            new CustomEvent<CitationInsertionResult>(
+              "twyne:citation-inserted",
+              {
+                detail: { sourceId: detail.sourceId, inserted },
+              },
+            ),
+          );
         };
-        window.addEventListener("twyne:insert-text", onInsertText);
+        window.addEventListener("twyne:insert-citation", onInsertCitation);
 
         // ── Persona notes: pin feedback to the passages it concerns ──
         const onPersonaNotes = (e: Event) => {
@@ -1864,6 +1919,10 @@ export const TwyneEditor = component$(
           window.removeEventListener(
             "twyne:request-draft-html",
             onRequestDraftHtml,
+          );
+          window.removeEventListener(
+            "twyne:insert-citation",
+            onInsertCitation,
           );
           window.removeEventListener("twyne:persona-notes", onPersonaNotes);
           window.removeEventListener(
@@ -2346,14 +2405,21 @@ export const TwyneEditor = component$(
       const editor = store.editor;
       if (!editor) return;
       const { from, to } = editor.state.selection;
-      const text =
+      const selectionOffset =
+        from !== to
+          ? editor.state.doc.textBetween(0, from, "\n\n").length
+          : 0;
+      const rawText =
         from !== to
           ? editor.state.doc.textBetween(from, to, "\n\n")
           : editor.getText();
-      if (!text.trim()) return;
+      const leadingWhitespace = rawText.length - rawText.trimStart().length;
+      const text = rawText.trim();
+      if (!text) return;
       await speak({
         id: MANUSCRIPT_READING_ID,
         text,
+        sourceOffset: selectionOffset + leadingWhitespace,
         client: clientSig.value ?? null,
         signedIn: Boolean(auth.value.user),
       });
@@ -3392,6 +3458,17 @@ export const TwyneEditor = component$(
             ⌕ find
           </button>
           <button
+            title="Grammar suggestions"
+            aria-label="Grammar suggestions"
+            aria-pressed={store.showGrammar}
+            onClick$={() => {
+              store.showGrammar = !store.showGrammar;
+            }}
+            class="tool-btn"
+          >
+            Aa grammar
+          </button>
+          <button
             title="Document outline (⌘⇧O)"
             aria-label="Document outline"
             aria-pressed={store.showOutline}
@@ -3709,6 +3786,16 @@ export const TwyneEditor = component$(
               }}
             />
           </div>
+        )}
+
+        {store.showGrammar && (
+          <GrammarPanel
+            editor={store.editor ? noSerialize(store.editor) : null}
+            readOnly={readOnly}
+            onClose$={() => {
+              store.showGrammar = false;
+            }}
+          />
         )}
 
         {store.showOutline && (
@@ -4079,6 +4166,8 @@ export const TwyneEditor = component$(
             />
             <div
               id="twyne-editor-mount"
+              data-speech-id={MANUSCRIPT_READING_ID}
+              data-speech-source="plain"
               style={{ position: "relative", zIndex: 1 }}
             />
 
@@ -4262,6 +4351,7 @@ export const TwyneEditor = component$(
                 </blockquote>
               )}
               <div
+                data-speech-id={`note-popover-${store.notePopover.id}`}
                 class="comment-markdown text-[0.95rem] leading-6 text-[var(--color-ink)]"
                 style={{ fontFamily: "var(--font-serif)" }}
                 dangerouslySetInnerHTML={renderMarkdown(store.notePopover.note)}
@@ -4564,6 +4654,7 @@ export const TwyneEditor = component$(
                   {store.suggestionPopover.original}
                 </p>
                 <p
+                  data-speech-id={`suggestion-${store.suggestionPopover.id}`}
                   class="text-[0.95rem] leading-6 text-[var(--color-ink)]"
                   style={{ fontFamily: "var(--font-serif)" }}
                 >
@@ -4666,6 +4757,7 @@ export const TwyneEditor = component$(
               </div>
               <div class="px-5 py-4 space-y-3">
                 <div
+                  data-speech-id={`user-comment-${store.userCommentPopover.id}`}
                   class="comment-markdown text-[1rem] leading-6 text-[var(--color-ink)]"
                   style="font-family: var(--font-serif);"
                   dangerouslySetInnerHTML={renderMarkdown(

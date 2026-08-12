@@ -107,6 +107,10 @@ import {
   stripReasoningTags,
 } from "./reasoning-tags";
 import {
+  reasoningProviderOptions,
+  type ProviderOptions,
+} from "./reasoning-effort";
+import {
   createFrameCoalescer,
   createGenerationStreamAccumulator,
   textSnapshot,
@@ -724,6 +728,7 @@ async function runOnce({
   prompt,
   temperature,
   maxOutputTokens,
+  providerOptions,
   tools,
   stopWhen,
   onText,
@@ -734,6 +739,8 @@ async function runOnce({
   temperature: number;
   /** Undefined leaves the ceiling to the provider's model maximum. */
   maxOutputTokens?: number;
+  /** Provider-specific knobs — currently the thinking dial. Undefined sends none. */
+  providerOptions?: ProviderOptions;
   tools?: ToolSet;
   stopWhen?: ReturnType<typeof stepCountIs>;
   onText?: StreamText;
@@ -745,6 +752,7 @@ async function runOnce({
       prompt,
       temperature,
       maxOutputTokens,
+      ...(providerOptions ? { providerOptions } : {}),
       ...(tools ? { tools, stopWhen } : {}),
     });
     return { text: result.text, usage: normalizeAiUsage(result.totalUsage) };
@@ -756,6 +764,7 @@ async function runOnce({
     prompt,
     temperature,
     maxOutputTokens,
+    ...(providerOptions ? { providerOptions } : {}),
     ...(tools ? { tools, stopWhen } : {}),
   });
 
@@ -848,6 +857,13 @@ async function generateTrackedText({
       prompt: userPrompt,
       temperature: resolved.temperature,
       maxOutputTokens: resolved.maxTokens,
+      // Keyed by the model actually being used, so a feature that overrides
+      // the provider's default model does not inherit a dial set for a
+      // different model — thinking is a per-model capability.
+      providerOptions: reasoningProviderOptions(
+        resolved.provider,
+        resolved.model,
+      ),
       tools,
       stopWhen,
       onText,
@@ -1530,6 +1546,89 @@ export interface VoiceTranscribeResult {
   traceId?: string;
 }
 
+export interface VoiceTranscribeOptions {
+  signal?: AbortSignal;
+  /** Receives the full transcript-so-far whenever the provider emits a delta. */
+  onDelta?: (text: string) => void;
+}
+
+function supportsStreamingTranscription(
+  provider: AiProviderConfig,
+  model: string,
+): boolean {
+  return (
+    provider.type === "openai" &&
+    /^gpt-4o-(?:mini-)?transcribe(?:-|$)/i.test(model)
+  );
+}
+
+async function readTranscriptionEventStream(
+  response: Response,
+  onDelta: (text: string) => void,
+): Promise<string> {
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let transcript = "";
+
+  const emit = () => {
+    try {
+      onDelta(transcript);
+    } catch {
+      // Rendering a partial transcript must never abort provider work.
+    }
+  };
+
+  const consume = (frame: string) => {
+    const payload = frame
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith("data:"))
+      .map((line) => line.slice(5).trimStart())
+      .join("\n");
+    if (!payload || payload === "[DONE]") return;
+
+    const event = JSON.parse(payload) as {
+      type?: string;
+      delta?: string;
+      text?: string;
+      transcript?: string;
+      error?: { message?: string };
+    };
+    if (event.type === "error") {
+      throw new Error(
+        event.error?.message || "Streaming transcription failed.",
+      );
+    }
+    if (event.type === "transcript.text.delta" && event.delta) {
+      transcript += event.delta;
+      emit();
+      return;
+    }
+    if (
+      event.type === "transcript.text.done" ||
+      event.type === "transcription.completed"
+    ) {
+      const finalText = event.text ?? event.transcript;
+      if (typeof finalText === "string" && finalText !== transcript) {
+        transcript = finalText;
+        emit();
+      }
+    }
+  };
+
+  while (true) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+    const frames = buffer.split(/\r?\n\r?\n/);
+    buffer = frames.pop() ?? "";
+    for (const frame of frames) consume(frame);
+    if (done) break;
+  }
+  if (buffer.trim()) consume(buffer);
+  return transcript.trim();
+}
+
 async function captureVoiceTranscription({
   provider,
   model,
@@ -1575,7 +1674,7 @@ async function captureVoiceTranscription({
 export async function runClientVoiceTranscribe(
   req: VoiceTranscribeRequest,
   settings: AiSettings,
-  opts?: { signal?: AbortSignal },
+  opts?: VoiceTranscribeOptions,
 ): Promise<VoiceTranscribeResult | null> {
   const resolved = resolveFeatureConfig(settings, "voice-transcription");
   if (!resolved) return null;
@@ -1624,7 +1723,11 @@ export async function runClientVoiceTranscribe(
     const form = new FormData();
     form.append("file", req.audio, `note.${blobExtension(req.audio.type)}`);
     form.append("model", resolved.model);
-    form.append("response_format", "json");
+    const stream =
+      Boolean(opts?.onDelta) &&
+      supportsStreamingTranscription(resolved.provider, resolved.model);
+    if (stream) form.append("stream", "true");
+    else form.append("response_format", "json");
     if (req.prompt?.trim()) {
       form.append("prompt", req.prompt.trim().slice(0, 800));
     }
@@ -1641,18 +1744,26 @@ export async function runClientVoiceTranscribe(
         `Transcription failed (${res.status}): ${detail.slice(0, 240)}`,
       );
     }
-    const data = (await res.json()) as { text?: string };
-    const text = typeof data.text === "string" ? data.text.trim() : "";
+    const text = stream
+      ? await readTranscriptionEventStream(res, opts!.onDelta!)
+      : (() => "")();
+    const finalText = stream
+      ? text
+      : await res
+          .json()
+          .then((data: { text?: string }) =>
+            typeof data.text === "string" ? data.text.trim() : "",
+          );
     const traceId = await captureVoiceTranscription({
       provider: resolved.provider.type,
       model: resolved.model,
       audio: req.audio,
       prompt: req.prompt,
-      output: text,
+      output: finalText,
       latencyMs: performance.now() - start,
     });
     return {
-      text,
+      text: finalText,
       provider: resolved.provider.type,
       model: resolved.model,
       traceId,
@@ -1876,28 +1987,63 @@ export async function runClientCustomCriterionJudge(
 
 /* ── Public: test a provider configuration ──────────────────────── */
 
+export interface ProviderTestResult {
+  ok: boolean;
+  latencyMs: number;
+  error?: string;
+  /** How many models the endpoint listed, when it answered with a catalog. */
+  modelCount?: number;
+  models?: string[];
+}
+
+/**
+ * Does this key work, and what is actually at this URL?
+ *
+ * Asks the provider for its model list. That is the right question for three
+ * reasons: it bills nothing, it fails loudly and specifically on a bad key
+ * (401/403 rather than a generic generation error), and it comes back with the
+ * endpoint's own inventory — which is the only way to tell a working gateway
+ * from a URL that merely happens to accept requests.
+ *
+ * Not every OpenAI-compatible gateway serves `/models`. Twyne reports that
+ * limitation instead of silently making a billed generation request.
+ */
 export async function testProvider(
   config: AiProviderConfig,
-): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
+): Promise<ProviderTestResult> {
   const start = performance.now();
+  const elapsed = () => Math.round(performance.now() - start);
   try {
-    const model = await createModel(config);
-    if (!model) {
-      return { ok: false, latencyMs: 0, error: "Failed to create model" };
+    const { url, headers } = providerModelListRequest(config);
+    const res = await fetch(url, { headers });
+    if (res.ok) {
+      const models = parseModelListBody(await res.json());
+      return {
+        ok: true,
+        latencyMs: elapsed(),
+        modelCount: models.length,
+        models,
+      };
     }
-    // The one deliberate ceiling left in the codebase. This is a reachability
-    // probe, not an answer anyone reads — it only has to not throw — so it
-    // stays as small as possible rather than billing for a real generation.
-    await generateText({
-      model,
-      prompt: "Say 'ok' and nothing else.",
-      maxOutputTokens: 10,
-    });
-    return { ok: true, latencyMs: Math.round(performance.now() - start) };
+    if (res.status === 401 || res.status === 403) {
+      return {
+        ok: false,
+        latencyMs: elapsed(),
+        error: `The provider rejected this API key (${res.status}).`,
+      };
+    }
+    return {
+      ok: false,
+      latencyMs: elapsed(),
+      error:
+        res.status === 404 || res.status === 405
+          ? "This endpoint does not expose a model-list API, so Twyne cannot validate it without making a billed generation request."
+          : `The provider answered ${res.status} when asked for its models.`,
+    };
   } catch (err) {
     return {
       ok: false,
-      latencyMs: Math.round(performance.now() - start),
+      latencyMs: elapsed(),
       error: (err as Error).message ?? "Connection failed",
     };
   }
@@ -1928,70 +2074,73 @@ function fallbackModelsForProvider(config: AiProviderConfig): string[] {
   return dedupeModels([config.defaultModel, ...(config.availableModels ?? [])]);
 }
 
+/**
+ * Where a provider keeps its catalog, and how it wants to be asked.
+ *
+ * Shared by discovery and by the connection test, because they are the same
+ * request: listing models is the cheapest honest answer to "does this key work
+ * and what is actually at this URL?" — it bills nothing and, unlike a one-word
+ * generation probe, it comes back with the endpoint's own inventory.
+ */
+function providerModelListRequest(config: AiProviderConfig): {
+  url: string;
+  headers: Record<string, string>;
+} {
+  if (config.type === "google") {
+    return {
+      url: `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(config.apiKey)}`,
+      headers: {},
+    };
+  }
+  const isTinker = isTinkerProviderConfig(config);
+  const isAnthropicStyle =
+    !isTinker &&
+    (config.type === "anthropic" || config.type === "anthropic-compatible");
+  const baseUrl = normalizeApiBaseUrl(
+    isTinker ? tinkerRelayBaseUrl() : config.baseUrl,
+    isAnthropicStyle
+      ? "https://api.anthropic.com/v1"
+      : "https://api.openai.com/v1",
+  );
+  const headers: Record<string, string> = isAnthropicStyle
+    ? { "x-api-key": config.apiKey, "anthropic-version": "2023-06-01" }
+    : config.apiKey && config.type !== "ollama"
+      ? { authorization: `Bearer ${config.apiKey}` }
+      : {};
+  return { url: `${baseUrl}/models`, headers };
+}
+
+/** Pull every model id out of the three list shapes providers use. */
+export function parseModelListBody(body: unknown): string[] {
+  const b = body as {
+    data?: Array<{ id?: string; name?: string }>;
+    models?: Array<{ id?: string; name?: string; displayName?: string }>;
+  } | null;
+  if (!b) return [];
+  return dedupeModels([
+    ...(b.data ?? []).flatMap((m) => [m.id, m.name]),
+    // Google prefixes every id with `models/`; the rest of the app wants
+    // the bare id, which is also what its generation endpoint accepts.
+    ...(b.models ?? []).flatMap((m) => [
+      m.id,
+      m.name?.replace(/^models\//, ""),
+      m.displayName,
+    ]),
+  ]);
+}
+
 export async function discoverProviderModels(
   config: AiProviderConfig,
 ): Promise<ProviderModelDiscoveryResult> {
   const fallback = fallbackModelsForProvider(config);
 
   try {
-    if (config.type === "google") {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(config.apiKey)}`,
-      );
-      if (!res.ok) {
-        throw new Error(`Model discovery failed (${res.status})`);
-      }
-      const body = (await res.json()) as {
-        models?: Array<{ name?: string; displayName?: string }>;
-      };
-      const models = dedupeModels(
-        (body.models ?? []).flatMap((m) => [
-          m.name?.replace(/^models\//, ""),
-          m.displayName,
-        ]),
-      );
-      return {
-        models: models.length > 0 ? models : fallback,
-        source: models.length > 0 ? "remote" : "fallback",
-      };
-    }
-
-    const isTinker = isTinkerProviderConfig(config);
-    const isAnthropicStyle =
-      !isTinker &&
-      (config.type === "anthropic" || config.type === "anthropic-compatible");
-    const baseUrl = normalizeApiBaseUrl(
-      isTinker ? tinkerRelayBaseUrl() : config.baseUrl,
-      isAnthropicStyle
-        ? "https://api.anthropic.com/v1"
-        : "https://api.openai.com/v1",
-    );
-    const headers: Record<string, string> = isAnthropicStyle
-      ? {
-          "x-api-key": config.apiKey,
-          "anthropic-version": "2023-06-01",
-        }
-      : config.apiKey && config.type !== "ollama"
-        ? {
-            authorization: `Bearer ${config.apiKey}`,
-          }
-        : {};
-
-    const res = await fetch(`${baseUrl}/models`, { headers });
+    const { url, headers } = providerModelListRequest(config);
+    const res = await fetch(url, { headers });
     if (!res.ok) {
       throw new Error(`Model discovery failed (${res.status})`);
     }
-
-    const body = (await res.json()) as {
-      data?: Array<{ id?: string; name?: string }>;
-      models?: Array<{ id?: string; name?: string; displayName?: string }>;
-    };
-
-    const models = dedupeModels([
-      ...(body.data ?? []).flatMap((m) => [m.id, m.name]),
-      ...(body.models ?? []).flatMap((m) => [m.id, m.name, m.displayName]),
-    ]);
-
+    const models = parseModelListBody(await res.json());
     return {
       models: models.length > 0 ? models : fallback,
       source: models.length > 0 ? "remote" : "fallback",
@@ -2091,7 +2240,9 @@ export async function runClientCitationFormat(
       style: req.style,
       rawText: req.rawText,
       contextBlock: req.context
-        ? renderNamed("blocks/citation-format-context", { context: req.context })
+        ? renderNamed("blocks/citation-format-context", {
+            context: req.context,
+          })
         : "",
     });
 
@@ -2147,14 +2298,18 @@ export async function runClientSourceExtract(
   const model = await createModel(resolved.provider, resolved.model);
   if (!model) return null;
   try {
-    const { canvasSystemPrompt } = await import("../components/canvas/openui/library");
+    const { canvasSystemPrompt } = await import(
+      "../components/canvas/openui/library"
+    );
     const prompt = [
       `Source title: ${req.title}`,
       req.author ? `Author: ${req.author}` : "",
       req.url ? `Source URL: ${req.url}` : "",
       "Source text:",
       req.markdown,
-    ].filter(Boolean).join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
     return await generateTrackedText({
       feature: "source-extract",
       resolved,
@@ -2163,7 +2318,10 @@ export async function runClientSourceExtract(
       prompt,
       spanName: "source_extract",
       onText,
-      evalSignals: { twyne_source_chars: req.markdown.length, twyne_expected_format: "openui_lang" },
+      evalSignals: {
+        twyne_source_chars: req.markdown.length,
+        twyne_expected_format: "openui_lang",
+      },
     });
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:source-extract", err);
@@ -2185,44 +2343,104 @@ export interface SourceMapResult {
   provider: string;
 }
 
-export function parseSourceMapResult(text: string, knownNodeIds: ReadonlySet<string>, provider: string): SourceMapResult | null {
+export function parseSourceMapResult(
+  text: string,
+  knownNodeIds: ReadonlySet<string>,
+  provider: string,
+): SourceMapResult | null {
   try {
-    const stripped = stripReasoningTags(text).trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
-    const raw = JSON.parse(extractFirstJsonObject(stripped) ?? stripped) as Record<string, unknown>;
+    const stripped = stripReasoningTags(text)
+      .trim()
+      .replace(/^```(?:json)?/i, "")
+      .replace(/```$/, "")
+      .trim();
+    const raw = JSON.parse(
+      extractFirstJsonObject(stripped) ?? stripped,
+    ) as Record<string, unknown>;
     const annotations: Record<string, CanvasAnnotation> = {};
     for (const item of Array.isArray(raw.annotations) ? raw.annotations : []) {
       if (!item || typeof item !== "object") continue;
       const row = item as Record<string, unknown>;
-      if (!knownNodeIds.has(String(row.nodeId)) || typeof row.relevance !== "string") continue;
-      const stance = ["supports", "complicates", "contradicts", "background"].includes(String(row.stance))
+      if (
+        !knownNodeIds.has(String(row.nodeId)) ||
+        typeof row.relevance !== "string"
+      )
+        continue;
+      const stance = [
+        "supports",
+        "complicates",
+        "contradicts",
+        "background",
+      ].includes(String(row.stance))
         ? (row.stance as CanvasAnnotation["stance"])
         : "background";
       annotations[String(row.nodeId)] = {
-        relevance: row.relevance.trim(), stance,
-        draftAnchor: typeof row.draftAnchor === "string" ? row.draftAnchor.trim() || undefined : undefined,
-        score: typeof row.score === "number" ? Math.min(5, Math.max(1, Math.round(row.score))) : undefined,
+        relevance: row.relevance.trim(),
+        stance,
+        draftAnchor:
+          typeof row.draftAnchor === "string"
+            ? row.draftAnchor.trim() || undefined
+            : undefined,
+        score:
+          typeof row.score === "number"
+            ? Math.min(5, Math.max(1, Math.round(row.score)))
+            : undefined,
       };
     }
-    const clusters: CanvasCluster[] = (Array.isArray(raw.clusters) ? raw.clusters : [])
-      .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
-      .filter((item) => typeof item.id === "string" && typeof item.label === "string")
+    const clusters: CanvasCluster[] = (
+      Array.isArray(raw.clusters) ? raw.clusters : []
+    )
+      .filter(
+        (item): item is Record<string, unknown> =>
+          !!item && typeof item === "object",
+      )
+      .filter(
+        (item) => typeof item.id === "string" && typeof item.label === "string",
+      )
       .slice(0, 7)
-      .map((item) => ({ id: String(item.id), label: String(item.label), hue: typeof item.hue === "number" ? item.hue : undefined }));
+      .map((item) => ({
+        id: String(item.id),
+        label: String(item.label),
+        hue: typeof item.hue === "number" ? item.hue : undefined,
+      }));
     const clusterIds = new Set(clusters.map((cluster) => cluster.id));
     const clusterOf: Record<string, string> = {};
     if (raw.clusterOf && typeof raw.clusterOf === "object") {
       for (const [nodeId, clusterId] of Object.entries(raw.clusterOf)) {
-        if (knownNodeIds.has(nodeId) && clusterIds.has(String(clusterId))) clusterOf[nodeId] = String(clusterId);
+        if (knownNodeIds.has(nodeId) && clusterIds.has(String(clusterId)))
+          clusterOf[nodeId] = String(clusterId);
       }
     }
-    const allowedKinds = new Set(["supports", "complicates", "contradicts", "extends", "same-topic"]);
+    const allowedKinds = new Set([
+      "supports",
+      "complicates",
+      "contradicts",
+      "extends",
+      "same-topic",
+    ]);
     const edges: CanvasEdge[] = (Array.isArray(raw.edges) ? raw.edges : [])
-      .filter((item): item is Record<string, unknown> => !!item && typeof item === "object")
-      .filter((item) => knownNodeIds.has(String(item.from)) && knownNodeIds.has(String(item.to)) && allowedKinds.has(String(item.kind)))
+      .filter(
+        (item): item is Record<string, unknown> =>
+          !!item && typeof item === "object",
+      )
+      .filter(
+        (item) =>
+          knownNodeIds.has(String(item.from)) &&
+          knownNodeIds.has(String(item.to)) &&
+          allowedKinds.has(String(item.kind)),
+      )
       .map((item, index) => ({
-        id: typeof item.id === "string" ? item.id : `model:${index}:${item.from}:${item.to}`,
-        from: String(item.from), to: String(item.to), kind: String(item.kind) as CanvasEdge["kind"],
-        label: typeof item.label === "string" ? item.label.trim() || undefined : undefined,
+        id:
+          typeof item.id === "string"
+            ? item.id
+            : `model:${index}:${item.from}:${item.to}`,
+        from: String(item.from),
+        to: String(item.to),
+        kind: String(item.kind) as CanvasEdge["kind"],
+        label:
+          typeof item.label === "string"
+            ? item.label.trim() || undefined
+            : undefined,
         origin: "model" as const,
       }));
     return { annotations, clusterOf, clusters, edges, provider };
@@ -2231,14 +2449,19 @@ export function parseSourceMapResult(text: string, knownNodeIds: ReadonlySet<str
   }
 }
 
-export async function runClientSourceMap(req: SourceMapRequest, settings: AiSettings): Promise<SourceMapResult | null> {
+export async function runClientSourceMap(
+  req: SourceMapRequest,
+  settings: AiSettings,
+): Promise<SourceMapResult | null> {
   const resolved = resolveFeatureConfig(settings, "source-map");
   if (!resolved) return null;
   const model = await createModel(resolved.provider, resolved.model);
   if (!model) return null;
   try {
     const text = await generateTrackedText({
-      feature: "source-map", resolved, model,
+      feature: "source-map",
+      resolved,
+      model,
       system: renderNamed("source-map-system"),
       prompt: renderPrompt(renderNamed("source-map-user"), {
         draft: req.draftText || "(No draft text yet.)",
@@ -2246,9 +2469,16 @@ export async function runClientSourceMap(req: SourceMapRequest, settings: AiSett
         nodes: JSON.stringify(req.nodes),
       }),
       spanName: "source_map",
-      evalSignals: { twyne_canvas_nodes: req.nodes.length, twyne_expected_format: "json_source_map" },
+      evalSignals: {
+        twyne_canvas_nodes: req.nodes.length,
+        twyne_expected_format: "json_source_map",
+      },
     });
-    return parseSourceMapResult(text, new Set(req.nodes.map((node) => node.id)), resolved.provider.type);
+    return parseSourceMapResult(
+      text,
+      new Set(req.nodes.map((node) => node.id)),
+      resolved.provider.type,
+    );
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:source-map", err);
     return null;
@@ -2901,12 +3131,14 @@ export async function runClientInterviewTurn(
     generationPrompt = transcript;
     let text: string;
     if (onUpdate) {
+      const providerOptions = reasoningProviderOptions(cfg.provider, cfg.model);
       const streamed = streamText({
         model,
         system,
         prompt: generationPrompt,
         temperature: cfg.temperature,
         maxOutputTokens: cfg.maxTokens,
+        ...(providerOptions ? { providerOptions } : {}),
       });
       let rawText = "";
       let nativeReasoning = "";

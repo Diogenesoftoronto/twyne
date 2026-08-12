@@ -1,4 +1,11 @@
-import { afterAll, afterEach, beforeEach, describe, expect, test } from "bun:test";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from "bun:test";
 import { PERSONAS } from "./personas";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
@@ -236,10 +243,7 @@ describe("speak", () => {
  */
 describe("speakQueue", () => {
   /** Wait for the manager to reach a state, rather than guessing at ticks. */
-  async function settle(
-    predicate: () => boolean,
-    what: string,
-  ): Promise<void> {
+  async function settle(predicate: () => boolean, what: string): Promise<void> {
     for (let i = 0; i < 200; i++) {
       if (predicate()) return;
       await new Promise((resolve) => setTimeout(resolve, 5));
@@ -274,7 +278,13 @@ describe("speakQueue", () => {
 
   function room(client: never) {
     return [
-      { id: "memo-1", text: "one", label: "Marguerite", client, signedIn: true },
+      {
+        id: "memo-1",
+        text: "one",
+        label: "Marguerite",
+        client,
+        signedIn: true,
+      },
       { id: "memo-2", text: "two", label: "Inés", client, signedIn: true },
       { id: "memo-3", text: "three", label: "Auden", client, signedIn: true },
     ];
@@ -362,7 +372,10 @@ describe("speakQueue", () => {
     const { client, said } = hostedClient();
     await speakModule.speakQueue(room(client), { ownerId: "room" });
 
-    await settle(() => said.includes("two"), "the second passage to be prepared");
+    await settle(
+      () => said.includes("two"),
+      "the second passage to be prepared",
+    );
     // Still on the first: the prefetch must not disturb what is sounding.
     expect(speakModule.speechState().id).toBe("memo-1");
     expect(said).not.toContain("three");
@@ -412,12 +425,40 @@ describe("speakQueue", () => {
     expect(speakModule.hasNextSpeech()).toBe(false);
   });
 
+  test("changing the active voice regenerates the passage without losing the queue", async () => {
+    const calls: Array<{ text: string; voice?: string }> = [];
+    const client = {
+      action: async (_ref: unknown, args: { text: string; voice?: string }) => {
+        calls.push(args);
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    } as never;
+
+    await speakModule.speakQueue(room(client), { ownerId: "room" });
+    await speakModule.restartSpeechWithVoice("cedar");
+
+    const state = speakModule.speechState();
+    expect(state.id).toBe("memo-1");
+    expect(state.ownerId).toBe("room");
+    expect(state.queueLength).toBe(3);
+    expect(state.voice).toBe("cedar");
+    expect(
+      calls.some((call) => call.text === "one" && call.voice === "cedar"),
+    ).toBe(true);
+  });
+
   test("skips empty passages rather than stalling on them", async () => {
     const { client } = hostedClient();
     await speakModule.speakQueue(
       [
         { id: "blank", text: "   ", client, signedIn: true },
-        { id: "memo-1", text: "one", label: "Marguerite", client, signedIn: true },
+        {
+          id: "memo-1",
+          text: "one",
+          label: "Marguerite",
+          client,
+          signedIn: true,
+        },
       ],
       { ownerId: "room" },
     );
@@ -460,9 +501,9 @@ describe("pickVoiceForProvider", () => {
     expect(speakModule.pickVoiceForProvider(voices, "onyx", undefined)).toBe(
       "onyx",
     );
-    expect(speakModule.pickVoiceForProvider(undefined, "onyx", "fishaudio")).toBe(
-      "onyx",
-    );
+    expect(
+      speakModule.pickVoiceForProvider(undefined, "onyx", "fishaudio"),
+    ).toBe("onyx");
   });
 });
 
@@ -480,8 +521,9 @@ describe("persona voices", () => {
    */
   test("every editor has a distinct Fish Audio voice id", () => {
     const ids = PERSONAS.map((p) => p.speechVoices?.fishaudio);
-    expect(ids.every((id) => typeof id === "string" && /^[0-9a-f]{32}$/.test(id!)))
-      .toBe(true);
+    expect(
+      ids.every((id) => typeof id === "string" && /^[0-9a-f]{32}$/.test(id!)),
+    ).toBe(true);
     expect(new Set(ids).size).toBe(PERSONAS.length);
   });
 

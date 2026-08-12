@@ -148,6 +148,7 @@ function normalizeApparatusSettings(value: unknown): ApparatusSettings {
         : DEFAULT_APPARATUS_SETTINGS.defaultCitationStyle,
     aiEnhanceCitations: v.aiEnhanceCitations === true,
     flagMissingSources: v.flagMissingSources === true,
+    autoInsertFootnotes: v.autoInsertFootnotes === true,
     researchProvider:
       v.researchProvider === "search-api" ||
       v.researchProvider === "model-web-search" ||
@@ -462,18 +463,14 @@ describe("folio sync (convex-sync)", () => {
         syncRevision: 1,
         folios: SAMPLE_FOLIOS,
         foliosUpdatedAt: 2,
-        folioContent: [
-          { folioId: "f1", html: SAMPLE_HTML, updatedAt: 2 },
-        ],
+        folioContent: [{ folioId: "f1", html: SAMPLE_HTML, updatedAt: 2 }],
       },
       {
         ...emptyRemoteSnapshot(),
         syncRevision: 3,
         folios: SAMPLE_FOLIOS,
         foliosUpdatedAt: 2,
-        folioContent: [
-          { folioId: "f1", html: SAMPLE_HTML, updatedAt: 2 },
-        ],
+        folioContent: [{ folioId: "f1", html: SAMPLE_HTML, updatedAt: 2 }],
       },
     ];
     let syncMutation = 0;

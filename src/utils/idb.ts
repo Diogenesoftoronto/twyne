@@ -237,6 +237,7 @@ function normalizeApparatusSettings(value: unknown): ApparatusSettings {
         : DEFAULT_APPARATUS_SETTINGS.defaultCitationStyle,
     aiEnhanceCitations: v.aiEnhanceCitations === true,
     flagMissingSources: v.flagMissingSources === true,
+    autoInsertFootnotes: v.autoInsertFootnotes === true,
     researchProvider: normalizeResearchProvider(v.researchProvider),
     searchBackend: normalizeSearchBackend(value),
     maxResults: Math.max(1, Math.min(20, maxResults)),
@@ -276,12 +277,14 @@ function normalizeSearchBackend(value: unknown): SearchBackendConfig {
   }
   return {
     ...DEFAULT_SEARCH_BACKEND,
-    apiKey:
-      typeof rec.tinyFishApiKey === "string" ? rec.tinyFishApiKey : "",
+    apiKey: typeof rec.tinyFishApiKey === "string" ? rec.tinyFishApiKey : "",
   };
 }
 
-function normalizeMcpServer(value: unknown, index: number): McpServerConfig | null {
+function normalizeMcpServer(
+  value: unknown,
+  index: number,
+): McpServerConfig | null {
   if (!value || typeof value !== "object") return null;
   const v = value as Partial<McpServerConfig>;
   const url = typeof v.url === "string" ? v.url.trim() : "";
@@ -986,9 +989,7 @@ export async function saveModelFileToIdb(
   }
 }
 
-export async function loadModelFileFromIdb(
-  id: string,
-): Promise<Blob | null> {
+export async function loadModelFileFromIdb(id: string): Promise<Blob | null> {
   if (!isBrowser()) return null;
   try {
     const db = await openDb();
@@ -1001,9 +1002,9 @@ export async function loadModelFileFromIdb(
   }
 }
 
-export async function listModelFilesFromIdb(prefix: string): Promise<
-  ModelFileRecord[]
-> {
+export async function listModelFilesFromIdb(
+  prefix: string,
+): Promise<ModelFileRecord[]> {
   if (!isBrowser()) return [];
   try {
     const db = await openDb();

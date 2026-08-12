@@ -36,6 +36,7 @@ import {
 import { resolveFeatureConfig, runClientVoiceSpeech } from "./ai-client";
 import { getCachedAiSettings } from "./ai-orchestrator";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
+import { BROWSER_TTS_VOICES } from "./browser-inference";
 
 /** Cap on cached clips, so a long session doesn't hold every note in memory. */
 const MAX_CACHED_CLIPS = 24;
@@ -44,6 +45,8 @@ export interface SpeakRequest {
   text: string;
   /** Stable id for the thing being read, so the UI can highlight it. */
   id: string;
+  /** Character offset within a larger plain-text source, when reading a selection. */
+  sourceOffset?: number;
   /** Fallback voice name, e.g. "onyx". */
   voice?: string;
   /**
@@ -79,12 +82,7 @@ export interface SpeakRequest {
   signedIn?: boolean;
 }
 
-export type SpeechStatus =
-  | "idle"
-  | "loading"
-  | "playing"
-  | "paused"
-  | "error";
+export type SpeechStatus = "idle" | "loading" | "playing" | "paused" | "error";
 
 export interface SpeechState {
   status: SpeechStatus;
@@ -108,7 +106,43 @@ export interface SpeechState {
   queueLength: number;
   /** Display name of the passage being read, when the caller gave one. */
   label: string | null;
+  /** Voice currently selected for this passage, once it is resolved. */
+  voice: string | null;
+  /** Provider and model serving the active clip, once known. */
+  provider: string | null;
+  model: string | null;
 }
+
+export interface SpeechVoiceOption {
+  id: string;
+  label: string;
+}
+
+export interface SpeechVoiceMenu {
+  provider: string;
+  model: string;
+  selected: string;
+  options: SpeechVoiceOption[];
+  /** Compatible APIs may accept a voice id that is not in their advertised set. */
+  allowsCustom: boolean;
+}
+
+/** Voices accepted by OpenAI's speech request API. */
+export const OPENAI_SPEECH_VOICES = [
+  "alloy",
+  "ash",
+  "ballad",
+  "coral",
+  "echo",
+  "fable",
+  "onyx",
+  "nova",
+  "sage",
+  "shimmer",
+  "verse",
+  "marin",
+  "cedar",
+] as const;
 
 const state: SpeechState = {
   status: "idle",
@@ -120,6 +154,9 @@ const state: SpeechState = {
   queueIndex: 0,
   queueLength: 0,
   label: null,
+  voice: null,
+  provider: null,
+  model: null,
 };
 
 let audio: HTMLAudioElement | null = null;
@@ -141,6 +178,19 @@ let queueOwner: string | null = null;
 
 export function speechState(): SpeechState {
   return { ...state };
+}
+
+/** The exact prose handed to the provider for the active queue item. */
+export function currentSpeechText(): string | null {
+  return queue[queueIndex]?.text.trim() || null;
+}
+
+/** Character offset of the active passage inside its marked plain-text source. */
+export function currentSpeechSourceOffset(): number | null {
+  const offset = queue[queueIndex]?.sourceOffset;
+  return typeof offset === "number" && Number.isFinite(offset)
+    ? Math.max(0, offset)
+    : null;
 }
 
 function notify(): void {
@@ -165,6 +215,11 @@ function setState(
   if (status === "idle" || status === "error") {
     state.currentTime = 0;
     state.duration = 0;
+  }
+  if (status === "idle") {
+    state.voice = null;
+    state.provider = null;
+    state.model = null;
   }
   notify();
 }
@@ -215,12 +270,97 @@ export function pickVoiceForProvider(
   return fallback;
 }
 
-function resolveVoice(req: SpeakRequest, settings: AiSettings): string | undefined {
+function resolveVoice(
+  req: SpeakRequest,
+  settings: AiSettings,
+): string | undefined {
   return pickVoiceForProvider(
     req.voices,
     req.voice,
     resolveFeatureConfig(settings, "voice-narration")?.provider.type,
   );
+}
+
+function uniqueVoiceOptions(options: SpeechVoiceOption[]): SpeechVoiceOption[] {
+  const seen = new Set<string>();
+  return options.filter((option) => {
+    if (!option.id || seen.has(option.id)) return false;
+    seen.add(option.id);
+    return true;
+  });
+}
+
+/**
+ * Voices the active narration API can accept.
+ *
+ * OpenAI-compatible APIs share the standard named set but can also expose
+ * custom ids. Fish uses the cast's saved reference ids, while Supertonic uses
+ * the voice embeddings already present in its browser bundle.
+ */
+export async function currentSpeechVoiceMenu(): Promise<SpeechVoiceMenu | null> {
+  const req = queue[queueIndex];
+  if (!req) return null;
+
+  const spoken = await withPersonaVoice(req);
+  const settings = await getCachedAiSettings();
+  const resolved = resolveFeatureConfig(settings, "voice-narration");
+  const providerType = resolved?.provider.type;
+  const selected = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
+
+  if (providerType === "supertonic") {
+    return {
+      provider: "Browser voice",
+      model: resolved?.model ?? "supertonic-tts",
+      selected,
+      options: BROWSER_TTS_VOICES.map((voice) => ({
+        id: voice,
+        label: `Voice ${voice}`,
+      })),
+      allowsCustom: false,
+    };
+  }
+
+  if (providerType === "fishaudio") {
+    let cast: Persona[] = PERSONAS;
+    try {
+      const custom = await loadPersonasFromIdb();
+      if (custom?.length) cast = custom;
+    } catch {
+      // Default cast still gives the player useful choices.
+    }
+    const options = uniqueVoiceOptions([
+      ...cast.flatMap((persona) => {
+        const id = persona.speechVoices?.fishaudio;
+        return id ? [{ id, label: persona.name }] : [];
+      }),
+      { id: selected, label: "Current voice" },
+    ]);
+    return {
+      provider: "Fish Audio",
+      model: resolved?.model ?? "s2-pro",
+      selected,
+      options,
+      allowsCustom: true,
+    };
+  }
+
+  const standard = OPENAI_SPEECH_VOICES.map((voice) => ({
+    id: voice,
+    label: voice.charAt(0).toUpperCase() + voice.slice(1),
+  }));
+  return {
+    provider:
+      resolved?.provider.name ?? (resolved ? "Voice API" : "Twyne voice"),
+    model: resolved?.model ?? "hosted",
+    selected,
+    options: uniqueVoiceOptions([
+      ...standard,
+      ...(standard.some((option) => option.id === selected)
+        ? []
+        : [{ id: selected, label: "Current voice" }]),
+    ]),
+    allowsCustom: Boolean(resolved && resolved.provider.type !== "openai"),
+  };
 }
 
 /**
@@ -407,6 +547,35 @@ export function seekSpeech(seconds: number): void {
   notify();
 }
 
+/**
+ * Regenerate the active passage with another API voice and start it again.
+ * The queue and its position are preserved, so changing a speaker midway
+ * through a room reading does not discard the remaining editors.
+ */
+export async function restartSpeechWithVoice(voice: string): Promise<void> {
+  const req = queue[queueIndex];
+  const nextVoice = voice.trim();
+  if (!req || !nextVoice) return;
+
+  const settings = await getCachedAiSettings();
+  const providerType = resolveFeatureConfig(settings, "voice-narration")
+    ?.provider.type;
+  queue[queueIndex] = {
+    ...req,
+    voice: nextVoice,
+    voices: providerType
+      ? { ...req.voices, [providerType]: nextVoice }
+      : req.voices,
+  };
+  await playCurrent();
+}
+
+/** Retry the active queue item after a recoverable provider or playback error. */
+export async function retrySpeech(): Promise<void> {
+  if (!queue[queueIndex]) return;
+  await playCurrent();
+}
+
 type Synthesis = {
   audio: Blob;
   provider: string;
@@ -433,7 +602,11 @@ async function synthesize(req: SpeakRequest): Promise<Synthesis> {
   const narrator = resolveFeatureConfig(settings, "voice-narration");
   if (narrator) {
     const result = await runClientVoiceSpeech(
-      { text, voice: resolveVoice(req, settings), instructions: req.instructions },
+      {
+        text,
+        voice: resolveVoice(req, settings),
+        instructions: req.instructions,
+      },
       settings,
     );
     if (result) {
@@ -670,6 +843,11 @@ async function playCurrent(): Promise<void> {
     };
     await audio.play();
     if (mine === generation) {
+      const menu = await currentSpeechVoiceMenu();
+      if (mine !== generation) return;
+      state.provider = menu?.provider ?? null;
+      state.model = menu?.model ?? null;
+      state.voice = menu?.selected ?? null;
       setState("playing", req.id);
       prefetchNext();
     }
@@ -679,19 +857,15 @@ async function playCurrent(): Promise<void> {
     // check their API key when the browser simply refused to make noise sends
     // them off to fix something that was never wrong.
     if (err instanceof DOMException && err.name === "NotAllowedError") {
-      setState(
-        "error",
-        req.id,
-        {
-          ...createAppError("PERMISSION_DENIED", {
-            source: "application",
-            recovery: { action: "retry", canRetry: true },
-            metadata: { feature: "voice-narration", operation: "playback" },
-          }),
-          message:
-            "Your browser blocked playback. Press read aloud again to allow it.",
-        },
-      );
+      setState("error", req.id, {
+        ...createAppError("PERMISSION_DENIED", {
+          source: "application",
+          recovery: { action: "retry", canRetry: true },
+          metadata: { feature: "voice-narration", operation: "playback" },
+        }),
+        message:
+          "Your browser blocked playback. Press read aloud again to allow it.",
+      });
       return;
     }
     setState(
