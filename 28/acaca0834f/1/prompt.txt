@@ -1,0 +1,9 @@
+look for performance issues and also issues with components that seem identical or not composed. just look at uncommited for now
+
+---
+
+fix these issues
+
+---
+
+skip vet
