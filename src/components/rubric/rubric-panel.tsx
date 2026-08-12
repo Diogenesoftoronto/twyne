@@ -41,6 +41,7 @@ import { draftReadiness, MIN_RUBRIC_WORDS } from "../../utils/draft-thresholds";
 import { renderMarkdown } from "../../utils/markdown";
 import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
+import { EditorialLoader } from "../ui/editorial-loader";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
@@ -791,29 +792,11 @@ export const RubricPanel = component$(
         )}
 
         {store.isAnalyzing && (
-          <div
-            class="flex-1 flex flex-col items-center justify-center px-6 py-10 text-center"
-            role="status"
-          >
-            <div
-              class="text-4xl animate-spin"
-              aria-hidden="true"
-              style="font-family: var(--font-display); color: var(--color-cobalt);"
-            >
-              ✦
-            </div>
-            <p
-              class="mt-4 text-sm text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter); letter-spacing: 0.15em; text-transform: uppercase;"
-            >
-              Five judges reading…
-            </p>
-            <p
-              class="mt-2 text-[11px] text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter); letter-spacing: 0.15em;"
-            >
-              Measuring sentence cadence, citation density, paragraph shape
-            </p>
+          <div class="flex flex-1 items-center justify-center">
+            <EditorialLoader
+              personas={DEFAULT_PERSONAS}
+              label="Five judges reading"
+            />
           </div>
         )}
 
@@ -1023,6 +1006,7 @@ export const RubricPanel = component$(
                         />
                       </div>
                       <div
+                        data-speech-id="rubric-review"
                         class="comment-markdown mt-2 text-[var(--color-ink)]"
                         style="font-family: var(--font-serif);"
                         dangerouslySetInnerHTML={renderMarkdown(
@@ -1467,35 +1451,39 @@ function JudgeCard({ judge }: { judge: JudgeResult }) {
         : "var(--color-accent-red)";
 
   return (
-    <div class="border-l-2 pl-3" style={{ borderColor: color }}>
-      <div class="flex items-baseline justify-between gap-2">
-        <p
-          class="min-w-0 truncate text-[var(--color-ink)]"
-          style="font-family: var(--font-display); font-weight: 600; font-size: 0.9375rem;"
-        >
-          {persona?.icon ? `${persona.icon} ` : ""}
-          {persona?.name ?? judge.personaId}
-        </p>
+    <div
+      class="desk-card border-l-2"
+      style={{
+        borderColor: color,
+        ["--card-accent" as never]: color,
+        ["--card-pad-x" as never]: "0.75rem",
+      }}
+    >
+      {/* Portrait in the gutter, name against the left margin, the mark
+        stamped against the right — the same masthead the room's notes
+        use, so a verdict and a note read as the same kind of object. */}
+      <div class="desk-card__head">
+        {persona?.icon && (
+          <span class="desk-card__mark" aria-hidden="true">
+            {persona.icon}
+          </span>
+        )}
+        <p class="desk-card__name">{persona?.name ?? judge.personaId}</p>
         <span
-          class="flex-shrink-0 tabular-nums"
-          style={{
-            color: scoreColor,
-            fontFamily: "var(--font-typewriter)",
-            fontSize: "0.8125rem",
-          }}
+          class="desk-card__stamp desk-card__stamp--quiet tabular-nums"
+          style={{ color: scoreColor, fontSize: "0.8125rem" }}
         >
           {judge.score}
           <span class="text-[var(--color-ink-muted)]">/10</span>
         </span>
+        {persona?.role && (
+          <div class="desk-card__byline" style={{ color }}>
+            {persona.role}
+          </div>
+        )}
       </div>
-      {persona?.role && (
-        <p class="panel-meta uppercase" style={{ color }}>
-          {persona.role}
-        </p>
-      )}
       <div
-        class="comment-markdown mt-1.5 text-[var(--color-ink-light)]"
-        style="font-family: var(--font-serif);"
+        class="desk-card__body comment-markdown"
         dangerouslySetInnerHTML={renderMarkdown(judge.rationale)}
       />
     </div>

@@ -44,6 +44,11 @@ function pct(n: number): number {
   return Math.round(n * 100);
 }
 
+function truncateSummary(summary: string, maxLength = 120): string {
+  if (summary.length <= maxLength) return summary;
+  return `${summary.slice(0, maxLength - 1).trimEnd()}…`;
+}
+
 /** Concrete, prescriptive next step for a low-scoring criterion. */
 function nextMoveFor(id: string): string {
   const moves: Record<string, string> = {
@@ -71,25 +76,41 @@ function nextMoveFor(id: string): string {
 
 /** Static curve anchors for "the brutal curve" explainer. */
 const CURVE_ANCHORS: Array<[number, number, string]> = [
-  [50, 50, "A C-grade draft stays a C — Twyne does not flatter."],
+  [
+    50,
+    50,
+    "A C-grade draft stays a C. It may have a promising idea, but it is not ready to carry the reader yet.",
+  ],
   [
     60,
     58,
-    "Above 60 the curve compresses — work that looks good still scores below its raw value.",
+    "A coherent draft with a clear point, still needing substantial revision before publication.",
   ],
-  [70, 67, "70 raw → 67 final. Most good drafts land here on first pass."],
+  [
+    70,
+    67,
+    "A strong first pass: an engaging class essay, blog post, or early magazine draft with room to sharpen.",
+  ],
   [
     80,
     76,
-    "80 raw → 76. The curve is honest about the gap between polished and exemplary.",
+    "A polished, publishable-feeling essay or reported feature, with a few visible limits keeping it from the top tier.",
   ],
-  [90, 86, "90 raw → 86. You have to clear the 90 bar to land in the 80s."],
+  [
+    90,
+    86,
+    "A prize-caliber essay, reported feature, or literary piece may fit here, possibly Pulitzer-level if that is what the draft is aiming to be and the execution earns it.",
+  ],
   [
     95,
     93,
-    "Above 95 the curve stretches — only genuinely strong work gets here.",
+    "Rare, field-leading work: the kind of piece an editor would build a cover, issue, or shortlist around.",
   ],
-  [100, 100, "100 raw → 100. A perfect draft."],
+  [
+    100,
+    100,
+    "A virtually unimprovable draft for its purpose, audience, and form.",
+  ],
 ];
 
 export default component$(() => {
@@ -138,6 +159,12 @@ export default component$(() => {
       border-bottom: 1px dashed var(--color-paper-3);
     }
     .anchor:last-child { border-bottom: none; }
+    .summary-details summary::marker { color: var(--color-ink-muted); }
+    .summary-details summary:focus-visible {
+      outline: 2px solid var(--color-cobalt);
+      outline-offset: 3px;
+      border-radius: 2px;
+    }
   `);
 
   return (
@@ -236,12 +263,21 @@ export default component$(() => {
                       / 100
                     </span>
                   </p>
-                  <p
-                    class="mt-2 text-sm leading-6 text-[var(--color-ink-light)]"
-                    style={{ fontFamily: "var(--font-serif)" }}
-                  >
-                    {store.result.summary}
-                  </p>
+                  <details class="summary-details mt-2">
+                    <summary
+                      class="cursor-pointer text-sm leading-6 text-[var(--color-ink-light)]"
+                      style={{ fontFamily: "var(--font-serif)" }}
+                      aria-label="Editor's summary, expand to read the full summary"
+                    >
+                      {truncateSummary(store.result.summary)}
+                    </summary>
+                    <p
+                      class="mt-2 text-sm leading-6 text-[var(--color-ink-light)]"
+                      style={{ fontFamily: "var(--font-serif)" }}
+                    >
+                      {store.result.summary}
+                    </p>
+                  </details>
                   <p
                     class="mt-3 text-[0.65rem] text-[var(--color-ink-muted)]"
                     style={{
@@ -268,16 +304,16 @@ export default component$(() => {
                 class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
                 style={{ fontFamily: "var(--font-serif)" }}
               >
-                The raw score is a blend, not a plain average: the judges'
-                mean opinion counts for 45%, but the single harshest judge's
-                score also counts on its own for 35% — so one editor who
-                really isn't convinced can drag the grade down even if the
-                rest of the room liked it. Mechanical polish (structure,
-                pacing, citations) is the remaining 20%, deliberately a minor
-                share, since clean prose around a hollow argument shouldn't
-                read as a good draft. That raw blend is then curved: Twyne
-                compresses the middle of the scale and stretches the top, so
-                a 90+ is reserved for genuinely excellent work.
+                The raw score is a blend, not a plain average: the judges' mean
+                opinion counts for 45%, but the single harshest judge's score
+                also counts on its own for 35% — so one editor who really isn't
+                convinced can drag the grade down even if the rest of the room
+                liked it. Mechanical polish (structure, pacing, citations) is
+                the remaining 20%, deliberately a minor share, since clean prose
+                around a hollow argument shouldn't read as a good draft. That
+                raw blend is then curved: Twyne compresses the middle of the
+                scale and stretches the top, so a 90+ is reserved for genuinely
+                excellent work.
               </p>
               <div class="mt-4">
                 {CURVE_ANCHORS.map(([raw, final, note]) => (

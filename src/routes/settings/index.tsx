@@ -15,6 +15,9 @@ import type {
   AiFeature,
   AiFeatureOverride,
   AiModelModalities,
+  AiReasoningEffort,
+  AiModelReasoningSetting,
+  AiModelReasoningOption,
   ApparatusSettings,
   McpServerConfig,
   SearchBackendConfig,
@@ -33,10 +36,7 @@ import {
   SEARCH_BACKENDS,
 } from "../../utils/research-backends";
 import type { ConvexClient } from "convex/browser";
-import {
-  connectMcpServer,
-  type McpServerHandle,
-} from "../../utils/mcp-client";
+import { connectMcpServer, type McpServerHandle } from "../../utils/mcp-client";
 import { pickSearchTool } from "../../utils/mcp-research";
 import {
   loadAiSettingsFromIdb,
@@ -55,7 +55,9 @@ import {
   stripManagedDesktopLocalProvider,
   stripManagedSupertonicProvider,
 } from "../../utils/ai-client";
+import { supportsReasoningEffort } from "../../utils/reasoning-effort";
 import { LOCAL_PROVIDER_ID } from "../../utils/desktop-bridge";
+import { SiteSelect } from "../../components/ui/site-select";
 import {
   BROWSER_TTS_BUNDLE_BYTES,
   BROWSER_TTS_MANIFEST_FILES,
@@ -135,8 +137,20 @@ interface SettingsStore {
   testingProviderId: string | null;
   testResults: Record<
     string,
-    { ok: boolean; latencyMs: number; error?: AppError } | undefined
+    | {
+        ok: boolean;
+        latencyMs: number;
+        error?: AppError;
+        modelCount?: number;
+        models?: string[];
+      }
+    | undefined
   >;
+  /**
+   * Provider awaiting a second click before it is removed. Deleting a
+   * provider throws away a stored API key, so the button asks once.
+   */
+  removingProviderId: string | null;
   discoveringProviderId: string | null;
   providerModelErrors: Record<string, AppError | undefined>;
   /* browser voice download */
@@ -156,6 +170,7 @@ interface SettingsStore {
   defaultCitationStyle: ApparatusSettings["defaultCitationStyle"];
   aiEnhanceCitations: boolean;
   flagMissingSources: boolean;
+  autoInsertFootnotes: boolean;
   researchProvider: ApparatusSettings["researchProvider"];
   searchBackend: SearchBackendConfig;
   maxResults: number;
@@ -282,6 +297,31 @@ function isTinkerProvider(provider: AiProviderConfig): boolean {
   );
 }
 
+/**
+ * Which models expose a thinking control in the live catalog.
+ *
+ * The catalog is the authority, not the provider type: the same OpenAI key
+ * reaches both a reasoning model and a plain one, and a thinking parameter
+ * sent to the plain one is a hard API error. So the dial is offered only for
+ * the model the provider actually defaults to, and only when models.dev marks
+ * that model as reasoning. Returns null when there is nothing safe to offer —
+ * including when the catalog has not loaded, since an unknown model is not a
+ * known-reasoning one.
+ */
+function reasoningModelsFor(
+  provider: AiProviderConfig,
+  catalog: ModelsDevProvider[],
+): ModelsDevModel[] {
+  if (!supportsReasoningEffort(provider.type)) return [];
+  const model = catalogModelsForProvider(provider, catalog).find(
+    (candidate) => candidate.id === provider.defaultModel,
+  );
+  if (!model) return [];
+  const reasoningOptions =
+    model.reasoningOptions ?? provider.modelReasoningOptions?.[model.id];
+  return reasoningOptions?.length ? [{ ...model, reasoningOptions }] : [];
+}
+
 function supportsOpenAiApiMode(provider: AiProviderConfig): boolean {
   return (
     provider.type === "openai" ||
@@ -302,6 +342,16 @@ function catalogModelModalities(
     (provider?.models ?? [])
       .filter((model) => model.modalities)
       .map((model) => [model.id, model.modalities as AiModelModalities]),
+  );
+}
+
+function catalogModelReasoningOptions(
+  provider: ModelsDevProvider | undefined,
+): Record<string, AiModelReasoningOption[]> {
+  return Object.fromEntries(
+    (provider?.models ?? [])
+      .filter((model) => model.reasoningOptions?.length)
+      .map((model) => [model.id, model.reasoningOptions ?? []]),
   );
 }
 
@@ -343,6 +393,7 @@ function buildApparatusSettings(store: SettingsStore): ApparatusSettings {
     defaultCitationStyle: store.defaultCitationStyle,
     aiEnhanceCitations: store.aiEnhanceCitations,
     flagMissingSources: store.flagMissingSources,
+    autoInsertFootnotes: store.autoInsertFootnotes,
     researchProvider: store.researchProvider,
     searchBackend: { ...store.searchBackend },
     maxResults: store.maxResults,
@@ -420,6 +471,7 @@ export default component$(() => {
     modelsDevProviderId: null,
     testingProviderId: null,
     testResults: {},
+    removingProviderId: null,
     discoveringProviderId: null,
     providerModelErrors: {},
     supertonicStatus: null,
@@ -431,6 +483,7 @@ export default component$(() => {
     defaultCitationStyle: DEFAULT_APPARATUS_SETTINGS.defaultCitationStyle,
     aiEnhanceCitations: DEFAULT_APPARATUS_SETTINGS.aiEnhanceCitations,
     flagMissingSources: DEFAULT_APPARATUS_SETTINGS.flagMissingSources,
+    autoInsertFootnotes: DEFAULT_APPARATUS_SETTINGS.autoInsertFootnotes,
     researchProvider: DEFAULT_APPARATUS_SETTINGS.researchProvider,
     searchBackend: { ...DEFAULT_APPARATUS_SETTINGS.searchBackend },
     maxResults: DEFAULT_APPARATUS_SETTINGS.maxResults,
@@ -508,6 +561,10 @@ export default component$(() => {
             ...provider.modelModalities,
             ...catalogModelModalities(catalogProvider),
           },
+          modelReasoningOptions: {
+            ...provider.modelReasoningOptions,
+            ...catalogModelReasoningOptions(catalogProvider),
+          },
           availableModels: Array.from(
             new Set([...catalogModels, ...providerModelOptions(provider)]),
           ),
@@ -519,6 +576,7 @@ export default component$(() => {
     store.defaultCitationStyle = apparatus.defaultCitationStyle;
     store.aiEnhanceCitations = apparatus.aiEnhanceCitations;
     store.flagMissingSources = apparatus.flagMissingSources;
+    store.autoInsertFootnotes = apparatus.autoInsertFootnotes;
     store.researchProvider = apparatus.researchProvider;
     store.searchBackend = { ...apparatus.searchBackend };
     store.maxResults = apparatus.maxResults;
@@ -677,6 +735,7 @@ export default component$(() => {
     store.defaultCitationStyle = settings.defaultCitationStyle;
     store.aiEnhanceCitations = settings.aiEnhanceCitations;
     store.flagMissingSources = settings.flagMissingSources;
+    store.autoInsertFootnotes = settings.autoInsertFootnotes;
     store.researchProvider = settings.researchProvider;
     store.searchBackend = { ...settings.searchBackend };
     store.maxResults = settings.maxResults;
@@ -769,6 +828,10 @@ export default component$(() => {
                   ...p.modelModalities,
                   ...catalogModelModalities(catalogProvider),
                 },
+                modelReasoningOptions: {
+                  ...p.modelReasoningOptions,
+                  ...catalogModelReasoningOptions(catalogProvider),
+                },
                 availableModels: models,
                 defaultModel:
                   models.includes(p.defaultModel) && p.defaultModel
@@ -834,6 +897,7 @@ export default component$(() => {
         "language",
       ).map((model) => model.id),
       modelModalities: catalogModelModalities(catalogProvider),
+      modelReasoningOptions: catalogModelReasoningOptions(catalogProvider),
       apiMode: store.newProviderApiMode,
     };
 
@@ -855,6 +919,7 @@ export default component$(() => {
   });
 
   const removeProvider = $((id: string) => {
+    store.removingProviderId = null;
     const next = store.settings.providers.filter((p) => p.id !== id);
     const isDefault = store.settings.defaultProviderId === id;
     store.settings = {
@@ -917,6 +982,33 @@ export default component$(() => {
     },
   );
 
+  /**
+   * Set — or clear — how hard one model should think.
+   *
+   * Stored against the model id rather than the provider, and an empty
+   * choice deletes the entry outright rather than recording a level. That
+   * distinction is the safety net: a model with no entry has no thinking
+   * parameter sent for it at all, which is the only correct request for a
+   * model that does not reason.
+   */
+  const updateProviderReasoning = $(
+    (id: string, modelId: string, setting: AiModelReasoningSetting | null) => {
+      store.settings = {
+        ...store.settings,
+        providers: store.settings.providers.map((provider) => {
+          if (provider.id !== id) return provider;
+          const next = { ...(provider.modelReasoning ?? {}) };
+          if (setting) next[modelId] = setting;
+          else delete next[modelId];
+          return Object.keys(next).length > 0
+            ? { ...provider, modelReasoning: next }
+            : { ...provider, modelReasoning: undefined };
+        }),
+      };
+      void persist();
+    },
+  );
+
   const runTest = $(async (config: AiProviderConfig) => {
     store.testingProviderId = config.id;
     store.testResults = { ...store.testResults, [config.id]: undefined };
@@ -925,8 +1017,15 @@ export default component$(() => {
       ok: boolean;
       latencyMs: number;
       error?: AppError;
+      modelCount?: number;
+      models?: string[];
     } = result.ok
-      ? { ok: true, latencyMs: result.latencyMs }
+      ? {
+          ok: true,
+          latencyMs: result.latencyMs,
+          modelCount: result.modelCount,
+          models: result.models,
+        }
       : {
           ok: false,
           latencyMs: result.latencyMs,
@@ -952,6 +1051,25 @@ export default component$(() => {
       );
     }
     store.testResults = { ...store.testResults, [config.id]: safeResult };
+    if (result.ok && result.models) {
+      store.settings = {
+        ...store.settings,
+        providers: store.settings.providers.map((provider) =>
+          provider.id === config.id
+            ? {
+                ...provider,
+                availableModels: result.models,
+                defaultModel:
+                  result.models?.includes(provider.defaultModel) &&
+                  provider.defaultModel
+                    ? provider.defaultModel
+                    : (result.models?.[0] ?? provider.defaultModel),
+              }
+            : provider,
+        ),
+      };
+      await persist();
+    }
     store.testingProviderId = null;
     if (result.ok) {
       await refreshProviderModels(config.id);
@@ -1355,7 +1473,7 @@ export default component$(() => {
 
   return (
     <div
-      class="min-h-screen bg-[var(--color-paper-soft)] text-[var(--color-ink)]"
+      class="settings-page min-h-screen bg-[var(--color-paper-soft)] text-[var(--color-ink)]"
       style={{ fontFamily: "var(--font-serif)" }}
     >
       <div class="max-w-4xl mx-auto px-6 py-8">
@@ -1678,23 +1796,23 @@ export default component$(() => {
                   >
                     Feedback pressure
                   </span>
-                  <select
+                  <SiteSelect
                     value={store.writerProfile.feedbackStyle}
-                    onChange$={(e) => {
-                      const feedbackStyle = (e.target as HTMLSelectElement)
-                        .value as WriterProfile["feedbackStyle"];
+                    ariaLabel="Feedback pressure"
+                    options={[
+                      { value: "direct", label: "Direct and demanding" },
+                      { value: "balanced", label: "Balanced, candid, useful" },
+                      { value: "gentle", label: "Gentle, protect momentum" },
+                    ]}
+                    onChange$={(value) => {
+                      const feedbackStyle =
+                        value as WriterProfile["feedbackStyle"];
                       void saveWriterProfile({
                         ...store.writerProfile,
                         feedbackStyle,
                       });
                     }}
-                    class="w-full text-sm px-3 py-2 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                    style={{ borderRadius: "2px" }}
-                  >
-                    <option value="direct">Direct and demanding</option>
-                    <option value="balanced">Balanced, candid, useful</option>
-                    <option value="gentle">Gentle, protect momentum</option>
-                  </select>
+                  />
                 </label>
               </div>
               <div class="mt-4 grid gap-4 sm:grid-cols-2">
@@ -1887,97 +2005,77 @@ export default component$(() => {
                   >
                     AI Providers
                   </h2>
-                  <button
-                    onClick$={() => {
-                      store.showAddProvider = true;
-                      store.newProviderType = "openai";
-                      store.modelsDevProviderId = null;
-                      store.providerSearch = "";
-                    }}
-                    class="btn-press text-xs"
-                  >
-                    + Add provider
-                  </button>
+                  {!store.showAddProvider && (
+                    <button
+                      onClick$={() => {
+                        store.showAddProvider = true;
+                        store.newProviderType = "openai";
+                        store.modelsDevProviderId = null;
+                        store.providerSearch = "";
+                      }}
+                      class="btn-press text-xs"
+                    >
+                      Add provider
+                    </button>
+                  )}
                 </div>
 
                 {/* Provider list */}
-                <div class="space-y-3">
+                <div class={store.showAddProvider ? "hidden" : "space-y-3"}>
                   {store.settings.providers.map((p) => {
                     const isManagedLocal = p.id === LOCAL_PROVIDER_ID;
                     const isManagedBrowserVoice =
                       p.id === BROWSER_TTS_PROVIDER_ID;
                     const isManagedVoice =
                       isManagedLocal || isManagedBrowserVoice;
+                    const isDefault = store.settings.defaultProviderId === p.id;
+                    // Only offered for models the catalog marks as reasoning.
+                    const thinkingModels = reasoningModelsFor(
+                      p,
+                      store.modelsDevProviders,
+                    );
                     return (
                       <div
                         key={p.id}
-                        class="p-3 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-                        style={{ borderRadius: "2px" }}
+                        class="desk-card border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
+                        style={{
+                          ["--card-accent" as never]: isDefault
+                            ? "var(--color-accent-green)"
+                            : "var(--color-ink-muted)",
+                        }}
                       >
-                        <div class="flex items-start justify-between gap-3">
-                          <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2">
-                              <span
-                                class="text-xs font-semibold text-[var(--color-ink)]"
-                                style={{ fontFamily: "var(--font-display)" }}
-                              >
-                                {p.name}
-                              </span>
-                              <span
-                                class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
-                                style={{ fontFamily: "var(--font-typewriter)" }}
-                              >
-                                {PROVIDER_METAS.find((m) => m.type === p.type)
-                                  ?.label ?? p.type}
-                              </span>
-                              {store.settings.defaultProviderId === p.id && (
-                                <span
-                                  class="text-[0.6rem] tracking-[0.15em] uppercase px-1.5 py-0.5 border"
-                                  style={{
-                                    fontFamily: "var(--font-typewriter)",
-                                    borderColor: "var(--color-accent-green)",
-                                    color: "var(--color-accent-green)",
-                                    borderRadius: "1px",
-                                  }}
-                                >
-                                  default
-                                </span>
-                              )}
-                              {isManagedLocal && (
-                                <span
-                                  class="text-[0.6rem] tracking-[0.15em] uppercase px-1.5 py-0.5 border"
-                                  style={{
-                                    fontFamily: "var(--font-typewriter)",
-                                    borderColor: "var(--color-accent-blue)",
-                                    color: "var(--color-accent-blue)",
-                                    borderRadius: "1px",
-                                  }}
-                                >
-                                  desktop
-                                </span>
-                              )}
-                              {isManagedBrowserVoice && (
-                                <span
-                                  class="text-[0.6rem] tracking-[0.15em] uppercase px-1.5 py-0.5 border"
-                                  style={{
-                                    fontFamily: "var(--font-typewriter)",
-                                    borderColor: "var(--color-accent-green)",
-                                    color: "var(--color-accent-green)",
-                                    borderRadius: "1px",
-                                  }}
-                                >
-                                  on device
-                                </span>
-                              )}
-                            </div>
-                            <div class="mt-1.5 space-y-1">
+                        {/* Name against the left margin, what it is stamped
+                          against the right, the endpoint as the byline. */}
+                        <div class="desk-card__head">
+                          <p
+                            class="desk-card__name desk-card__name--wrap"
+                            title={p.name}
+                          >
+                            {p.name}
+                          </p>
+                          <span class="desk-card__stamp">
+                            {isDefault
+                              ? "default"
+                              : isManagedLocal
+                                ? "desktop"
+                                : isManagedBrowserVoice
+                                  ? "on device"
+                                  : (PROVIDER_METAS.find(
+                                      (m) => m.type === p.type,
+                                    )?.label ?? p.type)}
+                          </span>
+                          <div class="desk-card__byline">
+                            <span class="truncate">
+                              {PROVIDER_METAS.find((m) => m.type === p.type)
+                                ?.label ?? p.type}
+                            </span>
+                          </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div>
+                            <div class="space-y-1">
                               {p.baseUrl && (
-                                <p
-                                  class="text-[0.65rem] text-[var(--color-ink-muted)]"
-                                  style={{ fontFamily: "var(--font-mono)" }}
-                                >
-                                  {p.baseUrl}
-                                </p>
+                                <p class="desk-card__detail">{p.baseUrl}</p>
                               )}
                               {isTinkerProvider(p) &&
                                 p.type === "anthropic-compatible" && (
@@ -2043,106 +2141,299 @@ export default component$(() => {
                                 </div>
                               </div>
                             ) : (
-                              <div class="mt-2 flex flex-wrap items-center gap-2">
-                                {!isManagedVoice && (
-                                  <button
-                                    onClick$={() => {
-                                      store.editingProviderId = p.id;
-                                      store.editKey = "";
-                                    }}
-                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                                    style={{
-                                      fontFamily: "var(--font-typewriter)",
-                                    }}
-                                  >
-                                    Change key
-                                  </button>
-                                )}
-                                {!isManagedBrowserVoice && (
-                                  <button
-                                    onClick$={() => runTest(p)}
-                                    disabled={store.testingProviderId === p.id}
-                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent-green)] disabled:opacity-40"
-                                    style={{
-                                      fontFamily: "var(--font-typewriter)",
-                                    }}
-                                  >
-                                    {store.testingProviderId === p.id
-                                      ? "Testing…"
-                                      : "Test connection"}
-                                  </button>
-                                )}
-                                {!isManagedBrowserVoice && (
-                                  <button
-                                    onClick$={() => refreshProviderModels(p.id)}
-                                    disabled={
-                                      store.discoveringProviderId === p.id
-                                    }
-                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)] disabled:opacity-40"
-                                    style={{
-                                      fontFamily: "var(--font-typewriter)",
-                                    }}
-                                  >
-                                    {store.discoveringProviderId === p.id
-                                      ? "Loading models…"
-                                      : "Refresh models"}
-                                  </button>
-                                )}
-                                {!isManagedBrowserVoice &&
-                                  store.settings.defaultProviderId !== p.id && (
+                              // Maintenance on the left, the two decisions
+                              // that change what this provider *is* — make it
+                              // default, take it away — on the right.
+                              <div class="desk-card__foot">
+                                <div class="desk-card__foot-start">
+                                  {!isManagedVoice && (
                                     <button
-                                      onClick$={() => setDefaultProvider(p.id)}
-                                      class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                                      style={{
-                                        fontFamily: "var(--font-typewriter)",
+                                      onClick$={() => {
+                                        store.editingProviderId = p.id;
+                                        store.editKey = "";
                                       }}
+                                      class="card-key"
+                                      title="Replace the stored API key"
                                     >
-                                      Set as default
+                                      Change key
                                     </button>
                                   )}
-                                {!isManagedVoice && (
-                                  <button
-                                    onClick$={() => removeProvider(p.id)}
-                                    class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                                    style={{
-                                      fontFamily: "var(--font-typewriter)",
-                                    }}
-                                  >
-                                    Remove
-                                  </button>
-                                )}
+                                  {!isManagedBrowserVoice && (
+                                    <button
+                                      onClick$={() => runTest(p)}
+                                      disabled={
+                                        store.testingProviderId === p.id
+                                      }
+                                      class="card-key card-key--go"
+                                      title="Validate the key by asking the endpoint for its model list"
+                                    >
+                                      {store.testingProviderId === p.id
+                                        ? "Testing key…"
+                                        : "Test key"}
+                                    </button>
+                                  )}
+                                  {!isManagedBrowserVoice && (
+                                    <button
+                                      onClick$={() =>
+                                        refreshProviderModels(p.id)
+                                      }
+                                      disabled={
+                                        store.discoveringProviderId === p.id
+                                      }
+                                      class="card-key"
+                                      title="Read the model catalog from this endpoint"
+                                    >
+                                      {store.discoveringProviderId === p.id
+                                        ? "Loading models…"
+                                        : "Refresh models"}
+                                    </button>
+                                  )}
+                                </div>
+                                <div class="desk-card__foot-end">
+                                  {!isManagedBrowserVoice && !isDefault && (
+                                    <button
+                                      onClick$={() => setDefaultProvider(p.id)}
+                                      class="card-key"
+                                      title="Use this provider wherever no other is chosen"
+                                    >
+                                      Make default
+                                    </button>
+                                  )}
+                                  {!isManagedVoice && (
+                                    <button
+                                      onClick$={() => {
+                                        if (store.removingProviderId === p.id) {
+                                          removeProvider(p.id);
+                                        } else {
+                                          store.removingProviderId = p.id;
+                                        }
+                                      }}
+                                      onBlur$={() => {
+                                        if (store.removingProviderId === p.id) {
+                                          store.removingProviderId = null;
+                                        }
+                                      }}
+                                      class={`card-key card-key--danger${
+                                        store.removingProviderId === p.id
+                                          ? " card-key--arming"
+                                          : ""
+                                      }`}
+                                      aria-label={
+                                        store.removingProviderId === p.id
+                                          ? `Confirm removal of ${p.name}`
+                                          : `Remove ${p.name}`
+                                      }
+                                    >
+                                      {store.removingProviderId === p.id
+                                        ? "Confirm remove"
+                                        : "Remove"}
+                                    </button>
+                                  )}
+                                </div>
                               </div>
                             )}
 
-                            {supportsOpenAiApiMode(p) && !isManagedVoice && (
-                              <label class="mt-3 block max-w-xs">
-                                <span
-                                  class="block text-[0.6rem] tracking-[0.16em] uppercase text-[var(--color-ink-muted)] mb-1"
-                                  style={{ fontFamily: "var(--font-typewriter)" }}
-                                >
-                                  Generation API
-                                </span>
-                                <select
-                                  value={p.apiMode ?? "chat"}
-                                  onChange$={(event) =>
-                                    updateProviderApiMode(
-                                      p.id,
-                                      (event.target as HTMLSelectElement)
-                                        .value as "chat" | "responses",
-                                    )
-                                  }
-                                  class="w-full px-2 py-1.5 text-xs border border-[var(--color-paper-3)] bg-[var(--color-paper)] text-[var(--color-ink)] focus:outline-none focus:border-[var(--color-vermilion)]"
-                                  style={{ fontFamily: "var(--font-typewriter)" }}
-                                >
-                                  <option value="chat">Chat Completions</option>
-                                  <option value="responses">Responses API</option>
-                                </select>
-                                <span class="mt-1 block text-[0.6rem] text-[var(--color-ink-muted)]">
-                                  Choose Responses for OpenAI and compatible
-                                  gateways that expose <code>/responses</code>.
-                                </span>
-                              </label>
-                            )}
+                            {!isManagedVoice &&
+                              (supportsOpenAiApiMode(p) ||
+                                thinkingModels.length > 0) && (
+                                <div class="provider-controls">
+                                  {supportsOpenAiApiMode(p) && (
+                                    <label class="card-field">
+                                      <span>Generation API</span>
+                                      <SiteSelect
+                                        value={p.apiMode ?? "chat"}
+                                        ariaLabel={`Generation API for ${p.name}`}
+                                        options={[
+                                          {
+                                            value: "chat",
+                                            label: "Chat Completions",
+                                            description:
+                                              "The widely supported chat endpoint.",
+                                          },
+                                          {
+                                            value: "responses",
+                                            label: "Responses API",
+                                            description:
+                                              "Use only when this endpoint exposes /responses.",
+                                          },
+                                        ]}
+                                        onChange$={(value) =>
+                                          updateProviderApiMode(
+                                            p.id,
+                                            value as "chat" | "responses",
+                                          )
+                                        }
+                                      />
+                                      <span class="card-field__hint">
+                                        Select Responses only when this endpoint
+                                        exposes <code>/responses</code>.
+                                      </span>
+                                    </label>
+                                  )}
+
+                                  {thinkingModels.flatMap((model) =>
+                                    (model.reasoningOptions ?? []).map(
+                                      (option, optionIndex) => {
+                                        const setting =
+                                          p.modelReasoning?.[model.id];
+                                        const label = `Thinking: ${
+                                          model.name || model.id
+                                        }`;
+                                        if (option.type === "budget_tokens") {
+                                          return (
+                                            <label
+                                              key={`${model.id}-${option.type}-${optionIndex}`}
+                                              class="card-field"
+                                            >
+                                              <span title={model.id}>
+                                                {label}
+                                              </span>
+                                              <input
+                                                type="number"
+                                                min={option.min}
+                                                max={option.max}
+                                                placeholder="Model default"
+                                                value={
+                                                  setting?.type ===
+                                                  "budget_tokens"
+                                                    ? setting.value
+                                                    : ""
+                                                }
+                                                onChange$={(event) => {
+                                                  const raw = (
+                                                    event.target as HTMLInputElement
+                                                  ).value;
+                                                  updateProviderReasoning(
+                                                    p.id,
+                                                    model.id,
+                                                    raw
+                                                      ? {
+                                                          type: "budget_tokens",
+                                                          value: Number(raw),
+                                                        }
+                                                      : null,
+                                                  );
+                                                }}
+                                              />
+                                              <span class="card-field__hint">
+                                                Token budget, {option.min} to{" "}
+                                                {option.max}. Blank uses the
+                                                model default.
+                                              </span>
+                                            </label>
+                                          );
+                                        }
+                                        if (option.type === "toggle") {
+                                          return (
+                                            <label
+                                              key={`${model.id}-${option.type}-${optionIndex}`}
+                                              class="card-field"
+                                            >
+                                              <span title={model.id}>
+                                                {label}
+                                              </span>
+                                              <SiteSelect
+                                                value={
+                                                  setting?.type === "toggle"
+                                                    ? String(setting.value)
+                                                    : ""
+                                                }
+                                                ariaLabel={label}
+                                                options={[
+                                                  {
+                                                    value: "",
+                                                    label: "Model default",
+                                                  },
+                                                  {
+                                                    value: "true",
+                                                    label: "On",
+                                                  },
+                                                  {
+                                                    value: "false",
+                                                    label: "Off",
+                                                  },
+                                                ]}
+                                                onChange$={(value) => {
+                                                  updateProviderReasoning(
+                                                    p.id,
+                                                    model.id,
+                                                    value
+                                                      ? {
+                                                          type: "toggle",
+                                                          value:
+                                                            value === "true",
+                                                        }
+                                                      : null,
+                                                  );
+                                                }}
+                                              />
+                                              <span class="card-field__hint">
+                                                This model exposes an on or off
+                                                thinking mode.
+                                              </span>
+                                            </label>
+                                          );
+                                        }
+                                        const values = option.values.filter(
+                                          (value): value is AiReasoningEffort =>
+                                            value !== null,
+                                        );
+                                        return (
+                                          <label
+                                            key={`${model.id}-${option.type}-${optionIndex}`}
+                                            class="card-field"
+                                          >
+                                            <span title={model.id}>
+                                              {label}
+                                            </span>
+                                            <SiteSelect
+                                              value={
+                                                setting?.type === "effort"
+                                                  ? setting.value
+                                                  : ""
+                                              }
+                                              ariaLabel={label}
+                                              options={[
+                                                {
+                                                  value: "",
+                                                  label: "Model default",
+                                                },
+                                                ...values.map((value) => ({
+                                                  value,
+                                                  label:
+                                                    value
+                                                      .charAt(0)
+                                                      .toUpperCase() +
+                                                    value.slice(1),
+                                                })),
+                                              ]}
+                                              onChange$={(rawValue) => {
+                                                const value = rawValue as
+                                                  | AiReasoningEffort
+                                                  | "";
+                                                updateProviderReasoning(
+                                                  p.id,
+                                                  model.id,
+                                                  value
+                                                    ? {
+                                                        type: "effort",
+                                                        value,
+                                                      }
+                                                    : null,
+                                                );
+                                              }}
+                                            />
+                                            <span class="card-field__hint">
+                                              Choices reported for this model by
+                                              models.dev.
+                                            </span>
+                                          </label>
+                                        );
+                                      },
+                                    ),
+                                  )}
+                                </div>
+                              )}
 
                             {store.testResults[p.id] && (
                               <>
@@ -2153,8 +2444,13 @@ export default component$(() => {
                                       fontFamily: "var(--font-typewriter)",
                                     }}
                                   >
-                                    ✓ Connected (
-                                    {store.testResults[p.id]?.latencyMs}ms)
+                                    Connected in{" "}
+                                    {store.testResults[p.id]?.latencyMs ?? 0}
+                                    ms
+                                    {store.testResults[p.id]?.modelCount !==
+                                    undefined
+                                      ? `, ${store.testResults[p.id]?.modelCount} models found`
+                                      : ""}
                                   </p>
                                 ) : (
                                   store.testResults[p.id]?.error && (
@@ -2195,7 +2491,9 @@ export default component$(() => {
                                 <div class="flex items-center justify-between gap-2">
                                   <p
                                     class="text-[0.65rem] text-[var(--color-ink-muted)]"
-                                    style={{ fontFamily: "var(--font-display)" }}
+                                    style={{
+                                      fontFamily: "var(--font-display)",
+                                    }}
                                   >
                                     On-device voice
                                   </p>
@@ -2254,7 +2552,9 @@ export default component$(() => {
                                   )}
                                 <p
                                   class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
-                                  style={{ fontFamily: "var(--font-typewriter)" }}
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
                                 >
                                   {store.supertonicStatus?.phase === "ready"
                                     ? "Ready — reading works offline."
@@ -2282,7 +2582,7 @@ export default component$(() => {
 
                 {/* Add provider form */}
                 {store.showAddProvider && (
-                  <div class="mt-4 p-4 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+                  <div class="p-4 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
                     <h3
                       class="text-sm font-semibold mb-3"
                       style={{
@@ -2396,9 +2696,6 @@ export default component$(() => {
                               e.target as HTMLInputElement
                             ).value;
                           }}
-                          onBlur$={() => {
-                            void addProvider();
-                          }}
                           placeholder="e.g. My OpenAI"
                           class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
                           style={{
@@ -2422,9 +2719,6 @@ export default component$(() => {
                             store.newProviderKey = (
                               e.target as HTMLInputElement
                             ).value;
-                          }}
-                          onBlur$={() => {
-                            void addProvider();
                           }}
                           placeholder={
                             providerMetaForForm(store.newProviderType)
@@ -2465,9 +2759,6 @@ export default component$(() => {
                                 e.target as HTMLInputElement
                               ).value;
                             }}
-                            onBlur$={() => {
-                              void addProvider();
-                            }}
                             placeholder={
                               providerMetaForForm(store.newProviderType)
                                 ?.defaultBaseUrl ?? "https://api.example.com/v1"
@@ -2495,19 +2786,29 @@ export default component$(() => {
                           >
                             Generation API
                           </label>
-                          <select
+                          <SiteSelect
                             value={store.newProviderApiMode}
-                            onChange$={(event) => {
-                              store.newProviderApiMode = (
-                                event.target as HTMLSelectElement
-                              ).value as "chat" | "responses";
+                            ariaLabel="Generation API for new provider"
+                            options={[
+                              {
+                                value: "chat",
+                                label: "Chat Completions",
+                                description:
+                                  "The widely supported chat endpoint.",
+                              },
+                              {
+                                value: "responses",
+                                label: "Responses API",
+                                description:
+                                  "Use only when this endpoint exposes /responses.",
+                              },
+                            ]}
+                            onChange$={(value) => {
+                              store.newProviderApiMode = value as
+                                | "chat"
+                                | "responses";
                             }}
-                            class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                            style={{ fontFamily: "var(--font-typewriter)" }}
-                          >
-                            <option value="chat">Chat Completions</option>
-                            <option value="responses">Responses API</option>
-                          </select>
+                          />
                         </div>
                       )}
 
@@ -2769,12 +3070,25 @@ export default component$(() => {
                                     >
                                       Provider
                                     </label>
-                                    <select
+                                    <SiteSelect
                                       value={selectedProviderId}
-                                      onChange$={(e) => {
-                                        const providerId = (
-                                          e.target as HTMLSelectElement
-                                        ).value;
+                                      ariaLabel={`Provider for ${FEATURE_LABELS[feature] ?? feature}`}
+                                      options={[
+                                        {
+                                          value: "",
+                                          label: selectedProvider
+                                            ? `Automatic (${selectedProvider.name})`
+                                            : "No compatible provider",
+                                        },
+                                        ...eligibleProviders.map(
+                                          (provider) => ({
+                                            value: provider.id,
+                                            label: provider.name,
+                                            description: provider.type,
+                                          }),
+                                        ),
+                                      ]}
+                                      onChange$={(providerId) => {
                                         const existing =
                                           store.settings.perFeature[feature];
                                         setFeatureOverride(feature, {
@@ -2792,23 +3106,7 @@ export default component$(() => {
                                           instructions: existing?.instructions,
                                         });
                                       }}
-                                      class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                      style={{
-                                        fontFamily: "var(--font-typewriter)",
-                                        borderRadius: "2px",
-                                      }}
-                                    >
-                                      <option value="">
-                                        {selectedProvider
-                                          ? `Use automatic provider (${selectedProvider.name})`
-                                          : "No compatible provider"}
-                                      </option>
-                                      {eligibleProviders.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                          {`${p.name} (${p.type})`}
-                                        </option>
-                                      ))}
-                                    </select>
+                                    />
                                   </div>
 
                                   <div class="grid grid-cols-3 gap-3">
@@ -3018,16 +3316,26 @@ export default component$(() => {
                                         >
                                           Format
                                         </label>
-                                        <select
+                                        <SiteSelect
                                           value={
                                             store.settings.perFeature[feature]
                                               ?.responseFormat ?? "mp3"
                                           }
-                                          onChange$={(e) => {
-                                            const responseFormat = (
-                                              e.target as HTMLSelectElement
-                                            )
-                                              .value as AiFeatureOverride["responseFormat"];
+                                          ariaLabel={`Audio format for ${FEATURE_LABELS[feature]}`}
+                                          options={[
+                                            "mp3",
+                                            "opus",
+                                            "aac",
+                                            "flac",
+                                            "wav",
+                                            "pcm",
+                                          ].map((format) => ({
+                                            value: format,
+                                            label: format.toUpperCase(),
+                                          }))}
+                                          onChange$={(value) => {
+                                            const responseFormat =
+                                              value as AiFeatureOverride["responseFormat"];
                                             const existing =
                                               store.settings.perFeature[
                                                 feature
@@ -3049,28 +3357,7 @@ export default component$(() => {
                                                 existing?.instructions,
                                             });
                                           }}
-                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                          style={{
-                                            fontFamily:
-                                              "var(--font-typewriter)",
-                                            borderRadius: "2px",
-                                          }}
-                                        >
-                                          {(
-                                            [
-                                              "mp3",
-                                              "opus",
-                                              "aac",
-                                              "flac",
-                                              "wav",
-                                              "pcm",
-                                            ] as const
-                                          ).map((fmt) => (
-                                            <option key={fmt} value={fmt}>
-                                              {fmt}
-                                            </option>
-                                          ))}
-                                        </select>
+                                        />
                                       </div>
                                       <div>
                                         <label
@@ -3336,6 +3623,50 @@ export default component$(() => {
                   </span>
                 </label>
 
+                <label class="flex items-center justify-between gap-4 cursor-pointer">
+                  <span>
+                    <span
+                      class="block text-sm text-[var(--color-ink)]"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      Auto-insert researched footnotes
+                    </span>
+                    <span
+                      class="mt-0.5 block text-[0.65rem] text-[var(--color-ink-muted)]"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      Place each new source beside the claim it was found for.
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    checked={store.autoInsertFootnotes}
+                    onChange$={(e) => {
+                      void persistApparatusSettings({
+                        ...buildApparatusSettings(store),
+                        autoInsertFootnotes: (e.target as HTMLInputElement)
+                          .checked,
+                      });
+                    }}
+                    class="sr-only"
+                  />
+                  <span
+                    class={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+                      store.autoInsertFootnotes
+                        ? "bg-[var(--color-vermilion)]"
+                        : "bg-[var(--color-paper-3)]"
+                    }`}
+                  >
+                    <span
+                      class={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--color-paper)] transition-transform ${
+                        store.autoInsertFootnotes
+                          ? "translate-x-5"
+                          : "translate-x-1"
+                      }`}
+                    />
+                  </span>
+                </label>
+
                 <div class="pt-4 border-t border-dashed border-[var(--color-paper-3)] space-y-3">
                   <div>
                     <label
@@ -3344,30 +3675,32 @@ export default component$(() => {
                     >
                       Research provider
                     </label>
-                    <select
+                    <SiteSelect
                       value={store.researchProvider}
-                      onChange$={(e) => {
+                      ariaLabel="Research provider"
+                      options={[
+                        {
+                          value: "hosted",
+                          label: "Hosted Twyne search",
+                        },
+                        {
+                          value: "search-api",
+                          label: "Search API key in this browser",
+                        },
+                        {
+                          value: "model-web-search",
+                          label: "Model endpoint web search",
+                        },
+                        { value: "web-mcp", label: "Your MCP servers" },
+                      ]}
+                      onChange$={(value) => {
                         void persistApparatusSettings({
                           ...buildApparatusSettings(store),
-                          researchProvider: (e.target as HTMLSelectElement)
-                            .value as ApparatusSettings["researchProvider"],
+                          researchProvider:
+                            value as ApparatusSettings["researchProvider"],
                         });
                       }}
-                      class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                      style={{
-                        fontFamily: "var(--font-typewriter)",
-                        borderRadius: "2px",
-                      }}
-                    >
-                      <option value="hosted">Hosted Twyne search</option>
-                      <option value="search-api">
-                        Search API key in this browser
-                      </option>
-                      <option value="model-web-search">
-                        Model endpoint web search
-                      </option>
-                      <option value="web-mcp">Your MCP servers</option>
-                    </select>
+                    />
                     <p
                       class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
                       style={{ fontFamily: "var(--font-typewriter)" }}
@@ -3420,30 +3753,23 @@ export default component$(() => {
                         >
                           Search service
                         </label>
-                        <select
+                        <SiteSelect
                           value={store.searchBackend.id}
-                          onChange$={(e) => {
+                          ariaLabel="Search service"
+                          options={SEARCH_BACKEND_IDS.map((id) => ({
+                            value: id,
+                            label: SEARCH_BACKENDS[id].label,
+                          }))}
+                          onChange$={(value) => {
                             store.searchBackend = {
                               ...store.searchBackend,
-                              id: (e.target as HTMLSelectElement)
-                                .value as SearchBackendId,
+                              id: value as SearchBackendId,
                             };
                             void persistApparatusSettings(
                               buildApparatusSettings(store),
                             );
                           }}
-                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            borderRadius: "2px",
-                          }}
-                        >
-                          {SEARCH_BACKEND_IDS.map((id) => (
-                            <option key={id} value={id}>
-                              {SEARCH_BACKENDS[id].label}
-                            </option>
-                          ))}
-                        </select>
+                        />
                       </div>
                       <div>
                         <label
@@ -3696,28 +4022,28 @@ export default component$(() => {
                     />
 
                     <div class="flex flex-wrap items-center gap-3">
-                      <select
+                      <SiteSelect
                         value={server.connection}
-                        onChange$={(e) => {
+                        ariaLabel={`Connection mode for ${server.label || "MCP server"}`}
+                        class="mcp-connection-select"
+                        options={[
+                          { value: "auto", label: "Direct, then relay" },
+                          { value: "direct", label: "Direct only" },
+                          {
+                            value: "proxy",
+                            label: "Relay through Twyne",
+                          },
+                        ]}
+                        onChange$={(value) => {
                           store.mcpServers[index] = {
                             ...server,
-                            connection: (e.target as HTMLSelectElement)
-                              .value as McpServerConfig["connection"],
+                            connection: value as McpServerConfig["connection"],
                           };
                           void persistApparatusSettings(
                             buildApparatusSettings(store),
                           );
                         }}
-                        class="text-xs px-2 py-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)]"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          borderRadius: "2px",
-                        }}
-                      >
-                        <option value="auto">Direct, then relay</option>
-                        <option value="direct">Direct only</option>
-                        <option value="proxy">Relay through Twyne</option>
-                      </select>
+                      />
 
                       <input
                         value={server.searchToolName}

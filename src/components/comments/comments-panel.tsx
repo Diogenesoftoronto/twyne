@@ -838,6 +838,11 @@ export const CommentsPanel = component$(
                           )}
                         </div>
                         <div
+                          data-speech-id={
+                            reply.authorKind === "persona"
+                              ? `comment-reply-${reply.id}`
+                              : undefined
+                          }
                           class="comment-markdown text-xs text-[var(--color-ink-light)] leading-5"
                           style={{
                             fontFamily: "var(--font-serif)",

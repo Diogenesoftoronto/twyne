@@ -24,6 +24,7 @@ import type * as images from "../images.js";
 import type * as integrations from "../integrations.js";
 import type * as interviewStreams from "../interviewStreams.js";
 import type * as lib_applicationErrors from "../lib/applicationErrors.js";
+import type * as lib_authIdentity from "../lib/authIdentity.js";
 import type * as lib_collections from "../lib/collections.js";
 import type * as lib_creem from "../lib/creem.js";
 import type * as lib_entitlement from "../lib/entitlement.js";
@@ -73,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   integrations: typeof integrations;
   interviewStreams: typeof interviewStreams;
   "lib/applicationErrors": typeof lib_applicationErrors;
+  "lib/authIdentity": typeof lib_authIdentity;
   "lib/collections": typeof lib_collections;
   "lib/creem": typeof lib_creem;
   "lib/entitlement": typeof lib_entitlement;

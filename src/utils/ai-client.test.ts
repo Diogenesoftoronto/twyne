@@ -54,7 +54,12 @@ describe("source map parsing", () => {
     const result = parseSourceMapResult(
       JSON.stringify({
         annotations: [
-          { nodeId: "a", relevance: "Supports the opening claim", stance: "supports", score: 9 },
+          {
+            nodeId: "a",
+            relevance: "Supports the opening claim",
+            stance: "supports",
+            score: 9,
+          },
           { nodeId: "missing", relevance: "Invented" },
         ],
         clusters: [{ id: "theme", label: "Opening claim" }],
@@ -375,6 +380,45 @@ describe("client voice synthesis", () => {
     });
   });
 
+  test("streams OpenAI transcription deltas through the voice hook", async () => {
+    let requestBody: FormData | null = null;
+    globalThis.fetch = (async (_url: RequestInfo | URL, init?: RequestInit) => {
+      requestBody = init?.body as FormData;
+      return new Response(
+        [
+          'data: {"type":"transcript.text.delta","delta":"A spoken"}',
+          "",
+          'data: {"type":"transcript.text.delta","delta":" note."}',
+          "",
+          'data: {"type":"transcript.text.done","text":"A spoken note."}',
+          "",
+        ].join("\n"),
+        { status: 200, headers: { "content-type": "text/event-stream" } },
+      );
+    }) as typeof fetch;
+
+    const partials: string[] = [];
+    const result = await runClientVoiceTranscribe(
+      { audio: new Blob(["voice"], { type: "audio/webm" }) },
+      makeSettings({
+        perFeature: {
+          "voice-transcription": {
+            providerId: "provider-openai",
+            model: "gpt-4o-mini-transcribe",
+          },
+        },
+      }),
+      { onDelta: (text: string) => partials.push(text) },
+    );
+
+    expect((requestBody as FormData | null)?.get("stream")).toBe("true");
+    expect((requestBody as FormData | null)?.has("response_format")).toBe(
+      false,
+    );
+    expect(partials).toEqual(["A spoken", "A spoken note."]);
+    expect(result?.text).toBe("A spoken note.");
+  });
+
   test("routes Inkling audio through Twyne's Tinker bridge", async () => {
     let requestedUrl = "";
     let requestBody: Record<string, unknown> | null = null;
@@ -690,9 +734,9 @@ describe("voice-only providers", () => {
     });
 
     expect(hasConfiguredVoiceProvider(settings)).toBe(true);
-    expect(resolveFeatureConfig(settings, "voice-transcription")?.provider.type).toBe(
-      "google",
-    );
+    expect(
+      resolveFeatureConfig(settings, "voice-transcription")?.provider.type,
+    ).toBe("google");
     expect(resolveFeatureConfig(settings, "voice-narration")).toBeNull();
   });
 });

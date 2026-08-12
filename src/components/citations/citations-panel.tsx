@@ -1,6 +1,12 @@
 import { component$, useStore, $, useVisibleTask$ } from "@builder.io/qwik";
 import { Link } from "@builder.io/qwik-city";
-import type { AiSettings, DetectedCitation, Folio } from "../../types";
+import type {
+  AiSettings,
+  CitationInsertionDetail,
+  CitationInsertionResult,
+  DetectedCitation,
+  Folio,
+} from "../../types";
 import { detectCitations } from "../../utils/citations";
 import {
   type BibEntry,
@@ -11,6 +17,7 @@ import {
   formatCitation,
   footnoteCite,
   mergeBibEntry,
+  upsertBibEntry,
 } from "../../utils/bibliography";
 import {
   formatResearchTime,
@@ -24,6 +31,7 @@ import { targetKindLabel } from "../../utils/research-targets";
 import {
   loadAiSettingsFromIdb,
   loadApparatusSettingsFromIdb,
+  saveApparatusSettingsToIdb,
 } from "../../utils/idb";
 import {
   hasConfiguredAiProvider,
@@ -60,11 +68,14 @@ interface CitationsStore {
   lastBackgroundSave: { saved: number; query: string } | null;
   aiSettings: AiSettings | null;
   aiEnhanceCitations: boolean;
+  autoInsertFootnotes: boolean;
   autoFormatting: boolean;
   /** Track which detected citations are being formatted/saved. */
   formattingIds: Record<string, boolean>;
   /** Citations already added to the bibliography (by citation id). */
   addedIds: Record<string, boolean>;
+  pendingInsertions: Record<string, boolean>;
+  citationNotice: string | null;
 }
 
 interface CitationsPanelProps {
@@ -99,9 +110,47 @@ export const CitationsPanel = component$(
       lastBackgroundSave: null,
       aiSettings: null,
       aiEnhanceCitations: false,
+      autoInsertFootnotes: false,
       autoFormatting: false,
       formattingIds: {},
       addedIds: {},
+      pendingInsertions: {},
+      citationNotice: null,
+    });
+
+    const requestCitationInsertion = $(
+      (entry: BibEntry, allowSelectionFallback = false) => {
+        if (store.pendingInsertions[entry.id] || entry.citationInsertedAt)
+          return;
+        store.pendingInsertions = {
+          ...store.pendingInsertions,
+          [entry.id]: true,
+        };
+        const detail: CitationInsertionDetail = {
+          sourceId: entry.id,
+          text: footnoteCite(entry, store.style),
+          anchor: entry.target?.anchor,
+          sourceUrl: entry.url || undefined,
+          allowSelectionFallback,
+        };
+        window.dispatchEvent(
+          new CustomEvent("twyne:insert-citation", { detail }),
+        );
+      },
+    );
+
+    const autoInsertEntries = $(async (entries: BibEntry[]) => {
+      if (!store.autoInsertFootnotes || !activeFolio) return;
+      for (const entry of entries) {
+        if (
+          entry.folioId !== activeFolio.id ||
+          !entry.target?.anchor ||
+          entry.citationInsertedAt
+        ) {
+          continue;
+        }
+        await requestCitationInsertion(entry, false);
+      }
     });
 
     const autoFormatIfEnabled = $(async (citations: DetectedCitation[]) => {
@@ -209,6 +258,41 @@ export const CitationsPanel = component$(
       return () => window.removeEventListener("twyne:citations", handler);
     });
 
+    // Confirm insertion before marking a bibliography source as cited. An
+    // anchor may have been edited since research ran, and a failed lookup must
+    // never silently drop the footnote at the current cursor.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(() => {
+      const handler = (event: Event) => {
+        const result = (event as CustomEvent<CitationInsertionResult>).detail;
+        if (!result?.sourceId) return;
+        const pending = { ...store.pendingInsertions };
+        delete pending[result.sourceId];
+        store.pendingInsertions = pending;
+
+        if (!result.inserted) {
+          store.citationNotice =
+            result.reason === "anchor-not-found"
+              ? "The claim has changed. Select its current wording, then cite again."
+              : "Select the passage this source supports, then cite again.";
+          return;
+        }
+
+        const entry = store.bibliography.find(
+          (candidate) => candidate.id === result.sourceId,
+        );
+        if (!entry) return;
+        const updated = { ...entry, citationInsertedAt: Date.now() };
+        void upsertBibEntry(updated).then((all) => {
+          store.bibliography = all;
+        });
+        store.citationNotice = "Footnote placed beside its claim.";
+      };
+      window.addEventListener("twyne:citation-inserted", handler);
+      return () =>
+        window.removeEventListener("twyne:citation-inserted", handler);
+    });
+
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async () => {
       const [bibliography, apparatusSettings, aiSettings] = await Promise.all([
@@ -219,10 +303,12 @@ export const CitationsPanel = component$(
       store.bibliography = bibliography;
       store.style = apparatusSettings.defaultCitationStyle;
       store.aiEnhanceCitations = apparatusSettings.aiEnhanceCitations;
+      store.autoInsertFootnotes = apparatusSettings.autoInsertFootnotes;
       store.aiSettings = aiSettings;
       if (initialCitations?.length) {
         await autoFormatIfEnabled(initialCitations);
       }
+      await autoInsertEntries(bibliography);
     });
 
     // Background-research status — render the live state from the
@@ -262,6 +348,7 @@ export const CitationsPanel = component$(
         // Refresh the bibliography so newly-saved entries show up.
         void loadBibliography().then((all) => {
           store.bibliography = all;
+          void autoInsertEntries(all);
         });
       };
       pull();
@@ -301,9 +388,7 @@ export const CitationsPanel = component$(
       } catch {
         /* ignore */
       }
-      window.dispatchEvent(
-        new CustomEvent("twyne:insert-text", { detail: text }),
-      );
+      await requestCitationInsertion(entry, !entry.target?.anchor);
     });
 
     const openEmbed = $(async (entry: BibEntry) => {
@@ -670,118 +755,140 @@ export const CitationsPanel = component$(
           )}
 
           {store.bibliography.length > 0 && (
-            <div class="px-4 pt-4 pb-2 flex items-center justify-between">
-              <p class="dept-label">Saved Bibliography</p>
-              <LinkButton href="/apparatus" label="Expand ↗" />
+            <div class="px-4 pt-4 pb-2 space-y-2">
+              <div class="flex items-center justify-between">
+                <p class="dept-label">Saved Bibliography</p>
+                <LinkButton href="/apparatus" label="Expand ↗" />
+              </div>
+              <label class="flex items-center justify-between gap-3 text-[0.65rem] text-[var(--color-ink-muted)]">
+                <span style={{ fontFamily: "var(--font-typewriter)" }}>
+                  Auto-insert researched footnotes
+                </span>
+                <input
+                  type="checkbox"
+                  checked={store.autoInsertFootnotes}
+                  onChange$={async (_, el) => {
+                    const settings = await loadApparatusSettingsFromIdb();
+                    const next = {
+                      ...settings,
+                      autoInsertFootnotes: el.checked,
+                    };
+                    await saveApparatusSettingsToIdb(next);
+                    store.autoInsertFootnotes = el.checked;
+                    if (el.checked) await autoInsertEntries(store.bibliography);
+                  }}
+                  aria-label="Automatically insert researched sources as footnotes"
+                />
+              </label>
+              {store.citationNotice && (
+                <p
+                  class="text-[0.65rem] leading-4 text-[var(--color-ink-light)]"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                  role="status"
+                >
+                  {store.citationNotice}
+                </p>
+              )}
             </div>
           )}
           {store.bibliography
             .filter((b) => b.folioId === activeFolio?.id || !b.folioId)
             .map((entry) => {
-              const isCited = citedUrls.has(entry.url.replace(/\/+$/, ""));
+              const isCited =
+                Boolean(entry.citationInsertedAt) ||
+                citedUrls.has(entry.url.replace(/\/+$/, ""));
               const isBackground = entry.provenance === "background";
               return (
                 <div
                   key={entry.id}
-                  class="group slide-in px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] transition-all duration-200 hover:border-[var(--color-vermilion)] hover:shadow-md page-turn"
-                  style="border-radius: 2px;"
+                  class="desk-card slide-in mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] transition-all duration-200 hover:border-[var(--color-vermilion)] hover:shadow-md page-turn"
+                  style={{
+                    ["--card-accent" as never]: isCited
+                      ? "var(--color-accent-green)"
+                      : isBackground
+                        ? "var(--color-mustard)"
+                        : "var(--color-ink-muted)",
+                  }}
                 >
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 mb-1 flex-wrap">
-                        <p
-                          class="text-sm text-[var(--color-ink)] leading-snug"
-                          style={{
-                            fontFamily: "var(--font-display)",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {entry.title}
-                        </p>
-                        {isBackground && (
-                          <span
-                            class="text-[0.55rem] tracking-[0.15em] uppercase px-1 py-0.5"
-                            style={{
-                              fontFamily: "var(--font-typewriter)",
-                              color: "var(--color-mustard)",
-                              border: "1px solid var(--color-mustard)",
-                              borderRadius: "1px",
-                            }}
-                          >
-                            agent
-                          </span>
-                        )}
-                        {isCited && (
-                          <span
-                            class="text-[0.55rem] tracking-[0.15em] uppercase px-1 py-0.5"
-                            style={{
-                              fontFamily: "var(--font-typewriter)",
-                              color: "var(--color-accent-green)",
-                              border: "1px solid var(--color-accent-green)",
-                              borderRadius: "1px",
-                            }}
-                          >
-                            cited
-                          </span>
-                        )}
-                      </div>
-                      <p
-                        class="text-[10px] text-[var(--color-ink-muted)] mt-0.5 break-all"
-                        style={{ fontFamily: "var(--font-mono)" }}
-                      >
-                        {entry.url}
-                      </p>
-                      <p
-                        class="text-xs text-[var(--color-ink-light)] mt-1.5 leading-5"
-                        style={{ fontFamily: "var(--font-serif)" }}
-                      >
-                        {formatCitation(entry, store.style)}
-                      </p>
-                      {isBackground && entry.target && (
-                        <p
-                          class="text-[0.6rem] text-[var(--color-ink-muted)] mt-1 italic"
-                          style={{ fontFamily: "var(--font-typewriter)" }}
-                        >
+                  {/* Title against the left margin, provenance stamped
+                    against the right; the URL as the byline beneath. */}
+                  <div class="desk-card__head">
+                    <p
+                      class="desk-card__name desk-card__name--wrap"
+                      title={entry.title}
+                    >
+                      {entry.title}
+                    </p>
+                    {(isCited || isBackground) && (
+                      <span class="desk-card__stamp">
+                        {isCited ? "cited" : "agent"}
+                      </span>
+                    )}
+                    <p class="desk-card__aside desk-card__detail">
+                      {entry.url}
+                    </p>
+                  </div>
+
+                  <p class="desk-card__body text-[0.8125rem]">
+                    {formatCitation(entry, store.style)}
+                  </p>
+
+                  {isBackground && (entry.target || entry.backgroundQuery) && (
+                    <div class="desk-card__quote">
+                      {entry.target && (
+                        <p>
                           for: “{entry.target.anchor.slice(0, 110)}
                           {entry.target.anchor.length > 110 ? "…" : ""}”
-                          <span class="uppercase not-italic ml-1">
+                          <span
+                            class="uppercase not-italic ml-1 text-[0.6rem]"
+                            style="font-family: var(--font-typewriter);"
+                          >
                             · {targetKindLabel(entry.target.kind)}
                           </span>
                         </p>
                       )}
-                      {isBackground && entry.backgroundQuery && (
-                        <p
-                          class="text-[0.6rem] text-[var(--color-ink-muted)] mt-1 italic"
-                          style={{ fontFamily: "var(--font-typewriter)" }}
-                        >
+                      {entry.backgroundQuery && (
+                        <p>
                           why: {entry.backgroundQuery.slice(0, 100)}
                           {entry.backgroundQuery.length > 100 ? "…" : ""}
                         </p>
                       )}
                     </div>
-                  </div>
-                  <div class="mt-2 flex items-center gap-2 flex-wrap opacity-60 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick$={() => citeInDraft(entry)}
-                      class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)]"
-                      style="font-family: var(--font-typewriter);"
-                    >
-                      ✎ cite in draft
-                    </button>
-                    <button
-                      onClick$={() => openEmbed(entry)}
-                      class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                      style="font-family: var(--font-typewriter);"
-                    >
-                      ⌖ open
-                    </button>
-                    <button
-                      onClick$={() => dropEntry(entry.id)}
-                      class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                      style="font-family: var(--font-typewriter);"
-                    >
-                      ✕
-                    </button>
+                  )}
+
+                  <div class="desk-card__foot">
+                    <div class="desk-card__foot-start">
+                      <button
+                        onClick$={() => citeInDraft(entry)}
+                        disabled={
+                          Boolean(entry.citationInsertedAt) ||
+                          Boolean(store.pendingInsertions[entry.id])
+                        }
+                        class="card-key card-key--on"
+                      >
+                        {store.pendingInsertions[entry.id]
+                          ? "placing…"
+                          : entry.citationInsertedAt
+                            ? "✓ footnoted"
+                            : "✎ cite in draft"}
+                      </button>
+                      <button
+                        onClick$={() => openEmbed(entry)}
+                        class="card-key"
+                      >
+                        ⌖ open
+                      </button>
+                    </div>
+                    <div class="desk-card__foot-end desk-card__reveal">
+                      <button
+                        onClick$={() => dropEntry(entry.id)}
+                        class="card-key"
+                        aria-label="Remove from the bibliography"
+                        title="Remove from the bibliography"
+                      >
+                        ✕
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -808,115 +915,87 @@ export const CitationsPanel = component$(
             return (
               <div
                 key={citation.id}
-                class="citation-card group slide-in px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] transition-all duration-200 hover:border-[var(--color-vermilion)] hover:shadow-md page-turn"
+                class="desk-card citation-card slide-in mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] transition-all duration-200 hover:border-[var(--color-vermilion)] hover:shadow-md page-turn"
                 style={{
-                  borderRadius: "2px",
                   borderLeftColor: accent,
                   borderLeftWidth: "3px",
+                  ["--card-accent" as never]: inkMix(accent),
                 }}
               >
-                <div class="flex items-start justify-between gap-2">
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1.5">
-                      <span
-                        class="text-[10px] tracking-[0.18em] uppercase"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          color: "var(--color-ink-muted)",
-                        }}
-                      >
-                        №{String(idx + 1).padStart(2, "0")}
-                      </span>
-                      <span
-                        class="text-[10px] tracking-[0.16em] uppercase px-1.5 py-0.5"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          color: inkMix(accent),
-                          border: `1px solid ${accent}`,
-                          borderRadius: "2px",
-                        }}
-                      >
-                        {getTypeLabel(citation.type)}
-                      </span>
-                      {isAdded && (
-                        <span
-                          class="text-[9px] tracking-[0.15em] uppercase px-1.5 py-0.5"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            color: "var(--color-accent-green)",
-                            border: "1px solid var(--color-accent-green)",
-                            borderRadius: "1px",
-                          }}
-                        >
-                          ✓ in bib
-                        </span>
-                      )}
-                    </div>
-                    <p
-                      class="text-xs text-[var(--color-ink)] break-all"
-                      style={{ fontFamily: "var(--font-mono)" }}
+                {/* The folio number rides in the gutter the way it does on
+                  a printed page; the kind of source is stamped opposite. */}
+                <div class="desk-card__head">
+                  <span
+                    class="desk-card__mark tabular-nums"
+                    style="font-family: var(--font-typewriter); font-size: 0.6875rem; letter-spacing: 0.08em; color: var(--color-ink-muted);"
+                  >
+                    №{String(idx + 1).padStart(2, "0")}
+                  </span>
+                  <p class="desk-card__name desk-card__name--wrap">
+                    {getTypeLabel(citation.type)}
+                  </p>
+                  {isAdded && (
+                    <span
+                      class="desk-card__stamp"
+                      style="--card-accent: var(--color-accent-green);"
                     >
-                      {citation.text}
-                    </p>
-                    {store.expandedId === citation.id && citation.metadata && (
-                      <div class="mt-2 space-y-1 pl-2 border-l border-dashed border-[var(--color-paper-3)]">
-                        {Object.entries(citation.metadata).map(
-                          ([_key, val]) => (
-                            <p
-                              key={_key}
-                              class="text-xs text-[var(--color-ink-muted)]"
-                              style={{ fontFamily: "var(--font-serif)" }}
-                            >
-                              <span class="dept-label not-italic">{_key}</span>{" "}
-                              {val}
-                            </p>
-                          ),
-                        )}
-                      </div>
-                    )}
+                      ✓ in bib
+                    </span>
+                  )}
+                </div>
+
+                <p class="desk-card__detail text-[var(--color-ink)]">
+                  {citation.text}
+                </p>
+
+                {store.expandedId === citation.id && citation.metadata && (
+                  <div class="desk-card__quote space-y-1">
+                    {Object.entries(citation.metadata).map(([_key, val]) => (
+                      <p key={_key} class="not-italic">
+                        <span class="dept-label not-italic">{_key}</span> {val}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                <div class="desk-card__foot">
+                  <div class="desk-card__foot-start">
+                    <button
+                      onClick$={() => addToBibliography(citation)}
+                      disabled={isFormatting || isAdded}
+                      class="card-key card-key--on"
+                      title={
+                        hasAi
+                          ? "Format this citation with AI and add it to your bibliography."
+                          : "Add this citation to your bibliography."
+                      }
+                    >
+                      {isFormatting
+                        ? "formatting…"
+                        : isAdded
+                          ? "✓ added"
+                          : hasAi
+                            ? "✦ add to bib"
+                            : "+ add to bib"}
+                    </button>
                     {citation.lookupUrl && (
                       <a
                         href={citation.lookupUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="inline-flex items-center gap-1 mt-2 text-[11px] tracking-[0.16em] uppercase hover:text-[var(--color-vermilion)] focus-ring"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          color: inkMix(accent),
-                        }}
+                        class="card-key focus-ring"
                       >
-                        Look up ↗
+                        look up ↗
                       </a>
                     )}
-                    <div class="mt-2 flex items-center gap-2 flex-wrap citation-actions opacity-60 group-hover:opacity-100 transition-opacity">
-                      <button
-                        onClick$={() => addToBibliography(citation)}
-                        disabled={isFormatting || isAdded}
-                        class="text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)] disabled:opacity-40 disabled:cursor-default"
-                        style="font-family: var(--font-typewriter);"
-                        title={
-                          hasAi
-                            ? "Format this citation with AI and add it to your bibliography."
-                            : "Add this citation to your bibliography."
-                        }
-                      >
-                        {isFormatting
-                          ? "formatting…"
-                          : isAdded
-                            ? "✓ added"
-                            : hasAi
-                              ? "✦ add to bib"
-                              : "+ add to bib"}
-                      </button>
-                    </div>
                   </div>
-                  <div class="flex items-center gap-1 ml-1 flex-shrink-0">
+                  <div class="desk-card__foot-end desk-card__reveal">
                     <button
                       onClick$={() => {
                         store.expandedId =
                           store.expandedId === citation.id ? null : citation.id;
                       }}
-                      class="icon-btn text-xs"
+                      class="card-key"
                       aria-expanded={store.expandedId === citation.id}
                       aria-label={`Details for entry ${idx + 1}`}
                     >
@@ -924,7 +1003,7 @@ export const CitationsPanel = component$(
                     </button>
                     <button
                       onClick$={() => removeCitation(citation.id)}
-                      class="icon-btn text-xs hover:text-[var(--color-vermilion)]"
+                      class="card-key"
                       aria-label={`Remove entry ${idx + 1}`}
                     >
                       ✕

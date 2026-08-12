@@ -589,7 +589,15 @@ export const ConversationalInterview = component$(
                           />
                         </div>
                       )}
-                      {m.text}
+                      <span
+                        data-speech-id={
+                          m.author === "interviewer"
+                            ? `interview-${i}`
+                            : undefined
+                        }
+                      >
+                        {m.text}
+                      </span>
                     </div>
                   </div>
                 </div>

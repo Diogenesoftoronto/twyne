@@ -29,6 +29,9 @@ const fixture = {
         description: "Deep reasoning model",
         family: "gpt",
         reasoning: true,
+        reasoning_options: [
+          { type: "effort", values: ["low", "high", "xhigh"] },
+        ],
       },
     },
   },
@@ -63,6 +66,14 @@ describe("models.dev catalog", () => {
         name: "GPT Fast",
         toolCall: true,
         modalities: { input: ["text"], output: ["text"] },
+      }),
+    );
+    expect(catalog[0]?.models).toContainEqual(
+      expect.objectContaining({
+        id: "gpt-reason",
+        reasoningOptions: [
+          { type: "effort", values: ["low", "high", "xhigh"] },
+        ],
       }),
     );
   });
@@ -145,9 +156,9 @@ describe("models.dev feature filtering", () => {
   ];
 
   test("offers models matching the feature modality", () => {
-    expect(modelsDevModelsForFeature(models, "language").map((m) => m.id)).toEqual([
-      "chat",
-    ]);
+    expect(
+      modelsDevModelsForFeature(models, "language").map((m) => m.id),
+    ).toEqual(["chat"]);
     expect(
       modelsDevModelsForFeature(models, "voice-narration").map((m) => m.id),
     ).toEqual(["tts"]);

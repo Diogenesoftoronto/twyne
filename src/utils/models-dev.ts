@@ -1,4 +1,8 @@
-import type { AiProviderType } from "../types";
+import type {
+  AiModelReasoningOption,
+  AiProviderType,
+  AiReasoningEffort,
+} from "../types";
 
 export const MODELS_DEV_CATALOG_URL = "https://models.dev/api.json";
 
@@ -8,6 +12,7 @@ export interface ModelsDevModel {
   description?: string;
   family?: string;
   reasoning?: boolean;
+  reasoningOptions?: AiModelReasoningOption[];
   toolCall?: boolean;
   modalities?: {
     input: string[];
@@ -33,6 +38,7 @@ interface RawModelsDevModel {
   description?: string;
   family?: string;
   reasoning?: boolean;
+  reasoning_options?: unknown;
   tool_call?: boolean;
   modalities?: {
     input?: string[];
@@ -58,6 +64,32 @@ const SUPPORTED_NPM_PACKAGES = new Set([
   "@ai-sdk/openai-compatible",
   "@openrouter/ai-sdk-provider",
 ]);
+
+function parseReasoningOptions(value: unknown): AiModelReasoningOption[] {
+  if (!Array.isArray(value)) return [];
+  return value.flatMap((entry): AiModelReasoningOption[] => {
+    if (!entry || typeof entry !== "object") return [];
+    const option = entry as Record<string, unknown>;
+    if (option.type === "toggle") return [{ type: "toggle" }];
+    if (option.type === "effort" && Array.isArray(option.values)) {
+      const allowed = new Set(["low", "medium", "high", "xhigh", "max"]);
+      const values = option.values.filter(
+        (item) =>
+          item === null || (typeof item === "string" && allowed.has(item)),
+      ) as Array<AiReasoningEffort | null>;
+      return values.length ? [{ type: "effort", values }] : [];
+    }
+    if (
+      option.type === "budget_tokens" &&
+      typeof option.min === "number" &&
+      typeof option.max === "number" &&
+      option.min <= option.max
+    ) {
+      return [{ type: "budget_tokens", min: option.min, max: option.max }];
+    }
+    return [];
+  });
+}
 
 function providerType(provider: RawModelsDevProvider): AiProviderType | null {
   switch (provider.id) {
@@ -103,12 +135,15 @@ export function parseModelsDevCatalog(input: unknown): ModelsDevProvider[] {
         if (!model || typeof model !== "object") return null;
         const id = (model.id ?? modelKey).trim();
         if (!id) return null;
+        const reasoningOptions = parseReasoningOptions(model.reasoning_options);
         return {
           id,
           name: model.name?.trim() || id,
           description: model.description?.trim() || undefined,
           family: model.family?.trim() || undefined,
           reasoning: model.reasoning,
+          reasoningOptions:
+            reasoningOptions.length > 0 ? reasoningOptions : undefined,
           toolCall: model.tool_call,
           modalities: model.modalities
             ? {

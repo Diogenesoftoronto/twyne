@@ -215,6 +215,7 @@ export default component$(() => {
                   </div>
                 </div>
                 <div
+                  data-speech-id="analysis-synthesis"
                   class="comment-markdown mt-3 text-[15px] leading-7 text-[var(--color-ink)]"
                   style={{ fontFamily: "var(--font-serif)" }}
                   dangerouslySetInnerHTML={renderMarkdown(
@@ -265,6 +266,7 @@ export default component$(() => {
                         />
                       </div>
                       <div
+                        data-speech-id={`analysis-memo-${memo.personaId}`}
                         class="comment-markdown mt-1.5 text-[15px] leading-7 text-[var(--color-ink)]"
                         style={{ fontFamily: "var(--font-serif)" }}
                         dangerouslySetInnerHTML={renderMarkdown(memo.text)}

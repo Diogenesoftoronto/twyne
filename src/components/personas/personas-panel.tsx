@@ -70,6 +70,7 @@ import {
 import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
 import { SpeechTransport } from "../ui/speech-transport";
+import { EditorialLoader } from "../ui/editorial-loader";
 import { ANALYSIS_READING_ID, speakQueue } from "../../utils/speech";
 import type { AppError } from "../../types/application-errors";
 import {
@@ -2167,6 +2168,19 @@ export const PersonasPanel = component$(
               their own card as they go, so the wait is spent reading rather
               than watching a spinner. These are not notes yet: no reply box,
               no strike, nothing to act on until they are filed. */}
+            {store.isGenerating &&
+              !Object.values(store.streamingNotes).some(
+                (stream) =>
+                  stream.status === "running" ||
+                  !!stream.text.trim() ||
+                  !!stream.reasoning.trim(),
+              ) && (
+                <EditorialLoader
+                  personas={store.personas}
+                  label="The room is reading"
+                  compact
+                />
+              )}
             {store.personas
               .filter((p) => {
                 // Anything arriving counts, including reasoning. A model that
@@ -2184,58 +2198,51 @@ export const PersonasPanel = component$(
               .map((persona) => (
                 <div
                   key={`streaming-${persona.id}`}
-                  class="p-3 border-l-2 bg-[var(--color-paper-soft)]"
+                  class="desk-card border-l-2 bg-[var(--color-paper-soft)]"
                   style={{
                     borderColor: persona.color,
-                    borderRadius: "2px",
+                    ["--card-accent" as never]: persona.color,
                   }}
                   aria-live="polite"
                 >
-                  <div class="flex items-baseline justify-between gap-2">
-                    <p
-                      class="text-sm truncate text-[var(--color-ink)]"
-                      style="font-family: var(--font-display); font-weight: 600;"
+                  {/* The same masthead the filed note will get, so the card
+                    does not rearrange itself the moment it lands. */}
+                  <div class="desk-card__head">
+                    <span
+                      class="desk-card__mark portrait-icon"
+                      style={{ ["--frame-color" as never]: persona.color }}
                     >
-                      {persona.name}
-                    </p>
-                    <p
-                      class="text-[0.65rem] tracking-[0.14em] uppercase"
-                      style={{
-                        fontFamily: "var(--font-typewriter)",
-                        color: persona.color,
-                      }}
-                    >
+                      {persona.icon}
+                    </span>
+                    <p class="desk-card__name">{persona.name}</p>
+                    <span class="desk-card__stamp">
                       {store.streamingNotes[persona.id].activePart ===
                       "reasoning"
                         ? "thinking…"
                         : "writing…"}
-                    </p>
+                    </span>
+                    {/* The model's scratch work, folded away. Offered rather
+                      than shown: it is how the note was arrived at, not the
+                      note, and the room speaks in finished sentences. */}
+                    {store.streamingNotes[persona.id].reasoning.trim() && (
+                      <details class="desk-card__aside">
+                        <summary class="cursor-pointer">
+                          {store.streamingNotes[persona.id].activePart ===
+                          "reasoning"
+                            ? "thinking"
+                            : "thought"}
+                        </summary>
+                        <p
+                          class="mt-1 whitespace-pre-wrap border-l pl-2 text-[0.7rem] leading-4 text-[var(--color-ink-muted)]"
+                          style="font-family: var(--font-typewriter); border-color: var(--color-rule);"
+                        >
+                          {store.streamingNotes[persona.id].reasoning}
+                        </p>
+                      </details>
+                    )}
                   </div>
-                  {/* The model's scratch work, folded away. Offered rather
-                    than shown: it is how the note was arrived at, not the
-                    note, and the room speaks in finished sentences. */}
-                  {store.streamingNotes[persona.id].reasoning.trim() && (
-                    <details class="mt-1.5">
-                      <summary
-                        class="cursor-pointer text-[0.65rem] tracking-[0.14em] uppercase text-[var(--color-ink-muted)]"
-                        style="font-family: var(--font-typewriter);"
-                      >
-                        {store.streamingNotes[persona.id].activePart ===
-                        "reasoning"
-                          ? "thinking"
-                          : "thought"}
-                      </summary>
-                      <p
-                        class="mt-1 whitespace-pre-wrap border-l pl-2 text-[0.7rem] leading-4 text-[var(--color-ink-muted)]"
-                        style="font-family: var(--font-typewriter); border-color: var(--color-rule);"
-                      >
-                        {store.streamingNotes[persona.id].reasoning}
-                      </p>
-                    </details>
-                  )}
                   <div
-                    class="comment-markdown mt-1.5 text-[0.85rem] leading-5 text-[var(--color-ink-light)]"
-                    style="font-family: var(--font-serif);"
+                    class="desk-card__body comment-markdown"
                     dangerouslySetInnerHTML={renderMarkdown(
                       store.streamingNotes[persona.id].text,
                     )}
@@ -2245,21 +2252,17 @@ export const PersonasPanel = component$(
 
             {store.streamingSynthesis.trim() && (
               <div
-                class="p-3 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] rounded"
+                class="desk-card border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
                 aria-live="polite"
               >
-                <div class="flex items-baseline justify-between gap-2">
-                  <p class="dept-label">The Room's Verdict</p>
-                  <p
-                    class="text-[0.65rem] tracking-[0.14em] uppercase text-[var(--color-ink-muted)]"
-                    style="font-family: var(--font-typewriter);"
-                  >
+                <div class="desk-card__head">
+                  <p class="desk-card__name">The Room's Verdict</p>
+                  <span class="desk-card__stamp desk-card__stamp--quiet">
                     writing…
-                  </p>
+                  </span>
                 </div>
                 <div
-                  class="comment-markdown mt-1.5 text-[0.85rem] leading-5 text-[var(--color-ink-light)]"
-                  style="font-family: var(--font-serif);"
+                  class="desk-card__body comment-markdown"
                   dangerouslySetInnerHTML={renderMarkdown(
                     store.streamingSynthesis,
                   )}
@@ -2330,84 +2333,69 @@ export const PersonasPanel = component$(
                     key={noteKey}
                     class={
                       isPassing
-                        ? "passing-note feedback-enter px-4 py-3"
-                        : "clipping feedback-enter p-4"
+                        ? "desk-card passing-note feedback-enter"
+                        : "desk-card clipping feedback-enter"
                     }
-                    style={{ ["--clip-color" as never]: personaColor }}
+                    style={{
+                      ["--clip-color" as never]: personaColor,
+                      ["--card-accent" as never]: personaColor,
+                    }}
                   >
-                    <div class="flex items-start gap-3 mb-2">
+                    {/* Masthead: portrait in the gutter, the editor's name
+                      against the left margin, what kind of note it is
+                      stamped against the right one. */}
+                    <div class="desk-card__head">
                       <span
-                        class="portrait-icon flex-shrink-0"
+                        class="desk-card__mark portrait-icon"
                         style={{ ["--frame-color" as never]: personaColor }}
                       >
                         {persona?.icon}
                       </span>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center justify-between gap-2">
-                          <p
-                            class="text-sm text-[var(--color-ink)] truncate"
-                            style="font-family: var(--font-display); font-weight: 600;"
-                          >
-                            {feedback.personaName}
-                          </p>
-                          <div class="flex items-center gap-1.5 flex-shrink-0">
-                            <p
-                              class="text-[0.65rem] tracking-[0.14em] uppercase"
-                              style={{
-                                fontFamily: "var(--font-typewriter)",
-                                color: personaColor,
-                              }}
-                            >
-                              {isPassing
-                                ? "in passing"
-                                : typeLabel(feedback.type)}
-                            </p>
-                            <SpeakButton
-                              compact
-                              id={noteKey}
-                              text={feedback.feedback}
-                              voice={persona?.speechVoice}
-                              voices={persona?.speechVoices}
-                              instructions={persona?.voice}
-                              label={feedback.personaName}
-                            />
-                          </div>
-                        </div>
-                        {feedback.anchor && (
-                          <blockquote
-                            class="mt-1.5 pl-2 border-l-2 text-[11px] italic text-[var(--color-ink-muted)] cursor-pointer hover:text-[var(--color-ink)]"
-                            style={{
-                              borderColor: personaColor,
-                              fontFamily: "var(--font-serif)",
-                            }}
-                            onClick$={() => {
-                              if (feedback.noteId) {
-                                window.dispatchEvent(
-                                  new CustomEvent(
-                                    "twyne:scroll-to-persona-note",
-                                    {
-                                      detail: feedback.noteId,
-                                    },
-                                  ),
-                                );
-                              }
-                            }}
-                            title="Show this note in the manuscript"
-                          >
-                            « {truncate(feedback.anchor, 160)} »
-                          </blockquote>
-                        )}
+                      <p class="desk-card__name" title={feedback.personaName}>
+                        {feedback.personaName}
+                      </p>
+                      <span class="desk-card__stamp">
+                        {isPassing ? "in passing" : typeLabel(feedback.type)}
+                      </span>
+                      <div class="desk-card__byline">
+                        <span>{timeAgo(feedback.timestamp)}</span>
+                        <span class="desk-card__tools desk-card__reveal">
+                          <SpeakButton
+                            compact
+                            id={noteKey}
+                            text={feedback.feedback}
+                            voice={persona?.speechVoice}
+                            voices={persona?.speechVoices}
+                            instructions={persona?.voice}
+                            label={feedback.personaName}
+                          />
+                        </span>
                       </div>
                     </div>
+
+                    {feedback.anchor && (
+                      <blockquote
+                        class="desk-card__quote desk-card__quote--action"
+                        onClick$={() => {
+                          if (feedback.noteId) {
+                            window.dispatchEvent(
+                              new CustomEvent("twyne:scroll-to-persona-note", {
+                                detail: feedback.noteId,
+                              }),
+                            );
+                          }
+                        }}
+                        title="Show this note in the manuscript"
+                      >
+                        « {truncate(feedback.anchor, 160)} »
+                      </blockquote>
+                    )}
+
                     <div
-                      class={`comment-markdown text-[14px] leading-6 text-[var(--color-ink-light)]${
-                        bodyClamped ? " cursor-pointer" : ""
+                      data-speech-id={noteKey}
+                      class={`desk-card__body comment-markdown${
+                        bodyClamped ? " desk-card__body--clamped" : ""
                       }`}
-                      style={
-                        bodyClamped
-                          ? "font-family: var(--font-serif); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden;"
-                          : "font-family: var(--font-serif);"
-                      }
                       title={
                         bodyClamped ? "Click to read the full note" : undefined
                       }
@@ -2426,77 +2414,41 @@ export const PersonasPanel = component$(
                       )}
                     />
 
-                    {feedback.traceId && (
-                      <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--color-paper-3)] pt-2">
-                        <span
-                          class="text-[0.6rem] tracking-[0.14em] uppercase text-[var(--color-ink-muted)]"
-                          style="font-family: var(--font-typewriter);"
-                        >
-                          useful?
-                        </span>
-                        <button
-                          class="text-[0.65rem] text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                          aria-label="Mark this note helpful"
-                          onClick$={() =>
-                            submitAiFeedback(feedback, "positive")
-                          }
-                        >
-                          ↑ helpful
-                        </button>
-                        <button
-                          class="text-[0.65rem] text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                          aria-label="Mark this note as needing work"
-                          onClick$={() =>
-                            submitAiFeedback(feedback, "negative")
-                          }
-                        >
-                          ↓ needs work
-                        </button>
-                        {store.aiFeedback[feedback.traceId]?.sentiment ===
-                          "negative" && (
-                          <div class="flex flex-wrap gap-1">
-                            {(
-                              [
-                                ["grounding", "not grounded"],
-                                ["usefulness", "not useful"],
-                                ["tone", "wrong tone"],
-                                ["incorrect", "incorrect"],
-                                ["too_long", "too long"],
-                                ["other", "other"],
-                              ] as const
-                            ).map(([reason, label]) => (
-                              <button
-                                key={reason}
-                                class="rounded border border-[var(--color-paper-3)] px-1.5 py-0.5 text-[0.6rem] text-[var(--color-ink-muted)] hover:border-[var(--color-vermilion)] hover:text-[var(--color-vermilion)]"
-                                onClick$={() =>
-                                  submitAiFeedback(feedback, "negative", reason)
-                                }
-                              >
-                                {label}
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {store.groupByPersona && groupCount > 1 && (
-                      <button
-                        class="mt-1.5 text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                        style="font-family: var(--font-typewriter);"
-                        onClick$={() => {
-                          const cur = new Set(store.expandedPersonas);
-                          if (cur.has(feedback.personaId))
-                            cur.delete(feedback.personaId);
-                          else cur.add(feedback.personaId);
-                          store.expandedPersonas = cur;
-                        }}
-                      >
-                        {isExpanded
-                          ? "▾ hide older"
-                          : `+ ${groupCount - 1} older from ${feedback.personaName}`}
-                      </button>
-                    )}
+                    {/* Why the note was wrong, once the writer has said it
+                      was. Its own row rather than a sixth item in the foot,
+                      which is a two-cluster row and stays one. */}
+                    {feedback.traceId &&
+                      store.aiFeedback[feedback.traceId]?.sentiment ===
+                        "negative" && (
+                        <div class="flex flex-wrap items-center gap-1.5">
+                          <span
+                            class="text-[0.6rem] tracking-[0.14em] uppercase text-[var(--color-ink-muted)]"
+                            style="font-family: var(--font-typewriter);"
+                          >
+                            what missed?
+                          </span>
+                          {(
+                            [
+                              ["grounding", "not grounded"],
+                              ["usefulness", "not useful"],
+                              ["tone", "wrong tone"],
+                              ["incorrect", "incorrect"],
+                              ["too_long", "too long"],
+                              ["other", "other"],
+                            ] as const
+                          ).map(([reason, label]) => (
+                            <button
+                              key={reason}
+                              class="rounded border border-[var(--color-paper-3)] px-1.5 py-0.5 text-[0.6rem] text-[var(--color-ink-muted)] hover:border-[var(--color-vermilion)] hover:text-[var(--color-vermilion)]"
+                              onClick$={() =>
+                                submitAiFeedback(feedback, "negative", reason)
+                              }
+                            >
+                              {label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
 
                     {/* Threaded replies */}
                     {replies.length > 0 && (
@@ -2623,33 +2575,89 @@ export const PersonasPanel = component$(
                         </p>
                       </div>
                     ) : (
-                      <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <button
-                          class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                          style="font-family: var(--font-typewriter);"
-                          onClick$={() => {
-                            if (feedback.noteId) openReply(feedback.noteId);
-                          }}
-                        >
-                          + Reply / ask the editor
-                        </button>
-                        {feedback.anchor &&
-                          effectiveLevel(
-                            store.roomSettings,
-                            feedback.personaId,
-                          ) !== "comments" && (
+                      // The foot. What the writer does with the note on the
+                      // left; what they say about the note on the right.
+                      <div class="desk-card__foot">
+                        <div class="desk-card__foot-start">
+                          <button
+                            class="card-key"
+                            onClick$={() => {
+                              if (feedback.noteId) openReply(feedback.noteId);
+                            }}
+                            title="Reply to this editor, or ask them to come back"
+                          >
+                            ↩ reply
+                          </button>
+                          {feedback.anchor &&
+                            effectiveLevel(
+                              store.roomSettings,
+                              feedback.personaId,
+                            ) !== "comments" && (
+                              <button
+                                class="card-key"
+                                disabled={
+                                  store.fixingNoteId === feedback.noteId
+                                }
+                                onClick$={() => askForFix(feedback)}
+                                title="Ask this editor to propose an edit to the anchored passage"
+                              >
+                                {store.fixingNoteId === feedback.noteId
+                                  ? "drafting…"
+                                  : "✎ ask for a fix"}
+                              </button>
+                            )}
+                          {store.groupByPersona && groupCount > 1 && (
                             <button
-                              class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] disabled:opacity-50"
-                              style="font-family: var(--font-typewriter);"
-                              disabled={store.fixingNoteId === feedback.noteId}
-                              onClick$={() => askForFix(feedback)}
-                              title="Ask this editor to propose an edit to the anchored passage"
+                              class={`card-key${isExpanded ? " card-key--on" : ""}`}
+                              onClick$={() => {
+                                const cur = new Set(store.expandedPersonas);
+                                if (cur.has(feedback.personaId))
+                                  cur.delete(feedback.personaId);
+                                else cur.add(feedback.personaId);
+                                store.expandedPersonas = cur;
+                              }}
+                              title={`Earlier notes from ${feedback.personaName}`}
                             >
-                              {store.fixingNoteId === feedback.noteId
-                                ? "drafting…"
-                                : "✎ ask for a fix"}
+                              {isExpanded
+                                ? "▾ hide older"
+                                : `▸ ${groupCount - 1} older`}
                             </button>
                           )}
+                        </div>
+                        {feedback.traceId && (
+                          <div class="desk-card__foot-end desk-card__reveal">
+                            <button
+                              class={`card-key card-key--go${
+                                store.aiFeedback[feedback.traceId]
+                                  ?.sentiment === "positive"
+                                  ? " card-key--on"
+                                  : ""
+                              }`}
+                              aria-label="Mark this note helpful"
+                              title="This note was useful"
+                              onClick$={() =>
+                                submitAiFeedback(feedback, "positive")
+                              }
+                            >
+                              ↑
+                            </button>
+                            <button
+                              class={`card-key${
+                                store.aiFeedback[feedback.traceId]
+                                  ?.sentiment === "negative"
+                                  ? " card-key--on"
+                                  : ""
+                              }`}
+                              aria-label="Mark this note as needing work"
+                              title="This note needs work"
+                              onClick$={() =>
+                                submitAiFeedback(feedback, "negative")
+                              }
+                            >
+                              ↓
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -2783,6 +2791,7 @@ export const PersonasPanel = component$(
                       </div>
                     </div>
                     <div
+                      data-speech-id="analysis-synthesis"
                       class="comment-markdown mt-2 text-[13px] leading-6 text-[var(--color-ink)]"
                       style="font-family: var(--font-serif);"
                       dangerouslySetInnerHTML={renderMarkdown(
@@ -2854,6 +2863,7 @@ export const PersonasPanel = component$(
                         </div>
                         {!collapsed && (
                           <div
+                            data-speech-id={`analysis-memo-${memo.personaId}`}
                             class="comment-markdown mt-1 text-[13px] leading-6 text-[var(--color-ink)]"
                             style="font-family: var(--font-serif);"
                             dangerouslySetInnerHTML={renderMarkdown(memo.text)}

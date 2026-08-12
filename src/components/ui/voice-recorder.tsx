@@ -33,6 +33,8 @@ interface VoiceRecorderProps {
    * the caller decides whether to keep it.
    */
   onCapture$: PropFunction<(capture: VoiceCapture) => void>;
+  /** Optional integration hook for streamed and final transcript updates. */
+  onTranscript$?: PropFunction<(transcript: string, final: boolean) => void>;
   /** Terms likely to appear, to help the transcriber with proper nouns. */
   transcriptionHint?: string;
   /** Wording for the idle button. */
@@ -50,7 +52,11 @@ interface RecorderStore {
   handle: NoSerialize<RecorderHandle> | null;
   /** Lets the writer stop an in-flight transcription. */
   transcribeAbort: NoSerialize<AbortController> | null;
-  captured: NoSerialize<{ blob: Blob; mimeType: string; durationMs: number }> | null;
+  captured: NoSerialize<{
+    blob: Blob;
+    mimeType: string;
+    durationMs: number;
+  }> | null;
 }
 
 /**
@@ -126,6 +132,7 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
     const recording = await handle.stop();
     store.handle = null;
     store.captured = noSerialize(recording);
+    store.transcript = "";
     store.phase = "transcribing";
     const abort = new AbortController();
     store.transcribeAbort = noSerialize(abort);
@@ -136,10 +143,16 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
         client: clientSig.value ?? null,
         prompt: props.transcriptionHint,
         signal: abort.signal,
+        onDelta: (text) => {
+          if (store.phase !== "transcribing") return;
+          store.transcript = text;
+          void props.onTranscript$?.(text, false);
+        },
       });
       // The writer pressed Cancel while the words were being set down.
       if (store.phase !== "transcribing") return;
       store.transcript = text;
+      await props.onTranscript$?.(text, true);
       store.phase = "review";
     } catch (err) {
       // The recording survives a failed transcription — the writer can still
@@ -249,20 +262,42 @@ export const VoiceRecorder = component$<VoiceRecorderProps>((props) => {
       )}
 
       {store.phase === "transcribing" && (
-        <div class="flex items-center gap-2" role="status">
-          <p
-            class="text-xs text-[var(--color-ink-muted)]"
-            style="font-family: var(--font-typewriter); letter-spacing: 0.1em;"
-          >
-            Setting down what you said…
-          </p>
-          <button
-            onClick$={discard}
-            class="text-[10px] uppercase tracking-[0.12em] text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] focus-ring"
-            style="font-family: var(--font-typewriter);"
-          >
-            Cancel
-          </button>
+        <div
+          class="space-y-2 rounded-[3px] border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-2.5"
+          role="status"
+        >
+          <div class="flex items-center justify-between gap-3">
+            <p
+              class="text-xs text-[var(--color-ink-muted)]"
+              style="font-family: var(--font-typewriter); letter-spacing: 0.08em;"
+            >
+              {store.transcript
+                ? "Transcribing as the words arrive…"
+                : "Setting down what you said…"}
+            </p>
+            <button
+              onClick$={discard}
+              class="text-[10px] uppercase tracking-[0.12em] text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] focus-ring"
+              style="font-family: var(--font-typewriter);"
+            >
+              Cancel
+            </button>
+          </div>
+          {store.transcript && (
+            <p
+              class="max-h-24 overflow-y-auto text-xs leading-relaxed text-[var(--color-ink)]"
+              style="font-family: var(--font-serif);"
+              aria-live="polite"
+            >
+              {store.transcript}
+              <span
+                class="ml-1 animate-pulse text-[var(--color-vermilion)]"
+                aria-hidden="true"
+              >
+                ▌
+              </span>
+            </p>
+          )}
         </div>
       )}
 
@@ -362,7 +397,15 @@ function MicIcon() {
       aria-hidden="true"
       style="display: inline-block; vertical-align: -2px;"
     >
-      <rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor" stroke="none" />
+      <rect
+        x="9"
+        y="2"
+        width="6"
+        height="12"
+        rx="3"
+        fill="currentColor"
+        stroke="none"
+      />
       <path d="M5 11a7 7 0 0 0 14 0" />
       <path d="M12 18v3" />
     </svg>

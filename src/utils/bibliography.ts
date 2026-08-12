@@ -50,6 +50,8 @@ export interface BibEntry {
   target?: ResearchTargetRef;
   /** Free-form creation timestamp (used by AI-generated entries). */
   createdAt?: number;
+  /** Set after the editor confirms this source was placed as a footnote. */
+  citationInsertedAt?: number;
 }
 
 export async function loadBibliography(): Promise<BibEntry[]> {

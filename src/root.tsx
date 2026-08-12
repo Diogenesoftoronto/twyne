@@ -6,6 +6,7 @@ import { AuthProvider } from "./utils/auth-context";
 import { PostHogProvider } from "./utils/posthog-context";
 import { installLixAuthInterceptor } from "./utils/lix-auth";
 import { GlobalConnectivityBanner } from "./components/ui/global-connectivity-banner";
+import { GlobalSpeechPlayer } from "./components/ui/global-speech-player";
 import {
   THEME_BOOTSTRAP_SCRIPT,
   applyTheme,
@@ -76,6 +77,7 @@ export default component$(() => {
           <AuthProvider>
             <PostHogProvider>
               <RouterOutlet />
+              <GlobalSpeechPlayer />
             </PostHogProvider>
           </AuthProvider>
         </ConvexProvider>

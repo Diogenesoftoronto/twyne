@@ -19,7 +19,10 @@ import {
 } from "./ai-client";
 import { getCachedAiSettings } from "./ai-orchestrator";
 import { loadVoiceNoteBlob, saveVoiceNoteBlob } from "./idb";
-import { createAppError, normalizeApplicationError } from "./application-errors";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "./application-errors";
 import type { AppError } from "../types/application-errors";
 
 /** Recording stops itself here. Long enough for a real thought, short enough
@@ -141,10 +144,7 @@ export async function startRecording(): Promise<RecorderHandle> {
    *  count audio, not wall clock: a long pause before a short thought should
    *  not silently eat the recording budget. */
   const activeTime = (now = Date.now()): number =>
-    now -
-    startedAt -
-    totalPausedMs -
-    (pausedAt === null ? 0 : now - pausedAt);
+    now - startedAt - totalPausedMs - (pausedAt === null ? 0 : now - pausedAt);
 
   let autoStop: ReturnType<typeof setTimeout> | null = null;
 
@@ -224,10 +224,7 @@ export async function startRecording(): Promise<RecorderHandle> {
 
 /* ── Persistence ────────────────────────────────────────────────── */
 
-export async function storeVoiceNote(
-  id: string,
-  blob: Blob,
-): Promise<void> {
+export async function storeVoiceNote(id: string, blob: Blob): Promise<void> {
   await saveVoiceNoteBlob(id, blob);
 }
 
@@ -303,6 +300,8 @@ export async function transcribeRecording(args: {
   prompt?: string;
   /** Lets the writer stop an in-flight transcription. */
   signal?: AbortSignal;
+  /** Full transcript-so-far, emitted by providers that support streaming. */
+  onDelta?: (text: string) => void;
 }): Promise<TranscriptionOutcome> {
   if (args.signal?.aborted) throw createAbortError();
   const settings = await getCachedAiSettings();
@@ -313,7 +312,7 @@ export async function transcribeRecording(args: {
     const result = await runClientVoiceTranscribe(
       { audio: args.blob, prompt: args.prompt },
       settings,
-      { signal: args.signal },
+      { signal: args.signal, onDelta: args.onDelta },
     );
     if (result?.text) {
       return { text: result.text, provider: `client-${result.provider}` };
