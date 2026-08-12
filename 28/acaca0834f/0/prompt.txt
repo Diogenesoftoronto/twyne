@@ -1,0 +1,1 @@
+I want the ssummary in the galley to be collapsed and truncated by default only showing 120 characters. I would also like the brutal curve explanation to give examples for works that would probably fit there like 90 being something possibly politzer prize winning if that's what fits your draft or something

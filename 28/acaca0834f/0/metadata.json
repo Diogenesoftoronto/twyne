@@ -1,0 +1,88 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "28acaca0834f",
+  "session_id": "019ff3ea-9cce-7d30-84d2-623250b69355",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-12T04:51:12.110846816Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [],
+  "agent": "Codex",
+  "model": "gpt-5.6-luna",
+  "turn_id": "30edb174269f",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 67151,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 986368,
+    "output_tokens": 6149,
+    "api_call_count": 25
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1774,
+      "user_lines_removed": 163,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "bun.lock": 6,
+        "package.json": 1,
+        "src/components/citations/citations-panel.tsx": 135,
+        "src/components/editor/grammar-panel.tsx": 298,
+        "src/components/editor/twyne-editor.tsx": 86,
+        "src/components/personas/personas-panel.tsx": 14,
+        "src/components/rubric/rubric-panel.tsx": 6,
+        "src/components/ui/editorial-loader.tsx": 58,
+        "src/components/ui/global-speech-player.tsx": 217,
+        "src/components/ui/voice-recorder.tsx": 59,
+        "src/root.tsx": 2,
+        "src/routes/settings/index.tsx": 65,
+        "src/types/index.ts": 21,
+        "src/utils/ai-client.test.ts": 48,
+        "src/utils/ai-client.ts": 209,
+        "src/utils/bibliography.ts": 2,
+        "src/utils/citation-ui-wiring.test.ts": 35,
+        "src/utils/convex-sync.test.ts": 3,
+        "src/utils/editorial-chatter.test.ts": 22,
+        "src/utils/editorial-chatter.ts": 25,
+        "src/utils/grammar.test.ts": 27,
+        "src/utils/grammar.ts": 93,
+        "src/utils/idb-preferences.test.ts": 5,
+        "src/utils/idb.ts": 10,
+        "src/utils/speech.test.ts": 55,
+        "src/utils/speech.ts": 180,
+        "src/utils/use-speech-player.ts": 83,
+        "src/utils/voice-notes.ts": 9
+      },
+      "user_removed_per_file": {
+        "bun.lock": 1,
+        "src/components/citations/citations-panel.tsx": 9,
+        "src/components/editor/twyne-editor.tsx": 6,
+        "src/components/rubric/rubric-panel.tsx": 23,
+        "src/components/ui/voice-recorder.tsx": 16,
+        "src/routes/settings/index.tsx": 9,
+        "src/utils/ai-client.test.ts": 4,
+        "src/utils/ai-client.ts": 33,
+        "src/utils/citation-ui-wiring.test.ts": 2,
+        "src/utils/convex-sync.test.ts": 6,
+        "src/utils/idb-preferences.test.ts": 1,
+        "src/utils/idb.ts": 9,
+        "src/utils/speech.test.ts": 13,
+        "src/utils/speech.ts": 21,
+        "src/utils/voice-notes.ts": 10
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 1833,
+      "agent_lines_removed": 186
+    }
+  ]
+}
