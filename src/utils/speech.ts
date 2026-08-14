@@ -37,6 +37,7 @@ import { resolveFeatureConfig, runClientVoiceSpeech } from "./ai-client";
 import { getCachedAiSettings } from "./ai-orchestrator";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
 import { BROWSER_TTS_VOICES } from "./browser-inference";
+import { segmentSpeechText } from "./speech-segments";
 
 /** Cap on cached clips, so a long session doesn't hold every note in memory. */
 const MAX_CACHED_CLIPS = 24;
@@ -80,6 +81,12 @@ export interface SpeakRequest {
    * key and never asked for the hosted path at all.
    */
   signedIn?: boolean;
+  /**
+   * Split a long passage at semantic boundaries and play its first chunk while
+   * later chunks synthesize ahead of playback. Intended for manuscript reads;
+   * explicit editorial-room queues retain their one-item-per-editor shape.
+   */
+  progressive?: boolean;
 }
 
 export type SpeechStatus = "idle" | "loading" | "playing" | "paused" | "error";
@@ -560,13 +567,17 @@ export async function restartSpeechWithVoice(voice: string): Promise<void> {
   const settings = await getCachedAiSettings();
   const providerType = resolveFeatureConfig(settings, "voice-narration")
     ?.provider.type;
-  queue[queueIndex] = {
-    ...req,
-    voice: nextVoice,
-    voices: providerType
-      ? { ...req.voices, [providerType]: nextVoice }
-      : req.voices,
-  };
+  queue = queue.map((item, index) =>
+    index >= queueIndex && item.id === req.id
+      ? {
+          ...item,
+          voice: nextVoice,
+          voices: providerType
+            ? { ...item.voices, [providerType]: nextVoice }
+            : item.voices,
+        }
+      : item,
+  );
   await playCurrent();
 }
 
@@ -751,7 +762,16 @@ export async function speak(req: SpeakRequest): Promise<void> {
     }
   }
 
-  await speakQueue([req]);
+  const segments = req.progressive
+    ? segmentSpeechText(req.text).map((segment) => ({
+        ...req,
+        text: segment.text,
+        sourceOffset: (req.sourceOffset ?? 0) + segment.start,
+      }))
+    : [req];
+  await speakQueue(segments, {
+    ownerId: segments.length > 1 ? req.id : undefined,
+  });
 }
 
 /**

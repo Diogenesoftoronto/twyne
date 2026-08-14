@@ -2426,6 +2426,7 @@ export const TwyneEditor = component$(
         sourceOffset: selectionOffset + leadingWhitespace,
         client: clientSig.value ?? null,
         signedIn: Boolean(auth.value.user),
+        progressive: true,
       });
     });
 
