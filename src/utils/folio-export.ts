@@ -15,7 +15,7 @@ import {
   loadFolioContentFromIdb,
   loadApparatusSettingsFromIdb,
 } from "./idb";
-import { loadBibliography } from "./bibliography";
+import { loadBibliographyForFolio } from "./bibliography";
 import { loadPersonaNotesLocally } from "./convex-sync";
 
 export interface FolioExportRequest {
@@ -59,23 +59,17 @@ export async function buildFolioExportPayload(
     await Promise.all([
       readActiveFolioHtml(req.folioId),
       loadFoliosFromIdb(),
-      loadBibliography(),
+      loadBibliographyForFolio(req.folioId),
       loadApparatusSettingsFromIdb(),
       loadPersonaNotesLocally(req.folioId ?? undefined),
     ]);
-
-  // Entries with no folio are the writer's general library and belong in
-  // every document; the rest are scoped to the folio that collected them.
-  const activeBibliography = bibliography.filter(
-    (entry) => entry.folioId === req.folioId || !entry.folioId,
-  );
 
   return {
     title: req.folioName || "Untitled",
     html,
     brief: req.brief ?? undefined,
     folios,
-    bibliography: activeBibliography,
+    bibliography,
     marginalia,
     citationStyle: apparatusSettings.defaultCitationStyle,
     layout: req.layout,

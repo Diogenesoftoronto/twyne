@@ -23,6 +23,7 @@ const {
   loadSourceCanvas,
   saveSourceCanvas,
   seedCanvasFromFolio,
+  sourceCanvasPath,
   upsertNode,
 } = await import("./source-canvas");
 
@@ -79,6 +80,42 @@ describe("load / save", () => {
     expect((await loadSourceCanvas("f1")).nodes).toEqual([]);
   });
 
+  test("restores each board independently across A to B to A navigation", async () => {
+    await saveSourceCanvas({
+      ...emptyCanvas("f1"),
+      nodes: [node({ id: "a", folioId: "f1", x: 10 })],
+    });
+    await saveSourceCanvas({
+      ...emptyCanvas("f2"),
+      nodes: [node({ id: "b", folioId: "f2", x: 20 })],
+    });
+    expect((await loadSourceCanvas("f2")).nodes.map((item) => item.id)).toEqual(["b"]);
+    expect((await loadSourceCanvas("f1")).nodes.map((item) => item.id)).toEqual(["a"]);
+  });
+
+  test("a late save from folio A cannot populate or overwrite folio B", async () => {
+    await saveSourceCanvas({
+      ...emptyCanvas("f2"),
+      nodes: [node({ id: "b", folioId: "f2" })],
+    });
+    await saveSourceCanvas({
+      ...emptyCanvas("f1"),
+      nodes: [node({ id: "late-a", folioId: "f1" })],
+    });
+    expect((await loadSourceCanvas("f2")).nodes.map((item) => item.id)).toEqual(["b"]);
+  });
+
+  test("migrates a legacy board only to its declared owner", async () => {
+    files.set("/source-canvas.json", {
+      ...emptyCanvas("f1"),
+      nodes: [node({ id: "legacy" })],
+    });
+    expect((await loadSourceCanvas("f2")).nodes).toEqual([]);
+    expect((await loadSourceCanvas("f1")).nodes.map((item) => item.id)).toEqual(["legacy"]);
+    expect(files.get(sourceCanvasPath("f1"))).toBeDefined();
+    expect(files.get("/source-canvas.json")).toBeNull();
+  });
+
   /**
    * The invariant that matters most: a reload mid-extraction must not leave a
    * half-composed card on disk with nothing running to finish it.
@@ -104,7 +141,7 @@ describe("load / save", () => {
   });
 
   test("repairs a corrupt viewport rather than blanking the board", async () => {
-    files.set("/source-canvas.json", {
+    files.set(sourceCanvasPath("f1"), {
       version: 1,
       folioId: "f1",
       nodes: [node({ id: "a" })],
@@ -117,7 +154,7 @@ describe("load / save", () => {
   });
 
   test("survives a blob with missing arrays", async () => {
-    files.set("/source-canvas.json", { version: 1, folioId: "f1" });
+    files.set(sourceCanvasPath("f1"), { version: 1, folioId: "f1" });
     const back = await loadSourceCanvas("f1");
     expect(back.nodes).toEqual([]);
     expect(back.edges).toEqual([]);

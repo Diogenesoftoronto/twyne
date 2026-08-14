@@ -68,7 +68,10 @@ import {
   normalizeApplicationError,
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
-import { migrateLegacyEditorialArtifacts } from "../../utils/folio-workspace";
+import {
+  canClaimLegacyEditorialArtifacts,
+  migrateLegacyEditorialArtifacts,
+} from "../../utils/folio-workspace";
 import { createRevisionSnapshot } from "../../utils/revision-history";
 import { getDraftBlocks } from "../../utils/lix";
 import {
@@ -294,7 +297,13 @@ export default component$(() => {
 
         store.brief = await loadProjectBriefForFolio(store.activeFolioId);
         if (store.activeFolioId) {
-          await migrateLegacyEditorialArtifacts(store.activeFolioId);
+          await migrateLegacyEditorialArtifacts(
+            store.activeFolioId,
+            canClaimLegacyEditorialArtifacts(
+              store.folios.map((folio) => folio.id),
+              store.activeFolioId,
+            ),
+          );
         }
         const folioDossiers = await loadAllBriefsFromIdb();
         if (

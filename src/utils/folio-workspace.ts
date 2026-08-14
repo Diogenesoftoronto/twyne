@@ -20,6 +20,13 @@ import { readFileAsJson, writeFileAsJson } from "./lix";
 
 const MIGRATION_KEY = "folio-editorial-artifacts-migrated";
 
+export function canClaimLegacyEditorialArtifacts(
+  folioIds: readonly string[],
+  activeFolioId: string,
+): boolean {
+  return folioIds.length === 1 && folioIds[0] === activeFolioId;
+}
+
 function scopedPath(folioId: string, filename: string): string {
   return `/folios/${folioId}/${filename}`;
 }
@@ -50,8 +57,11 @@ async function moveLegacyArray<T extends { folioId?: string }>(
  */
 export async function migrateLegacyEditorialArtifacts(
   folioId: string,
+  claimLegacy: boolean,
 ): Promise<void> {
-  if (!folioId) return;
+  // With multiple possible owners, preserve old unscoped data without showing
+  // it in any folio. A later recovery can ask where it belongs.
+  if (!folioId || !claimLegacy) return;
   const migrated = await loadMetaFromIdb<string>(MIGRATION_KEY);
   if (migrated) return;
 

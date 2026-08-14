@@ -37,7 +37,7 @@ import {
   saveStartingMaterial,
 } from "../../../utils/anti-tabula-rasa";
 import { captureProductEvent } from "../../../utils/product-analytics";
-import { type BibEntry, loadBibliography } from "../../../utils/bibliography";
+import { type BibEntry, bibliographyForFolio, loadBibliographyForFolio } from "../../../utils/bibliography";
 import { emptyCanvas, loadSourceCanvas, saveSourceCanvas, seedCanvasFromFolio, applyMapping } from "../../../utils/source-canvas";
 import { layoutCanvas } from "../../../utils/canvas-layout";
 import { extractPendingSources } from "../../../utils/source-extract";
@@ -105,13 +105,13 @@ export default component$(() => {
     );
     store.folioId = requestedFolioId ?? activeFolioId;
     store.brief = await loadProjectBriefForFolio(store.folioId);
-    store.bibliography = await loadBibliography();
+    store.bibliography = await loadBibliographyForFolio(store.folioId);
     store.aiSettings = await loadAiSettingsFromIdb();
     if (store.folioId && store.brief) {
       const loaded = await loadSourceCanvas(store.folioId);
       const seeded = seedCanvasFromFolio(loaded, {
         folioId: store.folioId,
-        bibliography: store.bibliography.filter((entry) => !entry.folioId || entry.folioId === store.folioId),
+        bibliography: bibliographyForFolio(store.bibliography, store.folioId),
         attachments: store.brief.attachments,
         briefAnswers: Object.entries(store.brief.answers),
       });
@@ -130,7 +130,7 @@ export default component$(() => {
   const extractCanvas = $(async () => {
     if (!store.folioId || !store.aiSettings || !convexClient.value) return;
     try {
-      const entries = store.bibliography.filter((entry) => !entry.folioId || entry.folioId === store.folioId);
+      const entries = bibliographyForFolio(store.bibliography, store.folioId);
       const seeded = seedCanvasFromFolio(store.canvas, {
         folioId: store.folioId,
         bibliography: entries,

@@ -16,7 +16,8 @@ import { detectCitations } from "../../utils/citations";
 import {
   type BibEntry,
   type CitationStyle,
-  loadBibliography,
+  bibliographyForFolio,
+  loadBibliographyForFolio,
   deleteBibEntry,
   formatCitation,
   buildBibEntryFromFormattedCitation,
@@ -150,7 +151,7 @@ export default component$(() => {
 
   const runCanvasExtraction = $(async () => {
     if (!store.activeFolio || !store.aiSettings || !convexClient.value) return;
-    const entries = store.bibliography.filter((entry) => !entry.folioId || entry.folioId === store.activeFolio?.id);
+    const entries = bibliographyForFolio(store.bibliography, store.activeFolio.id);
     if (!entries.length) return;
     try {
       const seeded = seedCanvasFromFolio(store.canvas, { folioId: store.activeFolio.id, bibliography: entries });
@@ -208,16 +209,16 @@ export default component$(() => {
     store.style = apparatusSettings.defaultCitationStyle;
     store.aiEnhanceCitations = apparatusSettings.aiEnhanceCitations;
     store.flagMissingSources = apparatusSettings.flagMissingSources;
-    store.bibliography = await loadBibliography();
     const folios = await loadFoliosFromIdb();
     const activeFolioId = await loadActiveFolioIdFromIdb();
     store.activeFolio =
       folios.find((folio) => folio.id === activeFolioId) ?? folios[0] ?? null;
+    store.bibliography = await loadBibliographyForFolio(store.activeFolio?.id);
     if (store.activeFolio) {
       const loadedCanvas = await loadSourceCanvas(store.activeFolio.id);
       const seeded = seedCanvasFromFolio(loadedCanvas, {
         folioId: store.activeFolio.id,
-        bibliography: store.bibliography.filter((entry) => !entry.folioId || entry.folioId === store.activeFolio?.id),
+        bibliography: store.bibliography,
       });
       store.canvas = { ...seeded, nodes: layoutCanvas(seeded.nodes, seeded.clusters) };
       await saveSourceCanvas(store.canvas);
@@ -268,7 +269,7 @@ export default component$(() => {
             store.activeFolio.id,
           ),
         );
-        store.bibliography = all;
+        store.bibliography = bibliographyForFolio(all, store.activeFolio?.id);
       }
     }
   });
@@ -292,8 +293,8 @@ export default component$(() => {
       };
     };
     const onSources = () => {
-      void loadBibliography().then((all) => {
-        store.bibliography = all;
+      void loadBibliographyForFolio(store.activeFolio?.id).then((entries) => {
+        store.bibliography = entries;
       });
     };
     pull();
@@ -374,8 +375,8 @@ export default component$(() => {
   });
 
   const dropEntry = $(async (id: string) => {
-    const all = await deleteBibEntry(id);
-    store.bibliography = all;
+    const all = await deleteBibEntry(id, store.activeFolio?.id);
+    store.bibliography = bibliographyForFolio(all, store.activeFolio?.id);
   });
 
   const openEmbed = $(async (entry: BibEntry) => {
@@ -467,7 +468,7 @@ export default component$(() => {
               store.activeFolio?.id ?? "",
             ),
           );
-          store.bibliography = all;
+          store.bibliography = bibliographyForFolio(all, store.activeFolio?.id);
           store.addedCitationIds = {
             ...store.addedCitationIds,
             [citation.id]: true,
@@ -483,7 +484,7 @@ export default component$(() => {
           store.activeFolio?.id ?? "",
         ),
       );
-      store.bibliography = all;
+      store.bibliography = bibliographyForFolio(all, store.activeFolio?.id);
       store.addedCitationIds = {
         ...store.addedCitationIds,
         [citation.id]: true,
