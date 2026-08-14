@@ -54,6 +54,7 @@
         "marked": "^18.0.5",
         "mermaid": "^11.15.0",
         "posthog-js": "^1.386.6",
+        "reicon": "1.2.1",
         "resend": "^6.12.4",
         "wav-encoder": "^1.3.0",
         "zod": "^4.4.3",
@@ -2240,6 +2241,8 @@
     "regexp.prototype.flags": ["regexp.prototype.flags@1.5.4", "", { "dependencies": { "call-bind": "^1.0.8", "define-properties": "^1.2.1", "es-errors": "^1.3.0", "get-proto": "^1.0.1", "gopd": "^1.2.0", "set-function-name": "^2.0.2" } }, "sha512-dYqgNSZbDwkaJ2ceRd9ojCGjBq+mOm9LmtXnAnEGyHhN/5R7iDW2TRw3h+o/jCFxus3P2LfWIIiwowAjANm7IA=="],
 
     "rehype-recma": ["rehype-recma@1.0.0", "", { "dependencies": { "@types/estree": "^1.0.0", "@types/hast": "^3.0.0", "hast-util-to-estree": "^3.0.0" } }, "sha512-lqA4rGUf1JmacCNWWZx0Wv1dHqMwxzsDWYMTowuplHF3xH0N/MmrZ/G3BDZnzAkRmxDadujCjaKM2hqYdCBOGw=="],
+
+    "reicon": ["reicon@1.2.1", "", {}, "sha512-LesFg0fBcX3zsWZRVua2MChn30wVYOwP0J4wPoVZDVqAD060U382LNlTRDw4yKZHWNzSjKSyerXslLnn+kpY5Q=="],
 
     "remark-mdx": ["remark-mdx@3.1.1", "", { "dependencies": { "mdast-util-mdx": "^3.0.0", "micromark-extension-mdxjs": "^3.0.0" } }, "sha512-Pjj2IYlUY3+D8x00UJsIOg5BEvfMyeI+2uLPn9VO9Wg4MEtN/VTIq2NEJQfde9PnX15KgtHyl9S0BcTnWrIuWg=="],
 

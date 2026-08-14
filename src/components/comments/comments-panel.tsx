@@ -49,6 +49,7 @@ import {
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { toAgentPersona } from "../../../convex/agentPrompts";
+import { commentEditorStyle } from "../../utils/comment-editor-layout";
 
 function personaToMentionable(p: Persona): Mentionable {
   return {
@@ -501,8 +502,8 @@ export const CommentsPanel = component$(
     ];
 
     return (
-      <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
-        <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+      <div class="flex h-full min-h-0 flex-col bg-[var(--color-paper-2)]">
+        <div class="shrink-0 px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
           <p class="dept-label">Notes in the Margin</p>
           <h2
             class="mt-0.5 text-xl text-[var(--color-ink)]"
@@ -551,7 +552,7 @@ export const CommentsPanel = component$(
           )}
         </div>
 
-        <div class="px-4 py-4 border-b border-[var(--color-paper-3)]">
+        <div class="shrink-0 px-4 py-4 border-b border-[var(--color-paper-3)]">
           <div class="relative">
             <textarea
               id={mentionInputId("new")}
@@ -634,9 +635,9 @@ export const CommentsPanel = component$(
                 }
               }}
               placeholder={getCommentPlaceholder(brief)}
-              class="w-full px-3 py-2 text-sm bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)] text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic"
-              style="font-family: var(--font-serif); border-radius: 2px;"
-              rows={2}
+              class="w-full px-3 py-2 text-sm bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-mustard)] text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic"
+              style={commentEditorStyle("new")}
+              rows={5}
             />
             {store.mentionTarget === "new" && (
               <MentionDropdown
@@ -687,7 +688,7 @@ export const CommentsPanel = component$(
           </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto">
+        <div class="min-h-0 flex-1 overscroll-contain overflow-y-auto">
           {store.comments.length === 0 && (
             <div class="text-center py-10 px-6">
               <p
@@ -1052,9 +1053,9 @@ export const CommentsPanel = component$(
                           }
                         }}
                         placeholder="Annotate… (@ to tag an editor)"
-                        class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
-                        style="font-family: var(--font-serif); border-radius: 2px;"
-                        rows={2}
+                        class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-mustard)]"
+                        style={commentEditorStyle("reply")}
+                        rows={5}
                       />
                       {store.mentionTarget === comment.id && (
                         <MentionDropdown

@@ -30,20 +30,68 @@ function slashGroup(candidate: SlashCommandCandidate): string {
   return candidate.command.slash?.group ?? "Commands";
 }
 
+type SlashSelectionId = EditorCommandId | null;
+
+/** Keep selection attached to a command, even when filtering reorders rows. */
+export function reconcileSlashSelection(
+  candidates: SlashCommandCandidate[],
+  selectedCommandId: SlashSelectionId,
+): SlashSelectionId {
+  if (
+    selectedCommandId &&
+    candidates.some((candidate) => candidate.command.id === selectedCommandId)
+  ) {
+    return selectedCommandId;
+  }
+  return (candidates[0]?.command.id as EditorCommandId | undefined) ?? null;
+}
+
+/** Move through the visible result set rather than the unfiltered registry. */
+export function moveSlashSelection(
+  candidates: SlashCommandCandidate[],
+  selectedCommandId: SlashSelectionId,
+  direction: 1 | -1,
+): SlashSelectionId {
+  if (candidates.length === 0) return null;
+  const currentId = reconcileSlashSelection(candidates, selectedCommandId);
+  const currentIndex = candidates.findIndex(
+    (candidate) => candidate.command.id === currentId,
+  );
+  const nextIndex =
+    (currentIndex + direction + candidates.length) % candidates.length;
+  return candidates[nextIndex].command.id as EditorCommandId;
+}
+
+function optionId(commandId: string): string {
+  return `slash-command-${commandId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
 /** Keyboard-navigable slash menu, driven entirely by the command registry. */
 export const SlashCommandMenu = component$<SlashCommandMenuProps>((props) => {
-  const activeIndex = useSignal(0);
+  const selectedCommandId = useSignal<SlashSelectionId>(null);
   const candidates: SlashCommandCandidate[] = fuzzySlashCommands(
     props.query,
     props.context,
     props.platform ?? "mac",
   );
+  const visibleSelection = reconcileSlashSelection(
+    candidates,
+    selectedCommandId.value,
+  );
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup, track }) => {
     const open = track(() => props.open);
-    track(() => props.query);
-    activeIndex.value = 0;
+    const query = track(() => props.query);
+    const currentCandidates = fuzzySlashCommands(
+      query,
+      props.context,
+      props.platform ?? "mac",
+    );
+    selectedCommandId.value = reconcileSlashSelection(
+      currentCandidates,
+      selectedCommandId.value,
+    );
     if (!open) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -52,17 +100,38 @@ export const SlashCommandMenu = component$<SlashCommandMenuProps>((props) => {
         void props.onClose$();
         return;
       }
-      if (candidates.length === 0) return;
+      // Resolve results at keypress time. A rapid query change must never leave
+      // Enter acting on the candidate array from the prior render.
+      const visibleCandidates = fuzzySlashCommands(
+        props.query,
+        props.context,
+        props.platform ?? "mac",
+      );
+      if (visibleCandidates.length === 0) return;
       if (event.key === "ArrowDown") {
         event.preventDefault();
-        activeIndex.value = (activeIndex.value + 1) % candidates.length;
+        selectedCommandId.value = moveSlashSelection(
+          visibleCandidates,
+          selectedCommandId.value,
+          1,
+        );
       } else if (event.key === "ArrowUp") {
         event.preventDefault();
-        activeIndex.value =
-          (activeIndex.value - 1 + candidates.length) % candidates.length;
+        selectedCommandId.value = moveSlashSelection(
+          visibleCandidates,
+          selectedCommandId.value,
+          -1,
+        );
       } else if (event.key === "Enter") {
+        if (event.isComposing) return;
         event.preventDefault();
-        const selected = candidates[activeIndex.value];
+        const currentSelection = reconcileSlashSelection(
+          visibleCandidates,
+          selectedCommandId.value,
+        );
+        const selected = visibleCandidates.find(
+          (candidate) => candidate.command.id === currentSelection,
+        );
         if (selected)
           void props.onSelect$(selected.command.id as EditorCommandId);
       }
@@ -84,6 +153,9 @@ export const SlashCommandMenu = component$<SlashCommandMenuProps>((props) => {
       }}
       role="listbox"
       aria-label="Insert command"
+      aria-activedescendant={
+        visibleSelection ? optionId(visibleSelection) : undefined
+      }
     >
       <p
         class="border-b border-[var(--color-paper-3)] px-3 py-2 text-[0.62rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]"
@@ -105,6 +177,7 @@ export const SlashCommandMenu = component$<SlashCommandMenuProps>((props) => {
             const group = slashGroup(candidate);
             const showGroup =
               index === 0 || slashGroup(candidates[index - 1]) !== group;
+            const isSelected = candidate.command.id === visibleSelection;
             return (
               <div key={candidate.command.id}>
                 {showGroup && (
@@ -116,16 +189,18 @@ export const SlashCommandMenu = component$<SlashCommandMenuProps>((props) => {
                   </p>
                 )}
                 <button
+                  id={optionId(candidate.command.id)}
                   type="button"
                   role="option"
-                  aria-selected={index === activeIndex.value}
+                  aria-selected={isSelected}
                   class={`flex w-full items-center gap-3 px-3 py-2 text-left ${
-                    index === activeIndex.value
+                    isSelected
                       ? "bg-[var(--color-paper-2)] text-[var(--color-vermilion)]"
                       : "text-[var(--color-ink)] hover:bg-[var(--color-paper-soft)]"
                   }`}
                   onMouseEnter$={() => {
-                    activeIndex.value = index;
+                    selectedCommandId.value = candidate.command
+                      .id as EditorCommandId;
                   }}
                   onMouseDown$={(event) => event.preventDefault()}
                   onClick$={() =>

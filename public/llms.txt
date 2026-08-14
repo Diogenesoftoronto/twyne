@@ -7,6 +7,8 @@
 > you sign in. The AI is bring-your-own-key: the user picks the provider and
 > model.
 
+Canonical site: https://twyne.love/
+
 Twyne is for writers who want editorial pushback while they draft, without
 handing their work to a hosted service. The default AI provider is Anthropic's
 Claude; OpenAI, Google, and gateways (Portkey, self-hosted Rivet) are also

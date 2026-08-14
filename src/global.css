@@ -764,7 +764,12 @@ body {
   margin: 0.25em 0;
 }
 .twyne-editor .ProseMirror ul[data-type="taskList"] li > label {
-  margin-top: 0.28em;
+  display: grid;
+  width: 1.5rem;
+  min-width: 1.5rem;
+  min-height: 1.5rem;
+  margin-top: 0.08em;
+  place-items: center;
   user-select: none;
 }
 .twyne-editor
@@ -774,16 +779,33 @@ body {
   > label
   input[type="checkbox"] {
   appearance: none;
-  width: 1.05em;
-  height: 1.05em;
-  border: 1.5px solid var(--color-paper-3);
-  border-radius: 2px;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1.5px solid var(--color-ink-muted);
+  border-radius: 3px;
   background: var(--color-paper);
   cursor: pointer;
   position: relative;
   transition:
     background 0.12s ease,
     border-color 0.12s ease;
+}
+.twyne-editor
+  .ProseMirror
+  ul[data-type="taskList"]
+  li
+  > label
+  input[type="checkbox"]:hover {
+  border-color: var(--color-vermilion);
+}
+.twyne-editor
+  .ProseMirror
+  ul[data-type="taskList"]
+  li
+  > label
+  input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
 }
 .twyne-editor
   .ProseMirror
@@ -1286,43 +1308,273 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────
- * Compositor's stick, on a narrow screen
+ * Compositor ribbon
  *
- * The toolbar carries around forty controls in seven groups. Left
- * to wrap, that is six stacked rows on a phone. Compact mode keeps
- * the manuscript dominant; expanded mode wraps into a bounded,
- * vertically scrolling tray. Neither mode should make the whole
- * composing room scroll sideways.
+ * Familiar document-editor tabs replace the old unbroken control strip.
+ * Each tab exposes only the groups needed for its task, while history and
+ * sync remain visible. Groups wrap as units so the manuscript never gains
+ * a horizontal scrollbar.
  * ───────────────────────────────────────────────────────────── */
-.twyne-toolbar > * {
-  flex: none;
+.compositor-tabs {
+  display: flex;
+  min-width: 0;
+  align-items: stretch;
+  gap: 0.125rem;
+  padding: 0 0.5rem;
+  border-bottom: 1px solid var(--color-paper-3);
+  background: var(--color-paper);
+}
+.compositor-title {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.75rem 0 0.25rem;
+  color: var(--color-ink-muted);
+  font-size: 0.625rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.compositor-tab {
+  min-height: 2.125rem;
+  padding: 0.4rem 0.75rem 0.32rem;
+  border-bottom: 2px solid transparent;
+  color: var(--color-ink-light);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.compositor-tab:hover {
+  color: var(--color-ink);
+  background: var(--color-paper-soft);
+}
+.compositor-tab[aria-selected="true"] {
+  border-bottom-color: var(--color-vermilion);
+  color: var(--color-vermilion);
+  background: var(--color-paper-soft);
+}
+.compositor-tab:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: -2px;
+}
+.compositor-tab-spacer {
+  flex: 1 1 auto;
+}
+.compositor-quick-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding-left: 0.375rem;
+}
+.compositor-ribbon {
+  display: flex;
+  min-width: 0;
+  min-height: 3.75rem;
+  flex-wrap: wrap;
+  align-items: stretch;
+  padding: 0.25rem 0.5rem 0;
+}
+.compositor-group {
+  position: relative;
+  display: none;
+  flex: 0 0 auto;
+  align-items: flex-start;
+  gap: 0.0625rem;
+  min-height: 3.5rem;
+  padding: 0.25rem 0.5rem 1rem;
+  border-right: 1px solid var(--color-paper-3);
+}
+.compositor-group::after {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0.125rem;
+  left: 0.5rem;
+  overflow: hidden;
+  color: var(--color-ink-muted);
+  content: attr(data-group-label);
+  font-family: var(--font-sans);
+  font-size: 0.5625rem;
+  line-height: 0.75rem;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.twyne-toolbar[data-active-tab="home"] [data-compositor-tab="home"],
+.twyne-toolbar[data-active-tab="insert"] [data-compositor-tab="insert"],
+.twyne-toolbar[data-active-tab="review"] [data-compositor-tab="review"],
+.twyne-toolbar[data-active-tab="view"] [data-compositor-tab="view"] {
+  display: flex;
+}
+.compositor-group:last-child {
+  border-right: 0;
+}
+.compositor-group .tool-btn {
+  display: inline-flex;
+  min-height: 1.875rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+}
+.compositor-font-select,
+.compositor-size-select {
+  height: 1.875rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+}
+.compositor-font-select {
+  width: 8.75rem;
+  padding: 0 1.5rem 0 0.45rem;
+}
+.compositor-size-select {
+  width: 3.75rem;
+  padding: 0 1.25rem 0 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+.compositor-font-select:hover,
+.compositor-size-select:hover {
+  border-color: var(--color-ink-muted);
+}
+.compositor-font-select:focus-visible,
+.compositor-size-select:focus-visible {
+  border-color: var(--color-vermilion);
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 1px;
+}
+.layout-panel-header {
+  margin-bottom: 0.875rem;
+}
+.layout-panel-header h2 {
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.layout-panel-header p {
+  margin-top: 0.125rem;
+  color: var(--color-ink-muted);
+  font-family: var(--font-serif);
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.layout-section {
+  min-width: 0;
+  margin: 0;
+  padding: 0.75rem 0;
+  border: 0;
+  border-top: 1px solid var(--color-paper-3);
+}
+.layout-section > legend {
+  padding: 0 0.4rem 0 0;
+  color: var(--color-ink-light);
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.layout-choice {
+  min-height: 2rem;
+  flex: 1 1 0;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  color: var(--color-ink-light);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+}
+.layout-choice:hover {
+  border-color: var(--color-ink-muted);
+  color: var(--color-ink);
+}
+.layout-choice[aria-pressed="true"] {
+  border-color: var(--color-vermilion);
+  color: var(--color-vermilion);
+  background: color-mix(in srgb, var(--color-vermilion) 8%, transparent);
+  box-shadow: inset 0 -2px 0 var(--color-vermilion);
+}
+.layout-choice:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 1px;
+}
+.compositor-check-row {
+  display: flex;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 3px;
+  color: var(--color-ink-light);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+}
+.compositor-check-row:hover {
+  background: var(--color-paper-soft);
+}
+.compositor-checkbox {
+  width: 1.125rem;
+  height: 1.125rem;
+  flex: 0 0 auto;
+  accent-color: var(--color-vermilion);
+  cursor: pointer;
+}
+.compositor-checkbox:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
+}
+.compositor-checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 @media (max-width: 639px) {
-  .twyne-toolbar {
-    flex-wrap: wrap;
-    overflow-x: hidden;
-    min-width: 0;
+  .compositor-tabs {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
   }
-  .twyne-toolbar.is-compact > :nth-child(n + 5):not(.mobile-tool-toggle) {
+  .compositor-title {
     display: none;
   }
-  .twyne-toolbar.is-expanded {
-    max-height: min(45vh, 18rem);
-    overflow-y: auto;
-    overscroll-behavior-y: contain;
-  }
-  .twyne-toolbar .mobile-tool-toggle {
-    margin-left: auto;
-    width: auto;
+  .compositor-tab {
+    min-height: 2.5rem;
     padding-inline: 0.65rem;
-    font-size: 0.68rem;
   }
-  /* Touch targets. 0.25rem of padding is fine for a mouse and not for a
-     thumb; this brings each control to a 34px box without changing the
-     desktop metrics above. */
-  .twyne-toolbar .tool-btn {
-    padding: 0.4rem 0.55rem;
+  .compositor-tab-spacer {
+    min-width: 0.25rem;
+  }
+  .compositor-quick-actions {
+    position: sticky;
+    right: 0;
+    flex: none;
+    padding-right: 0.25rem;
+    background: var(--color-paper);
+  }
+  .compositor-ribbon {
+    min-height: 0;
+    gap: 0.125rem 0;
+    padding: 0.25rem;
+  }
+  .compositor-group {
+    min-height: 0;
+    flex-wrap: wrap;
+    padding: 0.125rem 0.25rem;
+  }
+  .compositor-group::after {
+    display: none;
+  }
+  .compositor-group .tool-btn {
+    min-width: 2.125rem;
+    min-height: 2.125rem;
+    padding: 0.4rem 0.5rem;
+  }
+  .compositor-layout-panel {
+    position: fixed;
+    inset: 5.25rem 0.75rem auto;
+    width: auto;
+    max-width: none;
+    max-height: calc(100dvh - 6rem) !important;
   }
 }
 

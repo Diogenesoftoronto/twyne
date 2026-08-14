@@ -1,28 +1,10 @@
 # Twyne — robots.txt
-# Public, indexable pages: the landing page and informational routes.
-# Private workspace routes are disallowed (they hold per-user, local content).
+# Public pages are crawlable. Workspace and authentication routes emit a
+# noindex robots meta tag so crawlers can see and honor the instruction.
 
 User-agent: *
-Allow: /$
-Allow: /docs
-Allow: /faq
-Allow: /terms
-Allow: /privacy
-Allow: /pricing
-Allow: /blog
-Allow: /downloads
-Allow: /download
-Allow: /signin
-Disallow: /editor
-Disallow: /onboarding
-Disallow: /dossier/create
-Disallow: /settings
-Disallow: /apparatus
-Disallow: /dossier/refine
-Disallow: /rubric
-Disallow: /library
-Disallow: /personas
-Disallow: /landings
+Allow: /
+Disallow: /api/
 Disallow: /oauth-client-metadata.json
 
 Sitemap: https://twyne.love/sitemap.xml

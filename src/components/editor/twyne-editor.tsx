@@ -52,7 +52,17 @@ import { useAuth } from "../../utils/auth-context";
 import { SpeakButton } from "../ui/speak-button";
 import { SpeechTransport } from "../ui/speech-transport";
 import { ColorPicker } from "../ui/color-picker";
+import { Icon } from "../ui/icon";
+import { COMPOSITOR_ICONS, EDITOR_TOOL_ICONS } from "../../utils/icon-system";
 import {
+  COMPOSITOR_TABS,
+  DEFAULT_COMPOSITOR_TAB,
+  moveCompositorTab,
+  type CompositorTab,
+} from "../../utils/compositor-toolbar";
+import {
+  DEFAULT_MANUSCRIPT_FONT_LABEL,
+  DEFAULT_MANUSCRIPT_FONT_SIZE_LABEL,
   FONT_CHOICES,
   FONT_SIZES,
   LINE_SPACINGS,
@@ -343,8 +353,8 @@ export interface EditorStore {
    * which painting page frames is worth doing.
    */
   paginationActive: boolean;
-  /** Mobile progressive disclosure for the compositor's full tool set. */
-  mobileToolbarExpanded: boolean;
+  /** Active task ribbon in the compositor. */
+  toolbarTab: CompositorTab;
 }
 
 /** The popover for a writer-authored inline comment, anchored to its mark. */
@@ -492,7 +502,7 @@ export const TwyneEditor = component$(
       currentKeepWithNext: false,
       pageCount: 1,
       paginationActive: false,
-      mobileToolbarExpanded: false,
+      toolbarTab: DEFAULT_COMPOSITOR_TAB,
     });
 
     useStyles$(`
@@ -1573,8 +1583,7 @@ export const TwyneEditor = component$(
 
         // ── Place a citation beside the passage it actually supports ──
         const onInsertCitation = (event: Event) => {
-          const detail = (event as CustomEvent<CitationInsertionDetail>)
-            .detail;
+          const detail = (event as CustomEvent<CitationInsertionDetail>).detail;
           if (!detail?.sourceId || !detail.text) return;
 
           let target = detail.anchor
@@ -1920,10 +1929,7 @@ export const TwyneEditor = component$(
             "twyne:request-draft-html",
             onRequestDraftHtml,
           );
-          window.removeEventListener(
-            "twyne:insert-citation",
-            onInsertCitation,
-          );
+          window.removeEventListener("twyne:insert-citation", onInsertCitation);
           window.removeEventListener("twyne:persona-notes", onPersonaNotes);
           window.removeEventListener(
             "twyne:clear-persona-notes",
@@ -2406,9 +2412,7 @@ export const TwyneEditor = component$(
       if (!editor) return;
       const { from, to } = editor.state.selection;
       const selectionOffset =
-        from !== to
-          ? editor.state.doc.textBetween(0, from, "\n\n").length
-          : 0;
+        from !== to ? editor.state.doc.textBetween(0, from, "\n\n").length : 0;
       const rawText =
         from !== to
           ? editor.state.doc.textBetween(from, to, "\n\n")
@@ -2796,13 +2800,8 @@ export const TwyneEditor = component$(
       store.slashOpen = false;
     });
 
-    /* Editorial toolbar — typewriter labels, paper buttons */
-    const Sep = () => (
-      <span
-        class="w-px h-5 bg-[var(--color-paper-3)] mx-1"
-        aria-hidden="true"
-      />
-    );
+    /* Ribbon groups provide their own boundaries. */
+    const Sep = () => null;
 
     /* Folios: roughly 250 words per manuscript page, the old standard */
     const folios = (store.meta.wordCount / 250).toFixed(2);
@@ -2822,1279 +2821,1468 @@ export const TwyneEditor = component$(
             active (image, note, comment, mermaid). All live in one sticky
             wrapper so the active bar always sits flush under the toolbar
             rather than scrolling out of view as the manuscript scrolls. */}
-        <div
-          class="sticky top-0"
-          style={{ zIndex: "var(--z-sticky)" }}
-        >
-        {/* ── Toolbar (compositor's stick) ───────────────── */}
-        <div
-          class={`twyne-toolbar ${store.mobileToolbarExpanded ? "is-expanded" : "is-compact"} flex items-center gap-1 px-2 sm:px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] sm:flex-wrap sm:overflow-x-visible`}
-          style="font-family: var(--font-typewriter);"
-          role="toolbar"
-          aria-label="Formatting"
-        >
-          <span class="dept-label mr-2 hidden md:inline">Compositor</span>
+        <div class="sticky top-0" style={{ zIndex: "var(--z-sticky)" }}>
+          {/* ── Task-oriented compositor ribbon ───────────── */}
+          <div
+            class="twyne-toolbar border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
+            style="font-family: var(--font-typewriter);"
+            role="toolbar"
+            aria-label="Document compositor"
+            data-active-tab={store.toolbarTab}
+          >
+            <div class="compositor-tabs" role="tablist" aria-label="Tools">
+              <span class="compositor-title">Compositor</span>
+              {COMPOSITOR_TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={store.toolbarTab === tab.id}
+                  aria-controls="compositor-ribbon"
+                  data-tab-id={tab.id}
+                  class="compositor-tab"
+                  onClick$={() => {
+                    store.toolbarTab = tab.id;
+                    store.openPicker = null;
+                    store.showLayout = false;
+                  }}
+                  onKeyDown$={(event, element) => {
+                    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
+                      return;
+                    event.preventDefault();
+                    const next = moveCompositorTab(
+                      tab.id,
+                      event.key === "ArrowRight" ? 1 : -1,
+                    );
+                    store.toolbarTab = next;
+                    store.openPicker = null;
+                    store.showLayout = false;
+                    const target = element.parentElement?.querySelector(
+                      `[data-tab-id="${next}"]`,
+                    );
+                    if (target instanceof HTMLElement) target.focus();
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
 
-          <div class="flex items-center">
-            <button
-              title="Bold (⌘B)"
-              aria-label="Bold"
-              aria-pressed={!!store.active.bold}
-              onClick$={() => runCommand("bold")}
-              class="tool-btn"
-            >
-              <b style="font-family: var(--font-display);">B</b>
-            </button>
-            <button
-              title="Italic (⌘I)"
-              aria-label="Italic"
-              aria-pressed={!!store.active.italic}
-              onClick$={() => runCommand("italic")}
-              class="tool-btn"
-            >
-              <i style="font-family: var(--font-display);">I</i>
-            </button>
-            <button
-              title="Underline (⌘U)"
-              aria-label="Underline"
-              aria-pressed={!!store.active.underline}
-              onClick$={() => runCommand("underline")}
-              class="tool-btn"
-            >
-              <u style="font-family: var(--font-display);">U</u>
-            </button>
-            <button
-              title="Strikethrough"
-              aria-label="Strikethrough"
-              aria-pressed={!!store.active.strike}
-              onClick$={() => runCommand("strike")}
-              class="tool-btn"
-            >
-              <s style="font-family: var(--font-display);">S</s>
-            </button>
-            <button
-              title="Superscript"
-              aria-label="Superscript"
-              aria-pressed={!!store.active.superscript}
-              onClick$={() => runCommand("superscript")}
-              class="tool-btn"
-            >
-              <span style="font-family: var(--font-display);">
-                x<sup>2</sup>
-              </span>
-            </button>
-            <button
-              title="Subscript"
-              aria-label="Subscript"
-              aria-pressed={!!store.active.subscript}
-              onClick$={() => runCommand("subscript")}
-              class="tool-btn"
-            >
-              <span style="font-family: var(--font-display);">
-                x<sub>2</sub>
-              </span>
-            </button>
+              <span class="compositor-tab-spacer" />
 
-            {/* Highlight: a toggle for the last colour used, plus a caret to
+              <div class="compositor-quick-actions" aria-label="History">
+                <button
+                  title="Undo (⌘Z)"
+                  aria-label="Undo"
+                  disabled={!store.canUndo}
+                  onClick$={() => runCommand("undo")}
+                  class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Icon name={COMPOSITOR_ICONS.undo} size={17} />
+                </button>
+                <button
+                  title="Redo (⌘⇧Z)"
+                  aria-label="Redo"
+                  disabled={!store.canRedo}
+                  onClick$={() => runCommand("redo")}
+                  class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Icon name={COMPOSITOR_ICONS.redo} size={17} />
+                </button>
+                <SyncDot />
+              </div>
+            </div>
+
+            <div
+              id="compositor-ribbon"
+              class="compositor-ribbon"
+              role="tabpanel"
+              aria-label={`${store.toolbarTab} tools`}
+            >
+              <div
+                class="compositor-group"
+                data-compositor-tab="home"
+                data-group-label="Character"
+                role="group"
+                aria-label="Character"
+              >
+                <button
+                  title="Bold (⌘B)"
+                  aria-label="Bold"
+                  aria-pressed={!!store.active.bold}
+                  onClick$={() => runCommand("bold")}
+                  class="tool-btn"
+                >
+                  <b style="font-family: var(--font-display);">B</b>
+                </button>
+                <button
+                  title="Italic (⌘I)"
+                  aria-label="Italic"
+                  aria-pressed={!!store.active.italic}
+                  onClick$={() => runCommand("italic")}
+                  class="tool-btn"
+                >
+                  <i style="font-family: var(--font-display);">I</i>
+                </button>
+                <button
+                  title="Underline (⌘U)"
+                  aria-label="Underline"
+                  aria-pressed={!!store.active.underline}
+                  onClick$={() => runCommand("underline")}
+                  class="tool-btn"
+                >
+                  <u style="font-family: var(--font-display);">U</u>
+                </button>
+                <button
+                  title="Strikethrough"
+                  aria-label="Strikethrough"
+                  aria-pressed={!!store.active.strike}
+                  onClick$={() => runCommand("strike")}
+                  class="tool-btn"
+                >
+                  <s style="font-family: var(--font-display);">S</s>
+                </button>
+                <button
+                  title="Superscript"
+                  aria-label="Superscript"
+                  aria-pressed={!!store.active.superscript}
+                  onClick$={() => runCommand("superscript")}
+                  class="tool-btn"
+                >
+                  <span style="font-family: var(--font-display);">
+                    x<sup>2</sup>
+                  </span>
+                </button>
+                <button
+                  title="Subscript"
+                  aria-label="Subscript"
+                  aria-pressed={!!store.active.subscript}
+                  onClick$={() => runCommand("subscript")}
+                  class="tool-btn"
+                >
+                  <span style="font-family: var(--font-display);">
+                    x<sub>2</sub>
+                  </span>
+                </button>
+
+                {/* Highlight: a toggle for the last colour used, plus a caret to
                 change it. Splitting the two is what makes multicolor usable —
                 Highlight has been configured `multicolor: true` since the
                 editor was written, and the toolbar only ever called the bare
                 toggle, so the capability shipped unreachable. */}
-            <div class="flex items-center relative">
-              <button
-                title="Highlight"
-                aria-label="Highlight"
-                aria-pressed={!!store.active.highlight}
-                onClick$={() =>
-                  store.active.highlight
-                    ? applyHighlight(null)
-                    : applyHighlight(store.currentHighlight ?? "#fbeaa8")
-                }
-                class="tool-btn"
-              >
-                <span
-                  style={{
-                    background: `linear-gradient(transparent 60%, ${store.currentHighlight ?? "#fbeaa8"} 60%)`,
-                  }}
-                >
-                  Hi
-                </span>
-              </button>
-              <button
-                title="Highlight colour"
-                aria-label="Choose highlight colour"
-                aria-expanded={store.openPicker === "highlight"}
-                onClick$={() => {
-                  store.openPicker =
-                    store.openPicker === "highlight" ? null : "highlight";
-                }}
-                class="tool-btn px-1"
-              >
-                ▾
-              </button>
-              {store.openPicker === "highlight" && (
-                <ColorPicker
-                  kind="highlight"
-                  title="Highlight"
-                  value={store.currentHighlight}
-                  clearLabel="No highlight"
-                  onPick$={(hex) => applyHighlight(hex)}
-                  onClear$={() => applyHighlight(null)}
-                  onClose$={() => {
-                    store.openPicker = null;
-                  }}
-                />
-              )}
-            </div>
+                <div class="flex items-center relative">
+                  <button
+                    title="Highlight"
+                    aria-label="Highlight"
+                    aria-pressed={!!store.active.highlight}
+                    onClick$={() =>
+                      store.active.highlight
+                        ? applyHighlight(null)
+                        : applyHighlight(store.currentHighlight ?? "#fbeaa8")
+                    }
+                    class="tool-btn"
+                  >
+                    <span
+                      style={{
+                        background: `linear-gradient(transparent 60%, ${store.currentHighlight ?? "#fbeaa8"} 60%)`,
+                      }}
+                    >
+                      Hi
+                    </span>
+                  </button>
+                  <button
+                    title="Highlight colour"
+                    aria-label="Choose highlight colour"
+                    aria-expanded={store.openPicker === "highlight"}
+                    onClick$={() => {
+                      store.openPicker =
+                        store.openPicker === "highlight" ? null : "highlight";
+                    }}
+                    class="tool-btn px-1"
+                  >
+                    ▾
+                  </button>
+                  {store.openPicker === "highlight" && (
+                    <ColorPicker
+                      kind="highlight"
+                      title="Highlight"
+                      value={store.currentHighlight}
+                      clearLabel="No highlight"
+                      onPick$={(hex) => applyHighlight(hex)}
+                      onClear$={() => applyHighlight(null)}
+                      onClose$={() => {
+                        store.openPicker = null;
+                      }}
+                    />
+                  )}
+                </div>
 
-            {/* Text colour, from the darker palette — every entry clears
+                {/* Text colour, from the darker palette — every entry clears
                 WCAG AA against the manuscript's paper. */}
-            <div class="flex items-center relative">
-              <button
-                title="Text colour"
-                aria-label="Text colour"
-                aria-expanded={store.openPicker === "textColor"}
-                onClick$={() => {
-                  store.openPicker =
-                    store.openPicker === "textColor" ? null : "textColor";
-                }}
-                class="tool-btn"
-              >
-                <span
-                  style={{
-                    color: store.currentColor ?? "var(--color-ink)",
-                    fontFamily: "var(--font-display)",
-                    borderBottom: `2px solid ${store.currentColor ?? "var(--color-ink)"}`,
-                  }}
+                <div class="flex items-center relative">
+                  <button
+                    title="Text colour"
+                    aria-label="Text colour"
+                    aria-expanded={store.openPicker === "textColor"}
+                    onClick$={() => {
+                      store.openPicker =
+                        store.openPicker === "textColor" ? null : "textColor";
+                    }}
+                    class="tool-btn"
+                  >
+                    <span
+                      style={{
+                        color: store.currentColor ?? "var(--color-ink)",
+                        fontFamily: "var(--font-display)",
+                        borderBottom: `2px solid ${store.currentColor ?? "var(--color-ink)"}`,
+                      }}
+                    >
+                      A
+                    </span>
+                  </button>
+                  {store.openPicker === "textColor" && (
+                    <ColorPicker
+                      kind="text"
+                      title="Text colour"
+                      value={store.currentColor}
+                      clearLabel="Default ink"
+                      onPick$={(hex) => applyTextColor(hex)}
+                      onClear$={() => applyTextColor(null)}
+                      onClose$={() => {
+                        store.openPicker = null;
+                      }}
+                    />
+                  )}
+                </div>
+
+                <button
+                  title="Clear formatting"
+                  aria-label="Clear formatting"
+                  onClick$={() => runCommand("clearFormatting")}
+                  class="tool-btn"
                 >
-                  A
-                </span>
-              </button>
-              {store.openPicker === "textColor" && (
-                <ColorPicker
-                  kind="text"
-                  title="Text colour"
-                  value={store.currentColor}
-                  clearLabel="Default ink"
-                  onPick$={(hex) => applyTextColor(hex)}
-                  onClear$={() => applyTextColor(null)}
-                  onClose$={() => {
-                    store.openPicker = null;
-                  }}
-                />
-              )}
-            </div>
+                  ⌫ fmt
+                </button>
+              </div>
 
-            <button
-              title="Clear formatting"
-              aria-label="Clear formatting"
-              onClick$={() => runCommand("clearFormatting")}
-              class="tool-btn"
-            >
-              ⌫ fmt
-            </button>
-          </div>
+              <Sep />
 
-          <Sep />
-
-          {/* Type: family, size, line spacing, and case. One popover rather
-              than five toolbar controls — this is the "open the dialog" end of
-              formatting, not the every-sentence end. */}
-          <div class="flex items-center relative">
-            <button
-              title="Type — font, size, spacing, case"
-              aria-label="Type options"
-              aria-expanded={store.openPicker === "type"}
-              onClick$={() => {
-                store.openPicker = store.openPicker === "type" ? null : "type";
-              }}
-              class="tool-btn"
-            >
-              Aa type
-            </button>
-            {store.openPicker === "type" && (
+              {/* Font family and point size stay visible, as they do in a
+              conventional word processor. Less frequent paragraph controls
+              remain in the adjacent advanced panel. */}
               <div
-                data-type-popover
-                class="absolute left-0 top-full mt-1 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg w-60"
-                style={{
-                  zIndex: "var(--z-dropdown)",
-                  borderRadius: "2px",
-                  fontFamily: "var(--font-typewriter)",
-                }}
-                role="dialog"
-                aria-label="Type options"
+                class="compositor-group relative"
+                data-compositor-tab="home"
+                data-group-label="Type"
+                role="group"
+                aria-label="Type"
               >
-                <p class="dept-label mb-1.5">Family</p>
                 <select
-                  class="field-input mb-3 text-[0.7rem]"
+                  class="compositor-font-select"
                   value={store.currentFontFamily ?? ""}
-                  onChange$={(_, el) =>
-                    applyFontFamily(el.value === "" ? null : el.value)
+                  onChange$={(_, element) =>
+                    applyFontFamily(element.value === "" ? null : element.value)
                   }
                   aria-label="Font family"
+                  title="Font family"
                 >
-                  <option value="">Manuscript default</option>
-                  {FONT_CHOICES.map((f) => (
-                    <option key={f.id} value={f.stack}>
-                      {f.label}
+                  <option value="">{DEFAULT_MANUSCRIPT_FONT_LABEL}</option>
+                  {FONT_CHOICES.map((font) => (
+                    <option key={font.id} value={font.stack}>
+                      {font.label}
                     </option>
                   ))}
                 </select>
-
-                <p class="dept-label mb-1.5">Size</p>
                 <select
-                  class="field-input mb-3 text-[0.7rem]"
+                  class="compositor-size-select"
                   value={store.currentFontSize ?? ""}
-                  onChange$={(_, el) =>
-                    applyFontSize(el.value === "" ? null : el.value)
+                  onChange$={(_, element) =>
+                    applyFontSize(element.value === "" ? null : element.value)
                   }
-                  aria-label="Font size"
+                  aria-label="Font size in points"
+                  title="Font size in points"
                 >
-                  <option value="">Default</option>
-                  {FONT_SIZES.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {`${s.label} pt`}
+                  <option value="">{DEFAULT_MANUSCRIPT_FONT_SIZE_LABEL}</option>
+                  {FONT_SIZES.map((size) => (
+                    <option key={size.value} value={size.value}>
+                      {size.label}
                     </option>
                   ))}
                 </select>
-
-                <p class="dept-label mb-1.5">Line spacing</p>
-                <div class="flex items-center gap-1 mb-3">
-                  {LINE_SPACINGS.map((s) => (
-                    <button
-                      key={s.value}
-                      type="button"
-                      onClick$={() => applyLineHeight(s.value)}
-                      class={`flex-1 text-[0.62rem] py-1 border ${store.currentLineHeight === s.value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
-                      style="border-radius: 1px;"
-                    >
-                      {s.label}
-                    </button>
-                  ))}
-                </div>
-
-                <p class="dept-label mb-1.5">Paragraph spacing</p>
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                  <label class="text-[0.62rem] text-[var(--color-ink-light)]">
-                    <span class="block mb-1">Before</span>
-                    <select
-                      class="field-input text-[0.68rem]"
-                      value={
-                        store.currentSpaceBefore == null
-                          ? ""
-                          : String(store.currentSpaceBefore)
-                      }
-                      onChange$={(_, el) =>
-                        applySpaceBefore(
-                          el.value === "" ? null : Number(el.value),
-                        )
-                      }
-                      aria-label="Space before paragraph"
-                    >
-                      <option value="">Default</option>
-                      {PARAGRAPH_SPACINGS.map((s) => (
-                        <option key={s.value} value={s.value}>
-                          {s.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label class="text-[0.62rem] text-[var(--color-ink-light)]">
-                    <span class="block mb-1">After</span>
-                    <select
-                      class="field-input text-[0.68rem]"
-                      value={
-                        store.currentSpaceAfter == null
-                          ? ""
-                          : String(store.currentSpaceAfter)
-                      }
-                      onChange$={(_, el) =>
-                        applySpaceAfter(
-                          el.value === "" ? null : Number(el.value),
-                        )
-                      }
-                      aria-label="Space after paragraph"
-                    >
-                      <option value="">Default</option>
-                      {PARAGRAPH_SPACINGS.map((s) => (
-                        <option key={s.value} value={s.value}>
-                          {s.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-
-                <label class="flex items-center justify-between gap-3 mb-3 text-[0.68rem] text-[var(--color-ink-light)]">
-                  <span>
-                    Keep with next
-                    {store.active.h1 || store.active.h2 || store.active.h3
-                      ? " (heading default)"
-                      : ""}
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={store.currentKeepWithNext}
-                    disabled={
-                      !!store.active.h1 ||
-                      !!store.active.h2 ||
-                      !!store.active.h3
-                    }
-                    onChange$={(_, el) => applyKeepWithNext(el.checked)}
-                    aria-label="Keep paragraph with next"
-                  />
-                </label>
-
-                <p class="dept-label mb-1.5">Case</p>
-                <div class="flex items-center gap-1">
-                  {(
-                    [
-                      ["upper", "AA"],
-                      ["lower", "aa"],
-                      ["title", "Aa"],
-                      ["sentence", "A."],
-                    ] as const
-                  ).map(([mode, label]) => (
-                    <button
-                      key={mode}
-                      type="button"
-                      disabled={!store.hasSelection}
-                      aria-label={`${mode} case`}
-                      title={`${mode} case${store.hasSelection ? "" : " — select some text first"}`}
-                      onClick$={() => applyTextCase(mode as TextCase)}
-                      class="flex-1 text-[0.65rem] py-1 border border-[var(--color-paper-3)] text-[var(--color-ink-light)] disabled:opacity-30 disabled:cursor-not-allowed"
-                      style="border-radius: 1px;"
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <Sep />
-
-          <div class="flex items-center">
-            <button
-              title="Heading 1"
-              aria-label="Heading 1"
-              aria-pressed={!!store.active.h1}
-              onClick$={() => runCommand("h1")}
-              class="tool-btn"
-              style="font-family: var(--font-display); font-weight: 600;"
-            >
-              H₁
-            </button>
-            <button
-              title="Heading 2"
-              aria-label="Heading 2"
-              aria-pressed={!!store.active.h2}
-              onClick$={() => runCommand("h2")}
-              class="tool-btn"
-              style="font-family: var(--font-display); font-weight: 600;"
-            >
-              H₂
-            </button>
-            <button
-              title="Heading 3"
-              aria-label="Heading 3"
-              aria-pressed={!!store.active.h3}
-              onClick$={() => runCommand("h3")}
-              class="tool-btn"
-              style="font-family: var(--font-display); font-weight: 600;"
-            >
-              H₃
-            </button>
-          </div>
-
-          <Sep />
-
-          <div class="flex items-center">
-            <button
-              title="Bullet list"
-              aria-label="Bullet list"
-              aria-pressed={!!store.active.bullet}
-              onClick$={() => runCommand("bullet")}
-              class="tool-btn"
-            >
-              ❦ list
-            </button>
-            <button
-              title="Numbered list"
-              aria-label="Numbered list"
-              aria-pressed={!!store.active.ordered}
-              onClick$={() => runCommand("ordered")}
-              class="tool-btn"
-            >
-              I. list
-            </button>
-            <button
-              title="Checklist"
-              aria-label="Checklist"
-              aria-pressed={!!store.active.taskList}
-              onClick$={() => runCommand("taskList")}
-              class="tool-btn"
-            >
-              ☑ list
-            </button>
-            <button
-              title="Pull quote"
-              aria-label="Pull quote"
-              aria-pressed={!!store.active.blockquote}
-              onClick$={() => runCommand("blockquote")}
-              class="tool-btn"
-            >
-              ❝ pull
-            </button>
-            <button
-              title="Code block"
-              aria-label="Code block"
-              aria-pressed={!!store.active.code}
-              onClick$={() => runCommand("code")}
-              class="tool-btn"
-            >
-              {"</>"}
-            </button>
-          </div>
-
-          <Sep />
-
-          <div class="flex items-center">
-            <button
-              title="Align left"
-              aria-label="Align left"
-              aria-pressed={!!store.active.left}
-              onClick$={() => runCommand("left")}
-              class="tool-btn"
-            >
-              ≡
-            </button>
-            <button
-              title="Align center"
-              aria-label="Align center"
-              aria-pressed={!!store.active.center}
-              onClick$={() => runCommand("center")}
-              class="tool-btn"
-            >
-              ☰
-            </button>
-            <button
-              title="Align right"
-              aria-label="Align right"
-              aria-pressed={!!store.active.right}
-              onClick$={() => runCommand("right")}
-              class="tool-btn"
-            >
-              ⌐
-            </button>
-            <button
-              title="Justify"
-              aria-label="Justify"
-              aria-pressed={!!store.active.justify}
-              onClick$={() => runCommand("justify")}
-              class="tool-btn"
-            >
-              ▤
-            </button>
-          </div>
-
-          <Sep />
-
-          <div class="flex items-center">
-            <button
-              title="Insert plate (image)"
-              aria-label="Insert image"
-              onClick$={() => {
-                store.showImageInput = true;
-              }}
-              class="tool-btn"
-            >
-              ▣ plate
-            </button>
-            <button
-              title="Insert tabular (table)"
-              aria-label="Insert table"
-              aria-expanded={store.showTableInsertion}
-              onClick$={() => {
-                store.showTableInsertion = !store.showTableInsertion;
-              }}
-              class="tool-btn"
-            >
-              ▤ tab.
-            </button>
-            <button
-              title="Insert diagram (Mermaid)"
-              aria-label="Insert Mermaid diagram"
-              onClick$={() => {
-                store.showMermaidInput = true;
-              }}
-              class="tool-btn"
-            >
-              ⟢ mmd
-            </button>
-            <button
-              title="Section break"
-              aria-label="Section break"
-              onClick$={() => runCommand("horizontal")}
-              class="tool-btn"
-            >
-              ❦
-            </button>
-            <button
-              title="Page break (Ctrl/Cmd + Enter)"
-              aria-label="Insert page break"
-              onClick$={() => runCommand("pageBreak")}
-              class="tool-btn"
-            >
-              ⤓ page
-            </button>
-            <button
-              title="Add comment"
-              aria-label="Add comment"
-              disabled={!store.hasSelection}
-              onClick$={() => {
-                store.showCommentInput = true;
-              }}
-              class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              ☍ comment
-            </button>
-            <SpeechTransport
-              id={MANUSCRIPT_READING_ID}
-              onPlay$={readAloud}
-              playLabel="Read the selection aloud — or the whole draft when nothing is selected"
-            />
-            <button
-              title="Insert endnote — collected under Notes on export"
-              aria-label="Insert endnote"
-              aria-pressed={store.noteInputKind === "endnote"}
-              onClick$={() => {
-                store.noteInputKind =
-                  store.noteInputKind === "endnote" ? null : "endnote";
-                store.noteText = "";
-              }}
-              class="tool-btn"
-            >
-              ¹ endnote
-            </button>
-            <button
-              title="Insert footnote — collected under Footnotes on export"
-              aria-label="Insert footnote"
-              aria-pressed={store.noteInputKind === "footnote"}
-              onClick$={() => {
-                store.noteInputKind =
-                  store.noteInputKind === "footnote" ? null : "footnote";
-                store.noteText = "";
-              }}
-              class="tool-btn"
-            >
-              † footnote
-            </button>
-          </div>
-
-          <div class="flex-1" />
-
-          <div class="flex items-center">
-            <button
-              title="Undo (⌘Z)"
-              aria-label="Undo"
-              disabled={!store.canUndo}
-              onClick$={() => runCommand("undo")}
-              class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              ↶
-            </button>
-            <button
-              title="Redo (⌘⇧Z)"
-              aria-label="Redo"
-              disabled={!store.canRedo}
-              onClick$={() => runCommand("redo")}
-              class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              ↷
-            </button>
-          </div>
-
-          <Sep />
-
-          {/* Sync dot — vermilion when offline, paper-3 while pending, accent-green when synced */}
-          <div class="flex items-center" style="padding-left: 0.5rem;">
-            <SyncDot />
-          </div>
-
-          {/* Zen mode — dims inline notes/comments and asks the route to
-              collapse the side panels, for distraction-free writing. */}
-          <button
-            title={
-              store.zenMode
-                ? "Exit distraction-free writing"
-                : "Distraction-free writing — hides notes, comments, and side panels"
-            }
-            aria-label="Toggle zen mode"
-            aria-pressed={store.zenMode}
-            onClick$={() => {
-              store.zenMode = !store.zenMode;
-              window.dispatchEvent(
-                new CustomEvent("twyne:zen-mode", {
-                  detail: { on: store.zenMode },
-                }),
-              );
-            }}
-            class="tool-btn"
-          >
-            {store.zenMode ? "◑ zen: on" : "◐ zen"}
-          </button>
-
-          <button
-            title="Find and replace (⌘F / ⌘H)"
-            aria-label="Find and replace"
-            aria-pressed={store.showFindReplace}
-            onClick$={() => {
-              store.showFindReplace = !store.showFindReplace;
-            }}
-            class="tool-btn"
-          >
-            ⌕ find
-          </button>
-          <button
-            title="Grammar suggestions"
-            aria-label="Grammar suggestions"
-            aria-pressed={store.showGrammar}
-            onClick$={() => {
-              store.showGrammar = !store.showGrammar;
-            }}
-            class="tool-btn"
-          >
-            Aa grammar
-          </button>
-          <button
-            title="Document outline (⌘⇧O)"
-            aria-label="Document outline"
-            aria-pressed={store.showOutline}
-            onClick$={() => {
-              store.showOutline = !store.showOutline;
-            }}
-            class="tool-btn"
-          >
-            ☷ outline
-          </button>
-          <button
-            title="Keyboard shortcuts (⌘/)"
-            aria-label="Keyboard shortcuts"
-            onClick$={() => {
-              store.showShortcutDialog = true;
-            }}
-            class="tool-btn"
-          >
-            ? keys
-          </button>
-
-          {/* Layout popover — one control for width, margin, running header, page numbers */}
-          <div class="flex items-center relative">
-            <button
-              title="Page layout"
-              aria-label="Page layout"
-              aria-expanded={store.showLayout}
-              onClick$={(_, el) => {
-                // Cap the panel to the room actually below the button. A bare
-                // `max-height` cannot do this: it knows the viewport but not
-                // where the panel starts, so a tall panel opened from a
-                // toolbar partway down the page still ran off the bottom.
-                const below =
-                  window.innerHeight - el.getBoundingClientRect().bottom - 16;
-                store.layoutPanelMaxH = Math.max(220, Math.round(below));
-                store.showLayout = !store.showLayout;
-              }}
-              class="tool-btn"
-            >
-              ◫ layout
-            </button>
-            {store.showLayout && (
-              <div
-                data-layout-popover
-                class="absolute right-0 top-full mt-1 z-50 w-[21rem] max-w-[calc(100vw-1.5rem)] overflow-y-auto p-4 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
-                style={{
-                  borderRadius: "2px",
-                  fontFamily: "var(--font-typewriter)",
-                  maxHeight: `${store.layoutPanelMaxH}px`,
-                  overscrollBehavior: "contain",
-                }}
-                role="dialog"
-                aria-label="Page layout"
-              >
-                <p class="dept-label mb-2">Paper</p>
-                <div class="flex items-center gap-1 mb-2">
-                  {(
-                    [
-                      ["letter", "Letter"],
-                      ["a4", "A4"],
-                      ["legal", "Legal"],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <button
-                      key={value}
-                      onClick$={() =>
-                        emitLayout({ ...store.layout, paper: value })
-                      }
-                      class={`flex-1 text-[0.7rem] py-1 border ${resolvePageSetup(store.layout).paper === value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
-                      style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                <div class="flex items-center gap-1 mb-3">
-                  {(
-                    [
-                      ["portrait", "Portrait"],
-                      ["landscape", "Landscape"],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <button
-                      key={value}
-                      onClick$={() =>
-                        emitLayout({ ...store.layout, orientation: value })
-                      }
-                      class={`flex-1 text-[0.7rem] py-1 border ${resolvePageSetup(store.layout).orientation === value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
-                      style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                <hr class="mb-3 border-[var(--color-paper-3)]" />
-
-                <p class="dept-label mb-2">Flow</p>
-                <div class="flex items-center gap-1 mb-3">
-                  {(
-                    [
-                      ["paginated", "Pages"],
-                      ["continuous", "Scroll"],
-                    ] as const
-                  ).map(([value, label]) => (
-                    <button
-                      key={value}
-                      onClick$={() =>
-                        emitLayout({ ...store.layout, pagination: value })
-                      }
-                      class={`flex-1 text-[0.7rem] py-1 border ${resolvePageSetup(store.layout).pagination === value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
-                      style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* The column-width presets only mean anything without a
-                    sheet. On a paginated canvas the paper decides the width
-                    and the margins decide the column. */}
-                {resolvePageSetup(store.layout).pagination === "continuous" && (
-                  <>
-                    <p class="dept-label mb-2">Column</p>
+                <button
+                  title="Advanced type and paragraph options"
+                  aria-label="Advanced type and paragraph options"
+                  aria-expanded={store.openPicker === "type"}
+                  onClick$={() => {
+                    store.openPicker =
+                      store.openPicker === "type" ? null : "type";
+                  }}
+                  class="tool-btn"
+                >
+                  More ▾
+                </button>
+                {store.openPicker === "type" && (
+                  <div
+                    data-type-popover
+                    class="absolute left-0 top-full mt-1 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg w-60"
+                    style={{
+                      zIndex: "var(--z-dropdown)",
+                      borderRadius: "2px",
+                      fontFamily: "var(--font-typewriter)",
+                    }}
+                    role="dialog"
+                    aria-label="Advanced type and paragraph options"
+                  >
+                    <p class="dept-label mb-1.5">Line spacing</p>
                     <div class="flex items-center gap-1 mb-3">
-                      {(["narrow", "normal", "wide"] as const).map((w) => (
+                      {LINE_SPACINGS.map((s) => (
                         <button
-                          key={w}
-                          onClick$={() =>
-                            emitLayout({ ...store.layout, width: w })
-                          }
-                          class={`flex-1 text-[0.7rem] py-1 border ${store.layout.width === w ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
-                          style="border-radius: 1px; text-transform: uppercase; letter-spacing: 0.1em;"
+                          key={s.value}
+                          type="button"
+                          onClick$={() => applyLineHeight(s.value)}
+                          class={`flex-1 text-[0.62rem] py-1 border ${store.currentLineHeight === s.value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
+                          style="border-radius: 1px;"
                         >
-                          {w}
+                          {s.label}
                         </button>
                       ))}
                     </div>
-                  </>
-                )}
-                <hr class="mb-3 border-[var(--color-paper-3)]" />
 
-                <p class="dept-label mb-2">Margins</p>
-                {/* Two columns, paired the way the page reads: the opposing
+                    <p class="dept-label mb-1.5">Paragraph spacing</p>
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                      <label class="text-[0.62rem] text-[var(--color-ink-light)]">
+                        <span class="block mb-1">Before</span>
+                        <select
+                          class="field-input text-[0.68rem]"
+                          value={
+                            store.currentSpaceBefore == null
+                              ? ""
+                              : String(store.currentSpaceBefore)
+                          }
+                          onChange$={(_, el) =>
+                            applySpaceBefore(
+                              el.value === "" ? null : Number(el.value),
+                            )
+                          }
+                          aria-label="Space before paragraph"
+                        >
+                          <option value="">Default</option>
+                          {PARAGRAPH_SPACINGS.map((s) => (
+                            <option key={s.value} value={s.value}>
+                              {s.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label class="text-[0.62rem] text-[var(--color-ink-light)]">
+                        <span class="block mb-1">After</span>
+                        <select
+                          class="field-input text-[0.68rem]"
+                          value={
+                            store.currentSpaceAfter == null
+                              ? ""
+                              : String(store.currentSpaceAfter)
+                          }
+                          onChange$={(_, el) =>
+                            applySpaceAfter(
+                              el.value === "" ? null : Number(el.value),
+                            )
+                          }
+                          aria-label="Space after paragraph"
+                        >
+                          <option value="">Default</option>
+                          {PARAGRAPH_SPACINGS.map((s) => (
+                            <option key={s.value} value={s.value}>
+                              {s.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+
+                    <label class="compositor-check-row mb-3">
+                      <span class="min-w-0">
+                        <span class="block text-[0.7rem] text-[var(--color-ink)]">
+                          Keep with next
+                        </span>
+                        <span class="block text-[0.6rem] text-[var(--color-ink-muted)]">
+                          {store.active.h1 || store.active.h2 || store.active.h3
+                            ? "Always on for headings"
+                            : "Prevent a page break after this paragraph"}
+                        </span>
+                      </span>
+                      <input
+                        type="checkbox"
+                        class="compositor-checkbox"
+                        checked={store.currentKeepWithNext}
+                        disabled={
+                          !!store.active.h1 ||
+                          !!store.active.h2 ||
+                          !!store.active.h3
+                        }
+                        onChange$={(_, el) => applyKeepWithNext(el.checked)}
+                        aria-label="Keep paragraph with next"
+                      />
+                    </label>
+
+                    <p class="dept-label mb-1.5">Case</p>
+                    <div class="flex items-center gap-1">
+                      {(
+                        [
+                          ["upper", "AA"],
+                          ["lower", "aa"],
+                          ["title", "Aa"],
+                          ["sentence", "A."],
+                        ] as const
+                      ).map(([mode, label]) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          disabled={!store.hasSelection}
+                          aria-label={`${mode} case`}
+                          title={`${mode} case${store.hasSelection ? "" : " — select some text first"}`}
+                          onClick$={() => applyTextCase(mode as TextCase)}
+                          class="flex-1 text-[0.65rem] py-1 border border-[var(--color-paper-3)] text-[var(--color-ink-light)] disabled:opacity-30 disabled:cursor-not-allowed"
+                          style="border-radius: 1px;"
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Sep />
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="home"
+                data-group-label="Styles"
+                role="group"
+                aria-label="Styles"
+              >
+                <button
+                  title="Heading 1"
+                  aria-label="Heading 1"
+                  aria-pressed={!!store.active.h1}
+                  onClick$={() => runCommand("h1")}
+                  class="tool-btn"
+                  style="font-family: var(--font-display); font-weight: 600;"
+                >
+                  H₁
+                </button>
+                <button
+                  title="Heading 2"
+                  aria-label="Heading 2"
+                  aria-pressed={!!store.active.h2}
+                  onClick$={() => runCommand("h2")}
+                  class="tool-btn"
+                  style="font-family: var(--font-display); font-weight: 600;"
+                >
+                  H₂
+                </button>
+                <button
+                  title="Heading 3"
+                  aria-label="Heading 3"
+                  aria-pressed={!!store.active.h3}
+                  onClick$={() => runCommand("h3")}
+                  class="tool-btn"
+                  style="font-family: var(--font-display); font-weight: 600;"
+                >
+                  H₃
+                </button>
+              </div>
+
+              <Sep />
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="home"
+                data-group-label="Lists"
+                role="group"
+                aria-label="Lists"
+              >
+                <button
+                  title="Bullet list"
+                  aria-label="Bullet list"
+                  aria-pressed={!!store.active.bullet}
+                  onClick$={() => runCommand("bullet")}
+                  class="tool-btn"
+                >
+                  <Icon name={EDITOR_TOOL_ICONS.bulletList} size={16} /> list
+                </button>
+                <button
+                  title="Numbered list"
+                  aria-label="Numbered list"
+                  aria-pressed={!!store.active.ordered}
+                  onClick$={() => runCommand("ordered")}
+                  class="tool-btn"
+                >
+                  <Icon name={EDITOR_TOOL_ICONS.numberedList} size={16} /> list
+                </button>
+                <button
+                  title="Checklist"
+                  aria-label="Checklist"
+                  aria-pressed={!!store.active.taskList}
+                  onClick$={() => runCommand("taskList")}
+                  class="tool-btn"
+                >
+                  <Icon name={EDITOR_TOOL_ICONS.checklist} size={16} />{" "}
+                  Checklist
+                </button>
+                <button
+                  title="Pull quote"
+                  aria-label="Pull quote"
+                  aria-pressed={!!store.active.blockquote}
+                  onClick$={() => runCommand("blockquote")}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.quote} size={16} />
+                </button>
+                <button
+                  title="Code block"
+                  aria-label="Code block"
+                  aria-pressed={!!store.active.code}
+                  onClick$={() => runCommand("code")}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.codeBlock} size={16} />
+                </button>
+              </div>
+
+              <Sep />
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="home"
+                data-group-label="Alignment"
+                role="group"
+                aria-label="Alignment"
+              >
+                <button
+                  title="Align left"
+                  aria-label="Align left"
+                  aria-pressed={!!store.active.left}
+                  onClick$={() => runCommand("left")}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.alignLeft} size={16} />
+                </button>
+                <button
+                  title="Align center"
+                  aria-label="Align center"
+                  aria-pressed={!!store.active.center}
+                  onClick$={() => runCommand("center")}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.alignCenter} size={16} />
+                </button>
+                <button
+                  title="Align right"
+                  aria-label="Align right"
+                  aria-pressed={!!store.active.right}
+                  onClick$={() => runCommand("right")}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.alignRight} size={16} />
+                </button>
+                <button
+                  title="Justify"
+                  aria-label="Justify"
+                  aria-pressed={!!store.active.justify}
+                  onClick$={() => runCommand("justify")}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.justify} size={16} />
+                </button>
+              </div>
+
+              <Sep />
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="insert"
+                data-group-label="Objects"
+                role="group"
+                aria-label="Objects"
+              >
+                <button
+                  title="Insert plate (image)"
+                  aria-label="Insert image"
+                  onClick$={() => {
+                    store.showImageInput = true;
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.image} size={16} /> Image
+                </button>
+                <button
+                  title="Insert tabular (table)"
+                  aria-label="Insert table"
+                  aria-expanded={store.showTableInsertion}
+                  onClick$={() => {
+                    store.showTableInsertion = !store.showTableInsertion;
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.table} size={16} /> Table
+                </button>
+                <button
+                  title="Insert diagram (Mermaid)"
+                  aria-label="Insert Mermaid diagram"
+                  onClick$={() => {
+                    store.showMermaidInput = true;
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.diagram} size={16} /> Diagram
+                </button>
+              </div>
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="insert"
+                data-group-label="Breaks"
+                role="group"
+                aria-label="Breaks"
+              >
+                <button
+                  title="Section break"
+                  aria-label="Section break"
+                  onClick$={() => runCommand("horizontal")}
+                  class="tool-btn"
+                >
+                  <Icon name={EDITOR_TOOL_ICONS.sectionBreak} size={18} />
+                </button>
+                <button
+                  title="Page break (Ctrl/Cmd + Enter)"
+                  aria-label="Insert page break"
+                  onClick$={() => runCommand("pageBreak")}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.pageBreak} size={16} /> Page
+                </button>
+              </div>
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="review"
+                data-group-label="Comments"
+                role="group"
+                aria-label="Comments"
+              >
+                <button
+                  title="Add comment"
+                  aria-label="Add comment"
+                  disabled={!store.hasSelection}
+                  onClick$={() => {
+                    store.showCommentInput = true;
+                  }}
+                  class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Icon name={COMPOSITOR_ICONS.comment} size={16} /> Comment
+                </button>
+              </div>
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="review"
+                data-group-label="Listening"
+                role="group"
+                aria-label="Listening"
+              >
+                <SpeechTransport
+                  id={MANUSCRIPT_READING_ID}
+                  onPlay$={readAloud}
+                  playLabel="Read the selection aloud — or the whole draft when nothing is selected"
+                />
+              </div>
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="insert"
+                data-group-label="Notes"
+                role="group"
+                aria-label="Notes"
+              >
+                <button
+                  title="Insert endnote — collected under Notes on export"
+                  aria-label="Insert endnote"
+                  aria-pressed={store.noteInputKind === "endnote"}
+                  onClick$={() => {
+                    store.noteInputKind =
+                      store.noteInputKind === "endnote" ? null : "endnote";
+                    store.noteText = "";
+                  }}
+                  class="tool-btn"
+                >
+                  ¹ endnote
+                </button>
+                <button
+                  title="Insert footnote — collected under Footnotes on export"
+                  aria-label="Insert footnote"
+                  aria-pressed={store.noteInputKind === "footnote"}
+                  onClick$={() => {
+                    store.noteInputKind =
+                      store.noteInputKind === "footnote" ? null : "footnote";
+                    store.noteText = "";
+                  }}
+                  class="tool-btn"
+                >
+                  † footnote
+                </button>
+              </div>
+
+              {/* Zen mode — dims inline notes/comments and asks the route to
+              collapse the side panels, for distraction-free writing. */}
+              <div
+                class="compositor-group"
+                data-compositor-tab="view"
+                data-group-label="Focus"
+                role="group"
+                aria-label="Focus"
+              >
+                <button
+                  title={
+                    store.zenMode
+                      ? "Exit distraction-free writing"
+                      : "Distraction-free writing — hides notes, comments, and side panels"
+                  }
+                  aria-label="Toggle zen mode"
+                  aria-pressed={store.zenMode}
+                  onClick$={() => {
+                    store.zenMode = !store.zenMode;
+                    window.dispatchEvent(
+                      new CustomEvent("twyne:zen-mode", {
+                        detail: { on: store.zenMode },
+                      }),
+                    );
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.zen} size={16} />
+                  {store.zenMode ? "Exit focus" : "Focus"}
+                </button>
+              </div>
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="review"
+                data-group-label="Proofing"
+                role="group"
+                aria-label="Proofing"
+              >
+                <button
+                  title="Find and replace (⌘F / ⌘H)"
+                  aria-label="Find and replace"
+                  aria-pressed={store.showFindReplace}
+                  onClick$={() => {
+                    store.showFindReplace = !store.showFindReplace;
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.find} size={16} /> Find
+                </button>
+                <button
+                  title="Grammar suggestions"
+                  aria-label="Grammar suggestions"
+                  aria-pressed={store.showGrammar}
+                  onClick$={() => {
+                    store.showGrammar = !store.showGrammar;
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.grammar} size={16} /> Grammar
+                </button>
+              </div>
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="view"
+                data-group-label="Navigation"
+                role="group"
+                aria-label="Navigation"
+              >
+                <button
+                  title="Document outline (⌘⇧O)"
+                  aria-label="Document outline"
+                  aria-pressed={store.showOutline}
+                  onClick$={() => {
+                    store.showOutline = !store.showOutline;
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.outline} size={16} /> Outline
+                </button>
+              </div>
+
+              <div
+                class="compositor-group"
+                data-compositor-tab="view"
+                data-group-label="Help"
+                role="group"
+                aria-label="Help"
+              >
+                <button
+                  title="Keyboard shortcuts (⌘/)"
+                  aria-label="Keyboard shortcuts"
+                  onClick$={() => {
+                    store.showShortcutDialog = true;
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.keyboard} size={16} /> Shortcuts
+                </button>
+              </div>
+
+              {/* Layout popover — one control for width, margin, running header, page numbers */}
+              <div
+                class="compositor-group relative"
+                data-compositor-tab="view"
+                data-group-label="Page"
+                role="group"
+                aria-label="Page"
+              >
+                <button
+                  title="Page layout"
+                  aria-label="Page layout"
+                  aria-expanded={store.showLayout}
+                  onClick$={(_, el) => {
+                    // Cap the panel to the room actually below the button. A bare
+                    // `max-height` cannot do this: it knows the viewport but not
+                    // where the panel starts, so a tall panel opened from a
+                    // toolbar partway down the page still ran off the bottom.
+                    const below =
+                      window.innerHeight -
+                      el.getBoundingClientRect().bottom -
+                      16;
+                    store.layoutPanelMaxH = Math.max(220, Math.round(below));
+                    store.showLayout = !store.showLayout;
+                  }}
+                  class="tool-btn"
+                >
+                  <Icon name={COMPOSITOR_ICONS.layout} size={16} /> Layout
+                </button>
+                {store.showLayout && (
+                  <div
+                    data-layout-popover
+                    class="compositor-layout-panel absolute right-0 top-full mt-1 z-50 w-[23rem] max-w-[calc(100vw-1.5rem)] overflow-y-auto p-4 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
+                    style={{
+                      borderRadius: "2px",
+                      fontFamily: "var(--font-typewriter)",
+                      maxHeight: `${store.layoutPanelMaxH}px`,
+                      overscrollBehavior: "contain",
+                    }}
+                    role="dialog"
+                    aria-label="Page layout"
+                  >
+                    <header class="layout-panel-header">
+                      <h2>Page layout</h2>
+                      <p>Paper, flow, margins, and running heads.</p>
+                    </header>
+
+                    <fieldset class="layout-section">
+                      <legend>Paper</legend>
+                      <div class="flex items-center gap-1 mb-2">
+                        {(
+                          [
+                            ["letter", "Letter"],
+                            ["a4", "A4"],
+                            ["legal", "Legal"],
+                          ] as const
+                        ).map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={
+                              resolvePageSetup(store.layout).paper === value
+                            }
+                            onClick$={() =>
+                              emitLayout({ ...store.layout, paper: value })
+                            }
+                            class="layout-choice"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      <div class="flex items-center gap-1 mb-3">
+                        {(
+                          [
+                            ["portrait", "Portrait"],
+                            ["landscape", "Landscape"],
+                          ] as const
+                        ).map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={
+                              resolvePageSetup(store.layout).orientation ===
+                              value
+                            }
+                            onClick$={() =>
+                              emitLayout({
+                                ...store.layout,
+                                orientation: value,
+                              })
+                            }
+                            class="layout-choice"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
+
+                    <fieldset class="layout-section">
+                      <legend>Flow</legend>
+                      <div class="flex items-center gap-1 mb-3">
+                        {(
+                          [
+                            ["paginated", "Pages"],
+                            ["continuous", "Scroll"],
+                          ] as const
+                        ).map(([value, label]) => (
+                          <button
+                            key={value}
+                            type="button"
+                            aria-pressed={
+                              resolvePageSetup(store.layout).pagination ===
+                              value
+                            }
+                            onClick$={() =>
+                              emitLayout({ ...store.layout, pagination: value })
+                            }
+                            class="layout-choice"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* The column-width presets only mean anything without a
+                    sheet. On a paginated canvas the paper decides the width
+                    and the margins decide the column. */}
+                      {resolvePageSetup(store.layout).pagination ===
+                        "continuous" && (
+                        <>
+                          <p class="dept-label mb-2">Column</p>
+                          <div class="flex items-center gap-1 mb-3">
+                            {(["narrow", "normal", "wide"] as const).map(
+                              (w) => (
+                                <button
+                                  key={w}
+                                  type="button"
+                                  aria-pressed={store.layout.width === w}
+                                  onClick$={() =>
+                                    emitLayout({ ...store.layout, width: w })
+                                  }
+                                  class="layout-choice"
+                                >
+                                  {w}
+                                </button>
+                              ),
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </fieldset>
+
+                    <fieldset class="layout-section">
+                      <legend>Margins</legend>
+                      {/* Two columns, paired the way the page reads: the opposing
                     edges sit beside each other, so setting a symmetric margin
                     is a comparison rather than a memory test. */}
-                <div class="grid grid-cols-2 gap-x-3 gap-y-2">
-                  {(
-                    [
-                      ["Left", "left", "marginLeft"],
-                      ["Right", "right", "marginRight"],
-                      ["Top", "top", "marginTop"],
-                      ["Bottom", "bottom", "marginBottom"],
-                    ] as const
-                  ).map(([label, rangeKey, field]) => {
-                    const range = MARGIN_RANGE[rangeKey];
-                    const value = resolveMargins(store.layout)[rangeKey];
-                    return (
-                      <label
-                        key={field}
-                        class="block text-[0.7rem] text-[var(--color-ink-light)]"
-                      >
-                        <span class="flex items-baseline justify-between mb-1 gap-2">
-                          <span>{label}</span>
-                          <span class="tabular-nums text-[0.65rem] text-[var(--color-ink-muted)]">
-                            {value.toFixed(2)}
+                      <div class="grid grid-cols-2 gap-x-3 gap-y-2">
+                        {(
+                          [
+                            ["Left", "left", "marginLeft"],
+                            ["Right", "right", "marginRight"],
+                            ["Top", "top", "marginTop"],
+                            ["Bottom", "bottom", "marginBottom"],
+                          ] as const
+                        ).map(([label, rangeKey, field]) => {
+                          const range = MARGIN_RANGE[rangeKey];
+                          const value = resolveMargins(store.layout)[rangeKey];
+                          return (
+                            <label
+                              key={field}
+                              class="block text-[0.7rem] text-[var(--color-ink-light)]"
+                            >
+                              <span class="flex items-baseline justify-between mb-1 gap-2">
+                                <span>{label}</span>
+                                <span class="tabular-nums text-[0.65rem] text-[var(--color-ink-muted)]">
+                                  {value.toFixed(2)} rem
+                                </span>
+                              </span>
+                              <input
+                                type="range"
+                                class="margin-slider"
+                                aria-label={`${label} margin, rem`}
+                                min={range.min}
+                                max={range.max}
+                                step={range.step}
+                                value={value}
+                                onInput$={(e) =>
+                                  emitLayout({
+                                    ...store.layout,
+                                    [field]: Number(
+                                      (e.target as HTMLInputElement).value,
+                                    ),
+                                  })
+                                }
+                              />
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <label class="compositor-check-row mt-3">
+                        <span class="min-w-0">
+                          <span class="block text-[0.7rem] text-[var(--color-ink)]">
+                            Margin guides
+                          </span>
+                          <span class="block text-[0.6rem] text-[var(--color-ink-muted)]">
+                            Show the printable text boundary
                           </span>
                         </span>
                         <input
-                          type="range"
-                          class="margin-slider"
-                          aria-label={`${label} margin, rem`}
-                          min={range.min}
-                          max={range.max}
-                          step={range.step}
-                          value={value}
-                          onInput$={(e) =>
+                          type="checkbox"
+                          class="compositor-checkbox"
+                          checked={store.layout.showMarginGuides === true}
+                          onChange$={(e) =>
                             emitLayout({
                               ...store.layout,
-                              [field]: Number(
-                                (e.target as HTMLInputElement).value,
-                              ),
+                              showMarginGuides: (e.target as HTMLInputElement)
+                                .checked,
                             })
                           }
                         />
                       </label>
-                    );
-                  })}
-                </div>
-                <label class="mt-2 flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] cursor-pointer">
-                  <span>Margin guides</span>
-                  <input
-                    type="checkbox"
-                    checked={store.layout.showMarginGuides === true}
-                    onChange$={(e) =>
-                      emitLayout({
-                        ...store.layout,
-                        showMarginGuides: (e.target as HTMLInputElement)
-                          .checked,
-                      })
-                    }
-                  />
-                </label>
+                    </fieldset>
 
-                <hr class="my-3 border-[var(--color-paper-3)]" />
-
-                {/* Header, footer and page numbers are one subject — the
+                    {/* Header, footer and page numbers are one subject — the
                     running heads — and used to be interleaved with the margin
                     guides and each other. */}
-                <p class="dept-label mb-2">Running heads</p>
-                <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] mb-2 cursor-pointer">
-                  <span>Show running header</span>
-                  <input
-                    type="checkbox"
-                    checked={store.layout.runningHeader}
-                    onChange$={(e) =>
-                      emitLayout({
-                        ...store.layout,
-                        runningHeader: (e.target as HTMLInputElement).checked,
-                      })
-                    }
-                  />
-                </label>
-                <label class="flex items-center justify-between text-[0.7rem] text-[var(--color-ink-light)] mb-3 cursor-pointer">
-                  <span>Page numbers</span>
-                  <input
-                    type="checkbox"
-                    checked={store.layout.pageNumbers}
-                    onChange$={(e) =>
-                      emitLayout({
-                        ...store.layout,
-                        pageNumbers: (e.target as HTMLInputElement).checked,
-                      })
-                    }
-                  />
-                </label>
-                <div class="mb-2">
-                  <label
-                    class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
-                    for="layout-header-text"
-                  >
-                    Header line
-                  </label>
-                  <input
-                    id="layout-header-text"
-                    value={store.headerText}
-                    placeholder="Optional running header"
-                    class="field-input text-[0.78rem]"
-                    style="font-family: var(--font-typewriter);"
-                    onInput$={(e) =>
-                      updateChromeText(
-                        "header",
-                        (e.target as HTMLInputElement).value,
-                      )
-                    }
-                  />
-                </div>
-                <div>
-                  <label
-                    class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
-                    for="layout-footer-text"
-                  >
-                    Footer line
-                  </label>
-                  <input
-                    id="layout-footer-text"
-                    value={store.footerText}
-                    placeholder="Optional running footer"
-                    class="field-input text-[0.78rem]"
-                    style="font-family: var(--font-typewriter);"
-                    onInput$={(e) =>
-                      updateChromeText(
-                        "footer",
-                        (e.target as HTMLInputElement).value,
-                      )
-                    }
-                  />
-                </div>
-                {/* Page setup and "print it" belong together — this is the
+                    <fieldset class="layout-section">
+                      <legend>Running heads</legend>
+                      <label class="compositor-check-row mb-2">
+                        <span>Show running header</span>
+                        <input
+                          type="checkbox"
+                          class="compositor-checkbox"
+                          checked={store.layout.runningHeader}
+                          onChange$={(e) =>
+                            emitLayout({
+                              ...store.layout,
+                              runningHeader: (e.target as HTMLInputElement)
+                                .checked,
+                            })
+                          }
+                        />
+                      </label>
+                      <label class="compositor-check-row mb-3">
+                        <span>Page numbers</span>
+                        <input
+                          type="checkbox"
+                          class="compositor-checkbox"
+                          checked={store.layout.pageNumbers}
+                          onChange$={(e) =>
+                            emitLayout({
+                              ...store.layout,
+                              pageNumbers: (e.target as HTMLInputElement)
+                                .checked,
+                            })
+                          }
+                        />
+                      </label>
+                      <div class="mb-2">
+                        <label
+                          class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
+                          for="layout-header-text"
+                        >
+                          Header line
+                        </label>
+                        <input
+                          id="layout-header-text"
+                          value={store.headerText}
+                          placeholder="Optional running header"
+                          class="field-input text-[0.78rem]"
+                          style="font-family: var(--font-typewriter);"
+                          onInput$={(e) =>
+                            updateChromeText(
+                              "header",
+                              (e.target as HTMLInputElement).value,
+                            )
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
+                          for="layout-footer-text"
+                        >
+                          Footer line
+                        </label>
+                        <input
+                          id="layout-footer-text"
+                          value={store.footerText}
+                          placeholder="Optional running footer"
+                          class="field-input text-[0.78rem]"
+                          style="font-family: var(--font-typewriter);"
+                          onInput$={(e) =>
+                            updateChromeText(
+                              "footer",
+                              (e.target as HTMLInputElement).value,
+                            )
+                          }
+                        />
+                      </div>
+                    </fieldset>
+                    {/* Page setup and "print it" belong together — this is the
                     panel where the writer just decided what the page looks
                     like, so it is where they look to commit it to paper. */}
-                <hr class="my-3 border-[var(--color-paper-3)]" />
-                <button
-                  type="button"
-                  onClick$={saveAsPdf}
-                  disabled={store.exportingPdf}
-                  class="btn-paper w-full py-1.5 text-[0.7rem] disabled:opacity-40"
-                >
-                  {store.exportingPdf ? "Preparing…" : "Save as PDF…"}
-                </button>
+                    <button
+                      type="button"
+                      onClick$={saveAsPdf}
+                      disabled={store.exportingPdf}
+                      class="btn-paper w-full py-1.5 text-[0.7rem] disabled:opacity-40"
+                    >
+                      {store.exportingPdf ? "Preparing…" : "Save as PDF…"}
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <button
-            type="button"
-            class="mobile-tool-toggle tool-btn sm:hidden"
-            aria-expanded={store.mobileToolbarExpanded}
-            onClick$={() => {
-              store.mobileToolbarExpanded = !store.mobileToolbarExpanded;
-            }}
-          >
-            {store.mobileToolbarExpanded ? "Fewer tools" : "More tools"}
-          </button>
-        </div>
-
-        {store.showFindReplace && (
-          <div
-            class="fixed right-4 top-16"
-            style={{ zIndex: "var(--z-dropdown)" }}
-          >
-            <FindReplacePanel
-              editor={store.editor ? noSerialize(store.editor) : null}
-              onClose$={() => {
-                store.showFindReplace = false;
-              }}
-            />
-          </div>
-        )}
-
-        {store.showGrammar && (
-          <GrammarPanel
-            editor={store.editor ? noSerialize(store.editor) : null}
-            readOnly={readOnly}
-            onClose$={() => {
-              store.showGrammar = false;
-            }}
-          />
-        )}
-
-        {store.showOutline && (
-          <aside
-            class="fixed bottom-16 left-4 top-20 w-72 overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3 shadow-lg"
-            style={{ zIndex: "var(--z-dropdown)" }}
-            aria-label="Document outline panel"
-          >
-            <div class="mb-2 flex items-center justify-between gap-3">
-              <p class="dept-label">Document outline</p>
-              <button
-                type="button"
-                class="tool-btn"
-                aria-label="Close document outline"
-                onClick$={() => {
-                  store.showOutline = false;
-                }}
-              >
-                ×
-              </button>
             </div>
-            <DocumentOutline
-              outline={store.outline}
-              editor={store.editor ? noSerialize(store.editor) : undefined}
-            />
-          </aside>
-        )}
-
-        <ShortcutDialog
-          open={store.showShortcutDialog}
-          onClose$={() => {
-            store.showShortcutDialog = false;
-          }}
-        />
-
-        {/* Footnote / endnote modal — replaces the old single-line inline bar
-            so the writer can hold a real sentence of gloss, with Cmd+Enter
-            to commit. Visibility tracks `noteInputKind` so the existing
-            toolbar toggle keeps working. */}
-        <TextModal
-          open={store.noteInputKind !== null}
-          kicker={store.noteInputKind === "footnote" ? "Insert" : "Insert"}
-          title={store.noteInputKind === "footnote" ? "Footnote" : "Endnote"}
-          description={
-            store.noteInputKind === "footnote"
-              ? "Footnote text appears at the foot of the page on the same sheet as the marker — for asides the reader needs on the same page as the line that prompted them."
-              : "Endnote text collects under Notes at the end of the manuscript — for sourcing, citations, and longer remarks."
-          }
-          inputLabel={
-            store.noteInputKind === "footnote" ? "Footnote text" : "Endnote text"
-          }
-          placeholder={
-            store.noteInputKind === "footnote"
-              ? "e.g. See Smith 2019, p. 142, for the original formulation."
-              : "e.g. The name 'Eleanor' surfaces across the archive in nine distinct hands."
-          }
-          helpText="Cmd/Ctrl + Enter to insert · Esc to cancel"
-          rows={4}
-          minHeightRem={8}
-          submitLabel={
-            store.noteInputKind === "footnote" ? "Insert footnote" : "Insert endnote"
-          }
-          onCancel$={() => {
-            store.noteInputKind = null;
-            store.noteText = "";
-          }}
-          onConfirm$={async (value) => {
-            store.noteText = value.trim();
-            if (!store.noteText) {
-              store.noteInputKind = null;
-              return;
-            }
-            await runCommand("insertNote");
-          }}
-        />
-
-        {/* Mermaid modal — the inline bar couldn't hold a real diagram spec. */}
-        <TextModal
-          open={store.showMermaidInput}
-          kicker="Insert"
-          title="Mermaid diagram"
-          description="Write a Mermaid diagram spec. It will render in-line where the cursor sits."
-          inputLabel="Diagram source"
-          placeholder="graph TD; A[Manuscript] --> B{Reviewed?}; B -->|Yes| C[Publish]; B -->|No| D[Revise]; D --> A"
-          helpText="Cmd/Ctrl + Enter to insert · Esc to cancel. See mermaid.js.org for syntax."
-          rows={8}
-          minHeightRem={14}
-          submitLabel="Insert diagram"
-          onCancel$={() => {
-            store.showMermaidInput = false;
-            store.mermaidSource = "";
-          }}
-          onConfirm$={async (value) => {
-            store.mermaidSource = value.trim();
-            if (!store.mermaidSource) {
-              store.showMermaidInput = false;
-              return;
-            }
-            await runCommand("insertMermaid");
-          }}
-        />
-
-        <SlashCommandMenu
-          open={store.slashOpen}
-          query={store.slashQuery}
-          left={store.slashLeft}
-          top={store.slashTop}
-          context={{
-            hasSelection: store.hasSelection,
-            inTable: !!store.active.isInTable,
-            canMergeCells: !!store.active.canMergeCells,
-            canSplitCell: !!store.active.canSplitCell,
-            canUndo: store.canUndo,
-            canRedo: store.canRedo,
-            hasDocument: true,
-            paginationActive: store.paginationActive,
-          }}
-          onSelect$={selectSlashCommand}
-          onClose$={() => {
-            store.editor?.commands.closeSlashCommand();
-            store.slashOpen = false;
-          }}
-        />
-
-        {store.showTableInsertion && (
-          <div
-            class="fixed left-1/2 top-16 -translate-x-1/2"
-            style={{ zIndex: "var(--z-dropdown)" }}
-          >
-            <TableInsertionGrid
-              onInsert$={insertTableDimensions}
-              onCancel$={() => {
-                store.showTableInsertion = false;
-              }}
-            />
           </div>
-        )}
 
-        <FloatingTableToolbar
-          snapshot={store.tableToolbar}
-          onIntent$={handleTableToolbarIntent}
-        />
-        {store.tableToolbar.visible &&
-          store.tableToolbar.position &&
-          store.tableToolbar.position.cellRowTop != null &&
-          store.cellFormat.cellCount > 0 && (
+          {store.showFindReplace && (
             <div
-              data-table-cell-format-panel
-              class="fixed overflow-x-auto border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2 shadow-lg"
-              style={{
-                left: `${store.tableToolbar.position.left}px`,
-                top: `${store.tableToolbar.position.cellRowTop}px`,
-                width: `${store.tableToolbar.position.width}px`,
-                zIndex: "var(--z-dropdown)",
-              }}
+              class="fixed right-4 top-16"
+              style={{ zIndex: "var(--z-dropdown)" }}
             >
-              <TableCellFormatControls
-                format={store.cellFormat}
-                onIntent$={handleCellFormatIntent}
+              <FindReplacePanel
+                editor={store.editor ? noSerialize(store.editor) : null}
+                onClose$={() => {
+                  store.showFindReplace = false;
+                }}
               />
             </div>
           )}
 
-        {store.selectedImage && (
-          <div
-            class="fixed right-4 top-24 w-72 shadow-lg"
-            style={{ zIndex: "var(--z-dropdown)" }}
-          >
-            <ImageInspector
-              attributes={store.selectedImage}
-              onPatch$={patchSelectedImage}
-              onChooseFiles$={chooseImageFiles}
-              onRetry$={retrySelectedImage}
-              onRemove$={removeSelectedImage}
+          {store.showGrammar && (
+            <GrammarPanel
+              editor={store.editor ? noSerialize(store.editor) : null}
+              readOnly={readOnly}
+              onClose$={() => {
+                store.showGrammar = false;
+              }}
             />
-          </div>
-        )}
+          )}
 
-        {store.showImageInput && (
-          <div
-            class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-            style="z-index: var(--z-sticky);"
-          >
-            <span
-              class="text-xs text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter);"
+          {store.showOutline && (
+            <aside
+              class="fixed bottom-16 left-4 top-20 w-72 overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3 shadow-lg"
+              style={{ zIndex: "var(--z-dropdown)" }}
+              aria-label="Document outline panel"
             >
-              Plate URL:
-            </span>
-            <button
-              type="button"
-              onClick$={chooseImageFiles}
-              disabled={!store.imageUploadAdapter}
-              class="tool-btn text-xs"
+              <div class="mb-2 flex items-center justify-between gap-3">
+                <p class="dept-label">Document outline</p>
+                <button
+                  type="button"
+                  class="tool-btn"
+                  aria-label="Close document outline"
+                  onClick$={() => {
+                    store.showOutline = false;
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+              <DocumentOutline
+                outline={store.outline}
+                editor={store.editor ? noSerialize(store.editor) : undefined}
+              />
+            </aside>
+          )}
+
+          <ShortcutDialog
+            open={store.showShortcutDialog}
+            onClose$={() => {
+              store.showShortcutDialog = false;
+            }}
+          />
+
+          {/* Footnote / endnote modal — replaces the old single-line inline bar
+            so the writer can hold a real sentence of gloss, with Cmd+Enter
+            to commit. Visibility tracks `noteInputKind` so the existing
+            toolbar toggle keeps working. */}
+          <TextModal
+            open={store.noteInputKind !== null}
+            kicker={store.noteInputKind === "footnote" ? "Insert" : "Insert"}
+            title={store.noteInputKind === "footnote" ? "Footnote" : "Endnote"}
+            description={
+              store.noteInputKind === "footnote"
+                ? "Footnote text appears at the foot of the page on the same sheet as the marker — for asides the reader needs on the same page as the line that prompted them."
+                : "Endnote text collects under Notes at the end of the manuscript — for sourcing, citations, and longer remarks."
+            }
+            inputLabel={
+              store.noteInputKind === "footnote"
+                ? "Footnote text"
+                : "Endnote text"
+            }
+            placeholder={
+              store.noteInputKind === "footnote"
+                ? "e.g. See Smith 2019, p. 142, for the original formulation."
+                : "e.g. The name 'Eleanor' surfaces across the archive in nine distinct hands."
+            }
+            helpText="Cmd/Ctrl + Enter to insert · Esc to cancel"
+            rows={4}
+            minHeightRem={8}
+            submitLabel={
+              store.noteInputKind === "footnote"
+                ? "Insert footnote"
+                : "Insert endnote"
+            }
+            onCancel$={() => {
+              store.noteInputKind = null;
+              store.noteText = "";
+            }}
+            onConfirm$={async (value) => {
+              store.noteText = value.trim();
+              if (!store.noteText) {
+                store.noteInputKind = null;
+                return;
+              }
+              await runCommand("insertNote");
+            }}
+          />
+
+          {/* Mermaid modal — the inline bar couldn't hold a real diagram spec. */}
+          <TextModal
+            open={store.showMermaidInput}
+            kicker="Insert"
+            title="Mermaid diagram"
+            description="Write a Mermaid diagram spec. It will render in-line where the cursor sits."
+            inputLabel="Diagram source"
+            placeholder="graph TD; A[Manuscript] --> B{Reviewed?}; B -->|Yes| C[Publish]; B -->|No| D[Revise]; D --> A"
+            helpText="Cmd/Ctrl + Enter to insert · Esc to cancel. See mermaid.js.org for syntax."
+            rows={8}
+            minHeightRem={14}
+            submitLabel="Insert diagram"
+            onCancel$={() => {
+              store.showMermaidInput = false;
+              store.mermaidSource = "";
+            }}
+            onConfirm$={async (value) => {
+              store.mermaidSource = value.trim();
+              if (!store.mermaidSource) {
+                store.showMermaidInput = false;
+                return;
+              }
+              await runCommand("insertMermaid");
+            }}
+          />
+
+          <SlashCommandMenu
+            open={store.slashOpen}
+            query={store.slashQuery}
+            left={store.slashLeft}
+            top={store.slashTop}
+            context={{
+              hasSelection: store.hasSelection,
+              inTable: !!store.active.isInTable,
+              canMergeCells: !!store.active.canMergeCells,
+              canSplitCell: !!store.active.canSplitCell,
+              canUndo: store.canUndo,
+              canRedo: store.canRedo,
+              hasDocument: true,
+              paginationActive: store.paginationActive,
+            }}
+            onSelect$={selectSlashCommand}
+            onClose$={() => {
+              store.editor?.commands.closeSlashCommand();
+              store.slashOpen = false;
+            }}
+          />
+
+          {store.showTableInsertion && (
+            <div
+              class="fixed left-1/2 top-16 -translate-x-1/2"
+              style={{ zIndex: "var(--z-dropdown)" }}
             >
-              Choose file…
-            </button>
-            <span class="text-xs text-[var(--color-ink-muted)]">or</span>
-            <input
-              autoFocus
-              value={store.imageUrl}
-              onInput$={(e) => {
-                store.imageUrl = (e.target as HTMLInputElement).value;
-              }}
-              onKeyDown$={(e) => {
-                if (e.key === "Enter" && store.imageUrl.trim()) {
-                  insertImage(store.imageUrl.trim());
-                  store.showImageInput = false;
-                  store.imageUrl = "";
-                }
-                if (e.key === "Escape") {
-                  store.showImageInput = false;
-                  store.imageUrl = "";
-                }
-              }}
-              placeholder="https://…"
-              class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
-              style="font-family: var(--font-typewriter); border-radius: 2px;"
-            />
-            <button
-              onClick$={() => {
-                if (store.imageUrl.trim()) {
-                  insertImage(store.imageUrl.trim());
-                }
-                store.showImageInput = false;
-                store.imageUrl = "";
-              }}
-              class="tool-btn text-xs"
-            >
-              Insert
-            </button>
-            <button
-              onClick$={() => {
-                store.showImageInput = false;
-                store.imageUrl = "";
-              }}
-              class="tool-btn text-xs"
-            >
-              Cancel
-            </button>
-            {store.imageUploadError && (
-              <span role="alert" class="text-xs text-[var(--color-vermilion)]">
-                {store.imageUploadError}
-              </span>
+              <TableInsertionGrid
+                onInsert$={insertTableDimensions}
+                onCancel$={() => {
+                  store.showTableInsertion = false;
+                }}
+              />
+            </div>
+          )}
+
+          <FloatingTableToolbar
+            snapshot={store.tableToolbar}
+            onIntent$={handleTableToolbarIntent}
+          />
+          {store.tableToolbar.visible &&
+            store.tableToolbar.position &&
+            store.tableToolbar.position.cellRowTop != null &&
+            store.cellFormat.cellCount > 0 && (
+              <div
+                data-table-cell-format-panel
+                class="fixed overflow-x-auto border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2 shadow-lg"
+                style={{
+                  left: `${store.tableToolbar.position.left}px`,
+                  top: `${store.tableToolbar.position.cellRowTop}px`,
+                  width: `${store.tableToolbar.position.width}px`,
+                  zIndex: "var(--z-dropdown)",
+                }}
+              >
+                <TableCellFormatControls
+                  format={store.cellFormat}
+                  onIntent$={handleCellFormatIntent}
+                />
+              </div>
             )}
-          </div>
-        )}
 
-        {store.showCommentInput && (
-          <div
-            class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-            style="z-index: var(--z-sticky);"
-          >
-            <span
-              class="text-xs text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter);"
+          {store.selectedImage && (
+            <div
+              class="fixed right-4 top-24 w-72 shadow-lg"
+              style={{ zIndex: "var(--z-dropdown)" }}
             >
-              Comment:
-            </span>
-            <input
-              autoFocus
-              value={store.commentText}
-              onInput$={(e) => {
-                store.commentText = (e.target as HTMLInputElement).value;
-              }}
-              onKeyDown$={(e) => {
-                if (e.key === "Enter" && store.commentText.trim()) {
-                  runCommand("addComment");
-                }
-                if (e.key === "Escape") {
+              <ImageInspector
+                attributes={store.selectedImage}
+                onPatch$={patchSelectedImage}
+                onChooseFiles$={chooseImageFiles}
+                onRetry$={retrySelectedImage}
+                onRemove$={removeSelectedImage}
+              />
+            </div>
+          )}
+
+          {store.showImageInput && (
+            <div
+              class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
+              style="z-index: var(--z-sticky);"
+            >
+              <span
+                class="text-xs text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-typewriter);"
+              >
+                Plate URL:
+              </span>
+              <button
+                type="button"
+                onClick$={chooseImageFiles}
+                disabled={!store.imageUploadAdapter}
+                class="tool-btn text-xs"
+              >
+                Choose file…
+              </button>
+              <span class="text-xs text-[var(--color-ink-muted)]">or</span>
+              <input
+                autoFocus
+                value={store.imageUrl}
+                onInput$={(e) => {
+                  store.imageUrl = (e.target as HTMLInputElement).value;
+                }}
+                onKeyDown$={(e) => {
+                  if (e.key === "Enter" && store.imageUrl.trim()) {
+                    insertImage(store.imageUrl.trim());
+                    store.showImageInput = false;
+                    store.imageUrl = "";
+                  }
+                  if (e.key === "Escape") {
+                    store.showImageInput = false;
+                    store.imageUrl = "";
+                  }
+                }}
+                placeholder="https://…"
+                class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                style="font-family: var(--font-typewriter); border-radius: 2px;"
+              />
+              <button
+                onClick$={() => {
+                  if (store.imageUrl.trim()) {
+                    insertImage(store.imageUrl.trim());
+                  }
+                  store.showImageInput = false;
+                  store.imageUrl = "";
+                }}
+                class="tool-btn text-xs"
+              >
+                Insert
+              </button>
+              <button
+                onClick$={() => {
+                  store.showImageInput = false;
+                  store.imageUrl = "";
+                }}
+                class="tool-btn text-xs"
+              >
+                Cancel
+              </button>
+              {store.imageUploadError && (
+                <span
+                  role="alert"
+                  class="text-xs text-[var(--color-vermilion)]"
+                >
+                  {store.imageUploadError}
+                </span>
+              )}
+            </div>
+          )}
+
+          {store.showCommentInput && (
+            <div
+              class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
+              style="z-index: var(--z-sticky);"
+            >
+              <span
+                class="text-xs text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-typewriter);"
+              >
+                Comment:
+              </span>
+              <input
+                autoFocus
+                value={store.commentText}
+                onInput$={(e) => {
+                  store.commentText = (e.target as HTMLInputElement).value;
+                }}
+                onKeyDown$={(e) => {
+                  if (e.key === "Enter" && store.commentText.trim()) {
+                    runCommand("addComment");
+                  }
+                  if (e.key === "Escape") {
+                    store.showCommentInput = false;
+                    store.commentText = "";
+                  }
+                }}
+                placeholder="Type your editorial note…"
+                class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
+                style="font-family: var(--font-typewriter); border-radius: 2px;"
+              />
+              <button
+                onClick$={() => {
+                  if (store.commentText.trim()) {
+                    runCommand("addComment");
+                  }
+                }}
+                class="tool-btn text-xs"
+              >
+                Add
+              </button>
+              <button
+                onClick$={() => {
                   store.showCommentInput = false;
                   store.commentText = "";
-                }
-              }}
-              placeholder="Type your editorial note…"
-              class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
-              style="font-family: var(--font-typewriter); border-radius: 2px;"
-            />
-            <button
-              onClick$={() => {
-                if (store.commentText.trim()) {
-                  runCommand("addComment");
-                }
-              }}
-              class="tool-btn text-xs"
-            >
-              Add
-            </button>
-            <button
-              onClick$={() => {
-                store.showCommentInput = false;
-                store.commentText = "";
-              }}
-              class="tool-btn text-xs"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
+                }}
+                class="tool-btn text-xs"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── Editor area (the manuscript page) ──────────── */}

@@ -46,6 +46,10 @@ export const FONT_CHOICES: readonly FontChoice[] = [
   },
 ];
 
+/** The manuscript CSS uses Lora at 1.125rem, which resolves to 13.5 points. */
+export const DEFAULT_MANUSCRIPT_FONT_LABEL = "Lora (default)";
+export const DEFAULT_MANUSCRIPT_FONT_SIZE_LABEL = "13.5";
+
 /**
  * Point sizes, in the sequence a word processor offers.
  *

@@ -42,6 +42,7 @@ import { emptyCanvas, loadSourceCanvas, saveSourceCanvas, seedCanvasFromFolio, a
 import { layoutCanvas } from "../../../utils/canvas-layout";
 import { extractPendingSources } from "../../../utils/source-extract";
 import { useConvexClient } from "../../../utils/convex-context";
+import { dossierRouteClass } from "../../../utils/conversation-layout";
 
 interface RefiningStore {
   brief: ProjectBrief | null;
@@ -122,6 +123,7 @@ export default component$(() => {
       : await loadDraftHtml();
     const writer = await loadWriterSettingsFromIdb();
     store.style = writer.interviewStyle;
+    if (store.style === "conversational") store.canvasOpen = false;
     store.hydrated = true;
   });
 
@@ -358,7 +360,7 @@ export default component$(() => {
   }
 
   return (
-    <div class="min-h-screen bg-[var(--color-paper)]">
+    <div class={dossierRouteClass(store.style)}>
       <DossierTopBar
         backHref="/editor/"
         backLabel="Back to desk"
@@ -366,7 +368,10 @@ export default component$(() => {
         switchHref=""
         showStartOver
         onSwitch$={$(() => {
-          store.style = store.style === "form" ? "conversational" : "form";
+          const next =
+            store.style === "form" ? "conversational" : "form";
+          store.style = next;
+          if (next === "conversational") store.canvasOpen = false;
         })}
         onStartOver$={$(() => {
           store.startOverOpen = true;
@@ -487,13 +492,23 @@ export default component$(() => {
         </section>
       )}
 
-      <section class="border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-4">
+      <section class="shrink-0 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-4">
         <div class="mx-auto max-w-6xl">
           <button type="button" class="mb-3 flex w-full items-center justify-between text-left" onClick$={() => { store.canvasOpen = !store.canvasOpen; }}>
             <span><strong class="font-[var(--font-display)] text-base text-[var(--color-ink)]">Dossier map</strong><span class="ml-2 font-[var(--font-typewriter)] text-[0.68rem] text-[var(--color-ink-muted)]">Brief, attachments, sources, and draft connections</span></span>
             <span aria-hidden="true">{store.canvasOpen ? "−" : "+"}</span>
           </button>
-          {store.canvasOpen && <SourceCanvas canvas={store.canvas} status={store.canvasStatus} onMap$={mapCanvas} onRetry$={extractCanvas} onChange$={(canvas) => { store.canvas = canvas; void saveSourceCanvas(canvas); }} />}
+          {store.canvasOpen && (
+            <div
+              class={
+                store.style === "conversational"
+                  ? "max-h-[35dvh] overflow-y-auto overscroll-contain"
+                  : undefined
+              }
+            >
+              <SourceCanvas canvas={store.canvas} status={store.canvasStatus} onMap$={mapCanvas} onRetry$={extractCanvas} onChange$={(canvas) => { store.canvas = canvas; void saveSourceCanvas(canvas); }} />
+            </div>
+          )}
         </div>
       </section>
 

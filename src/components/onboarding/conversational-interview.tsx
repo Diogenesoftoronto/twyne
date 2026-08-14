@@ -38,6 +38,11 @@ import {
   createAppError,
   normalizeApplicationError,
 } from "../../utils/application-errors";
+import {
+  CONVERSATION_COMPOSER_CLASS,
+  CONVERSATION_HISTORY_CLASS,
+  CONVERSATION_SHELL_CLASS,
+} from "../../utils/conversation-layout";
 
 /**
  * The conversational interview. A chat-style replacement for the
@@ -511,11 +516,11 @@ export const ConversationalInterview = component$(
 
     return (
       <div
-        class="min-h-screen flex flex-col bg-[var(--color-paper)] text-[var(--color-ink)]"
+        class={CONVERSATION_SHELL_CLASS}
         style={{ fontFamily: "var(--font-serif)" }}
       >
         {/* Header */}
-        <header class="px-6 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/90 backdrop-blur-sm flex items-center justify-between">
+        <header class="shrink-0 px-6 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/90 backdrop-blur-sm flex items-center justify-between">
           <div>
             <p
               class="text-[0.6rem] tracking-[0.32em] uppercase text-[var(--color-ink-muted)]"
@@ -537,7 +542,7 @@ export const ConversationalInterview = component$(
         {/* Thread */}
         <div
           ref={scrollerRef}
-          class="flex-1 overflow-y-auto px-4 py-6 space-y-4"
+          class={CONVERSATION_HISTORY_CLASS}
         >
           <div class="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
             <div class="space-y-4">
@@ -932,7 +937,12 @@ export const ConversationalInterview = component$(
 
         {/* Composer */}
         {!store.synthesis && (
-          <div class="border-t border-[var(--color-paper-3)] bg-[var(--color-paper-2)] px-4 py-3">
+          <div
+            class={CONVERSATION_COMPOSER_CLASS}
+            style={{
+              paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+            }}
+          >
             <div class="max-w-2xl mx-auto">
               {store.error && (
                 <div class="mb-3">

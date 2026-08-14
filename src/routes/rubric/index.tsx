@@ -44,11 +44,6 @@ function pct(n: number): number {
   return Math.round(n * 100);
 }
 
-function truncateSummary(summary: string, maxLength = 120): string {
-  if (summary.length <= maxLength) return summary;
-  return `${summary.slice(0, maxLength - 1).trimEnd()}…`;
-}
-
 /** Concrete, prescriptive next step for a low-scoring criterion. */
 function nextMoveFor(id: string): string {
   const moves: Record<string, string> = {
@@ -159,12 +154,6 @@ export default component$(() => {
       border-bottom: 1px dashed var(--color-paper-3);
     }
     .anchor:last-child { border-bottom: none; }
-    .summary-details summary::marker { color: var(--color-ink-muted); }
-    .summary-details summary:focus-visible {
-      outline: 2px solid var(--color-cobalt);
-      outline-offset: 3px;
-      border-radius: 2px;
-    }
   `);
 
   return (
@@ -263,21 +252,12 @@ export default component$(() => {
                       / 100
                     </span>
                   </p>
-                  <details class="summary-details mt-2">
-                    <summary
-                      class="cursor-pointer text-sm leading-6 text-[var(--color-ink-light)]"
-                      style={{ fontFamily: "var(--font-serif)" }}
-                      aria-label="Editor's summary, expand to read the full summary"
-                    >
-                      {truncateSummary(store.result.summary)}
-                    </summary>
-                    <p
-                      class="mt-2 text-sm leading-6 text-[var(--color-ink-light)]"
-                      style={{ fontFamily: "var(--font-serif)" }}
-                    >
-                      {store.result.summary}
-                    </p>
-                  </details>
+                  <p
+                    class="mt-2 text-sm leading-6 text-[var(--color-ink-light)]"
+                    style={{ fontFamily: "var(--font-serif)" }}
+                  >
+                    {store.result.summary}
+                  </p>
                   <p
                     class="mt-3 text-[0.65rem] text-[var(--color-ink-muted)]"
                     style={{

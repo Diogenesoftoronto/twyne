@@ -13,6 +13,7 @@ import {
   captureProductEvent,
   type LandingCtaLocation,
 } from "../utils/product-analytics";
+import { TWYNE_HOME_STRUCTURED_DATA } from "../utils/seo";
 
 /**
  * The landing page. Twyne-style: a magazine broadsheet the writer
@@ -88,6 +89,12 @@ export const head: DocumentHead = {
       property: "og:description",
       content:
         "Write with a room full of editors. Twyne starts with an interview, a seeded brief, citation detection, and structured feedback.",
+    },
+  ],
+  scripts: [
+    {
+      props: { type: "application/ld+json" },
+      script: JSON.stringify(TWYNE_HOME_STRUCTURED_DATA),
     },
   ],
 };
