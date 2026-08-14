@@ -64,6 +64,21 @@ export async function loadBibliography(): Promise<BibEntry[]> {
   }
 }
 
+/** Return only sources owned by one folio; never guess an owner for legacy data. */
+export function bibliographyForFolio(
+  bibliography: readonly BibEntry[],
+  folioId: string | null | undefined,
+): BibEntry[] {
+  if (!folioId) return [];
+  return bibliography.filter((entry) => entry.folioId === folioId);
+}
+
+export async function loadBibliographyForFolio(
+  folioId: string | null | undefined,
+): Promise<BibEntry[]> {
+  return bibliographyForFolio(await loadBibliography(), folioId);
+}
+
 export async function saveBibliography(bib: BibEntry[]): Promise<void> {
   if (typeof window === "undefined") return;
   try {
@@ -75,16 +90,23 @@ export async function saveBibliography(bib: BibEntry[]): Promise<void> {
 
 export async function upsertBibEntry(entry: BibEntry): Promise<BibEntry[]> {
   const all = await loadBibliography();
-  const idx = all.findIndex((e) => e.id === entry.id);
+  const idx = all.findIndex(
+    (e) => e.id === entry.id && e.folioId === entry.folioId,
+  );
   if (idx >= 0) all[idx] = entry;
   else all.push(entry);
   await saveBibliography(all);
   return all;
 }
 
-export async function deleteBibEntry(id: string): Promise<BibEntry[]> {
+export async function deleteBibEntry(
+  id: string,
+  folioId?: string,
+): Promise<BibEntry[]> {
   const all = await loadBibliography();
-  const next = all.filter((e) => e.id !== id);
+  const next = all.filter(
+    (e) => e.id !== id || (folioId !== undefined && e.folioId !== folioId),
+  );
   await saveBibliography(next);
   return next;
 }
@@ -189,18 +211,31 @@ export function hasResolvableUrl(url: string | undefined | null): boolean {
   return typeof url === "string" && url.trim().length > 0;
 }
 
-export async function findBibByUrl(url: string): Promise<BibEntry | undefined> {
+export function findBibliographyEntryByUrl(
+  bibliography: readonly BibEntry[],
+  url: string,
+  folioId: string,
+): BibEntry | undefined {
   if (!hasResolvableUrl(url)) return undefined;
   const target = normalizeUrl(url);
-  const all = await loadBibliography();
-  return all.find((e) => normalizeUrl(e.url) === target);
+  return bibliography.find(
+    (entry) =>
+      entry.folioId === folioId && normalizeUrl(entry.url) === target,
+  );
+}
+
+export async function findBibByUrl(
+  url: string,
+  folioId: string,
+): Promise<BibEntry | undefined> {
+  return findBibliographyEntryByUrl(await loadBibliography(), url, folioId);
 }
 
 export async function mergeBibEntry(entry: BibEntry): Promise<BibEntry[]> {
   if (!hasResolvableUrl(entry.url)) {
     return upsertBibEntry(entry);
   }
-  const existing = await findBibByUrl(entry.url);
+  const existing = await findBibByUrl(entry.url, entry.folioId);
   if (existing) {
     return upsertBibEntry({ ...existing, ...entry, id: existing.id });
   }

@@ -6,6 +6,8 @@ import {
   footnoteCite,
   hasResolvableUrl,
   formatMla,
+  bibliographyForFolio,
+  findBibliographyEntryByUrl,
 } from "./bibliography";
 
 const citation: DetectedCitation = {
@@ -124,5 +126,39 @@ describe("bibliography citation formatting", () => {
 
     expect(formatMla(entry)).toBe('Rivera, Mara. "Against Flat Sources." 2024,');
     expect(formatMla(entry)).not.toContain("accessed");
+  });
+});
+
+describe("bibliography folio ownership", () => {
+  const base = {
+    title: "Shared source",
+    url: "https://example.com/source",
+    accessedAt: 0,
+  };
+
+  test("returns only entries owned by the requested folio", () => {
+    const entries = [
+      { ...base, id: "a", folioId: "folio-a" },
+      { ...base, id: "b", folioId: "folio-b" },
+      { ...base, id: "legacy", folioId: "" },
+    ];
+    expect(bibliographyForFolio(entries, "folio-a").map((entry) => entry.id)).toEqual(["a"]);
+    expect(bibliographyForFolio(entries, "folio-b").map((entry) => entry.id)).toEqual(["b"]);
+  });
+
+  test("does not guess an owner for legacy or missing folio ids", () => {
+    const entries = [{ ...base, id: "legacy", folioId: "" }];
+    expect(bibliographyForFolio(entries, "folio-a")).toEqual([]);
+    expect(bibliographyForFolio(entries, null)).toEqual([]);
+  });
+
+  test("deduplicates a URL only inside the same folio", () => {
+    const entries = [
+      { ...base, id: "a", folioId: "folio-a" },
+      { ...base, id: "b", folioId: "folio-b" },
+    ];
+    expect(findBibliographyEntryByUrl(entries, base.url, "folio-a")?.id).toBe("a");
+    expect(findBibliographyEntryByUrl(entries, base.url, "folio-b")?.id).toBe("b");
+    expect(findBibliographyEntryByUrl(entries, base.url, "folio-c")).toBeUndefined();
   });
 });

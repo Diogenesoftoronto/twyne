@@ -1,10 +1,10 @@
 /**
  * The source canvas — spatial state for a folio's research.
  *
- * Persisted at `/source-canvas.json` inside the Lix blob, exactly like
- * `/bibliography.json` in `bibliography.ts`, so it travels with the manuscript
- * and rides the existing Convex sync pipeline rather than needing one of its
- * own.
+ * Persisted beneath `/folios/<folioId>/source-canvas.json` inside the Lix blob.
+ * The folio id in the payload is a validation aid; the path is the ownership
+ * boundary. Keeping one global path used to mean that saving folio B destroyed
+ * folio A's board even though both payloads claimed the correct owner.
  *
  * **The canvas is a projection, never the store of record.** `BibEntry[]` stays
  * authoritative for sources and `ProjectBrief` for the brief; a node holds only
@@ -23,7 +23,11 @@ import type {
   SourceCanvas,
 } from "../types";
 
-const CANVAS_PATH = "/source-canvas.json";
+const LEGACY_CANVAS_PATH = "/source-canvas.json";
+
+export function sourceCanvasPath(folioId: string): string {
+  return `/folios/${encodeURIComponent(folioId)}/source-canvas.json`;
+}
 
 export const DEFAULT_INSPECTOR_WIDTH = 380;
 const MIN_INSPECTOR_WIDTH = 260;
@@ -51,7 +55,22 @@ export function emptyCanvas(folioId: string): SourceCanvas {
  * rather than throwing inside a render.
  */
 export async function loadSourceCanvas(folioId: string): Promise<SourceCanvas> {
-  const raw = await readFileAsJson<Partial<SourceCanvas>>(CANVAS_PATH);
+  const path = sourceCanvasPath(folioId);
+  let raw = await readFileAsJson<Partial<SourceCanvas>>(path);
+
+  // Old builds wrote one global canvas. Its embedded owner makes migration
+  // unambiguous: only that folio may claim it. A different folio must see a
+  // clean board, never whichever board happened to be saved most recently.
+  if (!raw) {
+    const legacy = await readFileAsJson<Partial<SourceCanvas>>(
+      LEGACY_CANVAS_PATH,
+    );
+    if (legacy?.folioId === folioId) {
+      raw = legacy;
+      await writeFileAsJson(path, legacy);
+      await writeFileAsJson(LEGACY_CANVAS_PATH, null);
+    }
+  }
   if (!raw || raw.folioId !== folioId) return emptyCanvas(folioId);
   return {
     version: 1,
@@ -92,7 +111,7 @@ export function clampInspector(width: number): number {
 export async function saveSourceCanvas(canvas: SourceCanvas): Promise<void> {
   const nodes = canvas.nodes.filter((n) => !n.streaming);
   const live = new Set(nodes.map((n) => n.id));
-  await writeFileAsJson(CANVAS_PATH, {
+  await writeFileAsJson(sourceCanvasPath(canvas.folioId), {
     ...canvas,
     nodes,
     // An edge to a dropped node would dangle; prune with the node.

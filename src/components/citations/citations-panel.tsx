@@ -12,7 +12,8 @@ import {
   type BibEntry,
   type CitationStyle,
   buildBibEntryFromFormattedCitation,
-  loadBibliography,
+  bibliographyForFolio,
+  loadBibliographyForFolio,
   deleteBibEntry,
   formatCitation,
   footnoteCite,
@@ -196,7 +197,7 @@ export const CitationsPanel = component$(
             seen.add(citation.lookupUrl.replace(/\/+$/, ""));
           }
         }
-        if (all) store.bibliography = all;
+        if (all) store.bibliography = bibliographyForFolio(all, activeFolio?.id);
       } finally {
         store.autoFormatting = false;
       }
@@ -224,7 +225,7 @@ export const CitationsPanel = component$(
                 activeFolio.id,
               ),
             );
-            store.bibliography = all;
+            store.bibliography = bibliographyForFolio(all, activeFolio.id);
             store.addedIds = { ...store.addedIds, [citation.id]: true };
             return;
           }
@@ -236,7 +237,7 @@ export const CitationsPanel = component$(
             activeFolio.id,
           ),
         );
-        store.bibliography = all;
+        store.bibliography = bibliographyForFolio(all, activeFolio.id);
         store.addedIds = { ...store.addedIds, [citation.id]: true };
       } finally {
         store.formattingIds = { ...store.formattingIds, [citation.id]: false };
@@ -284,7 +285,7 @@ export const CitationsPanel = component$(
         if (!entry) return;
         const updated = { ...entry, citationInsertedAt: Date.now() };
         void upsertBibEntry(updated).then((all) => {
-          store.bibliography = all;
+          store.bibliography = bibliographyForFolio(all, activeFolio?.id);
         });
         store.citationNotice = "Footnote placed beside its claim.";
       };
@@ -296,7 +297,7 @@ export const CitationsPanel = component$(
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async () => {
       const [bibliography, apparatusSettings, aiSettings] = await Promise.all([
-        loadBibliography(),
+        loadBibliographyForFolio(activeFolio?.id),
         loadApparatusSettingsFromIdb(),
         loadAiSettingsFromIdb(),
       ]);
@@ -346,9 +347,9 @@ export const CitationsPanel = component$(
           }, 6_000);
         }
         // Refresh the bibliography so newly-saved entries show up.
-        void loadBibliography().then((all) => {
-          store.bibliography = all;
-          void autoInsertEntries(all);
+        void loadBibliographyForFolio(activeFolio?.id).then((entries) => {
+          store.bibliography = entries;
+          void autoInsertEntries(entries);
         });
       };
       pull();
@@ -377,8 +378,8 @@ export const CitationsPanel = component$(
     });
 
     const dropEntry = $(async (id: string) => {
-      const all = await deleteBibEntry(id);
-      store.bibliography = all;
+      const all = await deleteBibEntry(id, activeFolio?.id);
+      store.bibliography = bibliographyForFolio(all, activeFolio?.id);
     });
 
     const citeInDraft = $(async (entry: BibEntry) => {
@@ -791,9 +792,7 @@ export const CitationsPanel = component$(
               )}
             </div>
           )}
-          {store.bibliography
-            .filter((b) => b.folioId === activeFolio?.id || !b.folioId)
-            .map((entry) => {
+          {store.bibliography.map((entry) => {
               const isCited =
                 Boolean(entry.citationInsertedAt) ||
                 citedUrls.has(entry.url.replace(/\/+$/, ""));
@@ -892,7 +891,7 @@ export const CitationsPanel = component$(
                   </div>
                 </div>
               );
-            })}
+          })}
 
           {store.citations.length > 0 && (
             <div class="px-4 pt-5 pb-2 flex items-center justify-between">
