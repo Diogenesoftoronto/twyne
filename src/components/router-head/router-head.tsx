@@ -1,10 +1,10 @@
 import { component$ } from "@builder.io/qwik";
 import { useDocumentHead, useLocation } from "@builder.io/qwik-city";
-
-/** Canonical production origin. Used as a fallback when no request origin is
- * available; absolute social URLs prefer the live request origin so embeds
- * resolve correctly on both the Railway URL and twyne.love. */
-const SITE = "https://twyne.love";
+import {
+  TWYNE_SITE_ORIGIN,
+  canonicalUrl,
+  isPrivateWorkspacePath,
+} from "../../utils/seo";
 
 /**
  * The RouterHead component is placed inside of the document `<head>` element.
@@ -13,9 +13,8 @@ export const RouterHead = component$(() => {
   const head = useDocumentHead();
   const loc = useLocation();
 
-  const origin = loc.url.origin || SITE;
-  const ogImage = `${origin}/og-image.png`;
-  const pageUrl = loc.url.href;
+  const ogImage = `${TWYNE_SITE_ORIGIN}/og-image.png`;
+  const pageUrl = canonicalUrl(loc.url);
 
   // Keys (name or property) a route already declared — render site-wide
   // social defaults only when the route hasn't overridden them.
@@ -47,6 +46,8 @@ export const RouterHead = component$(() => {
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: ogImage },
   ].filter((m) => !declared.has((m.property ?? m.name) as string));
+
+  const privateWorkspace = isPrivateWorkspacePath(loc.url.pathname);
 
   return (
     <>
@@ -85,6 +86,10 @@ export const RouterHead = component$(() => {
       {socialDefaults.map((m) => (
         <meta key={m.property ?? m.name} {...m} />
       ))}
+
+      {privateWorkspace && !declared.has("robots") && (
+        <meta name="robots" content="noindex, nofollow, noarchive" />
+      )}
 
       {head.meta.map((m) => (
         <meta key={m.key} {...m} />

@@ -8,6 +8,7 @@ import {
   getActiveTableFormat,
   getTableActionAvailability,
   type TableActionAvailability,
+  type TableActionId,
   type TableFormatAttributes,
   type TableToolbarIntent,
 } from "./extensions/table-format";
@@ -15,6 +16,8 @@ import {
   getSelectedCellFormat,
   type SelectedCellFormat,
 } from "./extensions/table-cell-format";
+import { Icon } from "../ui/icon";
+import type { TwyneIconName } from "../../utils/icon-system";
 
 export const TABLE_TOOLBAR_GAP = 8;
 export const TABLE_TOOLBAR_VIEWPORT_MARGIN = 8;
@@ -367,14 +370,28 @@ interface FloatingTableToolbarProps {
 
 const ACTION_GROUPS = ["rows", "columns", "cells", "table"] as const;
 
-/**
- * The removals are split out of the scrolling strip and pinned to its right
- * edge. Twelve labelled buttons overflow the toolbar's max width, so "Delete
- * table" used to sit past the end of a horizontal scroll nobody discovered —
- * writers reported being unable to get rid of a table at all.
- */
-const BUILD_ACTIONS = TABLE_ACTIONS.filter((action) => !action.destructive);
-const REMOVE_ACTIONS = TABLE_ACTIONS.filter((action) => action.destructive);
+const ACTION_GROUP_LABELS: Record<(typeof ACTION_GROUPS)[number], string> = {
+  rows: "Rows",
+  columns: "Columns",
+  cells: "Cells",
+  table: "Table",
+};
+
+/** One governed icon meaning for every structural table action. */
+export const TABLE_ACTION_ICONS: Record<TableActionId, TwyneIconName> = {
+  addRowBefore: "arrow-up",
+  addRowAfter: "arrow-down",
+  deleteRow: "trash",
+  toggleHeaderRow: "row-horizontal",
+  addColumnBefore: "arrow-left",
+  addColumnAfter: "arrow-right",
+  deleteColumn: "trash",
+  toggleHeaderColumn: "row-vertical",
+  mergeCells: "link",
+  splitCell: "link-broken",
+  distributeColumns: "align-horizontal-spacing",
+  deleteTable: "trash",
+};
 
 /**
  * Floating controls for the active table. It is intentionally editor-agnostic:
@@ -392,7 +409,7 @@ export const FloatingTableToolbar = component$<FloatingTableToolbarProps>(
         role="toolbar"
         aria-label="Table tools"
         data-placement={snapshot.position.placement}
-        class="fixed flex flex-col gap-2 overflow-x-auto bg-[var(--color-paper)] p-2 text-[var(--color-ink)]"
+        class="fixed flex flex-col gap-2 overflow-visible bg-[var(--color-paper)] p-2 text-[var(--color-ink)]"
         style={{
           left: `${snapshot.position.left}px`,
           top: `${snapshot.position.top}px`,
@@ -405,28 +422,32 @@ export const FloatingTableToolbar = component$<FloatingTableToolbarProps>(
             "0 6px 8px color-mix(in srgb, var(--color-ink) 12%, transparent)",
         }}
       >
-        <div class="flex min-w-max items-center gap-1">
-          {ACTION_GROUPS.flatMap((group, groupIndex) => {
-            const actions = BUILD_ACTIONS.filter(
+        <div class="flex flex-wrap items-start gap-2">
+          {ACTION_GROUPS.map((group) => {
+            const actions = TABLE_ACTIONS.filter(
               (action) => action.group === group,
             );
-            if (actions.length === 0) return [];
-            return [
-              ...(groupIndex === 0
-                ? []
-                : [
-                    <span
-                      key={`${group}:separator`}
-                      aria-hidden="true"
-                      class="mx-1 h-6 w-px bg-[var(--color-paper-3)]"
-                    />,
-                  ]),
-              ...actions.map((action) => (
+            return (
+              <div
+                key={group}
+                role="group"
+                aria-label={`${ACTION_GROUP_LABELS[group]} actions`}
+                class="flex items-center gap-1 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] p-1"
+              >
+                <span class="px-1 text-[0.58rem] uppercase tracking-[0.12em] text-[var(--color-ink-muted)]">
+                  {ACTION_GROUP_LABELS[group]}
+                </span>
+                {actions.map((action) => (
                 <button
                   key={action.id}
                   type="button"
                   disabled={!snapshot.availability[action.id]}
-                  class="btn-paper whitespace-nowrap px-2 py-1 text-[0.65rem] disabled:cursor-not-allowed disabled:opacity-40"
+                  class={[
+                    "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-transparent hover:border-[var(--color-paper-3)] hover:bg-[var(--color-paper)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-vermilion)] disabled:cursor-not-allowed disabled:opacity-35",
+                    action.destructive
+                      ? "text-[var(--color-vermilion)]"
+                      : "text-[var(--color-ink-light)] hover:text-[var(--color-ink)]",
+                  ]}
                   title={action.label}
                   aria-label={action.label}
                   onClick$={() =>
@@ -436,45 +457,15 @@ export const FloatingTableToolbar = component$<FloatingTableToolbarProps>(
                     })
                   }
                 >
-                  {action.label}
+                  <Icon name={TABLE_ACTION_ICONS[action.id]} size={17} />
                 </button>
-              )),
-            ];
+                ))}
+              </div>
+            );
           })}
-
-          {/* Pinned to the scroll container's right edge so the removals stay
-              on screen however far the strip is scrolled. */}
-          <div
-            role="group"
-            aria-label="Remove"
-            class="sticky right-0 flex items-center gap-1 pl-2 bg-[var(--color-paper)]"
-            style={{
-              boxShadow:
-                "-8px 0 8px -6px color-mix(in srgb, var(--color-ink) 18%, transparent)",
-            }}
-          >
-            {REMOVE_ACTIONS.map((action) => (
-              <button
-                key={action.id}
-                type="button"
-                disabled={!snapshot.availability[action.id]}
-                class="btn-paper whitespace-nowrap px-2 py-1 text-[0.65rem] text-[var(--color-vermilion)] disabled:cursor-not-allowed disabled:opacity-40"
-                title={action.label}
-                aria-label={action.label}
-                onClick$={() =>
-                  props.onIntent$({
-                    kind: "action",
-                    action: action.id,
-                  })
-                }
-              >
-                {action.label}
-              </button>
-            ))}
-          </div>
         </div>
 
-        <div class="flex min-w-max items-center gap-2 border-t border-[var(--color-paper-3)] pt-2">
+        <div class="flex min-w-0 flex-wrap items-center gap-2 border-t border-[var(--color-paper-3)] pt-2">
           <label class="flex items-center gap-1 text-[0.65rem]">
             <span>Width</span>
             <select
@@ -546,7 +537,7 @@ export const FloatingTableToolbar = component$<FloatingTableToolbarProps>(
             </select>
           </label>
 
-          <label class="flex min-w-[14rem] flex-1 items-center gap-1 text-[0.65rem]">
+          <label class="flex min-w-[11rem] flex-1 items-center gap-1 text-[0.65rem]">
             <span>Caption</span>
             <input
               type="text"

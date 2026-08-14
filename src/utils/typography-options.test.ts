@@ -1,5 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
+  DEFAULT_MANUSCRIPT_FONT_LABEL,
+  DEFAULT_MANUSCRIPT_FONT_SIZE_LABEL,
   FONT_CHOICES,
   FONT_SIZES,
   LINE_SPACINGS,
@@ -8,6 +10,11 @@ import {
 } from "./typography-options";
 
 describe("font choices", () => {
+  test("names the actual default family and size instead of hiding them", () => {
+    expect(DEFAULT_MANUSCRIPT_FONT_LABEL).toBe("Lora (default)");
+    expect(DEFAULT_MANUSCRIPT_FONT_SIZE_LABEL).toBe("13.5");
+  });
+
   test("every family the menu offers is one the app actually loads", () => {
     // A font menu is a promise about what the document will look like on
     // someone else's machine. Offering a family root.tsx never loads means the

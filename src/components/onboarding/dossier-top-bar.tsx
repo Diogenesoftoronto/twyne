@@ -35,7 +35,7 @@ export const DossierTopBar = component$((props: DossierTopBarProps) => {
   const formPill = props.mode === "form";
   return (
     <div
-      class="px-4 py-2 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/80 backdrop-blur-sm flex items-center justify-between gap-4"
+      class="shrink-0 px-4 py-2 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/80 backdrop-blur-sm flex items-center justify-between gap-4"
     >
       <div class="flex items-center gap-3">
         <Link

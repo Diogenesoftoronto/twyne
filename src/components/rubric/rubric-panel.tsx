@@ -65,6 +65,7 @@ import {
   sparklinePoints,
 } from "../../utils/rubric-criteria";
 import { toAgentPersona } from "../../../convex/agentPrompts";
+import { truncateGalleySummary } from "../../utils/galley-summary";
 
 interface RubricStore {
   result: RubricResult | null;
@@ -845,12 +846,21 @@ export const RubricPanel = component$(
                   )}
                 </div>
               </div>
-              <p
-                class="panel-prose mt-3 text-[var(--color-ink-light)]"
-                style="font-family: var(--font-serif); font-style: italic;"
-              >
-                {store.result.summary}
-              </p>
+              <details class="group mt-3">
+                <summary
+                  class="panel-prose cursor-pointer text-[var(--color-ink-light)] marker:text-[var(--color-ink-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-cobalt)]"
+                  style="font-family: var(--font-serif); font-style: italic;"
+                  aria-label="Editor's summary, expand to read the full summary"
+                >
+                  {truncateGalleySummary(store.result.summary)}
+                </summary>
+                <p
+                  class="panel-prose mt-2 border-l border-[var(--color-paper-3)] pl-3 text-[var(--color-ink-light)]"
+                  style="font-family: var(--font-serif); font-style: italic;"
+                >
+                  {store.result.summary}
+                </p>
+              </details>
               {store.error && (
                 <div class="mt-3">
                   <ApplicationNotice

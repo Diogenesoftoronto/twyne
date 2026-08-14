@@ -38,6 +38,7 @@ import {
 } from "../../../utils/idb";
 import { markDirty } from "../../../utils/convex-sync";
 import { captureProductEvent } from "../../../utils/product-analytics";
+import { CONVERSATION_ROUTE_CLASS } from "../../../utils/conversation-layout";
 
 interface OnboardingStore {
   hydrated: boolean;
@@ -225,7 +226,7 @@ export default component$(() => {
 
   if (store.style === "conversational") {
     return (
-      <div class="min-h-screen bg-[var(--color-paper)]">
+      <div class={CONVERSATION_ROUTE_CLASS}>
         <DossierTopBar
           backHref={store.folioId ? "/editor/" : "/"}
           backLabel={store.folioId ? "Back to desk" : "Back home"}

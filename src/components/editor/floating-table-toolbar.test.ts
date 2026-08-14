@@ -9,8 +9,11 @@ import {
   readTableToolbarSnapshot,
   TABLE_CELL_FORMAT_PANEL_HEIGHT,
   TABLE_TOOLBAR_GAP,
+  TABLE_ACTION_ICONS,
   type PlainRect,
 } from "./floating-table-toolbar";
+import { TABLE_ACTIONS } from "./extensions/table-format";
+import { renderTwyneIconSvg } from "../../utils/icon-system";
 
 function rect(
   left: number,
@@ -62,6 +65,19 @@ describe("floating table toolbar positioning", () => {
     );
     expect(position.width).toBe(304);
     expect(position.left).toBe(8);
+  });
+});
+
+describe("floating table toolbar actions", () => {
+  test("maps every action to a renderable governed Reicon", () => {
+    expect(Object.keys(TABLE_ACTION_ICONS).sort()).toEqual(
+      TABLE_ACTIONS.map((action) => action.id).sort(),
+    );
+    for (const action of TABLE_ACTIONS) {
+      expect(renderTwyneIconSvg(TABLE_ACTION_ICONS[action.id])).toContain(
+        "<svg",
+      );
+    }
   });
 });
 
