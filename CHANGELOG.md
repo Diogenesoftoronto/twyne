@@ -9,6 +9,29 @@
 
 
 
+
+## 0.15.0
+<sub>2026-08-14</sub>
+
+-  *(minor)*
+  Twyne 0.15 makes the writing desk easier to read, navigate, and discover.
+
+  **The compositor now behaves like a document editor.** Home, Insert, Review,
+  and View ribbons organize the full toolset, while font family and point size
+  stay visible at a glance. Semantic Reicon controls, clearer checklists, and a
+  grouped page-layout panel replace the old undifferentiated strip of symbols.
+
+  **Core writing interactions are steadier.** Slash commands retain the command
+  the writer selected, conversation history scrolls without displacing its
+  composer, Marginalia editors provide usable writing room, and table controls
+  remain reachable at narrow widths. Galley summaries are complete on their own
+  page and compact only in the side panel.
+
+  **Public pages are easier to index correctly.** Canonical metadata, structured
+  application data, route-aware indexing directives, robots guidance, sitemap
+  checks, and llms.txt now describe the public site while keeping private writing
+  routes out of search results.
+
 ## 0.14.0
 <sub>2026-08-12</sub>
 
