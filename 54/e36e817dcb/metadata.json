@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "54e36e817dcb",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/components/editor/twyne-editor.tsx",
+    "src/utils/speech.test.ts",
+    "src/utils/speech.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/54/e36e817dcb/0/metadata.json",
+      "transcript": "/54/e36e817dcb/0/full.jsonl",
+      "compact_transcript": "/54/e36e817dcb/0/transcript.jsonl",
+      "content_hash": "/54/e36e817dcb/0/content_hash.txt",
+      "prompt": "/54/e36e817dcb/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 532103,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 20939008,
+    "output_tokens": 24674,
+    "api_call_count": 140
+  }
+}
