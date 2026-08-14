@@ -38,6 +38,10 @@ import { getCachedAiSettings } from "./ai-orchestrator";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
 import { BROWSER_TTS_VOICES } from "./browser-inference";
 import { segmentSpeechText } from "./speech-segments";
+import type {
+  SpeechAlignmentRange,
+  SpeechAlignmentSnapshot,
+} from "./speech-alignment";
 
 /** Cap on cached clips, so a long session doesn't hold every note in memory. */
 const MAX_CACHED_CLIPS = 24;
@@ -118,6 +122,9 @@ export interface SpeechState {
   /** Provider and model serving the active clip, once known. */
   provider: string | null;
   model: string | null;
+  /** Native provider timing only. Empty means the UI must use coarse highlighting. */
+  alignment: SpeechAlignmentRange[];
+  alignmentProvider: string | null;
 }
 
 export interface SpeechVoiceOption {
@@ -164,6 +171,8 @@ const state: SpeechState = {
   voice: null,
   provider: null,
   model: null,
+  alignment: [],
+  alignmentProvider: null,
 };
 
 let audio: HTMLAudioElement | null = null;
@@ -175,7 +184,12 @@ const cache = new Map<string, string>();
  * skips to it; without this the same paragraph would be sent to the provider
  * twice and billed twice.
  */
-const inFlight = new Map<string, Promise<string>>();
+interface ResolvedClip {
+  url: string;
+  key: string;
+}
+const inFlight = new Map<string, Promise<ResolvedClip>>();
+const alignmentCache = new Map<string, SpeechAlignmentSnapshot>();
 /** Guards against a slow request landing after the writer moved on. */
 let generation = 0;
 /** The passages to read, in order. A lone reading is a queue of one. */
@@ -184,7 +198,7 @@ let queueIndex = 0;
 let queueOwner: string | null = null;
 
 export function speechState(): SpeechState {
-  return { ...state };
+  return { ...state, alignment: [...state.alignment] };
 }
 
 /** The exact prose handed to the provider for the active queue item. */
@@ -228,6 +242,10 @@ function setState(
     state.provider = null;
     state.model = null;
   }
+  if (status === "idle" || status === "loading" || status === "error") {
+    state.alignment = [];
+    state.alignmentProvider = null;
+  }
   notify();
 }
 
@@ -259,6 +277,7 @@ function remember(key: string, url: string): void {
     const stale = cache.get(oldest);
     if (stale) URL.revokeObjectURL(stale);
     cache.delete(oldest);
+    alignmentCache.delete(oldest);
   }
 }
 
@@ -588,7 +607,9 @@ export async function retrySpeech(): Promise<void> {
 }
 
 type Synthesis = {
-  audio: Blob;
+  audio?: Blob;
+  audioStream?: ReadableStream<Uint8Array>;
+  mimeType: string;
   provider: string;
   model: string;
   voice: string;
@@ -601,7 +622,10 @@ type Synthesis = {
  * and model are used, and failures are surfaced rather than silently changing
  * models. Hosted speech is considered only when no BYOK voice provider exists.
  */
-async function synthesize(req: SpeakRequest): Promise<Synthesis> {
+async function synthesize(
+  req: SpeakRequest,
+  onAlignment?: (snapshot: SpeechAlignmentSnapshot) => void,
+): Promise<Synthesis> {
   const text = req.text.trim();
   const settings = await getCachedAiSettings();
 
@@ -617,12 +641,15 @@ async function synthesize(req: SpeakRequest): Promise<Synthesis> {
         text,
         voice: resolveVoice(req, settings),
         instructions: req.instructions,
+        onAlignment,
       },
       settings,
     );
     if (result) {
       return {
         audio: result.audio,
+        audioStream: result.audioStream,
+        mimeType: result.mimeType,
         provider: result.provider,
         model: result.model,
         voice: result.voice,
@@ -651,6 +678,7 @@ async function synthesize(req: SpeakRequest): Promise<Synthesis> {
       );
       return {
         audio: new Blob([bytes], { type: res.mimeType }),
+        mimeType: res.mimeType,
         provider: "hosted",
         model: "hosted",
         voice: req.voice ?? "alloy",
@@ -678,7 +706,7 @@ async function synthesize(req: SpeakRequest): Promise<Synthesis> {
  * the same cache and the same in-flight map, which is what keeps a skip
  * during a prefetch from paying for the same paragraph twice.
  */
-async function resolveClip(req: SpeakRequest): Promise<string> {
+async function resolveClip(req: SpeakRequest): Promise<ResolvedClip> {
   const text = req.text.trim();
   const spoken = await withPersonaVoice(req);
   // Key the cache on the voice that will actually be used, so two editors
@@ -704,23 +732,84 @@ async function resolveClip(req: SpeakRequest): Promise<string> {
     // very clip that is playing.
     cache.delete(key);
     cache.set(key, cached);
-    return cached;
+    return { url: cached, key };
   }
 
   const pending = inFlight.get(key);
   if (pending) return pending;
 
-  const work = synthesize({ ...spoken, text })
-    .then((result) => {
-      const url = URL.createObjectURL(result.audio);
+  const work = synthesize({ ...spoken, text }, (snapshot) => {
+    alignmentCache.set(key, snapshot);
+  })
+    .then(async (result) => {
+      const url = result.audioStream
+        ? await createStreamingAudioUrl(result.audioStream, result.mimeType)
+        : URL.createObjectURL(result.audio!);
       remember(key, url);
-      return url;
+      return { url, key };
     })
     .finally(() => {
       inFlight.delete(key);
     });
   inFlight.set(key, work);
   return work;
+}
+
+async function createStreamingAudioUrl(
+  stream: ReadableStream<Uint8Array>,
+  mimeType: string,
+): Promise<string> {
+  if (
+    typeof MediaSource === "undefined" ||
+    !MediaSource.isTypeSupported(mimeType)
+  ) {
+    const blob = await new Response(stream).blob();
+    return URL.createObjectURL(new Blob([blob], { type: mimeType }));
+  }
+
+  const mediaSource = new MediaSource();
+  const url = URL.createObjectURL(mediaSource);
+  const reader = stream.getReader();
+  mediaSource.addEventListener(
+    "sourceopen",
+    () => {
+      const sourceBuffer = mediaSource.addSourceBuffer(mimeType);
+      const append = (chunk: Uint8Array) =>
+        new Promise<void>((resolve, reject) => {
+          const done = () => {
+            sourceBuffer.removeEventListener("updateend", done);
+            sourceBuffer.removeEventListener("error", failed);
+            resolve();
+          };
+          const failed = () => {
+            sourceBuffer.removeEventListener("updateend", done);
+            sourceBuffer.removeEventListener("error", failed);
+            reject(
+              new Error("The streamed audio buffer could not be appended."),
+            );
+          };
+          sourceBuffer.addEventListener("updateend", done, { once: true });
+          sourceBuffer.addEventListener("error", failed, { once: true });
+          sourceBuffer.appendBuffer(chunk.slice().buffer as ArrayBuffer);
+        });
+
+      void (async () => {
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            if (value.byteLength) await append(value);
+          }
+          if (mediaSource.readyState === "open") mediaSource.endOfStream();
+        } catch {
+          if (mediaSource.readyState === "open")
+            mediaSource.endOfStream("network");
+        }
+      })();
+    },
+    { once: true },
+  );
+  return url;
 }
 
 /**
@@ -823,12 +912,12 @@ async function playCurrent(): Promise<void> {
   setState("loading", req.id);
 
   try {
-    const url = await resolveClip(req);
+    const clip = await resolveClip(req);
     if (mine !== generation) return; // the writer moved on
 
     audio = audio ?? new Audio();
     audio.muted = false;
-    audio.src = url;
+    audio.src = clip.url;
     audio.onended = () => {
       if (mine !== generation) return;
       // On to the next editor. The queue is abandoned only at the end, so the
@@ -840,14 +929,19 @@ async function playCurrent(): Promise<void> {
       }
       stopSpeech();
     };
-    audio.onloadedmetadata = () => {
+    const updateDuration = () => {
       if (mine !== generation || !audio) return;
       state.duration = Number.isFinite(audio.duration) ? audio.duration : 0;
       notify();
     };
+    audio.onloadedmetadata = updateDuration;
+    audio.ondurationchange = updateDuration;
     audio.ontimeupdate = () => {
       if (mine !== generation || !audio) return;
       state.currentTime = audio.currentTime;
+      const settings = alignmentCache.get(clip.key);
+      state.alignment = settings ? [...settings.ranges] : [];
+      state.alignmentProvider = settings?.provider ?? null;
       notify();
     };
     audio.onerror = () => {
@@ -865,6 +959,9 @@ async function playCurrent(): Promise<void> {
     if (mine === generation) {
       const menu = await currentSpeechVoiceMenu();
       if (mine !== generation) return;
+      const alignment = alignmentCache.get(clip.key);
+      state.alignment = alignment ? [...alignment.ranges] : [];
+      state.alignmentProvider = alignment?.provider ?? null;
       state.provider = menu?.provider ?? null;
       state.model = menu?.model ?? null;
       state.voice = menu?.selected ?? null;
@@ -903,4 +1000,5 @@ async function playCurrent(): Promise<void> {
 export function clearSpeechCache(): void {
   for (const url of cache.values()) URL.revokeObjectURL(url);
   cache.clear();
+  alignmentCache.clear();
 }

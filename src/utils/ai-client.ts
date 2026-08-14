@@ -63,6 +63,12 @@ import {
 } from "../../convex/agentPrompts";
 import { buildQuoteTools } from "../../convex/agentTools";
 import { loadApparatusSettingsFromIdb } from "./idb";
+import {
+  SseJsonDecoder,
+  mapFishTimestampEvent,
+  type FishTimestampEvent,
+  type SpeechAlignmentSnapshot,
+} from "./speech-alignment";
 
 /**
  * The writer's MCP tools, if any server is marked "offer tools while writing".
@@ -571,10 +577,15 @@ export interface VoiceSpeechRequest {
   instructions?: string;
   responseFormat?: "mp3" | "opus" | "aac" | "flac" | "wav" | "pcm";
   speed?: number;
+  signal?: AbortSignal;
+  onAlignment?: (snapshot: SpeechAlignmentSnapshot) => void;
 }
 
 export interface VoiceSpeechResult {
-  audio: Blob;
+  audio?: Blob;
+  /** Native provider bytes as they arrive; preferred over waiting for `audio`. */
+  audioStream?: ReadableStream<Uint8Array>;
+  mimeType: string;
   provider: string;
   model: string;
   voice: string;
@@ -619,6 +630,8 @@ export async function runClientVoiceSpeech(
       voice,
       responseFormat,
       speed,
+      signal: req.signal,
+      onAlignment: req.onAlignment,
     });
   }
 
@@ -630,6 +643,7 @@ export async function runClientVoiceSpeech(
     });
     return {
       audio: result.audio,
+      mimeType: result.audio.type,
       provider: "supertonic",
       model: result.model,
       voice: result.voice ?? voice,
@@ -650,6 +664,7 @@ export async function runClientVoiceSpeech(
         authorization: `Bearer ${resolved.provider.apiKey}`,
         "content-type": "application/json",
       },
+      signal: req.signal,
       body: JSON.stringify({
         model: resolved.model,
         input,
@@ -657,6 +672,7 @@ export async function runClientVoiceSpeech(
         response_format: responseFormat,
         ...(instructions ? { instructions } : {}),
         ...(speed ? { speed } : {}),
+        stream_format: "audio",
       }),
     });
     if (!res.ok) {
@@ -665,11 +681,16 @@ export async function runClientVoiceSpeech(
         `Voice generation failed (${res.status}): ${detail.slice(0, 240)}`,
       );
     }
-    const audio = new Blob([await res.arrayBuffer()], {
-      type: audioMimeType(responseFormat),
-    });
+    const mimeType =
+      res.headers.get("content-type")?.split(";", 1)[0] ||
+      audioMimeType(responseFormat);
     return {
-      audio,
+      ...(res.body
+        ? { audioStream: res.body as ReadableStream<Uint8Array> }
+        : {
+            audio: new Blob([await res.arrayBuffer()], { type: mimeType }),
+          }),
+      mimeType,
       provider: resolved.provider.type,
       model: resolved.model,
       voice,
@@ -1291,6 +1312,8 @@ async function runFishAudioSpeech(args: {
   voice: string;
   responseFormat: string;
   speed?: number;
+  signal?: AbortSignal;
+  onAlignment?: (snapshot: SpeechAlignmentSnapshot) => void;
 }): Promise<VoiceSpeechResult | null> {
   // Fish voice ids are 32-character hex; the OpenAI voice names we default to
   // ("alloy", "onyx", …) are not, and sending one would 422.
@@ -1307,18 +1330,20 @@ async function runFishAudioSpeech(args: {
     : "mp3";
 
   try {
-    const res = await fetch(`${FISH_AUDIO_BASE}/v1/tts`, {
+    const res = await fetch(`${FISH_AUDIO_BASE}/v1/tts/stream/with-timestamp`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${args.provider.apiKey}`,
         "content-type": "application/json",
         model: args.model,
       },
+      signal: args.signal,
       body: JSON.stringify({
         text: args.text,
         format,
         ...(referenceId ? { reference_id: referenceId } : {}),
         ...(args.speed ? { prosody: { speed: args.speed } } : {}),
+        latency: "balanced",
       }),
     });
     if (!res.ok) {
@@ -1327,10 +1352,15 @@ async function runFishAudioSpeech(args: {
         `Fish Audio speech failed (${res.status}): ${detail.slice(0, 240)}`,
       );
     }
+    const mimeType = audioMimeType(format);
+    const audioStream = res.body
+      ? fishTimestampAudioStream(res.body, args.text, args.onAlignment)
+      : undefined;
     return {
-      audio: new Blob([await res.arrayBuffer()], {
-        type: audioMimeType(format),
-      }),
+      ...(audioStream
+        ? { audioStream }
+        : { audio: new Blob([await res.arrayBuffer()], { type: mimeType }) }),
+      mimeType,
       provider: "fishaudio",
       model: args.model,
       voice: referenceId ?? "default",
@@ -1340,6 +1370,79 @@ async function runFishAudioSpeech(args: {
     reportApplicationDiagnostic("twyne:ai-client:fishaudio-speech", err);
     throw err;
   }
+}
+
+function decodeBase64Bytes(value: string): Uint8Array {
+  const binary = atob(value);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+}
+
+/** Split Fish's SSE into playable audio bytes and superseding alignments. */
+function fishTimestampAudioStream(
+  body: ReadableStream<Uint8Array>,
+  source: string,
+  onAlignment?: (snapshot: SpeechAlignmentSnapshot) => void,
+): ReadableStream<Uint8Array> {
+  const reader = body.getReader();
+  const textDecoder = new TextDecoder();
+  const sse = new SseJsonDecoder<
+    FishTimestampEvent & { audio_base64?: string }
+  >();
+  const alignmentByChunk = new Map<number, SpeechAlignmentSnapshot["ranges"]>();
+  const sourceStartByChunk = new Map<number, number>();
+  let sourceCursor = 0;
+
+  const emit = (
+    controller: ReadableStreamDefaultController<Uint8Array>,
+    events: Array<FishTimestampEvent & { audio_base64?: string }>,
+  ) => {
+    for (const event of events) {
+      if (event.audio_base64) {
+        controller.enqueue(decodeBase64Bytes(event.audio_base64));
+      }
+      const chunk = Number(event.chunk_seq);
+      if (!Number.isFinite(chunk) || !event.alignment || !event.content) {
+        continue;
+      }
+      if (!sourceStartByChunk.has(chunk)) {
+        const found = source.indexOf(event.content, sourceCursor);
+        if (found < 0) continue;
+        sourceStartByChunk.set(chunk, found);
+      }
+      const sourceStart = sourceStartByChunk.get(chunk)!;
+      sourceCursor = Math.max(sourceCursor, sourceStart + event.content.length);
+      const ranges = mapFishTimestampEvent(source, event, sourceStart);
+      alignmentByChunk.set(chunk, ranges);
+      onAlignment?.({
+        provider: "fishaudio",
+        ranges: [...alignmentByChunk.entries()]
+          .sort(([left], [right]) => left - right)
+          .flatMap(([, value]) => value),
+      });
+    }
+  };
+
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      try {
+        const { done, value } = await reader.read();
+        emit(
+          controller,
+          sse.push(textDecoder.decode(value, { stream: !done })),
+        );
+        if (done) {
+          emit(controller, sse.finish());
+          controller.close();
+          return;
+        }
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+    cancel(reason) {
+      void reader.cancel(reason);
+    },
+  });
 }
 
 /**
