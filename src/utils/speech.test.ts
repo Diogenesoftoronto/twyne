@@ -232,6 +232,35 @@ describe("speak", () => {
     await speakModule.speak({ id: "note-2", text: "two" });
     expect(speakModule.speechState().id).toBe("note-2");
   });
+
+  test("starts a long manuscript from its first semantic chunk", async () => {
+    const said: string[] = [];
+    const client = {
+      action: async (_ref: unknown, args: { text: string }) => {
+        said.push(args.text);
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    } as never;
+    const sentence =
+      "The writer hears this sentence promptly while the later pages prepare.";
+    const text = Array.from({ length: 80 }, () => sentence).join(" ");
+
+    await speakModule.speak({
+      id: "manuscript",
+      text,
+      sourceOffset: 12,
+      client,
+      signedIn: true,
+      progressive: true,
+    });
+
+    expect(said[0].length).toBeLessThan(text.length);
+    expect(said[0].length).toBeLessThanOrEqual(900);
+    expect(speakModule.currentSpeechText()).toBe(said[0]);
+    expect(speakModule.currentSpeechSourceOffset()).toBe(12);
+    expect(speakModule.speechState().queueLength).toBeGreaterThan(1);
+    expect(speakModule.speechState().ownerId).toBe("manuscript");
+  });
 });
 
 /**
@@ -405,6 +434,65 @@ describe("speakQueue", () => {
     await playing("memo-2");
 
     expect(said.filter((t) => t === "two")).toHaveLength(1);
+  });
+
+  test("retries a failed future manuscript chunk without interrupting the current one", async () => {
+    const calls: string[] = [];
+    let firstChunk = "";
+    let failedChunk = "";
+    const attempts = new Map<string, number>();
+    const client = {
+      action: async (_ref: unknown, args: { text: string }) => {
+        calls.push(args.text);
+        if (!firstChunk) firstChunk = args.text;
+        else if (args.text !== firstChunk) {
+          if (!failedChunk) failedChunk = args.text;
+          const count = (attempts.get(args.text) ?? 0) + 1;
+          attempts.set(args.text, count);
+          if (args.text === failedChunk && count === 1) {
+            throw new Error("temporary provider error");
+          }
+        }
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    } as never;
+    const text = Array.from(
+      { length: 80 },
+      (_, index) =>
+        `Coherent sentence ${index + 1} keeps its narration boundary stable and audible.`,
+    ).join(" ");
+
+    await speakModule.speak({
+      id: "manuscript",
+      text,
+      client,
+      signedIn: true,
+      progressive: true,
+    });
+    await settle(
+      () => Boolean(failedChunk) && attempts.get(failedChunk) === 1,
+      "the future chunk prefetch to fail",
+    );
+    expect(speakModule.speechState().status).toBe("playing");
+    expect(speakModule.currentSpeechText()).toBe(firstChunk);
+
+    // Let the rejected prefetch clear its in-flight cache entry. Real audio
+    // supplies this gap naturally while the current chunk is still playing.
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(FakeAudio.instances[0].onended).not.toBeNull();
+    FakeAudio.instances[0].onended?.();
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(attempts.get(failedChunk)).toBe(2);
+    await settle(
+      () =>
+        attempts.get(failedChunk) === 2 &&
+        speakModule.speechState().status === "playing",
+      "the failed future chunk to retry",
+    );
+
+    expect(calls.filter((text) => text === failedChunk)).toHaveLength(2);
+    expect(speakModule.currentSpeechText()).toBe(failedChunk);
+    expect(speakModule.currentSpeechSourceOffset()).toBe(text.indexOf(failedChunk));
   });
 
   test("reading a single passage abandons a queue that was running", async () => {
