@@ -2,6 +2,7 @@ import { afterEach, describe, expect, mock, test } from "bun:test";
 import { createRequire } from "node:module";
 import { PROVIDER_METAS } from "../types";
 import type { AiFeature, AiProviderConfig, AiSettings } from "../types";
+import type { SpeechAlignmentSnapshot } from "./speech-alignment";
 
 // `ai-client-reasoning.test.ts` stubs the `ai` SDK process-globally under
 // Bun's full-suite worker, so the import graph below can resolve to that
@@ -305,7 +306,9 @@ describe("client voice synthesis", () => {
       model: "chosen-high-quality-tts",
       input: "Read this passage.",
       voice: "chosen-voice",
+      stream_format: "audio",
     });
+    expect(result?.audioStream).toBeDefined();
     expect(result?.provider).toBe("openai-compatible");
     expect(result?.model).toBe("chosen-high-quality-tts");
     expect(result?.voice).toBe("chosen-voice");
@@ -501,9 +504,18 @@ describe("client voice synthesis", () => {
       requestedUrl = String(url);
       requestBody = JSON.parse(String(init?.body)) as Record<string, unknown>;
       requestHeaders = new Headers(init?.headers);
-      return new Response(new Uint8Array([1, 2, 3]), {
+      const event = {
+        audio_base64: "AQID",
+        content: "Read this passage.",
+        chunk_seq: 0,
+        chunk_audio_offset_sec: 0,
+        alignment: {
+          segments: [{ text: "Read", start: 0, end: 0.3 }],
+        },
+      };
+      return new Response(`data: ${JSON.stringify(event)}\n\n`, {
         status: 200,
-        headers: { "content-type": "audio/mpeg" },
+        headers: { "content-type": "text/event-stream" },
       });
     }) as typeof fetch;
 
@@ -525,12 +537,19 @@ describe("client voice synthesis", () => {
       },
     });
 
+    const alignments: unknown[] = [];
     const result = await runClientVoiceSpeech(
-      { text: "Read this passage." },
+      {
+        text: "Read this passage.",
+        onAlignment: (snapshot: SpeechAlignmentSnapshot) =>
+          alignments.push(snapshot),
+      },
       settings,
     );
 
-    expect(requestedUrl).toBe("https://api.fish.audio/v1/tts");
+    expect(requestedUrl).toBe(
+      "https://api.fish.audio/v1/tts/stream/with-timestamp",
+    );
     expect((requestHeaders as Headers | null)?.get("model")).toBe("s2-pro");
     expect(requestBody).toMatchObject({
       text: "Read this passage.",
@@ -538,6 +557,25 @@ describe("client voice synthesis", () => {
       reference_id: "91f2fedea8bc4465a6c668b2776be809",
     });
     expect(result?.provider).toBe("fishaudio");
+    expect(
+      Array.from(
+        new Uint8Array(await new Response(result!.audioStream).arrayBuffer()),
+      ),
+    ).toEqual([1, 2, 3]);
+    expect(alignments).toEqual([
+      {
+        provider: "fishaudio",
+        ranges: [
+          {
+            sourceStart: 0,
+            sourceEnd: 4,
+            audioStart: 0,
+            audioEnd: 0.3,
+            precision: "word",
+          },
+        ],
+      },
+    ]);
   });
 });
 

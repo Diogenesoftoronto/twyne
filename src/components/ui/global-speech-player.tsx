@@ -9,10 +9,12 @@ import {
 } from "../../utils/speech";
 import {
   buildSpeechTimeline,
-  speechPositionAtProgress,
-  speechProgressAtOffset,
   type SpeechTimeline,
 } from "../../utils/speech-follow-along";
+import {
+  alignmentRangeAtSourceOffset,
+  alignmentRangeAtTime,
+} from "../../utils/speech-alignment";
 
 const SENTENCE_HIGHLIGHT = "twyne-speech-sentence";
 const WORD_HIGHLIGHT = "twyne-speech-word";
@@ -28,6 +30,9 @@ interface SpeechTextMap {
   text: string;
   slices: SpeechTextSlice[];
   timeline: SpeechTimeline;
+  /** Location of the exact clip text inside the rendered target. */
+  spokenStart: number;
+  spokenEnd: number;
 }
 
 interface HighlightRegistryLike {
@@ -132,6 +137,8 @@ function buildSpeechTextMap(root: HTMLElement): SpeechTextMap {
 
   const text = parts.join("");
   let timeline = buildSpeechTimeline(text);
+  let spokenStart = 0;
+  let spokenEnd = text.length;
   const spokenText = currentSpeechText();
   if (root.dataset.speechSource === "plain" && spokenText) {
     const requestedStart = currentSpeechSourceOffset();
@@ -142,6 +149,8 @@ function buildSpeechTextMap(root: HTMLElement): SpeechTextMap {
         ? requestedStart
         : text.indexOf(spokenText);
     if (start >= 0) {
+      spokenStart = start;
+      spokenEnd = start + spokenText.length;
       const spokenTimeline = buildSpeechTimeline(spokenText);
       timeline = {
         totalWeight: spokenTimeline.totalWeight,
@@ -160,6 +169,8 @@ function buildSpeechTextMap(root: HTMLElement): SpeechTextMap {
     text,
     slices,
     timeline,
+    spokenStart,
+    spokenEnd,
   };
 }
 
@@ -267,9 +278,9 @@ export const GlobalSpeechPlayer = component$(() => {
   const player = useSpeechPlayer();
   const local = useStore({ customVoice: "", customOpen: false });
 
-  // The speech manager emits real audio time but providers do not return word
-  // timestamps. Pair that time with the visible prose's approximate timeline,
-  // then use the browser Highlight API so Markdown formatting stays intact.
+  // Use native provider timing when it exists. Providers without alignment
+  // get one honest clip-level highlight; elapsed duration is never converted
+  // into manufactured word timing. The Highlight API preserves Markdown DOM.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
     let activeMap: SpeechTextMap | null = null;
@@ -331,29 +342,47 @@ export const GlobalSpeechPlayer = component$(() => {
         activeMap.root.dataset.speechActive = snapshot.status;
       }
 
-      if (!activeMap || snapshot.duration <= 0) {
+      if (!activeMap) {
         clearSpeechHighlights();
         return;
       }
-      const position = speechPositionAtProgress(
-        activeMap.timeline,
-        snapshot.currentTime / snapshot.duration,
-      );
       const api = speechHighlightApi();
-      if (!position || !api) return;
+      if (!api) return;
+      clearSpeechHighlights();
 
-      const sentence = textRange(
-        activeMap,
-        position.sentenceStart,
-        position.sentenceEnd,
+      const native = alignmentRangeAtTime(
+        snapshot.alignment,
+        snapshot.currentTime,
       );
-      const word = textRange(activeMap, position.wordStart, position.wordEnd);
+      const nativeStart = native
+        ? activeMap.spokenStart + native.sourceStart
+        : null;
+      const nativeEnd = native
+        ? activeMap.spokenStart + native.sourceEnd
+        : null;
+      const timelineWord =
+        nativeStart === null
+          ? null
+          : (activeMap.timeline.words.find(
+              (word) =>
+                nativeStart >= word.start && nativeStart < word.sentenceEnd,
+            ) ?? null);
+      const sentenceStart =
+        timelineWord?.sentenceStart ?? activeMap.spokenStart;
+      const sentenceEnd = timelineWord?.sentenceEnd ?? activeMap.spokenEnd;
+      const sentence = textRange(activeMap, sentenceStart, sentenceEnd);
+      const word =
+        native?.precision === "word" &&
+        nativeStart !== null &&
+        nativeEnd !== null
+          ? textRange(activeMap, nativeStart, nativeEnd)
+          : null;
       if (sentence) {
         api.registry.set(SENTENCE_HIGHLIGHT, new api.Highlight(sentence));
       }
       if (word) api.registry.set(WORD_HIGHLIGHT, new api.Highlight(word));
 
-      const sentenceKey = `${activeId}:${position.sentenceStart}`;
+      const sentenceKey = `${activeId}:${sentenceStart}`;
       if (sentence && sentenceKey !== lastSentence && pointerId === null) {
         lastSentence = sentenceKey;
         scrollRangeIntoView(sentence, activeMap.root);
@@ -372,19 +401,12 @@ export const GlobalSpeechPlayer = component$(() => {
       }
       const offset = caretOffsetFromPoint(activeMap, x, y);
       if (offset === null) return;
-      const firstWord = activeMap.timeline.words[0];
-      const lastWord = activeMap.timeline.words.at(-1);
-      if (
-        !firstWord ||
-        !lastWord ||
-        offset < firstWord.start ||
-        offset > lastWord.end
-      ) {
-        return;
-      }
-      seekSpeech(
-        speechProgressAtOffset(activeMap.timeline, offset) * snapshot.duration,
+      const native = alignmentRangeAtSourceOffset(
+        snapshot.alignment,
+        offset - activeMap.spokenStart,
       );
+      if (!native) return;
+      seekSpeech(native.audioStart);
       didSeek = true;
     };
 
@@ -402,6 +424,7 @@ export const GlobalSpeechPlayer = component$(() => {
       if (
         snapshot.id !== activeId ||
         snapshot.duration <= 0 ||
+        snapshot.alignment.length === 0 ||
         (snapshot.status !== "playing" && snapshot.status !== "paused")
       ) {
         return;
@@ -564,7 +587,11 @@ export const GlobalSpeechPlayer = component$(() => {
 
         <div
           class="order-last flex w-full min-w-32 items-center gap-2 sm:order-none sm:w-auto sm:flex-[1.25]"
-          title="Drag the timeline, or choose a word in the highlighted text, to seek"
+          title={
+            player.state.alignment.length
+              ? "Drag the timeline, or choose an aligned word in the text, to seek"
+              : "Drag the timeline to seek"
+          }
         >
           <span
             class="w-8 text-right text-[0.58rem] tabular-nums text-[var(--color-ink-muted)]"
