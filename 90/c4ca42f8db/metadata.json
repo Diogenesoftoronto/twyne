@@ -3,7 +3,7 @@
   "checkpoint_id": "90c4ca42f8db",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     "src/routes/apparatus/index.tsx",
     "src/routes/dossier/refine/index.tsx",
@@ -30,6 +30,13 @@
       "compact_transcript": "/90/c4ca42f8db/2/transcript.jsonl",
       "content_hash": "/90/c4ca42f8db/2/content_hash.txt",
       "prompt": "/90/c4ca42f8db/2/prompt.txt"
+    },
+    {
+      "metadata": "/90/c4ca42f8db/3/metadata.json",
+      "transcript": "/90/c4ca42f8db/3/full.jsonl",
+      "compact_transcript": "/90/c4ca42f8db/3/transcript.jsonl",
+      "content_hash": "/90/c4ca42f8db/3/content_hash.txt",
+      "prompt": "/90/c4ca42f8db/3/prompt.txt"
     }
   ],
   "token_usage": {
