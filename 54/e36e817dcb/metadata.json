@@ -3,7 +3,7 @@
   "checkpoint_id": "54e36e817dcb",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 6,
+  "checkpoints_count": 7,
   "files_touched": [
     "src/components/editor/twyne-editor.tsx",
     "src/utils/speech.test.ts",
@@ -51,6 +51,13 @@
       "compact_transcript": "/54/e36e817dcb/5/transcript.jsonl",
       "content_hash": "/54/e36e817dcb/5/content_hash.txt",
       "prompt": "/54/e36e817dcb/5/prompt.txt"
+    },
+    {
+      "metadata": "/54/e36e817dcb/6/metadata.json",
+      "transcript": "/54/e36e817dcb/6/full.jsonl",
+      "compact_transcript": "/54/e36e817dcb/6/transcript.jsonl",
+      "content_hash": "/54/e36e817dcb/6/content_hash.txt",
+      "prompt": "/54/e36e817dcb/6/prompt.txt"
     }
   ],
   "token_usage": {

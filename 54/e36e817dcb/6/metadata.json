@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "54e36e817dcb",
+  "session_id": "019fea8c-b3c0-77b1-abc5-7e240dfa7bbd",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-14T04:48:15.398689895Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "src/components/editor/twyne-editor.tsx",
+    "src/utils/speech.test.ts",
+    "src/utils/speech.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "49d63d233991",
+  "checkpoint_transcript_start": 330,
+  "transcript_lines_at_start": 330,
+  "compact_transcript_start": 67,
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-14T04:48:12.981991401Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 354,
+    "human_modified": 8,
+    "human_removed": 0,
+    "total_committed": 354,
+    "total_lines_changed": 362,
+    "agent_percentage": 0,
+    "metric_version": 2
+  }
+}
