@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "b95afa8142a1",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/keen-fast-bee.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b9/5afa8142a1/0/metadata.json",
+      "transcript": "/b9/5afa8142a1/0/full.jsonl",
+      "compact_transcript": "/b9/5afa8142a1/0/transcript.jsonl",
+      "content_hash": "/b9/5afa8142a1/0/content_hash.txt",
+      "prompt": "/b9/5afa8142a1/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 77703,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2027776,
+    "output_tokens": 7378,
+    "api_call_count": 55
+  }
+}

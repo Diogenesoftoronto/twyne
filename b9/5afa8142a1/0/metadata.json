@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "b95afa8142a1",
+  "session_id": "019ffe54-b5b0-7173-9971-9f36dee5b0f2",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-14T04:42:17.86703952Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/keen-fast-bee.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "b53b867140ef",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 77703,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2027776,
+    "output_tokens": 7378,
+    "api_call_count": 55
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-14T04:42:17.819555866Z",
+    "agent_lines": 2,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 2,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 218,
+      "user_lines_removed": 2,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "devenv.nix": 7,
+        "src/utils/speech-segments.test.ts": 52,
+        "src/utils/speech-segments.ts": 159
+      },
+      "user_removed_per_file": {
+        "devenv.nix": 2
+      }
+    }
+  ]
+}
