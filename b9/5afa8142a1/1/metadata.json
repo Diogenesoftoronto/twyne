@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "b95afa8142a1",
+  "session_id": "019ffe5a-0060-7bf2-a321-38a92ddd452e",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-14T04:42:18.154630688Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/keen-fast-bee.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "564872bf4070",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 54937,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 766208,
+    "output_tokens": 3778,
+    "api_call_count": 21
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-14T04:42:18.100465786Z",
+    "agent_lines": 2,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 2,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 355,
+      "user_lines_removed": 13,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "devenv.nix": 7,
+        "src/components/editor/slash-command-menu.test.ts": 51,
+        "src/components/editor/slash-command-menu.tsx": 86,
+        "src/utils/speech-segments.test.ts": 52,
+        "src/utils/speech-segments.ts": 159
+      },
+      "user_removed_per_file": {
+        "devenv.nix": 2,
+        "src/components/editor/slash-command-menu.tsx": 11
+      }
+    }
+  ]
+}
