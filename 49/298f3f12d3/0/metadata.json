@@ -1,0 +1,150 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "49298f3f12d3",
+  "session_id": "01a002bd-b6ca-7362-8e37-7c05130fe2d7",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-15T01:29:22.71608387Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "save_step_count": 5,
+  "files_touched": [
+    ".bumpy/release-0.15.1.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "029038f57f9b",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 615678,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 25399552,
+    "output_tokens": 99287,
+    "api_call_count": 220
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-15T01:29:22.419468716Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 2,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 2,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 2566,
+      "user_lines_removed": 2381,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "devenv.lock": 9,
+        "devenv.nix": 7,
+        "src/components/editor/compositor-panel.tsx": 1193,
+        "src/components/editor/editor-state.ts": 160,
+        "src/components/editor/insert-panels.tsx": 165,
+        "src/components/editor/manuscript-panel.tsx": 170,
+        "src/components/editor/persona-note-panel.tsx": 283,
+        "src/components/editor/suggestion-panel.tsx": 120,
+        "src/components/editor/twyne-editor.tsx": 163,
+        "src/components/editor/user-comment-panel.tsx": 185,
+        "src/components/personas/personas-panel.tsx": 1,
+        "src/components/rubric/rubric-panel.tsx": 1,
+        "src/utils/application-errors.test.ts": 9,
+        "src/utils/application-errors.ts": 2,
+        "src/utils/background-room.test.ts": 11,
+        "src/utils/background-room.ts": 13,
+        "src/utils/compositor-toolbar-wiring.test.ts": 15,
+        "src/utils/draft-thresholds.test.ts": 42,
+        "src/utils/draft-thresholds.ts": 17
+      },
+      "user_removed_per_file": {
+        "devenv.lock": 9,
+        "devenv.nix": 2,
+        "src/components/editor/twyne-editor.tsx": 2347,
+        "src/components/personas/personas-panel.tsx": 1,
+        "src/utils/background-room.test.ts": 2,
+        "src/utils/background-room.ts": 4,
+        "src/utils/compositor-toolbar-wiring.test.ts": 13,
+        "src/utils/draft-thresholds.ts": 3
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2566,
+      "agent_lines_removed": 2381
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2566,
+      "agent_lines_removed": 2381
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 99,
+      "user_lines_removed": 53,
+      "agent_lines_added": 2566,
+      "agent_lines_removed": 2381,
+      "user_added_per_file": {
+        "src/components/editor/compositor-panel.tsx": 13,
+        "src/components/editor/insert-panels.tsx": 38,
+        "src/components/editor/manuscript-panel.tsx": 8,
+        "src/components/editor/persona-note-panel.tsx": 40
+      },
+      "user_removed_per_file": {
+        "src/components/editor/compositor-panel.tsx": 1,
+        "src/components/editor/insert-panels.tsx": 16,
+        "src/components/editor/manuscript-panel.tsx": 1,
+        "src/components/editor/persona-note-panel.tsx": 35
+      }
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 99,
+      "user_lines_removed": 53,
+      "agent_lines_added": 2570,
+      "agent_lines_removed": 5389,
+      "user_added_per_file": {
+        "src/components/editor/compositor-panel.tsx": 13,
+        "src/components/editor/insert-panels.tsx": 38,
+        "src/components/editor/manuscript-panel.tsx": 8,
+        "src/components/editor/persona-note-panel.tsx": 40
+      },
+      "user_removed_per_file": {
+        "src/components/editor/compositor-panel.tsx": 1,
+        "src/components/editor/insert-panels.tsx": 16,
+        "src/components/editor/manuscript-panel.tsx": 1,
+        "src/components/editor/persona-note-panel.tsx": 35
+      }
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 99,
+      "user_lines_removed": 53,
+      "agent_lines_added": 2570,
+      "agent_lines_removed": 5389,
+      "user_added_per_file": {
+        "src/components/editor/compositor-panel.tsx": 13,
+        "src/components/editor/insert-panels.tsx": 38,
+        "src/components/editor/manuscript-panel.tsx": 8,
+        "src/components/editor/persona-note-panel.tsx": 40
+      },
+      "user_removed_per_file": {
+        "src/components/editor/compositor-panel.tsx": 1,
+        "src/components/editor/insert-panels.tsx": 16,
+        "src/components/editor/manuscript-panel.tsx": 1,
+        "src/components/editor/persona-note-panel.tsx": 35
+      }
+    }
+  ]
+}

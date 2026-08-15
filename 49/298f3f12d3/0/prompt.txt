@@ -1,0 +1,29 @@
+hey the src/components/editor/twyne-editor.tsx is really large file i think it makes sense to break it up and run similarity.ts. I would like some organization that fit into my brain for the different panels and how those work
+
+---
+
+skip vet
+
+---
+
+i have a lot of ternaries for conditional rendering, does this make sense for qwik or is there a better way?
+
+---
+
+can you explain your rule a bit more the reasoning behind it i don't know that much about qwik
+
+---
+
+alright do the things you metinoned then. I understand now. class is definitely prerred here
+
+---
+
+hey i want to get rid of the dossier map and canvas stuff. it is slow and i think something just clutters the application.
+
+---
+
+the dossier itself should definitely stay. the conversations should stay. it is the map canvas interface and code that must go.
+
+---
+
+create a new release
