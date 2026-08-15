@@ -3,7 +3,7 @@
   "checkpoint_id": "77a6effcc0f5",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     "bun.lock",
     "src/components/personas/personas-panel.tsx",
@@ -34,6 +34,13 @@
       "compact_transcript": "/77/a6effcc0f5/2/transcript.jsonl",
       "content_hash": "/77/a6effcc0f5/2/content_hash.txt",
       "prompt": "/77/a6effcc0f5/2/prompt.txt"
+    },
+    {
+      "metadata": "/77/a6effcc0f5/3/metadata.json",
+      "transcript": "/77/a6effcc0f5/3/full.jsonl",
+      "compact_transcript": "/77/a6effcc0f5/3/transcript.jsonl",
+      "content_hash": "/77/a6effcc0f5/3/content_hash.txt",
+      "prompt": "/77/a6effcc0f5/3/prompt.txt"
     }
   ],
   "token_usage": {
