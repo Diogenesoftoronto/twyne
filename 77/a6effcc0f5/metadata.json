@@ -3,9 +3,10 @@
   "checkpoint_id": "77a6effcc0f5",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 8,
+  "checkpoints_count": 9,
   "files_touched": [
     "bun.lock",
+    "src/components/editor/twyne-editor.tsx",
     "src/components/personas/personas-panel.tsx",
     "src/components/rubric/rubric-panel.tsx",
     "src/routes/settings/index.tsx",
@@ -69,13 +70,20 @@
       "compact_transcript": "/77/a6effcc0f5/7/transcript.jsonl",
       "content_hash": "/77/a6effcc0f5/7/content_hash.txt",
       "prompt": "/77/a6effcc0f5/7/prompt.txt"
+    },
+    {
+      "metadata": "/77/a6effcc0f5/8/metadata.json",
+      "transcript": "/77/a6effcc0f5/8/full.jsonl",
+      "compact_transcript": "/77/a6effcc0f5/8/transcript.jsonl",
+      "content_hash": "/77/a6effcc0f5/8/content_hash.txt",
+      "prompt": "/77/a6effcc0f5/8/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 532103,
+    "input_tokens": 1019951,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 20939008,
-    "output_tokens": 24674,
-    "api_call_count": 140
+    "cache_read_tokens": 31405568,
+    "output_tokens": 40826,
+    "api_call_count": 213
   }
 }
