@@ -6,12 +6,7 @@ import {
   $,
 } from "@builder.io/qwik";
 import { Link, type DocumentHead } from "@builder.io/qwik-city";
-import type { DetectedCitation, Folio, ProjectBrief, SourceCanvas as SourceCanvasState } from "../../types";
-import { SourceCanvas } from "../../components/canvas/source-canvas";
-import { useConvexClient } from "../../utils/convex-context";
-import { layoutCanvas } from "../../utils/canvas-layout";
-import { emptyCanvas, loadSourceCanvas, saveSourceCanvas, seedCanvasFromFolio } from "../../utils/source-canvas";
-import { extractPendingSources } from "../../utils/source-extract";
+import type { DetectedCitation, Folio } from "../../types";
 import { detectCitations } from "../../utils/citations";
 import {
   type BibEntry,
@@ -50,20 +45,15 @@ import {
   runClientCitationFormat,
   runClientSourceSummarize,
   runClientMissingSourceDetect,
-  runClientSourceMap,
 } from "../../utils/ai-client";
 import { loadAiSettingsFromIdb } from "../../utils/idb";
 import type { AiSettings, SourceSummarizeResult } from "../../types";
 
 interface ApparatusStore {
-  viewMode: "list" | "canvas";
-  canvas: SourceCanvasState;
-  canvasStatus: string;
   bibliography: BibEntry[];
   citations: DetectedCitation[];
   style: CitationStyle;
   activeFolio: Folio | null;
-  brief: ProjectBrief | null;
   embedUrl: string | null;
   embedTitle: string;
   embedMarkdown: string | null;
@@ -111,16 +101,11 @@ const STYLE_OPTIONS: ReadonlyArray<{ value: CitationStyle; label: string }> = [
 ];
 
 export default component$(() => {
-  const convexClient = useConvexClient();
   const store = useStore<ApparatusStore>({
-    viewMode: "list",
-    canvas: emptyCanvas(""),
-    canvasStatus: "",
     bibliography: [],
     citations: [],
     style: "mla",
     activeFolio: null,
-    brief: null,
     embedUrl: null,
     embedTitle: "",
     embedMarkdown: null,
@@ -149,60 +134,6 @@ export default component$(() => {
     mcpDocuments: [],
   });
 
-  const runCanvasExtraction = $(async () => {
-    if (!store.activeFolio || !store.aiSettings || !convexClient.value) return;
-    const entries = bibliographyForFolio(store.bibliography, store.activeFolio.id);
-    if (!entries.length) return;
-    try {
-      const seeded = seedCanvasFromFolio(store.canvas, { folioId: store.activeFolio.id, bibliography: entries });
-      store.canvas = { ...seeded, nodes: layoutCanvas(seeded.nodes, seeded.clusters) };
-      const next = await extractPendingSources({
-        entries,
-        canvas: store.canvas,
-        client: convexClient.value,
-        settings: store.aiSettings,
-        onCanvas: (canvas) => { store.canvas = canvas; },
-        onProgress: (progress) => {
-          store.canvasStatus = progress.phase === "fetching" ? "Fetching source…" : progress.phase === "composing" ? "Writing cards…" : progress.phase === "error" ? (progress.message ?? "Extraction failed") : "Cards ready";
-        },
-      });
-      store.canvas = next;
-      await saveSourceCanvas(next);
-    } catch {
-      // The progress callback preserves a recoverable message beside the board.
-    }
-  });
-
-  const mapCanvas = $(async () => {
-    if (!store.aiSettings || !store.activeFolio) return;
-    store.canvasStatus = "Mapping connections…";
-    const html = await loadFolioContentFromIdb(store.activeFolio.id);
-    const result = await runClientSourceMap({
-      draftText: html.replace(/<[^>]+>/g, " "),
-      brief: "",
-      nodes: store.canvas.nodes.map((node) => ({ id: node.id, title: node.title, text: node.ouiLang ?? node.annotation?.relevance ?? "" })),
-    }, store.aiSettings);
-    if (!result) { store.canvasStatus = "Mapping failed. Check the AI provider in Settings."; return; }
-    const { applyMapping } = await import("../../utils/source-canvas");
-    const mapped = applyMapping(store.canvas, result);
-    store.canvas = { ...mapped, nodes: layoutCanvas(mapped.nodes, mapped.clusters) };
-    await saveSourceCanvas(store.canvas);
-    store.canvasStatus = "Connections mapped";
-  });
-
-  // Automatic extraction starts after the folio, sources, client, and model
-  // are all hydrated. A landed background source also changes the bibliography
-  // length, re-entering this small debounced pass.
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track, cleanup }) => {
-    const sourceCount = track(() => store.bibliography.length);
-    const folioId = track(() => store.activeFolio?.id);
-    const client = track(() => convexClient.value);
-    if (!sourceCount || !folioId || !client) return;
-    const timer = window.setTimeout(() => void runCanvasExtraction(), 900);
-    cleanup(() => window.clearTimeout(timer));
-  });
-
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
     const apparatusSettings = await loadApparatusSettingsFromIdb();
@@ -215,13 +146,6 @@ export default component$(() => {
       folios.find((folio) => folio.id === activeFolioId) ?? folios[0] ?? null;
     store.bibliography = await loadBibliographyForFolio(store.activeFolio?.id);
     if (store.activeFolio) {
-      const loadedCanvas = await loadSourceCanvas(store.activeFolio.id);
-      const seeded = seedCanvasFromFolio(loadedCanvas, {
-        folioId: store.activeFolio.id,
-        bibliography: store.bibliography,
-      });
-      store.canvas = { ...seeded, nodes: layoutCanvas(seeded.nodes, seeded.clusters) };
-      await saveSourceCanvas(store.canvas);
       const html = await loadFolioContentFromIdb(store.activeFolio.id);
       const text = html.replace(/<[^>]+>/g, " ");
       store.citations = detectCitations(text);
@@ -587,11 +511,6 @@ export default component$(() => {
           </Link>
         </div>
 
-        <div class="style-toggle mb-5" aria-label="Apparatus view">
-          <button type="button" aria-pressed={store.viewMode === "list"} onClick$={() => { store.viewMode = "list"; }}>List</button>
-          <button type="button" aria-pressed={store.viewMode === "canvas"} onClick$={() => { store.viewMode = "canvas"; }}>Canvas</button>
-        </div>
-
         {/* Status card — live snapshot of the background watcher. */}
         <section class="card p-4 mb-6">
           <div class="flex items-center gap-3">
@@ -824,9 +743,6 @@ export default component$(() => {
           )}
         </section>
 
-        {store.viewMode === "canvas" ? (
-          <SourceCanvas canvas={store.canvas} status={store.canvasStatus} onMap$={mapCanvas} onRetry$={runCanvasExtraction} onChange$={(canvas) => { store.canvas = canvas; void saveSourceCanvas(canvas); }} />
-        ) : (
         <div class="grid lg:grid-cols-[1fr_1.4fr] gap-6">
           {/* Left: sources found by the agents. */}
           <section>
@@ -1177,7 +1093,6 @@ export default component$(() => {
             </div>
           </section>
         </div>
-        )}
 
         {/* Missing citations — AI scans the draft for claims that need sourcing. */}
         {store.flagMissingSources && (

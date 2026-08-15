@@ -25,7 +25,6 @@ const {
   hasConfiguredVoiceProvider,
   parseCitationFormatResult,
   parseMissingSourceResult,
-  parseSourceMapResult,
   providerSupportsFeature,
   resolveFeatureConfig,
   runClientVoiceTranscribe,
@@ -44,43 +43,9 @@ const ALL_FEATURES: AiFeature[] = [
   "citation-format",
   "source-summarize",
   "source-detect-missing",
-  "source-extract",
-  "source-map",
   "interview-turn",
   "dossier-check",
 ];
-
-describe("source map parsing", () => {
-  test("drops unknown nodes and malformed relationships", () => {
-    const result = parseSourceMapResult(
-      JSON.stringify({
-        annotations: [
-          {
-            nodeId: "a",
-            relevance: "Supports the opening claim",
-            stance: "supports",
-            score: 9,
-          },
-          { nodeId: "missing", relevance: "Invented" },
-        ],
-        clusters: [{ id: "theme", label: "Opening claim" }],
-        clusterOf: { a: "theme", missing: "theme", b: "unknown" },
-        edges: [
-          { from: "a", to: "b", kind: "supports" },
-          { from: "a", to: "missing", kind: "supports" },
-          { from: "a", to: "b", kind: "teleports" },
-        ],
-      }),
-      new Set(["a", "b"]),
-      "test",
-    );
-    expect(result?.annotations.a.score).toBe(5);
-    expect(result?.annotations.missing).toBeUndefined();
-    expect(result?.clusterOf).toEqual({ a: "theme" });
-    expect(result?.edges).toHaveLength(1);
-    expect(result?.edges[0].origin).toBe("model");
-  });
-});
 
 function makeSettings(overrides: Partial<AiSettings> = {}): AiSettings {
   return {

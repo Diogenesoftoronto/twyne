@@ -5,9 +5,7 @@ import {
   useVisibleTask$,
   noSerialize,
   $,
-  type NoSerialize,
 } from "@builder.io/qwik";
-import ImgApprovalStamp from "../../media/approval-stamp.svg?jsx";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { Highlight } from "@tiptap/extension-highlight";
@@ -25,9 +23,7 @@ import { TextSelection } from "@tiptap/pm/state";
 import type {
   CitationInsertionDetail,
   CitationInsertionResult,
-  DocumentMeta,
   DraftContentDetail,
-  Folio,
   LayoutSettings,
   PersonaNotePayload,
   PersonaReply,
@@ -35,12 +31,9 @@ import type {
 import {
   DEFAULT_LAYOUT,
   DOC_WIDTH_REM,
-  MARGIN_RANGE,
   resolveMargins,
   resolvePageSetup,
 } from "../../types";
-import { PageRuler } from "./page-ruler";
-import { PageChrome } from "./page-chrome";
 import { computePageGeometry } from "./pagination-geometry";
 import { pxToRem, rootFontSize } from "../../utils/css-units";
 import { exportPdf } from "../../utils/exchange";
@@ -49,35 +42,24 @@ import { reportApplicationDiagnostic } from "../../utils/application-diagnostics
 import { detectCitations } from "../../utils/citations";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
-import { SpeakButton } from "../ui/speak-button";
-import { SpeechTransport } from "../ui/speech-transport";
-import { ColorPicker } from "../ui/color-picker";
-import { Icon } from "../ui/icon";
-import { COMPOSITOR_ICONS, EDITOR_TOOL_ICONS } from "../../utils/icon-system";
+import { DEFAULT_COMPOSITOR_TAB } from "../../utils/compositor-toolbar";
 import {
-  COMPOSITOR_TABS,
-  DEFAULT_COMPOSITOR_TAB,
-  moveCompositorTab,
-  type CompositorTab,
-} from "../../utils/compositor-toolbar";
-import {
-  DEFAULT_MANUSCRIPT_FONT_LABEL,
-  DEFAULT_MANUSCRIPT_FONT_SIZE_LABEL,
-  FONT_CHOICES,
-  FONT_SIZES,
-  LINE_SPACINGS,
-  PARAGRAPH_SPACINGS,
   recaseTextSegments,
   type TextCase,
 } from "../../utils/typography-options";
 import { speak } from "../../utils/speech";
 import { createRevisionSnapshot } from "../../utils/revision-history";
+import { MANUSCRIPT_READING_ID, ManuscriptPanel } from "./manuscript-panel";
+import { SuggestionPanel } from "./suggestion-panel";
+import { UserCommentPanel } from "./user-comment-panel";
+import { PersonaNotePanel } from "./persona-note-panel";
+import { InsertPanels } from "./insert-panels";
+import { CompositorPanel } from "./compositor-panel";
 
 /**
  * The reading the toolbar owns. Stable rather than derived from the
  * selection, so the transport can find the reading it started.
  */
-const MANUSCRIPT_READING_ID = "manuscript";
 const REGISTRY_COMMAND_ALIASES: Partial<Record<EditorCommandId, string>> = {
   "format.bold": "bold",
   "format.italic": "italic",
@@ -127,11 +109,7 @@ import {
   reconcileCommentAnchors,
 } from "../../utils/reconcile-comments";
 import { bindNetworkStatusEvents } from "../../utils/convex-sync";
-import {
-  applyDocumentMeta,
-  formatWordCount,
-  readingTimeLabel,
-} from "../../utils/document";
+import { applyDocumentMeta } from "../../utils/document";
 import { CommentMark } from "./extensions/comment-mark";
 import { PersonaNoteMark } from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
@@ -144,13 +122,9 @@ import { SectionReorder } from "./extensions/section-reorder";
 import { FindReplacePanel } from "./find-replace-panel";
 import { GrammarPanel } from "./grammar-panel";
 import { ShortcutDialog } from "./shortcut-dialog";
-import { TextModal } from "../ui/text-modal";
 import { EDITOR_KEYBINDINGS, chordMatches } from "../../utils/keybindings";
 import { DocumentOutline } from "./document-outline";
-import {
-  buildDocumentOutline,
-  type DocumentOutlineModel,
-} from "../../utils/document-outline";
+import { buildDocumentOutline } from "../../utils/document-outline";
 import { RemoteCursors } from "./extensions/remote-cursors";
 import { type RemoteCursor } from "./extensions/remote-cursors";
 import { Indent } from "./extensions/indent";
@@ -158,7 +132,6 @@ import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 import { PageBreakNode } from "./extensions/page-break-node";
 import { Pagination, type PaginationInfo } from "./extensions/pagination";
 import { ParagraphFormat } from "./extensions/paragraph-format";
-import { SyncDot, LastSavedLine } from "./sync-indicator";
 import {
   DRAFT_SNAPSHOT_REQUEST,
   type DraftSnapshotRequest,
@@ -180,7 +153,6 @@ import {
   saveSuggestionLocally,
 } from "../../utils/convex-sync";
 import type { SuggestionPayload, Suggestion } from "../../types";
-import { renderMarkdown } from "../../utils/markdown";
 import { computePopoverGeometry } from "./popover-positioning";
 import {
   EMPTY_TABLE_TOOLBAR_SNAPSHOT,
@@ -190,12 +162,10 @@ import {
   createTableToolbarController,
   runTableToolbarIntent,
   type TableToolbarIntent,
-  type TableToolbarSnapshot,
 } from "./table-core";
 import {
   TableCellFormat,
   runTableCellFormatIntent,
-  type SelectedCellFormat,
   type TableCellFormatIntent,
 } from "./extensions/table-cell-format";
 import { TableCellFormatControls } from "./table-cell-format-controls";
@@ -213,176 +183,13 @@ import {
   createImageUploadAdapter,
   type ImageUploadAdapter,
 } from "../../utils/image-upload";
-
-interface NotePopover {
-  id: string;
-  author: string;
-  color: string;
-  label: string;
-  note: string;
-  x: number;
-  top: number | null;
-  bottom: number | null;
-  maxH: number;
-  placement: "above" | "below";
-  /** The passage the note is pinned to. */
-  quote?: string;
-  /** Brief title captured at convene time. */
-  briefTitle?: string;
-  /** Draft reply text. */
-  draft: string;
-  /** True when the writer has dismissed this note. */
-  dismissed: boolean;
-  /** True once the writer clicks the note: the card stays open on mouse-out. */
-  pinned: boolean;
-  /** Live reply thread (mirrored from the personas panel). */
-  thread: PersonaReply[];
-  /** True while the persona is generating a reply. */
-  replying: boolean;
-  /**
-   * The reply as it is being written. Held apart from `thread` because it is
-   * not a reply yet — it has no id, it is not persisted, and it is replaced
-   * wholesale by the filed version the moment there is one.
-   */
-  streamingReply: string;
-  /** Inline error to surface in the popover. */
-  error: string | null;
-}
-
-/** Floating card for an editor's proposed rewrite (accept / strike). */
-interface SuggestionPopover {
-  id: string;
-  versionId: string;
-  author: string;
-  color: string;
-  /** The current (original) passage under the mark. */
-  original: string;
-  replacement: string;
-  rationale: string;
-  x: number;
-  y: number;
-  busy: boolean;
-}
-
-/** A note collected live from the document, in reading order, numbered per kind. */
-export interface EditorNote {
-  kind: NoteKind;
-  number: number;
-  text: string;
-  pos: number;
-}
-
-export interface EditorStore {
-  editor: Editor | null;
-  meta: DocumentMeta;
-  isDragOver: boolean;
-  isAnalysisRunning: boolean;
-  active: Record<string, boolean>;
-  showImageInput: boolean;
-  imageUrl: string;
-  imageUploadAdapter: NoSerialize<ImageUploadAdapter> | null;
-  selectedImage: ImageNodeAttributes | null;
-  imageUploadError: string | null;
-  showCommentInput: boolean;
-  commentText: string;
-  showMermaidInput: boolean;
-  mermaidSource: string;
-  /** Which note input row is open, if any. */
-  noteInputKind: "endnote" | "footnote" | null;
-  noteText: string;
-  /** Endnotes/footnotes collected live from the doc, for the bottom-of-manuscript notes panel. */
-  notes: EditorNote[];
-  hasSelection: boolean;
-  notePopover: NotePopover | null;
-  suggestionPopover: SuggestionPopover | null;
-  /** Approval stamp animation — set briefly when an edit is accepted. */
-  stampVisible: boolean;
-  /** Epoch ms of the most recent successful Lix mirror, drives the colophon's "saved Xs ago" line. */
-  lastSavedAt: number | null;
-  /** Floating margin card for the writer's own inline comments. */
-  userCommentPopover: UserCommentPopover | null;
-  /** Undo/redo availability — refreshed on every transaction. */
-  canUndo: boolean;
-  canRedo: boolean;
-  /** Echoed from the parent route so the editor can scope user comments. */
-  activeFolioId: string;
-  /** Live document-chrome settings (one control drives editor + export + print). */
-  layout: LayoutSettings;
-  /** Editable running header. */
-  headerText: string;
-  /** Editable running footer. */
-  footerText: string;
-  /** Show the layout popover? */
-  showLayout: boolean;
-  /** Room below the layout button, measured on open so the panel always fits. */
-  layoutPanelMaxH: number;
-  /** A PDF print job is being prepared. */
-  exportingPdf: boolean;
-  /** Coordinator-owned navigation and help surfaces. */
-  showFindReplace: boolean;
-  showGrammar: boolean;
-  showShortcutDialog: boolean;
-  showOutline: boolean;
-  outline: DocumentOutlineModel;
-  showTableInsertion: boolean;
-  tableToolbar: TableToolbarSnapshot;
-  cellFormat: SelectedCellFormat;
-  slashOpen: boolean;
-  slashQuery: string;
-  slashLeft: number;
-  slashTop: number;
-  /** Distraction-free mode: dims inline notes/comments and asks the route to collapse side panels. */
-  zenMode: boolean;
-  /** Which formatting popover is open, if any. Only one at a time. */
-  openPicker: "highlight" | "textColor" | "type" | "spacing" | null;
-  /** Applied text colour at the cursor, as a hex literal. */
-  currentColor: string | null;
-  /** Applied highlight colour at the cursor. */
-  currentHighlight: string | null;
-  currentFontFamily: string | null;
-  currentFontSize: string | null;
-  currentLineHeight: string | null;
-  currentSpaceBefore: number | null;
-  currentSpaceAfter: number | null;
-  currentKeepWithNext: boolean;
-  /** Sheets the manuscript currently occupies, reported by the pagination engine. */
-  pageCount: number;
-  /**
-   * False when the engine fell back to a continuous column — either because
-   * the writer asked for it, or because the document is past the size at
-   * which painting page frames is worth doing.
-   */
-  paginationActive: boolean;
-  /** Active task ribbon in the compositor. */
-  toolbarTab: CompositorTab;
-}
-
-/** The popover for a writer-authored inline comment, anchored to its mark. */
-interface UserCommentPopover {
-  id: string;
-  author: string;
-  text: string;
-  createdAt: number;
-  x: number;
-  y: number;
-  resolved: boolean;
-  replies: UserCommentReply[];
-  draft: string;
-}
-
-interface TwyneEditorProps {
-  initialContent?: string;
-  /** The folio this draft belongs to. Used to scope user comments. */
-  activeFolioId?: string;
-  /** The full active folio — carries the layout, header, and footer. */
-  activeFolio?: Folio | null;
-  /** The current project brief — used to derive running-header metadata. */
-  brief?: import("../../types").ProjectBrief | null;
-  /** When set, the editor joins a multiplayer session (presence + remote cursors + sync). */
-  sharedLixId?: string;
-  /** Commenters can inspect and discuss a shared folio without editing it. */
-  readOnly?: boolean;
-}
+import type {
+  EditorNote,
+  EditorStore,
+  NotePopover,
+  TwyneEditorProps,
+} from "./editor-state";
+export type { EditorNote, EditorStore } from "./editor-state";
 
 /**
  * Walk every table in the editor mount and ensure the first row of each
@@ -1673,19 +1480,7 @@ export const TwyneEditor = component$(
 
         const onScrollToNote = (e: Event) => {
           const id = (e as CustomEvent).detail as string;
-          const span = el.querySelector(
-            `[data-persona-note-id="${CSS.escape(id)}"]`,
-          ) as HTMLElement | null;
-          if (!span) return;
-          const reduceMotion = window.matchMedia(
-            "(prefers-reduced-motion: reduce)",
-          ).matches;
-          span.scrollIntoView({
-            behavior: reduceMotion ? "auto" : "smooth",
-            block: "center",
-          });
-          span.classList.add("is-flashing");
-          setTimeout(() => span.classList.remove("is-flashing"), 1600);
+          flashMarkedElement(el, `[data-persona-note-id="${CSS.escape(id)}"]`);
         };
         window.addEventListener("twyne:scroll-to-persona-note", onScrollToNote);
 
@@ -1885,19 +1680,7 @@ export const TwyneEditor = component$(
 
         const onScrollToSuggestion = (e: Event) => {
           const id = (e as CustomEvent).detail as string;
-          const span = el.querySelector(
-            `[data-suggestion-id="${CSS.escape(id)}"]`,
-          ) as HTMLElement | null;
-          if (!span) return;
-          const reduceMotion = window.matchMedia(
-            "(prefers-reduced-motion: reduce)",
-          ).matches;
-          span.scrollIntoView({
-            behavior: reduceMotion ? "auto" : "smooth",
-            block: "center",
-          });
-          span.classList.add("is-flashing");
-          setTimeout(() => span.classList.remove("is-flashing"), 1600);
+          flashMarkedElement(el, `[data-suggestion-id="${CSS.escape(id)}"]`);
         };
         window.addEventListener(
           "twyne:scroll-to-suggestion",
@@ -2801,12 +2584,6 @@ export const TwyneEditor = component$(
       store.slashOpen = false;
     });
 
-    /* Ribbon groups provide their own boundaries. */
-    const Sep = () => null;
-
-    /* Folios: roughly 250 words per manuscript page, the old standard */
-    const folios = (store.meta.wordCount / 250).toFixed(2);
-
     return (
       <div class="flex flex-1 flex-col min-h-0">
         {readOnly && (
@@ -2823,1139 +2600,23 @@ export const TwyneEditor = component$(
             wrapper so the active bar always sits flush under the toolbar
             rather than scrolling out of view as the manuscript scrolls. */}
         <div class="sticky top-0" style={{ zIndex: "var(--z-sticky)" }}>
-          {/* ── Task-oriented compositor ribbon ───────────── */}
-          <div
-            class="twyne-toolbar border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-            style="font-family: var(--font-typewriter);"
-            role="toolbar"
-            aria-label="Document compositor"
-            data-active-tab={store.toolbarTab}
-          >
-            <div class="compositor-tabs" role="tablist" aria-label="Tools">
-              <span class="compositor-title">Compositor</span>
-              {COMPOSITOR_TABS.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={store.toolbarTab === tab.id}
-                  aria-controls="compositor-ribbon"
-                  data-tab-id={tab.id}
-                  class="compositor-tab"
-                  onClick$={() => {
-                    store.toolbarTab = tab.id;
-                    store.openPicker = null;
-                    store.showLayout = false;
-                  }}
-                  onKeyDown$={(event, element) => {
-                    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight")
-                      return;
-                    event.preventDefault();
-                    const next = moveCompositorTab(
-                      tab.id,
-                      event.key === "ArrowRight" ? 1 : -1,
-                    );
-                    store.toolbarTab = next;
-                    store.openPicker = null;
-                    store.showLayout = false;
-                    const target = element.parentElement?.querySelector(
-                      `[data-tab-id="${next}"]`,
-                    );
-                    if (target instanceof HTMLElement) target.focus();
-                  }}
-                >
-                  {tab.label}
-                </button>
-              ))}
-
-              <span class="compositor-tab-spacer" />
-
-              <div class="compositor-quick-actions" aria-label="History">
-                <button
-                  title="Undo (⌘Z)"
-                  aria-label="Undo"
-                  disabled={!store.canUndo}
-                  onClick$={() => runCommand("undo")}
-                  class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <Icon name={COMPOSITOR_ICONS.undo} size={17} />
-                </button>
-                <button
-                  title="Redo (⌘⇧Z)"
-                  aria-label="Redo"
-                  disabled={!store.canRedo}
-                  onClick$={() => runCommand("redo")}
-                  class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <Icon name={COMPOSITOR_ICONS.redo} size={17} />
-                </button>
-                <SyncDot />
-              </div>
-            </div>
-
-            <div
-              id="compositor-ribbon"
-              class="compositor-ribbon"
-              role="tabpanel"
-              aria-label={`${store.toolbarTab} tools`}
-            >
-              <div
-                class="compositor-group"
-                data-compositor-tab="home"
-                data-group-label="Character"
-                role="group"
-                aria-label="Character"
-              >
-                <button
-                  title="Bold (⌘B)"
-                  aria-label="Bold"
-                  aria-pressed={!!store.active.bold}
-                  onClick$={() => runCommand("bold")}
-                  class="tool-btn"
-                >
-                  <b style="font-family: var(--font-display);">B</b>
-                </button>
-                <button
-                  title="Italic (⌘I)"
-                  aria-label="Italic"
-                  aria-pressed={!!store.active.italic}
-                  onClick$={() => runCommand("italic")}
-                  class="tool-btn"
-                >
-                  <i style="font-family: var(--font-display);">I</i>
-                </button>
-                <button
-                  title="Underline (⌘U)"
-                  aria-label="Underline"
-                  aria-pressed={!!store.active.underline}
-                  onClick$={() => runCommand("underline")}
-                  class="tool-btn"
-                >
-                  <u style="font-family: var(--font-display);">U</u>
-                </button>
-                <button
-                  title="Strikethrough"
-                  aria-label="Strikethrough"
-                  aria-pressed={!!store.active.strike}
-                  onClick$={() => runCommand("strike")}
-                  class="tool-btn"
-                >
-                  <s style="font-family: var(--font-display);">S</s>
-                </button>
-                <button
-                  title="Superscript"
-                  aria-label="Superscript"
-                  aria-pressed={!!store.active.superscript}
-                  onClick$={() => runCommand("superscript")}
-                  class="tool-btn"
-                >
-                  <span style="font-family: var(--font-display);">
-                    x<sup>2</sup>
-                  </span>
-                </button>
-                <button
-                  title="Subscript"
-                  aria-label="Subscript"
-                  aria-pressed={!!store.active.subscript}
-                  onClick$={() => runCommand("subscript")}
-                  class="tool-btn"
-                >
-                  <span style="font-family: var(--font-display);">
-                    x<sub>2</sub>
-                  </span>
-                </button>
-
-                {/* Highlight: a toggle for the last colour used, plus a caret to
-                change it. Splitting the two is what makes multicolor usable —
-                Highlight has been configured `multicolor: true` since the
-                editor was written, and the toolbar only ever called the bare
-                toggle, so the capability shipped unreachable. */}
-                <div class="flex items-center relative">
-                  <button
-                    title="Highlight"
-                    aria-label="Highlight"
-                    aria-pressed={!!store.active.highlight}
-                    onClick$={() =>
-                      store.active.highlight
-                        ? applyHighlight(null)
-                        : applyHighlight(store.currentHighlight ?? "#fbeaa8")
-                    }
-                    class="tool-btn"
-                  >
-                    <span
-                      style={{
-                        background: `linear-gradient(transparent 60%, ${store.currentHighlight ?? "#fbeaa8"} 60%)`,
-                      }}
-                    >
-                      Hi
-                    </span>
-                  </button>
-                  <button
-                    title="Highlight colour"
-                    aria-label="Choose highlight colour"
-                    aria-expanded={store.openPicker === "highlight"}
-                    onClick$={() => {
-                      store.openPicker =
-                        store.openPicker === "highlight" ? null : "highlight";
-                    }}
-                    class="tool-btn px-1"
-                  >
-                    ▾
-                  </button>
-                  {store.openPicker === "highlight" && (
-                    <ColorPicker
-                      kind="highlight"
-                      title="Highlight"
-                      value={store.currentHighlight}
-                      clearLabel="No highlight"
-                      onPick$={(hex) => applyHighlight(hex)}
-                      onClear$={() => applyHighlight(null)}
-                      onClose$={() => {
-                        store.openPicker = null;
-                      }}
-                    />
-                  )}
-                </div>
-
-                {/* Text colour, from the darker palette — every entry clears
-                WCAG AA against the manuscript's paper. */}
-                <div class="flex items-center relative">
-                  <button
-                    title="Text colour"
-                    aria-label="Text colour"
-                    aria-expanded={store.openPicker === "textColor"}
-                    onClick$={() => {
-                      store.openPicker =
-                        store.openPicker === "textColor" ? null : "textColor";
-                    }}
-                    class="tool-btn"
-                  >
-                    <span
-                      style={{
-                        color: store.currentColor ?? "var(--color-ink)",
-                        fontFamily: "var(--font-display)",
-                        borderBottom: `2px solid ${store.currentColor ?? "var(--color-ink)"}`,
-                      }}
-                    >
-                      A
-                    </span>
-                  </button>
-                  {store.openPicker === "textColor" && (
-                    <ColorPicker
-                      kind="text"
-                      title="Text colour"
-                      value={store.currentColor}
-                      clearLabel="Default ink"
-                      onPick$={(hex) => applyTextColor(hex)}
-                      onClear$={() => applyTextColor(null)}
-                      onClose$={() => {
-                        store.openPicker = null;
-                      }}
-                    />
-                  )}
-                </div>
-
-                <button
-                  title="Clear formatting"
-                  aria-label="Clear formatting"
-                  onClick$={() => runCommand("clearFormatting")}
-                  class="tool-btn"
-                >
-                  ⌫ fmt
-                </button>
-              </div>
-
-              <Sep />
-
-              {/* Font family and point size stay visible, as they do in a
-              conventional word processor. Less frequent paragraph controls
-              remain in the adjacent advanced panel. */}
-              <div
-                class="compositor-group relative"
-                data-compositor-tab="home"
-                data-group-label="Type"
-                role="group"
-                aria-label="Type"
-              >
-                <select
-                  class="compositor-font-select"
-                  value={store.currentFontFamily ?? ""}
-                  onChange$={(_, element) =>
-                    applyFontFamily(element.value === "" ? null : element.value)
-                  }
-                  aria-label="Font family"
-                  title="Font family"
-                >
-                  <option value="">{DEFAULT_MANUSCRIPT_FONT_LABEL}</option>
-                  {FONT_CHOICES.map((font) => (
-                    <option key={font.id} value={font.stack}>
-                      {font.label}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  class="compositor-size-select"
-                  value={store.currentFontSize ?? ""}
-                  onChange$={(_, element) =>
-                    applyFontSize(element.value === "" ? null : element.value)
-                  }
-                  aria-label="Font size in points"
-                  title="Font size in points"
-                >
-                  <option value="">{DEFAULT_MANUSCRIPT_FONT_SIZE_LABEL}</option>
-                  {FONT_SIZES.map((size) => (
-                    <option key={size.value} value={size.value}>
-                      {size.label}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  title="Advanced type and paragraph options"
-                  aria-label="Advanced type and paragraph options"
-                  aria-expanded={store.openPicker === "type"}
-                  onClick$={() => {
-                    store.openPicker =
-                      store.openPicker === "type" ? null : "type";
-                  }}
-                  class="tool-btn"
-                >
-                  More ▾
-                </button>
-                {store.openPicker === "type" && (
-                  <div
-                    data-type-popover
-                    class="absolute left-0 top-full mt-1 p-3 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg w-60"
-                    style={{
-                      zIndex: "var(--z-dropdown)",
-                      borderRadius: "2px",
-                      fontFamily: "var(--font-typewriter)",
-                    }}
-                    role="dialog"
-                    aria-label="Advanced type and paragraph options"
-                  >
-                    <p class="dept-label mb-1.5">Line spacing</p>
-                    <div class="flex items-center gap-1 mb-3">
-                      {LINE_SPACINGS.map((s) => (
-                        <button
-                          key={s.value}
-                          type="button"
-                          onClick$={() => applyLineHeight(s.value)}
-                          class={`flex-1 text-[0.62rem] py-1 border ${store.currentLineHeight === s.value ? "border-[var(--color-vermilion)] text-[var(--color-vermilion)]" : "border-[var(--color-paper-3)] text-[var(--color-ink-light)]"}`}
-                          style="border-radius: 1px;"
-                        >
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <p class="dept-label mb-1.5">Paragraph spacing</p>
-                    <div class="grid grid-cols-2 gap-2 mb-3">
-                      <label class="text-[0.62rem] text-[var(--color-ink-light)]">
-                        <span class="block mb-1">Before</span>
-                        <select
-                          class="field-input text-[0.68rem]"
-                          value={
-                            store.currentSpaceBefore == null
-                              ? ""
-                              : String(store.currentSpaceBefore)
-                          }
-                          onChange$={(_, el) =>
-                            applySpaceBefore(
-                              el.value === "" ? null : Number(el.value),
-                            )
-                          }
-                          aria-label="Space before paragraph"
-                        >
-                          <option value="">Default</option>
-                          {PARAGRAPH_SPACINGS.map((s) => (
-                            <option key={s.value} value={s.value}>
-                              {s.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <label class="text-[0.62rem] text-[var(--color-ink-light)]">
-                        <span class="block mb-1">After</span>
-                        <select
-                          class="field-input text-[0.68rem]"
-                          value={
-                            store.currentSpaceAfter == null
-                              ? ""
-                              : String(store.currentSpaceAfter)
-                          }
-                          onChange$={(_, el) =>
-                            applySpaceAfter(
-                              el.value === "" ? null : Number(el.value),
-                            )
-                          }
-                          aria-label="Space after paragraph"
-                        >
-                          <option value="">Default</option>
-                          {PARAGRAPH_SPACINGS.map((s) => (
-                            <option key={s.value} value={s.value}>
-                              {s.label}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    </div>
-
-                    <label class="compositor-check-row mb-3">
-                      <span class="min-w-0">
-                        <span class="block text-[0.7rem] text-[var(--color-ink)]">
-                          Keep with next
-                        </span>
-                        <span class="block text-[0.6rem] text-[var(--color-ink-muted)]">
-                          {store.active.h1 || store.active.h2 || store.active.h3
-                            ? "Always on for headings"
-                            : "Prevent a page break after this paragraph"}
-                        </span>
-                      </span>
-                      <input
-                        type="checkbox"
-                        class="compositor-checkbox"
-                        checked={store.currentKeepWithNext}
-                        disabled={
-                          !!store.active.h1 ||
-                          !!store.active.h2 ||
-                          !!store.active.h3
-                        }
-                        onChange$={(_, el) => applyKeepWithNext(el.checked)}
-                        aria-label="Keep paragraph with next"
-                      />
-                    </label>
-
-                    <p class="dept-label mb-1.5">Case</p>
-                    <div class="flex items-center gap-1">
-                      {(
-                        [
-                          ["upper", "AA"],
-                          ["lower", "aa"],
-                          ["title", "Aa"],
-                          ["sentence", "A."],
-                        ] as const
-                      ).map(([mode, label]) => (
-                        <button
-                          key={mode}
-                          type="button"
-                          disabled={!store.hasSelection}
-                          aria-label={`${mode} case`}
-                          title={`${mode} case${store.hasSelection ? "" : " — select some text first"}`}
-                          onClick$={() => applyTextCase(mode as TextCase)}
-                          class="flex-1 text-[0.65rem] py-1 border border-[var(--color-paper-3)] text-[var(--color-ink-light)] disabled:opacity-30 disabled:cursor-not-allowed"
-                          style="border-radius: 1px;"
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <Sep />
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="home"
-                data-group-label="Styles"
-                role="group"
-                aria-label="Styles"
-              >
-                <button
-                  title="Heading 1"
-                  aria-label="Heading 1"
-                  aria-pressed={!!store.active.h1}
-                  onClick$={() => runCommand("h1")}
-                  class="tool-btn"
-                  style="font-family: var(--font-display); font-weight: 600;"
-                >
-                  H₁
-                </button>
-                <button
-                  title="Heading 2"
-                  aria-label="Heading 2"
-                  aria-pressed={!!store.active.h2}
-                  onClick$={() => runCommand("h2")}
-                  class="tool-btn"
-                  style="font-family: var(--font-display); font-weight: 600;"
-                >
-                  H₂
-                </button>
-                <button
-                  title="Heading 3"
-                  aria-label="Heading 3"
-                  aria-pressed={!!store.active.h3}
-                  onClick$={() => runCommand("h3")}
-                  class="tool-btn"
-                  style="font-family: var(--font-display); font-weight: 600;"
-                >
-                  H₃
-                </button>
-              </div>
-
-              <Sep />
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="home"
-                data-group-label="Lists"
-                role="group"
-                aria-label="Lists"
-              >
-                <button
-                  title="Bullet list"
-                  aria-label="Bullet list"
-                  aria-pressed={!!store.active.bullet}
-                  onClick$={() => runCommand("bullet")}
-                  class="tool-btn"
-                >
-                  <Icon name={EDITOR_TOOL_ICONS.bulletList} size={16} /> list
-                </button>
-                <button
-                  title="Numbered list"
-                  aria-label="Numbered list"
-                  aria-pressed={!!store.active.ordered}
-                  onClick$={() => runCommand("ordered")}
-                  class="tool-btn"
-                >
-                  <Icon name={EDITOR_TOOL_ICONS.numberedList} size={16} /> list
-                </button>
-                <button
-                  title="Checklist"
-                  aria-label="Checklist"
-                  aria-pressed={!!store.active.taskList}
-                  onClick$={() => runCommand("taskList")}
-                  class="tool-btn"
-                >
-                  <Icon name={EDITOR_TOOL_ICONS.checklist} size={16} />{" "}
-                  Checklist
-                </button>
-                <button
-                  title="Pull quote"
-                  aria-label="Pull quote"
-                  aria-pressed={!!store.active.blockquote}
-                  onClick$={() => runCommand("blockquote")}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.quote} size={16} />
-                </button>
-                <button
-                  title="Code block"
-                  aria-label="Code block"
-                  aria-pressed={!!store.active.code}
-                  onClick$={() => runCommand("code")}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.codeBlock} size={16} />
-                </button>
-              </div>
-
-              <Sep />
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="home"
-                data-group-label="Alignment"
-                role="group"
-                aria-label="Alignment"
-              >
-                <button
-                  title="Align left"
-                  aria-label="Align left"
-                  aria-pressed={!!store.active.left}
-                  onClick$={() => runCommand("left")}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.alignLeft} size={16} />
-                </button>
-                <button
-                  title="Align center"
-                  aria-label="Align center"
-                  aria-pressed={!!store.active.center}
-                  onClick$={() => runCommand("center")}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.alignCenter} size={16} />
-                </button>
-                <button
-                  title="Align right"
-                  aria-label="Align right"
-                  aria-pressed={!!store.active.right}
-                  onClick$={() => runCommand("right")}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.alignRight} size={16} />
-                </button>
-                <button
-                  title="Justify"
-                  aria-label="Justify"
-                  aria-pressed={!!store.active.justify}
-                  onClick$={() => runCommand("justify")}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.justify} size={16} />
-                </button>
-              </div>
-
-              <Sep />
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="insert"
-                data-group-label="Objects"
-                role="group"
-                aria-label="Objects"
-              >
-                <button
-                  title="Insert plate (image)"
-                  aria-label="Insert image"
-                  onClick$={() => {
-                    store.showImageInput = true;
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.image} size={16} /> Image
-                </button>
-                <button
-                  title="Insert tabular (table)"
-                  aria-label="Insert table"
-                  aria-expanded={store.showTableInsertion}
-                  onClick$={() => {
-                    store.showTableInsertion = !store.showTableInsertion;
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.table} size={16} /> Table
-                </button>
-                <button
-                  title="Insert diagram (Mermaid)"
-                  aria-label="Insert Mermaid diagram"
-                  onClick$={() => {
-                    store.showMermaidInput = true;
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.diagram} size={16} /> Diagram
-                </button>
-              </div>
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="insert"
-                data-group-label="Breaks"
-                role="group"
-                aria-label="Breaks"
-              >
-                <button
-                  title="Section break"
-                  aria-label="Section break"
-                  onClick$={() => runCommand("horizontal")}
-                  class="tool-btn"
-                >
-                  <Icon name={EDITOR_TOOL_ICONS.sectionBreak} size={18} />
-                </button>
-                <button
-                  title="Page break (Ctrl/Cmd + Enter)"
-                  aria-label="Insert page break"
-                  onClick$={() => runCommand("pageBreak")}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.pageBreak} size={16} /> Page
-                </button>
-              </div>
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="review"
-                data-group-label="Comments"
-                role="group"
-                aria-label="Comments"
-              >
-                <button
-                  title="Add comment"
-                  aria-label="Add comment"
-                  disabled={!store.hasSelection}
-                  onClick$={() => {
-                    store.showCommentInput = true;
-                  }}
-                  class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <Icon name={COMPOSITOR_ICONS.comment} size={16} /> Comment
-                </button>
-              </div>
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="review"
-                data-group-label="Listening"
-                role="group"
-                aria-label="Listening"
-              >
-                <SpeechTransport
-                  id={MANUSCRIPT_READING_ID}
-                  onPlay$={readAloud}
-                  playLabel="Read the selection aloud — or the whole draft when nothing is selected"
-                />
-              </div>
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="insert"
-                data-group-label="Notes"
-                role="group"
-                aria-label="Notes"
-              >
-                <button
-                  title="Insert endnote — collected under Notes on export"
-                  aria-label="Insert endnote"
-                  aria-pressed={store.noteInputKind === "endnote"}
-                  onClick$={() => {
-                    store.noteInputKind =
-                      store.noteInputKind === "endnote" ? null : "endnote";
-                    store.noteText = "";
-                  }}
-                  class="tool-btn"
-                >
-                  ¹ endnote
-                </button>
-                <button
-                  title="Insert footnote — collected under Footnotes on export"
-                  aria-label="Insert footnote"
-                  aria-pressed={store.noteInputKind === "footnote"}
-                  onClick$={() => {
-                    store.noteInputKind =
-                      store.noteInputKind === "footnote" ? null : "footnote";
-                    store.noteText = "";
-                  }}
-                  class="tool-btn"
-                >
-                  † footnote
-                </button>
-              </div>
-
-              {/* Zen mode — dims inline notes/comments and asks the route to
-              collapse the side panels, for distraction-free writing. */}
-              <div
-                class="compositor-group"
-                data-compositor-tab="view"
-                data-group-label="Focus"
-                role="group"
-                aria-label="Focus"
-              >
-                <button
-                  title={
-                    store.zenMode
-                      ? "Exit distraction-free writing"
-                      : "Distraction-free writing — hides notes, comments, and side panels"
-                  }
-                  aria-label="Toggle zen mode"
-                  aria-pressed={store.zenMode}
-                  onClick$={() => {
-                    store.zenMode = !store.zenMode;
-                    window.dispatchEvent(
-                      new CustomEvent("twyne:zen-mode", {
-                        detail: { on: store.zenMode },
-                      }),
-                    );
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.zen} size={16} />
-                  {store.zenMode ? "Exit focus" : "Focus"}
-                </button>
-              </div>
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="review"
-                data-group-label="Proofing"
-                role="group"
-                aria-label="Proofing"
-              >
-                <button
-                  title="Find and replace (⌘F / ⌘H)"
-                  aria-label="Find and replace"
-                  aria-pressed={store.showFindReplace}
-                  onClick$={() => {
-                    store.showFindReplace = !store.showFindReplace;
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.find} size={16} /> Find
-                </button>
-                <button
-                  title="Grammar suggestions"
-                  aria-label="Grammar suggestions"
-                  aria-pressed={store.showGrammar}
-                  onClick$={() => {
-                    store.showGrammar = !store.showGrammar;
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.grammar} size={16} /> Grammar
-                </button>
-              </div>
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="view"
-                data-group-label="Navigation"
-                role="group"
-                aria-label="Navigation"
-              >
-                <button
-                  title="Document outline (⌘⇧O)"
-                  aria-label="Document outline"
-                  aria-pressed={store.showOutline}
-                  onClick$={() => {
-                    store.showOutline = !store.showOutline;
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.outline} size={16} /> Outline
-                </button>
-              </div>
-
-              <div
-                class="compositor-group"
-                data-compositor-tab="view"
-                data-group-label="Help"
-                role="group"
-                aria-label="Help"
-              >
-                <button
-                  title="Keyboard shortcuts (⌘/)"
-                  aria-label="Keyboard shortcuts"
-                  onClick$={() => {
-                    store.showShortcutDialog = true;
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.keyboard} size={16} /> Shortcuts
-                </button>
-              </div>
-
-              {/* Layout popover — one control for width, margin, running header, page numbers */}
-              <div
-                class="compositor-group relative"
-                data-compositor-tab="view"
-                data-group-label="Page"
-                role="group"
-                aria-label="Page"
-              >
-                <button
-                  title="Page layout"
-                  aria-label="Page layout"
-                  aria-expanded={store.showLayout}
-                  onClick$={(_, el) => {
-                    // Cap the panel to the room actually below the button. A bare
-                    // `max-height` cannot do this: it knows the viewport but not
-                    // where the panel starts, so a tall panel opened from a
-                    // toolbar partway down the page still ran off the bottom.
-                    const below =
-                      window.innerHeight -
-                      el.getBoundingClientRect().bottom -
-                      16;
-                    store.layoutPanelMaxH = Math.max(220, Math.round(below));
-                    store.showLayout = !store.showLayout;
-                  }}
-                  class="tool-btn"
-                >
-                  <Icon name={COMPOSITOR_ICONS.layout} size={16} /> Layout
-                </button>
-                {store.showLayout && (
-                  <div
-                    data-layout-popover
-                    class="compositor-layout-panel absolute right-0 top-full mt-1 z-50 w-[23rem] max-w-[calc(100vw-1.5rem)] overflow-y-auto p-4 bg-[var(--color-paper)] border border-[var(--color-paper-3)] shadow-lg"
-                    style={{
-                      borderRadius: "2px",
-                      fontFamily: "var(--font-typewriter)",
-                      maxHeight: `${store.layoutPanelMaxH}px`,
-                      overscrollBehavior: "contain",
-                    }}
-                    role="dialog"
-                    aria-label="Page layout"
-                  >
-                    <header class="layout-panel-header">
-                      <h2>Page layout</h2>
-                      <p>Paper, flow, margins, and running heads.</p>
-                    </header>
-
-                    <fieldset class="layout-section">
-                      <legend>Paper</legend>
-                      <div class="flex items-center gap-1 mb-2">
-                        {(
-                          [
-                            ["letter", "Letter"],
-                            ["a4", "A4"],
-                            ["legal", "Legal"],
-                          ] as const
-                        ).map(([value, label]) => (
-                          <button
-                            key={value}
-                            type="button"
-                            aria-pressed={
-                              resolvePageSetup(store.layout).paper === value
-                            }
-                            onClick$={() =>
-                              emitLayout({ ...store.layout, paper: value })
-                            }
-                            class="layout-choice"
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                      <div class="flex items-center gap-1 mb-3">
-                        {(
-                          [
-                            ["portrait", "Portrait"],
-                            ["landscape", "Landscape"],
-                          ] as const
-                        ).map(([value, label]) => (
-                          <button
-                            key={value}
-                            type="button"
-                            aria-pressed={
-                              resolvePageSetup(store.layout).orientation ===
-                              value
-                            }
-                            onClick$={() =>
-                              emitLayout({
-                                ...store.layout,
-                                orientation: value,
-                              })
-                            }
-                            class="layout-choice"
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-                    </fieldset>
-
-                    <fieldset class="layout-section">
-                      <legend>Flow</legend>
-                      <div class="flex items-center gap-1 mb-3">
-                        {(
-                          [
-                            ["paginated", "Pages"],
-                            ["continuous", "Scroll"],
-                          ] as const
-                        ).map(([value, label]) => (
-                          <button
-                            key={value}
-                            type="button"
-                            aria-pressed={
-                              resolvePageSetup(store.layout).pagination ===
-                              value
-                            }
-                            onClick$={() =>
-                              emitLayout({ ...store.layout, pagination: value })
-                            }
-                            class="layout-choice"
-                          >
-                            {label}
-                          </button>
-                        ))}
-                      </div>
-
-                      {/* The column-width presets only mean anything without a
-                    sheet. On a paginated canvas the paper decides the width
-                    and the margins decide the column. */}
-                      {resolvePageSetup(store.layout).pagination ===
-                        "continuous" && (
-                        <>
-                          <p class="dept-label mb-2">Column</p>
-                          <div class="flex items-center gap-1 mb-3">
-                            {(["narrow", "normal", "wide"] as const).map(
-                              (w) => (
-                                <button
-                                  key={w}
-                                  type="button"
-                                  aria-pressed={store.layout.width === w}
-                                  onClick$={() =>
-                                    emitLayout({ ...store.layout, width: w })
-                                  }
-                                  class="layout-choice"
-                                >
-                                  {w}
-                                </button>
-                              ),
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </fieldset>
-
-                    <fieldset class="layout-section">
-                      <legend>Margins</legend>
-                      {/* Two columns, paired the way the page reads: the opposing
-                    edges sit beside each other, so setting a symmetric margin
-                    is a comparison rather than a memory test. */}
-                      <div class="grid grid-cols-2 gap-x-3 gap-y-2">
-                        {(
-                          [
-                            ["Left", "left", "marginLeft"],
-                            ["Right", "right", "marginRight"],
-                            ["Top", "top", "marginTop"],
-                            ["Bottom", "bottom", "marginBottom"],
-                          ] as const
-                        ).map(([label, rangeKey, field]) => {
-                          const range = MARGIN_RANGE[rangeKey];
-                          const value = resolveMargins(store.layout)[rangeKey];
-                          return (
-                            <label
-                              key={field}
-                              class="block text-[0.7rem] text-[var(--color-ink-light)]"
-                            >
-                              <span class="flex items-baseline justify-between mb-1 gap-2">
-                                <span>{label}</span>
-                                <span class="tabular-nums text-[0.65rem] text-[var(--color-ink-muted)]">
-                                  {value.toFixed(2)} rem
-                                </span>
-                              </span>
-                              <input
-                                type="range"
-                                class="margin-slider"
-                                aria-label={`${label} margin, rem`}
-                                min={range.min}
-                                max={range.max}
-                                step={range.step}
-                                value={value}
-                                onInput$={(e) =>
-                                  emitLayout({
-                                    ...store.layout,
-                                    [field]: Number(
-                                      (e.target as HTMLInputElement).value,
-                                    ),
-                                  })
-                                }
-                              />
-                            </label>
-                          );
-                        })}
-                      </div>
-                      <label class="compositor-check-row mt-3">
-                        <span class="min-w-0">
-                          <span class="block text-[0.7rem] text-[var(--color-ink)]">
-                            Margin guides
-                          </span>
-                          <span class="block text-[0.6rem] text-[var(--color-ink-muted)]">
-                            Show the printable text boundary
-                          </span>
-                        </span>
-                        <input
-                          type="checkbox"
-                          class="compositor-checkbox"
-                          checked={store.layout.showMarginGuides === true}
-                          onChange$={(e) =>
-                            emitLayout({
-                              ...store.layout,
-                              showMarginGuides: (e.target as HTMLInputElement)
-                                .checked,
-                            })
-                          }
-                        />
-                      </label>
-                    </fieldset>
-
-                    {/* Header, footer and page numbers are one subject — the
-                    running heads — and used to be interleaved with the margin
-                    guides and each other. */}
-                    <fieldset class="layout-section">
-                      <legend>Running heads</legend>
-                      <label class="compositor-check-row mb-2">
-                        <span>Show running header</span>
-                        <input
-                          type="checkbox"
-                          class="compositor-checkbox"
-                          checked={store.layout.runningHeader}
-                          onChange$={(e) =>
-                            emitLayout({
-                              ...store.layout,
-                              runningHeader: (e.target as HTMLInputElement)
-                                .checked,
-                            })
-                          }
-                        />
-                      </label>
-                      <label class="compositor-check-row mb-3">
-                        <span>Page numbers</span>
-                        <input
-                          type="checkbox"
-                          class="compositor-checkbox"
-                          checked={store.layout.pageNumbers}
-                          onChange$={(e) =>
-                            emitLayout({
-                              ...store.layout,
-                              pageNumbers: (e.target as HTMLInputElement)
-                                .checked,
-                            })
-                          }
-                        />
-                      </label>
-                      <div class="mb-2">
-                        <label
-                          class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
-                          for="layout-header-text"
-                        >
-                          Header line
-                        </label>
-                        <input
-                          id="layout-header-text"
-                          value={store.headerText}
-                          placeholder="Optional running header"
-                          class="field-input text-[0.78rem]"
-                          style="font-family: var(--font-typewriter);"
-                          onInput$={(e) =>
-                            updateChromeText(
-                              "header",
-                              (e.target as HTMLInputElement).value,
-                            )
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label
-                          class="block text-[0.63rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] mb-1"
-                          for="layout-footer-text"
-                        >
-                          Footer line
-                        </label>
-                        <input
-                          id="layout-footer-text"
-                          value={store.footerText}
-                          placeholder="Optional running footer"
-                          class="field-input text-[0.78rem]"
-                          style="font-family: var(--font-typewriter);"
-                          onInput$={(e) =>
-                            updateChromeText(
-                              "footer",
-                              (e.target as HTMLInputElement).value,
-                            )
-                          }
-                        />
-                      </div>
-                    </fieldset>
-                    {/* Page setup and "print it" belong together — this is the
-                    panel where the writer just decided what the page looks
-                    like, so it is where they look to commit it to paper. */}
-                    <button
-                      type="button"
-                      onClick$={saveAsPdf}
-                      disabled={store.exportingPdf}
-                      class="btn-paper w-full py-1.5 text-[0.7rem] disabled:opacity-40"
-                    >
-                      {store.exportingPdf ? "Preparing…" : "Save as PDF…"}
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
+          <CompositorPanel
+            store={store}
+            onCommand$={runCommand}
+            onHighlight$={applyHighlight}
+            onTextColor$={applyTextColor}
+            onFontFamily$={applyFontFamily}
+            onFontSize$={applyFontSize}
+            onLineHeight$={applyLineHeight}
+            onSpaceBefore$={applySpaceBefore}
+            onSpaceAfter$={applySpaceAfter}
+            onKeepWithNext$={applyKeepWithNext}
+            onTextCase$={applyTextCase}
+            onReadAloud$={readAloud}
+            onLayoutChange$={emitLayout}
+            onChromeTextChange$={updateChromeText}
+            onSavePdf$={saveAsPdf}
+          />
           {store.showFindReplace && (
             <div
               class="fixed right-4 top-16"
@@ -4013,42 +2674,20 @@ export const TwyneEditor = component$(
             }}
           />
 
-          {/* Footnote / endnote modal — replaces the old single-line inline bar
-            so the writer can hold a real sentence of gloss, with Cmd+Enter
-            to commit. Visibility tracks `noteInputKind` so the existing
-            toolbar toggle keeps working. */}
-          <TextModal
-            open={store.noteInputKind !== null}
-            kicker={store.noteInputKind === "footnote" ? "Insert" : "Insert"}
-            title={store.noteInputKind === "footnote" ? "Footnote" : "Endnote"}
-            description={
-              store.noteInputKind === "footnote"
-                ? "Footnote text appears at the foot of the page on the same sheet as the marker — for asides the reader needs on the same page as the line that prompted them."
-                : "Endnote text collects under Notes at the end of the manuscript — for sourcing, citations, and longer remarks."
-            }
-            inputLabel={
-              store.noteInputKind === "footnote"
-                ? "Footnote text"
-                : "Endnote text"
-            }
-            placeholder={
-              store.noteInputKind === "footnote"
-                ? "e.g. See Smith 2019, p. 142, for the original formulation."
-                : "e.g. The name 'Eleanor' surfaces across the archive in nine distinct hands."
-            }
-            helpText="Cmd/Ctrl + Enter to insert · Esc to cancel"
-            rows={4}
-            minHeightRem={8}
-            submitLabel={
-              store.noteInputKind === "footnote"
-                ? "Insert footnote"
-                : "Insert endnote"
-            }
-            onCancel$={() => {
+          <InsertPanels
+            noteKind={store.noteInputKind}
+            mermaidOpen={store.showMermaidInput}
+            imageOpen={store.showImageInput}
+            imageUrl={store.imageUrl}
+            imageUploadAvailable={!!store.imageUploadAdapter}
+            imageUploadError={store.imageUploadError}
+            commentOpen={store.showCommentInput}
+            commentText={store.commentText}
+            onCancelNote$={() => {
               store.noteInputKind = null;
               store.noteText = "";
             }}
-            onConfirm$={async (value) => {
+            onConfirmNote$={async (value) => {
               store.noteText = value.trim();
               if (!store.noteText) {
                 store.noteInputKind = null;
@@ -4056,25 +2695,11 @@ export const TwyneEditor = component$(
               }
               await runCommand("insertNote");
             }}
-          />
-
-          {/* Mermaid modal — the inline bar couldn't hold a real diagram spec. */}
-          <TextModal
-            open={store.showMermaidInput}
-            kicker="Insert"
-            title="Mermaid diagram"
-            description="Write a Mermaid diagram spec. It will render in-line where the cursor sits."
-            inputLabel="Diagram source"
-            placeholder="graph TD; A[Manuscript] --> B{Reviewed?}; B -->|Yes| C[Publish]; B -->|No| D[Revise]; D --> A"
-            helpText="Cmd/Ctrl + Enter to insert · Esc to cancel. See mermaid.js.org for syntax."
-            rows={8}
-            minHeightRem={14}
-            submitLabel="Insert diagram"
-            onCancel$={() => {
+            onCancelMermaid$={() => {
               store.showMermaidInput = false;
               store.mermaidSource = "";
             }}
-            onConfirm$={async (value) => {
+            onConfirmMermaid$={async (value) => {
               store.mermaidSource = value.trim();
               if (!store.mermaidSource) {
                 store.showMermaidInput = false;
@@ -4082,8 +2707,30 @@ export const TwyneEditor = component$(
               }
               await runCommand("insertMermaid");
             }}
+            onChooseImage$={chooseImageFiles}
+            onImageUrlChange$={(value) => {
+              store.imageUrl = value;
+            }}
+            onInsertImage$={(url) => {
+              if (url) insertImage(url);
+              store.showImageInput = false;
+              store.imageUrl = "";
+            }}
+            onCancelImage$={() => {
+              store.showImageInput = false;
+              store.imageUrl = "";
+            }}
+            onCommentChange$={(value) => {
+              store.commentText = value;
+            }}
+            onAddComment$={() => {
+              if (store.commentText.trim()) runCommand("addComment");
+            }}
+            onCancelComment$={() => {
+              store.showCommentInput = false;
+              store.commentText = "";
+            }}
           />
-
           <SlashCommandMenu
             open={store.slashOpen}
             query={store.slashQuery}
@@ -4159,908 +2806,78 @@ export const TwyneEditor = component$(
               />
             </div>
           )}
-
-          {store.showImageInput && (
-            <div
-              class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-              style="z-index: var(--z-sticky);"
-            >
-              <span
-                class="text-xs text-[var(--color-ink-muted)]"
-                style="font-family: var(--font-typewriter);"
-              >
-                Plate URL:
-              </span>
-              <button
-                type="button"
-                onClick$={chooseImageFiles}
-                disabled={!store.imageUploadAdapter}
-                class="tool-btn text-xs"
-              >
-                Choose file…
-              </button>
-              <span class="text-xs text-[var(--color-ink-muted)]">or</span>
-              <input
-                autoFocus
-                value={store.imageUrl}
-                onInput$={(e) => {
-                  store.imageUrl = (e.target as HTMLInputElement).value;
-                }}
-                onKeyDown$={(e) => {
-                  if (e.key === "Enter" && store.imageUrl.trim()) {
-                    insertImage(store.imageUrl.trim());
-                    store.showImageInput = false;
-                    store.imageUrl = "";
-                  }
-                  if (e.key === "Escape") {
-                    store.showImageInput = false;
-                    store.imageUrl = "";
-                  }
-                }}
-                placeholder="https://…"
-                class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                style="font-family: var(--font-typewriter); border-radius: 2px;"
-              />
-              <button
-                onClick$={() => {
-                  if (store.imageUrl.trim()) {
-                    insertImage(store.imageUrl.trim());
-                  }
-                  store.showImageInput = false;
-                  store.imageUrl = "";
-                }}
-                class="tool-btn text-xs"
-              >
-                Insert
-              </button>
-              <button
-                onClick$={() => {
-                  store.showImageInput = false;
-                  store.imageUrl = "";
-                }}
-                class="tool-btn text-xs"
-              >
-                Cancel
-              </button>
-              {store.imageUploadError && (
-                <span
-                  role="alert"
-                  class="text-xs text-[var(--color-vermilion)]"
-                >
-                  {store.imageUploadError}
-                </span>
-              )}
-            </div>
-          )}
-
-          {store.showCommentInput && (
-            <div
-              class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-              style="z-index: var(--z-sticky);"
-            >
-              <span
-                class="text-xs text-[var(--color-ink-muted)]"
-                style="font-family: var(--font-typewriter);"
-              >
-                Comment:
-              </span>
-              <input
-                autoFocus
-                value={store.commentText}
-                onInput$={(e) => {
-                  store.commentText = (e.target as HTMLInputElement).value;
-                }}
-                onKeyDown$={(e) => {
-                  if (e.key === "Enter" && store.commentText.trim()) {
-                    runCommand("addComment");
-                  }
-                  if (e.key === "Escape") {
-                    store.showCommentInput = false;
-                    store.commentText = "";
-                  }
-                }}
-                placeholder="Type your editorial note…"
-                class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                style="font-family: var(--font-typewriter); border-radius: 2px;"
-              />
-              <button
-                onClick$={() => {
-                  if (store.commentText.trim()) {
-                    runCommand("addComment");
-                  }
-                }}
-                class="tool-btn text-xs"
-              >
-                Add
-              </button>
-              <button
-                onClick$={() => {
-                  store.showCommentInput = false;
-                  store.commentText = "";
-                }}
-                class="tool-btn text-xs"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
         </div>
-
-        {/* ── Editor area (the manuscript page) ──────────── */}
-        <div
-          class="flex-1 overflow-y-auto overflow-x-auto"
-          style="background: var(--color-editor-bg);"
-          preventdefault:dragover
-          preventdefault:dragleave
-          preventdefault:drop
+        <ManuscriptPanel
+          store={store}
+          pageWidthRem={pageWidthRem()}
+          canvasMinHeight={canvasMinHeight()}
+          pageChromeGeometry={pageChromeGeometry()}
           onDragOver$={handleDragOver}
           onDragLeave$={handleDragLeave}
           onDrop$={handleDrop}
-        >
-          {store.isDragOver && (
-            <div class="drag-overlay">
-              <span>Drop plate or tabular here</span>
-            </div>
-          )}
-          {/* The ruler spans the page it describes, so its markers sit on the
-              real margins rather than near them. */}
-          <PageRuler
-            layout={store.layout}
-            pageWidthRem={pageWidthRem()}
-            zen={store.zenMode}
-            onChange$={emitLayout}
-          />
-          <div
-            class={`mx-auto twyne-editor page-canvas relative ${store.layout.showMarginGuides ? "show-margin-guides" : ""} ${store.zenMode ? "zen-mode" : ""} ${store.paginationActive ? "is-paginated" : ""}`}
-            style={{
-              // A sheet is a physical size. Given only a max-width it would
-              // shrink with the viewport, narrowing the column, making every
-              // block taller, and silently changing how many pages the
-              // manuscript is — a page count that moves when you drag the
-              // window is not a page count. So the paginated canvas takes a
-              // fixed width and the area around it scrolls, which is what
-              // every word processor does.
-              ...(store.paginationActive
-                ? {
-                    width: "var(--page-w)",
-                    "flex-shrink": "0",
-                    // The sheets are absolutely positioned, so they add no
-                    // height of their own. Without this the last page — which
-                    // is usually only part full — gets clipped where the prose
-                    // happens to stop, and the paper ends mid-sheet.
-                    "min-height": `${canvasMinHeight()}px`,
-                  }
-                : { "max-width": "var(--doc-width, 48rem)" }),
-              "padding-left": "var(--doc-pad-left, 3rem)",
-              "padding-right": "var(--doc-pad-right, 3rem)",
-              "padding-top": "var(--doc-pad-y, 2.5rem)",
-              "padding-bottom": "var(--doc-pad-bottom, 4rem)",
-            }}
-          >
-            {/* Sheet edges, running headers and page numbers. Painted behind
-                the prose from the engine's page count — it reads nothing from
-                the DOM, because the uniform grid makes every position a
-                multiply. */}
-            <PageChrome
-              pageCount={store.pageCount}
-              active={store.paginationActive}
-              layout={store.layout}
-              title={store.meta.title}
-              headerText={store.headerText}
-              footerText={store.footerText}
-              zen={store.zenMode}
-              onHeaderCommit$={(value) => updateChromeText("header", value)}
-              onFooterCommit$={(value) => updateChromeText("footer", value)}
-              {...pageChromeGeometry()}
-            />
-            <div
-              id="twyne-editor-mount"
-              data-speech-id={MANUSCRIPT_READING_ID}
-              data-speech-source="plain"
-              style={{ position: "relative", zIndex: 1 }}
-            />
+          onLayoutChange$={emitLayout}
+          onHeaderCommit$={(value) => updateChromeText("header", value)}
+          onFooterCommit$={(value) => updateChromeText("footer", value)}
+          onJumpToNote$={jumpToNote}
+        />
 
-            {/* Notes — endnotes and footnotes collected live from the doc,
-                set at the foot of the manuscript like a book's own notes
-                page. Independent numbering per kind, mirroring the inline
-                markers and the exported "Notes"/"Footnotes" sections. */}
-            {store.notes.length > 0 && (
-              <div
-                class="manuscript-notes mt-10 pt-6 border-t border-[var(--color-paper-3)]"
-                style="font-family: var(--font-serif);"
-              >
-                {(["endnote", "footnote"] as const).map((kind) => {
-                  const items = store.notes.filter((n) => n.kind === kind);
-                  if (items.length === 0) return null;
-                  return (
-                    <div key={kind} class="manuscript-notes-group">
-                      <h3
-                        class="dept-label mb-2"
-                        style="font-family: var(--font-typewriter); font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-muted);"
-                      >
-                        {kind === "endnote" ? "Notes" : "Footnotes"}
-                      </h3>
-                      <ol class="manuscript-notes-list">
-                        {items.map((n) => (
-                          <li key={`${kind}-${n.number}`}>
-                            <button
-                              type="button"
-                              class="manuscript-note-marker"
-                              style={{
-                                color:
-                                  kind === "footnote"
-                                    ? "var(--color-cobalt)"
-                                    : "var(--color-vermilion)",
-                              }}
-                              onClick$={() => jumpToNote(n.pos)}
-                              aria-label={`Jump to ${kind} ${n.number} in the text`}
-                            >
-                              {kind === "footnote" ? `†${n.number}` : n.number}
-                            </button>
-                            <span class="manuscript-note-text">{n.text}</span>
-                          </li>
-                        ))}
-                      </ol>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ── Status bar (the colophon) ──────────────────── */}
-        <div
-          class="flex items-center justify-between px-5 py-1.5 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] text-[var(--color-ink-light)] sticky bottom-0"
-          style={{
-            fontFamily: "var(--font-typewriter)",
-            letterSpacing: "0.1em",
-            textTransform: "uppercase",
-            fontSize: "0.72rem",
-            zIndex: "var(--z-sticky)",
+        <PersonaNotePanel
+          note={store.notePopover}
+          onPin$={(noteId) => {
+            const note = store.notePopover;
+            if (note?.id === noteId && !note.pinned) {
+              store.notePopover = { ...note, pinned: true };
+            }
           }}
-        >
-          <span>
-            {formatWordCount(store.meta.wordCount)} words · {folios} folios
-          </span>
-          <span>
-            <LastSavedLine savedAt={store.lastSavedAt} /> ·{" "}
-            {readingTimeLabel(store.meta.readingTime)} · set in Lora &amp;
-            Fraunces
-          </span>
-        </div>
-
-        {/* ── Persona-note card: anchored below (or flipped above) the
-              sentence, never overlapping the marked text. The card
-              geometry is computed by `computePopoverGeometry` so the JSX
-              just mirrors the resulting fields. Click pins the card so it
-              survives mouse-out. ── */}
-        {store.notePopover && (
-          <div
-            class="persona-note-card fixed z-50 flex flex-col"
-            role="dialog"
-            aria-label={`Note from ${store.notePopover.author}`}
-            style={{
-              left: `${store.notePopover.x}px`,
-              top:
-                store.notePopover.top != null
-                  ? `${store.notePopover.top}px`
-                  : "auto",
-              bottom:
-                store.notePopover.bottom != null
-                  ? `${store.notePopover.bottom}px`
-                  : "auto",
-              width: "340px",
-              "max-height": `${store.notePopover.maxH}px`,
-              background: "var(--color-paper)",
-              border: `2px solid ${store.notePopover.color}`,
-              "border-radius": "4px",
-              "box-shadow": "0 14px 36px rgba(0,0,0,0.28)",
-            }}
-            onClick$={(e) => {
-              // Clicking the card itself pins it so it survives mouseout.
-              e.stopPropagation();
-              const p = store.notePopover;
-              if (p && !p.pinned) {
-                store.notePopover = { ...p, pinned: true };
-              }
-            }}
-            onMouseLeave$={(e) => {
-              if (store.notePopover?.pinned) return;
-              // Mid-conversation: keep the live thread open even if the
-              // popover was opened by hover rather than a click.
-              if (store.notePopover?.replying) return;
-              if ((store.notePopover?.thread.length ?? 0) > 0) return;
-              const related = (e as MouseEvent)
-                .relatedTarget as HTMLElement | null;
-              if (related?.closest(".twyne-persona-note")) return;
-              if (related?.closest(".twyne-mark-anchor")) return;
+          onClose$={() => {
+            store.notePopover = null;
+          }}
+          onDraftChange$={(draft) => {
+            const note = store.notePopover;
+            if (note) store.notePopover = { ...note, draft };
+          }}
+          onReply$={(noteId, text, author) => {
+            window.dispatchEvent(
+              new CustomEvent("twyne:persona-reply", {
+                detail: { noteId, text, author },
+              }),
+            );
+            const note = store.notePopover;
+            if (note?.id === noteId) {
+              store.notePopover = { ...note, draft: "", error: null };
+            }
+          }}
+          onStrike$={(noteId) => {
+            dismissNote(noteId);
+            if (store.notePopover?.id === noteId) {
               store.notePopover = null;
-            }}
-          >
-            <div
-              class="px-5 py-3 border-b flex items-baseline justify-between gap-3"
-              style={{
-                "border-color": "var(--color-paper-3)",
-                background: "var(--color-paper-soft)",
-              }}
-            >
-              <div class="min-w-0">
-                <p
-                  class="text-base text-[var(--color-ink)] truncate"
-                  style={{
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 600,
-                  }}
-                >
-                  {store.notePopover.author}
-                </p>
-                {store.notePopover.label && (
-                  <p
-                    class="text-[0.7rem] tracking-[0.14em] uppercase mt-0.5"
-                    style={{
-                      fontFamily: "var(--font-typewriter)",
-                      color: store.notePopover.color,
-                    }}
-                  >
-                    {store.notePopover.label}
-                  </p>
-                )}
-              </div>
-              <div class="flex items-center gap-1.5 flex-shrink-0">
-                {/* Hear the note in its editor's voice, from the passage it
-                    concerns — the same control the Cast panel carries, so a
-                    writer working in the manuscript never has to go looking
-                    for the panel to be read to. */}
-                <SpeakButton
-                  compact
-                  id={`note-popover-${store.notePopover.id}`}
-                  text={store.notePopover.note}
-                  author={store.notePopover.author}
-                  label={store.notePopover.author}
-                />
-                <button
-                  onClick$={() => {
-                    store.notePopover = null;
-                  }}
-                  class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
-                  aria-label="Close note"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-            <div class="px-5 py-4 space-y-3 overflow-y-auto">
-              {store.notePopover.quote && (
-                <blockquote
-                  class="text-[0.85rem] leading-6 text-[var(--color-ink-light)] border-l-2 pl-3 italic"
-                  style={{ "border-color": store.notePopover.color }}
-                >
-                  {`« ${store.notePopover.quote.length > 280 ? store.notePopover.quote.slice(0, 279) + "…" : store.notePopover.quote} »`}
-                </blockquote>
-              )}
-              <div
-                data-speech-id={`note-popover-${store.notePopover.id}`}
-                class="comment-markdown text-[0.95rem] leading-6 text-[var(--color-ink)]"
-                style={{ fontFamily: "var(--font-serif)" }}
-                dangerouslySetInnerHTML={renderMarkdown(store.notePopover.note)}
-              />
-              {store.notePopover.briefTitle && (
-                <p
-                  class="text-[0.65rem] text-[var(--color-ink-muted)]"
-                  style={{ fontFamily: "var(--font-typewriter)" }}
-                >
-                  {`filed against “${store.notePopover.briefTitle}”`}
-                </p>
-              )}
-              {store.notePopover.thread.length > 0 && (
-                <div class="persona-note-thread space-y-2 pt-2">
-                  {(() => {
-                    const pop = store.notePopover!;
-                    return store.notePopover.thread.map((r) =>
-                      r.authorKind === "user" ? (
-                        <div
-                          key={r.id}
-                          class="flex justify-end"
-                          data-author-kind="user"
-                        >
-                          <div
-                            class="max-w-[85%] px-3 py-2 border border-[var(--color-paper-3)] text-[0.85rem] leading-5 text-[var(--color-ink)]"
-                            style={{
-                              "background-color": "var(--color-paper-soft)",
-                              "border-radius": "6px 6px 2px 6px",
-                              fontFamily: "var(--font-serif)",
-                            }}
-                          >
-                            <p
-                              class="text-[0.6rem] tracking-[0.14em] uppercase mb-1 text-[var(--color-ink-muted)]"
-                              style={{ fontFamily: "var(--font-typewriter)" }}
-                            >
-                              You
-                            </p>
-                            <div
-                              class="comment-markdown whitespace-pre-wrap"
-                              dangerouslySetInnerHTML={renderMarkdown(r.text)}
-                            />
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          key={r.id}
-                          class="flex justify-start"
-                          data-author-kind="persona"
-                        >
-                          <div
-                            class="max-w-[85%] px-3 py-2 border text-[0.85rem] leading-5 text-[var(--color-ink)]"
-                            style={{
-                              "background-color": pop.color,
-                              "border-color": pop.color,
-                              "border-radius": "6px 6px 6px 2px",
-                              fontFamily: "var(--font-serif)",
-                            }}
-                          >
-                            <p
-                              class="text-[0.6rem] tracking-[0.14em] uppercase mb-1"
-                              style={{
-                                fontFamily: "var(--font-typewriter)",
-                                color: "var(--color-paper)",
-                                opacity: "0.9",
-                              }}
-                            >
-                              {r.author}
-                            </p>
-                            <div
-                              class="comment-markdown comment-markdown-on-color whitespace-pre-wrap"
-                              style={{ color: "var(--color-paper)" }}
-                              dangerouslySetInnerHTML={renderMarkdown(r.text)}
-                            />
-                          </div>
-                        </div>
-                      ),
-                    );
-                  })()}
-                </div>
-              )}
-              {/* The reply as it is written. Once there are words the dots
-                  are redundant — watching the sentence form is a better
-                  progress indicator than any animation. It sits in the same
-                  bubble the finished reply will occupy, so nothing jumps
-                  when the two swap. */}
-              {store.notePopover.replying &&
-                store.notePopover.streamingReply.trim() && (
-                  <div class="persona-note-streaming flex justify-start">
-                    <div
-                      class="max-w-[85%] px-3 py-2 border text-[0.85rem] leading-5"
-                      style={{
-                        "background-color": store.notePopover.color,
-                        "border-color": store.notePopover.color,
-                        "border-radius": "6px 6px 6px 2px",
-                        fontFamily: "var(--font-serif)",
-                      }}
-                    >
-                      <p
-                        class="text-[0.6rem] tracking-[0.14em] uppercase mb-1"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          color: "var(--color-paper)",
-                          opacity: "0.9",
-                        }}
-                      >
-                        {store.notePopover.author}
-                      </p>
-                      <div
-                        class="comment-markdown comment-markdown-on-color whitespace-pre-wrap"
-                        style={{ color: "var(--color-paper)" }}
-                        dangerouslySetInnerHTML={renderMarkdown(
-                          store.notePopover.streamingReply,
-                        )}
-                      />
-                    </div>
-                  </div>
-                )}
-              {store.notePopover.replying &&
-                !store.notePopover.streamingReply.trim() && (
-                  <div
-                    class="persona-note-typing flex items-center gap-2 pt-1 italic text-[0.75rem] text-[var(--color-ink-muted)]"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
-                  >
-                    <span class="typing-dots" aria-hidden="true">
-                      <span>.</span>
-                      <span>.</span>
-                      <span>.</span>
-                    </span>
-                    <span>{store.notePopover.author} is typing…</span>
-                  </div>
-                )}
-              {store.notePopover.error && (
-                <p
-                  class="persona-note-error text-[0.7rem] leading-4 pt-1 text-[var(--color-vermilion)]"
-                  style={{ fontFamily: "var(--font-typewriter)" }}
-                >
-                  {store.notePopover.error}
-                </p>
-              )}
-              <div
-                class="pt-2 border-t border-dashed"
-                style={{ "border-color": "var(--color-paper-3)" }}
-              >
-                <textarea
-                  value={store.notePopover.draft}
-                  onInput$={(e) => {
-                    if (!store.notePopover) return;
-                    store.notePopover = {
-                      ...store.notePopover,
-                      draft: (e.target as HTMLTextAreaElement).value,
-                    };
-                  }}
-                  onKeyDown$={(e) => {
-                    if (
-                      (e.metaKey || e.ctrlKey) &&
-                      e.key === "Enter" &&
-                      store.notePopover
-                    ) {
-                      e.preventDefault();
-                      if (!store.notePopover.draft.trim()) return;
-                      window.dispatchEvent(
-                        new CustomEvent("twyne:persona-reply", {
-                          detail: {
-                            noteId: store.notePopover.id,
-                            text: store.notePopover.draft,
-                            author: store.notePopover.author,
-                          },
-                        }),
-                      );
-                      // Keep the popover open so the writer sees the
-                      // optimistic reply, the typing indicator, and
-                      // the persona's response land in the thread.
-                      store.notePopover = {
-                        ...store.notePopover,
-                        draft: "",
-                        error: null,
-                      };
-                    }
-                  }}
-                  placeholder={`Reply to ${store.notePopover.author}…`}
-                  class="w-full mt-2 px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
-                  style="font-family: var(--font-serif); border-radius: 2px;"
-                  rows={3}
-                />
-                <div class="mt-2 flex items-center justify-between gap-2">
-                  <span
-                    class="text-[10px] text-[var(--color-ink-muted)]"
-                    style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
-                  >
-                    ⌘↩ to reply
-                  </span>
-                  <div class="flex gap-2">
-                    <button
-                      onClick$={() => {
-                        if (!store.notePopover) return;
-                        dismissNote(store.notePopover.id);
-                        store.notePopover = null;
-                      }}
-                      class="btn-paper text-[11px]"
-                    >
-                      Strike
-                    </button>
-                    <button
-                      onClick$={() => {
-                        if (!store.notePopover) return;
-                        if (!store.notePopover.draft.trim()) return;
-                        window.dispatchEvent(
-                          new CustomEvent("twyne:persona-reply", {
-                            detail: {
-                              noteId: store.notePopover.id,
-                              text: store.notePopover.draft,
-                              author: store.notePopover.author,
-                            },
-                          }),
-                        );
-                        // Live thread: stay open. The Cast panel and
-                        // the popover now share the same source of
-                        // truth via the `twyne:*` event bus, so the
-                        // writer can keep replying in the text.
-                        store.notePopover = {
-                          ...store.notePopover,
-                          draft: "",
-                          error: null,
-                        };
-                      }}
-                      disabled={!store.notePopover.draft.trim()}
-                      class="btn-press text-[11px] disabled:opacity-30 disabled:cursor-not-allowed"
-                    >
-                      Reply
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+            }
+          }}
+        />
+        <SuggestionPanel
+          suggestion={store.suggestionPopover}
+          stampVisible={store.stampVisible}
+          onClose$={() => {
+            store.suggestionPopover = null;
+          }}
+          onStrike$={strikeSuggestion}
+          onAccept$={acceptSuggestion}
+        />
 
-        {/* ── Suggestion modal: an editor's proposed rewrite (centered) ── */}
-        {store.suggestionPopover && (
-          <div
-            class="fixed inset-0 z-50 flex items-center justify-center p-6"
-            style="background: rgba(20, 16, 10, 0.55);"
-            role="dialog"
-            aria-label={`Proposed edit from ${store.suggestionPopover.author}`}
-            onClick$={() => {
-              store.suggestionPopover = null;
-            }}
-          >
-            <div
-              class="bg-[var(--color-paper)] border-2 w-full max-w-xl flex flex-col"
-              style={{
-                "border-color": store.suggestionPopover.color,
-                "border-radius": "4px",
-                "box-shadow": "0 20px 50px rgba(0,0,0,0.35)",
-              }}
-              onClick$={(e) => e.stopPropagation()}
-            >
-              <div
-                class="px-5 py-3 border-b flex items-baseline justify-between gap-3"
-                style={{
-                  "border-color": "var(--color-paper-3)",
-                  background: "var(--color-paper-soft)",
-                }}
-              >
-                <p
-                  class="text-[0.7rem] tracking-[0.14em] uppercase"
-                  style={{
-                    fontFamily: "var(--font-typewriter)",
-                    color: store.suggestionPopover.color,
-                  }}
-                >
-                  {store.suggestionPopover.author} proposes
-                </p>
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                  {/* Hearing a proposed rewrite is the fastest way to tell
-                      whether it sounds like you. */}
-                  <SpeakButton
-                    compact
-                    id={`suggestion-${store.suggestionPopover.id}`}
-                    text={store.suggestionPopover.replacement}
-                    author={store.suggestionPopover.author}
-                    label={store.suggestionPopover.author}
-                  />
-                  <button
-                    onClick$={() => {
-                      store.suggestionPopover = null;
-                    }}
-                    class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
-                    aria-label="Close"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-              <div class="px-5 py-4 space-y-3">
-                <p
-                  class="text-[0.85rem] leading-6 line-through text-[var(--color-ink-muted)]"
-                  style={{ fontFamily: "var(--font-serif)" }}
-                >
-                  {store.suggestionPopover.original}
-                </p>
-                <p
-                  data-speech-id={`suggestion-${store.suggestionPopover.id}`}
-                  class="text-[0.95rem] leading-6 text-[var(--color-ink)]"
-                  style={{ fontFamily: "var(--font-serif)" }}
-                >
-                  {store.suggestionPopover.replacement}
-                </p>
-                {store.suggestionPopover.rationale && (
-                  <div
-                    class="comment-markdown text-[0.78rem] italic leading-5 text-[var(--color-ink-light)]"
-                    style={{ fontFamily: "var(--font-serif)" }}
-                    dangerouslySetInnerHTML={renderMarkdown(
-                      store.suggestionPopover.rationale,
-                    )}
-                  />
-                )}
-                <div class="pt-2 flex gap-2 justify-end">
-                  <button
-                    onClick$={strikeSuggestion}
-                    disabled={store.suggestionPopover.busy}
-                    class="btn-paper text-xs"
-                  >
-                    Strike
-                  </button>
-                  <button
-                    onClick$={acceptSuggestion}
-                    disabled={store.suggestionPopover.busy}
-                    class="btn-press text-xs"
-                  >
-                    {store.suggestionPopover.busy
-                      ? "Stamping…"
-                      : "Accept & stamp"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── Approval stamp: thunks onto the page when an edit is accepted ── */}
-        {store.stampVisible && (
-          <div class="approval-stamp-overlay" aria-hidden="true">
-            <ImgApprovalStamp aria-hidden="true" width="220" height="220" />
-          </div>
-        )}
-
-        {/* ── User inline-comment modal: centered, dismissable ── */}
-        {store.userCommentPopover && (
-          <div
-            class="fixed inset-0 z-50 flex items-center justify-center p-6"
-            style="background: rgba(20, 16, 10, 0.55);"
-            role="dialog"
-            aria-label={`Comment from ${store.userCommentPopover.author}`}
-            onClick$={closeUserCommentPopover}
-          >
-            <div
-              class="bg-[var(--color-paper)] border-2 w-full max-w-xl flex flex-col"
-              style={{
-                "border-color": store.userCommentPopover.resolved
-                  ? "var(--color-accent-green)"
-                  : "var(--color-mustard)",
-                "border-radius": "4px",
-                "box-shadow": "0 20px 50px rgba(0,0,0,0.35)",
-              }}
-              onClick$={(e) => e.stopPropagation()}
-            >
-              <div
-                class="px-5 py-3 border-b flex items-baseline justify-between gap-3"
-                style={{
-                  "border-color": "var(--color-paper-3)",
-                  background: "var(--color-paper-soft)",
-                }}
-              >
-                <p
-                  class="text-[0.7rem] tracking-[0.18em] uppercase"
-                  style={{
-                    fontFamily: "var(--font-typewriter)",
-                    color: store.userCommentPopover.resolved
-                      ? "var(--color-accent-green)"
-                      : "var(--color-mustard)",
-                  }}
-                >
-                  {store.userCommentPopover.resolved
-                    ? "resolved · "
-                    : "open · "}
-                  {timeAgo(store.userCommentPopover.createdAt)}
-                </p>
-                <div class="flex items-center gap-1.5 flex-shrink-0">
-                  <SpeakButton
-                    compact
-                    id={`user-comment-${store.userCommentPopover.id}`}
-                    text={store.userCommentPopover.text}
-                  />
-                  <button
-                    onClick$={closeUserCommentPopover}
-                    class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
-                    aria-label="Close comment"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-              <div class="px-5 py-4 space-y-3">
-                <div
-                  data-speech-id={`user-comment-${store.userCommentPopover.id}`}
-                  class="comment-markdown text-[1rem] leading-6 text-[var(--color-ink)]"
-                  style="font-family: var(--font-serif);"
-                  dangerouslySetInnerHTML={renderMarkdown(
-                    store.userCommentPopover.text,
-                  )}
-                />
-                {store.userCommentPopover.replies.length > 0 && (
-                  <div
-                    class="pt-2 mt-2 border-t border-dashed space-y-2"
-                    style={{ "border-color": "var(--color-paper-3)" }}
-                  >
-                    {store.userCommentPopover.replies.map((r) => (
-                      <div key={r.id} class="text-[0.85rem]">
-                        <p
-                          class="text-[0.6rem] tracking-[0.16em] uppercase"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            color:
-                              r.authorKind === "persona" && r.color
-                                ? r.color
-                                : "var(--color-ink-muted)",
-                          }}
-                        >
-                          {r.author}
-                          {r.authorKind === "persona" && (
-                            <span class="ml-1.5 opacity-70">editor</span>
-                          )}{" "}
-                          · {timeAgo(r.createdAt)}
-                        </p>
-                        <div
-                          class="comment-markdown mt-0.5 text-[var(--color-ink-light)] leading-5"
-                          style={{
-                            fontFamily: "var(--font-serif)",
-                            fontStyle:
-                              r.authorKind === "persona" ? "italic" : "normal",
-                          }}
-                          dangerouslySetInnerHTML={renderMarkdown(r.text)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                <div
-                  class="pt-2 mt-2 border-t border-dashed"
-                  style={{ "border-color": "var(--color-paper-3)" }}
-                >
-                  <textarea
-                    value={store.userCommentPopover.draft}
-                    onInput$={(e) => {
-                      if (!store.userCommentPopover) return;
-                      store.userCommentPopover = {
-                        ...store.userCommentPopover,
-                        draft: (e.target as HTMLTextAreaElement).value,
-                      };
-                    }}
-                    onKeyDown$={(e) => {
-                      if (
-                        (e.metaKey || e.ctrlKey) &&
-                        e.key === "Enter" &&
-                        store.userCommentPopover
-                      ) {
-                        submitUserCommentReply(store.userCommentPopover.id);
-                      }
-                    }}
-                    placeholder="Reply as the writer…"
-                    class="w-full mt-2 px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
-                    style="font-family: var(--font-serif); border-radius: 2px;"
-                    rows={3}
-                  />
-                  <div class="mt-2 flex items-center justify-between gap-2">
-                    <span
-                      class="text-[10px] text-[var(--color-ink-muted)]"
-                      style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
-                    >
-                      ⌘↩ to reply
-                    </span>
-                    <div class="flex gap-2">
-                      <button
-                        onClick$={() => {
-                          if (!store.userCommentPopover) return;
-                          toggleResolveUserComment(store.userCommentPopover.id);
-                        }}
-                        class="btn-paper text-[11px]"
-                      >
-                        {store.userCommentPopover.resolved
-                          ? "Reopen"
-                          : "Resolve"}
-                      </button>
-                      <button
-                        onClick$={() => {
-                          if (store.userCommentPopover)
-                            deleteUserCommentLocal(store.userCommentPopover.id);
-                        }}
-                        class="btn-paper text-[11px] text-[var(--color-vermilion)]"
-                      >
-                        Erase
-                      </button>
-                      <button
-                        onClick$={() => {
-                          if (store.userCommentPopover)
-                            submitUserCommentReply(store.userCommentPopover.id);
-                        }}
-                        disabled={!store.userCommentPopover.draft.trim()}
-                        class="btn-press text-[11px] disabled:opacity-30 disabled:cursor-not-allowed"
-                      >
-                        Reply
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <UserCommentPanel
+          comment={store.userCommentPopover}
+          onClose$={closeUserCommentPopover}
+          onDraftChange$={(draft) => {
+            if (!store.userCommentPopover) return;
+            store.userCommentPopover = {
+              ...store.userCommentPopover,
+              draft,
+            };
+          }}
+          onSubmit$={submitUserCommentReply}
+          onToggleResolved$={toggleResolveUserComment}
+          onDelete$={deleteUserCommentLocal}
+        />
       </div>
     );
   },
@@ -5073,16 +2890,6 @@ export const TwyneEditor = component$(
  * absolute position range. Quotes never span blocks (they are sentences),
  * so the search resets per block.
  */
-
-function timeAgo(timestamp: number): string {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 60) return "just now";
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
 
 function findTextRange(
   doc: any,
@@ -5123,21 +2930,43 @@ function findTextRange(
   return found;
 }
 
-function removePersonaNote(editor: Editor, id: string | null): void {
+function flashMarkedElement(root: HTMLElement, selector: string): void {
+  const element = root.querySelector(selector) as HTMLElement | null;
+  if (!element) return;
+  const reduceMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)",
+  ).matches;
+  element.scrollIntoView({
+    behavior: reduceMotion ? "auto" : "smooth",
+    block: "center",
+  });
+  element.classList.add("is-flashing");
+  setTimeout(() => element.classList.remove("is-flashing"), 1600);
+}
+
+function removeEditorMark(
+  editor: Editor,
+  markName: "personaNote" | "suggestion",
+  id: string | null,
+): void {
   const { state, view } = editor;
-  const type = state.schema.marks.personaNote;
+  const type = state.schema.marks[markName];
   if (!type) return;
-  const tr = state.tr;
+  const transaction = state.tr;
   state.doc.descendants((node: any, pos: number) => {
     if (!node.isText) return true;
     for (const mark of node.marks) {
       if (mark.type === type && (id === null || mark.attrs.id === id)) {
-        tr.removeMark(pos, pos + node.nodeSize, type);
+        transaction.removeMark(pos, pos + node.nodeSize, type);
       }
     }
     return true;
   });
-  if (tr.docChanged) view.dispatch(tr);
+  if (transaction.docChanged) view.dispatch(transaction);
+}
+
+function removePersonaNote(editor: Editor, id: string | null): void {
+  removeEditorMark(editor, "personaNote", id);
 }
 
 function removeAllPersonaNotes(editor: Editor): void {
@@ -5166,20 +2995,7 @@ function findSuggestionRange(
 }
 
 function removeSuggestionMark(editor: Editor, id: string | null): void {
-  const { state, view } = editor;
-  const type = state.schema.marks.suggestion;
-  if (!type) return;
-  const tr = state.tr;
-  state.doc.descendants((node: any, pos: number) => {
-    if (!node.isText) return true;
-    for (const mark of node.marks) {
-      if (mark.type === type && (id === null || mark.attrs.id === id)) {
-        tr.removeMark(pos, pos + node.nodeSize, type);
-      }
-    }
-    return true;
-  });
-  if (tr.docChanged) view.dispatch(tr);
+  removeEditorMark(editor, "suggestion", id);
 }
 
 function removeAllSuggestions(editor: Editor): void {

@@ -190,7 +190,7 @@ function effectiveLevel(
 
 function localDraftValidationError(
   operation: string,
-  validationKey: "too_short" | "required" = "too_short",
+  validationKey: "draft_too_short" | "required" = "draft_too_short",
 ): AppError {
   return createAppError("VALIDATION_FAILED", {
     source: "validation",

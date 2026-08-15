@@ -22,7 +22,9 @@ import { PERSONAS } from "./personas";
 const words = (n: number) => "word ".repeat(n).trim();
 const doc = (n: number) => `${words(n)}\n\n${words(n)}`;
 
-function start(overrides: Partial<Parameters<typeof startBackgroundRoom>[0]> = {}) {
+function start(
+  overrides: Partial<Parameters<typeof startBackgroundRoom>[0]> = {},
+) {
   startBackgroundRoom({
     client: null,
     brief: null,
@@ -128,8 +130,15 @@ describe("spend guards", () => {
 
   test("refuses to run on a draft too short to be worth reading", () => {
     start({ baselineText: "" });
-    onDraftChanged("only a handful of words here");
+    onDraftChanged(words(WORD_DELTA_THRESHOLD - 1));
     expect(whyNotReady()).toBe("too-short");
+  });
+
+  test("becomes eligible at one complete folio", () => {
+    start({ baselineText: "" });
+    onDraftChanged(words(WORD_DELTA_THRESHOLD));
+    expect(whyNotReady()).toBeNull();
+    expect(snapshot().status).toBe("armed");
   });
 
   test("enforces a floor between passes", () => {

@@ -8,6 +8,7 @@ import {
   type ApplicationResult,
   type SafeErrorMetadataValue,
 } from "../types/application-errors";
+import { WORDS_PER_FOLIO } from "./draft-thresholds";
 
 const APP_ERROR_CODE_SET = new Set<string>(APP_ERROR_CODES);
 const APP_ERROR_SOURCE_SET = new Set<AppErrorSource>([
@@ -71,6 +72,7 @@ const VALIDATION_MESSAGES: Record<string, string> = {
     "Use a handle made from letters, numbers, periods, or hyphens.",
   invalid_format: "Use the requested format and try again.",
   invalid_value: "Check the highlighted value and try again.",
+  draft_too_short: `Write at least ${WORDS_PER_FOLIO} words before asking the room to judge the draft.`,
   too_short: "Enter a longer value.",
   too_long: "Enter a shorter value.",
   file_too_large: "Choose a smaller file and try again.",
