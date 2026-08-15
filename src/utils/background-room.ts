@@ -28,7 +28,11 @@ import type { ConvexClient } from "convex/browser";
 import { api } from "../../convex/_generated/api";
 import { toAgentPersona } from "../../convex/agentPrompts";
 import type { Persona, PersonaFeedback, ProjectBrief } from "../types";
-import { MIN_EDITOR_WORDS, countWords } from "./draft-thresholds";
+import {
+  MIN_EDITOR_WORDS,
+  WORDS_PER_FOLIO,
+  countWords,
+} from "./draft-thresholds";
 import {
   appendTrajectory,
   diffParagraphs,
@@ -42,8 +46,8 @@ import { loadWriterSettingsFromIdb } from "./idb";
 import { savePersonaNoteLocally } from "./convex-sync";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
 
-/** Net new words required before a pass is even considered. */
-export const WORD_DELTA_THRESHOLD = 300;
+/** Wait for another substantive folio before automatically reading again. */
+export const WORD_DELTA_THRESHOLD = WORDS_PER_FOLIO;
 
 /** Quiet time required after that threshold is crossed. */
 export const IDLE_MS = 120_000;
@@ -58,7 +62,12 @@ export const MIN_INTERVAL_MS = 5 * 60_000;
 /** Passes allowed per session, so a long day can't run away with spend. */
 export const MAX_PASSES_PER_SESSION = 8;
 
-export type BackgroundRoomStatus = "off" | "idle" | "armed" | "reading" | "error";
+export type BackgroundRoomStatus =
+  | "off"
+  | "idle"
+  | "armed"
+  | "reading"
+  | "error";
 
 export interface BackgroundRoomSnapshot {
   status: BackgroundRoomStatus;

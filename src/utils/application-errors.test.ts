@@ -104,6 +104,15 @@ describe("validation normalization", () => {
     });
     expect(error.message).toBe("Choose a smaller file and try again.");
   });
+
+  test("explains the substantive draft boundary", () => {
+    const error = createAppError("VALIDATION_FAILED", {
+      validationKey: "draft_too_short",
+    });
+    expect(error.message).toBe(
+      "Write at least 500 words before asking the room to judge the draft.",
+    );
+  });
 });
 
 describe("Convex normalization", () => {

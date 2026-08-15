@@ -35,15 +35,13 @@ describe("citation UI wiring", () => {
   });
 
   test("apparatus surfaces load only the active folio bibliography", async () => {
-    const [panel, apparatus, refinery] = await Promise.all([
+    const [panel, apparatus] = await Promise.all([
       Bun.file("src/components/citations/citations-panel.tsx").text(),
       Bun.file("src/routes/apparatus/index.tsx").text(),
-      Bun.file("src/routes/dossier/refine/index.tsx").text(),
     ]);
     expect(panel).toContain("loadBibliographyForFolio(activeFolio?.id)");
     expect(apparatus).toContain("loadBibliographyForFolio(");
-    expect(refinery).toContain("loadBibliographyForFolio(store.folioId)");
-    expect(`${panel}\n${apparatus}\n${refinery}`).not.toContain("|| !entry.folioId");
+    expect(`${panel}\n${apparatus}`).not.toContain("|| !entry.folioId");
   });
 
   test("citation insertion targets the researched claim and never silently uses the cursor", async () => {

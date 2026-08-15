@@ -4,7 +4,6 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
 import { DossierTopBar } from "../../../components/onboarding/dossier-top-bar";
-import { SourceCanvas } from "../../../components/canvas/source-canvas";
 import { ThemedDialog } from "../../../components/ui/themed-dialog";
 import type {
   DossierAttachment,
@@ -14,13 +13,10 @@ import type {
   InterviewStyle,
   ProjectBrief,
   ProjectInterviewAnswers,
-  SourceCanvas as SourceCanvasState,
-  AiSettings,
 } from "../../../types";
 import {
   hasConfiguredAiProvider,
   runClientDossierCheck,
-  runClientSourceMap,
 } from "../../../utils/ai-client";
 import {
   loadActiveFolioIdFromIdb,
@@ -37,11 +33,6 @@ import {
   saveStartingMaterial,
 } from "../../../utils/anti-tabula-rasa";
 import { captureProductEvent } from "../../../utils/product-analytics";
-import { type BibEntry, bibliographyForFolio, loadBibliographyForFolio } from "../../../utils/bibliography";
-import { emptyCanvas, loadSourceCanvas, saveSourceCanvas, seedCanvasFromFolio, applyMapping } from "../../../utils/source-canvas";
-import { layoutCanvas } from "../../../utils/canvas-layout";
-import { extractPendingSources } from "../../../utils/source-extract";
-import { useConvexClient } from "../../../utils/convex-context";
 import { dossierRouteClass } from "../../../utils/conversation-layout";
 
 interface RefiningStore {
@@ -58,11 +49,6 @@ interface RefiningStore {
   folioId: string | null;
   startOverOpen: boolean;
   startOverBusy: boolean;
-  canvas: SourceCanvasState;
-  canvasOpen: boolean;
-  canvasStatus: string;
-  bibliography: BibEntry[];
-  aiSettings: AiSettings | null;
 }
 
 /**
@@ -75,7 +61,6 @@ interface RefiningStore {
  */
 export default component$(() => {
   const nav = useNavigate();
-  const convexClient = useConvexClient();
   const store = useStore<RefiningStore>({
     brief: null,
     draftText: "",
@@ -90,11 +75,6 @@ export default component$(() => {
     folioId: null,
     startOverOpen: false,
     startOverBusy: false,
-    canvas: emptyCanvas(""),
-    canvasOpen: true,
-    canvasStatus: "",
-    bibliography: [],
-    aiSettings: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -105,72 +85,12 @@ export default component$(() => {
     );
     store.folioId = requestedFolioId ?? activeFolioId;
     store.brief = await loadProjectBriefForFolio(store.folioId);
-    store.bibliography = await loadBibliographyForFolio(store.folioId);
-    store.aiSettings = await loadAiSettingsFromIdb();
-    if (store.folioId && store.brief) {
-      const loaded = await loadSourceCanvas(store.folioId);
-      const seeded = seedCanvasFromFolio(loaded, {
-        folioId: store.folioId,
-        bibliography: bibliographyForFolio(store.bibliography, store.folioId),
-        attachments: store.brief.attachments,
-        briefAnswers: Object.entries(store.brief.answers),
-      });
-      store.canvas = { ...seeded, nodes: layoutCanvas(seeded.nodes, seeded.clusters) };
-      await saveSourceCanvas(store.canvas);
-    }
     store.draftText = store.folioId
       ? await loadFolioContentFromIdb(store.folioId)
       : await loadDraftHtml();
     const writer = await loadWriterSettingsFromIdb();
     store.style = writer.interviewStyle;
-    if (store.style === "conversational") store.canvasOpen = false;
     store.hydrated = true;
-  });
-
-  const extractCanvas = $(async () => {
-    if (!store.folioId || !store.aiSettings || !convexClient.value) return;
-    try {
-      const entries = bibliographyForFolio(store.bibliography, store.folioId);
-      const seeded = seedCanvasFromFolio(store.canvas, {
-        folioId: store.folioId,
-        bibliography: entries,
-        attachments: store.brief?.attachments ?? [],
-        briefAnswers: store.brief ? Object.entries(store.brief.answers) : [],
-      });
-      store.canvas = { ...seeded, nodes: layoutCanvas(seeded.nodes, seeded.clusters) };
-      const next = await extractPendingSources({
-        entries,
-        canvas: store.canvas,
-        client: convexClient.value,
-        settings: store.aiSettings,
-        onCanvas: (canvas) => { store.canvas = canvas; },
-        onProgress: (progress) => { store.canvasStatus = progress.phase === "fetching" ? "Fetching source…" : progress.phase === "composing" ? "Writing cards…" : progress.phase === "error" ? (progress.message ?? "Extraction failed") : "Cards ready"; },
-      });
-      store.canvas = next; await saveSourceCanvas(next);
-    } catch { /* Progress remains visible with retry available on remount. */ }
-  });
-
-  const mapCanvas = $(async () => {
-    if (!store.aiSettings || !store.brief) return;
-    store.canvasStatus = "Mapping connections…";
-    const result = await runClientSourceMap({
-      draftText: htmlToPlainText(store.draftText),
-      brief: Object.values(store.brief.answers).join("\n"),
-      nodes: store.canvas.nodes.map((node) => ({ id: node.id, title: node.title, text: node.ouiLang ?? node.annotation?.relevance ?? "" })),
-    }, store.aiSettings);
-    if (!result) { store.canvasStatus = "Mapping failed. Check the AI provider in Settings."; return; }
-    const mapped = applyMapping(store.canvas, result);
-    store.canvas = { ...mapped, nodes: layoutCanvas(mapped.nodes, mapped.clusters) };
-    await saveSourceCanvas(store.canvas); store.canvasStatus = "Connections mapped";
-  });
-
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track, cleanup }) => {
-    const ready = track(() => store.hydrated && store.bibliography.length > 0);
-    const client = track(() => convexClient.value);
-    if (!ready || !client) return;
-    const timer = window.setTimeout(() => void extractCanvas(), 900);
-    cleanup(() => window.clearTimeout(timer));
   });
 
   const onFormSubmit = $(
@@ -368,10 +288,8 @@ export default component$(() => {
         switchHref=""
         showStartOver
         onSwitch$={$(() => {
-          const next =
-            store.style === "form" ? "conversational" : "form";
+          const next = store.style === "form" ? "conversational" : "form";
           store.style = next;
-          if (next === "conversational") store.canvasOpen = false;
         })}
         onStartOver$={$(() => {
           store.startOverOpen = true;
@@ -491,26 +409,6 @@ export default component$(() => {
           </div>
         </section>
       )}
-
-      <section class="shrink-0 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-4">
-        <div class="mx-auto max-w-6xl">
-          <button type="button" class="mb-3 flex w-full items-center justify-between text-left" onClick$={() => { store.canvasOpen = !store.canvasOpen; }}>
-            <span><strong class="font-[var(--font-display)] text-base text-[var(--color-ink)]">Dossier map</strong><span class="ml-2 font-[var(--font-typewriter)] text-[0.68rem] text-[var(--color-ink-muted)]">Brief, attachments, sources, and draft connections</span></span>
-            <span aria-hidden="true">{store.canvasOpen ? "−" : "+"}</span>
-          </button>
-          {store.canvasOpen && (
-            <div
-              class={
-                store.style === "conversational"
-                  ? "max-h-[35dvh] overflow-y-auto overscroll-contain"
-                  : undefined
-              }
-            >
-              <SourceCanvas canvas={store.canvas} status={store.canvasStatus} onMap$={mapCanvas} onRetry$={extractCanvas} onChange$={(canvas) => { store.canvas = canvas; void saveSourceCanvas(canvas); }} />
-            </div>
-          )}
-        </div>
-      </section>
 
       {store.style === "form" ? (
         <AntiTabulaRasa

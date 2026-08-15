@@ -1,13 +1,18 @@
-{ pkgs, lib, config, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  ...
+}:
 {
   # Per-project devenv config for the Twyne app shell.
   # Provides Bun + the orchestration tasks that previously lived in justfile.
 
+  dotenv.enable = true;
   languages.javascript = {
     enable = true;
     bun.enable = true;
   };
-
   # Multi-step workflows. Single-step commands live in package.json (`bun run X`).
   tasks."install" = {
     description = "Install dependencies and run Convex codegen";

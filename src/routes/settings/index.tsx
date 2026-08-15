@@ -240,8 +240,6 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "citation-format": "Citation Format",
   "source-summarize": "Source Summarize",
   "source-detect-missing": "Missing Source Detection",
-  "source-extract": "Source Canvas Extraction",
-  "source-map": "Source Canvas Mapping",
   "research-web-search": "Apparatus Web Search",
   "research-extract": "Auto-Research (claim finding)",
   "interview-turn": "Conversational Interview",
@@ -268,10 +266,6 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
   "source-summarize": "AI summarizes saved sources for your bibliography.",
   "source-detect-missing":
     "AI detects claims in your draft that need citations.",
-  "source-extract":
-    "Reads fetched source text and composes structured cards on the research canvas.",
-  "source-map":
-    "Relates research cards to the draft and draws thematic connections.",
   "research-web-search":
     "The Apparatus asks a model endpoint with web-search support for source candidates.",
   "research-extract":

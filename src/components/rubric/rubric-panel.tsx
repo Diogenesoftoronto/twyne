@@ -170,6 +170,7 @@ export const RubricPanel = component$(
           store.judges = [];
           store.result = null;
           store.error = createAppError("VALIDATION_FAILED", {
+            validationKey: "draft_too_short",
             metadata: { feature: "rubric", operation: "analyze" },
           });
           return;
