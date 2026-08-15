@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "77a6effcc0f5",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "bun.lock",
+    "src/components/personas/personas-panel.tsx",
+    "src/components/rubric/rubric-panel.tsx",
+    "src/routes/settings/index.tsx",
+    "src/types/index.ts",
+    "src/utils/ai-client.test.ts",
+    "src/utils/ai-client.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/77/a6effcc0f5/0/metadata.json",
+      "transcript": "/77/a6effcc0f5/0/full.jsonl",
+      "compact_transcript": "/77/a6effcc0f5/0/transcript.jsonl",
+      "content_hash": "/77/a6effcc0f5/0/content_hash.txt",
+      "prompt": "/77/a6effcc0f5/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 532103,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 20939008,
+    "output_tokens": 24674,
+    "api_call_count": 140
+  }
+}
