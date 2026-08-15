@@ -10,6 +10,17 @@
 
 
 
+
+## 0.15.1
+<sub>2026-08-15</sub>
+
+-  *(patch)*
+  Split the editor into focused panel modules, use one substantive-folio threshold
+  for editorial feedback, and remove the slow dossier research canvas.
+-  *(patch)*
+  Start long manuscript narration from semantic chunks, stream provider audio,
+  and use native speech alignment when the provider supplies it.
+
 ## 0.15.0
 <sub>2026-08-14</sub>
 
