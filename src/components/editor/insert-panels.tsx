@@ -39,8 +39,6 @@ interface InsertPanelsProps {
   imageUrl: string;
   imageUploadAvailable: boolean;
   imageUploadError: string | null;
-  commentOpen: boolean;
-  commentText: string;
   onCancelNote$: PropFunction<() => void>;
   onConfirmNote$: PropFunction<(value: string) => void>;
   onCancelMermaid$: PropFunction<() => void>;
@@ -49,9 +47,6 @@ interface InsertPanelsProps {
   onImageUrlChange$: PropFunction<(value: string) => void>;
   onInsertImage$: PropFunction<(url: string) => void>;
   onCancelImage$: PropFunction<() => void>;
-  onCommentChange$: PropFunction<(value: string) => void>;
-  onAddComment$: PropFunction<() => void>;
-  onCancelComment$: PropFunction<() => void>;
 }
 
 /**
@@ -62,11 +57,8 @@ export const InsertPanels = component$<InsertPanelsProps>((props) => {
   const noteKind = props.noteKind;
   const noteCopy = NOTE_MODAL_COPY[noteKind ?? "endnote"];
   const imageUrl = props.imageUrl;
-  const commentText = props.commentText;
   const onInsertImage$ = props.onInsertImage$;
   const onCancelImage$ = props.onCancelImage$;
-  const onAddComment$ = props.onAddComment$;
-  const onCancelComment$ = props.onCancelComment$;
 
   return (
     <>
@@ -148,38 +140,6 @@ export const InsertPanels = component$<InsertPanelsProps>((props) => {
               {props.imageUploadError}
             </span>
           )}
-        </div>
-      )}
-
-      {props.commentOpen && (
-        <div
-          class="flex items-center gap-2 px-4 py-1.5 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]"
-          style="z-index: var(--z-sticky);"
-        >
-          <span
-            class="text-xs text-[var(--color-ink-muted)]"
-            style="font-family: var(--font-typewriter);"
-          >
-            Comment:
-          </span>
-          <input
-            autoFocus
-            value={commentText}
-            onInput$={(_, element) => props.onCommentChange$(element.value)}
-            onKeyDown$={(event) => {
-              if (event.key === "Enter" && commentText.trim()) onAddComment$();
-              if (event.key === "Escape") onCancelComment$();
-            }}
-            placeholder="Type your editorial note…"
-            class="flex-1 border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-2 py-1 text-xs text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] focus:border-[var(--color-vermilion)] focus:outline-none"
-            style="font-family: var(--font-typewriter); border-radius: 2px;"
-          />
-          <button onClick$={onAddComment$} class="tool-btn text-xs">
-            Add
-          </button>
-          <button onClick$={onCancelComment$} class="tool-btn text-xs">
-            Cancel
-          </button>
         </div>
       )}
     </>

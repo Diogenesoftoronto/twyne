@@ -1,9 +1,57 @@
 import { describe, expect, test } from "bun:test";
 import {
+  computeMarginCardGeometry,
   computePopoverGeometry,
+  MARGIN_CARD_GAP,
   POPOVER_CARD_MARGIN,
   POPOVER_CARD_WIDTH,
 } from "./popover-positioning";
+
+describe("manuscript margin card positioning", () => {
+  test("uses the right outside margin when it fits", () => {
+    const geom = computeMarginCardGeometry({
+      vw: 1440,
+      vh: 900,
+      rect: { left: 620, top: 240, bottom: 270 },
+      page: { left: 320, right: 980 },
+      idealH: 360,
+    });
+
+    expect(geom.x).toBe(980 + MARGIN_CARD_GAP);
+    expect(geom.top).toBe(240);
+    expect(geom.bottom).toBeNull();
+  });
+
+  test("uses the left outside margin when the right side is cramped", () => {
+    const geom = computeMarginCardGeometry({
+      vw: 1100,
+      vh: 800,
+      rect: { left: 700, top: 180, bottom: 210 },
+      page: { left: 420, right: 980 },
+      idealH: 360,
+    });
+
+    expect(geom.x).toBe(420 - POPOVER_CARD_WIDTH - MARGIN_CARD_GAP);
+  });
+
+  test("clamps to a viewport edge when neither outside margin fits", () => {
+    const geom = computeMarginCardGeometry({
+      vw: 760,
+      vh: 420,
+      rect: { left: 360, top: 390, bottom: 410 },
+      page: { left: 70, right: 690 },
+      idealH: 360,
+    });
+
+    expect(geom.x).toBeGreaterThanOrEqual(MARGIN_CARD_GAP);
+    expect(geom.x + POPOVER_CARD_WIDTH).toBeLessThanOrEqual(
+      760 - MARGIN_CARD_GAP,
+    );
+    expect((geom.top ?? 0) + geom.maxH).toBeLessThanOrEqual(
+      420 - MARGIN_CARD_GAP,
+    );
+  });
+});
 
 describe("popover positioning", () => {
   test("places the card just below the sentence in a tall viewport", () => {

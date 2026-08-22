@@ -2,10 +2,10 @@
 notes: |
   Research-extract user body. `existingBlock` switches between the
   "writer's bibliography is empty" and "Already covered…" forms.
-version: "1"
+version: "2"
 ---
 
-FIND UP TO {maxTargets} ITEMS in this draft that need a source.
+FACT-CHECK UP TO {maxTargets} ITEMS in this draft. First sweep for quotations, then named people in context, then statistics/dates, then every other externally checkable factual claim or event. Do not stop after finding one category.
 
 {existingBlock}
 

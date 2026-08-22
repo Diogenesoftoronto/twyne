@@ -1,11 +1,18 @@
-import type { ResearchTarget, ResearchTargetKind } from "../types";
+import type {
+  ProjectBrief,
+  ResearchTarget,
+  ResearchTargetKind,
+} from "../types";
 import { extractFirstJsonObject, stripJsonFences } from "./llm-parsing";
 import { stripReasoningTags } from "./reasoning-tags";
 import { prompt as renderNamed } from "./prompts";
 
-export const DEFAULT_TARGETS_PER_PASS = 4;
+/** Extraction is deliberately deeper than the per-run search budget. Covered
+ * targets fall away on later passes, allowing the queue to advance through a
+ * dense draft without bursting hosted-provider rate limits. */
+export const DEFAULT_TARGETS_PER_PASS = 12;
 /** Largest draft slice the extractor will read at once. */
-export const DRAFT_SCAN_MAX_CHARS = 9000;
+export const DRAFT_SCAN_MAX_CHARS = 18_000;
 /** Longest anchor quoted back to the writer. */
 export const MAX_ANCHOR_CHARS = 200;
 
@@ -20,6 +27,165 @@ export const RESEARCH_TARGET_LABELS: Record<ResearchTargetKind, string> = {
 
 export function targetKindLabel(kind: string): string {
   return RESEARCH_TARGET_LABELS[kind as ResearchTargetKind] ?? "Source";
+}
+
+export interface DirectedResearchTargetInput {
+  anchor: string;
+  query?: string;
+  instructions?: string;
+  kind?: ResearchTargetKind;
+}
+
+export type DossierResearchMode = "fiction" | "nonfiction" | "general";
+
+const FICTION_FORMAT =
+  /\b(novel|novella|fiction|short stor(?:y|ies)|screenplay|teleplay|stage play|graphic novel|comic|narrative game)\b/i;
+const NONFICTION_FORMAT =
+  /\b(non[- ]?fiction|essay|article|report\w*|journalism|memoir|biograph\w*|white paper|academic|research|op[- ]?ed|opinion|column|feature|explainer|investigat\w*|analys[ie]s|commentary|review|interview|documentary|textbook|thesis|dissertation|case stud(?:y|ies)|newsletter|profile|history|criticism|proposal)\b/i;
+
+/** The Dossier's declared form is authoritative. Goal/constraints are only a
+ * fallback for older or loosely worded dossiers such as "book-length work". */
+export function dossierResearchMode(
+  brief: ProjectBrief | null,
+): DossierResearchMode {
+  if (!brief) return "general";
+  const format = brief.answers.format.trim();
+  if (NONFICTION_FORMAT.test(format)) return "nonfiction";
+  if (FICTION_FORMAT.test(format)) return "fiction";
+  const fallback = [
+    brief.answers.goal,
+    brief.answers.constraints,
+    ...(brief.probes ?? []).flatMap((probe) =>
+      Array.isArray(probe.answer)
+        ? probe.answer
+        : probe.answer === undefined
+          ? []
+          : [String(probe.answer)],
+    ),
+  ].join(" ");
+  if (FICTION_FORMAT.test(fallback)) return "fiction";
+  if (NONFICTION_FORMAT.test(fallback)) return "nonfiction";
+  return "general";
+}
+
+function compactDossierValue(value: string, max = 500): string {
+  return value.replace(/\s+/g, " ").trim().slice(0, max);
+}
+
+/** Turn the whole useful Dossier—not only title/tone—into an explicit modus
+ * operandi for target extraction. Kept bounded because it shares context with
+ * the manuscript. */
+export function buildDossierResearchInstructions(
+  brief: ProjectBrief | null,
+): string {
+  if (!brief) {
+    return [
+      "Research mode selected from Dossier: GENERAL (no Dossier available).",
+      "Treat real-world quotations, people, statistics, events, works, and factual claims as checkable, while leaving clearly invented material alone.",
+    ].join("\n");
+  }
+
+  const mode = dossierResearchMode(brief);
+  const a = brief.answers;
+  const lines = [
+    `Research mode selected from Dossier: ${mode.toUpperCase()}.`,
+    "Dossier particulars:",
+    `- Format: ${compactDossierValue(a.format)}`,
+    `- Working title: ${compactDossierValue(a.workingTitle)}`,
+    `- Audience: ${compactDossierValue(a.audience)}`,
+    `- Goal: ${compactDossierValue(a.goal)}`,
+    `- Tone: ${compactDossierValue(a.tone)}`,
+    `- Constraints: ${compactDossierValue(a.constraints)}`,
+    `- Success signal: ${compactDossierValue(a.successSignal)}`,
+  ];
+
+  const answeredProbes = (brief.probes ?? [])
+    .filter((probe) => probe.answer !== undefined)
+    .slice(0, 6)
+    .map((probe) => {
+      const answer = Array.isArray(probe.answer)
+        ? probe.answer.join("; ")
+        : String(probe.answer);
+      return `- ${compactDossierValue(probe.prompt, 240)} => ${compactDossierValue(answer, 300)}`;
+    });
+  if (answeredProbes.length > 0) {
+    lines.push("Answered Dossier probes:", ...answeredProbes);
+  }
+
+  const references = brief.attachments
+    .slice(0, 6)
+    .map(
+      (attachment) =>
+        `- ${compactDossierValue(attachment.title, 200)}: ${compactDossierValue(attachment.why, 300)}`,
+    );
+  if (references.length > 0) {
+    lines.push("Dossier reference notes:", ...references);
+  }
+
+  lines.push(
+    mode === "fiction"
+      ? "Modus operandi: research for authenticity, period and setting accuracy, real people and works, cultural and professional context, physical plausibility, and quotation provenance. Do not fact-check invented plot, characters, worldbuilding, narration, or dialogue merely because it is written declaratively."
+      : mode === "nonfiction"
+        ? "Modus operandi: fact-check every material external claim; verify quotation wording and provenance, each named person's asserted context, statistics, dates, events, scope, and whether named sources actually support the prose."
+        : "Modus operandi: use the Dossier to distinguish invented material from real-world assertions; verify or authenticate every material outside-world detail.",
+  );
+  return lines.join("\n");
+}
+
+/** Give every provider the verification question behind a search, not only a
+ * generic request for links. Search APIs may ignore this context; model/MCP
+ * providers can use it to distinguish corroboration from topical similarity. */
+export function buildResearchSearchContext(target: ResearchTarget): string {
+  const mandate: Record<ResearchTargetKind, string> = {
+    quote:
+      "Verify the exact wording, speaker or author, original source, date, and immediate context of this quotation.",
+    person:
+      "Verify this person's identity and the specific role, relationship, action, viewpoint, or chronology asserted here.",
+    statistic:
+      "Verify the exact figure, population, time period, methodology, and original dataset or study.",
+    claim:
+      "Fact-check the exact assertion, including evidence that supports or contradicts it and any missing scope or qualification.",
+    event:
+      "Verify what happened, where and when it happened, who was involved, and whether the draft's characterization is accurate.",
+    work: "Verify the identity, authorship, publication or release details, medium, and contextual claim about this work.",
+  };
+  return [
+    mandate[target.kind],
+    `Draft passage: "${target.anchor}"`,
+    `Why it was flagged: ${target.reason}`,
+  ].join("\n");
+}
+
+export function buildResearchSearchInstructions(
+  target: ResearchTarget,
+): string {
+  const specific =
+    target.kind === "quote"
+      ? "For a quotation, prefer the original text, recording, transcript, archival document, or a reliable edition that establishes wording and context."
+      : target.kind === "person"
+        ? "For a person, require a source that supports the specific contextual statement, not merely a generic biography page."
+        : "Prefer primary sources and authoritative records; include secondary analysis when it is needed to interpret or challenge the claim.";
+  return `${specific} Return only sources whose available evidence can support, correct, or meaningfully contextualize the flagged passage. Topical similarity alone is not enough.`;
+}
+
+/** Build the single target used when a writer researches selected text. */
+export function directedResearchTarget(
+  request: DirectedResearchTargetInput,
+): ResearchTarget | null {
+  const anchor = request.anchor.trim();
+  if (!anchor) return null;
+  const instructions = request.instructions?.trim();
+  const query =
+    request.query?.trim() ||
+    (instructions ? `${anchor} ${instructions}` : anchor);
+  return {
+    id: `directed-${crypto.randomUUID()}`,
+    kind: request.kind ?? "claim",
+    anchor,
+    query,
+    reason: instructions || "The writer requested sources for this passage.",
+    importance: 5,
+  };
 }
 
 /* ── Prompt construction ───────────────────────────────────────── */

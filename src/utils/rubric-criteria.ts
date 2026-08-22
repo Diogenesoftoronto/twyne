@@ -42,6 +42,12 @@ export function clampWeight(weight: number): number {
   return Math.min(MAX_WEIGHT, Math.max(MIN_WEIGHT, weight));
 }
 
+/** Move a relative weight by one quarter-step without floating-point drift. */
+export function stepWeight(weight: number, direction: -1 | 1): number {
+  const next = clampWeight(weight) + direction * 0.25;
+  return clampWeight(Math.round(next * 100) / 100);
+}
+
 /**
  * Merge stored specs with the shipped spine.
  *

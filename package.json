@@ -53,6 +53,7 @@
     "eval:judge": "tsx evals/judge.ts",
     "eval:rubric": "tsx evals/run-rubric.ts",
     "eval:apparatus": "tsx evals/run-apparatus.ts",
+    "eval:extract": "tsx evals/run-extract.ts",
     "eval:interview": "tsx evals/run-interview.ts",
     "eval:robustness": "tsx evals/run-robustness.ts",
     "eval:local": "tsx evals/run-local-model.ts",

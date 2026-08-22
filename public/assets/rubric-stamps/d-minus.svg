@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linejoin="bevel">
+    <path d="M35 9h110l27 28v51l-28 27H36L8 88V37z" stroke-width="4.5" stroke-dasharray="88 4 43 3"/>
+    <path d="M42 19h96l24 23v41l-24 22H42L18 83V42z" stroke-width="1.5" stroke-dasharray="10 4"/>
+    <path d="M25 62h12m106 0h13" stroke-width="2.5"/>
+  </g>
+  <text x="90" y="71" fill="#000" font-family="Georgia,serif" font-size="53" font-style="italic" font-weight="700" text-anchor="middle">D−</text>
+  <text x="90" y="92" fill="#000" font-family="monospace" font-size="6.8" font-weight="700" letter-spacing="1.7" text-anchor="middle">MAJOR REVISION</text>
+</svg>

@@ -1,5 +1,10 @@
 import { describe, expect, test } from "bun:test";
-import { exportHtml, exportMarkdown, extractInlineNotes } from "./exchange";
+import {
+  exportHtml,
+  exportMarkdown,
+  exportPlainText,
+  extractInlineNotes,
+} from "./exchange";
 import { combineJudgesAndStatic, scoreStaticFeatures } from "./rubric";
 
 /* TipTap serializes the text attribute BEFORE data-type, so the
@@ -52,6 +57,48 @@ describe("export with notes", () => {
     expect(out).toContain("## Footnotes");
     expect(out).toContain("1. Author interview, 2024.");
   });
+
+  test("persona comments only appear when supplied by the export choice", () => {
+    const personaComment = {
+      personaId: "copy-chief",
+      personaName: "M. Le Stylo",
+      personaColor: "#d4a017",
+      feedback: "Verify the archive figure before publication.",
+      timestamp: 1,
+      type: "critique" as const,
+      anchor: "nearly sixty percent",
+    };
+
+    const withoutComments = exportMarkdown({
+      title: "Clean proof",
+      html: "<p>The manuscript stands alone.</p>",
+    });
+    expect(withoutComments).not.toContain("M. Le Stylo");
+    expect(withoutComments).not.toContain("Verify the archive figure");
+
+    const withComments = exportMarkdown({
+      title: "Annotated proof",
+      html: "<p>The manuscript stands alone.</p>",
+      marginalia: [personaComment],
+    });
+    expect(withComments).toContain("M. Le Stylo");
+    expect(withComments).toContain("Verify the archive figure");
+
+    const cleanText = exportPlainText({
+      title: "Clean proof",
+      html: "<p>The manuscript stands alone.</p>",
+    });
+    expect(cleanText).not.toContain("M. Le Stylo");
+
+    const annotatedText = exportPlainText({
+      title: "Annotated proof",
+      html: "<p>The manuscript stands alone.</p>",
+      marginalia: [personaComment],
+    });
+    expect(annotatedText).toContain("Notes");
+    expect(annotatedText).toContain("M. Le Stylo");
+    expect(annotatedText).toContain("Verify the archive figure");
+  });
 });
 
 describe("rubric scoring", () => {
@@ -98,9 +145,9 @@ describe("rubric scoring", () => {
     const long = Array.from({ length: 2000 }, (_, i) => vocab[i % 300]).join(
       " ",
     );
-    expect(
-      scoreStaticFeatures(long).features.uniqueWordsRatio,
-    ).toBeGreaterThan(0.9);
+    expect(scoreStaticFeatures(long).features.uniqueWordsRatio).toBeGreaterThan(
+      0.9,
+    );
 
     // Genuine local repetition must still be caught.
     const paragraph =

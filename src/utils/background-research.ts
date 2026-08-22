@@ -49,9 +49,14 @@ import {
 } from "./bibliography";
 import {
   DEFAULT_TARGETS_PER_PASS,
+  buildDossierResearchInstructions,
+  buildResearchSearchContext,
+  buildResearchSearchInstructions,
+  directedResearchTarget,
   selectFreshTargets,
   targetKey,
   rankSourcesForTarget,
+  type DirectedResearchTargetInput,
 } from "./research-targets";
 
 const DEBOUNCE_MS = 45_000;
@@ -59,7 +64,9 @@ const PASS_TTL_MS = 5 * 60_000; // don't chase the same set of claims every pass
 const MAX_BACKGROUND_PER_FOLIO = 25; // soft cap so the bib doesn't grow forever
 const SNIPPET_MIN_CHARS = 40; // skip throwaway stubs
 const MIN_DRAFT_CHARS = 120; // too thin to bother an AI
-const MAX_TARGETS_PER_PASS = 3; // per-run budget, most-important first
+// The signed-in free hosted tier permits five searches per minute. Extraction
+// can queue more targets, but one immediate pass must not make the sixth fail.
+const MAX_TARGETS_PER_PASS = 5;
 
 interface ResearchState {
   lastQuery: string;
@@ -149,19 +156,14 @@ let lastTargetSummary: Array<{ kind: string; anchor: string; query: string }> =
 let progressItems: ResearchProgressItem[] = [];
 let activityLog: ResearchActivityEntry[] = [];
 let passInFlight = false;
+/**
+ * Monotonic ownership token for async work. Providers are not all abortable,
+ * so a folio switch invalidates an old pass before it may persist anything.
+ */
+let researchGeneration = 0;
 
 const MAX_PROGRESS_ROWS = 8;
 const MAX_ACTIVITY_ROWS = 8;
-
-function briefContext(brief: ProjectBrief | null): string {
-  if (!brief?.answers) return "";
-  const parts: string[] = [];
-  if (brief.answers.workingTitle) parts.push(brief.answers.workingTitle);
-  if (brief.answers.audience) parts.push(`Audience: ${brief.answers.audience}`);
-  if (brief.answers.goal) parts.push(`Goal: ${brief.answers.goal}`);
-  if (brief.answers.tone) parts.push(`Tone: ${brief.answers.tone}`);
-  return parts.join(". ") + ".";
-}
 
 function setStatus(
   status: ResearchState["lastStatus"],
@@ -172,6 +174,7 @@ function setStatus(
   state.lastTickAt = Date.now();
   if (phase !== undefined) state.phase = status === "error" ? "error" : phase;
   if (error) state.lastError = error;
+  else if (status !== "error") state.lastError = undefined;
   notify();
 }
 
@@ -234,7 +237,11 @@ function logActivity(
   }
 }
 
-function emitSaved(target: ResearchTarget, saved: number): void {
+function emitSaved(
+  target: ResearchTarget,
+  saved: number,
+  folioId: string,
+): void {
   if (typeof window === "undefined") return;
   window.dispatchEvent(
     new CustomEvent("twyne:background-sources", {
@@ -243,7 +250,7 @@ function emitSaved(target: ResearchTarget, saved: number): void {
         query: target.query,
         anchor: target.anchor,
         kind: target.kind,
-        folioId: activeFolioId,
+        folioId,
       },
     }),
   );
@@ -274,7 +281,9 @@ export function retryBackgroundResearch(): void {
  *  only stumble was a timeout / network error. */
 export function retryResearchTarget(key: string): void {
   const row = progressItems.find((p) => p.key === key);
-  if (!row || passInFlight) return;
+  const folioId = activeFolioId;
+  if (!row || passInFlight || !folioId) return;
+  const generation = researchGeneration;
   const target: ResearchTarget = {
     id: `retry-${row.key}`,
     kind: row.kind as ResearchTargetKind,
@@ -283,14 +292,121 @@ export function retryResearchTarget(key: string): void {
     reason: "",
     importance: 1,
   };
-  void resolveClaim(row, target)
-    .then(() => setStatus("idle", "idle"))
+  passInFlight = true;
+  setStatus("running", "searching");
+  void resolveClaim(row, target, { generation, folioId })
     .catch((err) => {
       row.status = "error";
       row.error = errorMessage(err, "Research failed.");
       logActivity(row.kind, row.anchor, row.query, "error", 0, row.error);
-      setStatus("idle", "idle");
+    })
+    .finally(() => {
+      if (generation === researchGeneration) {
+        passInFlight = false;
+        setStatus("idle", "idle");
+      }
     });
+}
+
+export interface DirectedResearchRequest extends DirectedResearchTargetInput {
+  /** Guards a selection captured immediately before a folio switch. */
+  folioId?: string;
+}
+
+export interface ResearchCommandResult {
+  ok: boolean;
+  message?: string;
+}
+
+/** Research exactly the passage the writer selected. This bypasses target
+ * extraction, while keeping the normal provider, progress, retry, ranking,
+ * and bibliography pipeline. */
+export async function researchSelection(
+  request: DirectedResearchRequest,
+): Promise<ResearchCommandResult> {
+  const folioId = activeFolioId;
+  if (!folioId || (request.folioId && request.folioId !== folioId)) {
+    return { ok: false, message: "That selection belongs to another folio." };
+  }
+  if (passInFlight) {
+    return {
+      ok: false,
+      message:
+        "The Apparatus is already searching. Wait for this pass to settle.",
+    };
+  }
+  const target = directedResearchTarget(request);
+  if (!target) return { ok: false, message: "Select a passage to research." };
+
+  const generation = researchGeneration;
+  const row: ResearchProgressItem = {
+    key: targetKey(target),
+    kind: target.kind,
+    anchor: target.anchor,
+    query: target.query,
+    status: "queued",
+  };
+  progressItems = [
+    row,
+    ...progressItems.filter((item) => item.key !== row.key),
+  ].slice(0, MAX_PROGRESS_ROWS);
+  lastTargetSummary = [
+    { kind: target.kind, anchor: target.anchor, query: target.query },
+  ];
+  state.lastQuery = target.query;
+  state.lastQueryAt = Date.now();
+  passInFlight = true;
+  setStatus("running", "searching");
+  try {
+    await resolveClaim(row, target, { generation, folioId });
+    if (generation !== researchGeneration) {
+      return {
+        ok: false,
+        message: "The folio changed before research finished.",
+      };
+    }
+    return row.status === "error"
+      ? { ok: false, message: row.error ?? "Research failed." }
+      : { ok: true };
+  } finally {
+    if (generation === researchGeneration) {
+      passInFlight = false;
+      setStatus("idle", "idle");
+    }
+  }
+}
+
+/** Re-run target extraction immediately with a writer-authored direction. */
+export async function steerBackgroundResearch(
+  instructions: string,
+): Promise<ResearchCommandResult> {
+  const direction = instructions.trim();
+  if (!direction) return { ok: false, message: "Write a direction first." };
+  if (!activeFolioId || !lastDraftText) {
+    return { ok: false, message: "Open a folio with draft text first." };
+  }
+  if (lastDraftText.trim().length < MIN_DRAFT_CHARS) {
+    return {
+      ok: false,
+      message:
+        "The folio needs a little more draft text before it can be steered.",
+    };
+  }
+  if (passInFlight) {
+    return { ok: false, message: "Let the current search settle first." };
+  }
+  const aiSettings = await loadAiSettingsFromIdb();
+  if (!aiSettings || !hasConfiguredAiProvider(aiSettings)) {
+    return {
+      ok: false,
+      message:
+        "Choose an AI provider in Settings before steering a draft-wide pass.",
+    };
+  }
+  await runOnce(lastDraftText, true, direction);
+  return state.lastStatus === "error"
+    ? { ok: false, message: state.lastError ?? "Research failed." }
+    : { ok: true };
 }
 
 /** Take one claim through search → rank → save, updating its live row and
@@ -298,7 +414,9 @@ export function retryResearchTarget(key: string): void {
 async function resolveClaim(
   row: ResearchProgressItem,
   target: ResearchTarget,
+  run: { generation: number; folioId: string },
 ): Promise<void> {
+  if (run.generation !== researchGeneration) return;
   const settings = await loadApparatusSettingsFromIdb();
   row.status = "searching";
   row.error = undefined;
@@ -310,6 +428,7 @@ async function resolveClaim(
   } catch (err) {
     outcome = { ok: false, message: errorMessage(err, "Search failed.") };
   }
+  if (run.generation !== researchGeneration) return;
   if (outcome.ok) state.lastProvider = outcome.provider;
 
   let found = 0;
@@ -318,7 +437,7 @@ async function resolveClaim(
     const ranked = rankSourcesForTarget(outcome.results);
     try {
       setStatus("running", "saving");
-      found = await persistTarget(target, ranked);
+      found = await persistTarget(target, ranked, run.folioId);
       setStatus("running", "searching");
     } catch (err) {
       found = 0;
@@ -339,6 +458,9 @@ async function resolveClaim(
     row.error = failMsg;
   } else {
     row.status = "missed";
+    // A miss remains available for explicit retry in Deep Trace, but should
+    // not monopolize every automatic pass and starve later dossier targets.
+    recentTargetKeys.add(targetKey(target));
   }
   logActivity(
     target.kind,
@@ -349,7 +471,7 @@ async function resolveClaim(
     failMsg,
   );
   notify();
-  emitSaved(target, found);
+  emitSaved(target, found, run.folioId);
 }
 
 /** Fingerprint of a set of targets — stable identity for the TTL cache. */
@@ -379,6 +501,7 @@ export function stopBackgroundResearch(): void {
     clearTimeout(debounceTimer);
     debounceTimer = null;
   }
+  researchGeneration += 1;
   passInFlight = false;
   setStatus("idle", "idle");
 }
@@ -390,6 +513,7 @@ export function startBackgroundResearch(args: {
   brief: ProjectBrief | null;
   folioId: string | null;
 }): void {
+  researchGeneration += 1;
   activeClient = args.client;
   // Share the client with the MCP layer, which also needs it for the relay
   // from call sites that never receive one (the drafting tool loop).
@@ -412,8 +536,14 @@ function schedule(draftText: string, delay: number, force = false): void {
   }, delay);
 }
 
-async function runOnce(draftText: string, force = false): Promise<void> {
-  if (!activeClient || !activeFolioId) return;
+async function runOnce(
+  draftText: string,
+  force = false,
+  steeringInstructions?: string,
+): Promise<void> {
+  if (!activeFolioId) return;
+  const generation = researchGeneration;
+  const folioId = activeFolioId;
   const trimmed = draftText.trim();
   if (trimmed.length < MIN_DRAFT_CHARS) return;
 
@@ -446,7 +576,10 @@ async function runOnce(draftText: string, force = false): Promise<void> {
         draftText: trimmed,
         existingSources: existingTitles,
         maxTargets: DEFAULT_TARGETS_PER_PASS,
-        instructions: briefContext(activeBrief) || undefined,
+        instructions:
+          [buildDossierResearchInstructions(activeBrief), steeringInstructions]
+            .filter(Boolean)
+            .join("\n") || undefined,
       },
       aiSettings,
     );
@@ -509,11 +642,14 @@ async function runOnce(draftText: string, force = false): Promise<void> {
     for (const target of fresh) {
       const row = progressItems.find((p) => p.key === targetKey(target));
       if (!row) continue;
-      await resolveClaim(row, target);
+      await resolveClaim(row, target, { generation, folioId });
+      if (generation !== researchGeneration) return;
     }
   } finally {
-    passInFlight = false;
-    setStatus("idle", "idle");
+    if (generation === researchGeneration) {
+      passInFlight = false;
+      setStatus("idle", "idle");
+    }
   }
 }
 
@@ -524,11 +660,13 @@ async function searchForTarget(
   settings: ApparatusSettings,
 ): Promise<SearchOutcome> {
   const query = target.query;
-  const context = `The draft says: "${target.anchor}" — ${target.reason}`;
+  const context = buildResearchSearchContext(target);
+  const instructions = buildResearchSearchInstructions(target);
   const configured = await searchWithConfiguredProvider(
     query,
     context,
     settings,
+    instructions,
   );
   if (configured) return configured;
   // Hosted fallback: a locally-configured provider wasn't usable or chosen.
@@ -544,6 +682,13 @@ async function searchForTarget(
       query,
       context,
     })) as { results?: Source[]; provider?: string };
+    if (res.provider === "local") {
+      return {
+        ok: false,
+        message:
+          "Live research is not configured. Choose a research provider in Settings; local placeholder results are not fact-check evidence.",
+      };
+    }
     return {
       ok: true,
       provider: res.provider ?? "hosted",
@@ -561,12 +706,13 @@ async function searchWithConfiguredProvider(
   query: string,
   context: string,
   settings: ApparatusSettings,
+  instructions: string,
 ): Promise<SearchOutcome | null> {
   switch (settings.researchProvider) {
     case "search-api":
       return searchViaBackend(query, context, settings);
     case "model-web-search":
-      return searchModelEndpoint(query, context, settings);
+      return searchModelEndpoint(query, context, settings, instructions);
     case "web-mcp":
       return searchViaMcp(query, context, settings);
     case "hosted":
@@ -600,6 +746,7 @@ async function searchModelEndpoint(
   query: string,
   context: string,
   settings: ApparatusSettings,
+  instructions: string,
 ): Promise<SearchOutcome | null> {
   const aiSettings = await loadAiSettingsFromIdb();
   if (!aiSettings) {
@@ -614,8 +761,7 @@ async function searchModelEndpoint(
         query,
         context,
         maxResults: settings.maxResults,
-        instructions:
-          "Only return sources that demonstrably support the quoted claim. Prefer the exact source of the quote when the query asks for one.",
+        instructions,
       },
       aiSettings,
     );
@@ -644,12 +790,17 @@ async function searchViaMcp(
     };
   }
   try {
-    const res = await searchMcpServers({ query, context }, settings, activeClient);
+    const res = await searchMcpServers(
+      { query, context },
+      settings,
+      activeClient,
+    );
     if (!res.results.length) {
       return {
         ok: false,
         message:
-          res.warnings[0] ?? "The MCP servers returned no sources for that claim.",
+          res.warnings[0] ??
+          "The MCP servers returned no sources for that claim.",
       };
     }
     return { ok: true, provider: res.provider, results: res.results };
@@ -661,15 +812,14 @@ async function searchViaMcp(
 async function persistTarget(
   target: ResearchTarget,
   results: Source[],
+  folioId: string,
 ): Promise<number> {
   const all = await loadBibliography();
   const seen = new Set(
-    all
-      .filter((e) => e.folioId === activeFolioId)
-      .map((e) => normalizeUrl(e.url)),
+    all.filter((e) => e.folioId === folioId).map((e) => normalizeUrl(e.url)),
   );
   const existingBgForFolio = all.filter(
-    (e) => e.folioId === activeFolioId && e.provenance === "background",
+    (e) => e.folioId === folioId && e.provenance === "background",
   ).length;
   let budget = Math.max(0, MAX_BACKGROUND_PER_FOLIO - existingBgForFolio);
   const ref: ResearchTargetRef = {
@@ -687,7 +837,7 @@ async function persistTarget(
     if ((src.snippet?.length ?? 0) < SNIPPET_MIN_CHARS) continue;
     const entry: BibEntry = {
       id: crypto.randomUUID(),
-      folioId: activeFolioId!,
+      folioId,
       title: src.title || src.url,
       author: src.author,
       publisher: src.publisher,

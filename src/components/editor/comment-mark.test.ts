@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { withEditor } from "./test-harness";
+import { removeCommentMarkById } from "./extensions/comment-mark";
 
 /**
  * The CommentMark is the bridge between a passage of text and a
@@ -18,21 +19,21 @@ describe("CommentMark", () => {
         editor.commands.setTextSelection({ from: 1, to: 11 });
         editor.commands.setComment({ id: "c-1" });
         const html = editor.getHTML();
-        expect(html).toContain("data-comment-id=\"c-1\"");
+        expect(html).toContain('data-comment-id="c-1"');
         expect(html).toContain("twyne-comment-mark");
       },
     );
   });
 
-  test("setComment defaults author to You and color to mustard when omitted", async () => {
+  test("setComment defaults author to You and the writer-note color when omitted", async () => {
     await withEditor(
       { content: "<p>highlighted passage</p>" },
       ({ editor }) => {
         editor.commands.setTextSelection({ from: 1, to: 11 });
         editor.commands.setComment({ id: "c-1" });
         const html = editor.getHTML();
-        expect(html).toContain("data-comment-author=\"You\"");
-        expect(html).toContain("data-comment-color=\"var(--color-mustard)\"");
+        expect(html).toContain('data-comment-author="You"');
+        expect(html).toContain('data-comment-color="var(--color-writer-note)"');
       },
     );
   });
@@ -48,8 +49,8 @@ describe("CommentMark", () => {
           color: "red",
         });
         const html = editor.getHTML();
-        expect(html).toContain("data-comment-author=\"Editor A\"");
-        expect(html).toContain("data-comment-color=\"red\"");
+        expect(html).toContain('data-comment-author="Editor A"');
+        expect(html).toContain('data-comment-color="red"');
       },
     );
   });
@@ -60,7 +61,7 @@ describe("CommentMark", () => {
       ({ editor }) => {
         editor.commands.setTextSelection({ from: 1, to: 11 });
         editor.commands.setComment({ id: "c-1" });
-        expect(editor.getHTML()).toContain("data-comment-id=\"c-1\"");
+        expect(editor.getHTML()).toContain('data-comment-id="c-1"');
         editor.commands.setTextSelection({ from: 1, to: 11 });
         editor.commands.unsetComment();
         expect(editor.getHTML()).not.toContain("data-comment-id");
@@ -73,20 +74,17 @@ describe("CommentMark", () => {
     // The writer types after a marked passage. The mark's id must
     // stay attached to the same text — that anchor is what the
     // thread is bound to.
-    await withEditor(
-      { content: "<p>marked trailing</p>" },
-      ({ editor }) => {
-        editor.commands.setTextSelection({ from: 1, to: 7 });
-        editor.commands.setComment({ id: "c-1" });
-        // Move caret to end and type.
-        editor.commands.focus("end");
-        editor.commands.insertContent(" more");
-        const html = editor.getHTML();
-        expect(html).toContain("data-comment-id=\"c-1\"");
-        // The mark still covers the original 6 characters.
-        expect(html).toMatch(/<span data-comment-id="c-1"[^>]*>marked<\/span>/);
-      },
-    );
+    await withEditor({ content: "<p>marked trailing</p>" }, ({ editor }) => {
+      editor.commands.setTextSelection({ from: 1, to: 7 });
+      editor.commands.setComment({ id: "c-1" });
+      // Move caret to end and type.
+      editor.commands.focus("end");
+      editor.commands.insertContent(" more");
+      const html = editor.getHTML();
+      expect(html).toContain('data-comment-id="c-1"');
+      // The mark still covers the original 6 characters.
+      expect(html).toMatch(/<span data-comment-id="c-1"[^>]*>marked<\/span>/);
+    });
   });
 
   test("deleting the marked passage leaves no mark behind", async () => {
@@ -94,16 +92,13 @@ describe("CommentMark", () => {
     // thread in Lix is still pointing at this id, the Marginalia
     // panel has a ghost. The reconciliation primitive (Phase 2)
     // surfaces that; the mark's disappearance is the trigger.
-    await withEditor(
-      { content: "<p>kill me</p>" },
-      ({ editor }) => {
-        editor.commands.setTextSelection({ from: 1, to: 8 });
-        editor.commands.setComment({ id: "c-1" });
-        expect(editor.getHTML()).toContain("data-comment-id=\"c-1\"");
-        editor.commands.deleteSelection();
-        expect(editor.getHTML()).not.toContain("data-comment-id");
-      },
-    );
+    await withEditor({ content: "<p>kill me</p>" }, ({ editor }) => {
+      editor.commands.setTextSelection({ from: 1, to: 8 });
+      editor.commands.setComment({ id: "c-1" });
+      expect(editor.getHTML()).toContain('data-comment-id="c-1"');
+      editor.commands.deleteSelection();
+      expect(editor.getHTML()).not.toContain("data-comment-id");
+    });
   });
 
   test("parseHTML round-trips the data attributes", async () => {
@@ -117,24 +112,56 @@ describe("CommentMark", () => {
         // renderHTML disagree on attribute names, the second pass
         // would drop the id.
         const html = editor.getHTML();
-        expect(html).toContain("data-comment-id=\"c-9\"");
-        expect(html).toContain("data-comment-author=\"Editor\"");
-        expect(html).toContain("data-comment-color=\"red\"");
+        expect(html).toContain('data-comment-id="c-9"');
+        expect(html).toContain('data-comment-author="Editor"');
+        expect(html).toContain('data-comment-color="red"');
       },
     );
   });
 
   test("two non-adjacent comments get distinct ids", async () => {
+    await withEditor({ content: "<p>first second third</p>" }, ({ editor }) => {
+      editor.commands.setTextSelection({ from: 1, to: 6 });
+      editor.commands.setComment({ id: "c-1" });
+      editor.commands.setTextSelection({ from: 13, to: 18 });
+      editor.commands.setComment({ id: "c-2" });
+      const html = editor.getHTML();
+      expect(html).toContain('data-comment-id="c-1"');
+      expect(html).toContain('data-comment-id="c-2"');
+    });
+  });
+
+  test("overlapping margins keep the first comment anchor", async () => {
     await withEditor(
-      { content: "<p>first second third</p>" },
+      { content: "<p>one shared passage for both comments</p>" },
       ({ editor }) => {
-        editor.commands.setTextSelection({ from: 1, to: 6 });
-        editor.commands.setComment({ id: "c-1" });
-        editor.commands.setTextSelection({ from: 13, to: 18 });
-        editor.commands.setComment({ id: "c-2" });
+        editor.commands.setTextSelection({ from: 1, to: 19 });
+        editor.commands.setComment({ id: "c-first" });
+        editor.commands.setTextSelection({ from: 1, to: 19 });
+        editor.commands.setComment({ id: "c-second" });
+
         const html = editor.getHTML();
-        expect(html).toContain("data-comment-id=\"c-1\"");
-        expect(html).toContain("data-comment-id=\"c-2\"");
+        expect(html).toContain('data-comment-id="c-first"');
+        expect(html).toContain('data-comment-id="c-second"');
+
+        expect(removeCommentMarkById(editor, "c-first")).toBe(true);
+        const afterDelete = editor.getHTML();
+        expect(afterDelete).not.toContain('data-comment-id="c-first"');
+        expect(afterDelete).toContain('data-comment-id="c-second"');
+      },
+    );
+  });
+
+  test("migrates the old M. Le Stylo mustard to the writer-note color", async () => {
+    await withEditor(
+      {
+        content:
+          '<p><span data-comment-id="c-old" data-comment-color="var(--color-mustard)">old margin</span></p>',
+      },
+      ({ editor }) => {
+        expect(editor.getHTML()).toContain(
+          'data-comment-color="var(--color-writer-note)"',
+        );
       },
     );
   });

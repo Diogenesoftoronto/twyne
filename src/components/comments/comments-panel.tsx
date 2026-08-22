@@ -11,10 +11,8 @@ import {
   type UserComment,
   type UserCommentReply,
   loadUserComments,
-  upsertUserComment,
   appendUserCommentReply,
   toggleUserCommentResolved,
-  deleteUserComment,
 } from "../../utils/user-comments";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
 import { loadPersonasFromIdb, loadAiSettingsFromIdb } from "../../utils/idb";
@@ -36,12 +34,7 @@ import { renderMarkdown } from "../../utils/markdown";
 import { MentionDropdown, mentionOptionId } from "../ui/mention-dropdown";
 import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
-import { VoiceRecorder, type VoiceCapture } from "../ui/voice-recorder";
-import {
-  formatDuration,
-  readVoiceNote,
-  storeVoiceNote,
-} from "../../utils/voice-notes";
+import { formatDuration, readVoiceNote } from "../../utils/voice-notes";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
@@ -63,7 +56,6 @@ function personaToMentionable(p: Persona): Mentionable {
 
 interface CommentsStore {
   comments: UserComment[];
-  newCommentText: string;
   replyingTo: string | null;
   /** Per-comment reply drafts (keyed by comment id). */
   replyDrafts: Record<string, string>;
@@ -178,7 +170,6 @@ export const CommentsPanel = component$(
     const clientSig = useConvexClient();
     const store = useStore<CommentsStore>({
       comments: initialComments ?? [],
-      newCommentText: "",
       replyingTo: null,
       replyDrafts: {},
       askPersonaFor: null,
@@ -254,63 +245,6 @@ export const CommentsPanel = component$(
       }
     });
 
-    const addComment = $(async () => {
-      if (!store.newCommentText.trim()) return;
-      const comment: UserComment = {
-        id: `c-${Date.now()}`,
-        folioId: activeFolioId ?? "",
-        text: store.newCommentText,
-        author: "You",
-        resolved: false,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        replies: [],
-      };
-      const all = await upsertUserComment(comment);
-      store.comments = all;
-      store.newCommentText = "";
-      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
-      void triggerMentions(comment.id, comment.text);
-    });
-
-    /**
-     * File a spoken note. The transcript becomes the comment text so it
-     * threads, resolves and @-mentions like any other; the recording is kept
-     * locally and playable from the card, because the transcript is not the
-     * whole of what the writer said.
-     */
-    const addVoiceComment = $(async (capture: VoiceCapture) => {
-      const transcript = capture.transcript.trim();
-      if (!transcript) return;
-      const id = `c-${Date.now()}`;
-      const audioId = `va-${id}`;
-      try {
-        await storeVoiceNote(audioId, capture.blob);
-      } catch (err) {
-        // Losing the audio must not lose the words.
-        reportApplicationDiagnostic("twyne:comments:store-voice-note", err, {
-          feature: "comments",
-          operation: "store-voice-note",
-        });
-      }
-      const comment: UserComment = {
-        id,
-        folioId: activeFolioId ?? "",
-        text: transcript,
-        author: "You",
-        resolved: false,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
-        replies: [],
-        audioId,
-        audioDurationMs: capture.durationMs,
-      };
-      const all = await upsertUserComment(comment);
-      store.comments = all;
-      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
-      void triggerMentions(comment.id, comment.text);
-    });
-
     const addReply = $(async (commentId: string, text: string) => {
       if (!text.trim()) return;
       const reply: UserCommentReply = {
@@ -333,10 +267,16 @@ export const CommentsPanel = component$(
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
     });
 
-    const deleteComment = $(async (commentId: string) => {
-      const all = await deleteUserComment(commentId);
-      store.comments = all;
-      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+    const deleteComment = $((commentId: string) => {
+      // The editor owns both the persisted thread and its ProseMirror mark.
+      // Optimistically remove the card, then let that single owner complete
+      // local storage, cloud sync, highlight, chip, and popover cleanup.
+      store.comments = store.comments.filter((item) => item.id !== commentId);
+      window.dispatchEvent(
+        new CustomEvent("twyne:delete-user-comment", {
+          detail: { commentId },
+        }),
+      );
     });
 
     /**
@@ -484,6 +424,62 @@ export const CommentsPanel = component$(
       },
     );
 
+    // Selection actions and manuscript-side @mentions both route through the
+    // same thread/model path as the Marginalia UI. Keeping these listeners
+    // mounted is why closing the Board does not cancel or lose the requested
+    // reading.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ cleanup }) => {
+      const onSelectionRequest = (event: Event) => {
+        const detail = (
+          event as CustomEvent<{ commentId?: string; personaId?: string }>
+        ).detail;
+        if (!detail?.commentId || !detail.personaId) return;
+        void loadUserComments().then((all) => {
+          const comment = all.find(
+            (item) =>
+              item.id === detail.commentId && item.folioId === activeFolioId,
+          );
+          if (!comment) return;
+          store.comments = all.filter((item) => item.folioId === activeFolioId);
+          void askEditor(detail.commentId!, detail.personaId!);
+        });
+      };
+      const onMentionRequest = (event: Event) => {
+        const detail = (
+          event as CustomEvent<{ commentId?: string; text?: string }>
+        ).detail;
+        if (!detail?.commentId || !detail.text?.trim()) return;
+        void loadUserComments().then((all) => {
+          const comment = all.find(
+            (item) =>
+              item.id === detail.commentId && item.folioId === activeFolioId,
+          );
+          if (!comment) return;
+          store.comments = all.filter((item) => item.folioId === activeFolioId);
+          void triggerMentions(detail.commentId!, detail.text!);
+        });
+      };
+      window.addEventListener(
+        "twyne:ask-persona-on-comment",
+        onSelectionRequest,
+      );
+      window.addEventListener(
+        "twyne:user-comment-mentions",
+        onMentionRequest,
+      );
+      cleanup(() => {
+        window.removeEventListener(
+          "twyne:ask-persona-on-comment",
+          onSelectionRequest,
+        );
+        window.removeEventListener(
+          "twyne:user-comment-mentions",
+          onMentionRequest,
+        );
+      });
+    });
+
     const unresolved = store.comments.filter((c) => {
       if (c.folioId !== activeFolioId) return false;
       if (c.resolved) return false;
@@ -552,140 +548,11 @@ export const CommentsPanel = component$(
           )}
         </div>
 
-        <div class="shrink-0 px-4 py-4 border-b border-[var(--color-paper-3)]">
-          <div class="relative">
-            <textarea
-              id={mentionInputId("new")}
-              value={store.newCommentText}
-              aria-label="New margin note"
-              role="combobox"
-              aria-expanded={store.mentionTarget === "new"}
-              aria-controls={mentionListId("new")}
-              aria-activedescendant={
-                store.mentionTarget === "new"
-                  ? mentionOptionId(
-                      mentionListId("new"),
-                      filterMentionables(mentionables, store.mentionQuery)[
-                        store.mentionIndex
-                      ]?.id ?? "",
-                    )
-                  : undefined
-              }
-              onInput$={(e) => {
-                const el = e.target as HTMLTextAreaElement;
-                store.newCommentText = el.value;
-                const q = activeMentionQuery(el.value, el.selectionStart);
-                if (q !== null) {
-                  store.mentionTarget = "new";
-                  store.mentionQuery = q;
-                  store.mentionIndex = 0;
-                } else if (store.mentionTarget === "new") {
-                  store.mentionTarget = null;
-                }
-              }}
-              onKeyDown$={(e) => {
-                const el = e.target as HTMLTextAreaElement;
-                if (store.mentionTarget === "new") {
-                  const candidates = filterMentionables(
-                    mentionables,
-                    store.mentionQuery,
-                  );
-                  if (e.key === "Escape") {
-                    store.mentionTarget = null;
-                    return;
-                  }
-                  if (candidates.length > 0) {
-                    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-                      e.preventDefault();
-                      const step = e.key === "ArrowDown" ? 1 : -1;
-                      store.mentionIndex =
-                        (store.mentionIndex + step + candidates.length) %
-                        candidates.length;
-                      return;
-                    }
-                    // Plain Enter picks the highlighted name; Mod+Enter still
-                    // files the note, so the submit shortcut keeps working.
-                    if (
-                      (e.key === "Enter" && !e.metaKey && !e.ctrlKey) ||
-                      e.key === "Tab"
-                    ) {
-                      e.preventDefault();
-                      const item = candidates[store.mentionIndex];
-                      if (item) {
-                        const applied = applyMention(
-                          store.newCommentText,
-                          item.name,
-                          el.selectionStart,
-                        );
-                        store.newCommentText = applied.text;
-                        store.mentionTarget = null;
-                        restoreMentionCaret("new", applied.caret);
-                      }
-                      return;
-                    }
-                  }
-                }
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                  addComment();
-                }
-              }}
-              onBlur$={(e) => {
-                if (store.mentionTarget === "new" && blurLeavesMentionUi(e)) {
-                  store.mentionTarget = null;
-                }
-              }}
-              placeholder={getCommentPlaceholder(brief)}
-              class="w-full px-3 py-2 text-sm bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-mustard)] text-[var(--color-ink)] placeholder:text-[var(--color-ink-muted)] placeholder:italic"
-              style={commentEditorStyle("new")}
-              rows={5}
-            />
-            {store.mentionTarget === "new" && (
-              <MentionDropdown
-                id={mentionListId("new")}
-                items={mentionables}
-                query={store.mentionQuery}
-                activeIndex={store.mentionIndex}
-                size="md"
-                onSelect$={$((item: Mentionable) => {
-                  const el = document.getElementById(
-                    mentionInputId("new"),
-                  ) as HTMLTextAreaElement | null;
-                  const applied = applyMention(
-                    store.newCommentText,
-                    item.name,
-                    el?.selectionStart ?? store.newCommentText.length,
-                  );
-                  store.newCommentText = applied.text;
-                  store.mentionTarget = null;
-                  restoreMentionCaret("new", applied.caret);
-                })}
-              />
-            )}
-          </div>
-          <p
-            class="mt-1.5 text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)]"
-            style="font-family: var(--font-typewriter);"
-          >
-            Type @ to tag an editor — they'll weigh in automatically.
+        <div class="shrink-0 px-4 py-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+          <p class="panel-prose text-[var(--color-ink-light)]">
+            Select a passage, then choose <strong>Add margin</strong>. Your note
+            opens beside the text and appears here once placed.
           </p>
-          <button
-            onClick$={addComment}
-            disabled={!store.newCommentText.trim()}
-            class="btn-press mt-2 w-full"
-          >
-            Pencil it in
-          </button>
-          <div class="mt-2">
-            <VoiceRecorder
-              label="Say it instead"
-              transcriptionHint={
-                brief
-                  ? `${brief.answers.workingTitle}. ${brief.answers.audience}`
-                  : undefined
-              }
-              onCapture$={addVoiceComment}
-            />
-          </div>
         </div>
 
         <div class="min-h-0 flex-1 overscroll-contain overflow-y-auto">
@@ -693,7 +560,7 @@ export const CommentsPanel = component$(
             <div class="text-center py-10 px-6">
               <p
                 class="text-3xl"
-                style="font-family: var(--font-display); color: var(--color-mustard);"
+                style="font-family: var(--font-display); color: var(--color-writer-note);"
               >
                 ✎
               </p>
@@ -707,7 +574,7 @@ export const CommentsPanel = component$(
                 class="mt-1.5 text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
                 style="font-family: var(--font-typewriter);"
               >
-                Pencil in a note as you re-read.
+                Select a passage to add the first note.
               </p>
             </div>
           )}
@@ -725,7 +592,7 @@ export const CommentsPanel = component$(
                 key={comment.id}
                 data-comment-id={comment.id}
                 class="px-4 py-3 mx-3 mb-2 border border-[var(--color-paper-3)]"
-                style="border-radius: 2px; background: linear-gradient(rgba(212, 160, 23, 0.06), rgba(212, 160, 23, 0.06)), var(--color-paper);"
+                style="border-radius: 2px; background: color-mix(in srgb, var(--color-writer-note) 6%, var(--color-paper));"
               >
                 <div class="flex items-start justify-between">
                   <div class="flex-1 min-w-0">
@@ -745,7 +612,7 @@ export const CommentsPanel = component$(
                     </div>
                     {comment.anchor && (
                       <p
-                        class="text-xs italic text-[var(--color-ink-light)] mb-1 border-l border-[var(--color-mustard)] pl-2"
+                        class="text-xs italic text-[var(--color-ink-light)] mb-1 border-l border-[var(--color-writer-note)] pl-2"
                         style="font-family: var(--font-serif);"
                       >
                         « {truncate(comment.anchor, 120)} »
@@ -1053,7 +920,7 @@ export const CommentsPanel = component$(
                           }
                         }}
                         placeholder="Annotate… (@ to tag an editor)"
-                        class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-mustard)]"
+                        class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-writer-note)]"
                         style={commentEditorStyle("reply")}
                         rows={5}
                       />
@@ -1162,7 +1029,7 @@ export const CommentsPanel = component$(
                   </div>
                   {comment.anchor && (
                     <p
-                      class="text-xs italic text-[var(--color-ink-light)] mb-1 border-l border-[var(--color-mustard)] pl-2"
+                      class="text-xs italic text-[var(--color-ink-light)] mb-1 border-l border-[var(--color-writer-note)] pl-2"
                       style="font-family: var(--font-serif);"
                     >
                       « {truncate(comment.anchor, 120)} »
@@ -1215,11 +1082,6 @@ function getTimeAgo(timestamp: number): string {
 function truncate(s: string, n: number): string {
   if (s.length <= n) return s;
   return s.slice(0, n - 1) + "…";
-}
-
-function getCommentPlaceholder(brief: ProjectBrief | null): string {
-  if (!brief) return "Add a comment...";
-  return `Note for ${brief.answers.audience}...`;
 }
 
 /**

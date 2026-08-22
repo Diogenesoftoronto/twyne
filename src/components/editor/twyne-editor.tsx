@@ -55,6 +55,8 @@ import { UserCommentPanel } from "./user-comment-panel";
 import { PersonaNotePanel } from "./persona-note-panel";
 import { InsertPanels } from "./insert-panels";
 import { CompositorPanel } from "./compositor-panel";
+import { SelectionActions } from "./selection-actions";
+import { researchSelection } from "../../utils/background-research";
 
 /**
  * The reading the toolbar owns. Stable rather than derived from the
@@ -110,8 +112,11 @@ import {
 } from "../../utils/reconcile-comments";
 import { bindNetworkStatusEvents } from "../../utils/convex-sync";
 import { applyDocumentMeta } from "../../utils/document";
-import { CommentMark } from "./extensions/comment-mark";
-import { PersonaNoteMark } from "./extensions/persona-note-mark";
+import { CommentMark, removeCommentMarkById } from "./extensions/comment-mark";
+import {
+  PersonaNoteMark,
+  removePersonaNoteMarkById,
+} from "./extensions/persona-note-mark";
 import { SuggestionMark } from "./extensions/suggestion-mark";
 import { MermaidDiagram } from "./extensions/mermaid-node";
 import type { NoteKind } from "./extensions/endnote-node";
@@ -153,7 +158,7 @@ import {
   saveSuggestionLocally,
 } from "../../utils/convex-sync";
 import type { SuggestionPayload, Suggestion } from "../../types";
-import { computePopoverGeometry } from "./popover-positioning";
+import { computeMarginCardGeometry } from "./popover-positioning";
 import {
   EMPTY_TABLE_TOOLBAR_SNAPSHOT,
   FloatingTableToolbar,
@@ -228,6 +233,8 @@ export const TwyneEditor = component$(
     brief,
     sharedLixId,
     readOnly = false,
+    onEditorialContext$,
+    onManuscriptFocus$,
   }: TwyneEditorProps) => {
     const clientSig = useConvexClient();
     const auth = useAuth();
@@ -249,14 +256,13 @@ export const TwyneEditor = component$(
       imageUploadAdapter: null,
       selectedImage: null,
       imageUploadError: null,
-      showCommentInput: false,
-      commentText: "",
       showMermaidInput: false,
       mermaidSource: "",
       noteInputKind: null,
       noteText: "",
       notes: [],
       hasSelection: false,
+      selectionAction: null,
       notePopover: null,
       suggestionPopover: null,
       stampVisible: false,
@@ -271,6 +277,7 @@ export const TwyneEditor = component$(
       showLayout: false,
       layoutPanelMaxH: 544,
       exportingPdf: false,
+      includePersonaCommentsInExport: false,
       showFindReplace: false,
       showGrammar: false,
       showShortcutDialog: false,
@@ -756,6 +763,42 @@ export const TwyneEditor = component$(
           },
         });
 
+        // ProseMirror handles pointer events inside its own managed DOM and
+        // can stop them before Qwik's delegated listener reaches the mount
+        // wrapper. Capture on the actual editor surface so returning to the
+        // manuscript always clears transient editorial furniture.
+        const dismissEditorialFurniture = () => {
+          store.showImageInput = false;
+          store.selectionAction = null;
+          const comment = store.userCommentPopover;
+          store.userCommentPopover =
+            comment?.mode === "compose" ? { ...comment, visible: false } : null;
+          store.openPicker = null;
+          void onManuscriptFocus$?.();
+        };
+        editor.view.dom.addEventListener(
+          "mousedown",
+          dismissEditorialFurniture,
+          true,
+        );
+        editor.view.dom.addEventListener(
+          "touchstart",
+          dismissEditorialFurniture,
+          true,
+        );
+        cleanup(() => {
+          editor.view.dom.removeEventListener(
+            "mousedown",
+            dismissEditorialFurniture,
+            true,
+          );
+          editor.view.dom.removeEventListener(
+            "touchstart",
+            dismissEditorialFurniture,
+            true,
+          );
+        });
+
         // Sharing must serialize the exact document Tiptap owns, including
         // edits still inside the route's persistence debounce. The share
         // control requests this snapshot synchronously immediately before it
@@ -777,6 +820,38 @@ export const TwyneEditor = component$(
         const refreshActive = () => {
           const { from, to } = editor.state.selection;
           store.hasSelection = from !== to;
+          if (from !== to && editor.state.selection instanceof TextSelection) {
+            const text = editor.state.doc.textBetween(from, to, " ").trim();
+            if (text) {
+              const start = editor.view.coordsAtPos(from);
+              const end = editor.view.coordsAtPos(to);
+              const cardHalfWidth = Math.min(240, window.innerWidth / 2 - 8);
+              const center =
+                (Math.min(start.left, end.left) +
+                  Math.max(start.right, end.right)) /
+                2;
+              const x = Math.max(
+                cardHalfWidth,
+                Math.min(window.innerWidth - cardHalfWidth, center),
+              );
+              const placement = start.top > 112 ? "above" : "below";
+              const prior = store.selectionAction;
+              store.selectionAction = {
+                from,
+                to,
+                text,
+                x,
+                y: placement === "above" ? start.top - 10 : end.bottom + 10,
+                placement,
+                error:
+                  prior?.from === from && prior.to === to ? prior.error : null,
+              };
+            } else {
+              store.selectionAction = null;
+            }
+          } else {
+            store.selectionAction = null;
+          }
           store.active = {
             bold: editor.isActive("bold"),
             italic: editor.isActive("italic"),
@@ -969,10 +1044,9 @@ export const TwyneEditor = component$(
           };
         }
 
-        // Build a persona-note popover, anchored to the mark but never
-        // covering the sentence. Position is computed by the pure
-        // `computePopoverGeometry` module so the placement rules are
-        // unit-testable without a Tiptap editor. Splitting attribute
+        // Build a persona-note popover in the manuscript's outside margin.
+        // Position is computed by the same pure geometry used for writer
+        // comments, so both authors share one interaction grammar. Splitting attribute
         // read from geometry lets us re-use the same attribute
         // extractor when opening from the mark-anchor chip (where the
         // chip's own rect is the anchor, not the marked text's rect).
@@ -989,7 +1063,10 @@ export const TwyneEditor = component$(
           },
           pinned: boolean,
         ): NotePopover => {
-          const geom = computePopoverGeometry({
+          const pageRect = el
+            .closest<HTMLElement>(".page-canvas")
+            ?.getBoundingClientRect();
+          const geom = computeMarginCardGeometry({
             vw: window.innerWidth,
             vh: window.innerHeight,
             rect: {
@@ -997,6 +1074,9 @@ export const TwyneEditor = component$(
               top: rect.top,
               bottom: rect.bottom,
             },
+            page: pageRect
+              ? { left: pageRect.left, right: pageRect.right }
+              : { left: rect.left, right: rect.right },
           });
           return {
             id: attrs.id,
@@ -1103,6 +1183,7 @@ export const TwyneEditor = component$(
         //      mouseout alone.
         let hoverTimer: ReturnType<typeof setTimeout> | null = null;
         let hoverArmed = true;
+        let hoveredWriterCommentId: string | null = null;
         let lastMouse = { x: 0, y: 0 };
         const clearHoverTimer = () => {
           if (hoverTimer) {
@@ -1115,10 +1196,26 @@ export const TwyneEditor = component$(
           const noteSpan = target.closest(
             ".twyne-persona-note",
           ) as HTMLElement | null;
+          const writerCommentSpan = target.closest(
+            ".twyne-comment-mark",
+          ) as HTMLElement | null;
           const chip = target.closest(
             ".twyne-mark-anchor",
           ) as HTMLElement | null;
-          if (!noteSpan && !chip) return;
+          if (!noteSpan && !writerCommentSpan && !chip) return;
+          if (writerCommentSpan) {
+            if (store.userCommentPopover?.visible) return;
+            if (!hoverArmed) return;
+            const commentId =
+              writerCommentSpan.getAttribute("data-comment-id") ?? "";
+            if (!commentId) return;
+            clearHoverTimer();
+            hoverTimer = setTimeout(() => {
+              hoveredWriterCommentId = commentId;
+              void openUserCommentPopover(commentId, writerCommentSpan);
+            }, 350);
+            return;
+          }
           // Don't clobber a pinned card the writer is interacting with.
           if (store.notePopover?.pinned) return;
           if (!hoverArmed) return;
@@ -1138,12 +1235,23 @@ export const TwyneEditor = component$(
           const related = (e as MouseEvent).relatedTarget as HTMLElement | null;
           // Stay open while moving onto the card, the marked span, or
           // its corresponding anchor chip (text → chip → card).
-          if (related?.closest(".persona-note-card")) return;
+          if (related?.closest(".manuscript-comment-card")) return;
           if (related?.closest(".twyne-persona-note")) return;
+          if (related?.closest(".twyne-comment-mark")) return;
           if (related?.closest(".twyne-mark-anchor")) return;
           // Even when we don't close, cancel any pending hover-open
           // timer so a fast pass-through doesn't surprise the writer.
           clearHoverTimer();
+          if (hoveredWriterCommentId) {
+            if (
+              store.userCommentPopover?.id === hoveredWriterCommentId &&
+              !store.userCommentPopover.draft.trim()
+            ) {
+              store.userCommentPopover = null;
+            }
+            hoveredWriterCommentId = null;
+            return;
+          }
           // Mid-conversation: keep the live thread open even if the
           // popover was opened by hover rather than a click.
           if (store.notePopover?.pinned) return;
@@ -1155,6 +1263,7 @@ export const TwyneEditor = component$(
         // ── Click handler: anchor-chip routes by data-anchor-kind; mark
         // clicks fall through to ProseMirror (caret placement, no popover). ──
         el.addEventListener("click", (e) => {
+          dismissEditorialFurniture();
           const target = e.target as HTMLElement;
 
           // Anchor chip first — must preventDefault so clicking the
@@ -1169,6 +1278,7 @@ export const TwyneEditor = component$(
             if (!id) return;
             const chipRect = chip.getBoundingClientRect();
             if (kind === "comment") {
+              hoveredWriterCommentId = null;
               const span = el.querySelector(
                 `.twyne-comment-mark[data-comment-id="${CSS.escape(id)}"]`,
               ) as HTMLElement | null;
@@ -1868,6 +1978,22 @@ export const TwyneEditor = component$(
      */
     const openUserCommentPopover = $(
       async (commentId: string, markEl: HTMLElement) => {
+        const rect = markEl.getBoundingClientRect();
+        const pageRect = markEl
+          .closest<HTMLElement>(".page-canvas")
+          ?.getBoundingClientRect();
+        const geom = computeMarginCardGeometry({
+          vw: window.innerWidth,
+          vh: window.innerHeight,
+          rect: {
+            left: rect.left,
+            top: rect.top,
+            bottom: rect.bottom,
+          },
+          page: pageRect
+            ? { left: pageRect.left, right: pageRect.right }
+            : { left: rect.left, right: rect.right },
+        });
         const all = await loadUserComments();
         const c = all.find(
           (x) => x.id === commentId && x.folioId === store.activeFolioId,
@@ -1876,28 +2002,40 @@ export const TwyneEditor = component$(
           // The mark exists but the body didn't sync. Show a placeholder
           // so the writer can resolve or delete it; the next addComment
           // round-trip will populate the body.
-          const rect = markEl.getBoundingClientRect();
           store.userCommentPopover = {
+            mode: "thread",
+            visible: true,
             id: commentId,
             author: "You",
             text: "(comment body not yet synced)",
+            quote: markEl.textContent ?? "",
             createdAt: Date.now(),
-            x: Math.max(8, Math.min(rect.left, window.innerWidth - 360)),
-            y: rect.bottom + 8,
+            x: geom.x,
+            top: geom.top,
+            bottom: geom.bottom,
+            maxH: geom.maxH,
+            from: null,
+            to: null,
             resolved: false,
             replies: [],
             draft: "",
           };
           return;
         }
-        const rect = markEl.getBoundingClientRect();
         store.userCommentPopover = {
+          mode: "thread",
+          visible: true,
           id: c.id,
           author: c.author,
           text: c.text,
+          quote: c.anchor ?? markEl.textContent ?? "",
           createdAt: c.createdAt,
-          x: Math.max(8, Math.min(rect.left, window.innerWidth - 360)),
-          y: rect.bottom + 8,
+          x: geom.x,
+          top: geom.top,
+          bottom: geom.bottom,
+          maxH: geom.maxH,
+          from: null,
+          to: null,
           resolved: c.resolved,
           replies: c.replies,
           draft: "",
@@ -1906,7 +2044,9 @@ export const TwyneEditor = component$(
     );
 
     const closeUserCommentPopover = $(() => {
-      store.userCommentPopover = null;
+      const popover = store.userCommentPopover;
+      store.userCommentPopover =
+        popover?.mode === "compose" ? { ...popover, visible: false } : null;
     });
 
     const submitUserCommentReply = $(async (commentId: string) => {
@@ -1949,6 +2089,11 @@ export const TwyneEditor = component$(
       // Without this, the right-rail view stays stale until the panel
       // remounts, which makes it look like the reply vanished.
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+      window.dispatchEvent(
+        new CustomEvent("twyne:user-comment-mentions", {
+          detail: { commentId, text },
+        }),
+      );
     });
 
     const toggleResolveUserComment = $(async (commentId: string) => {
@@ -1971,25 +2116,12 @@ export const TwyneEditor = component$(
 
     const deleteUserCommentLocal = $(async (commentId: string) => {
       await deleteUserComment(commentId);
-      // Strike the mark from the document so the inline highlight goes away.
-      if (store.editor) {
-        const { state, view } = store.editor;
-        const type = state.schema.marks.commentMark;
-        if (type) {
-          const tr = state.tr;
-          state.doc.descendants((node: any, pos: number) => {
-            if (!node.isText) return true;
-            for (const mark of node.marks) {
-              if (mark.type === type && mark.attrs.id === commentId) {
-                tr.removeMark(pos, pos + node.nodeSize, type);
-              }
-            }
-            return true;
-          });
-          if (tr.docChanged) view.dispatch(tr);
-        }
+      // Strike exactly this mark from the document. A second margin may quote
+      // the same passage and must remain visible.
+      if (store.editor) removeCommentMarkById(store.editor, commentId);
+      if (store.userCommentPopover?.id === commentId) {
+        store.userCommentPopover = null;
       }
-      store.userCommentPopover = null;
       const client = clientSig.value;
       if (client) {
         try {
@@ -1999,6 +2131,51 @@ export const TwyneEditor = component$(
         }
       }
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+    });
+
+    // Marginalia list deletion routes through the editor so the stored thread
+    // and its document mark cannot diverge.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ cleanup }) => {
+      const onDeleteUserComment = (event: Event) => {
+        const detail = (event as CustomEvent<{ commentId?: string }>).detail;
+        if (!detail?.commentId) return;
+        void deleteUserCommentLocal(detail.commentId);
+      };
+      const onUserCommentsChanged = () => {
+        const open = store.userCommentPopover;
+        if (!open || open.mode !== "thread") return;
+        const openId = open.id;
+        void loadUserComments().then((all) => {
+          const latest = all.find((comment) => comment.id === openId);
+          const current = store.userCommentPopover;
+          if (!latest || !current || current.id !== openId) return;
+          store.userCommentPopover = {
+            ...current,
+            author: latest.author,
+            text: latest.text,
+            quote: latest.anchor ?? current.quote,
+            createdAt: latest.createdAt,
+            resolved: latest.resolved,
+            replies: latest.replies,
+          };
+        });
+      };
+      window.addEventListener("twyne:delete-user-comment", onDeleteUserComment);
+      window.addEventListener(
+        "twyne:user-comments-changed",
+        onUserCommentsChanged,
+      );
+      cleanup(() => {
+        window.removeEventListener(
+          "twyne:delete-user-comment",
+          onDeleteUserComment,
+        );
+        window.removeEventListener(
+          "twyne:user-comments-changed",
+          onUserCommentsChanged,
+        );
+      });
     });
 
     /** Fire-and-forget: persist a new comment to Lix + Convex. */
@@ -2040,11 +2217,151 @@ export const TwyneEditor = component$(
           // write is committed so the writer's new note shows up there
           // without a manual reload.
           window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+          return true;
         } catch (err) {
           console.warn("[twyne:editor] persistNewComment failed:", err);
+          return false;
         }
       },
     );
+
+    /** Create one anchored marginal note from a preserved text range. */
+    const createSelectionComment = $(
+      async (
+        body: string,
+        range: { from: number; to: number },
+        openPopover: boolean,
+      ): Promise<string | null> => {
+        const editor = store.editor;
+        if (
+          !editor ||
+          range.from >= range.to ||
+          range.to > editor.state.doc.content.size
+        ) {
+          return null;
+        }
+        const anchor = editor.state.doc.textBetween(range.from, range.to, " ");
+        if (!anchor.trim()) return null;
+
+        const commentId = crypto.randomUUID();
+        editor
+          .chain()
+          .focus()
+          .setTextSelection(range)
+          .setMark("commentMark", {
+            id: commentId,
+            author: "You",
+            color: "var(--color-writer-note)",
+          })
+          .run();
+
+        const persisted = await persistNewComment(
+          commentId,
+          body,
+          anchor,
+          store.activeFolioId || "",
+        );
+        if (!persisted) return null;
+
+        window.dispatchEvent(
+          new CustomEvent("twyne:user-comment-mentions", {
+            detail: { commentId, text: body },
+          }),
+        );
+
+        if (openPopover) {
+          requestAnimationFrame(() => {
+            const markEl = document.querySelector(
+              `.twyne-comment-mark[data-comment-id="${commentId}"]`,
+            ) as HTMLElement | null;
+            if (markEl) void openUserCommentPopover(commentId, markEl);
+          });
+        }
+        return commentId;
+      },
+    );
+
+    /** Open the writer's note beside the selected passage without filing it. */
+    const openWriterMarginComposer = $(
+      (range: { from: number; to: number }) => {
+        const editor = store.editor;
+        if (!editor || range.from >= range.to) return;
+        const quote = editor.state.doc.textBetween(range.from, range.to, " ");
+        if (!quote.trim()) return;
+
+        const start = editor.view.coordsAtPos(range.from);
+        const end = editor.view.coordsAtPos(range.to);
+        const pageRect = editor.view.dom
+          .closest<HTMLElement>(".page-canvas")
+          ?.getBoundingClientRect();
+        const geom = computeMarginCardGeometry({
+          vw: window.innerWidth,
+          vh: window.innerHeight,
+          rect: {
+            left: Math.min(start.left, end.left),
+            top: Math.min(start.top, end.top),
+            bottom: Math.max(start.bottom, end.bottom),
+          },
+          page: pageRect
+            ? { left: pageRect.left, right: pageRect.right }
+            : {
+                left: Math.min(start.left, end.left),
+                right: Math.max(start.right, end.right),
+              },
+          idealH: 360,
+        });
+        const prior = store.userCommentPopover;
+        const restoreDraft =
+          prior?.mode === "compose" &&
+          prior.from === range.from &&
+          prior.to === range.to
+            ? prior.draft
+            : "";
+        store.userCommentPopover = {
+          mode: "compose",
+          visible: true,
+          id: "draft-margin",
+          author: "You",
+          text: "",
+          quote,
+          createdAt: Date.now(),
+          x: geom.x,
+          top: geom.top,
+          bottom: geom.bottom,
+          maxH: geom.maxH,
+          from: range.from,
+          to: range.to,
+          resolved: false,
+          replies: [],
+          draft: restoreDraft,
+        };
+        store.selectionAction = null;
+      },
+    );
+
+    const submitWriterMargin = $(async () => {
+      const popover = store.userCommentPopover;
+      if (
+        !popover ||
+        popover.mode !== "compose" ||
+        popover.from == null ||
+        popover.to == null ||
+        !popover.draft.trim()
+      ) {
+        return;
+      }
+      await createSelectionComment(
+        popover.draft.trim(),
+        { from: popover.from, to: popover.to },
+        true,
+      );
+    });
+
+    const discardWriterMargin = $(() => {
+      if (store.userCommentPopover?.mode === "compose") {
+        store.userCommentPopover = null;
+      }
+    });
 
     const handleDragOver = $(() => {
       store.isDragOver = true;
@@ -2159,6 +2476,7 @@ export const TwyneEditor = component$(
           layout: store.layout,
           header: store.headerText,
           footer: store.footerText,
+          includePersonaComments: store.includePersonaCommentsInExport,
         });
         await exportPdf(payload);
       } catch (err) {
@@ -2313,7 +2631,7 @@ export const TwyneEditor = component$(
       editor.commands.focus();
     });
 
-    const runCommand = $((command: string) => {
+    const runCommand = $(async (command: string) => {
       const chain = store.editor?.chain().focus();
       if (!chain) return;
       switch (command) {
@@ -2433,34 +2751,7 @@ export const TwyneEditor = component$(
           const editor = store.editor!;
           const { from, to } = editor.state.selection;
           if (from === to) break;
-          const commentId = crypto.randomUUID();
-          const body = store.commentText.trim() || "New comment";
-          const anchor = editor.state.doc.textBetween(from, to);
-          const folioId = store.activeFolioId || "";
-          chain
-            .setMark("commentMark", {
-              commentId,
-              author: "You",
-              color: "var(--color-mustard)",
-            })
-            .run();
-
-          // Persist the body locally + push to Convex. Fire-and-forget
-          // so the sync doesn't block the mark from being set.
-          void persistNewComment(commentId, body, anchor, folioId);
-
-          // Open the popover immediately so the writer can keep typing
-          // replies or strike the note.
-          const sel = window.getSelection();
-          const markEl = sel?.anchorNode?.parentElement?.closest(
-            ".twyne-comment-mark",
-          ) as HTMLElement | null;
-          if (markEl) {
-            void openUserCommentPopover(commentId, markEl);
-          }
-
-          store.commentText = "";
-          store.showCommentInput = false;
+          await openWriterMarginComposer({ from, to });
           break;
         }
         case "insertNote": {
@@ -2547,7 +2838,7 @@ export const TwyneEditor = component$(
           store.noteText = "";
           break;
         case "review.comment":
-          store.showCommentInput = true;
+          await runCommand("addComment");
           break;
         case "review.read-aloud":
           await readAloud();
@@ -2583,6 +2874,69 @@ export const TwyneEditor = component$(
       editor.commands.focus();
       store.slashOpen = false;
     });
+
+    const getSourcesForSelection = $(async () => {
+      const selection = store.selectionAction;
+      if (!selection) return;
+      await onEditorialContext$?.("citations");
+      const result = await researchSelection({
+        anchor: selection.text,
+        folioId: store.activeFolioId,
+      });
+      const current = store.selectionAction;
+      if (
+        !result.ok &&
+        current?.from === selection.from &&
+        current.to === selection.to
+      ) {
+        store.selectionAction = {
+          ...current,
+          error: result.message ?? "The Apparatus could not start.",
+        };
+      }
+    });
+
+    const addMarginForSelection = $(async () => {
+      const selection = store.selectionAction;
+      if (!selection || !store.editor) return;
+      store.editor.commands.setTextSelection({
+        from: selection.from,
+        to: selection.to,
+      });
+      await openWriterMarginComposer({
+        from: selection.from,
+        to: selection.to,
+      });
+    });
+
+    const sendSelectionToPersona = $(
+      async (personaId: string, personaName: string) => {
+        const selection = store.selectionAction;
+        if (!selection) return;
+        const commentId = await createSelectionComment(
+          `Please give me ${personaName}'s editorial reading of this passage.`,
+          { from: selection.from, to: selection.to },
+          false,
+        );
+        if (!commentId) {
+          const current = store.selectionAction;
+          if (current) {
+            store.selectionAction = {
+              ...current,
+              error: "The margin request could not be filed.",
+            };
+          }
+          return;
+        }
+        store.selectionAction = null;
+        await onEditorialContext$?.("comments");
+        window.dispatchEvent(
+          new CustomEvent("twyne:ask-persona-on-comment", {
+            detail: { commentId, personaId },
+          }),
+        );
+      },
+    );
 
     return (
       <div class="flex flex-1 flex-col min-h-0">
@@ -2681,8 +3035,6 @@ export const TwyneEditor = component$(
             imageUrl={store.imageUrl}
             imageUploadAvailable={!!store.imageUploadAdapter}
             imageUploadError={store.imageUploadError}
-            commentOpen={store.showCommentInput}
-            commentText={store.commentText}
             onCancelNote$={() => {
               store.noteInputKind = null;
               store.noteText = "";
@@ -2719,16 +3071,6 @@ export const TwyneEditor = component$(
             onCancelImage$={() => {
               store.showImageInput = false;
               store.imageUrl = "";
-            }}
-            onCommentChange$={(value) => {
-              store.commentText = value;
-            }}
-            onAddComment$={() => {
-              if (store.commentText.trim()) runCommand("addComment");
-            }}
-            onCancelComment$={() => {
-              store.showCommentInput = false;
-              store.commentText = "";
             }}
           />
           <SlashCommandMenu
@@ -2821,6 +3163,18 @@ export const TwyneEditor = component$(
           onJumpToNote$={jumpToNote}
         />
 
+        <SelectionActions
+          selection={
+            store.userCommentPopover?.visible ? null : store.selectionAction
+          }
+          onGetSources$={getSourcesForSelection}
+          onAddMargin$={addMarginForSelection}
+          onSendToPersona$={sendSelectionToPersona}
+          onClose$={() => {
+            store.selectionAction = null;
+          }}
+        />
+
         <PersonaNotePanel
           note={store.notePopover}
           onPin$={(noteId) => {
@@ -2874,6 +3228,8 @@ export const TwyneEditor = component$(
               draft,
             };
           }}
+          onCreate$={submitWriterMargin}
+          onDiscard$={discardWriterMargin}
           onSubmit$={submitUserCommentReply}
           onToggleResolved$={toggleResolveUserComment}
           onDelete$={deleteUserCommentLocal}
@@ -2966,7 +3322,11 @@ function removeEditorMark(
 }
 
 function removePersonaNote(editor: Editor, id: string | null): void {
-  removeEditorMark(editor, "personaNote", id);
+  if (id === null) {
+    removeEditorMark(editor, "personaNote", null);
+    return;
+  }
+  removePersonaNoteMarkById(editor, id);
 }
 
 function removeAllPersonaNotes(editor: Editor): void {

@@ -72,4 +72,55 @@ describe("citation UI wiring", () => {
     expect(panel).toContain("citationInsertedAt: Date.now()");
     expect(settings).toContain("Auto-insert researched footnotes");
   });
+
+  test("editorial board closes as one surface while Apparatus cards disclose locally", async () => {
+    const [board, panel, styles] = await Promise.all([
+      Bun.file(
+        "src/components/editorial-board/editorial-board-overlay.tsx",
+      ).text(),
+      Bun.file("src/components/citations/citations-panel.tsx").text(),
+      Bun.file("src/global.css").text(),
+    ]);
+
+    expect(board).toContain('aria-label="Close the Editorial Board"');
+    expect(board).not.toContain("boardCollapsed");
+    expect(board).not.toContain("editorial-board-card--collapsed");
+    expect(board).toContain('store.steeringCollapsed ? "▸" : "▾"');
+    expect(panel).toContain('store.signalCollapsed ? "▸" : "▾"');
+    expect(panel).toContain('store.deepTraceCollapsed ? "▸" : "▾"');
+    expect(`${board}\n${panel}`).not.toContain("editorial-card-collapse");
+    expect(styles).toContain(".apparatus-disclosure-toggle");
+  });
+
+  test("steering the Apparatus uses the shared composer — Steer key under the box, voice inside it", async () => {
+    const [board, composer, styles] = await Promise.all([
+      Bun.file(
+        "src/components/editorial-board/editorial-board-overlay.tsx",
+      ).text(),
+      Bun.file("src/components/ui/chat-composer.tsx").text(),
+      Bun.file("src/global.css").text(),
+    ]);
+
+    // The steering box is the composer, so it inherits dictation and the
+    // control bar rather than re-implementing a textarea beside a button.
+    expect(board).toContain("<ChatComposer");
+    expect(board).toContain('sendLabel="Steer"');
+    expect(board).toContain("onSend$={submitSteering}");
+    expect(board).not.toContain("editorial-steering-card__input-row");
+    expect(board).not.toContain('id="apparatus-steering"');
+
+    // Voice is available: the composer only hides the mic when told to.
+    expect(board).not.toContain("allowVoice={false}");
+    expect(composer).toContain("props.allowVoice !== false && canRecord()");
+    expect(composer).toContain('title={props.sendLabel ?? "Send"}');
+
+    // The send key lives in the bar beneath the input, not alongside it.
+    const inputAt = composer.indexOf('class="composer-input"');
+    const barAt = composer.indexOf('class="composer-bar"');
+    expect(inputAt).toBeGreaterThan(-1);
+    expect(barAt).toBeGreaterThan(inputAt);
+
+    // A bare-element rule here would out-specify .composer-input.
+    expect(styles).not.toContain(".editorial-steering-card textarea");
+  });
 });

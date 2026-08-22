@@ -9,7 +9,7 @@ import { Link } from "@builder.io/qwik-city";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import type { ProjectBrief } from "../../types";
-import { loadDraftText, summarizeBrief } from "../../utils/anti-tabula-rasa";
+import { loadDraftText } from "../../utils/anti-tabula-rasa";
 import {
   scoreStaticFeatures,
   scoreSufficiency,
@@ -42,6 +42,13 @@ import { renderMarkdown } from "../../utils/markdown";
 import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
 import { EditorialLoader } from "../ui/editorial-loader";
+import { NumericStepper } from "../ui/numeric-stepper";
+import { GradeStamp } from "./grade-stamp";
+import {
+  playRubricGradeCue,
+  playRubricPaperCue,
+  primeRubricFeedback,
+} from "../../utils/rubric-feedback";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
@@ -69,6 +76,7 @@ import { truncateGalleySummary } from "../../utils/galley-summary";
 
 interface RubricStore {
   result: RubricResult | null;
+  resultFresh: boolean;
   isAnalyzing: boolean;
   isReviewing: boolean;
   /** Visible text from the full review currently being generated. */
@@ -139,6 +147,7 @@ export const RubricPanel = component$(
     const clientSig = useConvexClient();
     const store = useStore<RubricStore>({
       result: null,
+      resultFresh: false,
       isAnalyzing: false,
       isReviewing: false,
       streamingReview: "",
@@ -160,8 +169,12 @@ export const RubricPanel = component$(
 
     const analyze = $(async () => {
       store.isAnalyzing = true;
+      store.resultFresh = false;
       store.error = null;
       try {
+        if (await primeRubricFeedback()) {
+          playRubricPaperCue();
+        }
         const draftText = await loadDraftText();
         const client = clientSig.value;
         const readiness = draftReadiness(draftText, MIN_RUBRIC_WORDS);
@@ -521,6 +534,7 @@ export const RubricPanel = component$(
             ) ?? undefined,
         };
         store.result = result;
+        store.resultFresh = true;
         void saveRubricResultToIdb(result, activeFolioId);
         store.history = await appendRubricHistory(
           {
@@ -545,6 +559,9 @@ export const RubricPanel = component$(
         });
       } finally {
         store.isAnalyzing = false;
+        if (store.resultFresh && store.result) {
+          playRubricGradeCue(store.result.overallGrade);
+        }
       }
     });
 
@@ -627,6 +644,7 @@ export const RubricPanel = component$(
       const cached = await loadRubricResultFromIdb(activeFolioId);
       if (cached && !store.result) {
         store.result = cached;
+        store.resultFresh = false;
         store.judges = cached.judges ?? [];
         store.static = cached.staticScore ?? null;
       }
@@ -737,48 +755,27 @@ export const RubricPanel = component$(
     };
 
     const getGradeColor = (grade: string) => {
-      if (grade.startsWith("A")) return "text-[var(--color-accent-green)]";
-      if (grade.startsWith("B")) return "text-[var(--color-accent-blue)]";
-      if (grade.startsWith("C")) return "text-[var(--color-accent-amber)]";
-      return "text-[var(--color-accent-red)]";
+      if (grade.startsWith("A")) return "var(--color-accent-green)";
+      if (grade.startsWith("B")) return "var(--color-accent-blue)";
+      if (grade.startsWith("C")) return "var(--color-accent-amber)";
+      return "var(--color-accent-red)";
     };
 
     return (
       <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
-        <div class="px-5 py-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-          <p class="dept-label">Dept. of Rigor</p>
-          <h2
-            class="mt-0.5 text-xl text-[var(--color-ink)]"
-            style="font-family: var(--font-display); font-weight: 600;"
-          >
-            The Galley Proof
-          </h2>
-        </div>
-
         {!store.result && !store.isAnalyzing && (
-          <div class="flex-1 flex flex-col items-center justify-center px-6 py-10 text-center">
+          <div class="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
             <p
-              class="text-4xl"
-              style="font-family: var(--font-display); color: var(--color-cobalt);"
-            >
-              ❧
-            </p>
-            <p
-              class="mt-3 text-sm text-[var(--color-ink-light)] max-w-xs leading-6"
+              class="max-w-xs text-sm text-[var(--color-ink-light)]"
               style="font-family: var(--font-serif); font-style: italic;"
             >
-              Send the galley to the proof desk. Five judges read it, then the
-              rubric counts features the eye can't see.
+              Score this folio against the room and your criteria.
             </p>
-            <p
-              class="mt-2 max-w-xs text-xs leading-5 text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-serif); font-style: italic;"
-            >
-              {summarizeBrief(brief)}
-            </p>
-            <button onClick$={analyze} class="btn-press mt-5">
-              Send to copyedit
-            </button>
+            <div class="mt-4 flex items-center justify-center">
+              <button onClick$={analyze} class="btn-press">
+                Run rubric
+              </button>
+            </div>
             {store.error && (
               <div class="mt-3 max-w-sm">
                 <ApplicationNotice
@@ -794,7 +791,7 @@ export const RubricPanel = component$(
         )}
 
         {store.isAnalyzing && (
-          <div class="flex flex-1 items-center justify-center">
+          <div class="rubric-proof flex flex-1 items-center justify-center">
             <EditorialLoader
               personas={DEFAULT_PERSONAS}
               label="Five judges reading"
@@ -805,30 +802,22 @@ export const RubricPanel = component$(
         {store.result && !store.isAnalyzing && (
           <div class="flex-1 min-h-0 flex flex-col">
             {/* The verdict. Stays on screen whichever reading is open. */}
-            <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-              <div class="flex items-center gap-4">
-                <div
-                  class={`flex-shrink-0 w-16 h-16 flex items-center justify-center ${getGradeColor(store.result.overallGrade)}`}
-                  role="img"
-                  aria-label={`Overall grade ${store.result.overallGrade}, ${store.result.overallScore} of 100`}
-                  style={{
-                    borderRadius: "999px",
-                    border: "2.5px solid currentColor",
-                    fontFamily: "var(--font-display)",
-                    fontWeight: 700,
-                    fontSize: "1.85rem",
-                    lineHeight: 1,
-                    fontStyle: "italic",
-                    transform: "rotate(-4deg)",
-                    background: "rgba(255,255,255,0.4)",
-                  }}
-                >
-                  {store.result.overallGrade}
-                </div>
+            <div
+              class={[
+                "rubric-proof rubric-proof--panel border-b border-[var(--color-paper-3)] px-4 py-3",
+                { "rubric-proof--fresh": store.resultFresh },
+              ]}
+            >
+              <div class="flex items-center gap-3">
+                <GradeStamp
+                  grade={store.result.overallGrade}
+                  score={store.result.overallScore}
+                  color={getGradeColor(store.result.overallGrade)}
+                  animated={store.resultFresh}
+                />
                 <div class="flex-1 min-w-0">
-                  <p class="dept-label">Editor's Mark</p>
                   <p
-                    class="mt-0.5 text-2xl text-[var(--color-ink)]"
+                    class="text-2xl text-[var(--color-ink)]"
                     style="font-family: var(--font-display); font-weight: 600;"
                   >
                     {store.result.overallScore}
@@ -847,21 +836,13 @@ export const RubricPanel = component$(
                   )}
                 </div>
               </div>
-              <details class="group mt-3">
-                <summary
-                  class="panel-prose cursor-pointer text-[var(--color-ink-light)] marker:text-[var(--color-ink-muted)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-cobalt)]"
-                  style="font-family: var(--font-serif); font-style: italic;"
-                  aria-label="Editor's summary, expand to read the full summary"
-                >
-                  {truncateGalleySummary(store.result.summary)}
-                </summary>
-                <p
-                  class="panel-prose mt-2 border-l border-[var(--color-paper-3)] pl-3 text-[var(--color-ink-light)]"
-                  style="font-family: var(--font-serif); font-style: italic;"
-                >
-                  {store.result.summary}
-                </p>
-              </details>
+              <p
+                class="panel-prose mt-2 text-[var(--color-ink-light)]"
+                style="font-family: var(--font-serif); font-style: italic;"
+                title={store.result.summary}
+              >
+                {truncateGalleySummary(store.result.summary)}
+              </p>
               {store.error && (
                 <div class="mt-3">
                   <ApplicationNotice
@@ -879,9 +860,9 @@ export const RubricPanel = component$(
 
             {/* The trend line — the rubric as a trajectory, not a snapshot. */}
             {store.history.length >= 2 && (
-              <div class="px-5 py-2 border-b border-dashed border-[var(--color-paper-3)]">
+              <div class="border-b border-dashed border-[var(--color-paper-3)] px-4 py-2">
                 <div class="flex items-baseline justify-between">
-                  <p class="dept-label">The Run of Grades</p>
+                  <p class="dept-label">History</p>
                   <ScoreDeltaBadge delta={scoreDelta(store.history)} />
                 </div>
                 <Sparkline history={store.history} />
@@ -899,7 +880,7 @@ export const RubricPanel = component$(
                   },
                   {
                     id: "room",
-                    label: "The Room",
+                    label: "Room",
                     count: store.result.judges.length,
                   },
                   { id: "review", label: "Review" },
@@ -963,8 +944,7 @@ export const RubricPanel = component$(
                       class="panel-meta w-full text-left uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] focus-ring"
                       aria-expanded={store.criteriaOpen}
                     >
-                      {store.criteriaOpen ? "▾" : "▸"} What the proof desk
-                      grades
+                      {store.criteriaOpen ? "▾" : "▸"} Criteria
                     </button>
                     {store.criteriaOpen && (
                       <div class="mt-2">
@@ -1007,8 +987,7 @@ export const RubricPanel = component$(
                 <div class="px-4 py-4">
                   {store.result.review ? (
                     <>
-                      <div class="flex items-center justify-between gap-2">
-                        <p class="dept-label">The Critic's Full Review</p>
+                      <div class="flex items-center justify-end">
                         <SpeakButton
                           compact
                           id="rubric-review"
@@ -1035,22 +1014,13 @@ export const RubricPanel = component$(
                       )}
                     />
                   ) : (
-                    <div class="py-6 text-center">
-                      <p
-                        class="panel-prose mx-auto max-w-xs text-[var(--color-ink-light)]"
-                        style="font-family: var(--font-serif); font-style: italic;"
-                      >
-                        The marks say where the draft stands. A full review says
-                        why, in one sitting.
-                      </p>
+                    <div class="py-5 text-center">
                       <button
                         onClick$={generateReview}
                         disabled={store.isReviewing}
-                        class="btn-paper mt-3"
+                        class="btn-paper"
                       >
-                        {store.isReviewing
-                          ? "✍ Writing…"
-                          : "✍ Write the full review"}
+                        {store.isReviewing ? "Writing…" : "Generate review"}
                       </button>
                     </div>
                   )}
@@ -1060,7 +1030,7 @@ export const RubricPanel = component$(
 
             <div class="flex items-center gap-3 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-2.5">
               <button onClick$={analyze} class="btn-paper flex-1 text-xs">
-                ↻ Send back for re-reading
+                ↻ Run again
               </button>
               <Link
                 href="/rubric"
@@ -1177,15 +1147,7 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
 
   return (
     <div class="rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3 space-y-3">
-      <p
-        class="text-xs leading-5 text-[var(--color-ink-muted)]"
-        style="font-family: var(--font-serif);"
-      >
-        The standing criteria stay put so one pass can be compared with the next
-        — switch them off or reweight them, but they can't be removed. Anything
-        you add below is yours, and the room judges it too.
-      </p>
-
+      <p class="criteria-weight-legend">Relative weight</p>
       <div class="space-y-1">
         {spine.map((s) => (
           <CriterionRow
@@ -1285,6 +1247,31 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
   );
 });
 
+const RelativeWeightControl = component$<{
+  label: string;
+  value: number;
+  disabled: boolean;
+  onChange$: PropFunction<(weight: number) => void>;
+}>((props) => {
+  return (
+    <NumericStepper
+      value={props.value}
+      min={MIN_WEIGHT}
+      max={MAX_WEIGHT}
+      step={0.25}
+      emptyValue={1}
+      suffix="×"
+      density="compact"
+      disabled={props.disabled}
+      ariaLabel={`weight for ${props.label}`}
+      title="1× is neutral. Higher values count more toward your weighted score."
+      onValue$={(weight) => {
+        if (weight !== null) props.onChange$(weight);
+      }}
+    />
+  );
+});
+
 const CriterionRow = component$<{
   spec: RubricCriterionSpec;
   onToggle$: PropFunction<(id: string) => void>;
@@ -1311,18 +1298,11 @@ const CriterionRow = component$<{
       >
         {spec.label}
       </span>
-      <input
-        type="number"
-        min={MIN_WEIGHT}
-        max={MAX_WEIGHT}
-        step={0.25}
+      <RelativeWeightControl
+        label={spec.label}
         value={spec.weight}
-        onChange$={(_, el) => props.onWeight$(spec.id, Number(el.value))}
         disabled={!spec.enabled}
-        class="w-12 flex-shrink-0 border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-1 py-0.5 text-right text-[11px] disabled:opacity-40"
-        style="border-radius: 2px;"
-        aria-label={`Weight for ${spec.label}`}
-        title="Relative weight"
+        onChange$={(weight) => props.onWeight$(spec.id, weight)}
       />
       {props.onRemove$ && (
         <button

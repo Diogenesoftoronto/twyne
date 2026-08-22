@@ -3,6 +3,7 @@ import { Link, type DocumentHead } from "@builder.io/qwik-city";
 import { ApplicationNotice } from "../../components/ui/application-notice";
 import { SearchableModelSelect } from "../../components/ui/searchable-model-select";
 import { ThemedDialog } from "../../components/ui/themed-dialog";
+import { NumericStepper } from "../../components/ui/numeric-stepper";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
 import { signOut } from "../../utils/auth-client";
@@ -2275,17 +2276,18 @@ export default component$(() => {
                                         }`;
                                         if (option.type === "budget_tokens") {
                                           return (
-                                            <label
+                                            <div
                                               key={`${model.id}-${option.type}-${optionIndex}`}
                                               class="card-field"
                                             >
                                               <span title={model.id}>
                                                 {label}
                                               </span>
-                                              <input
-                                                type="number"
+                                              <NumericStepper
+                                                ariaLabel={`${label} token budget`}
                                                 min={option.min}
                                                 max={option.max}
+                                                suffix="tok"
                                                 placeholder="Model default"
                                                 value={
                                                   setting?.type ===
@@ -2293,17 +2295,14 @@ export default component$(() => {
                                                     ? setting.value
                                                     : ""
                                                 }
-                                                onChange$={(event) => {
-                                                  const raw = (
-                                                    event.target as HTMLInputElement
-                                                  ).value;
+                                                onValue$={(value) => {
                                                   updateProviderReasoning(
                                                     p.id,
                                                     model.id,
-                                                    raw
+                                                    value !== null
                                                       ? {
                                                           type: "budget_tokens",
-                                                          value: Number(raw),
+                                                          value,
                                                         }
                                                       : null,
                                                   );
@@ -2314,7 +2313,7 @@ export default component$(() => {
                                                 {option.max}. Blank uses the
                                                 model default.
                                               </span>
-                                            </label>
+                                            </div>
                                           );
                                         }
                                         if (option.type === "toggle") {
@@ -3152,8 +3151,8 @@ export default component$(() => {
                                       >
                                         Temperature
                                       </label>
-                                      <input
-                                        type="number"
+                                      <NumericStepper
+                                        ariaLabel={`${FEATURE_LABELS[feature]} temperature`}
                                         min={0}
                                         max={1}
                                         step={0.1}
@@ -3161,11 +3160,8 @@ export default component$(() => {
                                           store.settings.perFeature[feature]
                                             ?.temperature ?? ""
                                         }
-                                        onInput$={(e) => {
-                                          const temp = Number(
-                                            (e.target as HTMLInputElement)
-                                              .value,
-                                          );
+                                        placeholder="auto"
+                                        onValue$={(temperature) => {
                                           const existing =
                                             store.settings.perFeature[feature];
                                           setFeatureOverride(feature, {
@@ -3176,17 +3172,13 @@ export default component$(() => {
                                               "",
                                             model: existing?.model,
                                             temperature:
-                                              temp >= 0 && temp <= 1
-                                                ? temp
+                                              temperature !== null &&
+                                              temperature >= 0 &&
+                                              temperature <= 1
+                                                ? temperature
                                                 : undefined,
                                             maxTokens: existing?.maxTokens,
                                           });
-                                        }}
-                                        placeholder="auto"
-                                        class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                        style={{
-                                          fontFamily: "var(--font-typewriter)",
-                                          borderRadius: "2px",
                                         }}
                                       />
                                     </div>
@@ -3199,20 +3191,18 @@ export default component$(() => {
                                       >
                                         Max tokens
                                       </label>
-                                      <input
-                                        type="number"
+                                      <NumericStepper
+                                        ariaLabel={`${FEATURE_LABELS[feature]} maximum tokens`}
                                         min={50}
                                         max={4000}
                                         step={10}
+                                        suffix="tok"
                                         value={
                                           store.settings.perFeature[feature]
                                             ?.maxTokens ?? ""
                                         }
-                                        onInput$={(e) => {
-                                          const tokens = Number(
-                                            (e.target as HTMLInputElement)
-                                              .value,
-                                          );
+                                        placeholder="auto"
+                                        onValue$={(tokens) => {
                                           const existing =
                                             store.settings.perFeature[feature];
                                           setFeatureOverride(feature, {
@@ -3224,14 +3214,10 @@ export default component$(() => {
                                             model: existing?.model,
                                             temperature: existing?.temperature,
                                             maxTokens:
-                                              tokens > 0 ? tokens : undefined,
+                                              tokens !== null && tokens > 0
+                                                ? tokens
+                                                : undefined,
                                           });
-                                        }}
-                                        placeholder="auto"
-                                        class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                        style={{
-                                          fontFamily: "var(--font-typewriter)",
-                                          borderRadius: "2px",
                                         }}
                                       />
                                     </div>
@@ -3363,20 +3349,19 @@ export default component$(() => {
                                         >
                                           Speed
                                         </label>
-                                        <input
-                                          type="number"
+                                        <NumericStepper
+                                          ariaLabel={`${FEATURE_LABELS[feature]} speed`}
                                           min={0.25}
                                           max={4}
                                           step={0.05}
+                                          emptyValue={1}
+                                          suffix="×"
                                           value={
                                             store.settings.perFeature[feature]
                                               ?.speed ?? ""
                                           }
-                                          onInput$={(e) => {
-                                            const speed = Number(
-                                              (e.target as HTMLInputElement)
-                                                .value,
-                                            );
+                                          placeholder="1"
+                                          onValue$={(speed) => {
                                             const existing =
                                               store.settings.perFeature[
                                                 feature
@@ -3393,7 +3378,9 @@ export default component$(() => {
                                               maxTokens: existing?.maxTokens,
                                               voice: existing?.voice,
                                               speed:
-                                                speed >= 0.25 && speed <= 4
+                                                speed !== null &&
+                                                speed >= 0.25 &&
+                                                speed <= 4
                                                   ? speed
                                                   : undefined,
                                               responseFormat:
@@ -3401,13 +3388,6 @@ export default component$(() => {
                                               instructions:
                                                 existing?.instructions,
                                             });
-                                          }}
-                                          placeholder="1"
-                                          class="w-full text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                                          style={{
-                                            fontFamily:
-                                              "var(--font-typewriter)",
-                                            borderRadius: "2px",
                                           }}
                                         />
                                       </div>
@@ -3711,29 +3691,22 @@ export default component$(() => {
                     >
                       Max sources per search
                     </label>
-                    <input
-                      type="number"
+                    <NumericStepper
+                      density="compact"
+                      ariaLabel="maximum sources per search"
                       min={1}
                       max={20}
                       value={store.maxResults}
-                      onInput$={(e) => {
-                        const next = Number(
-                          (e.target as HTMLInputElement).value,
-                        );
+                      onValue$={(value) => {
                         store.maxResults = Math.max(
                           1,
-                          Math.min(20, Number.isFinite(next) ? next : 8),
+                          Math.min(20, value ?? 8),
                         );
                       }}
-                      onBlur$={() => {
+                      onCommit$={() => {
                         void persistApparatusSettings(
                           buildApparatusSettings(store),
                         );
-                      }}
-                      class="w-24 text-sm px-2 py-1.5 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none"
-                      style={{
-                        fontFamily: "var(--font-typewriter)",
-                        borderRadius: "2px",
                       }}
                     />
                   </div>

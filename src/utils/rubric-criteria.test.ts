@@ -10,6 +10,7 @@ import {
   reconcileSpecs,
   scoreDelta,
   sparklinePoints,
+  stepWeight,
   weightedCriteriaScore,
 } from "./rubric-criteria";
 
@@ -55,6 +56,19 @@ describe("clampWeight", () => {
     expect(clampWeight(NaN)).toBe(1);
     expect(clampWeight(Infinity)).toBe(1);
     expect(clampWeight(-Infinity)).toBe(1);
+  });
+});
+
+describe("stepWeight", () => {
+  test("moves through exact quarter-step relative weights", () => {
+    expect(stepWeight(1, 1)).toBe(1.25);
+    expect(stepWeight(1, -1)).toBe(0.75);
+    expect(stepWeight(1.25, 1)).toBe(1.5);
+  });
+
+  test("stops at the weight guard rails", () => {
+    expect(stepWeight(MIN_WEIGHT, -1)).toBe(MIN_WEIGHT);
+    expect(stepWeight(MAX_WEIGHT, 1)).toBe(MAX_WEIGHT);
   });
 });
 
@@ -192,8 +206,9 @@ describe("weightedCriteriaScore", () => {
 
   test("appears once the writer adds a criterion of their own", () => {
     const specs = [...defaultCriteriaSpecs(), custom()];
-    expect(weightedCriteriaScore(specs, { ...scores, "custom-1": 9 })).not
-      .toBeNull();
+    expect(
+      weightedCriteriaScore(specs, { ...scores, "custom-1": 9 }),
+    ).not.toBeNull();
   });
 
   test("weighting a criterion down raises a score it was dragging", () => {
@@ -249,11 +264,7 @@ describe("the trend line", () => {
   });
 
   test("scales to the observed range so small movement stays visible", () => {
-    const points = sparklinePoints([
-      entry(1, 60),
-      entry(2, 65),
-      entry(3, 70),
-    ]);
+    const points = sparklinePoints([entry(1, 60), entry(2, 65), entry(3, 70)]);
     expect(points[0].y).toBe(0);
     expect(points[2].y).toBe(1);
     expect(points[1].y).toBeCloseTo(0.5, 5);

@@ -9,6 +9,7 @@
 
 export const POPOVER_CARD_WIDTH = 340;
 export const POPOVER_CARD_MARGIN = 8;
+export const MARGIN_CARD_GAP = 12;
 /**
  * The popover's *content*-driven height. The CSS rule that the
  * card inflates to lives inside the JSX; this is the "ideal" we ask
@@ -47,6 +48,47 @@ export interface PopoverView {
   rect: AnchorRect;
   /** Ideal card height; defaults to POPOVER_CARD_IDEAL_HEIGHT. */
   idealH?: number;
+}
+
+export interface MarginCardView extends PopoverView {
+  /** The visible manuscript page whose outside margins the card should use. */
+  page: { left: number; right: number };
+}
+
+/**
+ * Place an editorial conversation beside the manuscript, Google-Docs style.
+ * The right margin is the stable default; the left margin is used when it is
+ * the only side with room. Narrow viewports fall back to a clamped edge card,
+ * with CSS turning that card into a bottom sheet on phones.
+ */
+export function computeMarginCardGeometry(
+  view: MarginCardView,
+): PopoverGeometry {
+  const margin = MARGIN_CARD_GAP;
+  const cardWidth = POPOVER_CARD_WIDTH;
+  const idealH = view.idealH ?? POPOVER_CARD_IDEAL_HEIGHT;
+  const rightX = view.page.right + margin;
+  const leftX = view.page.left - cardWidth - margin;
+  const rightFits = rightX + cardWidth <= view.vw - margin;
+  const leftFits = leftX >= margin;
+
+  let x: number;
+  if (rightFits) x = rightX;
+  else if (leftFits) x = leftX;
+  else {
+    const roomRight = view.vw - view.page.right;
+    const roomLeft = view.page.left;
+    x = roomRight >= roomLeft ? rightX : leftX;
+    x = Math.max(margin, Math.min(x, view.vw - cardWidth - margin));
+  }
+
+  const maxH = Math.max(0, Math.min(idealH, view.vh - margin * 2));
+  const top = Math.max(
+    margin,
+    Math.min(view.rect.top, view.vh - maxH - margin),
+  );
+
+  return { x, top, bottom: null, maxH, placement: "below" };
 }
 
 /**

@@ -2567,7 +2567,7 @@ export async function runClientResearchExtract(
 
   const maxTargets = Math.max(
     1,
-    Math.min(6, req.maxTargets ?? DEFAULT_TARGETS_PER_PASS),
+    Math.min(12, req.maxTargets ?? DEFAULT_TARGETS_PER_PASS),
   );
 
   try {

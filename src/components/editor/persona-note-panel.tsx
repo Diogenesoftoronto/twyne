@@ -27,19 +27,15 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
 
   return (
     <div
-      class="persona-note-card fixed z-50 flex flex-col"
+      class="persona-note-card manuscript-comment-card"
       role="dialog"
       aria-label={`Note from ${note.author}`}
       style={{
         left: `${note.x}px`,
         top: note.top != null ? `${note.top}px` : "auto",
         bottom: note.bottom != null ? `${note.bottom}px` : "auto",
-        width: "340px",
         "max-height": `${note.maxH}px`,
-        background: "var(--color-paper)",
-        border: `2px solid ${note.color}`,
-        "border-radius": "4px",
-        "box-shadow": "0 14px 36px rgba(0,0,0,0.28)",
+        "--comment-color": note.color,
       }}
       onClick$={(event) => {
         event.stopPropagation();
@@ -54,27 +50,13 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
         onClose$();
       }}
     >
-      <div
-        class="px-5 py-3 border-b flex items-baseline justify-between gap-3"
-        style={{
-          "border-color": "var(--color-paper-3)",
-          background: "var(--color-paper-soft)",
-        }}
-      >
+      <div class="manuscript-comment-card__head">
         <div class="min-w-0">
-          <p
-            class="text-base text-[var(--color-ink)] truncate"
-            style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
-          >
-            {note.author}
-          </p>
+          <p class="manuscript-comment-card__author">{note.author}</p>
           {note.label && (
             <p
-              class="text-[0.7rem] tracking-[0.14em] uppercase mt-0.5"
-              style={{
-                fontFamily: "var(--font-typewriter)",
-                color: note.color,
-              }}
+              class="manuscript-comment-card__label"
+              style={{ color: note.color }}
             >
               {note.label}
             </p>
@@ -90,7 +72,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
           />
           <button
             onClick$={onClose$}
-            class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
+            class="manuscript-comment-card__close"
             aria-label="Close note"
           >
             ✕
@@ -98,12 +80,9 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
         </div>
       </div>
 
-      <div class="px-5 py-4 space-y-3 overflow-y-auto">
+      <div class="manuscript-comment-card__body">
         {note.quote && (
-          <blockquote
-            class="text-[0.85rem] leading-6 text-[var(--color-ink-light)] border-l-2 pl-3 italic"
-            style={{ "border-color": note.color }}
-          >
+          <blockquote class="manuscript-comment-card__quote">
             {`« ${note.quote.length > 280 ? note.quote.slice(0, 279) + "…" : note.quote} »`}
           </blockquote>
         )}
@@ -170,10 +149,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
           </p>
         )}
 
-        <div
-          class="pt-2 border-t border-dashed"
-          style={{ "border-color": "var(--color-paper-3)" }}
-        >
+        <div class="manuscript-comment-card__composer">
           <textarea
             value={note.draft}
             onInput$={(_, element) => onDraftChange$(element.value)}
@@ -188,17 +164,11 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
               }
             }}
             placeholder={`Reply to ${note.author}…`}
-            class="w-full mt-2 px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] resize-none focus:outline-none focus:border-[var(--color-mustard)]"
-            style="font-family: var(--font-serif); border-radius: 2px;"
+            class="manuscript-comment-card__textarea"
             rows={3}
           />
-          <div class="mt-2 flex items-center justify-between gap-2">
-            <span
-              class="text-[10px] text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter); letter-spacing: 0.12em;"
-            >
-              ⌘↩ to reply
-            </span>
+          <div class="manuscript-comment-card__actions">
+            <span>⌘↩ to reply</span>
             <div class="flex gap-2">
               <button
                 onClick$={() => onStrike$(note.id)}

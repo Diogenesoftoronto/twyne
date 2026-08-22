@@ -39,8 +39,9 @@ describe("compositor toolbar wiring", () => {
 
   test("uses the shared visible checkbox treatment in type and page controls", () => {
     expect(compositorSource.match(/class="compositor-checkbox"/g)?.length).toBe(
-      4,
+      5,
     );
+    expect(compositorSource).toContain("Include persona comments");
     expect(globalCss).toContain(".compositor-checkbox:focus-visible");
     expect(globalCss).toContain(
       'ul[data-type="taskList"]\n  li\n  > label\n  input[type="checkbox"]:focus-visible',

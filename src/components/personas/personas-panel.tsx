@@ -71,6 +71,7 @@ import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
 import { SpeechTransport } from "../ui/speech-transport";
 import { EditorialLoader } from "../ui/editorial-loader";
+import { NumericStepper } from "../ui/numeric-stepper";
 import { ANALYSIS_READING_ID, speakQueue } from "../../utils/speech";
 import type { AppError } from "../../types/application-errors";
 import {
@@ -2033,48 +2034,42 @@ export const PersonasPanel = component$(
                       Adds notes after {WORD_DELTA_THRESHOLD} new words.
                     </p>
                   </div>
-                  <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
+                  <div class="flex items-center justify-between gap-3 text-[11px] text-[var(--color-ink)]">
                     <span style="font-family: var(--font-typewriter);">
                       Edits per pass
                     </span>
-                    <input
-                      type="number"
+                    <NumericStepper
+                      density="compact"
+                      ariaLabel="edits per pass"
                       min={1}
                       max={20}
                       value={store.roomSettings.maxProposals}
-                      onChange$={(_, el) =>
+                      onValue$={(value) =>
                         persistSettings({
                           ...store.roomSettings,
-                          maxProposals: Math.max(
-                            1,
-                            Math.min(20, Number(el.value) || 1),
-                          ),
+                          maxProposals: Math.max(1, Math.min(20, value ?? 1)),
                         })
                       }
-                      class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
                     />
-                  </label>
-                  <label class="flex items-center justify-between text-[11px] text-[var(--color-ink)]">
+                  </div>
+                  <div class="flex items-center justify-between gap-3 text-[11px] text-[var(--color-ink)]">
                     <span style="font-family: var(--font-typewriter);">
                       Paragraph edits
                     </span>
-                    <input
-                      type="number"
+                    <NumericStepper
+                      density="compact"
+                      ariaLabel="paragraph edits per pass"
                       min={0}
                       max={10}
                       value={store.roomSettings.maxLargeEdits}
-                      onChange$={(_, el) =>
+                      onValue$={(value) =>
                         persistSettings({
                           ...store.roomSettings,
-                          maxLargeEdits: Math.max(
-                            0,
-                            Math.min(10, Number(el.value) || 0),
-                          ),
+                          maxLargeEdits: Math.max(0, Math.min(10, value ?? 0)),
                         })
                       }
-                      class="w-14 rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-1 py-0.5 text-right"
                     />
-                  </label>
+                  </div>
                 </div>
               )}
 

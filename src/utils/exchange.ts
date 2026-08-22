@@ -596,7 +596,15 @@ export function exportHtml(p: ExportPayload): string {
 }
 
 export function exportPlainText(p: ExportPayload): string {
-  return stripHtml(stripEditorMarks(p.html));
+  const body = stripHtml(stripEditorMarks(p.html));
+  const marginalia = p.marginalia ?? [];
+  if (marginalia.length === 0) return body;
+  const notes = marginalia.map((comment, index) => {
+    const author = comment.personaName || "Editor";
+    const quote = comment.anchor ? `“${comment.anchor}”: ` : "";
+    return `${index + 1}. ${author}: ${quote}${comment.feedback}`;
+  });
+  return `${body}\n\nNotes\n\n${notes.join("\n")}`;
 }
 
 export function exportTwyneBackup(p: ExportPayload): string {
@@ -800,6 +808,28 @@ export async function exportDocx(payload: ExportPayload): Promise<Blob> {
         style: tag === "blockquote" ? "Quote" : undefined,
       }),
     );
+  }
+
+  const marginalia = payload.marginalia ?? [];
+  if (marginalia.length > 0) {
+    children.push(
+      new Paragraph({
+        text: "Notes",
+        heading: HeadingLevel.HEADING_2,
+      }),
+    );
+    for (const [index, comment] of marginalia.entries()) {
+      const author = comment.personaName || "Editor";
+      const quote = comment.anchor ? `“${comment.anchor}”: ` : "";
+      children.push(
+        new Paragraph({
+          children: [
+            new TextRun({ text: `${index + 1}. ${author}: `, bold: true }),
+            new TextRun(`${quote}${comment.feedback}`),
+          ],
+        }),
+      );
+    }
   }
 
   const document = new Document({ sections: [{ children }] });

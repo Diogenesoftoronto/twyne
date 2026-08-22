@@ -21,7 +21,6 @@ import {
   upsertBibEntry,
 } from "../../utils/bibliography";
 import {
-  formatResearchTime,
   retryBackgroundResearch,
   retryResearchTarget,
   snapshot as researchSnapshot,
@@ -77,6 +76,8 @@ interface CitationsStore {
   addedIds: Record<string, boolean>;
   pendingInsertions: Record<string, boolean>;
   citationNotice: string | null;
+  signalCollapsed: boolean;
+  deepTraceCollapsed: boolean;
 }
 
 interface CitationsPanelProps {
@@ -117,6 +118,8 @@ export const CitationsPanel = component$(
       addedIds: {},
       pendingInsertions: {},
       citationNotice: null,
+      signalCollapsed: false,
+      deepTraceCollapsed: false,
     });
 
     const requestCitationInsertion = $(
@@ -197,7 +200,8 @@ export const CitationsPanel = component$(
             seen.add(citation.lookupUrl.replace(/\/+$/, ""));
           }
         }
-        if (all) store.bibliography = bibliographyForFolio(all, activeFolio?.id);
+        if (all)
+          store.bibliography = bibliographyForFolio(all, activeFolio?.id);
       } finally {
         store.autoFormatting = false;
       }
@@ -474,224 +478,213 @@ export const CitationsPanel = component$(
     const hasResearchErrors =
       store.research.status === "error" ||
       store.research.progress.some((p) => p.status === "error");
+    const researchError =
+      store.research.error ||
+      store.research.progress.find((item) => item.status === "error")?.error;
+    const activeSearchCount = store.research.progress.filter(
+      (item) => item.status === "searching" || item.status === "queued",
+    ).length;
 
     return (
       <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
-        <div class="px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-          <p class="dept-label">Sources & Sourcerers</p>
-          <h2
-            class="mt-0.5 text-xl text-[var(--color-ink)]"
-            style="font-family: var(--font-display); font-weight: 600;"
-          >
-            The Apparatus
-          </h2>
-          <div class="flex items-center justify-between mt-2">
-            <p
-              class="text-[11px] tracking-[0.2em] uppercase text-[var(--color-ink-muted)]"
-              style="font-family: var(--font-typewriter);"
-            >
-              {backgroundCount} found by agents · {writerCount} saved
+        <div class="flex items-center justify-between gap-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-2">
+          <div class="flex min-w-0 items-baseline gap-2">
+            <p class="dept-label">Sources</p>
+            <p class="panel-meta truncate text-[var(--color-ink-muted)]">
+              {backgroundCount} agent · {writerCount} saved
             </p>
-            <Link
-              href="/apparatus"
-              class="text-[0.65rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] transition-colors"
-              style={{ fontFamily: "var(--font-typewriter)" }}
-            >
-              Open the full Apparatus →
-            </Link>
           </div>
+          <Link
+            href="/apparatus"
+            class="panel-meta flex-shrink-0 uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)]"
+          >
+            Full view ↗
+          </Link>
         </div>
 
-        {/* Background-agent status — passive, no click required */}
-        <div
-          class="px-4 py-2.5 border-b border-[var(--color-paper-3)] flex items-center gap-2.5"
-          style="background: var(--color-paper-2);"
-        >
-          <span
-            class={`inline-block w-2 h-2 rounded-full ${
-              store.research.status === "running"
-                ? "animate-pulse"
-                : store.research.status === "error"
-                  ? ""
-                  : ""
-            }`}
-            style={{
-              background:
-                store.research.status === "running"
-                  ? "var(--color-mustard)"
-                  : store.research.status === "saving"
-                    ? "var(--color-cobalt)"
-                    : store.research.status === "error"
-                      ? "var(--color-vermilion)"
-                      : "var(--color-accent-green)",
-            }}
-            aria-hidden="true"
-          />
-          <div class="flex-1 min-w-0">
-            <p
-              class="text-[0.65rem] text-[var(--color-ink)]"
-              style={{ fontFamily: "var(--font-typewriter)" }}
-            >
-              {store.research.status === "running" &&
-                store.research.phase === "extracting" &&
-                "Apparatus is reading your draft…"}
-              {store.research.status === "running" &&
-                store.research.phase === "searching" &&
-                "Apparatus is hunting for sources…"}
-              {store.research.status === "saving" &&
-                "Saving a discovered source…"}
-              {store.research.status === "error" &&
-                (store.research.error
-                  ? store.research.error
-                  : "Apparatus hit an error while researching.")}
-              {store.research.status === "idle" &&
-                (backgroundCount > 0
-                  ? `Agents are watching — ${backgroundCount} source${backgroundCount === 1 ? "" : "s"} on file.`
-                  : "Agents are watching your draft.")}
-            </p>
-            {store.research.lastQuery && (
-              <p
-                class="text-[0.6rem] text-[var(--color-ink-muted)] truncate"
-                style={{ fontFamily: "var(--font-typewriter)" }}
-                title={store.research.lastQuery}
+        {/* Signal Desk: the calm overview. The exact calls remain one level
+            down in Deep Trace so an active search is legible at a glance. */}
+        <section class="apparatus-monitor-card apparatus-signal-desk">
+          <header class="apparatus-monitor-card__head">
+            <div class="flex min-w-0 items-center gap-2.5">
+              <span
+                class={[
+                  "apparatus-status-dot",
+                  { "animate-pulse": store.research.passActive },
+                ]}
+                style={{
+                  background: hasResearchErrors
+                    ? "var(--color-vermilion)"
+                    : store.research.phase === "saving"
+                      ? "var(--color-cobalt)"
+                      : store.research.passActive
+                        ? "var(--color-mustard)"
+                        : "var(--color-accent-green)",
+                }}
+                aria-hidden="true"
+              />
+              <div class="min-w-0">
+                <p class="dept-label">Signal</p>
+                <p
+                  class="apparatus-monitor-card__summary"
+                  title={hasResearchErrors ? researchError : undefined}
+                >
+                  {hasResearchErrors &&
+                    (researchError || "Research needs attention")}
+                  {!hasResearchErrors &&
+                    store.research.phase === "extracting" &&
+                    "Reading draft"}
+                  {!hasResearchErrors &&
+                    store.research.phase === "searching" &&
+                    `${activeSearchCount} search${activeSearchCount === 1 ? "" : "es"}`}
+                  {!hasResearchErrors &&
+                    store.research.phase === "saving" &&
+                    "Saving source"}
+                  {!hasResearchErrors &&
+                    store.research.status === "idle" &&
+                    (backgroundCount > 0
+                      ? `${backgroundCount} source${backgroundCount === 1 ? "" : "s"} on file`
+                      : "Watching draft")}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              {hasResearchErrors && (
+                <button
+                  type="button"
+                  onClick$={() => retryBackgroundResearch()}
+                  class="apparatus-retry"
+                  title="Re-run the research pass against the current draft."
+                >
+                  ↻ retry pass
+                </button>
+              )}
+              <button
+                type="button"
+                class="apparatus-disclosure-toggle focus-ring"
+                onClick$={() => {
+                  store.signalCollapsed = !store.signalCollapsed;
+                }}
+                aria-expanded={!store.signalCollapsed}
+                aria-label={
+                  store.signalCollapsed
+                    ? "Expand Signal Desk"
+                    : "Collapse Signal Desk"
+                }
               >
-                last query: {store.research.lastQuery}
-              </p>
-            )}
-          </div>
-          {(hasResearchErrors || store.research.status === "error") && (
-            <button
-              onClick$={() => retryBackgroundResearch()}
-              class="text-[0.6rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] flex-shrink-0 border border-[var(--color-vermilion)] px-1.5 py-0.5"
-              style={{ fontFamily: "var(--font-typewriter)" }}
-              title="Re-run the research pass against the current draft."
+                {store.signalCollapsed ? "▸" : "▾"}
+              </button>
+            </div>
+          </header>
+          {!store.signalCollapsed && store.research.lastQuery && (
+            <p
+              class="apparatus-monitor-card__query"
+              title={store.research.lastQuery}
             >
-              ↻ retry
-            </button>
+              {store.research.lastQuery}
+            </p>
           )}
-        </div>
+        </section>
 
         {/* Live claims — what the watcher decided needs a source, and how
             each one is resolving. Streams as the pass runs. */}
         {store.research.progress.length > 0 && (
-          <div
-            class="px-4 py-2.5 border-b border-[var(--color-paper-3)]"
-            style="background: var(--color-paper-2);"
-          >
-            <p class="dept-label mb-1.5">
-              {store.research.passActive
-                ? "Researching your claims"
-                : "Research — last pass"}
-            </p>
-            <ul class="space-y-2">
-              {store.research.progress.map((item) => {
-                const dot =
-                  item.status === "searching"
-                    ? {
-                        background: "var(--color-mustard)",
-                        animation: "pulse 1.4s ease-in-out infinite",
-                      }
-                    : item.status === "found"
-                      ? { background: "var(--color-accent-green)" }
-                      : item.status === "missed"
-                        ? { background: "var(--color-ink-muted)" }
-                        : { background: "var(--color-paper-3)" };
-                return (
-                  <li key={item.key} class="flex items-start gap-2">
-                    <span
-                      class="inline-block w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
-                      style={dot}
-                      aria-hidden="true"
-                    />
-                    <div class="min-w-0 flex-1">
-                      <p
-                        class="text-[0.6rem] leading-4 text-[var(--color-ink)]"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        <span class="uppercase text-[var(--color-ink-muted)]">
-                          {targetKindLabel(item.kind)} ·{" "}
-                        </span>
-                        “{item.anchor.slice(0, 90)}
-                        {item.anchor.length > 90 ? "…" : ""}”
-                      </p>
-                      <p
-                        class="text-[0.55rem] text-[var(--color-ink-muted)] truncate"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                        title={
-                          item.status === "error"
-                            ? (item.error ?? item.query)
-                            : item.query
+          <section class="apparatus-monitor-card apparatus-deep-trace">
+            <header class="apparatus-monitor-card__head">
+              <p class="dept-label">
+                Deep trace · {store.research.progress.length}
+              </p>
+              <button
+                type="button"
+                class="apparatus-disclosure-toggle focus-ring"
+                onClick$={() => {
+                  store.deepTraceCollapsed = !store.deepTraceCollapsed;
+                }}
+                aria-expanded={!store.deepTraceCollapsed}
+                aria-label={
+                  store.deepTraceCollapsed
+                    ? "Expand Deep Trace"
+                    : "Collapse Deep Trace"
+                }
+              >
+                {store.deepTraceCollapsed ? "▸" : "▾"}
+              </button>
+            </header>
+            {!store.deepTraceCollapsed && (
+              <ul class="apparatus-trace-list">
+                {store.research.progress.map((item) => {
+                  const dot =
+                    item.status === "searching"
+                      ? {
+                          background: "var(--color-mustard)",
+                          animation: "pulse 1.4s ease-in-out infinite",
+                        }
+                      : item.status === "found"
+                        ? { background: "var(--color-accent-green)" }
+                        : item.status === "missed"
+                          ? { background: "var(--color-ink-muted)" }
+                          : { background: "var(--color-paper-3)" };
+                  return (
+                    <li key={item.key}>
+                      <details
+                        open={
+                          item.status === "searching" || item.status === "error"
                         }
                       >
-                        {item.status === "searching"
-                          ? "searching…"
-                          : item.status === "found"
-                            ? `${item.count ?? 0} source${(item.count ?? 1) === 1 ? "" : "s"} found`
-                            : item.status === "missed"
-                              ? "no sources matched"
-                              : item.status === "error"
-                                ? `⚠ ${item.error ?? "failed to research"}`
-                                : "queued"}
-                      </p>
-                    </div>
-                    {item.status === "error" && (
-                      <button
-                        onClick$={() => retryResearchTarget(item.key)}
-                        class="text-[0.55rem] tracking-[0.12em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-crimson)] flex-shrink-0"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                        title="Retry this claim only."
-                      >
-                        ↻ retry
-                      </button>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-
-        {/* Recent settlements — claims that already resolved. */}
-        {store.research.activity.length > 0 && (
-          <div
-            class="px-4 py-2.5 border-b border-[var(--color-paper-3)]"
-            style="background: var(--color-paper-2);"
-          >
-            <p class="dept-label mb-1.5">Recent research</p>
-            <ul class="space-y-1">
-              {store.research.activity.slice(0, 5).map((a) => (
-                <li
-                  key={a.id}
-                  class="flex items-baseline gap-1.5 text-[0.58rem] leading-4"
-                  style={{ fontFamily: "var(--font-typewriter)" }}
-                >
-                  <span
-                    class={
-                      a.outcome === "found"
-                        ? "text-[var(--color-accent-green)] flex-shrink-0"
-                        : a.outcome === "error"
-                          ? "text-[var(--color-vermilion)] flex-shrink-0"
-                          : "text-[var(--color-ink-muted)] flex-shrink-0"
-                    }
-                    title={a.outcome === "error" ? a.error : undefined}
-                  >
-                    {a.outcome === "found"
-                      ? `✦ +${a.count}`
-                      : a.outcome === "error"
-                        ? "⚠"
-                        : "✗"}
-                  </span>
-                  <span class="truncate text-[var(--color-ink-muted)]">
-                    “{a.anchor.slice(0, 50)}
-                    {a.anchor.length > 50 ? "…" : ""}”
-                  </span>
-                  <span class="ml-auto text-[var(--color-ink-muted)] flex-shrink-0">
-                    {formatResearchTime(a.at)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+                        <summary>
+                          <span
+                            class="apparatus-status-dot"
+                            style={dot}
+                            aria-hidden="true"
+                          />
+                          <span class="apparatus-trace-list__claim">
+                            <strong>{targetKindLabel(item.kind)}</strong>“
+                            {item.anchor.slice(0, 90)}
+                            {item.anchor.length > 90 ? "…" : ""}”
+                          </span>
+                          <span
+                            class={`apparatus-trace-list__state apparatus-trace-list__state--${item.status}`}
+                          >
+                            {item.status === "searching"
+                              ? "searching"
+                              : item.status === "found"
+                                ? `${item.count ?? 0} found`
+                                : item.status === "missed"
+                                  ? "no match"
+                                  : item.status === "error"
+                                    ? "failed"
+                                    : "queued"}
+                          </span>
+                        </summary>
+                        <div class="apparatus-trace-list__detail">
+                          <p>
+                            <span>Exact query</span>
+                            {item.query}
+                          </p>
+                          {item.error && (
+                            <p class="apparatus-trace-list__error">
+                              <span>Error</span>
+                              {item.error}
+                            </p>
+                          )}
+                          {item.status === "error" && (
+                            <button
+                              type="button"
+                              onClick$={() => retryResearchTarget(item.key)}
+                              class="apparatus-retry"
+                              title="Retry this claim only."
+                            >
+                              ↻ retry this search
+                            </button>
+                          )}
+                        </div>
+                      </details>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </section>
         )}
 
         {/* Transient toast when background agents save new sources */}
@@ -706,51 +699,24 @@ export const CitationsPanel = component$(
             role="status"
           >
             <p
-              class="text-xs text-[var(--color-ink)]"
-              style={{ fontFamily: "var(--font-serif)" }}
-            >
-              <span
-                style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
-              >
-                Apparatus found{" "}
-                {store.lastBackgroundSave.saved === 1
-                  ? "a source"
-                  : `${store.lastBackgroundSave.saved} sources`}
-              </span>{" "}
-              for your draft.
-            </p>
-            <p
-              class="text-[0.6rem] text-[var(--color-ink-muted)] mt-0.5"
+              class="truncate text-[0.65rem] text-[var(--color-ink)]"
               style={{ fontFamily: "var(--font-typewriter)" }}
+              title={store.lastBackgroundSave.query}
             >
-              from: {store.lastBackgroundSave.query}
+              Saved {store.lastBackgroundSave.saved} ·{" "}
+              {store.lastBackgroundSave.query}
             </p>
           </div>
         )}
 
         <div class="flex-1 overflow-y-auto">
           {store.bibliography.length === 0 && store.citations.length === 0 && (
-            <div class="text-center py-10 px-6">
+            <div class="px-4 py-6 text-center">
               <p
-                class="text-3xl"
-                style={{
-                  fontFamily: "var(--font-display)",
-                  color: "var(--color-periwinkle)",
-                }}
-              >
-                ❧
-              </p>
-              <p
-                class="mt-3 text-sm text-[var(--color-ink-light)]"
+                class="text-sm text-[var(--color-ink-light)]"
                 style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}
               >
-                The agents are reading your draft.
-              </p>
-              <p
-                class="mt-1.5 text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] leading-5"
-                style={{ fontFamily: "var(--font-typewriter)" }}
-              >
-                Sources will appear here as they're discovered.
+                Watching for claims that need sources.
               </p>
             </div>
           )}
@@ -758,12 +724,12 @@ export const CitationsPanel = component$(
           {store.bibliography.length > 0 && (
             <div class="px-4 pt-4 pb-2 space-y-2">
               <div class="flex items-center justify-between">
-                <p class="dept-label">Saved Bibliography</p>
-                <LinkButton href="/apparatus" label="Expand ↗" />
+                <p class="dept-label">Sources · {store.bibliography.length}</p>
+                <LinkButton href="/apparatus" label="Open ↗" />
               </div>
               <label class="flex items-center justify-between gap-3 text-[0.65rem] text-[var(--color-ink-muted)]">
                 <span style={{ fontFamily: "var(--font-typewriter)" }}>
-                  Auto-insert researched footnotes
+                  Auto-footnote
                 </span>
                 <input
                   type="checkbox"
@@ -793,104 +759,99 @@ export const CitationsPanel = component$(
             </div>
           )}
           {store.bibliography.map((entry) => {
-              const isCited =
-                Boolean(entry.citationInsertedAt) ||
-                citedUrls.has(entry.url.replace(/\/+$/, ""));
-              const isBackground = entry.provenance === "background";
-              return (
-                <div
-                  key={entry.id}
-                  class="desk-card slide-in mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] transition-all duration-200 hover:border-[var(--color-vermilion)] hover:shadow-md page-turn"
-                  style={{
-                    ["--card-accent" as never]: isCited
-                      ? "var(--color-accent-green)"
-                      : isBackground
-                        ? "var(--color-mustard)"
-                        : "var(--color-ink-muted)",
-                  }}
-                >
-                  {/* Title against the left margin, provenance stamped
+            const isCited =
+              Boolean(entry.citationInsertedAt) ||
+              citedUrls.has(entry.url.replace(/\/+$/, ""));
+            const isBackground = entry.provenance === "background";
+            return (
+              <div
+                key={entry.id}
+                class="desk-card slide-in mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] transition-all duration-200 hover:border-[var(--color-vermilion)] hover:shadow-md page-turn"
+                style={{
+                  ["--card-accent" as never]: isCited
+                    ? "var(--color-accent-green)"
+                    : isBackground
+                      ? "var(--color-mustard)"
+                      : "var(--color-ink-muted)",
+                }}
+              >
+                {/* Title against the left margin, provenance stamped
                     against the right; the URL as the byline beneath. */}
-                  <div class="desk-card__head">
-                    <p
-                      class="desk-card__name desk-card__name--wrap"
-                      title={entry.title}
-                    >
-                      {entry.title}
-                    </p>
-                    {(isCited || isBackground) && (
-                      <span class="desk-card__stamp">
-                        {isCited ? "cited" : "agent"}
-                      </span>
-                    )}
-                    <p class="desk-card__aside desk-card__detail">
-                      {entry.url}
-                    </p>
-                  </div>
-
-                  <p class="desk-card__body text-[0.8125rem]">
-                    {formatCitation(entry, store.style)}
+                <div class="desk-card__head">
+                  <p
+                    class="desk-card__name desk-card__name--wrap"
+                    title={entry.title}
+                  >
+                    {entry.title}
                   </p>
-
-                  {isBackground && (entry.target || entry.backgroundQuery) && (
-                    <div class="desk-card__quote">
-                      {entry.target && (
-                        <p>
-                          for: “{entry.target.anchor.slice(0, 110)}
-                          {entry.target.anchor.length > 110 ? "…" : ""}”
-                          <span
-                            class="uppercase not-italic ml-1 text-[0.6rem]"
-                            style="font-family: var(--font-typewriter);"
-                          >
-                            · {targetKindLabel(entry.target.kind)}
-                          </span>
-                        </p>
-                      )}
-                      {entry.backgroundQuery && (
-                        <p>
-                          why: {entry.backgroundQuery.slice(0, 100)}
-                          {entry.backgroundQuery.length > 100 ? "…" : ""}
-                        </p>
-                      )}
-                    </div>
+                  {(isCited || isBackground) && (
+                    <span class="desk-card__stamp">
+                      {isCited ? "cited" : "agent"}
+                    </span>
                   )}
+                  <p class="desk-card__aside desk-card__detail">{entry.url}</p>
+                </div>
 
-                  <div class="desk-card__foot">
-                    <div class="desk-card__foot-start">
-                      <button
-                        onClick$={() => citeInDraft(entry)}
-                        disabled={
-                          Boolean(entry.citationInsertedAt) ||
-                          Boolean(store.pendingInsertions[entry.id])
-                        }
-                        class="card-key card-key--on"
-                      >
-                        {store.pendingInsertions[entry.id]
-                          ? "placing…"
-                          : entry.citationInsertedAt
-                            ? "✓ footnoted"
-                            : "✎ cite in draft"}
-                      </button>
-                      <button
-                        onClick$={() => openEmbed(entry)}
-                        class="card-key"
-                      >
-                        ⌖ open
-                      </button>
-                    </div>
-                    <div class="desk-card__foot-end desk-card__reveal">
-                      <button
-                        onClick$={() => dropEntry(entry.id)}
-                        class="card-key"
-                        aria-label="Remove from the bibliography"
-                        title="Remove from the bibliography"
-                      >
-                        ✕
-                      </button>
-                    </div>
+                <p class="desk-card__body text-[0.8125rem]">
+                  {formatCitation(entry, store.style)}
+                </p>
+
+                {isBackground && (entry.target || entry.backgroundQuery) && (
+                  <div class="desk-card__quote">
+                    {entry.target && (
+                      <p>
+                        for: “{entry.target.anchor.slice(0, 110)}
+                        {entry.target.anchor.length > 110 ? "…" : ""}”
+                        <span
+                          class="uppercase not-italic ml-1 text-[0.6rem]"
+                          style="font-family: var(--font-typewriter);"
+                        >
+                          · {targetKindLabel(entry.target.kind)}
+                        </span>
+                      </p>
+                    )}
+                    {entry.backgroundQuery && (
+                      <p>
+                        why: {entry.backgroundQuery.slice(0, 100)}
+                        {entry.backgroundQuery.length > 100 ? "…" : ""}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <div class="desk-card__foot">
+                  <div class="desk-card__foot-start">
+                    <button
+                      onClick$={() => citeInDraft(entry)}
+                      disabled={
+                        Boolean(entry.citationInsertedAt) ||
+                        Boolean(store.pendingInsertions[entry.id])
+                      }
+                      class="card-key card-key--on"
+                    >
+                      {store.pendingInsertions[entry.id]
+                        ? "placing…"
+                        : entry.citationInsertedAt
+                          ? "✓ footnoted"
+                          : "✎ cite in draft"}
+                    </button>
+                    <button onClick$={() => openEmbed(entry)} class="card-key">
+                      ⌖ open
+                    </button>
+                  </div>
+                  <div class="desk-card__foot-end desk-card__reveal">
+                    <button
+                      onClick$={() => dropEntry(entry.id)}
+                      class="card-key"
+                      aria-label="Remove from the bibliography"
+                      title="Remove from the bibliography"
+                    >
+                      ✕
+                    </button>
                   </div>
                 </div>
-              );
+              </div>
+            );
           })}
 
           {store.citations.length > 0 && (
