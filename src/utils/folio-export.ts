@@ -3,9 +3,10 @@
  *
  * Both places a writer can export from — the File menu and the page-layout
  * tool — need the same set of parts: the manuscript, the brief, the
- * bibliography scoped to this folio, the editors' marginalia, the citation
- * style, and the page setup. Gathering them in one place is what stops the two
- * paths from drifting into producing different documents from the same folio.
+ * bibliography scoped to this folio, optionally the editors' marginalia, the
+ * citation style, and the page setup. Gathering them in one place is what
+ * stops the two paths from drifting into producing different documents from
+ * the same folio.
  */
 
 import type { ExportPayload } from "./exchange";
@@ -25,6 +26,14 @@ export interface FolioExportRequest {
   layout?: LayoutSettings;
   header?: string;
   footer?: string;
+  /** Persona feedback is private working context unless the writer opts in. */
+  includePersonaComments?: boolean;
+}
+
+export function shouldIncludePersonaComments(
+  request: Pick<FolioExportRequest, "includePersonaComments">,
+): boolean {
+  return request.includePersonaComments === true;
 }
 
 /**
@@ -61,7 +70,9 @@ export async function buildFolioExportPayload(
       loadFoliosFromIdb(),
       loadBibliographyForFolio(req.folioId),
       loadApparatusSettingsFromIdb(),
-      loadPersonaNotesLocally(req.folioId ?? undefined),
+      shouldIncludePersonaComments(req)
+        ? loadPersonaNotesLocally(req.folioId ?? undefined)
+        : Promise.resolve([]),
     ]);
 
   return {

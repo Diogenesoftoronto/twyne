@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linecap="round">
+    <ellipse cx="90" cy="63" rx="77" ry="46" stroke-width="4" stroke-dasharray="138 4 74 3"/>
+    <path d="M28 31c26-22 98-25 126 1M31 93c31 20 91 21 120-1M68 14l-2-8m24 6V3m23 10 3-8" stroke-width="1.6"/>
+  </g>
+  <text x="90" y="78" fill="#000" font-family="Georgia,serif" font-size="64" font-style="italic" font-weight="700" text-anchor="middle">A</text>
+  <text x="90" y="105" fill="#000" font-family="monospace" font-size="8" font-weight="700" letter-spacing="3" text-anchor="middle">SUPERIOR</text>
+</svg>

@@ -1,4 +1,4 @@
-import { Mark } from "@tiptap/core";
+import { Mark, type Editor } from "@tiptap/core";
 
 export interface PersonaNoteMarkOptions {
   HTMLAttributes: Record<string, any>;
@@ -31,6 +31,11 @@ declare module "@tiptap/core" {
  */
 export const PersonaNoteMark = Mark.create<PersonaNoteMarkOptions>({
   name: "personaNote",
+
+  // Several editors may ground conflicting readings in the exact same quote.
+  // ProseMirror otherwise treats a second mark of this type as a replacement
+  // for the first, which silently removes the earlier note's manuscript anchor.
+  excludes: "",
 
   addOptions() {
     return {
@@ -113,3 +118,27 @@ export const PersonaNoteMark = Mark.create<PersonaNoteMarkOptions>({
     };
   },
 });
+
+/** Remove one persona note without disturbing another note on the same quote. */
+export function removePersonaNoteMarkById(
+  editor: Editor,
+  noteId: string,
+): boolean {
+  const { state, view } = editor;
+  const type = state.schema.marks.personaNote;
+  if (!type) return false;
+
+  const transaction = state.tr;
+  state.doc.descendants((node, pos) => {
+    if (!node.isText) return true;
+    for (const mark of node.marks) {
+      if (mark.type === type && mark.attrs.id === noteId) {
+        transaction.removeMark(pos, pos + node.nodeSize, mark);
+      }
+    }
+    return true;
+  });
+  if (!transaction.docChanged) return false;
+  view.dispatch(transaction);
+  return true;
+}

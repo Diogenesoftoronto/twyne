@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linecap="round">
+    <ellipse cx="90" cy="62" rx="77" ry="50" stroke-width="5" stroke-dasharray="118 4 67 3"/>
+    <ellipse cx="90" cy="62" rx="67" ry="40" stroke-width="2"/>
+    <path d="M15 62h17m116 0h17M90 12v14m0 72v14" stroke-width="2.5"/>
+  </g>
+  <text x="90" y="80" fill="#000" font-family="Georgia,serif" font-size="66" font-style="italic" font-weight="700" text-anchor="middle">F</text>
+  <text x="90" y="99" fill="#000" font-family="monospace" font-size="7.5" font-weight="700" letter-spacing="2.5" text-anchor="middle">NOT READY</text>
+</svg>

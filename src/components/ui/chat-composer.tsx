@@ -37,6 +37,8 @@ interface ChatComposerProps {
   allowVoice?: boolean;
   /** Accessible name for the text box. */
   label?: string;
+  /** Names the send key where "Send" is the wrong verb — "Steer", say. */
+  sendLabel?: string;
 }
 
 interface ComposerStore {
@@ -309,7 +311,9 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
             )}
           </div>
 
-          {!recording && <span class="composer-hint">⏎ Send</span>}
+          {!recording && (
+            <span class="composer-hint">⏎ {props.sendLabel ?? "Send"}</span>
+          )}
 
           {showStop ? (
             <button
@@ -319,7 +323,13 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
               title="Stop generating"
               aria-label="Stop generating"
             >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
                 <rect x="6" y="6" width="12" height="12" rx="1" />
               </svg>
             </button>
@@ -329,8 +339,8 @@ export const ChatComposer = component$<ChatComposerProps>((props) => {
               onClick$={submit}
               disabled={!sendable || props.busy}
               class="composer-send"
-              title="Send"
-              aria-label="Send"
+              title={props.sendLabel ?? "Send"}
+              aria-label={props.sendLabel ?? "Send"}
             >
               {props.busy ? (
                 <span
@@ -399,7 +409,15 @@ function MicIcon() {
       stroke-linecap="round"
       aria-hidden="true"
     >
-      <rect x="9" y="2" width="6" height="12" rx="3" fill="currentColor" stroke="none" />
+      <rect
+        x="9"
+        y="2"
+        width="6"
+        height="12"
+        rx="3"
+        fill="currentColor"
+        stroke="none"
+      />
       <path d="M5 11a7 7 0 0 0 14 0" />
       <path d="M12 18v3" />
     </svg>

@@ -104,6 +104,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   const auth = useAuth();
   const clientSig = useConvexClient();
   const menuOpen = useSignal(false);
+  const includePersonaComments = useSignal(false);
   const dialog = useSignal<"import" | "share" | null>(null);
   const fileError = useSignal<AppError | null>(null);
   const importBusy = useSignal(false);
@@ -210,6 +211,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       layout: props.layout,
       header: props.header,
       footer: props.footer,
+      includePersonaComments: includePersonaComments.value,
     }),
   );
 
@@ -599,6 +601,32 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           style={{ padding: "0.4rem 0" }}
         >
           <p class="dept-label px-3 py-1.5">Export</p>
+          <label class="mx-3 mb-1 flex cursor-pointer items-start gap-2 border-b border-dashed border-[var(--color-paper-3)] pb-2 text-[12px] text-[var(--color-ink)]">
+            <input
+              type="checkbox"
+              checked={includePersonaComments.value}
+              onChange$={(_, element) => {
+                includePersonaComments.value = element.checked;
+              }}
+              class="mt-0.5 h-3.5 w-3.5 flex-none accent-[var(--color-vermilion)]"
+              aria-describedby="persona-comments-export-hint"
+            />
+            <span>
+              <span
+                class="block leading-4"
+                style="font-family: var(--font-typewriter);"
+              >
+                Include persona comments
+              </span>
+              <span
+                id="persona-comments-export-hint"
+                class="mt-0.5 block text-[10px] leading-4 text-[var(--color-ink-muted)]"
+                style="font-family: var(--font-serif);"
+              >
+                Adds the room&apos;s notes as endnotes.
+              </span>
+            </span>
+          </label>
           <MenuItem label="PDF…" onClick$={doExportPdf} />
           <MenuItem
             label="Markdown (.md)"
@@ -864,8 +892,8 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               </h4>
               <p class="mt-2 text-[12px] leading-5 text-[var(--color-ink-light)]">
                 Twyne packages the piece as one complete HTML file with its
-                reading layout, print styles, notes, and bibliography. Rename
-                it <code>index.html</code>, upload it to your web host, and use
+                reading layout, print styles, notes, and bibliography. Rename it{" "}
+                <code>index.html</code>, upload it to your web host, and use
                 that host's domain or DNS settings. No Twyne account or runtime
                 is required for the published page.
               </p>

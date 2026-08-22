@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linejoin="round">
+    <path d="M16 18l148 3-3 86-145-1z" stroke-width="4" stroke-dasharray="84 3 42 2"/>
+    <path d="M23 26l133 2-2 70-130 1z" stroke-width="1.5"/>
+    <path d="M35 36h110M35 88h110" stroke-width="1.2" stroke-dasharray="17 5"/>
+  </g>
+  <text x="90" y="80" fill="#000" font-family="Georgia,serif" font-size="65" font-style="italic" font-weight="700" text-anchor="middle">B</text>
+  <text x="90" y="97" fill="#000" font-family="monospace" font-size="8" font-weight="700" letter-spacing="4" text-anchor="middle">SOUND</text>
+</svg>

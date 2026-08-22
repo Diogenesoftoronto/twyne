@@ -11,6 +11,7 @@ import {
   loadRubricResultFromIdb,
 } from "../../utils/idb";
 import { renderMarkdown } from "../../utils/markdown";
+import { GradeStamp } from "../../components/rubric/grade-stamp";
 
 interface RubricPageStore {
   result: RubricResult | null;
@@ -120,20 +121,11 @@ export default component$(() => {
   });
 
   useStylesScoped$(`
-    .grade-circle {
-      border-radius: 999px;
-      border: 2.5px solid currentColor;
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 2.75rem;
-      line-height: 1;
-      font-style: italic;
-      transform: rotate(-4deg);
-      background: rgba(255,255,255,0.4);
-    }
     .card {
       border: 1px solid var(--color-paper-3);
-      background: var(--color-paper);
+      background-color: var(--color-paper);
+      background-image: url("/assets/rubric-proof-fibers.png");
+      background-size: 24rem 24rem;
       border-radius: 4px;
     }
     .bar {
@@ -225,18 +217,15 @@ export default component$(() => {
             {/* Overall */}
             <section class="card p-6">
               <div class="flex items-stretch gap-6">
-                <div
-                  class="grade-circle w-24 h-24 flex items-center justify-center flex-shrink-0"
-                  style={{
-                    color:
-                      GRADE_COLOR[store.result.overallGrade] ??
-                      "var(--color-ink)",
-                  }}
-                  role="img"
-                  aria-label={`Overall grade ${store.result.overallGrade}, ${store.result.overallScore} of 100`}
-                >
-                  {store.result.overallGrade}
-                </div>
+                <GradeStamp
+                  grade={store.result.overallGrade}
+                  score={store.result.overallScore}
+                  color={
+                    GRADE_COLOR[store.result.overallGrade] ?? "var(--color-ink)"
+                  }
+                  size="report"
+                  animated
+                />
                 <div class="flex-1 min-w-0">
                   <p class="dept-label">Editor's Mark</p>
                   <p

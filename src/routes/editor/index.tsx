@@ -39,6 +39,10 @@ import { PersonasPanel } from "../../components/personas/personas-panel";
 import { RubricPanel } from "../../components/rubric/rubric-panel";
 import { CommentsPanel } from "../../components/comments/comments-panel";
 import { CitationsPanel } from "../../components/citations/citations-panel";
+import {
+  EditorialBoardOverlay,
+  type EditorialBoardTab,
+} from "../../components/editorial-board/editorial-board-overlay";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { markDirty, loadRoomSettingsLocally } from "../../utils/convex-sync";
@@ -59,6 +63,7 @@ import {
   setVisiblePanel,
   startPanelActivity,
   type ActivityCounts,
+  type PanelId,
 } from "../../utils/panel-activity";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
 import type { AppError } from "../../types/application-errors";
@@ -81,7 +86,7 @@ import {
   wordCountBucket,
 } from "../../utils/product-analytics";
 
-type RightPanel = "personas" | "rubric" | "comments" | "citations";
+type RightPanel = PanelId;
 
 /** Widest the right panel may be while keeping the manuscript usable. */
 const MIN_EDITOR_WIDTH = 360;
@@ -109,18 +114,6 @@ function fitsDockedPanel(leftSidebarOpen: boolean): boolean {
   const reserved =
     (leftSidebarOpen ? LEFT_SIDEBAR_WIDTH : 0) + MIN_EDITOR_WIDTH;
   return window.innerWidth - reserved >= 260;
-}
-
-interface PanelTab {
-  id: RightPanel;
-  /** Section number on the masthead, e.g. "I" */
-  numeral: string;
-  /** Departmental name */
-  label: string;
-  /** Sub-line under the label */
-  kicker: string;
-  /** CSS color variable for the tab's accent */
-  accent: string;
 }
 
 interface LayoutStore {
@@ -338,7 +331,6 @@ export default component$(() => {
         if (new URLSearchParams(window.location.search).get("auth") === "1") {
           accountOpen.value = true;
         }
-
       } catch (err) {
         reportApplicationDiagnostic("twyne:editor:open-workspace", err, {
           operation: "open-workspace",
@@ -560,8 +552,9 @@ export default component$(() => {
     window.addEventListener("twyne:zen-mode", zenModeHandler);
     cleanup(() => window.removeEventListener("twyne:zen-mode", zenModeHandler));
 
-    // Keep the right panel from squeezing the manuscript off-screen when
-    // the browser window shrinks (e.g. a laptop that isn't maximized).
+    // The Drawer still undocks when the viewport is narrow. The Editorial
+    // Board is now an overlay with its own mobile layout, so it no longer
+    // needs to be closed just to preserve the manuscript measure.
     const onWindowResize = () => {
       const max = maxRightPanelWidth(store.leftSidebarOpen);
       if (store.rightPanelWidth > max) store.rightPanelWidth = max;
@@ -573,10 +566,6 @@ export default component$(() => {
       // waiting for a resize that never comes.
       if (!fitsDockedPanel(store.leftSidebarOpen)) {
         if (store.leftSidebarOpen) store.leftSidebarOpen = false;
-        if (store.rightPanelOpen) {
-          store.rightPanelOpen = false;
-          setVisiblePanel(null);
-        }
       }
     };
     window.addEventListener("resize", onWindowResize);
@@ -730,14 +719,15 @@ export default component$(() => {
     ]);
     if (cancelled || store.activeFolioId !== folioId) return;
 
-    if (client) {
-      startBackgroundResearch({ client, brief, folioId });
-      const plain = (seed ?? "")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-      if (plain.length > 40) kickBackgroundResearch(plain);
-    }
+    // Direct BYOK, model-search, and MCP research do not require a hosted
+    // Convex client. The watcher is therefore scoped for every folio; only
+    // the hosted provider itself depends on `client`.
+    startBackgroundResearch({ client: client ?? null, brief, folioId });
+    const plain = (seed ?? "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (plain.length > 40) kickBackgroundResearch(plain);
     startBackgroundRoom({
       client,
       brief,
@@ -825,7 +815,7 @@ export default component$(() => {
     await nav(`/dossier/create/?folio=${encodeURIComponent(newFolio.id)}`);
   });
 
-  const panelTabs: PanelTab[] = [
+  const panelTabs: EditorialBoardTab[] = [
     {
       id: "personas",
       numeral: "I",
@@ -924,7 +914,7 @@ export default component$(() => {
             </div>
           </div>
         )}
-      <div class="flex h-screen bg-[var(--color-paper)] overflow-hidden">
+      <div class="editor-workspace-shell flex h-screen bg-[var(--color-paper)] overflow-hidden">
         {/* ── The Drawer (left sidebar) ──────────────────────── */}
         <aside
           class={`sidebar-transition flex-shrink-0 border-r-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper-2)] ${
@@ -1214,7 +1204,7 @@ export default component$(() => {
         </aside>
 
         {/* ── Main area ─────────────────────────────────────── */}
-        <div class="flex-1 flex flex-col min-w-0">
+        <div class="editor-workspace-main flex-1 flex flex-col min-w-0">
           {/* Masthead */}
           <header
             class={`border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]${store.zenActive ? " zen-masthead" : ""}`}
@@ -1401,10 +1391,10 @@ export default component$(() => {
             </div>
           )}
 
-          {/* Editor + Editorial board */}
-          <div class="flex-1 flex min-h-0">
+          {/* The manuscript owns the remaining height beneath the masthead. */}
+          <div class="relative flex flex-1 min-h-0 overflow-hidden">
             {/* Editor */}
-            <div class="flex-1 min-w-0 overflow-auto bg-[var(--color-paper-soft)]">
+            <div class="h-full min-w-0 flex-1 overflow-auto bg-[var(--color-paper-soft)]">
               <TwyneEditor
                 key={`editor-${store.activeFolioId ?? "none"}-${store.sharedLixId ?? "solo"}-${store.folioKey}`}
                 initialContent={store.editorSeed}
@@ -1417,188 +1407,75 @@ export default component$(() => {
                 brief={store.brief}
                 sharedLixId={store.sharedLixId ?? undefined}
                 readOnly={store.sharedRole === "commenter"}
+                onEditorialContext$={(panel) => {
+                  store.rightPanel = panel;
+                  store.rightPanelOpen = true;
+                  setVisiblePanel(panel);
+                }}
+                onManuscriptFocus$={() => {
+                  store.rightPanelOpen = false;
+                  setVisiblePanel(null);
+                }}
               />
             </div>
-
-            {/* ── Editorial Board (right panel) ──────────── */}
-            {store.rightPanelOpen && (
-              <>
-                <div
-                  class="w-1.5 flex-shrink-0 cursor-col-resize hover:bg-[var(--color-accent)] transition-colors relative z-10"
-                  style={{ background: "var(--color-paper-3)" }}
-                  onMouseDown$={$((e: MouseEvent) => {
-                    const startX = e.clientX;
-                    const startWidth = store.rightPanelWidth;
-                    const onMove = (ev: MouseEvent) => {
-                      const delta = startX - ev.clientX;
-                      store.rightPanelWidth = Math.max(
-                        260,
-                        Math.min(
-                          maxRightPanelWidth(store.leftSidebarOpen),
-                          startWidth + delta,
-                        ),
-                      );
-                    };
-                    const onUp = () => {
-                      document.removeEventListener("mousemove", onMove);
-                      document.removeEventListener("mouseup", onUp);
-                      document.body.style.cursor = "";
-                      document.body.style.userSelect = "";
-                    };
-                    document.addEventListener("mousemove", onMove);
-                    document.addEventListener("mouseup", onUp);
-                    document.body.style.cursor = "col-resize";
-                    document.body.style.userSelect = "none";
-                  })}
-                  title="Drag to resize"
-                />
-                <aside
-                  class="sidebar-transition flex-shrink-0 border-l-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper-2)] overflow-hidden"
-                  style={{ width: store.rightPanelWidth }}
-                >
-                  <div
-                    class="h-full flex flex-col"
-                    style={{ width: store.rightPanelWidth }}
-                  >
-                    {/* Departmental tabs */}
-                    <div class="border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-                      <p class="dept-label px-4 pt-3">The Editorial Board</p>
-                      <div class="flex">
-                        {panelTabs.map((tab) => {
-                          const active =
-                            store.rightPanel === tab.id && store.rightPanelOpen;
-                          const unread = store.activity[tab.id] ?? 0;
-                          return (
-                            <button
-                              key={tab.id}
-                              onClick$={() => {
-                                store.rightPanel = tab.id;
-                                store.rightPanelOpen = true;
-                                setVisiblePanel(tab.id);
-                              }}
-                              class="flex-1 px-2 py-2.5 transition-colors group relative focus-ring"
-                              aria-pressed={active}
-                              aria-label={
-                                unread > 0
-                                  ? `${tab.label} — ${unread} new`
-                                  : tab.label
-                              }
-                              style={{
-                                borderBottom: active
-                                  ? `3px solid ${tab.accent}`
-                                  : "3px solid transparent",
-                                background: active
-                                  ? "var(--color-paper)"
-                                  : "transparent",
-                              }}
-                            >
-                              <span
-                                class="block text-[10px] tracking-[0.2em]"
-                                style={{
-                                  fontFamily: "var(--font-typewriter)",
-                                  color: active
-                                    ? tab.accent
-                                    : "var(--color-ink-muted)",
-                                }}
-                              >
-                                {tab.numeral}
-                              </span>
-                              <span
-                                class="block mt-0.5 text-sm"
-                                style={{
-                                  fontFamily: "var(--font-display)",
-                                  fontWeight: active ? 600 : 500,
-                                  color: active
-                                    ? "var(--color-ink)"
-                                    : "var(--color-ink-light)",
-                                }}
-                              >
-                                {tab.label}
-                              </span>
-                              {/* Work that arrived while the writer was
-                                  looking elsewhere. The panels stay mounted
-                                  but hidden, so without this it is silent. */}
-                              {unread > 0 && !active && (
-                                <span
-                                  class="absolute top-1.5 right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[9px] leading-none text-white"
-                                  style={{
-                                    background: tab.accent,
-                                    fontFamily: "var(--font-typewriter)",
-                                  }}
-                                  aria-hidden="true"
-                                >
-                                  {unread > 9 ? "9+" : unread}
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Panel content — all panels stay mounted so their
-                        event listeners (e.g. replying to an inline note from
-                        the editor modal) and in-progress state survive tab
-                        switches. Inactive panels are hidden, not unmounted. */}
-                    <div class="board-panel flex-1 min-h-0 overflow-hidden">
-                      <div
-                        class={
-                          store.rightPanel === "personas" ? "h-full" : "hidden"
-                        }
-                      >
-                        {store.activeFolioId && (
-                          <PersonasPanel
-                            key={`personas-${store.activeFolioId}`}
-                            brief={store.brief}
-                            activeFolioId={store.activeFolioId}
-                          />
-                        )}
-                      </div>
-                      <div
-                        class={
-                          store.rightPanel === "rubric" ? "h-full" : "hidden"
-                        }
-                      >
-                        {store.activeFolioId && (
-                          <RubricPanel
-                            key={`rubric-${store.activeFolioId}`}
-                            brief={store.brief}
-                            activeFolioId={store.activeFolioId}
-                          />
-                        )}
-                      </div>
-                      <div
-                        class={
-                          store.rightPanel === "comments" ? "h-full" : "hidden"
-                        }
-                      >
-                        <CommentsPanel
-                          key={`comments-${store.activeFolioId ?? "none"}`}
-                          brief={store.brief}
-                          activeFolioId={store.activeFolioId}
-                        />
-                      </div>
-                      <div
-                        class={
-                          store.rightPanel === "citations" ? "h-full" : "hidden"
-                        }
-                      >
-                        <CitationsPanel
-                          key={`citations-${store.activeFolioId ?? "none"}`}
-                          activeFolio={
-                            store.folios.find(
-                              (folio) => folio.id === store.activeFolioId,
-                            ) ?? null
-                          }
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </aside>
-              </>
-            )}
           </div>
         </div>
+
+        {/* The Board is a viewport-height sibling of the main column, matching
+            the drawer rather than inheriting the shorter manuscript row. */}
+        <EditorialBoardOverlay
+          open={store.rightPanelOpen}
+          activeContext={store.rightPanel}
+          activity={store.activity}
+          tabs={panelTabs}
+          onClose$={() => {
+            store.rightPanelOpen = false;
+            setVisiblePanel(null);
+          }}
+          onContext$={(panel) => {
+            store.rightPanel = panel;
+            store.rightPanelOpen = true;
+            setVisiblePanel(panel);
+          }}
+        >
+          {/* All panels stay mounted so their event listeners and in-progress
+              state survive tab switches and closure. */}
+          <div class={store.rightPanel === "personas" ? "h-full" : "hidden"}>
+            {store.activeFolioId && (
+              <PersonasPanel
+                key={`personas-${store.activeFolioId}`}
+                brief={store.brief}
+                activeFolioId={store.activeFolioId}
+              />
+            )}
+          </div>
+          <div class={store.rightPanel === "rubric" ? "h-full" : "hidden"}>
+            {store.activeFolioId && (
+              <RubricPanel
+                key={`rubric-${store.activeFolioId}`}
+                brief={store.brief}
+                activeFolioId={store.activeFolioId}
+              />
+            )}
+          </div>
+          <div class={store.rightPanel === "comments" ? "h-full" : "hidden"}>
+            <CommentsPanel
+              key={`comments-${store.activeFolioId ?? "none"}`}
+              brief={store.brief}
+              activeFolioId={store.activeFolioId}
+            />
+          </div>
+          <div class={store.rightPanel === "citations" ? "h-full" : "hidden"}>
+            <CitationsPanel
+              key={`citations-${store.activeFolioId ?? "none"}`}
+              activeFolio={
+                store.folios.find(
+                  (folio) => folio.id === store.activeFolioId,
+                ) ?? null
+              }
+            />
+          </div>
+        </EditorialBoardOverlay>
       </div>
     </div>
   );

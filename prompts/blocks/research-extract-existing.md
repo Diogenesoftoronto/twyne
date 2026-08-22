@@ -1,8 +1,8 @@
 ---
 notes: |
   When the writer has supplied existing bibliography entries.
-version: "1"
+version: "2"
 ---
 
-Already covered in the writer's bibliography (do not flag these):
+Existing bibliography titles are listed below only to help avoid finding the same source twice. A title does not prove that a quotation, person-context statement, statistic, or claim is correct, so still flag passages that need verification:
 {probeLines}

@@ -1,10 +1,193 @@
 import { describe, expect, test } from "bun:test";
-import type { ResearchTarget } from "../types";
+import type { ProjectBrief, ResearchTarget } from "../types";
 import {
+  buildDossierResearchInstructions,
+  buildResearchExtractSystemPrompt,
+  buildResearchExtractUserPrompt,
+  buildResearchSearchContext,
+  buildResearchSearchInstructions,
+  dossierResearchMode,
   parseResearchTargets,
   rankSourcesForTarget,
   selectFreshTargets,
 } from "./research-targets";
+
+describe("research extraction policy", () => {
+  test("proactively checks quotations, people in context, and factual claims", () => {
+    const system = buildResearchExtractSystemPrompt();
+
+    expect(system).toContain("target every direct quotation");
+    expect(system).toContain("whenever a named person is introduced");
+    expect(system).toContain(
+      "target every material, externally checkable claim",
+    );
+    expect(system).toContain("citation, link, or attribution is not proof");
+    expect(system).toContain("support or contradict the exact claim");
+  });
+
+  test("runs every fact-checking sweep even when a bibliography exists", () => {
+    const user = buildResearchExtractUserPrompt({
+      draftText: 'Ada Lovelace called the engine a "thinking machine."',
+      existingSources: ["A Biography of Ada Lovelace"],
+      maxTargets: 12,
+    });
+
+    expect(user).toContain("First sweep for quotations");
+    expect(user).toContain("then named people in context");
+    expect(user).toContain(
+      "then every other externally checkable factual claim",
+    );
+    expect(user).toContain("A title does not prove");
+    expect(user).not.toContain("do not flag these");
+  });
+});
+
+describe("Dossier research mode", () => {
+  const brief = (format: string): ProjectBrief => ({
+    answers: {
+      workingTitle: "The Glass Telegraph",
+      format,
+      audience: "Adult readers of literary historical fiction",
+      goal: "Make an invented 1890s strike feel physically and socially real",
+      tone: "Intimate and precise",
+      constraints: "Do not flatten the dockworkers into a single culture",
+      successSignal: "The setting survives expert scrutiny",
+    },
+    attachments: [
+      {
+        id: "dock-map",
+        kind: "link",
+        title: "Port map",
+        url: "https://example.com/map",
+        why: "Street and warehouse geography",
+        addedAt: 1,
+      },
+    ],
+    probes: [
+      {
+        id: "history-boundary",
+        kind: "choice",
+        prompt: "How tightly should the story follow recorded events?",
+        options: ["Strictly", "Loosely"],
+        answer: "Strictly",
+        relatesTo: "constraints",
+      },
+    ],
+    completedAt: 1,
+    updatedAt: 1,
+  });
+
+  test("selects fiction mode from the Dossier and changes the mandate", () => {
+    const dossier = brief("Historical novel");
+    const instructions = buildDossierResearchInstructions(dossier);
+
+    expect(dossierResearchMode(dossier)).toBe("fiction");
+    expect(instructions).toContain(
+      "Research mode selected from Dossier: FICTION",
+    );
+    expect(instructions).toContain("research for authenticity");
+    expect(instructions).toContain("Do not fact-check invented plot");
+    expect(instructions).toContain(
+      "How tightly should the story follow recorded events?",
+    );
+    expect(instructions).toContain("Port map: Street and warehouse geography");
+  });
+
+  test("recognizes the newsroom and academic formats writers actually type", () => {
+    // These fell through to GENERAL before, so a reported feature never got
+    // the nonfiction mandate — the drafts most in need of fact-checking.
+    for (const format of [
+      "Reported feature",
+      "Opinion column",
+      "Investigative piece",
+      "Book review",
+      "Explainer",
+      "Case study",
+      "PhD thesis",
+      "Reportage",
+      "Documentary script",
+    ]) {
+      expect(dossierResearchMode(brief(format))).toBe("nonfiction");
+    }
+  });
+
+  test("does not swallow fiction formats into the widened nonfiction list", () => {
+    for (const format of [
+      "Literary novel",
+      "Historical fiction",
+      "Short stories",
+      "Screenplay",
+      "Graphic novel",
+      "Novella",
+    ]) {
+      expect(dossierResearchMode(brief(format))).toBe("fiction");
+    }
+  });
+
+  test("keeps essays in nonfiction fact-check mode", () => {
+    const dossier = brief("Reported essay");
+    const instructions = buildDossierResearchInstructions(dossier);
+
+    expect(dossierResearchMode(dossier)).toBe("nonfiction");
+    expect(instructions).toContain("fact-check every material external claim");
+    expect(instructions).toContain(
+      "whether named sources actually support the prose",
+    );
+  });
+});
+
+describe("target-specific fact-check search", () => {
+  const target = (
+    kind: ResearchTarget["kind"],
+    anchor: string,
+  ): ResearchTarget => ({
+    id: kind,
+    kind,
+    anchor,
+    reason: "The draft relies on this detail.",
+    query: anchor,
+    importance: 5,
+  });
+
+  test("asks quotation searches to establish wording, provenance, and context", () => {
+    const quote = target("quote", 'Churchill said, "History will be kind."');
+
+    expect(buildResearchSearchContext(quote)).toContain("exact wording");
+    expect(buildResearchSearchContext(quote)).toContain("original source");
+    expect(buildResearchSearchInstructions(quote)).toContain("original text");
+    expect(buildResearchSearchInstructions(quote)).toContain(
+      "Topical similarity alone is not enough",
+    );
+  });
+
+  test("keeps a named person's asserted context in scope", () => {
+    const person = target(
+      "person",
+      "Grace Hopper coined the term debugging in 1947.",
+    );
+
+    expect(buildResearchSearchContext(person)).toContain(
+      "specific role, relationship, action, viewpoint, or chronology",
+    );
+    expect(buildResearchSearchInstructions(person)).toContain(
+      "not merely a generic biography page",
+    );
+  });
+
+  test("asks claim searches for supporting and contradictory evidence", () => {
+    const claim = target(
+      "claim",
+      "The policy caused rents to fall across the province.",
+    );
+
+    expect(buildResearchSearchContext(claim)).toContain(
+      "supports or contradicts",
+    );
+    expect(buildResearchSearchContext(claim)).toContain(
+      "missing scope or qualification",
+    );
+  });
+});
 
 describe("parseResearchTargets", () => {
   test("parses a plain JSON object and normalizes fields", () => {

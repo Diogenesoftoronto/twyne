@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="90" cy="62" rx="79" ry="48" stroke-width="4"/>
+    <ellipse cx="90" cy="62" rx="72" ry="41" stroke-width="1.6" stroke-dasharray="46 4 23 3"/>
+    <path d="M31 20l-5-7m23 1-2-9m84 10 3-9m20 17 7-6" stroke-width="2.5"/>
+  </g>
+  <text x="90" y="75" fill="#000" font-family="Georgia,serif" font-size="58" font-style="italic" font-weight="700" text-anchor="middle">A+</text>
+  <text x="90" y="104" fill="#000" font-family="monospace" font-size="8" font-weight="700" letter-spacing="2.4" text-anchor="middle">EXCEPTIONAL</text>
+</svg>

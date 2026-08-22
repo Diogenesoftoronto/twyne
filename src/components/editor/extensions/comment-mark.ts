@@ -1,4 +1,4 @@
-import { Mark } from "@tiptap/core";
+import { Mark, type Editor } from "@tiptap/core";
 
 export interface CommentMarkOptions {
   HTMLAttributes: Record<string, any>;
@@ -21,6 +21,11 @@ declare module "@tiptap/core" {
 
 export const CommentMark = Mark.create<CommentMarkOptions>({
   name: "commentMark",
+
+  // Margin threads are independent even when they quote the same passage.
+  // Allow multiple comment marks to coexist instead of letting the newest one
+  // replace the first at an identical selection.
+  excludes: "",
 
   addOptions() {
     return {
@@ -47,8 +52,15 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
         },
       },
       color: {
-        default: "var(--color-mustard)",
-        parseHTML: (element) => element.getAttribute("data-comment-color"),
+        default: "var(--color-writer-note)",
+        parseHTML: (element) => {
+          const color = element.getAttribute("data-comment-color");
+          // Migrate comments saved before writer notes received their own
+          // semantic color. Mustard belongs to M. Le Stylo.
+          return !color || color === "var(--color-mustard)"
+            ? "var(--color-writer-note)"
+            : color;
+        },
         renderHTML: (attributes) => {
           if (!attributes.color) return {};
           return { "data-comment-color": attributes.color };
@@ -66,13 +78,15 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
   },
 
   renderHTML({ HTMLAttributes }) {
+    const color =
+      HTMLAttributes["data-comment-color"] ?? "var(--color-writer-note)";
     return [
       "span",
       {
         ...this.options.HTMLAttributes,
         ...HTMLAttributes,
         class: "twyne-comment-mark",
-        style: `background: color-mix(in srgb, ${HTMLAttributes["data-comment-color"] ?? "var(--color-mustard)"} 18%, transparent); border-bottom: 2px solid ${HTMLAttributes["data-comment-color"] ?? "var(--color-mustard)"}; cursor: text;`,
+        style: `background: color-mix(in srgb, ${color} 18%, transparent); border-bottom: 2px solid ${color}; cursor: text;`,
       },
       0,
     ];
@@ -87,7 +101,7 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
             .setMark("commentMark", {
               id: attrs.id,
               author: attrs.author ?? "You",
-              color: attrs.color ?? "var(--color-mustard)",
+              color: attrs.color ?? "var(--color-writer-note)",
             })
             .run();
         },
@@ -99,3 +113,27 @@ export const CommentMark = Mark.create<CommentMarkOptions>({
     };
   },
 });
+
+/** Remove one comment id without disturbing another mark on the same quote. */
+export function removeCommentMarkById(
+  editor: Editor,
+  commentId: string,
+): boolean {
+  const { state, view } = editor;
+  const type = state.schema.marks.commentMark;
+  if (!type) return false;
+
+  const tr = state.tr;
+  state.doc.descendants((node, pos) => {
+    if (!node.isText) return true;
+    for (const mark of node.marks) {
+      if (mark.type === type && mark.attrs.id === commentId) {
+        tr.removeMark(pos, pos + node.nodeSize, mark);
+      }
+    }
+    return true;
+  });
+  if (!tr.docChanged) return false;
+  view.dispatch(tr);
+  return true;
+}

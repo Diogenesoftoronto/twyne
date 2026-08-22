@@ -726,15 +726,13 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
             aria-label="Comments"
           >
             <button
-              title="Add comment"
-              aria-label="Add comment"
+              title="Add a note beside the selected passage"
+              aria-label="Add margin note"
               disabled={!store.hasSelection}
-              onClick$={() => {
-                store.showCommentInput = true;
-              }}
+              onClick$={() => runCommand("addComment")}
               class="tool-btn disabled:opacity-30 disabled:cursor-not-allowed"
             >
-              <Icon name={COMPOSITOR_ICONS.comment} size={16} /> Comment
+              <Icon name={COMPOSITOR_ICONS.comment} size={16} /> Add margin
             </button>
           </div>
 
@@ -1184,6 +1182,22 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
                     />
                   </div>
                 </fieldset>
+                <label class="compositor-check-row mb-2">
+                  <span>
+                    <span class="block">Include persona comments</span>
+                    <span class="mt-0.5 block text-[0.61rem] leading-4 text-[var(--color-ink-muted)]">
+                      Adds the room&apos;s notes as endnotes.
+                    </span>
+                  </span>
+                  <input
+                    type="checkbox"
+                    class="compositor-checkbox"
+                    checked={store.includePersonaCommentsInExport}
+                    onChange$={(_, element) => {
+                      store.includePersonaCommentsInExport = element.checked;
+                    }}
+                  />
+                </label>
                 {/* Page setup and "print it" belong together — this is the
                     panel where the writer just decided what the page looks
                     like, so it is where they look to commit it to paper. */}

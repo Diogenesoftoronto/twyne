@@ -1,4 +1,4 @@
-import type { NoSerialize } from "@builder.io/qwik";
+import type { NoSerialize, PropFunction } from "@builder.io/qwik";
 import type { Editor } from "@tiptap/core";
 import type {
   DocumentMeta,
@@ -14,6 +14,7 @@ import type { NoteKind } from "./extensions/endnote-node";
 import type { ImageNodeAttributes } from "./extensions/image-node";
 import type { SelectedCellFormat } from "./extensions/table-cell-format";
 import type { TableToolbarSnapshot } from "./table-core";
+import type { PanelId } from "../../utils/panel-activity";
 
 /** A persona note anchored beside the passage it discusses. */
 export interface NotePopover {
@@ -62,15 +63,34 @@ export interface EditorNote {
 
 /** A writer-authored inline comment and its reply thread. */
 export interface UserCommentPopover {
+  mode: "compose" | "thread";
+  visible: boolean;
   id: string;
   author: string;
   text: string;
+  quote: string;
   createdAt: number;
   x: number;
-  y: number;
+  top: number | null;
+  bottom: number | null;
+  maxH: number;
+  from: number | null;
+  to: number | null;
   resolved: boolean;
   replies: UserCommentReply[];
   draft: string;
+}
+
+/** The exact Tiptap selection owned by the manuscript action card. */
+export interface SelectionActionState {
+  from: number;
+  to: number;
+  text: string;
+  /** Fixed viewport coordinates; the component centers itself on x. */
+  x: number;
+  y: number;
+  placement: "above" | "below";
+  error: string | null;
 }
 
 /**
@@ -90,14 +110,13 @@ export interface EditorStore {
   imageUploadAdapter: NoSerialize<ImageUploadAdapter> | null;
   selectedImage: ImageNodeAttributes | null;
   imageUploadError: string | null;
-  showCommentInput: boolean;
-  commentText: string;
   showMermaidInput: boolean;
   mermaidSource: string;
   noteInputKind: "endnote" | "footnote" | null;
   noteText: string;
   notes: EditorNote[];
   hasSelection: boolean;
+  selectionAction: SelectionActionState | null;
   notePopover: NotePopover | null;
   suggestionPopover: SuggestionPopover | null;
   stampVisible: boolean;
@@ -112,6 +131,7 @@ export interface EditorStore {
   showLayout: boolean;
   layoutPanelMaxH: number;
   exportingPdf: boolean;
+  includePersonaCommentsInExport: boolean;
   showFindReplace: boolean;
   showGrammar: boolean;
   showShortcutDialog: boolean;
@@ -157,4 +177,8 @@ export interface TwyneEditorProps {
   sharedLixId?: string;
   /** Commenters can inspect and discuss a shared folio without editing it. */
   readOnly?: boolean;
+  /** Route-owned switch between Cast, Rubric, Marginalia, and Apparatus. */
+  onEditorialContext$?: PropFunction<(context: PanelId) => void>;
+  /** A real manuscript interaction dismisses route-owned editorial furniture. */
+  onManuscriptFocus$?: PropFunction<() => void>;
 }
