@@ -3,7 +3,7 @@
   "checkpoint_id": "d3c9d95111d8",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 12,
+  "checkpoints_count": 13,
   "files_touched": [
     ".bumpy/release-0.16.0.md"
   ],
@@ -63,13 +63,20 @@
       "compact_transcript": "/d3/c9d95111d8/7/transcript.jsonl",
       "content_hash": "/d3/c9d95111d8/7/content_hash.txt",
       "prompt": "/d3/c9d95111d8/7/prompt.txt"
+    },
+    {
+      "metadata": "/d3/c9d95111d8/8/metadata.json",
+      "transcript": "/d3/c9d95111d8/8/full.jsonl",
+      "compact_transcript": "/d3/c9d95111d8/8/transcript.jsonl",
+      "content_hash": "/d3/c9d95111d8/8/content_hash.txt",
+      "prompt": "/d3/c9d95111d8/8/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2916685,
+    "input_tokens": 3058909,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 116005504,
-    "output_tokens": 367518,
-    "api_call_count": 1006
+    "cache_read_tokens": 118067584,
+    "output_tokens": 373982,
+    "api_call_count": 1023
   }
 }
