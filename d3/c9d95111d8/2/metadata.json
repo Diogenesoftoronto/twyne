@@ -1,0 +1,68 @@
+{
+  "cli_version": "0.9.0",
+  "checkpoint_id": "d3c9d95111d8",
+  "session_id": "01a02915-3a78-7a71-9f24-1270767ef555",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-22T22:30:20.79192084Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".bumpy/release-0.16.0.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "de68f853a6e0",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 124578,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1857792,
+    "output_tokens": 6415,
+    "api_call_count": 25
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-22T22:30:20.620351698Z",
+    "agent_lines": 2,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 2,
+    "total_lines_changed": 2,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1765,
+      "user_lines_removed": 494,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "docs/publishing-from-twyne.md": 59,
+        "src/components/citations/citations-panel.tsx": 272,
+        "src/components/comments/comments-panel.tsx": 33,
+        "src/components/editor/editor-state.ts": 19,
+        "src/components/editor/manuscript-panel.tsx": 2,
+        "src/components/editor/selection-actions.tsx": 130,
+        "src/components/editor/twyne-editor.tsx": 183,
+        "src/components/editor/user-comment-panel.tsx": 4,
+        "src/components/editorial-board/editorial-board-overlay.tsx": 232,
+        "src/global.css": 511,
+        "src/routes/editor/index.tsx": 90,
+        "src/utils/background-research.test.ts": 40,
+        "src/utils/background-research.ts": 163,
+        "src/utils/research-targets.ts": 27
+      },
+      "user_removed_per_file": {
+        "src/components/citations/citations-panel.tsx": 230,
+        "src/components/editor/editor-state.ts": 1,
+        "src/components/editor/twyne-editor.tsx": 28,
+        "src/components/editor/user-comment-panel.tsx": 6,
+        "src/routes/editor/index.tsx": 208,
+        "src/utils/background-research.ts": 21
+      }
+    }
+  ]
+}
