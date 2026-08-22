@@ -1,0 +1,5 @@
+i need help making a new release, i also want to make sure that we are properly evaluating the ai capabilities and triggers in terms of the changes made. I would also like to make sure that the apparatus button for steering should exist below the text box and that there is a way to use voice as an option in the box as well. Other than that this looks like a wonderful release for the end of summer. I think that this should prepare us for the road to 1.0 which i think needs only to make sure that the creem purchases and checkout with notorganic should work end to end before that release and cancelatio as well.
+
+---
+
+,
