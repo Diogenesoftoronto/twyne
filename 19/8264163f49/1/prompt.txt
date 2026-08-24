@@ -1,0 +1,41 @@
+some of my sites are not indexing and i want to know whay
+
+---
+
+fix this stuff
+
+---
+
+okay one second, this site domain is twyne.love why do we need convex here? we only need to go through the pages served in the frontend not in convex
+
+---
+
+oh i see one second the convex url link for stuff yeah that makes sense if i do want to include those automatically could i just allow everything on blog/* fit as sitemap?
+
+---
+
+okay do that then what do you need
+
+---
+
+Review the current code changes (staged, unstaged, and untracked files) and provide prioritized findings.
+
+---
+
+resulve
+
+---
+
+Review the current code changes (staged, unstaged, and untracked files) and provide prioritized findings.
+
+---
+
+fix thesese issues
+
+---
+
+create a new release and then push
+
+---
+
+before the new release make sure that the dossier paper outline gives you a good animation on completion of your dossier or refinement that the filed action was success and there should be a new filed dossier paper in the left sidebar of the deditor that should refer to that replacin the old one. there should also be an dropdown for the type of thing that is being writing for one of those questions where the default is essay, users should still be able to enter what they want in plain text but also there should be a bunch to select from. allow it to be filterable as well
