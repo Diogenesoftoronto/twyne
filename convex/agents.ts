@@ -48,11 +48,13 @@ import {
 } from "./agentPrompts";
 import { buildQuoteTools } from "./agentTools";
 import type {
+  DossierCheckResult,
   DossierProbe,
   ProjectBrief,
   ProjectInterviewAnswers,
 } from "../src/types";
 import { normalizeProbe } from "../src/utils/dossier-probes";
+import { parseDossierCheckResult } from "../src/utils/dossier-check";
 import {
   removeReasoningTagMarkers,
   stripReasoningTags,
@@ -413,7 +415,7 @@ async function runLlm(
     const first = stream
       ? await streamNote(stream, generation)
       : await generateText(generation);
-    let text = first.text;
+    const text = first.text;
     let usage = normalizeAiUsage(first.totalUsage);
     let visibleText = stripReasoningTags(text);
     // Reasoning is a mode, not a defect. The thinking is already stripped from
@@ -613,16 +615,15 @@ const probeValidator = v.object({
   relatesTo: v.optional(v.string()),
 });
 
-const briefValidator = v.union(
-  v.null(),
-  v.object({
-    answers: projectInterviewAnswersValidator,
-    attachments: v.array(attachmentValidator),
-    probes: v.optional(v.array(probeValidator)),
-    completedAt: v.number(),
-    updatedAt: v.number(),
-  }),
-);
+const projectBriefValidator = v.object({
+  answers: projectInterviewAnswersValidator,
+  attachments: v.array(attachmentValidator),
+  probes: v.optional(v.array(probeValidator)),
+  completedAt: v.number(),
+  updatedAt: v.number(),
+});
+
+const briefValidator = v.union(v.null(), projectBriefValidator);
 
 const writerProfileValidator = v.optional(
   v.object({
@@ -971,6 +972,10 @@ export const runInterviewTurn = action({
         traceId,
       );
     } catch (error) {
+      if (error instanceof Error && error.name === "ConvexError") {
+        await flushArize();
+        throw error;
+      }
       await captureServerAiGeneration({
         feature: "interview-turn",
         provider: provider.label,
@@ -1010,6 +1015,141 @@ export const runInterviewTurn = action({
           provider: provider.label,
           model: provider.modelId,
           mode: args.mode,
+        },
+      );
+    }
+  },
+});
+
+/**
+ * Compare the live manuscript with the filed dossier on Twyne's hosted
+ * provider path. The client uses the writer's own configured provider first;
+ * this action is the signed-in fallback promised by onboarding.
+ */
+export const runDossierCheck = action({
+  args: {
+    brief: projectBriefValidator,
+    draftText: v.string(),
+  },
+  handler: async (ctx, args): Promise<DossierCheckResult> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw applicationError("authentication_required");
+
+    await consumeRateLimit(ctx, {
+      action: "agent:dossier-check",
+      identifier: identity.tokenIdentifier,
+      ...RATE_LIMITS.agentFeedback,
+    });
+
+    if (!args.draftText.trim()) {
+      throw applicationError("validation_failed", {
+        message: "Write something before asking the room to read the draft.",
+      });
+    }
+
+    const provider = await pickProvider(ctx, "dossier-check", "balanced");
+    if (!provider) {
+      throw applicationError("provider_unavailable", {
+        recovery: "open_settings",
+      });
+    }
+
+    const system = renderNamed("dossier-check-system");
+    const user = renderNamed("dossier-check-user", {
+      dossier: JSON.stringify(args.brief.answers),
+      draft: args.draftText,
+    });
+    const temperature = 0.2;
+    const maxTokens = NO_OUTPUT_CEILING;
+    const start = Date.now();
+
+    try {
+      const { text, totalUsage } = await generateText({
+        model: provider.model,
+        system,
+        prompt: user,
+        temperature,
+        maxOutputTokens: maxTokens,
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: "dossier_check",
+          metadata: {
+            feature: "dossier-check",
+            provider: provider.label,
+            model: provider.modelId,
+          },
+        },
+      });
+      const visibleText = stripReasoningTags(text);
+      const parsed = parseDossierCheckResult(
+        visibleText,
+        provider.label,
+        args.brief.answers,
+      );
+
+      await captureServerAiGeneration({
+        feature: "dossier-check",
+        provider: provider.label,
+        model: provider.modelId,
+        generationInput: JSON.stringify({
+          brief: args.brief.answers,
+          draftText: args.draftText,
+        }),
+        output: visibleText,
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "dossier_check",
+        usage: normalizeAiUsage(totalUsage),
+        observability: {
+          distinctId: identity.tokenIdentifier,
+        },
+        evalSignals: {
+          twyne_expected_format: "json_dossier_observations",
+        },
+      });
+      await flushArize();
+
+      if (!parsed) {
+        throw applicationError("malformed_response", {
+          recovery: "retry",
+        });
+      }
+      return parsed;
+    } catch (error) {
+      // Parsing failures are deliberate, structured application errors. They
+      // were already captured with the provider output above, so preserve the
+      // malformed-response diagnosis instead of recording it a second time
+      // and relabeling it as provider_unavailable.
+      if (error instanceof Error && error.name === "ConvexError") {
+        throw error;
+      }
+      await captureServerAiGeneration({
+        feature: "dossier-check",
+        provider: provider.label,
+        model: provider.modelId,
+        generationInput: JSON.stringify({
+          brief: args.brief.answers,
+          draftText: args.draftText,
+        }),
+        latencyMs: Date.now() - start,
+        temperature,
+        maxTokens,
+        spanName: "dossier_check",
+        observability: {
+          distinctId: identity.tokenIdentifier,
+        },
+        error,
+      });
+      await flushArize();
+      throw reportedApplicationError(
+        "agents.dossier-check",
+        "provider_unavailable",
+        error,
+        { recovery: "retry" },
+        {
+          provider: provider.label,
+          model: provider.modelId,
         },
       );
     }

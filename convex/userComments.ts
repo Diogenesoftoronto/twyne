@@ -83,6 +83,29 @@ export const resolveComment = mutation({
   },
 });
 
+/** Set resolution state idempotently so offline/local reconciliation converges. */
+export const setCommentResolved = mutation({
+  args: { commentId: v.string(), resolved: v.boolean() },
+  returns: v.null(),
+  handler: async (ctx, { commentId, resolved }) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not signed in");
+    const ownerId = identity.tokenIdentifier;
+    const row = await ctx.db
+      .query("userComments")
+      .withIndex("by_ownerId_commentId", (q) =>
+        q.eq("ownerId", ownerId).eq("commentId", commentId),
+      )
+      .first();
+    if (!row || row.resolved === resolved) return null;
+    await ctx.db.patch(row._id, {
+      resolved,
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
+
 export const deleteComment = mutation({
   args: { commentId: v.string() },
   handler: async (ctx, { commentId }) => {

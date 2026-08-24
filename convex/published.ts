@@ -340,6 +340,42 @@ export const listBlog = query({
   },
 });
 
+/** Public URL metadata used by the frontend sitemap. */
+export const listForSitemap = query({
+  args: {},
+  returns: v.array(
+    v.object({
+      slug: v.string(),
+      ownerHandle: v.union(v.string(), v.null()),
+      kind: v.union(v.literal("post"), v.literal("blog")),
+      updatedAt: v.number(),
+    }),
+  ),
+  handler: async (ctx) => {
+    const [blogRows, postRows] = await Promise.all([
+      ctx.db
+        .query("published")
+        .withIndex("by_kind_publishedAt", (q) => q.eq("kind", "blog"))
+        .order("desc")
+        .take(1000),
+      ctx.db
+        .query("published")
+        .withIndex("by_kind_publishedAt", (q) => q.eq("kind", "post"))
+        .order("desc")
+        .take(1000),
+    ]);
+
+    return [...blogRows, ...postRows]
+      .map((row) => ({
+        slug: row.slug,
+        ownerHandle: row.ownerHandle ?? null,
+        kind: row.kind,
+        updatedAt: row.updatedAt,
+      }))
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+  },
+});
+
 /** Lightweight metadata — used by the share dialog to render a link card. */
 export const getMetadataBySlug = query({
   args: { slug: v.string() },

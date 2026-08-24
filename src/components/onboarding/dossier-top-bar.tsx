@@ -15,6 +15,12 @@ import { Link } from "@builder.io/qwik-city";
  * ("Back to desk"), the only mode switch (the right-aligned Form /
  * Conversation pair), and the only destructive action ("Start over"). The
  * authoring surfaces below it carry no chrome of their own.
+ *
+ * Two placements, one bar. The conversation is a full-bleed transcript, so
+ * the chrome sits above it as a page-wide rail (`variant="page"`). The form
+ * is a single folio on a desk, and a page-wide rail above it wasted a band
+ * of viewport the folio needed — there, the same bar is filed into the top
+ * of the folio itself as its tab strip (`variant="inset"`).
  */
 interface DossierTopBarProps {
   /** Where "Back to desk" navigates. */
@@ -27,20 +33,29 @@ interface DossierTopBarProps {
   switchHref: string;
   /** When true, render the "Start over" destructive action. Only the refine page exposes it. */
   showStartOver: boolean;
+  /** `page` floats above the surface; `inset` is filed into the folio's top edge. */
+  variant?: "page" | "inset";
   onSwitch$: PropFunction<() => void>;
   onStartOver$: PropFunction<() => void>;
 }
 
 export const DossierTopBar = component$((props: DossierTopBarProps) => {
   const formPill = props.mode === "form";
+  const inset = props.variant === "inset";
   return (
     <div
-      class="shrink-0 px-4 py-2 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/80 backdrop-blur-sm flex items-center justify-between gap-4"
+      class={`shrink-0 flex items-center justify-between gap-4 border-b border-[var(--color-paper-3)] ${
+        inset
+          ? "px-4 py-1.5 bg-[color-mix(in_srgb,var(--color-paper-2)_70%,transparent)]"
+          : "px-4 py-2 bg-[var(--color-paper-2)]/80 backdrop-blur-sm"
+      }`}
     >
       <div class="flex items-center gap-3">
         <Link
           href={props.backHref}
-          class="text-[var(--color-ink-light)] hover:text-[var(--color-ink)] text-sm flex items-center gap-1.5"
+          class={`text-[var(--color-ink-light)] hover:text-[var(--color-ink)] flex items-center gap-1.5 ${
+            inset ? "text-[0.7rem]" : "text-sm"
+          }`}
           style={{ fontFamily: "var(--font-typewriter)" }}
         >
           <span aria-hidden="true">←</span> {props.backLabel}
@@ -49,7 +64,7 @@ export const DossierTopBar = component$((props: DossierTopBarProps) => {
           <button
             type="button"
             onClick$={props.onStartOver$}
-            class="text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] text-[0.65rem] tracking-[0.18em] uppercase"
+            class="text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] text-[0.6rem] tracking-[0.18em] uppercase"
             style={{ fontFamily: "var(--font-typewriter)" }}
           >
             Start over
@@ -58,7 +73,9 @@ export const DossierTopBar = component$((props: DossierTopBarProps) => {
       </div>
 
       <div
-        class="flex items-center gap-1 text-[0.65rem] tracking-[0.18em] uppercase"
+        class={`flex items-center gap-1 tracking-[0.18em] uppercase ${
+          inset ? "text-[0.6rem]" : "text-[0.65rem]"
+        }`}
         style={{ fontFamily: "var(--font-typewriter)" }}
         role="group"
         aria-label="Authoring surface"
@@ -72,8 +89,8 @@ export const DossierTopBar = component$((props: DossierTopBarProps) => {
           onClick$={props.onSwitch$}
           class={
             formPill
-              ? "rounded-full bg-[var(--color-vermilion)] px-3 py-1 text-white"
-              : "rounded-full px-3 py-1 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
+              ? "rounded-full bg-[var(--color-vermilion)] px-2.5 py-0.5 text-[var(--color-paper)]"
+              : "rounded-full px-2.5 py-0.5 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
           }
         >
           Form
@@ -84,8 +101,8 @@ export const DossierTopBar = component$((props: DossierTopBarProps) => {
           onClick$={props.onSwitch$}
           class={
             formPill
-              ? "rounded-full px-3 py-1 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
-              : "rounded-full bg-[var(--color-vermilion)] px-3 py-1 text-white"
+              ? "rounded-full px-2.5 py-0.5 text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
+              : "rounded-full bg-[var(--color-vermilion)] px-2.5 py-0.5 text-[var(--color-paper)]"
           }
         >
           Conversation

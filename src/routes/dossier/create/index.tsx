@@ -9,7 +9,6 @@ import { useNavigate } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
-import { DossierTopBar } from "../../../components/onboarding/dossier-top-bar";
 import { AuthPanel } from "../../../components/auth/auth-panel";
 import { useAuth } from "../../../utils/auth-context";
 import type {
@@ -38,7 +37,11 @@ import {
 } from "../../../utils/idb";
 import { markDirty } from "../../../utils/convex-sync";
 import { captureProductEvent } from "../../../utils/product-analytics";
-import { CONVERSATION_ROUTE_CLASS } from "../../../utils/conversation-layout";
+import { DOSSIER_ROUTE_CLASS } from "../../../utils/conversation-layout";
+import {
+  waitForDossierFiledFeedback,
+  type DossierFilingState,
+} from "../../../utils/dossier-filing";
 
 interface OnboardingStore {
   hydrated: boolean;
@@ -64,6 +67,7 @@ export default component$(() => {
   const auth = useAuth();
   // Once the brief is saved we offer (but never force) sign-up.
   const briefDone = useSignal(false);
+  const filingState = useSignal<DossierFilingState>("idle");
   const store = useStore<OnboardingStore>({
     hydrated: false,
     style: "form",
@@ -107,61 +111,69 @@ export default component$(() => {
       attachments?: DossierAttachment[],
       probes?: DossierProbe[],
     ) => {
-      const brief = createProjectBrief(answers, null, attachments, probes);
-      let folioId = store.folioId;
-      let folioName = store.folioName;
-      if (!folioId) {
-        const folio: Folio = {
-          id: crypto.randomUUID(),
-          name: answers.workingTitle || "Untitled folio",
-          type: "draft",
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        };
-        const folios = await loadFoliosFromIdb();
-        await saveFoliosToIdb([...folios, folio]);
-        await saveActiveFolioIdToIdb(folio.id);
-        void captureProductEvent("folio_created", {
-          source: "onboarding",
-          folio_type: folio.type,
-        });
-        folioId = folio.id;
-        folioName = folio.name;
-        store.folioId = folio.id;
-        store.folioName = folio.name;
-      }
+      filingState.value = "filing";
+      try {
+        const brief = createProjectBrief(answers, null, attachments, probes);
+        let folioId = store.folioId;
+        let folioName = store.folioName;
+        if (!folioId) {
+          const folio: Folio = {
+            id: crypto.randomUUID(),
+            name: answers.workingTitle || "Untitled folio",
+            type: "draft",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          };
+          const folios = await loadFoliosFromIdb();
+          await saveFoliosToIdb([...folios, folio]);
+          await saveActiveFolioIdToIdb(folio.id);
+          void captureProductEvent("folio_created", {
+            source: "onboarding",
+            folio_type: folio.type,
+          });
+          folioId = folio.id;
+          folioName = folio.name;
+          store.folioId = folio.id;
+          store.folioName = folio.name;
+        }
 
-      await saveProjectBriefForFolio(folioId, brief);
+        await saveProjectBriefForFolio(folioId, brief);
 
-      const existingDraft = await loadFolioContentFromIdb(folioId);
-      if (!existingDraft.trim()) {
-        const material = existingMaterial?.trim();
-        await saveFolioContentToIdb(
-          folioId,
-          material
-            ? buildImportedMaterialDocument(answers, material, filename)
-            : buildStarterDocument(answers),
-        );
-      }
+        const existingDraft = await loadFolioContentFromIdb(folioId);
+        if (!existingDraft.trim()) {
+          const material = existingMaterial?.trim();
+          await saveFolioContentToIdb(
+            folioId,
+            material
+              ? buildImportedMaterialDocument(answers, material, filename)
+              : buildStarterDocument(answers),
+          );
+        }
 
-      await saveActiveFolioIdToIdb(folioId);
-      if (folioName && folioName === "Untitled folio") {
-        const folios = await loadFoliosFromIdb();
-        await saveFoliosToIdb(
-          folios.map((folio) =>
-            folio.id === folioId
-              ? {
-                  ...folio,
-                  name: answers.workingTitle || folio.name,
-                  updatedAt: Date.now(),
-                }
-              : folio,
-          ),
-        );
+        await saveActiveFolioIdToIdb(folioId);
+        if (folioName && folioName === "Untitled folio") {
+          const folios = await loadFoliosFromIdb();
+          await saveFoliosToIdb(
+            folios.map((folio) =>
+              folio.id === folioId
+                ? {
+                    ...folio,
+                    name: answers.workingTitle || folio.name,
+                    updatedAt: Date.now(),
+                  }
+                : folio,
+            ),
+          );
+        }
+        markDirty();
+        void captureProductEvent("dossier_completed", { mode: "first_run" });
+        filingState.value = "filed";
+        await waitForDossierFiledFeedback();
+        briefDone.value = true;
+      } catch (error) {
+        filingState.value = "idle";
+        throw error;
       }
-      markDirty();
-      void captureProductEvent("dossier_completed", { mode: "first_run" });
-      briefDone.value = true;
     },
   );
 
@@ -226,20 +238,15 @@ export default component$(() => {
 
   if (store.style === "conversational") {
     return (
-      <div class={CONVERSATION_ROUTE_CLASS}>
-        <DossierTopBar
-          backHref={store.folioId ? "/editor/" : "/"}
-          backLabel={store.folioId ? "Back to desk" : "Back home"}
-          mode={store.style}
-          switchHref=""
-          showStartOver={false}
-          onSwitch$={$(() => {
-            store.style = "form";
-          })}
-          onStartOver$={$(() => {})}
-        />
+      <div class={DOSSIER_ROUTE_CLASS}>
         <ConversationalInterview
           mode="first-run"
+          filingState={filingState.value}
+          chromeBackHref={store.folioId ? "/editor/" : "/"}
+          chromeBackLabel={store.folioId ? "Back to desk" : "Back home"}
+          onSwitchSurface$={$(() => {
+            store.style = "form";
+          })}
           initialMaterial={store.initialMaterial}
           onComplete$={({ answers, attachments, probes }) =>
             completeOnboarding$(
@@ -260,21 +267,18 @@ export default component$(() => {
     );
   }
 
+  // The form surface owns the viewport, and files its own chrome into the
+  // folio's top edge rather than stacking a page-wide bar above it.
   return (
-    <div class="min-h-screen bg-[var(--color-paper)]">
-      <DossierTopBar
-        backHref={store.folioId ? "/editor/" : "/"}
-        backLabel={store.folioId ? "Back to desk" : "Back home"}
-        mode={store.style}
-        switchHref=""
-        showStartOver={false}
-        onSwitch$={$(() => {
-          store.style = "conversational";
-        })}
-        onStartOver$={$(() => {})}
-      />
+    <div class={DOSSIER_ROUTE_CLASS}>
       <AntiTabulaRasa
         mode="first-run"
+        filingState={filingState.value}
+        chromeBackHref={store.folioId ? "/editor/" : "/"}
+        chromeBackLabel={store.folioId ? "Back to desk" : "Back home"}
+        onSwitchSurface$={$(() => {
+          store.style = "conversational";
+        })}
         initialAnswers={
           store.formAnswers as ProjectInterviewAnswers | null | undefined
         }

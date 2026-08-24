@@ -38,6 +38,21 @@ describe("print stylesheet", () => {
     }
   });
 
+  test("is a readable standalone document before it is printed", () => {
+    const html = exportHtml(payload());
+    expect(html).toContain('<main class="export-document">');
+    expect(html).toContain('<header class="export-titleblock">');
+    expect(html).toContain("<h1>Specimen</h1>");
+    expect(html).toContain('meta name="generator" content="Twyne"');
+    expect(html).toContain("article { max-width: 70ch; }");
+  });
+
+  test("does not duplicate a title already leading the manuscript", () => {
+    const html = exportHtml(payload({ html: "<h1>Specimen</h1><p>Body.</p>" }));
+    expect(html).not.toContain('<header class="export-titleblock">');
+    expect(html.match(/<h1>Specimen<\/h1>/g)).toHaveLength(1);
+  });
+
   test("the sheet size comes from paper and orientation", () => {
     const html = exportHtml(
       payload({ layout: layout({ paper: "a4", orientation: "landscape" }) }),
@@ -67,6 +82,13 @@ describe("print stylesheet", () => {
     const html = exportHtml(payload({ layout: layout({ marginLeft: 3 }) }));
     expect(html).toMatch(/body\s*\{[^}]*margin:\s*0;/);
     expect(html).toMatch(/body\s*\{[^}]*padding:\s*0;/);
+  });
+
+  test("screen-only paper geometry is removed for print", () => {
+    const html = exportHtml(payload());
+    expect(html).toContain(".export-document {");
+    expect(html).toContain("box-shadow: none;");
+    expect(html).toContain("article, .export-titleblock { max-width: none; }");
   });
 
   test("margins are converted to inches through the fixed 96px/in", () => {

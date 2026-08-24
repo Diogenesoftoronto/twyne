@@ -104,6 +104,7 @@ import {
   appendUserCommentReply,
   toggleUserCommentResolved,
   deleteUserComment,
+  deleteUserComments,
   type UserCommentReply,
 } from "../../utils/user-comments";
 import {
@@ -619,11 +620,10 @@ export const TwyneEditor = component$(
           if (mirrorTimer) clearTimeout(mirrorTimer);
         });
 
-        // Reconciliation of writer comments against the current
-        // document. Debounced to avoid walking the doc on every
-        // keystroke. Emits `twyne:comments-reconciled` with the
-        // three buckets (live, ghost, headless) so the Marginalia
-        // panel can show a writer what happened to their threads.
+        // Reconciliation of writer comments against the current document.
+        // A deleted anchor means its thread has no remaining manuscript
+        // subject, so remove it too rather than leaving unreachable ghosts
+        // in Marginalia. Debouncing avoids walking the document per keypress.
         let reconcileTimer: ReturnType<typeof setTimeout> | null = null;
         const reconcileCommentsDebounced = (html: string) => {
           if (reconcileTimer) clearTimeout(reconcileTimer);
@@ -634,6 +634,33 @@ export const TwyneEditor = component$(
                 (thread) => thread.folioId === store.activeFolioId,
               );
               const result = reconcileCommentAnchors(threads, markIds);
+              if (result.ghost.length > 0) {
+                const deletedIds = result.ghost.map((thread) => thread.id);
+                await deleteUserComments(deletedIds);
+                const client = clientSig.value;
+                if (client) {
+                  await Promise.all(
+                    deletedIds.map(async (commentId) => {
+                      try {
+                        await client.mutation(api.userComments.deleteComment, {
+                          commentId,
+                        });
+                      } catch (err) {
+                        console.warn(
+                          "[twyne:editor] deleted comment sync failed:",
+                          err,
+                        );
+                      }
+                    }),
+                  );
+                }
+                if (store.userCommentPopover?.id && deletedIds.includes(store.userCommentPopover.id)) {
+                  store.userCommentPopover = null;
+                }
+                window.dispatchEvent(
+                  new CustomEvent("twyne:user-comments-changed"),
+                );
+              }
               window.dispatchEvent(
                 new CustomEvent("twyne:comments-reconciled", {
                   detail: result,
@@ -765,8 +792,9 @@ export const TwyneEditor = component$(
 
         // ProseMirror handles pointer events inside its own managed DOM and
         // can stop them before Qwik's delegated listener reaches the mount
-        // wrapper. Capture on the actual editor surface so returning to the
-        // manuscript always clears transient editorial furniture.
+        // wrapper. A drag selection is only final on pointer release, so
+        // keep the action card out of the transaction churn until then.
+        let selectionPointerActive = false;
         const dismissEditorialFurniture = () => {
           store.showImageInput = false;
           store.selectionAction = null;
@@ -776,28 +804,6 @@ export const TwyneEditor = component$(
           store.openPicker = null;
           void onManuscriptFocus$?.();
         };
-        editor.view.dom.addEventListener(
-          "mousedown",
-          dismissEditorialFurniture,
-          true,
-        );
-        editor.view.dom.addEventListener(
-          "touchstart",
-          dismissEditorialFurniture,
-          true,
-        );
-        cleanup(() => {
-          editor.view.dom.removeEventListener(
-            "mousedown",
-            dismissEditorialFurniture,
-            true,
-          );
-          editor.view.dom.removeEventListener(
-            "touchstart",
-            dismissEditorialFurniture,
-            true,
-          );
-        });
 
         // Sharing must serialize the exact document Tiptap owns, including
         // edits still inside the route's persistence debounce. The share
@@ -817,7 +823,8 @@ export const TwyneEditor = component$(
           ),
         );
 
-        const refreshActive = () => {
+        /** Record the finished text range as a durable manuscript action. */
+        const refreshSelectionAction = () => {
           const { from, to } = editor.state.selection;
           store.hasSelection = from !== to;
           if (from !== to && editor.state.selection instanceof TextSelection) {
@@ -852,6 +859,39 @@ export const TwyneEditor = component$(
           } else {
             store.selectionAction = null;
           }
+        };
+
+        const finishSelectionPointer = () => {
+          selectionPointerActive = false;
+          document.removeEventListener("pointerup", finishSelectionPointer);
+          document.removeEventListener(
+            "pointercancel",
+            finishSelectionPointer,
+          );
+          // Browser selection and ProseMirror selection settle after pointerup.
+          // Waiting one frame makes the menu deterministic for a drag that
+          // ends over either text or the manuscript's empty page area.
+          requestAnimationFrame(refreshSelectionAction);
+        };
+        const beginSelectionPointer = () => {
+          selectionPointerActive = true;
+          dismissEditorialFurniture();
+          document.addEventListener("pointerup", finishSelectionPointer);
+          document.addEventListener("pointercancel", finishSelectionPointer);
+        };
+        editor.view.dom.addEventListener("pointerdown", beginSelectionPointer, true);
+        cleanup(() => {
+          editor.view.dom.removeEventListener(
+            "pointerdown",
+            beginSelectionPointer,
+            true,
+          );
+          document.removeEventListener("pointerup", finishSelectionPointer);
+          document.removeEventListener("pointercancel", finishSelectionPointer);
+        });
+
+        const refreshActive = () => {
+          if (!selectionPointerActive) refreshSelectionAction();
           store.active = {
             bold: editor.isActive("bold"),
             italic: editor.isActive("italic"),
@@ -2104,9 +2144,12 @@ export const TwyneEditor = component$(
         store.userCommentPopover = { ...popover, resolved: updated.resolved };
       }
       const client = clientSig.value;
-      if (client) {
+      if (client && updated) {
         try {
-          await client.mutation(api.userComments.resolveComment, { commentId });
+          await client.mutation(api.userComments.setCommentResolved, {
+            commentId,
+            resolved: updated.resolved,
+          });
         } catch (err) {
           console.warn("[twyne:editor] resolve sync failed:", err);
         }
@@ -2161,7 +2204,30 @@ export const TwyneEditor = component$(
           };
         });
       };
+      const onToggleUserCommentResolved = (event: Event) => {
+        const detail = (
+          event as CustomEvent<{ commentId?: string; resolved?: boolean }>
+        ).detail;
+        if (!detail?.commentId || typeof detail.resolved !== "boolean") return;
+        const client = clientSig.value;
+        if (!client) return;
+        void client
+          .mutation(api.userComments.setCommentResolved, {
+            commentId: detail.commentId,
+            resolved: detail.resolved,
+          })
+          .catch((err) => {
+            console.warn(
+              "[twyne:editor] rail comment resolve sync failed:",
+              err,
+            );
+          });
+      };
       window.addEventListener("twyne:delete-user-comment", onDeleteUserComment);
+      window.addEventListener(
+        "twyne:toggle-user-comment-resolved",
+        onToggleUserCommentResolved,
+      );
       window.addEventListener(
         "twyne:user-comments-changed",
         onUserCommentsChanged,
@@ -2170,6 +2236,10 @@ export const TwyneEditor = component$(
         window.removeEventListener(
           "twyne:delete-user-comment",
           onDeleteUserComment,
+        );
+        window.removeEventListener(
+          "twyne:toggle-user-comment-resolved",
+          onToggleUserCommentResolved,
         );
         window.removeEventListener(
           "twyne:user-comments-changed",

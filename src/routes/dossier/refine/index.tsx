@@ -3,13 +3,14 @@ import { useNavigate, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
-import { DossierTopBar } from "../../../components/onboarding/dossier-top-bar";
 import { ThemedDialog } from "../../../components/ui/themed-dialog";
+import { useConvexClient } from "../../../utils/convex-context";
+import { useAuth } from "../../../utils/auth-context";
+import { api } from "../../../../convex/_generated/api";
 import type {
   DossierAttachment,
   DossierProbe,
   DossierCheckResult,
-  DossierObservation,
   InterviewStyle,
   ProjectBrief,
   ProjectInterviewAnswers,
@@ -34,6 +35,15 @@ import {
 } from "../../../utils/anti-tabula-rasa";
 import { captureProductEvent } from "../../../utils/product-analytics";
 import { dossierRouteClass } from "../../../utils/conversation-layout";
+import { normalizeApplicationError } from "../../../utils/application-errors";
+import {
+  dossierCheckUnavailableMessage,
+  runDossierCheckWithHostedFallback,
+} from "../../../utils/dossier-check";
+import {
+  waitForDossierFiledFeedback,
+  type DossierFilingState,
+} from "../../../utils/dossier-filing";
 
 interface RefiningStore {
   brief: ProjectBrief | null;
@@ -43,24 +53,26 @@ interface RefiningStore {
   dossierCheck: DossierCheckResult | null;
   dossierCheckLoading: boolean;
   dossierCheckError: string | null;
-  showDossierCheck: boolean;
   formAnswers: Partial<ProjectInterviewAnswers> | null;
   formAttachments: DossierAttachment[];
   folioId: string | null;
   startOverOpen: boolean;
   startOverBusy: boolean;
+  filingState: DossierFilingState;
 }
 
 /**
  * The brief refinery. Two modes:
  *   - **form** (default) — the existing AntiTabulaRasa with pre-filled answers.
  *   - **conversational** — chat with the AI about which fields have drifted.
- * Plus the "sideways lift": a "Read my draft" button that asks the AI to
- * cross-reference the current draft against the dossier and surfaces where
- * the draft has outgrown the brief.
+ * Draft alignment is part of the live dossier preview: the room compares the
+ * current manuscript with all seven fields, and the writer applies or dismisses
+ * each proposed change in place.
  */
 export default component$(() => {
   const nav = useNavigate();
+  const auth = useAuth();
+  const clientSig = useConvexClient();
   const store = useStore<RefiningStore>({
     brief: null,
     draftText: "",
@@ -69,12 +81,12 @@ export default component$(() => {
     dossierCheck: null,
     dossierCheckLoading: false,
     dossierCheckError: null,
-    showDossierCheck: false,
     formAnswers: null,
     formAttachments: [],
     folioId: null,
     startOverOpen: false,
     startOverBusy: false,
+    filingState: "idle",
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -94,7 +106,7 @@ export default component$(() => {
   });
 
   const onFormSubmit = $(
-    (
+    async (
       answers: ProjectInterviewAnswers,
       _existing?: string,
       _filename?: string,
@@ -102,20 +114,29 @@ export default component$(() => {
       probes?: DossierProbe[],
     ) => {
       if (!store.brief || !store.folioId) return;
-      const next = createProjectBrief(
-        answers,
-        store.brief,
-        attachments,
-        probes,
-      );
-      void saveProjectBriefForFolio(store.folioId, next);
-      void captureProductEvent("dossier_completed", { mode: "refine" });
-      void nav("/editor/");
+      store.filingState = "filing";
+      try {
+        const next = createProjectBrief(
+          answers,
+          store.brief,
+          attachments,
+          probes,
+        );
+        await saveProjectBriefForFolio(store.folioId, next);
+        store.brief = next;
+        void captureProductEvent("dossier_completed", { mode: "refine" });
+        store.filingState = "filed";
+        await waitForDossierFiledFeedback();
+        await nav("/editor/");
+      } catch (error) {
+        store.filingState = "idle";
+        throw error;
+      }
     },
   );
 
   const onConversationComplete = $(
-    ({
+    async ({
       answers,
       attachments,
       probes,
@@ -125,23 +146,39 @@ export default component$(() => {
       probes: DossierProbe[];
     }) => {
       if (!store.brief || !store.folioId) return;
-      const next = createProjectBrief(
-        answers,
-        store.brief,
-        attachments,
-        probes,
-      );
-      void saveProjectBriefForFolio(store.folioId, next);
-      void captureProductEvent("dossier_completed", { mode: "refine" });
-      void nav("/editor/");
+      store.filingState = "filing";
+      try {
+        const next = createProjectBrief(
+          answers,
+          store.brief,
+          attachments,
+          probes,
+        );
+        await saveProjectBriefForFolio(store.folioId, next);
+        store.brief = next;
+        void captureProductEvent("dossier_completed", { mode: "refine" });
+        store.filingState = "filed";
+        await waitForDossierFiledFeedback();
+        await nav("/editor/");
+      } catch (error) {
+        store.filingState = "idle";
+        throw error;
+      }
     },
   );
 
-  const runDossierCheck = $(async () => {
+  const runDossierCheck = $(async (answers: ProjectInterviewAnswers) => {
     if (!store.brief) return;
+    const draftText = htmlToPlainText(store.draftText).trim();
+    if (!draftText) {
+      store.dossierCheck = null;
+      store.dossierCheckError =
+        "There is no manuscript text to compare yet. Add some draft material, then try again.";
+      return;
+    }
     store.dossierCheckLoading = true;
     store.dossierCheckError = null;
-    store.showDossierCheck = true;
+    store.dossierCheck = null;
     try {
       const raw = await loadAiSettingsFromIdb();
       const settings = raw ?? {
@@ -151,52 +188,79 @@ export default component$(() => {
         perFeature: {},
         showProviderTags: false,
       };
-      if (!hasConfiguredAiProvider(settings)) {
-        store.dossierCheckError =
-          "Reading the draft needs a configured AI provider. Add one in Settings.";
-        store.dossierCheckLoading = false;
+      const currentBrief: ProjectBrief = {
+        ...store.brief,
+        answers,
+        updatedAt: Date.now(),
+      };
+      const hasConfiguredProvider = hasConfiguredAiProvider(settings);
+      const hostedClient = auth.value.user ? clientSig.value : null;
+      const result = await runDossierCheckWithHostedFallback({
+        runClient: hasConfiguredProvider
+          ? () =>
+              runClientDossierCheck(
+                { brief: currentBrief, draftText },
+                settings,
+              )
+          : null,
+        runHosted: hostedClient
+          ? () =>
+              hostedClient.action(api.agents.runDossierCheck, {
+                brief: currentBrief,
+                draftText,
+              })
+          : null,
+      });
+      if (!result) {
+        store.dossierCheckError = dossierCheckUnavailableMessage(
+          hasConfiguredProvider,
+        );
         return;
       }
-      const result = await runClientDossierCheck(
-        { brief: store.brief, draftText: store.draftText || null },
-        settings,
-      );
       store.dossierCheck = result;
     } catch (err) {
-      store.dossierCheckError = (err as Error).message ?? "The check failed.";
+      store.dossierCheckError = normalizeApplicationError(err, {
+        metadata: { feature: "dossier-check" },
+      }).message;
     } finally {
       store.dossierCheckLoading = false;
     }
   });
 
-  const applyObservation = $((obs: DossierObservation) => {
-    if (!store.brief || !store.folioId || !obs.suggested) return;
-    const updated: ProjectInterviewAnswers = {
-      ...store.brief.answers,
-      [obs.field]: obs.suggested,
-    };
-    const next: ProjectBrief = {
-      ...store.brief,
-      answers: updated,
-      updatedAt: Date.now(),
-    };
-    void saveProjectBriefForFolio(store.folioId, next);
-    store.brief = next;
-    if (store.dossierCheck) {
-      store.dossierCheck = {
-        ...store.dossierCheck,
-        observations: store.dossierCheck.observations.filter((o) => o !== obs),
+  const applyObservation = $(
+    async (index: number, answers: ProjectInterviewAnswers) => {
+      if (!store.brief || !store.folioId) return;
+      const observation = store.dossierCheck?.observations[index];
+      if (!observation?.suggested) return;
+      const remaining =
+        store.dossierCheck?.observations.filter(
+          (_, observationIndex) => observationIndex !== index,
+        ) ?? [];
+      const next: ProjectBrief = {
+        ...store.brief,
+        answers,
+        updatedAt: Date.now(),
       };
-    }
-  });
+      await saveProjectBriefForFolio(store.folioId, next);
+      store.brief = next;
+      store.formAnswers = answers;
+      if (store.dossierCheck) {
+        store.dossierCheck = {
+          ...store.dossierCheck,
+          observations: remaining,
+        };
+      }
+    },
+  );
 
-  const dismissObservation = $((obs: DossierObservation) => {
-    if (store.dossierCheck) {
-      store.dossierCheck = {
-        ...store.dossierCheck,
-        observations: store.dossierCheck.observations.filter((o) => o !== obs),
-      };
-    }
+  const dismissObservation = $((index: number) => {
+    if (!store.dossierCheck) return;
+    store.dossierCheck = {
+      ...store.dossierCheck,
+      observations: store.dossierCheck.observations.filter(
+        (_, observationIndex) => observationIndex !== index,
+      ),
+    };
   });
 
   // The "Start over" affordance is the only destructive action on this page,
@@ -269,7 +333,7 @@ export default component$(() => {
                 ? `/dossier/create/?folio=${encodeURIComponent(store.folioId)}`
                 : "/dossier/create/"
             }
-            class="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-vermilion)] text-white px-5 py-2.5 text-sm"
+            class="inline-flex items-center gap-1.5 rounded-full bg-[var(--color-vermilion)] text-[var(--color-paper)] px-5 py-2.5 text-sm"
             style={{ fontFamily: "var(--font-display)" }}
           >
             File this folio's dossier
@@ -279,140 +343,27 @@ export default component$(() => {
     );
   }
 
+  const switchSurface = $(() => {
+    store.style = store.style === "form" ? "conversational" : "form";
+  });
+  const openStartOver = $(() => {
+    store.startOverOpen = true;
+  });
+
+  // Both surfaces are the same folio, so the route hands each of them the
+  // same chrome and lets the folio file it into its own top edge. Switching
+  // surfaces swaps a leaf, not the page.
   return (
     <div class={dossierRouteClass(store.style)}>
-      <DossierTopBar
-        backHref="/editor/"
-        backLabel="Back to desk"
-        mode={store.style}
-        switchHref=""
-        showStartOver
-        onSwitch$={$(() => {
-          const next = store.style === "form" ? "conversational" : "form";
-          store.style = next;
-        })}
-        onStartOver$={$(() => {
-          store.startOverOpen = true;
-        })}
-      />
-
-      {store.style === "form" && (
-        <div class="px-4 py-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-          <div class="max-w-2xl mx-auto flex items-center justify-between gap-3">
-            <div>
-              <p
-                class="text-sm"
-                style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
-              >
-                Have the room read your draft.
-              </p>
-              <p
-                class="text-[0.7rem] text-[var(--color-ink-muted)] mt-0.5"
-                style={{ fontFamily: "var(--font-typewriter)" }}
-              >
-                Cross-references the dossier against the current draft.
-              </p>
-            </div>
-            <button
-              onClick$={runDossierCheck}
-              disabled={store.dossierCheckLoading}
-              class="rounded-full bg-[var(--color-ink)] text-white px-4 py-1.5 text-sm disabled:opacity-30"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              {store.dossierCheckLoading ? "Reading…" : "Read my draft"}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {store.showDossierCheck && (
-        <section class="px-4 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-          <div class="max-w-2xl mx-auto space-y-3">
-            <div class="flex items-center justify-between">
-              <p
-                class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
-                style={{ fontFamily: "var(--font-typewriter)" }}
-              >
-                Drift report
-              </p>
-              <button
-                onClick$={() => {
-                  store.showDossierCheck = false;
-                }}
-                class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
-                style={{ fontFamily: "var(--font-typewriter)" }}
-              >
-                Close
-              </button>
-            </div>
-
-            {store.dossierCheckError && (
-              <div class="bg-[var(--color-vermilion)]/10 border border-[var(--color-vermilion)] rounded p-3 text-sm text-[var(--color-vermilion)]">
-                {store.dossierCheckError}
-              </div>
-            )}
-
-            {store.dossierCheck?.observations.length === 0 && (
-              <p class="text-sm text-[var(--color-ink-light)] italic">
-                No drift detected. The dossier still matches the draft.
-              </p>
-            )}
-
-            {store.dossierCheck?.observations.map((obs, i) => (
-              <div
-                key={i}
-                class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded p-3 space-y-2"
-              >
-                <p
-                  class="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)]"
-                  style={{ fontFamily: "var(--font-typewriter)" }}
-                >
-                  {obs.field}
-                </p>
-                <p
-                  class="text-sm leading-relaxed"
-                  style={{ fontFamily: "var(--font-serif)" }}
-                >
-                  {obs.reason}
-                </p>
-                {obs.suggested && (
-                  <p
-                    class="text-xs px-2 py-1.5 bg-[var(--color-paper)] border-l-2 border-[var(--color-mustard)] italic"
-                    style={{ fontFamily: "var(--font-serif)" }}
-                  >
-                    <span class="text-[var(--color-ink-muted)] not-italic">
-                      Suggested:{" "}
-                    </span>
-                    {obs.suggested}
-                  </p>
-                )}
-                <div class="flex items-center gap-2 pt-1">
-                  {obs.suggested && (
-                    <button
-                      onClick$={() => applyObservation(obs)}
-                      class="text-xs px-3 py-1 rounded bg-[var(--color-vermilion)] text-white"
-                      style={{ fontFamily: "var(--font-typewriter)" }}
-                    >
-                      Apply
-                    </button>
-                  )}
-                  <button
-                    onClick$={() => dismissObservation(obs)}
-                    class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
-                  >
-                    Dismiss
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
       {store.style === "form" ? (
         <AntiTabulaRasa
           mode="refine"
+          filingState={store.filingState}
+          chromeBackHref="/editor/"
+          chromeBackLabel="Back to desk"
+          chromeShowStartOver
+          onSwitchSurface$={switchSurface}
+          onStartOver$={openStartOver}
           initialAnswers={
             (store.formAnswers ??
               store.brief.answers) as ProjectInterviewAnswers
@@ -422,11 +373,24 @@ export default component$(() => {
               ? store.formAttachments
               : store.brief.attachments
           }
+          initialProbes={store.brief.probes}
+          draftReview={store.dossierCheck}
+          draftReviewLoading={store.dossierCheckLoading}
+          draftReviewError={store.dossierCheckError}
+          onReadDraft$={runDossierCheck}
+          onApplyDraftObservation$={applyObservation}
+          onDismissDraftObservation$={dismissObservation}
           onSubmit$={onFormSubmit}
         />
       ) : (
         <ConversationalInterview
           mode="refine"
+          filingState={store.filingState}
+          chromeBackHref="/editor/"
+          chromeBackLabel="Back to desk"
+          chromeShowStartOver
+          onSwitchSurface$={switchSurface}
+          onStartOver$={openStartOver}
           initialBrief={store.brief}
           initialAttachments={store.brief.attachments}
           onComplete$={onConversationComplete}

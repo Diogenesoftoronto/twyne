@@ -209,8 +209,21 @@ export async function toggleUserCommentResolved(
 export async function deleteUserComment(
   commentId: string,
 ): Promise<UserComment[]> {
+  return deleteUserComments([commentId]);
+}
+
+/**
+ * Remove several threads in one read/write cycle. Anchor reconciliation can
+ * find more than one deleted passage at a time; writing each deletion from a
+ * separate stale snapshot could otherwise resurrect a sibling thread.
+ */
+export async function deleteUserComments(
+  commentIds: Iterable<string>,
+): Promise<UserComment[]> {
+  const ids = new Set(commentIds);
+  if (ids.size === 0) return loadUserComments();
   const all = await loadUserComments();
-  const next = all.filter((x) => x.id !== commentId);
+  const next = all.filter((x) => !ids.has(x.id));
   await saveUserComments(next);
   return next;
 }
