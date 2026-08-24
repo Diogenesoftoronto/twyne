@@ -1,0 +1,84 @@
+{
+  "cli_version": "0.10.0",
+  "checkpoint_id": "4cc5de23a193",
+  "session_id": "01a02c1a-0ce5-78e0-b63b-d2c28001d3fd",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-24T18:49:59.284955122Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "convex/agents.ts",
+    "src/components/brief/dossier-preview.tsx",
+    "src/components/brief/project-brief-card.tsx",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/dossier-top-bar.tsx",
+    "src/components/onboarding/probe-input.tsx",
+    "src/routes/dossier/refine/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/dossier-check.test.ts",
+    "src/utils/dossier-check.ts",
+    "src/utils/dossier-preview-wiring.test.ts",
+    "src/utils/form-probes.test.ts",
+    "src/utils/form-probes.ts"
+  ],
+  "agent": "Codex",
+  "model": "fugu-ultra-v1.1",
+  "turn_id": "fdf24d796408",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 1884880,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 22805519,
+    "output_tokens": 69554,
+    "api_call_count": 93
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-24T18:49:59.027642363Z",
+    "agent_lines": 0,
+    "agent_removed": 117,
+    "human_added": 1477,
+    "human_modified": 461,
+    "human_removed": 0,
+    "total_committed": 1892,
+    "total_lines_changed": 2757,
+    "agent_percentage": 4.243743199129488,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 1415,
+      "user_lines_removed": 415,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "convex/agents.ts": 144,
+        "src/components/brief/dossier-preview.tsx": 321,
+        "src/components/brief/project-brief-card.tsx": 37,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 279,
+        "src/components/onboarding/dossier-top-bar.tsx": 3,
+        "src/components/onboarding/probe-input.tsx": 60,
+        "src/routes/dossier/refine/index.tsx": 87,
+        "src/utils/ai-client.ts": 6,
+        "src/utils/dossier-check.test.ts": 97,
+        "src/utils/dossier-check.ts": 118,
+        "src/utils/dossier-preview-wiring.test.ts": 54,
+        "src/utils/form-probes.test.ts": 97,
+        "src/utils/form-probes.ts": 112
+      },
+      "user_removed_per_file": {
+        "convex/agents.ts": 11,
+        "src/components/brief/project-brief-card.tsx": 7,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 160,
+        "src/components/onboarding/dossier-top-bar.tsx": 5,
+        "src/components/onboarding/probe-input.tsx": 46,
+        "src/routes/dossier/refine/index.tsx": 163,
+        "src/utils/ai-client.ts": 22,
+        "src/utils/form-probes.test.ts": 1
+      }
+    }
+  ]
+}

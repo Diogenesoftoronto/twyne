@@ -1,0 +1,21 @@
+a few things are serious problem with the application, for the filed brief, it appears in local mode it doesn't appear to really save or be applied after finishing, the preview should show the full brief with all those questions. there is a stage of the brief which suggestions questions or a question based on what is written so far and that didn't appear as well. that should be fixed it should tell me that is loading or the state of it at least. the next thing is that the button for read my draft is in all the way at the top and in a terrible colour in the dark color scenario. the other thing is that the apply to dossier stuff should work as well and appear in the dossier card itself instead of this awkward side placement. I want it to all fit the theme.
+
+---
+
+i will just check myself
+
+---
+
+okay the either dept of the particular still doesn't show anything for a question and the drift report does nothing either. please fix this the buttons aren't fixed you havent integrated with the brief in tthe center of the page either
+
+---
+
+[Image #1] this section is completely useless after the first section it has a description here that could be improved it has a title that should be switched dossier preview so other things take precendence and we can use the rest of the page for more useful interaction
+
+---
+
+[Image #1] this part above the brief should be functionality merged with it instead of outside it as well
+
+---
+
+I like the paper aspect that the brief had before it would be nice.
