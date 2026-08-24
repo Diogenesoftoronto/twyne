@@ -1,0 +1,118 @@
+{
+  "cli_version": "0.10.0",
+  "checkpoint_id": "4cc5de23a193",
+  "session_id": "01a02cfc-fa15-75c0-85d5-15364896f6f3",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-24T18:50:00.533238142Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "save_step_count": 3,
+  "files_touched": [
+    "convex/agents.ts",
+    "src/components/brief/project-brief-card.tsx",
+    "src/components/comments/comments-panel.tsx",
+    "src/components/editor/marginalia-wiring.test.ts",
+    "src/components/editor/selection-actions.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/conversational-interview.tsx",
+    "src/components/onboarding/dossier-top-bar.tsx",
+    "src/components/onboarding/probe-input.tsx",
+    "src/global.css",
+    "src/routes/dossier/create/index.tsx",
+    "src/routes/dossier/refine/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/conversation-layout.test.ts",
+    "src/utils/conversation-layout.ts",
+    "src/utils/exchange-print.test.ts",
+    "src/utils/exchange.ts",
+    "src/utils/form-probes.test.ts",
+    "src/utils/form-probes.ts",
+    "src/utils/user-comments.test.ts",
+    "src/utils/user-comments.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-terra",
+  "turn_id": "ca59063e6229",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 243699,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 5398784,
+    "output_tokens": 20630,
+    "api_call_count": 68
+  },
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-24T18:50:00.445593867Z",
+    "agent_lines": 0,
+    "agent_removed": 47,
+    "human_added": 0,
+    "human_modified": 940,
+    "human_removed": 226,
+    "total_committed": 104,
+    "total_lines_changed": 1280,
+    "agent_percentage": 3.671875,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 2508,
+      "user_lines_removed": 1063,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "convex/agents.ts": 144,
+        "src/components/brief/dossier-preview.tsx": 361,
+        "src/components/brief/project-brief-card.tsx": 37,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 543,
+        "src/components/onboarding/conversational-interview.tsx": 486,
+        "src/components/onboarding/dossier-folio.tsx": 71,
+        "src/components/onboarding/dossier-top-bar.tsx": 25,
+        "src/components/onboarding/probe-input.tsx": 60,
+        "src/global.css": 132,
+        "src/routes/dossier/create/index.tsx": 15,
+        "src/routes/dossier/refine/index.tsx": 107,
+        "src/utils/ai-client.ts": 6,
+        "src/utils/conversation-layout.test.ts": 17,
+        "src/utils/conversation-layout.ts": 26,
+        "src/utils/dossier-check.test.ts": 97,
+        "src/utils/dossier-check.ts": 118,
+        "src/utils/dossier-preview-wiring.test.ts": 54,
+        "src/utils/form-probes.test.ts": 97,
+        "src/utils/form-probes.ts": 112
+      },
+      "user_removed_per_file": {
+        "convex/agents.ts": 11,
+        "src/components/brief/project-brief-card.tsx": 7,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 257,
+        "src/components/onboarding/conversational-interview.tsx": 468,
+        "src/components/onboarding/dossier-top-bar.tsx": 8,
+        "src/components/onboarding/probe-input.tsx": 46,
+        "src/routes/dossier/create/index.tsx": 26,
+        "src/routes/dossier/refine/index.tsx": 179,
+        "src/utils/ai-client.ts": 22,
+        "src/utils/conversation-layout.test.ts": 23,
+        "src/utils/conversation-layout.ts": 15,
+        "src/utils/form-probes.test.ts": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2643,
+      "agent_lines_removed": 1074
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2692,
+      "agent_lines_removed": 1099
+    }
+  ]
+}

@@ -3,7 +3,7 @@
   "checkpoint_id": "4cc5de23a193",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 6,
+  "checkpoints_count": 9,
   "files_touched": [
     "convex/agents.ts",
     "src/components/brief/dossier-preview.tsx",
@@ -13,17 +13,24 @@
     "src/components/editor/selection-actions.tsx",
     "src/components/editor/twyne-editor.tsx",
     "src/components/onboarding/anti-tabula-rasa.tsx",
+    "src/components/onboarding/conversational-interview.tsx",
     "src/components/onboarding/dossier-top-bar.tsx",
     "src/components/onboarding/probe-input.tsx",
     "src/global.css",
+    "src/routes/dossier/create/index.tsx",
     "src/routes/dossier/refine/index.tsx",
     "src/utils/ai-client.ts",
+    "src/utils/conversation-layout.test.ts",
+    "src/utils/conversation-layout.ts",
     "src/utils/dossier-check.test.ts",
     "src/utils/dossier-check.ts",
     "src/utils/dossier-preview-wiring.test.ts",
+    "src/utils/exchange-print.test.ts",
     "src/utils/exchange.ts",
     "src/utils/form-probes.test.ts",
-    "src/utils/form-probes.ts"
+    "src/utils/form-probes.ts",
+    "src/utils/user-comments.test.ts",
+    "src/utils/user-comments.ts"
   ],
   "sessions": [
     {
@@ -39,13 +46,20 @@
       "compact_transcript": "/4c/c5de23a193/1/transcript.jsonl",
       "content_hash": "/4c/c5de23a193/1/content_hash.txt",
       "prompt": "/4c/c5de23a193/1/prompt.txt"
+    },
+    {
+      "metadata": "/4c/c5de23a193/2/metadata.json",
+      "transcript": "/4c/c5de23a193/2/full.jsonl",
+      "compact_transcript": "/4c/c5de23a193/2/transcript.jsonl",
+      "content_hash": "/4c/c5de23a193/2/content_hash.txt",
+      "prompt": "/4c/c5de23a193/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 3940841,
+    "input_tokens": 4184540,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 122797711,
-    "output_tokens": 395734,
-    "api_call_count": 922
+    "cache_read_tokens": 128196495,
+    "output_tokens": 416364,
+    "api_call_count": 990
   }
 }

@@ -1,0 +1,13 @@
+Hey there is a bug in the ux and there is a bug with the marginalia comments where they don't seem to be strikeable, they don't seem to be removed when deleting the text itself and the is a problem wit hthe ux where you select a piece of text you see the modal appear for that selection but nothing happens when you try to make that text still be there while the text is selected. it should basically stick around but it doesnt
+
+---
+
+it doesn't seem totally fixed the clicking sseems to partially seems like something that works if i select the text and let go in the off side parts of the editor. i need a more full proof way that this should work so that when i let go of the click the options should still be around until i click on something else or start typing.
+
+---
+
+can you improve the resulting exported standalone html document.
+
+---
+
+.
