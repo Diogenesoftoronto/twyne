@@ -1,0 +1,641 @@
+twyne on  main [!?] ❯ devenv update
+✓ Validating lock 1 files                                                                                                                                                                                                   0ms
+✓ Updating devenv.lock                                                                                                                                                                                                     2.8s
+✓ Downloading  https://github.com/cachix/devenv/archive/ffb790fa8de10911b88c3114f35917a26759874a.tar.gz from github.com                                                                                                   738ms
+✓ Evaluating devenv.config.changelog.json 1573 files                                                                                                                                                                       1.5s
+  └ ✓ Querying  changelog.json from install.determinate.systems                                                                                                                                                            73ms
+  └ ✓ Querying  changelog.json from cache.nixos.org                                                                                                                                                                        56ms
+  └ ✓ Building  changelog.json 1 lines                                                                                                                                                                                     52ms
+
+📋 changelog
+
+2026-08-16: The profile only links the outputs a package installs and the shell exposes
+
+  $DEVENV_PROFILE used to link every output of each package in packages, including doc, debug and static outputs, and outputs that collide with each other, such as the individual certificate files of pkgs.cacert.
+  It now links the outputs in the package's meta.outputsToInstall (what nix profile install would pick) plus the out, bin, lib, dev and include outputs the shell already exposes.
+  Selecting an output explicitly, such as pkgs.sqlite.dev, links only that output.
+
+  If you relied on another output being in the profile, add it to packages explicitly, for example pkgs.openssl.doc.
+
+direnv: loading ~/Projects/twyne/.envrc
+direnv: using devenv
+✓ Validating lock 1 files                                                                                                                                                                                                   0ms
+✓ Configuring shell                                                                                                                                                                                                       475ms
+  └ ✓ Configuring cachix                                                                                                                                                                                                    0ms
+  └ ✗ Evaluating shell 840 files                                                                                                                                                                                          475ms
+  │ evaluating file '/nix/store/REDACTED/pkgs/development/libraries/attr/default.nix'
+  │ evaluating file '/nix/store/REDACTED/lib/systems/doubles.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/by-name/gn/gnugrep/package.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/development/tools/misc/patchelf/default.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/stage.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/variants.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/aliases.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/all-packages.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/splice.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/build-support/trivial-builders/default.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/stdenv/adapters.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/stage.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/variants.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/aliases.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/all-packages.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/top-level/splice.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/build-support/trivial-builders/default.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/stdenv/adapters.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/shells/bash/5.nix'
+  │ evaluating file '/nix/store/REDACTED/pkgs/build-support/mkshell/default.nix'
+  × Failed to get shell attribute:
+    … from call site
+      at /home/diogenes/Projects/twyne/.devenv/bootstrap/bootstrapLib.nix:552:15:
+       551|       bash = pkgs.bash;
+       552|       shell = config.shell;
+          |               ^
+       553|       optionsJSON = options.optionsJSON;
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/attrsets.nix:1195:17:
+      1194|         mapAttrs (
+      1195|           name: value:
+          |                 ^
+      1196|           if isAttrs value && cond value then recurse (path ++ [ name ]) value else f (path ++ [ name ]) value
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/attrsets.nix:1196:85:
+      1195|           name: value:
+      1196|           if isAttrs value && cond value then recurse (path ++ [ name ]) value else f (path ++ [ name ]) value
+          |                                                                                     ^
+      1197|         );
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/modules.nix:282:71:
+       281|           # For definitions that have an associated option
+       282|           declaredConfig = mapAttrsRecursiveCond (v: !isOption v) (_: v: v.value) options;
+          |                                                                       ^
+       283|
+
+
+    … while evaluating the attribute 'value'
+      at /nix/store/REDACTED/lib/modules.nix:1149:7:
+      1148|     // {
+      1149|       value = addErrorContext "while evaluating the option `${showOption loc}':" value;
+          |       ^
+      1150|       inherit (res.defsFinal') highestPrio;
+
+
+    … while evaluating the option `shell':
+
+    … while evaluating the attribute 'mergedValue'
+      at /nix/store/REDACTED/lib/modules.nix:1246:5:
+      1245|     # Type-check the remaining definitions, and merge them. Or throw if no definitions.
+      1246|     mergedValue =
+          |     ^
+      1247|       if isDefined then
+
+
+    … while evaluating a branch condition
+      at /nix/store/REDACTED/lib/modules.nix:1247:7:
+      1246|     mergedValue =
+      1247|       if isDefined then
+          |       ^
+      1248|         if type.merge ? v2 then
+
+
+    … while evaluating a branch condition
+      at /nix/store/REDACTED/lib/modules.nix:1223:7:
+      1222|       # above are lazy and thus never forced on this branch.
+      1223|       if
+          |       ^
+      1224|         length defs == 1
+
+
+    … in the right operand of the AND (&&) operator
+      at /nix/store/REDACTED/lib/modules.nix:1225:9:
+      1224|         length defs == 1
+      1225|         && (
+          |         ^
+      1226|           let
+
+
+    … while evaluating definitions from `/nix/store/REDACTED/src/modules/top-level.nix':
+
+    … in the argument of the not operator
+      at /nix/store/REDACTED/lib/modules.nix:1230:31:
+      1229|           addErrorContext "while evaluating definitions from `${d.file}':" (
+      1230|             !(isAttrs d.value && d.value ? _type)
+          |                               ^
+      1231|           )
+
+
+    … in the left operand of the AND (&&) operator
+      at /nix/store/REDACTED/lib/modules.nix:1230:31:
+      1229|           addErrorContext "while evaluating definitions from `${d.file}':" (
+      1230|             !(isAttrs d.value && d.value ? _type)
+          |                               ^
+      1231|           )
+
+
+    … while calling the 'isAttrs' builtin
+      at /nix/store/REDACTED/lib/modules.nix:1230:15:
+      1229|           addErrorContext "while evaluating definitions from `${d.file}':" (
+      1230|             !(isAttrs d.value && d.value ? _type)
+          |               ^
+      1231|           )
+
+
+    … while evaluating the attribute 'value'
+      at /nix/store/REDACTED/lib/modules.nix:851:21:
+       850|             inherit (module) file;
+       851|             inherit value;
+          |                     ^
+       852|           }) module.config
+
+
+    … from call site
+      at /nix/store/REDACTED/src/modules/top-level.nix:449:7:
+       448|       in
+       449|       performAssertions (
+          |       ^
+       450|         (pkgs.mkShell.override { stdenv = config.stdenv; }) (
+
+
+    … while calling 'showWarnings'
+      at /nix/store/REDACTED/lib/trivial.nix:1051:28:
+      1050|
+      1051|   showWarnings = warnings: res: foldr warn res warnings;
+          |                            ^
+      1052|
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/trivial.nix:1051:33:
+      1050|
+      1051|   showWarnings = warnings: res: foldr warn res warnings;
+          |                                 ^
+      1052|
+
+
+    … while calling 'foldr'
+      at /nix/store/REDACTED/lib/lists.nix:138:14:
+       137|   foldr =
+       138|     op: nul: list:
+          |              ^
+       139|     let
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/lists.nix:143:5:
+       142|     in
+       143|     fold' 0;
+          |     ^
+       144|
+
+
+    … while calling 'fold''
+      at /nix/store/REDACTED/lib/lists.nix:141:15:
+       140|       len = length list;
+       141|       fold' = n: if n == len then nul else op (elemAt list n) (fold' (n + 1));
+          |               ^
+       142|     in
+
+
+    … while calling a functor (an attribute set with a '__functor' attribute)
+      at /nix/store/REDACTED/src/modules/top-level.nix:450:10:
+       449|       performAssertions (
+       450|         (pkgs.mkShell.override { stdenv = config.stdenv; }) (
+          |          ^
+       451|           {
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/customisation.nix:865:7:
+       864|       # Adds the fixed-point style support
+       865|       __functor =
+          |       ^
+       866|         self: fpargs:
+
+
+    … while calling '__functor'
+      at /nix/store/REDACTED/lib/customisation.nix:866:15:
+       865|       __functor =
+       866|         self: fpargs:
+          |               ^
+       867|         transformDrv (
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/customisation.nix:867:9:
+       866|         self: fpargs:
+       867|         transformDrv (
+          |         ^
+       868|           constructDrv (
+
+
+    … while calling 'id'
+      at /nix/store/REDACTED/lib/trivial.nix:63:8:
+        62|   */
+        63|   id = x: x;
+          |        ^
+        64|
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/customisation.nix:868:11:
+       867|         transformDrv (
+       868|           constructDrv (
+          |           ^
+       869|             final:
+
+
+    … while calling 'mkDerivation'
+      at /nix/store/REDACTED/pkgs/stdenv/generic/make-derivation.nix:225:18:
+       224|   */
+       225|   mkDerivation = fnOrAttrs: makeDerivationExtensible (toFunction fnOrAttrs);
+          |                  ^
+       226|
+
+
+    … from call site
+      at /nix/store/REDACTED/pkgs/stdenv/generic/make-derivation.nix:225:29:
+       224|   */
+       225|   mkDerivation = fnOrAttrs: makeDerivationExtensible (toFunction fnOrAttrs);
+          |                             ^
+       226|
+
+
+    … while calling 'makeDerivationExtensible'
+      at /nix/store/REDACTED/pkgs/stdenv/generic/make-derivation.nix:229:5:
+       228|   makeDerivationExtensible =
+       229|     rattrs:
+          |     ^
+       230|     let
+
+
+    … from call site
+      at /nix/store/REDACTED/pkgs/stdenv/generic/make-derivation.nix:308:22:
+       307|
+       308|       finalPackage = mkDerivationSimple overrideAttrs args;
+          |                      ^
+       309|
+
+
+    … from call site
+      at /nix/store/REDACTED/pkgs/stdenv/generic/make-derivation.nix:236:14:
+       235|       # An infinite recursion here can be caused by having the attribute names of expression `e` in `.overrideAttrs(finalAttrs: previousAttrs: e)` depend on `finalAttrs`. Only the attribute values of `e` can depend on `finalAttrs`.
+       236|       args = rattrs (args // { inherit finalPackage overrideAttrs; });
+          |              ^
+       237|       #              ^^^^
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/customisation.nix:869:13:
+       868|           constructDrv (
+       869|             final:
+          |             ^
+       870|             let
+
+
+    … in the right operand of the update (//) operator
+      at /nix/store/REDACTED/lib/customisation.nix:873:56:
+       872|             in
+       873|             removeAttrs previous excludeDrvArgNames // extendDrvArgs final previous
+          |                                                        ^
+       874|           )
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/customisation.nix:873:56:
+       872|             in
+       873|             removeAttrs previous excludeDrvArgNames // extendDrvArgs final previous
+          |                                                        ^
+       874|           )
+
+
+    … while evaluating a branch condition
+      at /nix/store/REDACTED/lib/customisation.nix:871:26:
+       870|             let
+       871|               previous = if isFunction fpargs then fpargs final else fpargs;
+          |                          ^
+       872|             in
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/customisation.nix:871:29:
+       870|             let
+       871|               previous = if isFunction fpargs then fpargs final else fpargs;
+          |                             ^
+       872|             in
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/trivial.nix:1131:5:
+      1130|     in
+      1131|     f: isFunction f || (f ? __functor && isFunction (f.__functor f));
+          |     ^
+      1132|
+
+
+    … in the left operand of the OR (||) operator
+      at /nix/store/REDACTED/lib/trivial.nix:1131:21:
+      1130|     in
+      1131|     f: isFunction f || (f ? __functor && isFunction (f.__functor f));
+          |                     ^
+      1132|
+
+
+    … while calling the 'isFunction' builtin
+      at /nix/store/REDACTED/lib/trivial.nix:1131:8:
+      1130|     in
+      1131|     f: isFunction f || (f ? __functor && isFunction (f.__functor f));
+          |        ^
+      1132|
+
+
+    … in the right operand of the update (//) operator
+      at /nix/store/REDACTED/src/modules/top-level.nix:460:14:
+       459|           }
+       460|           // config.env
+          |              ^
+       461|         )
+
+
+    … from call site
+      at /nix/store/REDACTED/src/modules/top-level.nix:460:14:
+       459|           }
+       460|           // config.env
+          |              ^
+       461|         )
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/attrsets.nix:1195:17:
+      1194|         mapAttrs (
+      1195|           name: value:
+          |                 ^
+      1196|           if isAttrs value && cond value then recurse (path ++ [ name ]) value else f (path ++ [ name ]) value
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/attrsets.nix:1196:85:
+      1195|           name: value:
+      1196|           if isAttrs value && cond value then recurse (path ++ [ name ]) value else f (path ++ [ name ]) value
+          |                                                                                     ^
+      1197|         );
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/modules.nix:282:71:
+       281|           # For definitions that have an associated option
+       282|           declaredConfig = mapAttrsRecursiveCond (v: !isOption v) (_: v: v.value) options;
+          |                                                                       ^
+       283|
+
+
+    … while evaluating the attribute 'value'
+      at /nix/store/REDACTED/lib/modules.nix:1149:7:
+      1148|     // {
+      1149|       value = addErrorContext "while evaluating the option `${showOption loc}':" value;
+          |       ^
+      1150|       inherit (res.defsFinal') highestPrio;
+
+
+    … while evaluating the option `env':
+
+    … while evaluating the attribute 'mergedValue'
+      at /nix/store/REDACTED/lib/modules.nix:1246:5:
+      1245|     # Type-check the remaining definitions, and merge them. Or throw if no definitions.
+      1246|     mergedValue =
+          |     ^
+      1247|       if isDefined then
+
+
+    … while evaluating a branch condition
+      at /nix/store/REDACTED/lib/modules.nix:1247:7:
+      1246|     mergedValue =
+      1247|       if isDefined then
+          |       ^
+      1248|         if type.merge ? v2 then
+
+
+    … while evaluating the attribute 'values'
+      at /nix/store/REDACTED/lib/modules.nix:1240:11:
+      1239|         {
+      1240|           values = defsSorted;
+          |           ^
+      1241|           inherit (defsFiltered) highestPrio;
+
+
+    … while evaluating a branch condition
+      at /nix/store/REDACTED/lib/modules.nix:1211:11:
+      1210|           # Avoid sorting if we don't have to.
+      1211|           if any (def: def.value._type or "" == "order") defsFiltered.values then
+          |           ^
+      1212|             sortProperties defsFiltered.values
+
+
+    … while calling the 'any' builtin
+      at /nix/store/REDACTED/lib/modules.nix:1211:14:
+      1210|           # Avoid sorting if we don't have to.
+      1211|           if any (def: def.value._type or "" == "order") defsFiltered.values then
+          |              ^
+      1212|             sortProperties defsFiltered.values
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/modules.nix:1206:24:
+      1205|         # Process mkOverride properties.
+      1206|         defsFiltered = filterOverrides' defsNormalized;
+          |                        ^
+      1207|
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/modules.nix:1424:5:
+      1423|     in
+      1424|     defs:
+          |     ^
+      1425|     # Optimize for the singleton case, equivalent to the `else` clause.
+
+
+    … while evaluating a branch condition
+      at /nix/store/REDACTED/lib/modules.nix:1426:5:
+      1425|     # Optimize for the singleton case, equivalent to the `else` clause.
+      1426|     if length defs == 1 then
+          |     ^
+      1427|       {
+
+
+    … while calling the 'length' builtin
+      at /nix/store/REDACTED/lib/modules.nix:1426:8:
+      1425|     # Optimize for the singleton case, equivalent to the `else` clause.
+      1426|     if length defs == 1 then
+          |        ^
+      1427|       {
+
+
+    … while calling the 'concatMap' builtin
+      at /nix/store/REDACTED/lib/modules.nix:1191:26:
+      1190|         # Process mkMerge and mkIf properties.
+      1191|         defsNormalized = concatMap (
+          |                          ^
+      1192|           m:
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/modules.nix:1192:11:
+      1191|         defsNormalized = concatMap (
+      1192|           m:
+          |           ^
+      1193|           map (
+
+
+    … while calling the 'map' builtin
+      at /nix/store/REDACTED/lib/modules.nix:1193:11:
+      1192|           m:
+      1193|           map (
+          |           ^
+      1194|             value:
+
+
+    … while evaluating definitions from `devenv:dotenv-resolved':
+
+    … from call site
+      at /nix/store/REDACTED/lib/modules.nix:1202:80:
+      1201|               }
+      1202|           ) (addErrorContext "while evaluating definitions from `${m.file}':" (dischargeProperties m.value))
+          |                                                                                ^
+      1203|         ) defs;
+
+
+    … while calling 'dischargeProperties'
+      at /nix/store/REDACTED/lib/modules.nix:1378:5:
+      1377|   dischargeProperties =
+      1378|     def:
+          |     ^
+      1379|     if def._type or "" == "merge" then
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/modules.nix:1383:31:
+      1382|       if isBool def.condition then
+      1383|         if def.condition then dischargeProperties def.content else [ ]
+          |                               ^
+      1384|       else
+
+
+    … while calling 'dischargeProperties'
+      at /nix/store/REDACTED/lib/modules.nix:1378:5:
+      1377|   dischargeProperties =
+      1378|     def:
+          |     ^
+      1379|     if def._type or "" == "merge" then
+
+
+    … while evaluating a branch condition
+      at /nix/store/REDACTED/lib/modules.nix:1379:5:
+      1378|     def:
+      1379|     if def._type or "" == "merge" then
+          |     ^
+      1380|       concatMap dischargeProperties def.contents
+
+
+    … while evaluating the attribute 'content'
+      at /nix/store/REDACTED/lib/modules.nix:1547:23:
+      1546|     _type = "if";
+      1547|     inherit condition content;
+          |                       ^
+      1548|   };
+
+
+    … while calling the 'mapAttrs' builtin
+      at /nix/store/REDACTED/src/modules/integrations/dotenv.nix:34:15:
+        33|           cliOwnedNames;
+        34|         env = lib.mapAttrs (_name: value: lib.mkDefault value) config.dotenv.resolved;
+          |               ^
+        35|       };
+
+
+    … from call site
+      at /nix/store/REDACTED/src/modules/integrations/dotenv.nix:34:64:
+        33|           cliOwnedNames;
+        34|         env = lib.mapAttrs (_name: value: lib.mkDefault value) config.dotenv.resolved;
+          |                                                                ^
+        35|       };
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/attrsets.nix:1195:17:
+      1194|         mapAttrs (
+      1195|           name: value:
+          |                 ^
+      1196|           if isAttrs value && cond value then recurse (path ++ [ name ]) value else f (path ++ [ name ]) value
+
+
+    … from call site
+      at /nix/store/REDACTED/lib/attrsets.nix:1196:85:
+      1195|           name: value:
+      1196|           if isAttrs value && cond value then recurse (path ++ [ name ]) value else f (path ++ [ name ]) value
+          |                                                                                     ^
+      1197|         );
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/lib/modules.nix:282:71:
+       281|           # For definitions that have an associated option
+       282|           declaredConfig = mapAttrsRecursiveCond (v: !isOption v) (_: v: v.value) options;
+          |                                                                       ^
+       283|
+
+
+    … while evaluating the attribute 'value'
+      at /nix/store/REDACTED/lib/modules.nix:1149:7:
+      1148|     // {
+      1149|       value = addErrorContext "while evaluating the option `${showOption loc}':" value;
+          |       ^
+      1150|       inherit (res.defsFinal') highestPrio;
+
+
+    … while evaluating the option `dotenv.resolved':
+
+    (19 duplicate frames omitted)
+
+    … while calling the 'removeAttrs' builtin
+      at /nix/store/REDACTED/src/modules/integrations/dotenv.nix:31:27:
+        30|       config = lib.mkIf config.dotenv.enable {
+        31|         dotenv.resolved = builtins.removeAttrs
+          |                           ^
+        32|           (loadDotenv (normalizeFilenames config.dotenv.filename) config.dotenv.substitution)
+
+
+    … from call site
+      at /nix/store/REDACTED/src/modules/integrations/dotenv.nix:32:12:
+        31|         dotenv.resolved = builtins.removeAttrs
+        32|           (loadDotenv (normalizeFilenames config.dotenv.filename) config.dotenv.substitution)
+          |            ^
+        33|           cliOwnedNames;
+
+
+    … while calling anonymous lambda
+      at /nix/store/REDACTED/src/modules/integrations/dotenv.nix:21:21:
+        20|       loadDotenv = devenvPrimops.loadDotenv or (
+        21|         _filenames: _substitution:
+          |                     ^
+        22|           throw ''
+
+
+    … while calling the 'throw' builtin
+      at /nix/store/REDACTED/src/modules/integrations/dotenv.nix:22:11:
+        21|         _filenames: _substitution:
+        22|           throw ''
+          |           ^
+        23|             The dotenv integration requires the C-Nix devenv CLI. It is not
+
+
+
+    error: The dotenv integration requires the C-Nix devenv CLI. It is not
+    available through the flake integration or another standalone Nix evaluation.
+
+---
+
+okay why a devenv.yaml instead of a devenv.nix sorry?
