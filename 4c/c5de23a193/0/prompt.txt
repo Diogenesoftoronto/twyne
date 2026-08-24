@@ -1,0 +1,85 @@
+Hey i want to improve the apparatus's ability to give feedback on what is happening during a search in the first place, a few things that are off to me about the You know, there's just a few things that are kind of off to me about the current experience. When I head to Twine, dialogue, and I go to the editor, I head to, you know, the side panel, the editorial board. I go to the apparatus, and there's just a few things that I kind of have problems with. One, I think, like, it's difficult to understand exactly when the agents are running and what they're exactly doing. I'd like to have, like, a really detailed look at exactly what sources the agents are looking for and whether they're doing that, and to restart if there's, like, some sort of failure. I need, like, more failure bounce, like to make sure that things are errors are actually being caught, that the right details are actually being looked at, possibly even having an ability to steer the agent search. That would be, like, if you're opening the full apparatus, I think being able to steer the search is probably important. Like, hey, like there's some steering involved here. I think that would be an excellent addition. Right now, when I go and I try out the apparatus, there's, like, a huge issue, at least to me, where there's no steering involved. That sounds, like that can sound kind of nice, but when an option isn't there, like let's say I highlight things in my text, right? I highlight stuff. That gives me some options, of course, in my compositor. But if I want to say, like, just have this immediately do, like a search to get information on this particular thing, you know? Like, oh sure, I can go and, like there should be some sort of right-click. Like sure, I can search Google for stuff if I right-click, or I can ask Gemini or something. But I want something better. I want something more involved, more important for the right-click on this site, or for, like, a hover option so that I can get, hey, immediately, hey, you know, in the regular editor, I can have, you know, go get sources. You know, there should be a get sources option or something like that. And it's like, yeah, this is the thing that you need to go and do some research on now. Like if I want to provide more information on this particular thing, like go and find sources on this, go and find the original source, that sort of stuff. That should all be there in the apparatus. Like the apparatus feature is, it feels more tacked on than what I think it really could provide. The other thing is, like, there's options. If we look at the marginalia, it's just, it just, there's some parts of it which I feel, it just feels a little bit, how do I say this? Feels a little tacked on, right? Like if you look at it, it just seems like it's tacked on. I personally, I feel like the marginalia should be taken out of the editorial board, and it should be, like, some option, like on the side here should be, like a prompt here. Maybe even thinking of a total alternative to the editorial board, where we pull the editorial board outside, outside of the side weird side panel, and we have it in the center of the screen, at, like, at the, like, bottom of the screen, right? Like where you can immediately start prompting, start talking, like go and see, and the overlay where you have, like, on the side, the comments, like, and not like a side panel, but, like, if you look at the Google Docs experience. The Google Docs experience has, like, these comments on the side. It has, like, oh, this is where this comment is looking at, this is what this is looking at. It's a more involved experience, and it's just all right there. Like users can hop in and dive in immediately with the text, and that makes it so that they never really need to pull out of the text, and I kind of like that as a design idea. So let's go with that. I like this pathway forward in order to improve, like, our ability to do design. If we think about the cards, the different cards that we can have, the way that we can mesh in with the styling, like remember we're very, like typewriter-esque styling. So working with that and even adding, like, yeah, so, like, that's important. I like everything else so far. Like it's just a generally good idea. If we go to, like, a new folio or whatever, that all works. I like everything else. Yeah, let's just get that part finished and done with.
+
+---
+
+create a visual example of each in html display for me to see
+
+---
+
+what if as things were being searched we gave deepdive then a summary and other search started to give some one an overview or llow some one to expand to gget an idea of what is happening during a search but otherwise keep them like signal desk. the other thing that i really like about being able to look between the deep trace and the signal is that it gives you very different look and understanding of what is important to the text. Also i think that this appartus cards shold be overlayed over the text itself with some basic translucence in the design. that is all
+
+---
+
+oh actually also those options for get sources find orginal and ask appartus i think somewhat redundant and unsure what they do. maybe get sources, add a margin (comment here on this where you invoke the marginalia) you could also send to a particular persona as well to request their thoughts on it with the model evolving per each persona.
+
+---
+
+steering at the top and should be a separate card should be able to switch contexts and collapse the cards.
+
+---
+
+when i was talking about switching the contexts i was talking about the other side like the other rubric and comments and stuff
+
+---
+
+now can you get started on the actual code
+
+---
+
+.
+
+---
+
+the overlay i think is quite awkward with its current position, there often isn't enough decent spacing at all to interact with the panels and the prompt for comments and stuff isn't centered and doesn't disappear when focused on the text itself. you have to think of these things
+
+---
+
+maybe have some sort of bottom panel that you can open like this very interface. instead of a terminal here in that bottom you also have a side panel so there are a bunch of patterns. One of the things I noticed is that there is still two ways to write a marginalia comment one that opens the comment panel in the compositor at the top and anther that opens the side panel. get rid of the interface for the compositor, this time use the same look as for the personas your own notes just get a different colour. the entire interface design should use good use of the editors space on right an left with comments appearing on the sides like in google does screen real estate is at a premium here and we want the interface to have depth as the user interacts instead of having it all upfront.
+
+---
+
+okay i think i have seen the bottom panel and honestly you can just return it to the side like old times, i would just like a more condensed way to view things in rubric and apparatus cut the redundant text by a lot
+
+---
+
+can you improve the design of apparatus card the top selection of the different modes of the editorial board should be in the same place
+
+---
+
+when there are conflicts in quotes the first one doesn't appear
+
+---
+
+design the component that is better for the rubric criteria relative weights but generally any of those input number types should be restyled if possible if not redesign component
+
+---
+
+marginalia comments have a bug they don't seem to disappear when deleted and you can view them like normal persona comments and they also have the same colour as m. le stylo
+
+---
+
+where ever input type number is used there should be a styled component that fits there instead of the generic.
+
+---
+
+when exporting there should be an option to export without comments from the personas which should be default
+
+---
+
+the editorial board should not have a collapsible option for the whole selection that is just the same as closing, instead get rid of that. i also want the tasteful arrows for collapsed stuff used in the appartus the way it is used in Cast
+
+---
+
+generate a stamped paper look for the rubric and grading should use custom assets and an animation for each. with maybe different small sounds
+
+---
+
+I think that the stamp should be transparent and the background 'texture' should have some transparency too because of the different colour schemes that we have sort of like the dossier stamp there's just one stamp for each grade made. gives a more significant identity to them too.
+
+---
+
+the little sound button is not what i want when grading the sound happens.
+
+---
+
+the editorial board should span the full length of the page just like the right drawer panel

@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.10.0",
+  "checkpoint_id": "4cc5de23a193",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "src/components/comments/comments-panel.tsx",
+    "src/components/editor/marginalia-wiring.test.ts",
+    "src/components/editor/selection-actions.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/global.css",
+    "src/utils/exchange.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4c/c5de23a193/0/metadata.json",
+      "transcript": "/4c/c5de23a193/0/full.jsonl",
+      "compact_transcript": "/4c/c5de23a193/0/transcript.jsonl",
+      "content_hash": "/4c/c5de23a193/0/content_hash.txt",
+      "prompt": "/4c/c5de23a193/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 2055961,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 99992192,
+    "output_tokens": 326180,
+    "api_call_count": 829
+  }
+}
