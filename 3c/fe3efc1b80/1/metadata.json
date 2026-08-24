@@ -1,0 +1,157 @@
+{
+  "cli_version": "0.10.0",
+  "checkpoint_id": "3cfe3efc1b80",
+  "session_id": "01a034b2-d30a-7da1-a246-090ccebed787",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-24T18:51:04.907275183Z",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "save_step_count": 6,
+  "files_touched": [
+    ".bumpy/dossier-filing-workflow.md"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "14ccb9f84a8b",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 740951,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 17353216,
+    "output_tokens": 57088,
+    "api_call_count": 159
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-24T18:51:04.469505418Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 24,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 24,
+    "total_lines_changed": 27,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 2776,
+      "user_lines_removed": 1119,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "convex/agents.ts": 144,
+        "devenv.lock": 10,
+        "devenv.nix": 5,
+        "src/components/brief/dossier-preview.tsx": 361,
+        "src/components/brief/project-brief-card.tsx": 37,
+        "src/components/comments/comments-panel.tsx": 10,
+        "src/components/editor/marginalia-wiring.test.ts": 41,
+        "src/components/editor/selection-actions.tsx": 4,
+        "src/components/editor/twyne-editor.tsx": 96,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 543,
+        "src/components/onboarding/conversational-interview.tsx": 486,
+        "src/components/onboarding/dossier-folio.tsx": 71,
+        "src/components/onboarding/dossier-top-bar.tsx": 25,
+        "src/components/onboarding/probe-input.tsx": 60,
+        "src/global.css": 132,
+        "src/routes/dossier/create/index.tsx": 15,
+        "src/routes/dossier/refine/index.tsx": 107,
+        "src/utils/ai-client.ts": 6,
+        "src/utils/conversation-layout.test.ts": 17,
+        "src/utils/conversation-layout.ts": 26,
+        "src/utils/dossier-check.test.ts": 97,
+        "src/utils/dossier-check.ts": 118,
+        "src/utils/dossier-preview-wiring.test.ts": 54,
+        "src/utils/exchange-print.test.ts": 22,
+        "src/utils/exchange.ts": 47,
+        "src/utils/form-probes.test.ts": 97,
+        "src/utils/form-probes.ts": 112,
+        "src/utils/user-comments.test.ts": 19,
+        "src/utils/user-comments.ts": 14
+      },
+      "user_removed_per_file": {
+        "convex/agents.ts": 11,
+        "devenv.lock": 10,
+        "devenv.nix": 2,
+        "src/components/brief/project-brief-card.tsx": 7,
+        "src/components/editor/selection-actions.tsx": 5,
+        "src/components/editor/twyne-editor.tsx": 30,
+        "src/components/onboarding/anti-tabula-rasa.tsx": 257,
+        "src/components/onboarding/conversational-interview.tsx": 468,
+        "src/components/onboarding/dossier-top-bar.tsx": 8,
+        "src/components/onboarding/probe-input.tsx": 46,
+        "src/routes/dossier/create/index.tsx": 26,
+        "src/routes/dossier/refine/index.tsx": 179,
+        "src/utils/ai-client.ts": 22,
+        "src/utils/conversation-layout.test.ts": 23,
+        "src/utils/conversation-layout.ts": 15,
+        "src/utils/exchange.ts": 8,
+        "src/utils/form-probes.test.ts": 1,
+        "src/utils/user-comments.ts": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2776,
+      "agent_lines_removed": 1119
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2776,
+      "agent_lines_removed": 1119
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2776,
+      "agent_lines_removed": 1119
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 2958,
+      "agent_lines_removed": 1186
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 29,
+      "user_lines_removed": 1,
+      "agent_lines_added": 3097,
+      "agent_lines_removed": 1189,
+      "user_added_per_file": {
+        "src/utils/dossier-check.test.ts": 16,
+        "src/utils/dossier-check.ts": 13
+      },
+      "user_removed_per_file": {
+        "src/utils/dossier-check.test.ts": 1
+      }
+    },
+    {
+      "checkpoint_number": 7,
+      "user_lines_added": 91,
+      "user_lines_removed": 3,
+      "agent_lines_added": 3106,
+      "agent_lines_removed": 1189,
+      "user_added_per_file": {
+        "convex/userComments.test.ts": 4,
+        "src/utils/dossier-check.test.ts": 59,
+        "src/utils/dossier-check.ts": 28
+      },
+      "user_removed_per_file": {
+        "convex/userComments.test.ts": 2,
+        "src/utils/dossier-check.test.ts": 1
+      }
+    }
+  ]
+}

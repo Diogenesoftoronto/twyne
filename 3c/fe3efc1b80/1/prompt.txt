@@ -1,0 +1,33 @@
+some of my sites are not indexing and i want to know whay
+
+---
+
+fix this stuff
+
+---
+
+okay one second, this site domain is twyne.love why do we need convex here? we only need to go through the pages served in the frontend not in convex
+
+---
+
+oh i see one second the convex url link for stuff yeah that makes sense if i do want to include those automatically could i just allow everything on blog/* fit as sitemap?
+
+---
+
+okay do that then what do you need
+
+---
+
+Review the current code changes (staged, unstaged, and untracked files) and provide prioritized findings.
+
+---
+
+resulve
+
+---
+
+Review the current code changes (staged, unstaged, and untracked files) and provide prioritized findings.
+
+---
+
+fix thesese issues
