@@ -3,7 +3,7 @@
   "checkpoint_id": "4cc5de23a193",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 15,
+  "checkpoints_count": 16,
   "files_touched": [
     "convex/agents.ts",
     "src/components/brief/dossier-preview.tsx",
@@ -95,13 +95,20 @@
       "compact_transcript": "/4c/c5de23a193/8/transcript.jsonl",
       "content_hash": "/4c/c5de23a193/8/content_hash.txt",
       "prompt": "/4c/c5de23a193/8/prompt.txt"
+    },
+    {
+      "metadata": "/4c/c5de23a193/9/metadata.json",
+      "transcript": "/4c/c5de23a193/9/full.jsonl",
+      "compact_transcript": "/4c/c5de23a193/9/transcript.jsonl",
+      "content_hash": "/4c/c5de23a193/9/content_hash.txt",
+      "prompt": "/4c/c5de23a193/9/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 5312473,
+    "input_tokens": 5392047,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 167477135,
-    "output_tokens": 508733,
-    "api_call_count": 1367
+    "cache_read_tokens": 167829135,
+    "output_tokens": 510841,
+    "api_call_count": 1372
   }
 }
