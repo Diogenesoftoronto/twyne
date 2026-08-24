@@ -1,0 +1,42 @@
+/**
+ * Familiar writing forms offered by the dossier's free-text combobox.
+ *
+ * This is intentionally suggestion-only. The stored value remains a string,
+ * so a writer can name a form that is not in this list without losing it.
+ */
+export const WRITING_FORMAT_SUGGESTIONS = [
+  "Essay",
+  "Article",
+  "Blog post",
+  "Newsletter",
+  "Op-ed",
+  "Feature",
+  "Profile",
+  "Interview",
+  "Review",
+  "Memo",
+  "Report",
+  "Proposal",
+  "Case study",
+  "White paper",
+  "Research paper",
+  "Academic paper",
+  "Personal statement",
+  "Grant application",
+  "Speech",
+  "Lecture",
+  "Tutorial",
+  "Documentation",
+  "Book chapter",
+  "Short story",
+  "Novella",
+  "Novel",
+  "Poem",
+  "Screenplay",
+  "Stage play",
+  "Radio script",
+  "Podcast script",
+  "Dispatch",
+  "Manifesto",
+  "Polemic",
+] as const;

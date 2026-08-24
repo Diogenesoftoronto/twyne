@@ -610,6 +610,55 @@ body {
   opacity: 0.55;
 }
 
+/* The editor drawer carries the latest per-folio dossier as a filed sheet,
+   distinct from the generic index-card treatment it replaced. */
+.filed-dossier-paper {
+  border: 1px solid var(--color-ink-light);
+  background: var(--color-paper-soft);
+  box-shadow: 3px 4px 0 color-mix(in srgb, var(--color-ink) 10%, transparent);
+  animation: filed-dossier-arrive 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.filed-dossier-paper::after {
+  content: "";
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-top: 1px solid var(--color-paper-3);
+  border-left: 1px solid var(--color-paper-3);
+  background: var(--color-paper-2);
+  clip-path: polygon(100% 0, 0 100%, 100% 100%);
+}
+
+.filed-dossier-paper__tab {
+  position: absolute;
+  top: -1px;
+  left: 0.75rem;
+  padding: 0.22rem 0.55rem 0.28rem;
+  border-right: 1px solid var(--color-ink-light);
+  border-bottom: 1px solid var(--color-ink-light);
+  border-left: 1px solid var(--color-ink-light);
+  background: color-mix(in srgb, var(--color-mustard) 18%, var(--color-paper));
+  color: var(--color-ink);
+  font-family: var(--font-typewriter);
+  font-size: 0.56rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+@keyframes filed-dossier-arrive {
+  from {
+    opacity: 0;
+    transform: translateX(-0.45rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* Dossier folder edge */
 .folio {
   background: var(--color-paper-soft);
@@ -4823,4 +4872,267 @@ a {
    too, since the indent is written as an inline style on the node. */
 .twyne-editor .ProseMirror [data-indent] {
   transition: margin-left 0.12s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Dossier folio — the viewport-locked filing surface
+ *
+ * The dossier is one sheet in a machine, not a scrolling web page:
+ * the folio fills the viewport, the two columns scroll inside their
+ * own frames, and advancing a step feeds a new sheet through the
+ * platen rather than repainting the page.
+ *
+ *   .folio-shift     : the sheet-feed on every step change
+ *   .folio-rail      : the department index along the bottom
+ *   .carriage-input  : platen underline that travels on focus
+ *   .type-caret      : blinking block caret on the live field
+ *   .field-live      : the preview card currently being typed into
+ * ───────────────────────────────────────────────────────────── */
+
+@keyframes folio-feed {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.folio-shift {
+  animation: folio-feed 0.26s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.dossier-folio-frame {
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.dossier-folio-frame[data-filing-state="filing"] {
+  border-color: color-mix(
+    in srgb,
+    var(--color-vermilion) 48%,
+    var(--color-paper-3)
+  );
+  transform: scale(0.998);
+}
+
+.dossier-folio-frame[data-filing-state="filed"] {
+  border-color: var(--color-vermilion);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--color-vermilion) 18%, transparent),
+    0 10px 24px -18px color-mix(in srgb, var(--shade) 38%, transparent);
+  animation: dossier-file-settle 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dossier-filed-confirmation {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  background: color-mix(in srgb, var(--color-paper) 76%, transparent);
+  pointer-events: none;
+  animation: dossier-filed-wash 180ms ease-out both;
+}
+
+.dossier-filed-confirmation__paper {
+  display: grid;
+  justify-items: center;
+  min-width: min(17rem, 84vw);
+  padding: 1.4rem 1.8rem 1.25rem;
+  border: 2px solid var(--color-vermilion);
+  background: var(--color-paper-soft);
+  color: var(--color-vermilion);
+  box-shadow: 0 5px 0
+    color-mix(in srgb, var(--color-vermilion) 16%, transparent);
+  font-family: var(--font-typewriter);
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(-1deg);
+  animation: dossier-stamp-filed 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.dossier-filed-confirmation__paper strong {
+  margin-top: 0.35rem;
+  font-size: 1.05rem;
+  letter-spacing: 0.24em;
+}
+
+.dossier-filed-confirmation__paper > span:last-child {
+  margin-top: 0.45rem;
+  color: var(--color-ink-light);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+}
+
+.dossier-filed-confirmation__mark {
+  display: grid;
+  width: 2.2rem;
+  height: 2.2rem;
+  place-items: center;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+@keyframes dossier-file-settle {
+  from {
+    transform: translateY(-0.35rem) scale(1.004);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dossier-filed-wash {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes dossier-stamp-filed {
+  from {
+    opacity: 0;
+    transform: translateY(-0.8rem) scale(1.16) rotate(-1deg);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1) rotate(-1deg);
+    filter: blur(0);
+  }
+}
+
+/* The caret that trails the live value in the dossier preview. A real
+   typewriter has no cursor, but the whole point of the preview is that
+   the sheet on the left is being struck as you type on the right — the
+   caret is what carries that across the gutter. */
+.type-caret {
+  display: inline-block;
+  width: 0.45em;
+  height: 1em;
+  margin-left: 0.1em;
+  vertical-align: -0.12em;
+  background: var(--color-vermilion);
+  animation: type-blink 1.05s steps(1, end) infinite;
+}
+
+/* Platen rule: the baseline under a single-line answer thickens and
+   colours as the carriage arrives. `background-size` animates from the
+   centre out so the rule is drawn rather than swapped. */
+.carriage-input {
+  background-image: linear-gradient(
+    to right,
+    var(--color-vermilion),
+    var(--color-mustard)
+  );
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 0% 2px;
+  transition: background-size 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.carriage-input:focus {
+  background-size: 100% 2px;
+}
+
+.writing-format-control {
+  position: relative;
+}
+
+.writing-format-control__cue {
+  position: absolute;
+  right: 0.4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-vermilion);
+  font-family: var(--font-typewriter);
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+/* The field card on the preview that the writer is filling right now. */
+.field-live {
+  border-color: var(--color-vermilion);
+  background: var(--color-paper);
+  box-shadow: 0 0 0 1px
+    color-mix(in srgb, var(--color-vermilion) 22%, transparent);
+}
+
+/* The department index that replaced the row of anonymous dots. Each
+   numeral is a jump target, so it needs a hit area and a filled state. */
+.folio-rail-step {
+  font-family: var(--font-typewriter);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  line-height: 1;
+  padding: 0.28rem 0.32rem 0.34rem;
+  color: var(--color-ink-muted);
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+.folio-rail-step:hover {
+  color: var(--color-ink);
+}
+.folio-rail-step[data-filled="true"] {
+  color: var(--color-ink-light);
+  border-bottom-color: color-mix(
+    in srgb,
+    var(--color-ink-muted) 45%,
+    transparent
+  );
+}
+.folio-rail-step[aria-current="step"] {
+  color: var(--color-vermilion);
+  border-bottom-color: var(--color-vermilion);
+}
+
+/* Column frames scroll inside the folio, never the page. The gutter is
+   a filing-cabinet crease rather than a scrollbar trough. */
+.folio-column {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-paper-3) transparent;
+}
+.folio-column::-webkit-scrollbar {
+  width: 6px;
+}
+.folio-column::-webkit-scrollbar-thumb {
+  background: var(--color-paper-3);
+  border-radius: 3px;
+}
+.folio-column::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .folio-shift {
+    animation: none;
+  }
+  .dossier-folio-frame,
+  .dossier-folio-frame[data-filing-state="filed"],
+  .dossier-filed-confirmation,
+  .dossier-filed-confirmation__paper,
+  .filed-dossier-paper {
+    animation: none;
+    transition: none;
+  }
+  .type-caret {
+    animation: none;
+  }
+  .carriage-input {
+    transition: none;
+  }
 }

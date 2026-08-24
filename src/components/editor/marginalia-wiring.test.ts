@@ -41,6 +41,49 @@ describe("marginalia interaction wiring", () => {
     expect(editor).toContain("removeCommentMarkById(store.editor, commentId)");
   });
 
+  test("deleting an anchored passage removes its marginalia thread", async () => {
+    const editor = await Bun.file(
+      "src/components/editor/twyne-editor.tsx",
+    ).text();
+
+    expect(editor).toContain("const result = reconcileCommentAnchors(threads, markIds)");
+    expect(editor).toContain("await deleteUserComments(deletedIds)");
+    expect(editor).toContain("api.userComments.deleteComment");
+  });
+
+  test("rail-side strikes sync through the editor-owned Convex client", async () => {
+    const [comments, editor] = await Promise.all([
+      Bun.file("src/components/comments/comments-panel.tsx").text(),
+      Bun.file("src/components/editor/twyne-editor.tsx").text(),
+    ]);
+
+    expect(comments).toContain('"twyne:toggle-user-comment-resolved"');
+    expect(editor).toContain("onToggleUserCommentResolved");
+    expect(editor).toContain("api.userComments.setCommentResolved");
+    expect(editor).toContain("resolved: detail.resolved");
+    expect(editor).toContain("rail comment resolve sync failed");
+  });
+
+  test("selection actions preserve the active manuscript range before clicks", async () => {
+    const actions = await Bun.file(
+      "src/components/editor/selection-actions.tsx",
+    ).text();
+
+    expect(actions).toContain("preventdefault:mousedown");
+    expect(actions).not.toContain("onMouseDown$={(event)");
+  });
+
+  test("selection actions settle after a manuscript pointer release", async () => {
+    const editor = await Bun.file(
+      "src/components/editor/twyne-editor.tsx",
+    ).text();
+
+    expect(editor).toContain("const finishSelectionPointer = () =>");
+    expect(editor).toContain("requestAnimationFrame(refreshSelectionAction)");
+    expect(editor).toContain('editor.view.dom.addEventListener("pointerdown"');
+    expect(editor).toContain('document.addEventListener("pointerup"');
+  });
+
   test("writer margins use the same hover-preview path as persona notes", async () => {
     const editor = await Bun.file(
       "src/components/editor/twyne-editor.tsx",

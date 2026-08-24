@@ -40,6 +40,7 @@ const {
   toggleUserCommentResolved,
   upsertUserComment,
   deleteUserComment,
+  deleteUserComments,
 } = await import("./user-comments");
 
 afterEach(() => {
@@ -175,6 +176,24 @@ describe("user-comments persistence", () => {
 
     const afterDelete = await deleteUserComment("c-1");
     expect(afterDelete.find((x) => x.id === "c-1")).toBeUndefined();
+  });
+
+  test("deletes several comments from one current snapshot", async () => {
+    for (const id of ["c-1", "c-2", "c-3"]) {
+      await upsertUserComment({
+        id,
+        folioId: "f-1",
+        text: "Note",
+        author: "You",
+        resolved: false,
+        createdAt: 1,
+        updatedAt: 1,
+        replies: [],
+      });
+    }
+
+    const remaining = await deleteUserComments(["c-1", "c-2"]);
+    expect(remaining.map((comment) => comment.id)).toEqual(["c-3"]);
   });
 
   test("upsert preserves replies filed before the parent body lands", async () => {

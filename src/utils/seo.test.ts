@@ -7,6 +7,7 @@ import {
   canonicalUrl,
   isPrivateWorkspacePath,
 } from "./seo";
+import { _test as sitemap } from "../routes/sitemap.xml/index";
 
 describe("Twyne search metadata", () => {
   test("canonicalizes every request onto the public origin", () => {
@@ -59,22 +60,21 @@ describe("Twyne search metadata", () => {
 describe("crawler discovery files", () => {
   const publicDir = resolve(import.meta.dir, "../../public");
 
-  test("robots advertises the canonical sitemap and leaves noindex pages crawlable", async () => {
-    const robots = await readFile(resolve(publicDir, "robots.txt"), "utf8");
-    expect(robots).toContain(`Sitemap: ${TWYNE_SITE_ORIGIN}/sitemap.xml`);
-    expect(robots).toContain("Allow: /");
-    expect(robots).not.toContain("Disallow: /editor");
-  });
-
-  test("sitemap contains only absolute production URLs", async () => {
-    const sitemap = await readFile(resolve(publicDir, "sitemap.xml"), "utf8");
-    const locations = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(
-      (match) => match[1],
+  test("sitemap renders static and dynamic public URLs as absolute URLs", () => {
+    const xml = sitemap.renderSitemap([
+      { path: "/" },
+      { path: "/blog/field-notes", lastmod: Date.parse("2026-08-24") },
+      { path: "/writer/a%26b" },
+    ]);
+    expect(xml).toContain(`<loc>${TWYNE_SITE_ORIGIN}/</loc>`);
+    expect(xml).toContain(
+      `<loc>${TWYNE_SITE_ORIGIN}/blog/field-notes</loc>`,
     );
-    expect(locations.length).toBeGreaterThan(5);
-    expect(locations.every((url) => url.startsWith(TWYNE_SITE_ORIGIN))).toBe(
-      true,
+    expect(xml).toContain(
+      `<lastmod>2026-08-24T00:00:00.000Z</lastmod>`,
     );
+    expect(xml).toContain(`${TWYNE_SITE_ORIGIN}/writer/a%26b`);
+    expect(xml).not.toContain("localhost");
   });
 
   test("llms.txt follows the heading, summary, and link-list shape", async () => {

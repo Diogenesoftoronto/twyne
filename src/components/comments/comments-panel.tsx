@@ -265,6 +265,16 @@ export const CommentsPanel = component$(
       const all = await toggleUserCommentResolved(commentId);
       store.comments = all;
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+      const updated = all.find((comment) => comment.id === commentId);
+      if (updated) {
+        // The editor owns the Convex client. Tell it about a rail-side strike
+        // so another sync cannot immediately reopen this comment.
+        window.dispatchEvent(
+          new CustomEvent("twyne:toggle-user-comment-resolved", {
+            detail: { commentId, resolved: updated.resolved },
+          }),
+        );
+      }
     });
 
     const deleteComment = $((commentId: string) => {

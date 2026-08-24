@@ -1,6 +1,16 @@
-import { component$, useSignal, useStore, $, type PropFunction } from "@builder.io/qwik";
+import {
+  component$,
+  useSignal,
+  useStore,
+  $,
+  type PropFunction,
+} from "@builder.io/qwik";
 import type { DossierProbe } from "../../types";
-import { BLANK_PATTERN, blankAnswer, countBlanks } from "../../utils/dossier-probes";
+import {
+  BLANK_PATTERN,
+  blankAnswer,
+  countBlanks,
+} from "../../utils/dossier-probes";
 
 interface ProbeInputProps {
   probe: DossierProbe;
@@ -100,7 +110,7 @@ export const ProbeInput = component$<ProbeInputProps>((props) => {
                     background: chosen
                       ? "var(--color-vermilion)"
                       : "var(--color-paper)",
-                    color: chosen ? "white" : "var(--color-ink)",
+                    color: chosen ? "var(--color-paper)" : "var(--color-ink)",
                   }}
                 >
                   {chosen ? "✓ " : ""}
@@ -124,47 +134,47 @@ export const ProbeInput = component$<ProbeInputProps>((props) => {
       {/* ── Fill in the blanks: inputs sit inside the sentence ── */}
       {probe.kind === "blanks" && probe.template && (
         <>
-            <p
-              class="text-[0.9rem] leading-8 text-[var(--color-ink)]"
-              style={{ fontFamily: "var(--font-serif)" }}
-            >
-              {splitTemplate(probe.template).map((piece, i) =>
-                piece.isBlank ? (
-                  <input
-                    key={`blank-${i}`}
-                    type="text"
-                    disabled={props.disabled}
-                    value={
-                      Array.isArray(state.answer)
-                        ? (state.answer[piece.blankIndex] ?? "")
-                        : ""
-                    }
-                    onInput$={(_, el) => {
-                      const current = Array.isArray(state.answer)
-                        ? [...state.answer]
-                        : new Array(countBlanks(probe.template!)).fill("");
-                      current[piece.blankIndex] = el.value;
-                      state.answer = current;
-                      touched.value = true;
-                    }}
-                    aria-label={`Blank ${piece.blankIndex + 1}`}
-                    class="mx-1 w-32 border-b border-[var(--color-vermilion)] bg-transparent px-1 text-[0.9rem] text-[var(--color-ink)] focus:outline-none"
-                    style={{ fontFamily: "var(--font-serif)" }}
-                  />
-                ) : (
-                  <span key={`text-${i}`}>{piece.text}</span>
-                ),
-              )}
-            </p>
-            <ConfirmRow
-              disabled={
-                props.disabled ||
-                !Array.isArray(state.answer) ||
-                !state.answer.some((v) => v.trim())
-              }
-              onConfirm$={$(() => commit(state.answer))}
-              onSkip$={props.onSkip$}
-            />
+          <p
+            class="text-[0.9rem] leading-8 text-[var(--color-ink)]"
+            style={{ fontFamily: "var(--font-serif)" }}
+          >
+            {splitTemplate(probe.template).map((piece, i) =>
+              piece.isBlank ? (
+                <input
+                  key={`blank-${i}`}
+                  type="text"
+                  disabled={props.disabled}
+                  value={
+                    Array.isArray(state.answer)
+                      ? (state.answer[piece.blankIndex] ?? "")
+                      : ""
+                  }
+                  onInput$={(_, el) => {
+                    const current = Array.isArray(state.answer)
+                      ? [...state.answer]
+                      : new Array(countBlanks(probe.template!)).fill("");
+                    current[piece.blankIndex] = el.value;
+                    state.answer = current;
+                    touched.value = true;
+                  }}
+                  aria-label={`Blank ${piece.blankIndex + 1}`}
+                  class="mx-1 w-32 border-b border-[var(--color-vermilion)] bg-transparent px-1 text-[0.9rem] text-[var(--color-ink)] focus:outline-none"
+                  style={{ fontFamily: "var(--font-serif)" }}
+                />
+              ) : (
+                <span key={`text-${i}`}>{piece.text}</span>
+              ),
+            )}
+          </p>
+          <ConfirmRow
+            disabled={
+              props.disabled ||
+              !Array.isArray(state.answer) ||
+              !state.answer.some((v) => v.trim())
+            }
+            onConfirm$={$(() => commit(state.answer))}
+            onSkip$={props.onSkip$}
+          />
         </>
       )}
 
@@ -226,7 +236,7 @@ const ConfirmRow = component$<{
     <button
       onClick$={props.onConfirm$}
       disabled={props.disabled}
-      class="rounded-full bg-[var(--color-vermilion)] px-3.5 py-1 text-[0.75rem] text-white disabled:opacity-30"
+      class="rounded-full bg-[var(--color-vermilion)] px-3.5 py-1 text-[0.75rem] text-[var(--color-paper)] disabled:opacity-30"
       style={{ fontFamily: "var(--font-display)" }}
     >
       Answer
@@ -266,7 +276,11 @@ function splitTemplate(
     cursor = start + match[0].length;
   }
   if (cursor < template.length) {
-    pieces.push({ isBlank: false, text: template.slice(cursor), blankIndex: -1 });
+    pieces.push({
+      isBlank: false,
+      text: template.slice(cursor),
+      blankIndex: -1,
+    });
   }
   return pieces;
 }

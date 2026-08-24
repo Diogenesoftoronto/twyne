@@ -125,18 +125,24 @@ function wrapStandaloneHtml(
   // literal word "page" once at the end of the manuscript is worse than
   // printing nothing. See the note on exportPdf.
   const footer = options.footer || "";
+  const hasLeadingTitle = /^\s*<h1\b/i.test(body);
+  const titleBlock = hasLeadingTitle
+    ? ""
+    : `<header class="export-titleblock">\n  <h1>${escapeHtml(title)}</h1>\n</header>`;
 
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content="Twyne" />
 <title>${escapeHtml(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Special+Elite&display=swap" />
 <style>
   :root { color-scheme: light; }
+  *, *::before, *::after { box-sizing: border-box; }
   /* The sheet owns the margins. There is deliberately no margin or padding on
      <body>: setting both stacks them, which silently doubled every printed
      margin for as long as this exporter has existed. */
@@ -148,12 +154,38 @@ function wrapStandaloneHtml(
   html { font-size: 16px; }
   body {
     font-family: "Lora", Georgia, "Times New Roman", serif;
-    ${paginated ? "max-width: none;" : `max-width: ${docWidth};`}
+    min-height: 100vh;
     margin: 0;
     padding: 0;
     line-height: 1.7;
     color: #1a1611;
+    background: #e7ded0;
+  }
+  /* A standalone export should be pleasant to open directly, not just when
+     it is sent to a print dialog. The shell gives readers a restrained page
+     on screen while @page remains the sole authority for printed margins. */
+  .export-document {
+    width: min(calc(100% - 2rem), ${docWidth});
+    margin: clamp(1rem, 5vw, 4rem) auto;
+    padding: clamp(1.5rem, 6vw, 4.5rem);
     background: #fbf6ec;
+    box-shadow: 0 0.5rem 1.5rem rgb(37 29 19 / 0.16);
+  }
+  article { max-width: 70ch; }
+  .export-titleblock {
+    max-width: 70ch;
+    margin: 0 0 clamp(2rem, 5vw, 3.5rem);
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid #c7b89c;
+  }
+  .export-titleblock h1 {
+    margin: 0;
+    color: #1a1611;
+    font-family: "Fraunces", Georgia, serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
   }
   /* Match the editor's own paragraph setting, so the print engine breaks
      lines where the screen did. Without this the two disagree about
@@ -195,6 +227,12 @@ function wrapStandaloneHtml(
        working way to get a running header. There is no equivalent for the
        page number: counter(page) is readable only inside an @page margin box,
        and Chrome implements neither the box nor the counter outside it. */
+    html, body { min-height: 0; background: #fff; }
+    .export-document {
+      width: auto; margin: 0; padding: 0; background: transparent;
+      box-shadow: none;
+    }
+    article, .export-titleblock { max-width: none; }
     .twyne-chrome:not(.f) { position: fixed; top: 0; left: 0; right: 0; }
     .twyne-page-spacer, .twyne-page-chrome { display: none !important; }
   }
@@ -202,7 +240,7 @@ function wrapStandaloneHtml(
     display: flex; justify-content: space-between; align-items: baseline;
     font-family: ui-monospace, "SF Mono", monospace;
     font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
-    color: #6a5d4a; padding: 0.5rem 0; border-bottom: 1px solid #c7b89c;
+    color: #554a3d; padding: 0.5rem 0; border-bottom: 1px solid #c7b89c;
     margin-bottom: 2rem;
   }
   .twyne-chrome.f { border-top: 1px solid #c7b89c; border-bottom: none; margin: 2rem 0 0; }
@@ -270,8 +308,9 @@ function wrapStandaloneHtml(
   li > p { margin: 0; }
   li > ul, li > ol { margin: 0.25rem 0; }
   ul[data-type="taskList"] { list-style: none; padding-left: 0; }
-  footer { margin-top: 3rem; font-size: 0.85rem; color: #6a5d4a; }
-  a { color: #8b2f24; }
+  .tableWrapper { max-width: 100%; overflow-x: auto; }
+  a { color: #75251c; text-decoration-thickness: 0.08em; text-underline-offset: 0.16em; }
+  a:focus-visible { outline: 2px solid #75251c; outline-offset: 0.18em; }
   sup.endnote-ref { color: #b04a3a; font-size: 0.75em; }
   sup.footnote-ref { color: #2c4a7c; font-size: 0.75em; }
   .endnotes, .footnotes {
@@ -287,14 +326,14 @@ function wrapStandaloneHtml(
 </style>
 </head>
 <body>
+<main class="export-document">
 ${running ? `<div class="twyne-chrome"><span>${escapeHtml(running)}</span></div>` : ""}
+${titleBlock}
 <article>
 ${body}
 </article>
-<div class="twyne-chrome f"><span>${escapeHtml(footer)}</span></div>
-<footer>
-  <p>Set in editorial vermilion · Twyne</p>
-</footer>
+${footer ? `<div class="twyne-chrome f"><span>${escapeHtml(footer)}</span></div>` : ""}
+</main>
 </body>
 </html>`;
 }

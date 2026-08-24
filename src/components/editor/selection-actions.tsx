@@ -47,11 +47,10 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
       style={{ left: `${selection.x}px`, top: `${selection.y}px` }}
       role="toolbar"
       aria-label={`Actions for “${selection.text.slice(0, 70)}”`}
-      onMouseDown$={(event) => {
-        // Keep the Tiptap selection intact while a card control receives focus.
-        if (!(event.target instanceof HTMLTextAreaElement))
-          event.preventDefault();
-      }}
+      // This must be declarative: a Qwik onMouseDown$ handler runs after the
+      // browser has already collapsed the ProseMirror range. Keeping the
+      // range lets every action act on the passage the writer just selected.
+      preventdefault:mousedown
     >
       <div class="selection-actions__quote" title={selection.text}>
         “{selection.text.slice(0, 82)}

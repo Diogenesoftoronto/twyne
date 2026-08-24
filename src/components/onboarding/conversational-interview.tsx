@@ -22,27 +22,23 @@ import type {
   ProjectBrief,
   ProjectInterviewAnswers,
 } from "../../types";
-import {
-  probeAnswerText,
-  upsertProbe,
-} from "../../utils/dossier-probes";
+import { probeAnswerText, upsertProbe } from "../../utils/dossier-probes";
 import { ProbeInput } from "./probe-input";
 import { SpeakButton } from "../ui/speak-button";
 import { ChatComposer } from "../ui/chat-composer";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { DossierAttachmentsEditor } from "./dossier-attachments-editor";
+import { DossierFolio } from "./dossier-folio";
+import { DossierTopBar } from "./dossier-top-bar";
+import type { DossierFilingState } from "../../utils/dossier-filing";
+import { DossierPreview } from "../brief/dossier-preview";
 import { ApplicationNotice } from "../ui/application-notice";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
   normalizeApplicationError,
 } from "../../utils/application-errors";
-import {
-  CONVERSATION_COMPOSER_CLASS,
-  CONVERSATION_HISTORY_CLASS,
-  CONVERSATION_SHELL_CLASS,
-} from "../../utils/conversation-layout";
 
 /**
  * The conversational interview. A chat-style replacement for the
@@ -99,6 +95,16 @@ interface ConversationalInterviewProps {
    * rather than starting cold.
    */
   initialMaterial?: string;
+  /**
+   * Route chrome, filed into the folio's top edge. Same five values the form
+   * takes, because the two surfaces are now the same folio and the writer
+   * should not be able to tell which one is drawing the bar.
+   */
+  chromeBackHref: string;
+  chromeBackLabel: string;
+  chromeShowStartOver?: boolean;
+  onSwitchSurface$: PropFunction<() => void>;
+  onStartOver$?: PropFunction<() => void>;
   onComplete$: PropFunction<
     (payload: {
       answers: ProjectInterviewAnswers;
@@ -106,6 +112,7 @@ interface ConversationalInterviewProps {
       probes: DossierProbe[];
     }) => void
   >;
+  filingState?: DossierFilingState;
   onUseForm$?: PropFunction<
     (payload: {
       answers: Partial<ProjectInterviewAnswers>;
@@ -142,6 +149,7 @@ interface ComponentStore {
   streaming: InterviewStreamUpdate | null;
   /** Reasoning panels the writer explicitly opened, keyed by turn index. */
   openReasoning: Record<number, boolean>;
+  filing: boolean;
 }
 
 function confidenceTone(c: InterviewConfidence | undefined): string {
@@ -208,6 +216,56 @@ const ReasoningPart = component$((props: ReasoningPartProps) => (
   </section>
 ));
 
+/**
+ * Per-field confidence dots for the folio's left leaf.
+ *
+ * A free function called from JSX, not a value computed at the top of the
+ * component: Qwik memoises each child-prop expression against the reactive
+ * values that expression reads, so a prop wired to a plain local freezes at
+ * whatever it held on the first render.
+ */
+/**
+ * A dossier the room has not extracted anything into yet.
+ *
+ * Deliberately *not* DEFAULT_INTERVIEW_ANSWERS: those are the form's seed
+ * values, and pouring them into the conversation's live sheet would show the
+ * writer seven fields the room has not actually heard them say.
+ */
+/** How many of the seven fields the room has actually filled in. */
+function countFilledFields(
+  panel: { brief: Partial<ProjectInterviewAnswers> } | null,
+): number {
+  return FIELD_ORDER.filter((field) => panel?.brief[field]?.trim()).length;
+}
+
+const EMPTY_ANSWERS: ProjectInterviewAnswers = {
+  workingTitle: "",
+  format: "",
+  audience: "",
+  goal: "",
+  tone: "",
+  constraints: "",
+  successSignal: "",
+};
+
+function buildFieldTone(
+  panel: {
+    brief: Partial<ProjectInterviewAnswers>;
+    confidence: Partial<
+      Record<keyof ProjectInterviewAnswers, InterviewConfidence>
+    >;
+  } | null,
+): Partial<Record<keyof ProjectInterviewAnswers, string>> {
+  return Object.fromEntries(
+    FIELD_ORDER.map((field) => [
+      field,
+      panel?.brief[field]
+        ? confidenceTone(panel.confidence[field])
+        : "bg-[var(--color-paper-3)]",
+    ]),
+  ) as Partial<Record<keyof ProjectInterviewAnswers, string>>;
+}
+
 export const ConversationalInterview = component$(
   (props: ConversationalInterviewProps) => {
     const store = useStore<ComponentStore>({
@@ -228,6 +286,7 @@ export const ConversationalInterview = component$(
       answeredProbes: props.initialBrief?.probes ?? [],
       streaming: null,
       openReasoning: {},
+      filing: false,
     });
     const inputRef = useSignal<HTMLTextAreaElement>();
     const scrollerRef = useSignal<HTMLDivElement>();
@@ -472,13 +531,21 @@ export const ConversationalInterview = component$(
       );
     });
 
-    const acceptSynthesis = $(() => {
+    const acceptSynthesis = $(async () => {
       if (!store.synthesis) return;
-      void props.onComplete$({
-        answers: store.synthesis.brief,
-        attachments: store.attachments,
-        probes: store.answeredProbes,
-      });
+      store.filing = true;
+      try {
+        await props.onComplete$({
+          answers: store.synthesis.brief,
+          attachments: store.attachments,
+          probes: store.answeredProbes,
+        });
+      } catch (error) {
+        store.error = normalizeApplicationError(error, {
+          metadata: { feature: "interview", operation: "file-dossier" },
+        });
+        store.filing = false;
+      }
     });
 
     const applyEdit = $((field: keyof ProjectInterviewAnswers) => {
@@ -514,501 +581,472 @@ export const ConversationalInterview = component$(
       ? { brief: store.synthesis.brief, confidence: store.synthesis.confidence }
       : store.liveDraft;
 
+    // The left leaf is the shared DossierPreview, so the conversation's own
+    // signal — how sure the room is about a field it inferred rather than was
+    // told — travels as a per-field marker class instead of a bespoke panel.
+    const filledFieldCount = countFilledFields(livePanel);
+
     return (
-      <div
-        class={CONVERSATION_SHELL_CLASS}
-        style={{ fontFamily: "var(--font-serif)" }}
-      >
-        {/* Header */}
-        <header class="shrink-0 px-6 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/90 backdrop-blur-sm flex items-center justify-between">
-          <div>
+      <DossierFolio
+        surface="conversational"
+        filingState={
+          props.filingState === "filed"
+            ? "filed"
+            : store.filing
+              ? "filing"
+              : (props.filingState ?? "idle")
+        }
+        chrome={
+          <DossierTopBar
+            backHref={props.chromeBackHref}
+            backLabel={props.chromeBackLabel}
+            mode="conversational"
+            switchHref=""
+            showStartOver={props.chromeShowStartOver ?? false}
+            variant="inset"
+            onSwitch$={props.onSwitchSurface$}
+            onStartOver$={props.onStartOver$ ?? $(() => {})}
+          />
+        }
+        dossier={
+          <>
+            <DossierPreview
+              answers={
+                {
+                  ...EMPTY_ANSWERS,
+                  ...(store.synthesis
+                    ? store.synthesis.brief
+                    : (store.liveDraft?.brief ?? {})),
+                } as ProjectInterviewAnswers
+              }
+              probes={store.answeredProbes}
+              attachments={store.attachments}
+              mode={props.mode === "refine" ? "refine" : "first-run"}
+              reviewedFieldCount={countFilledFields(
+                store.synthesis ?? store.liveDraft,
+              )}
+              headline={
+                store.synthesis ? "Ready for review" : "Filling as you talk"
+              }
+              fieldTone={buildFieldTone(store.synthesis ?? store.liveDraft)}
+            />
             <p
-              class="text-[0.6rem] tracking-[0.32em] uppercase text-[var(--color-ink-muted)]"
+              class="mt-2.5 border-t border-[var(--color-paper-3)] pt-2 text-[0.68rem] leading-5 text-[var(--color-ink-muted)]"
               style={{ fontFamily: "var(--font-typewriter)" }}
             >
-              {props.mode === "refine" ? "Refine the dossier" : "The interview"}
+              When the room has enough, it will ask you to review before opening
+              the editor.
             </p>
-            <h1
-              class="text-lg leading-tight mt-0.5"
-              style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
-            >
-              {props.mode === "refine"
-                ? "The room reads your draft."
-                : "Begin with a one-liner."}
-            </h1>
-          </div>
-        </header>
-
-        {/* Thread */}
-        <div
-          ref={scrollerRef}
-          class={CONVERSATION_HISTORY_CLASS}
-        >
-          <div class="mx-auto grid max-w-6xl gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
-            <div class="space-y-4">
-              {store.messages.map((m, i) => (
+          </>
+        }
+        leaf={
+          <>
+            {/* ── RIGHT LEAF: the transcript ──────────────────────────────── */}
+            <div class="shrink-0 px-5 pt-3">
+              <div class="flex items-baseline justify-between gap-3">
+                <p class="dept-label truncate">
+                  {props.mode === "refine"
+                    ? "Refine the dossier"
+                    : "The interview"}
+                </p>
+                <p class="dept-label shrink-0">
+                  {filledFieldCount} of 7 filled
+                </p>
+              </div>
+              <div
+                class="mt-1.5 h-[3px] w-full overflow-hidden bg-[var(--color-paper-2)]"
+                aria-hidden="true"
+              >
                 <div
-                  key={i}
-                  class={`flex ${m.author === "writer" ? "justify-end" : "justify-start"}`}
-                >
-                  <div class="max-w-[80%] space-y-2">
-                    {m.author === "interviewer" && m.reasoning && (
-                      <ReasoningPart
-                        text={m.reasoning}
-                        streaming={false}
-                        open={store.openReasoning[i] ?? false}
-                        onToggle$={$(() => {
-                          store.openReasoning = {
-                            ...store.openReasoning,
-                            [i]: !(store.openReasoning[i] ?? false),
-                          };
-                        })}
-                      />
-                    )}
+                  class="h-full transition-[width] duration-300"
+                  style={{
+                    width: `${Math.round((filledFieldCount / 7) * 100)}%`,
+                    background:
+                      "linear-gradient(90deg, var(--color-vermilion) 0%, var(--color-mustard) 100%)",
+                  }}
+                />
+              </div>
+            </div>
+
+            <div
+              ref={scrollerRef}
+              class="folio-column flex-1 px-5 py-4"
+              style={{ fontFamily: "var(--font-serif)" }}
+            >
+              <div class="grid gap-5">
+                <div class="space-y-4">
+                  {store.messages.map((m, i) => (
                     <div
-                      class={`rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem] ${
-                        m.author === "writer"
-                          ? "bg-[var(--color-vermilion)] text-white"
-                          : "bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)]"
-                      }`}
-                      style={{
-                        fontFamily:
-                          m.author === "writer"
-                            ? "var(--font-serif)"
-                            : "var(--font-display)",
-                      }}
+                      key={i}
+                      class={`flex ${m.author === "writer" ? "justify-end" : "justify-start"}`}
                     >
-                      {m.author === "interviewer" && (
-                        <div class="flex items-center justify-between gap-2 mb-1">
-                          <p
-                            class="text-[0.55rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
-                            style={{ fontFamily: "var(--font-typewriter)" }}
-                          >
-                            The room
-                          </p>
-                          <SpeakButton
-                            compact
-                            id={`interview-${i}`}
-                            text={m.text}
-                            label="the room"
+                      <div class="max-w-[80%] space-y-2">
+                        {m.author === "interviewer" && m.reasoning && (
+                          <ReasoningPart
+                            text={m.reasoning}
+                            streaming={false}
+                            open={store.openReasoning[i] ?? false}
+                            onToggle$={$(() => {
+                              store.openReasoning = {
+                                ...store.openReasoning,
+                                [i]: !(store.openReasoning[i] ?? false),
+                              };
+                            })}
                           />
-                        </div>
-                      )}
-                      <span
-                        data-speech-id={
-                          m.author === "interviewer"
-                            ? `interview-${i}`
-                            : undefined
-                        }
-                      >
-                        {m.text}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-
-              {store.loading &&
-                (store.streaming?.reasoning || store.streaming?.text) && (
-                  <div class="flex justify-start">
-                    <div class="max-w-[80%] space-y-2">
-                      {store.streaming.reasoning && (
-                        <ReasoningPart
-                          text={store.streaming.reasoning}
-                          streaming={store.streaming.phase === "reasoning"}
-                          open={store.openReasoning[store.messages.length] ?? true}
-                          onToggle$={$(() => {
-                            const key = store.messages.length;
-                            store.openReasoning = {
-                              ...store.openReasoning,
-                              [key]: !(store.openReasoning[key] ?? true),
-                            };
-                          })}
-                        />
-                      )}
-                      {store.streaming.text && (
+                        )}
                         <div
-                          aria-live="polite"
-                          class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)] rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem]"
-                          style={{ fontFamily: "var(--font-display)" }}
+                          class={`rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem] ${
+                            m.author === "writer"
+                              ? "bg-[var(--color-vermilion)] text-white"
+                              : "bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)]"
+                          }`}
+                          style={{
+                            fontFamily:
+                              m.author === "writer"
+                                ? "var(--font-serif)"
+                                : "var(--font-display)",
+                          }}
                         >
-                          <div class="flex items-center gap-2 mb-1">
-                            <p
-                              class="text-[0.55rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
-                              style={{
-                                fontFamily: "var(--font-typewriter)",
-                              }}
-                            >
-                              The room
-                            </p>
-                            <span
-                              class="h-1.5 w-1.5 rounded-full bg-[var(--color-mustard)] interview-stream-pulse"
-                              aria-label="Response streaming"
-                            />
-                          </div>
-                          {store.streaming.text}
+                          {m.author === "interviewer" && (
+                            <div class="flex items-center justify-between gap-2 mb-1">
+                              <p
+                                class="text-[0.55rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                The room
+                              </p>
+                              <SpeakButton
+                                compact
+                                id={`interview-${i}`}
+                                text={m.text}
+                                label="the room"
+                              />
+                            </div>
+                          )}
+                          <span
+                            data-speech-id={
+                              m.author === "interviewer"
+                                ? `interview-${i}`
+                                : undefined
+                            }
+                          >
+                            {m.text}
+                          </span>
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ))}
 
-              {/* A typed follow-up to the question just asked. Sits under the
-                  thread rather than inside the bubble so the transcript stays
-                  a transcript, and the writer can still just type instead. */}
-              {store.activeProbe && !store.loading && !store.synthesis && (
-                <div class="flex justify-start">
-                  <div class="max-w-[80%] w-full">
-                    <ProbeInput
-                      probe={store.activeProbe}
-                      disabled={store.loading}
-                      onAnswer$={answerProbe}
-                      onSkip$={skipProbe}
-                    />
-                  </div>
-                </div>
-              )}
-
-              {store.loading &&
-                !store.streaming?.reasoning &&
-                !store.streaming?.text && (
-                <div class="flex justify-start">
-                  <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[3px] px-4 py-2.5">
-                    <span
-                      class="text-[var(--color-ink-muted)] text-sm"
-                      style={{ fontFamily: "var(--font-typewriter)" }}
-                    >
-                      Preparing the next question…
-                    </span>
-                  </div>
-                </div>
-                )}
-
-              {store.synthesis && (
-                <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[2px] p-5 shadow-sm space-y-4">
-                  <div>
-                    <p
-                      class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)] mb-1"
-                      style={{ fontFamily: "var(--font-typewriter)" }}
-                    >
-                      Draft dossier
-                    </p>
-                    <p
-                      class="text-base"
-                      style={{
-                        fontFamily: "var(--font-display)",
-                        fontWeight: 600,
-                      }}
-                    >
-                      The room's first pass. Edit anything before you take it to
-                      the desk.
-                    </p>
-                  </div>
-
-                  <dl class="space-y-3">
-                    {FIELD_ORDER.map((field) => {
-                      const value = store.synthesis!.brief[field];
-                      const conf = store.synthesis!.confidence[field];
-                      const isEditing = store.editingField === field;
-                      return (
-                        <div
-                          key={field}
-                          class="border-l-2 border-[var(--color-paper-3)] pl-3 py-1"
-                        >
-                          <dt
-                            class="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] flex items-center gap-2 mb-1"
-                            style={{ fontFamily: "var(--font-typewriter)" }}
-                          >
-                            <span
-                              class={`inline-block w-1.5 h-1.5 rounded-full ${confidenceTone(conf)}`}
-                              aria-hidden="true"
+                  {store.loading &&
+                    (store.streaming?.reasoning || store.streaming?.text) && (
+                      <div class="flex justify-start">
+                        <div class="max-w-[80%] space-y-2">
+                          {store.streaming.reasoning && (
+                            <ReasoningPart
+                              text={store.streaming.reasoning}
+                              streaming={store.streaming.phase === "reasoning"}
+                              open={
+                                store.openReasoning[store.messages.length] ??
+                                true
+                              }
+                              onToggle$={$(() => {
+                                const key = store.messages.length;
+                                store.openReasoning = {
+                                  ...store.openReasoning,
+                                  [key]: !(store.openReasoning[key] ?? true),
+                                };
+                              })}
                             />
-                            {FIELD_LABELS[field]}
-                            <span
-                              class="text-[0.55rem] tracking-[0.1em] normal-case text-[var(--color-ink-muted)]"
-                              style={{ fontFamily: "var(--font-typewriter)" }}
+                          )}
+                          {store.streaming.text && (
+                            <div
+                              aria-live="polite"
+                              class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] text-[var(--color-ink)] rounded-[3px] px-4 py-2.5 leading-relaxed text-[0.95rem]"
+                              style={{ fontFamily: "var(--font-display)" }}
                             >
-                              ({confidenceLabel(conf)})
-                            </span>
-                          </dt>
-                          <dd
-                            class="text-[0.95rem] leading-relaxed"
-                            style={{ fontFamily: "var(--font-serif)" }}
-                          >
-                            {isEditing ? (
-                              <div class="space-y-2">
-                                <textarea
-                                  ref={inputRef}
-                                  value={store.draft}
-                                  onInput$={(_, el) => {
-                                    store.draft = el.value;
-                                  }}
-                                  rows={3}
-                                  class="w-full border border-[var(--color-paper-3)] rounded px-2 py-1.5 text-sm bg-[var(--color-paper-soft)] focus:outline-none focus:border-[var(--color-vermilion)]"
-                                  style={{ fontFamily: "var(--font-serif)" }}
-                                />
-                                <div class="flex items-center gap-2">
-                                  <button
-                                    onClick$={() => applyEdit(field)}
-                                    class="text-xs px-3 py-1 rounded bg-[var(--color-vermilion)] text-white"
-                                    style={{
-                                      fontFamily: "var(--font-typewriter)",
-                                    }}
-                                  >
-                                    Save
-                                  </button>
-                                  <button
-                                    onClick$={() => {
-                                      store.editingField = null;
-                                      store.draft = "";
-                                    }}
-                                    class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
-                                    style={{
-                                      fontFamily: "var(--font-typewriter)",
-                                    }}
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div class="flex items-start justify-between gap-2">
-                                <span class="flex-1">
-                                  {value || (
-                                    <em class="text-[var(--color-ink-muted)] italic">
-                                      (empty — the room wasn't sure)
-                                    </em>
-                                  )}
-                                </span>
-                                <button
-                                  onClick$={() => startEditing(field)}
-                                  class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] flex-shrink-0"
+                              <div class="flex items-center gap-2 mb-1">
+                                <p
+                                  class="text-[0.55rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
                                   style={{
                                     fontFamily: "var(--font-typewriter)",
                                   }}
                                 >
-                                  Edit
-                                </button>
+                                  The room
+                                </p>
+                                <span
+                                  class="h-1.5 w-1.5 rounded-full bg-[var(--color-mustard)] interview-stream-pulse"
+                                  aria-label="Response streaming"
+                                />
                               </div>
-                            )}
-                          </dd>
+                              {store.streaming.text}
+                            </div>
+                          )}
                         </div>
-                      );
-                    })}
-                  </dl>
+                      </div>
+                    )}
 
-                  <div class="border-t border-[var(--color-paper-3)] pt-4">
-                    <p
-                      class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)] mb-2"
-                      style={{ fontFamily: "var(--font-typewriter)" }}
-                    >
-                      Reference material
-                    </p>
-                    <DossierAttachmentsEditor
-                      attachments={store.attachments}
-                      onChange$={(next) => {
-                        store.attachments = next;
-                      }}
-                    />
-                  </div>
+                  {/* A typed follow-up to the question just asked. Sits under the
+                  thread rather than inside the bubble so the transcript stays
+                  a transcript, and the writer can still just type instead. */}
+                  {store.activeProbe && !store.loading && !store.synthesis && (
+                    <div class="flex justify-start">
+                      <div class="max-w-[80%] w-full">
+                        <ProbeInput
+                          probe={store.activeProbe}
+                          disabled={store.loading}
+                          onAnswer$={answerProbe}
+                          onSkip$={skipProbe}
+                        />
+                      </div>
+                    </div>
+                  )}
 
-                  <div class="flex items-center gap-2 pt-2 border-t border-[var(--color-paper-3)]">
-                    <button
-                      onClick$={acceptSynthesis}
-                      class="flex-1 rounded-full bg-[var(--color-vermilion)] text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity"
-                      style={{ fontFamily: "var(--font-display)" }}
-                    >
-                      Take it to the desk
-                    </button>
-                    <button
-                      onClick$={dismissSynthesis}
-                      class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-sm px-4 py-2.5"
-                      style={{ fontFamily: "var(--font-typewriter)" }}
-                    >
-                      Keep talking
-                    </button>
-                  </div>
+                  {store.loading &&
+                    !store.streaming?.reasoning &&
+                    !store.streaming?.text && (
+                      <div class="flex justify-start">
+                        <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[3px] px-4 py-2.5">
+                          <span
+                            class="text-[var(--color-ink-muted)] text-sm"
+                            style={{ fontFamily: "var(--font-typewriter)" }}
+                          >
+                            Preparing the next question…
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                  {store.synthesis && (
+                    <div class="bg-[var(--color-paper-2)] border border-[var(--color-paper-3)] rounded-[2px] p-5 shadow-sm space-y-4">
+                      <div>
+                        <p
+                          class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)] mb-1"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Draft dossier
+                        </p>
+                        <p
+                          class="text-base"
+                          style={{
+                            fontFamily: "var(--font-display)",
+                            fontWeight: 600,
+                          }}
+                        >
+                          The room's first pass. Edit anything before you take
+                          it to the desk.
+                        </p>
+                      </div>
+
+                      <dl class="space-y-3">
+                        {FIELD_ORDER.map((field) => {
+                          const value = store.synthesis!.brief[field];
+                          const conf = store.synthesis!.confidence[field];
+                          const isEditing = store.editingField === field;
+                          return (
+                            <div
+                              key={field}
+                              class="border-l-2 border-[var(--color-paper-3)] pl-3 py-1"
+                            >
+                              <dt
+                                class="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] flex items-center gap-2 mb-1"
+                                style={{ fontFamily: "var(--font-typewriter)" }}
+                              >
+                                <span
+                                  class={`inline-block w-1.5 h-1.5 rounded-full ${confidenceTone(conf)}`}
+                                  aria-hidden="true"
+                                />
+                                {FIELD_LABELS[field]}
+                                <span
+                                  class="text-[0.55rem] tracking-[0.1em] normal-case text-[var(--color-ink-muted)]"
+                                  style={{
+                                    fontFamily: "var(--font-typewriter)",
+                                  }}
+                                >
+                                  ({confidenceLabel(conf)})
+                                </span>
+                              </dt>
+                              <dd
+                                class="text-[0.95rem] leading-relaxed"
+                                style={{ fontFamily: "var(--font-serif)" }}
+                              >
+                                {isEditing ? (
+                                  <div class="space-y-2">
+                                    <textarea
+                                      ref={inputRef}
+                                      value={store.draft}
+                                      onInput$={(_, el) => {
+                                        store.draft = el.value;
+                                      }}
+                                      rows={3}
+                                      class="w-full border border-[var(--color-paper-3)] rounded px-2 py-1.5 text-sm bg-[var(--color-paper-soft)] focus:outline-none focus:border-[var(--color-vermilion)]"
+                                      style={{
+                                        fontFamily: "var(--font-serif)",
+                                      }}
+                                    />
+                                    <div class="flex items-center gap-2">
+                                      <button
+                                        onClick$={() => applyEdit(field)}
+                                        class="text-xs px-3 py-1 rounded bg-[var(--color-vermilion)] text-white"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                        }}
+                                      >
+                                        Save
+                                      </button>
+                                      <button
+                                        onClick$={() => {
+                                          store.editingField = null;
+                                          store.draft = "";
+                                        }}
+                                        class="text-xs text-[var(--color-ink-muted)] hover:text-[var(--color-ink)]"
+                                        style={{
+                                          fontFamily: "var(--font-typewriter)",
+                                        }}
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div class="flex items-start justify-between gap-2">
+                                    <span class="flex-1">
+                                      {value || (
+                                        <em class="text-[var(--color-ink-muted)] italic">
+                                          (empty — the room wasn't sure)
+                                        </em>
+                                      )}
+                                    </span>
+                                    <button
+                                      onClick$={() => startEditing(field)}
+                                      class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)] flex-shrink-0"
+                                      style={{
+                                        fontFamily: "var(--font-typewriter)",
+                                      }}
+                                    >
+                                      Edit
+                                    </button>
+                                  </div>
+                                )}
+                              </dd>
+                            </div>
+                          );
+                        })}
+                      </dl>
+
+                      <div class="border-t border-[var(--color-paper-3)] pt-4">
+                        <p
+                          class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)] mb-2"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Reference material
+                        </p>
+                        <DossierAttachmentsEditor
+                          attachments={store.attachments}
+                          onChange$={(next) => {
+                            store.attachments = next;
+                          }}
+                        />
+                      </div>
+
+                      <div class="flex items-center gap-2 pt-2 border-t border-[var(--color-paper-3)]">
+                        <button
+                          onClick$={acceptSynthesis}
+                          disabled={store.filing}
+                          class="flex-1 rounded-full bg-[var(--color-vermilion)] text-white px-5 py-2.5 text-sm font-semibold hover:opacity-90 transition-opacity"
+                          style={{ fontFamily: "var(--font-display)" }}
+                        >
+                          {store.filing ? "Filing…" : "File and open the desk"}
+                        </button>
+                        <button
+                          onClick$={dismissSynthesis}
+                          class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-sm px-4 py-2.5"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                        >
+                          Keep talking
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
-            <aside class="lg:sticky lg:top-4 lg:self-start border border-[var(--color-paper-3)] bg-[var(--color-paper-2)] p-4 shadow-sm">
-              <div class="flex items-center justify-between gap-3">
-                <div>
-                  <p
-                    class="text-[0.6rem] tracking-[0.24em] uppercase text-[var(--color-ink-muted)]"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
-                  >
-                    Room brief
-                  </p>
-                  <h2
-                    class="mt-1 text-base"
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Filling as you talk
-                  </h2>
-                </div>
-                <span
-                  class={`block h-2 w-2 rounded-full ${
-                    store.synthesis
-                      ? "bg-[var(--color-accent-green)]"
-                      : "bg-[var(--color-mustard)]"
-                  }`}
-                  aria-hidden="true"
-                />
-              </div>
-
-              <dl class="mt-4 space-y-3">
-                {FIELD_ORDER.map((field) => {
-                  const value = livePanel?.brief[field];
-                  const conf = livePanel?.confidence[field];
-                  return (
-                    <div
-                      key={field}
-                      class="border-l-2 border-[var(--color-paper-3)] pl-3"
-                    >
-                      <dt
-                        class="flex items-center gap-2 text-[0.57rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
-                        style={{ fontFamily: "var(--font-typewriter)" }}
-                      >
-                        <span
-                          class={`inline-block h-1.5 w-1.5 rounded-full ${
-                            value
-                              ? confidenceTone(conf)
-                              : "bg-[var(--color-paper-3)]"
-                          }`}
-                          aria-hidden="true"
-                        />
-                        {FIELD_LABELS[field]}
-                      </dt>
-                      <dd class="mt-1 text-sm leading-6 text-[var(--color-ink-light)]">
-                        {value || (
-                          <span class="italic text-[var(--color-ink-muted)]">
-                            Waiting for evidence.
-                          </span>
-                        )}
-                      </dd>
-                    </div>
-                  );
-                })}
-              </dl>
-
-              {store.answeredProbes.length > 0 && (
-                <div class="mt-4 border-t border-[var(--color-paper-3)] pt-3">
-                  <p
-                    class="text-[0.57rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
-                    style={{ fontFamily: "var(--font-typewriter)" }}
-                  >
-                    Particulars
-                  </p>
-                  <ul class="mt-2 space-y-1.5">
-                    {store.answeredProbes.map((p) => (
-                      <li
-                        key={p.id}
-                        class="text-[0.72rem] leading-4 text-[var(--color-ink-light)]"
-                        style={{ fontFamily: "var(--font-serif)" }}
-                      >
-                        <span class="text-[var(--color-ink-muted)]">
-                          {p.prompt}
-                        </span>
-                        <br />
-                        <span class="text-[var(--color-ink)]">
-                          {probeAnswerText(p)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <p
-                class="mt-4 border-t border-[var(--color-paper-3)] pt-3 text-[0.72rem] leading-5 text-[var(--color-ink-muted)]"
-                style={{ fontFamily: "var(--font-typewriter)" }}
+            {/* Composer */}
+            {!store.synthesis && (
+              <div
+                class="shrink-0 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-2)]/50 px-5 pt-3"
+                style={{
+                  paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+                }}
               >
-                When the room has enough, it will ask you to review before
-                opening the editor.
-              </p>
-            </aside>
-          </div>
-        </div>
-
-        {/* Composer */}
-        {!store.synthesis && (
-          <div
-            class={CONVERSATION_COMPOSER_CLASS}
-            style={{
-              paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
-            }}
-          >
-            <div class="max-w-2xl mx-auto">
-              {store.error && (
-                <div class="mb-3">
-                  <ApplicationNotice
-                    error={store.error}
-                    busy={store.loading}
-                    onRetry$={
-                      store.error.recovery.canRetry ? retryTurn : undefined
-                    }
-                    recoveryLabel={
-                      store.error.code === "AUTHENTICATION_REQUIRED"
-                        ? "Sign in"
-                        : props.onUseForm$
-                          ? "Use the form"
-                          : "Open AI settings"
-                    }
-                    recoveryHref={
-                      store.error.code === "AUTHENTICATION_REQUIRED"
-                        ? "/signin/"
-                        : props.onUseForm$
-                          ? undefined
-                          : "/settings/"
-                    }
-                    onRecovery$={props.onUseForm$ ? useForm : undefined}
-                    onDismiss$={dismissError}
-                  />
-                </div>
-              )}
-              {/* Speaking an answer fills the box rather than sending it —
+                <div class="mx-auto w-full">
+                  {store.error && (
+                    <div class="mb-3">
+                      <ApplicationNotice
+                        error={store.error}
+                        busy={store.loading}
+                        onRetry$={
+                          store.error.recovery.canRetry ? retryTurn : undefined
+                        }
+                        recoveryLabel={
+                          store.error.code === "AUTHENTICATION_REQUIRED"
+                            ? "Sign in"
+                            : props.onUseForm$
+                              ? "Use the form"
+                              : "Open AI settings"
+                        }
+                        recoveryHref={
+                          store.error.code === "AUTHENTICATION_REQUIRED"
+                            ? "/signin/"
+                            : props.onUseForm$
+                              ? undefined
+                              : "/settings/"
+                        }
+                        onRecovery$={props.onUseForm$ ? useForm : undefined}
+                        onDismiss$={dismissError}
+                      />
+                    </div>
+                  )}
+                  {/* Speaking an answer fills the box rather than sending it —
                   transcription mishears, and the writer should see their own
                   words before the room does. */}
-              <ChatComposer
-                value={store.draft}
-                onValueChange$={$((value: string) => {
-                  store.draft = value;
-                })}
-                onSend$={send}
-                busy={store.loading}
-                label="Your answer"
-                placeholder={
-                  store.messages.length <= 1
-                    ? "Type your answer here, or speak it."
-                    : "Type your answer…"
-                }
-                transcriptionHint={
-                  props.initialBrief
-                    ? `${props.initialBrief.answers.workingTitle}. ${props.initialBrief.answers.audience}`
-                    : undefined
-                }
-              >
-                <button
-                  q:slot="actions"
-                  type="button"
-                  onClick$={requestSynthesis}
-                  disabled={store.loading || store.messages.length < 3}
-                  class="focus-ring text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] disabled:opacity-30"
-                  style={{ fontFamily: "var(--font-typewriter)" }}
-                  title="Ask the room to synthesise the dossier now"
-                >
-                  → Show me what you have
-                </button>
-              </ChatComposer>
-            </div>
-          </div>
-        )}
-      </div>
+                  <ChatComposer
+                    value={store.draft}
+                    onValueChange$={$((value: string) => {
+                      store.draft = value;
+                    })}
+                    onSend$={send}
+                    busy={store.loading}
+                    label="Your answer"
+                    placeholder={
+                      store.messages.length <= 1
+                        ? "Type your answer here, or speak it."
+                        : "Type your answer…"
+                    }
+                    transcriptionHint={
+                      props.initialBrief
+                        ? `${props.initialBrief.answers.workingTitle}. ${props.initialBrief.answers.audience}`
+                        : undefined
+                    }
+                  >
+                    <button
+                      q:slot="actions"
+                      type="button"
+                      onClick$={requestSynthesis}
+                      disabled={store.loading || store.messages.length < 3}
+                      class="focus-ring text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] disabled:opacity-30"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                      title="Ask the room to synthesise the dossier now"
+                    >
+                      → Show me what you have
+                    </button>
+                  </ChatComposer>
+                </div>
+              </div>
+            )}
+          </>
+        }
+      />
     );
   },
 );

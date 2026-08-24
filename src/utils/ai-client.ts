@@ -88,6 +88,7 @@ async function loadMcpTools(): Promise<ToolSet> {
   }
 }
 import type { DossierProbe, ProjectBrief as ProjectBriefType } from "../types";
+import { parseDossierCheckResult } from "./dossier-check";
 import { normalizeProbe } from "./dossier-probes";
 import {
   localAiBaseUrl,
@@ -3259,30 +3260,13 @@ export async function runClientDossierCheck(
         twyne_expected_format: "json_dossier_observations",
       },
     });
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { observations: [] };
-    const observations = Array.isArray(parsed.observations)
-      ? parsed.observations
-      : [];
-    return {
-      observations: observations.filter(
-        (o: { field?: string }) =>
-          typeof o.field === "string" && o.field in DEFAULT_FIELDS,
-      ),
-      provider: cfg.provider.name,
-    };
+    return parseDossierCheckResult(
+      text,
+      cfg.provider.name,
+      request.brief.answers,
+    );
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:dossier-check", err);
     return null;
   }
 }
-
-const DEFAULT_FIELDS: Record<keyof ProjectInterviewAnswers, true> = {
-  workingTitle: true,
-  format: true,
-  audience: true,
-  goal: true,
-  tone: true,
-  constraints: true,
-  successSignal: true,
-};

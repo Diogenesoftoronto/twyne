@@ -1,7 +1,15 @@
 import { describe, expect, test } from "bun:test";
 import type { DossierProbe, ProjectInterviewAnswers } from "../types";
 import type { InterviewTurnResult } from "./ai-client";
-import { buildFormProbeMessages, requireFormProbe } from "./form-probes";
+import {
+  buildFormProbeMessages,
+  buildLocalFormProbes,
+  FORM_PROBE_COUNT,
+  mergeFormProbes,
+  mergeFormProbesWithLimit,
+  mergeProviderFormProbes,
+  requireFormProbe,
+} from "./form-probes";
 
 const answers: ProjectInterviewAnswers = {
   workingTitle: "The Particulars",
@@ -78,5 +86,122 @@ describe("requireFormProbe", () => {
       canRetry: true,
     });
     expect(checked.error.message).not.toContain("Tell me more");
+  });
+});
+
+describe("buildLocalFormProbes", () => {
+  test("always produces an ordered local-first Particulars set", () => {
+    const probes = buildLocalFormProbes(answers);
+
+    expect(probes).toHaveLength(FORM_PROBE_COUNT);
+    expect(probes.map((item) => item.kind)).toEqual([
+      "blanks",
+      "choice",
+      "scale",
+    ]);
+    expect(probes[0]?.prompt).toContain(answers.audience);
+    expect(probes[1]?.prompt).toContain(answers.goal);
+    expect(probes[2]?.prompt).toContain(answers.tone);
+    expect(new Set(probes.map((item) => item.prompt)).size).toBe(
+      FORM_PROBE_COUNT,
+    );
+  });
+
+  test("handles empty and very long answers without empty or unbounded copy", () => {
+    const probes = buildLocalFormProbes({
+      workingTitle: "",
+      format: "",
+      audience: "reader ".repeat(100),
+      goal: "",
+      tone: "",
+      constraints: "",
+      successSignal: "",
+    });
+
+    expect(probes).toHaveLength(FORM_PROBE_COUNT);
+    expect(probes.every((item) => item.prompt.trim().length > 0)).toBe(true);
+    expect(Math.max(...probes.map((item) => item.prompt.length))).toBeLessThan(
+      240,
+    );
+  });
+});
+
+describe("mergeFormProbes", () => {
+  test("preserves order, removes duplicate IDs and prompts, and caps the set", () => {
+    const duplicatePrompt = {
+      ...probe,
+      id: "different-id",
+      prompt: `  ${probe.prompt.toUpperCase()}  `,
+    };
+    const extra = buildLocalFormProbes(answers);
+
+    const merged = mergeFormProbes([probe], [duplicatePrompt], extra);
+
+    expect(merged).toHaveLength(FORM_PROBE_COUNT);
+    expect(merged[0]).toEqual(probe);
+    expect(
+      merged.filter(
+        (item) =>
+          item.prompt.trim().toLowerCase() === probe.prompt.toLowerCase(),
+      ),
+    ).toHaveLength(1);
+  });
+
+  test("keeps an answered duplicate over an unanswered copy", () => {
+    const answered = { ...probe, answer: "Editors" };
+
+    const merged = mergeFormProbes([probe], [answered]);
+
+    expect(merged).toEqual([answered]);
+  });
+
+  test("can preserve more previously answered questions than the generation limit", () => {
+    const answered = buildLocalFormProbes(answers).map((item, index) => ({
+      ...item,
+      id: `answered-${index}`,
+      answer:
+        item.kind === "scale"
+          ? 4
+          : item.kind === "blanks"
+            ? ["uncertain", "clear"]
+            : "Change a belief",
+    }));
+    answered.push({
+      ...probe,
+      id: "answered-extra",
+      answer: "Editors",
+    });
+
+    expect(mergeFormProbesWithLimit(answered.length, answered)).toHaveLength(
+      answered.length,
+    );
+  });
+
+  test("preserves an answer entered while provider probes were loading", () => {
+    const local = buildLocalFormProbes(answers);
+    const answeredDuringRequest = local.map((item, index) =>
+      index === 0 ? { ...item, answer: ["uncertain", "clear"] } : item,
+    );
+    const provider = [
+      {
+        ...probe,
+        id: "provider-particular",
+        prompt: "What evidence should change the reader's mind?",
+      },
+    ];
+
+    const merged = mergeProviderFormProbes(
+      answeredDuringRequest,
+      provider,
+      local,
+    );
+
+    expect(merged.find((item) => item.id === local[0]?.id)?.answer).toEqual([
+      "uncertain",
+      "clear",
+    ]);
+    expect(merged.some((item) => item.id === "provider-particular")).toBe(
+      true,
+    );
   });
 });
