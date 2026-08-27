@@ -11,7 +11,12 @@
  * report in, so the panels stay unaware of it and no wiring can drift.
  */
 
-export type PanelId = "personas" | "rubric" | "comments" | "citations";
+export type PanelId =
+  | "personas"
+  | "rubric"
+  | "comments"
+  | "citations"
+  | "history";
 
 export type ActivityCounts = Record<PanelId, number>;
 
@@ -20,6 +25,7 @@ const EMPTY: ActivityCounts = {
   rubric: 0,
   comments: 0,
   citations: 0,
+  history: 0,
 };
 
 const counts: ActivityCounts = { ...EMPTY };
@@ -84,11 +90,11 @@ export function startPanelActivity(): () => void {
   window.addEventListener("twyne:user-comments-changed", onCommentsChanged);
 
   return () => {
-    window.removeEventListener("twyne:background-room-notes", onBackgroundNotes);
     window.removeEventListener(
-      "twyne:background-sources",
-      onBackgroundSources,
+      "twyne:background-room-notes",
+      onBackgroundNotes,
     );
+    window.removeEventListener("twyne:background-sources", onBackgroundSources);
     window.removeEventListener(
       "twyne:user-comments-changed",
       onCommentsChanged,

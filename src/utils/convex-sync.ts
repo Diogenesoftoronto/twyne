@@ -368,9 +368,12 @@ export function clearConvexSyncContext() {
  * slices of IndexedDB; omitting them marks every section (the safe default —
  * callers that can't say exactly what moved should keep using it).
  */
-export function markDirty(sections?: Iterable<PushSection>): void {
+export function markDirty(
+  sections?: Iterable<PushSection>,
+  writingFolioId?: string,
+): void {
   if (!state.userId || !state.client) return;
-  recordWritingActivity();
+  recordWritingActivity(writingFolioId);
   if (sections) {
     for (const section of sections) state.dirtySections.add(section);
   } else {
@@ -389,13 +392,13 @@ export function markDirty(sections?: Iterable<PushSection>): void {
 const WRITING_ACTIVITY_THROTTLE_MS = 2 * 60 * 1000;
 let lastWritingActivityAt = 0;
 
-function recordWritingActivity(): void {
+function recordWritingActivity(folioId?: string): void {
   if (!state.client) return;
   const now = Date.now();
   if (now - lastWritingActivityAt < WRITING_ACTIVITY_THROTTLE_MS) return;
   lastWritingActivityAt = now;
   void state.client
-    .mutation(api.writingActivity.recordActivity, {})
+    .mutation(api.writingActivity.recordActivity, folioId ? { folioId } : {})
     .catch((err) => {
       reportApplicationDiagnostic("twyne:sync:record-writing-activity", err, {
         operation: "record-writing-activity",
@@ -1048,7 +1051,10 @@ async function replaceFromRemote(
     ]);
   }
   for (const [folioId, notes] of notesByFolio) {
-    await writeFileAsJson(folioArtifactPath(folioId, "persona-notes.json"), notes);
+    await writeFileAsJson(
+      folioArtifactPath(folioId, "persona-notes.json"),
+      notes,
+    );
   }
 
   const repliesByFolio = new Map<string, PersonaReply[]>();

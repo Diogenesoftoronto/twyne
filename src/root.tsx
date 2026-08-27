@@ -6,7 +6,9 @@ import { AuthProvider } from "./utils/auth-context";
 import { PostHogProvider } from "./utils/posthog-context";
 import { installLixAuthInterceptor } from "./utils/lix-auth";
 import { GlobalConnectivityBanner } from "./components/ui/global-connectivity-banner";
+import { GlobalApplicationToasts } from "./components/ui/global-application-toasts";
 import { GlobalSpeechPlayer } from "./components/ui/global-speech-player";
+import { UsageSyncController } from "./components/desk/usage-sync-controller";
 import {
   THEME_BOOTSTRAP_SCRIPT,
   applyTheme,
@@ -73,9 +75,11 @@ export default component$(() => {
       </head>
       <body lang="en">
         <GlobalConnectivityBanner />
+        <GlobalApplicationToasts />
         <ConvexProvider url={convexUrl}>
           <AuthProvider>
             <PostHogProvider>
+              <UsageSyncController />
               <RouterOutlet />
               <GlobalSpeechPlayer />
             </PostHogProvider>

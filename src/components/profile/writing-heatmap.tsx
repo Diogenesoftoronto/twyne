@@ -3,7 +3,7 @@
  * days as week-columns of 7 day-squares, colored by activity count.
  */
 
-import { component$ } from "@builder.io/qwik";
+import { component$, type QRL } from "@builder.io/qwik";
 
 export interface ActivityDay {
   day: string; // "YYYY-MM-DD"
@@ -13,7 +13,7 @@ export interface ActivityDay {
 const DAY_MS = 24 * 60 * 60 * 1000;
 const WEEKS = 53;
 
-function levelFor(count: number): 0 | 1 | 2 | 3 | 4 {
+export function levelFor(count: number): 0 | 1 | 2 | 3 | 4 {
   if (count <= 0) return 0;
   if (count === 1) return 1;
   if (count <= 3) return 2;
@@ -34,79 +34,108 @@ const LEVEL_COLORS = [
   "var(--color-vermilion)",
 ];
 
-export const WritingHeatmap = component$(
-  ({ days }: { days: ActivityDay[] }) => {
-    const byDay = new Map(days.map((d) => [d.day, d.count]));
+export interface HeatmapCell {
+  day: string;
+  count: number;
+}
 
-    const today = new Date();
-    today.setUTCHours(0, 0, 0, 0);
-    const totalDays = WEEKS * 7;
-    // Align the grid so the last column ends on today, in Sunday-first rows.
-    const endDow = today.getUTCDay();
-    const start = new Date(
-      today.getTime() - (totalDays - 1 - (6 - endDow)) * DAY_MS,
-    );
-
-    const weeks: { date: Date; count: number }[][] = [];
-    let cursor = new Date(start);
-    for (let w = 0; w < WEEKS; w++) {
-      const col: { date: Date; count: number }[] = [];
-      for (let d = 0; d < 7; d++) {
-        const key = cursor.toISOString().slice(0, 10);
-        col.push({
-          date: new Date(cursor),
-          count: cursor.getTime() > today.getTime() ? -1 : (byDay.get(key) ?? 0),
-        });
-        cursor = new Date(cursor.getTime() + DAY_MS);
-      }
-      weeks.push(col);
+export function buildHeatmapWeeks(
+  days: readonly ActivityDay[],
+  now = Date.now(),
+): HeatmapCell[][] {
+  const byDay = new Map(days.map((day) => [day.day, day.count]));
+  const today = new Date(now);
+  today.setUTCHours(0, 0, 0, 0);
+  const totalDays = WEEKS * 7;
+  const endDow = today.getUTCDay();
+  const start = new Date(
+    today.getTime() - (totalDays - 1 - (6 - endDow)) * DAY_MS,
+  );
+  const weeks: HeatmapCell[][] = [];
+  let cursor = new Date(start);
+  for (let week = 0; week < WEEKS; week += 1) {
+    const column: HeatmapCell[] = [];
+    for (let day = 0; day < 7; day += 1) {
+      const key = cursor.toISOString().slice(0, 10);
+      column.push({
+        day: key,
+        count: cursor.getTime() > today.getTime() ? -1 : (byDay.get(key) ?? 0),
+      });
+      cursor = new Date(cursor.getTime() + DAY_MS);
     }
+    weeks.push(column);
+  }
+  return weeks;
+}
 
-    const totalContributions = days.reduce((sum, d) => sum + d.count, 0);
+export interface WritingHeatmapProps {
+  days: ActivityDay[];
+  now?: number;
+  selectedDay?: string;
+  partialDays?: string[];
+  onSelectDay$?: QRL<(day: string) => void>;
+}
 
-    return (
-      <div>
-        <div class="flex gap-[3px] overflow-x-auto pb-1">
-          {weeks.map((col, wi) => (
-            <div key={wi} class="flex flex-col gap-[3px]">
-              {col.map((cell, di) => (
-                <div
-                  key={di}
-                  title={
-                    cell.count >= 0
-                      ? `${cell.date.toISOString().slice(0, 10)}: ${cell.count} ${cell.count === 1 ? "entry" : "entries"}`
-                      : undefined
-                  }
-                  class="h-[10px] w-[10px] rounded-[2px]"
-                  style={{
-                    background:
-                      cell.count < 0
-                        ? "transparent"
-                        : LEVEL_COLORS[levelFor(cell.count)],
-                  }}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-        <div
-          class="mt-2 flex items-center gap-2 text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)]"
-          style="font-family: var(--font-typewriter);"
-        >
-          <span>{totalContributions} entries in the last year</span>
-          <span class="ml-auto flex items-center gap-1 normal-case tracking-normal">
-            Less
-            {LEVEL_COLORS.map((c) => (
-              <span
-                key={c}
-                class="h-[10px] w-[10px] rounded-[2px]"
-                style={{ background: c }}
+export const WritingHeatmap = component$<WritingHeatmapProps>((props) => {
+  const weeks = buildHeatmapWeeks(props.days, props.now);
+  const partialDays = new Set(props.partialDays ?? []);
+  const totalContributions = props.days.reduce(
+    (sum, day) => sum + day.count,
+    0,
+  );
+
+  return (
+    <div>
+      <div class="flex gap-[3px] overflow-x-auto pb-1">
+        {weeks.map((col, wi) => (
+          <div key={wi} class="flex flex-col gap-[3px]">
+            {col.map((cell, di) => (
+              <button
+                key={di}
+                type="button"
+                disabled={cell.count < 0 || !props.onSelectDay$}
+                aria-label={
+                  cell.count >= 0
+                    ? `${cell.day}: ${cell.count} ${cell.count === 1 ? "entry" : "entries"}${partialDays.has(cell.day) ? ", partial detail" : ""}`
+                    : undefined
+                }
+                aria-pressed={props.selectedDay === cell.day}
+                onClick$={() => props.onSelectDay$?.(cell.day)}
+                class="h-[10px] w-[10px] rounded-[1px] p-0 enabled:cursor-pointer enabled:focus-visible:outline-2 enabled:focus-visible:outline-offset-2 enabled:focus-visible:outline-[var(--color-cobalt)]"
+                style={{
+                  background:
+                    cell.count < 0
+                      ? "transparent"
+                      : LEVEL_COLORS[levelFor(cell.count)],
+                  boxShadow:
+                    props.selectedDay === cell.day
+                      ? "0 0 0 1px var(--color-ink)"
+                      : partialDays.has(cell.day)
+                        ? "inset 0 0 0 1px var(--color-ink-muted)"
+                        : undefined,
+                }}
               />
             ))}
-            More
-          </span>
-        </div>
+          </div>
+        ))}
       </div>
-    );
-  },
-);
+      <div
+        class="mt-2 flex items-center gap-2 text-[10px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)]"
+        style="font-family: var(--font-typewriter);"
+      >
+        <span>{totalContributions} entries in the last year</span>
+        <span class="ml-auto flex items-center gap-1 normal-case tracking-normal">
+          Less
+          {LEVEL_COLORS.map((c) => (
+            <span
+              key={c}
+              class="h-[10px] w-[10px] rounded-[2px]"
+              style={{ background: c }}
+            />
+          ))}
+          More
+        </span>
+      </div>
+    </div>
+  );
+});

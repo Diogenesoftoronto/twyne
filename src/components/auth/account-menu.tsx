@@ -8,7 +8,10 @@ import {
   type Signal,
 } from "@builder.io/qwik";
 import { useNavigate } from "@builder.io/qwik-city";
-import { useAuth } from "../../utils/auth-context";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { AuthPanel } from "./auth-panel";
@@ -67,15 +70,14 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ track, cleanup }) => {
-    const userId = track(() => auth.value.user?.id);
-    const provider = track(() => auth.value.provider);
+    const authState = track(auth);
     const client = track(() => convexClient.value);
 
     profileAvatarUrl.value = null;
     profileDisplay.value = null;
     invitations.splice(0, invitations.length);
     sharedFolios.splice(0, sharedFolios.length);
-    if (!userId || provider !== "convex" || !client) return;
+    if (!client || !hasAuthenticatedConvexIdentity(authState)) return;
 
     const replaceInvitations = (pending: PendingInvitation[]) => {
       invitations.splice(0, invitations.length, ...pending);
@@ -240,10 +242,10 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
               style={{ fontFamily: "var(--font-display)" }}
               onClick$={() => {
                 menuOpen.value = false;
-                void nav("/docs/");
+                void nav("/desk/");
               }}
             >
-              ❦ The Manual
+              My Desk
             </button>
             <button
               type="button"
@@ -251,10 +253,10 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
               style={{ fontFamily: "var(--font-display)" }}
               onClick$={() => {
                 menuOpen.value = false;
-                void nav("/revisions/");
+                void nav("/docs/");
               }}
             >
-              Revision desk
+              ❦ The Manual
             </button>
             <button
               type="button"

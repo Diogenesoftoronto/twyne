@@ -1,33 +1,41 @@
-import { describe, expect, test, vi } from "vitest";
+import { beforeEach, describe, expect, test, vi } from "vitest";
 import type { Agent } from "@atproto/api";
 import { ensurePublication, publishDocument } from "./standard-site";
+
+const idb = { values: new Map<string, unknown>() };
+
+vi.mock("./idb", () => ({
+  loadMetaFromIdb: async <T>(key: string): Promise<T | null> =>
+    (idb.values.get(key) as T | undefined) ?? null,
+  saveMetaToIdb: async (key: string, value: unknown): Promise<void> => {
+    idb.values.set(key, value);
+  },
+}));
 
 const did = "did:plc:abcdefghijklmnopqrstuvwx";
 const publicationRkey = "3mabcde234567";
 const documentRkey = "3mzyxwv765432";
 
-function mockAgent() {
-  const createRecord = vi
-    .fn()
-    .mockResolvedValueOnce({
-      data: {
-        uri: `at://${did}/site.standard.publication/${publicationRkey}`,
-      },
-    })
-    .mockResolvedValueOnce({
-      data: { uri: `at://${did}/site.standard.document/${documentRkey}` },
-    });
+function mockAgent(actorDid = did) {
+  const createRecord = vi.fn(async (input: { collection: string }) => ({
+    data: {
+      uri:
+        input.collection === "site.standard.publication"
+          ? `at://${actorDid}/site.standard.publication/${publicationRkey}`
+          : `at://${actorDid}/site.standard.document/${documentRkey}`,
+    },
+  }));
   const putRecord = vi.fn(async (input: { collection: string }) => ({
     data: {
       uri:
         input.collection === "site.standard.publication"
-          ? `at://${did}/site.standard.publication/${publicationRkey}`
-          : `at://${did}/site.standard.document/${documentRkey}`,
+          ? `at://${actorDid}/site.standard.publication/${publicationRkey}`
+          : `at://${actorDid}/site.standard.document/${documentRkey}`,
     },
   }));
   const agent = {
-    did,
-    assertDid: did,
+    did: actorDid,
+    assertDid: actorDid,
     com: {
       atproto: {
         repo: {
@@ -44,6 +52,8 @@ function mockAgent() {
 }
 
 describe("Standard.site PDS publishing", () => {
+  beforeEach(() => idb.values.clear());
+
   test("creates a publication then replaces its temporary URL with a verifiable canonical URL", async () => {
     const { agent, putRecord } = mockAgent();
     const publication = await ensurePublication(agent, { name: "A Writer" });
@@ -101,6 +111,51 @@ describe("Standard.site PDS publishing", () => {
     expect(Array.isArray(documentPut.record.content)).toBe(false);
     expect(result.viewerUrl).toBe(
       `https://twyne.love/at/did%3Aplc%3Aabcdefghijklmnopqrstuvwx/${publicationRkey}/${documentRkey}`,
+    );
+  });
+
+  test("keeps publication and document caches isolated by writer DID", async () => {
+    const secondDid = "did:plc:zyxwvutsrqponmlkjihgfedc";
+    const first = mockAgent(did);
+    const second = mockAgent(secondDid);
+    const folio = {
+      id: "shared-browser-folio",
+      name: "A Piece",
+      type: "draft" as const,
+      createdAt: 1,
+      updatedAt: 1,
+    };
+
+    const firstPublication = await ensurePublication(first.agent, {
+      name: "First Writer",
+    });
+    await publishDocument(first.agent, {
+      folio,
+      html: "<p>First</p>",
+      brief: null,
+      publication: firstPublication,
+    });
+
+    const secondPublication = await ensurePublication(second.agent, {
+      name: "Second Writer",
+    });
+    await publishDocument(second.agent, {
+      folio,
+      html: "<p>Second</p>",
+      brief: null,
+      publication: secondPublication,
+    });
+
+    expect(second.createRecord).toHaveBeenCalledWith(
+      expect.objectContaining({ collection: "site.standard.document" }),
+    );
+    expect([...idb.values.keys()]).toEqual(
+      expect.arrayContaining([
+        `atproto-publication:${encodeURIComponent(did)}`,
+        `atproto-publication:${encodeURIComponent(secondDid)}`,
+        `atproto-doc:${encodeURIComponent(did)}:${folio.id}`,
+        `atproto-doc:${encodeURIComponent(secondDid)}:${folio.id}`,
+      ]),
     );
   });
 });

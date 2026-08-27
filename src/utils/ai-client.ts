@@ -59,7 +59,7 @@ import {
   type MemoForSynthesis,
 } from "../../convex/agentPrompts";
 import { buildQuoteTools } from "../../convex/agentTools";
-import { loadApparatusSettingsFromIdb } from "./idb";
+import { loadActiveFolioIdFromIdb, loadApparatusSettingsFromIdb } from "./idb";
 import {
   SseJsonDecoder,
   mapFishTimestampEvent,
@@ -98,6 +98,7 @@ import {
 import {
   BROWSER_TTS_MODEL_ID,
   BROWSER_TTS_PROVIDER_ID,
+  clientUsageSourceForProvider,
   isBrowserTtsSupported,
 } from "./browser-inference";
 import { captureAiGeneration } from "./ai-evals";
@@ -144,6 +145,7 @@ import {
 import type { ApplicationResult } from "../types/application-errors";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
 import { prompt as renderNamed, renderPrompt } from "./prompts";
+import { recordClientUsageAttempt } from "./usage-ledger";
 
 /* ── Provider factory ───────────────────────────────────────────── */
 
@@ -606,6 +608,18 @@ export async function runClientVoiceSpeech(
 
   const input = req.text.trim().slice(0, 4096);
   if (!input) return null;
+  const generationTraceId = createAiTraceId("voice-narration");
+  const folioId = await loadActiveFolioIdFromIdb();
+  const usageBase = {
+    traceId: generationTraceId,
+    attempt: 1,
+    source: clientUsageSourceForProvider(resolved.provider),
+    feature: "voice-narration" as const,
+    provider: resolved.provider.type,
+    model: resolved.model,
+    folioId: folioId ?? undefined,
+    editorialActionId: `${generationTraceId}:action`,
+  };
 
   const override = settings.perFeature["voice-narration"];
   const voice = req.voice ?? override?.voice ?? "alloy";
@@ -615,32 +629,61 @@ export async function runClientVoiceSpeech(
   const instructions = req.instructions ?? override?.instructions;
 
   if (resolved.provider.type === "fishaudio") {
-    return runFishAudioSpeech({
-      provider: resolved.provider,
-      model: resolved.model,
-      text: input,
-      voice,
-      responseFormat,
-      speed,
-      signal: req.signal,
-      onAlignment: req.onAlignment,
-    });
+    try {
+      const result = await runFishAudioSpeech({
+        provider: resolved.provider,
+        model: resolved.model,
+        text: input,
+        voice,
+        responseFormat,
+        speed,
+        signal: req.signal,
+        onAlignment: req.onAlignment,
+      });
+      await settleClientUsage({
+        ...usageBase,
+        requestSent: true,
+        outcome: "completed",
+      });
+      return result;
+    } catch (error) {
+      await settleClientUsage({
+        ...usageBase,
+        requestSent: true,
+        outcome: "failed",
+      });
+      throw error;
+    }
   }
 
   if (resolved.provider.type === "supertonic") {
-    const { synthesizeSupertonic } = await import("./supertonic-tts");
-    const result = await synthesizeSupertonic(input, {
-      voice,
-      speed: typeof speed === "number" ? speed : undefined,
-    });
-    return {
-      audio: result.audio,
-      mimeType: result.audio.type,
-      provider: "supertonic",
-      model: result.model,
-      voice: result.voice ?? voice,
-      responseFormat: result.responseFormat,
-    };
+    try {
+      const { synthesizeSupertonic } = await import("./supertonic-tts");
+      const result = await synthesizeSupertonic(input, {
+        voice,
+        speed: typeof speed === "number" ? speed : undefined,
+      });
+      await settleClientUsage({
+        ...usageBase,
+        requestSent: true,
+        outcome: "completed",
+      });
+      return {
+        audio: result.audio,
+        mimeType: result.audio.type,
+        provider: "supertonic",
+        model: result.model,
+        voice: result.voice ?? voice,
+        responseFormat: result.responseFormat,
+      };
+    } catch (error) {
+      await settleClientUsage({
+        ...usageBase,
+        requestSent: true,
+        outcome: "failed",
+      });
+      throw error;
+    }
   }
 
   const baseURL =
@@ -649,7 +692,9 @@ export async function runClientVoiceSpeech(
       ? resolved.provider.baseUrl.replace(/\/$/, "")
       : "https://api.openai.com/v1";
 
+  let requestSent = false;
   try {
+    requestSent = true;
     const res = await fetch(`${baseURL}/audio/speech`, {
       method: "POST",
       headers: {
@@ -676,7 +721,7 @@ export async function runClientVoiceSpeech(
     const mimeType =
       res.headers.get("content-type")?.split(";", 1)[0] ||
       audioMimeType(responseFormat);
-    return {
+    const result = {
       ...(res.body
         ? { audioStream: res.body as ReadableStream<Uint8Array> }
         : {
@@ -688,7 +733,19 @@ export async function runClientVoiceSpeech(
       voice,
       responseFormat,
     };
+    await settleClientUsage({
+      ...usageBase,
+      requestSent: true,
+      providerRequestId: res.headers.get("x-request-id") ?? undefined,
+      outcome: "completed",
+    });
+    return result;
   } catch (err) {
+    await settleClientUsage({
+      ...usageBase,
+      requestSent,
+      outcome: "failed",
+    });
     reportApplicationDiagnostic("twyne:ai-client:voice", err);
     throw err;
   }
@@ -725,6 +782,67 @@ function audioMimeType(format: string): string {
  */
 export type StreamText = (snapshot: GenerationStreamSnapshot) => void;
 
+function recordOf(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object"
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+async function providerRequestIdFromResult(
+  result: unknown,
+): Promise<string | undefined> {
+  try {
+    const root = recordOf(result);
+    const response = recordOf(await Promise.resolve(root?.response));
+    const metadata = recordOf(root?.providerMetadata);
+    const openai = recordOf(metadata?.openai);
+    const candidates = [
+      response?.id,
+      response?.requestId,
+      openai?.responseId,
+      openai?.requestId,
+    ];
+    return candidates.find(
+      (candidate): candidate is string =>
+        typeof candidate === "string" && candidate.length > 0,
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+/** Conservative failure classifier: plain local/configuration errors are pre-send. */
+export function providerRequestWasSent(error: unknown): boolean {
+  const value = recordOf(error);
+  if (!value) return false;
+  if (typeof value.statusCode === "number") return true;
+  if (value.responseHeaders || value.responseBody) return true;
+  return (
+    typeof value.url === "string" &&
+    ("requestBodyValues" in value || value.name === "AI_APICallError")
+  );
+}
+
+type ClientUsageRecorder = typeof recordClientUsageAttempt;
+let clientUsageRecorder: ClientUsageRecorder = recordClientUsageAttempt;
+
+/** Test seam; production callers never replace the IndexedDB-backed recorder. */
+export function setClientUsageRecorderForTests(
+  recorder: ClientUsageRecorder | undefined,
+): void {
+  clientUsageRecorder = recorder ?? recordClientUsageAttempt;
+}
+
+async function settleClientUsage(
+  input: Parameters<ClientUsageRecorder>[0],
+): Promise<void> {
+  try {
+    await clientUsageRecorder(input);
+  } catch {
+    // Personal telemetry must never make the writing action fail.
+  }
+}
+
 /**
  * One attempt at an answer, streamed when someone is listening.
  *
@@ -757,7 +875,7 @@ async function runOnce({
   tools?: ToolSet;
   stopWhen?: ReturnType<typeof stepCountIs>;
   onText?: StreamText;
-}): Promise<{ text: string; usage?: AiUsage }> {
+}): Promise<{ text: string; usage?: AiUsage; providerRequestId?: string }> {
   if (!onText) {
     const result = await generateText({
       model,
@@ -768,7 +886,11 @@ async function runOnce({
       ...(providerOptions ? { providerOptions } : {}),
       ...(tools ? { tools, stopWhen } : {}),
     });
-    return { text: result.text, usage: normalizeAiUsage(result.totalUsage) };
+    return {
+      text: result.text,
+      usage: normalizeAiUsage(result.totalUsage),
+      providerRequestId: await providerRequestIdFromResult(result),
+    };
   }
 
   const result = streamText({
@@ -818,6 +940,7 @@ async function runOnce({
   return {
     text: await result.text,
     usage: normalizeAiUsage(await result.totalUsage),
+    providerRequestId: await providerRequestIdFromResult(result),
   };
 }
 
@@ -856,6 +979,9 @@ async function generateTrackedText({
 }): Promise<string> {
   const start = performance.now();
   const generationTraceId = traceId ?? createAiTraceId(feature);
+  const folioId = await loadActiveFolioIdFromIdb();
+  const editorialActionId = `${generationTraceId}:action`;
+  let attempt = 0;
   onTrace?.(generationTraceId);
   // When tools are present the model needs at least one extra step after the
   // tool result to write its visible answer.
@@ -863,24 +989,57 @@ async function generateTrackedText({
   // read the document it found), so give a larger budget when they are present.
   const toolCount = tools ? Object.keys(tools).length : 0;
   const stopWhen = tools ? stepCountIs(toolCount > 1 ? 6 : 3) : undefined;
-  const run = (userPrompt: string) =>
-    runOnce({
-      model,
-      system,
-      prompt: userPrompt,
-      temperature: resolved.temperature,
-      maxOutputTokens: resolved.maxTokens,
-      // Keyed by the model actually being used, so a feature that overrides
-      // the provider's default model does not inherit a dial set for a
-      // different model — thinking is a per-model capability.
-      providerOptions: reasoningProviderOptions(
-        resolved.provider,
-        resolved.model,
-      ),
-      tools,
-      stopWhen,
-      onText,
-    });
+  const run = async (userPrompt: string) => {
+    attempt += 1;
+    try {
+      const result = await runOnce({
+        model,
+        system,
+        prompt: userPrompt,
+        temperature: resolved.temperature,
+        maxOutputTokens: resolved.maxTokens,
+        // Keyed by the model actually being used, so a feature that overrides
+        // the provider's default model does not inherit a dial set for a
+        // different model — thinking is a per-model capability.
+        providerOptions: reasoningProviderOptions(
+          resolved.provider,
+          resolved.model,
+        ),
+        tools,
+        stopWhen,
+        onText,
+      });
+      await settleClientUsage({
+        requestSent: true,
+        providerRequestId: result.providerRequestId,
+        traceId: generationTraceId,
+        attempt,
+        source: clientUsageSourceForProvider(resolved.provider),
+        feature,
+        provider: resolved.provider.type,
+        model: resolved.model,
+        outcome: "completed",
+        usage: result.usage,
+        folioId: folioId ?? undefined,
+        editorialActionId,
+      });
+      return result;
+    } catch (error) {
+      await settleClientUsage({
+        requestSent: providerRequestWasSent(error),
+        traceId: generationTraceId,
+        attempt,
+        source: clientUsageSourceForProvider(resolved.provider),
+        feature,
+        provider: resolved.provider.type,
+        model: resolved.model,
+        outcome: "failed",
+        folioId: folioId ?? undefined,
+        editorialActionId,
+      });
+      throw error;
+    }
+  };
   try {
     const first = await run(prompt);
     const text = first.text;
@@ -1448,11 +1607,15 @@ async function runFishAudioTranscribe(args: {
   signal?: AbortSignal;
 }): Promise<VoiceTranscribeResult | null> {
   const start = performance.now();
+  const generationTraceId = createAiTraceId("voice-transcription");
+  const folioId = await loadActiveFolioIdFromIdb();
+  let requestSent = false;
   try {
     const form = new FormData();
     form.append("audio", args.audio, `note.${blobExtension(args.audio.type)}`);
     form.append("ignore_timestamps", "true");
 
+    requestSent = true;
     const res = await fetch(`${FISH_AUDIO_BASE}/v1/asr`, {
       method: "POST",
       headers: { authorization: `Bearer ${args.provider.apiKey}` },
@@ -1467,12 +1630,26 @@ async function runFishAudioTranscribe(args: {
     }
     const data = (await res.json()) as { text?: string };
     const text = typeof data.text === "string" ? data.text.trim() : "";
+    await settleClientUsage({
+      requestSent: true,
+      providerRequestId: res.headers.get("x-request-id") ?? undefined,
+      traceId: generationTraceId,
+      attempt: 1,
+      source: "byok",
+      feature: "voice-transcription",
+      provider: "fishaudio",
+      model: args.model,
+      outcome: "completed",
+      folioId: folioId ?? undefined,
+      editorialActionId: `${generationTraceId}:action`,
+    });
     const traceId = await captureVoiceTranscription({
       provider: "fishaudio",
       model: args.model,
       audio: args.audio,
       output: text,
       latencyMs: performance.now() - start,
+      traceId: generationTraceId,
     });
     return {
       text,
@@ -1481,12 +1658,25 @@ async function runFishAudioTranscribe(args: {
       traceId,
     };
   } catch (err) {
+    await settleClientUsage({
+      requestSent,
+      traceId: generationTraceId,
+      attempt: 1,
+      source: "byok",
+      feature: "voice-transcription",
+      provider: "fishaudio",
+      model: args.model,
+      outcome: "failed",
+      folioId: folioId ?? undefined,
+      editorialActionId: `${generationTraceId}:action`,
+    });
     await captureVoiceTranscription({
       provider: "fishaudio",
       model: args.model,
       audio: args.audio,
       latencyMs: performance.now() - start,
       error: err,
+      traceId: generationTraceId,
     });
     reportApplicationDiagnostic("twyne:ai-client:fishaudio-transcribe", err);
     return null;
@@ -1556,6 +1746,8 @@ async function runDirectAudioTranscribe(args: {
   const model = await createModel(args.provider, args.model);
   if (!model) return null;
   const start = performance.now();
+  const generationTraceId = createAiTraceId("voice-transcription");
+  const folioId = await loadActiveFolioIdFromIdb();
   try {
     const needsWavOrMp3 =
       args.provider.type === "openai" ||
@@ -1590,6 +1782,21 @@ async function runDirectAudioTranscribe(args: {
       // Unset, like everywhere else: a long dictation should come back whole
       // rather than stop mid-sentence at a number chosen in advance.
     });
+    const usage = normalizeAiUsage(result.totalUsage);
+    await settleClientUsage({
+      requestSent: true,
+      providerRequestId: await providerRequestIdFromResult(result),
+      traceId: generationTraceId,
+      attempt: 1,
+      source: clientUsageSourceForProvider(args.provider),
+      feature: "voice-transcription",
+      provider: args.provider.type,
+      model: args.model,
+      outcome: "completed",
+      usage,
+      folioId: folioId ?? undefined,
+      editorialActionId: `${generationTraceId}:action`,
+    });
     const traceId = await captureVoiceTranscription({
       provider: args.provider.type,
       model: args.model,
@@ -1597,7 +1804,8 @@ async function runDirectAudioTranscribe(args: {
       prompt: args.prompt,
       output: result.text.trim(),
       latencyMs: performance.now() - start,
-      usage: normalizeAiUsage(result.totalUsage),
+      usage,
+      traceId: generationTraceId,
     });
     return {
       text: result.text.trim(),
@@ -1606,6 +1814,18 @@ async function runDirectAudioTranscribe(args: {
       traceId,
     };
   } catch (err) {
+    await settleClientUsage({
+      requestSent: providerRequestWasSent(err),
+      traceId: generationTraceId,
+      attempt: 1,
+      source: clientUsageSourceForProvider(args.provider),
+      feature: "voice-transcription",
+      provider: args.provider.type,
+      model: args.model,
+      outcome: "failed",
+      folioId: folioId ?? undefined,
+      editorialActionId: `${generationTraceId}:action`,
+    });
     await captureVoiceTranscription({
       provider: args.provider.type,
       model: args.model,
@@ -1613,6 +1833,7 @@ async function runDirectAudioTranscribe(args: {
       prompt: args.prompt,
       latencyMs: performance.now() - start,
       error: err,
+      traceId: generationTraceId,
     });
     reportApplicationDiagnostic(
       "twyne:ai-client:direct-audio-transcribe",
@@ -1733,6 +1954,7 @@ async function captureVoiceTranscription({
   latencyMs,
   usage,
   error,
+  traceId,
 }: {
   provider: string;
   model: string;
@@ -1742,6 +1964,7 @@ async function captureVoiceTranscription({
   latencyMs: number;
   usage?: AiUsage;
   error?: unknown;
+  traceId?: string;
 }): Promise<string> {
   return captureAiGeneration({
     feature: "voice-transcription",
@@ -1756,6 +1979,7 @@ async function captureVoiceTranscription({
     latencyMs,
     usage,
     error,
+    traceId,
     evalSignals: { twyne_audio_input: true },
   });
 }
@@ -1813,6 +2037,9 @@ export async function runClientVoiceTranscribe(
       ? resolved.provider.baseUrl.replace(/\/$/, "")
       : "https://api.openai.com/v1";
 
+  const generationTraceId = createAiTraceId("voice-transcription");
+  const folioId = await loadActiveFolioIdFromIdb();
+  let requestSent = false;
   try {
     const start = performance.now();
     const form = new FormData();
@@ -1827,6 +2054,7 @@ export async function runClientVoiceTranscribe(
       form.append("prompt", req.prompt.trim().slice(0, 800));
     }
 
+    requestSent = true;
     const res = await fetch(`${baseURL}/audio/transcriptions`, {
       method: "POST",
       headers: { authorization: `Bearer ${resolved.provider.apiKey}` },
@@ -1849,6 +2077,19 @@ export async function runClientVoiceTranscribe(
           .then((data: { text?: string }) =>
             typeof data.text === "string" ? data.text.trim() : "",
           );
+    await settleClientUsage({
+      requestSent: true,
+      providerRequestId: res.headers.get("x-request-id") ?? undefined,
+      traceId: generationTraceId,
+      attempt: 1,
+      source: clientUsageSourceForProvider(resolved.provider),
+      feature: "voice-transcription",
+      provider: resolved.provider.type,
+      model: resolved.model,
+      outcome: "completed",
+      folioId: folioId ?? undefined,
+      editorialActionId: `${generationTraceId}:action`,
+    });
     const traceId = await captureVoiceTranscription({
       provider: resolved.provider.type,
       model: resolved.model,
@@ -1856,6 +2097,7 @@ export async function runClientVoiceTranscribe(
       prompt: req.prompt,
       output: finalText,
       latencyMs: performance.now() - start,
+      traceId: generationTraceId,
     });
     return {
       text: finalText,
@@ -1864,6 +2106,18 @@ export async function runClientVoiceTranscribe(
       traceId,
     };
   } catch (err) {
+    await settleClientUsage({
+      requestSent,
+      traceId: generationTraceId,
+      attempt: 1,
+      source: clientUsageSourceForProvider(resolved.provider),
+      feature: "voice-transcription",
+      provider: resolved.provider.type,
+      model: resolved.model,
+      outcome: "failed",
+      folioId: folioId ?? undefined,
+      editorialActionId: `${generationTraceId}:action`,
+    });
     await captureVoiceTranscription({
       provider: resolved.provider.type,
       model: resolved.model,
@@ -1871,6 +2125,7 @@ export async function runClientVoiceTranscribe(
       prompt: req.prompt,
       latencyMs: 0,
       error: err,
+      traceId: generationTraceId,
     });
     reportApplicationDiagnostic("twyne:ai-client:voice-transcribe", err);
     return null;
@@ -2996,6 +3251,7 @@ export async function runClientInterviewTurn(
   }
   const generationTraceId = createAiTraceId("interview-turn");
   const generationStart = performance.now();
+  const usageFolioId = await loadActiveFolioIdFromIdb();
   let generationPrompt = "";
   try {
     const lastUser = [...request.messages]
@@ -3045,6 +3301,21 @@ export async function runClientInterviewTurn(
         }
       }
       text = await streamed.text;
+      const usage = normalizeAiUsage(await streamed.totalUsage);
+      await settleClientUsage({
+        requestSent: true,
+        providerRequestId: await providerRequestIdFromResult(streamed),
+        traceId: generationTraceId,
+        attempt: 1,
+        source: clientUsageSourceForProvider(cfg.provider),
+        feature: "interview-turn",
+        provider: cfg.provider.type,
+        model: cfg.model,
+        outcome: "completed",
+        usage,
+        folioId: usageFolioId ?? undefined,
+        editorialActionId: `${generationTraceId}:action`,
+      });
       await captureAiGeneration({
         feature: "interview-turn",
         provider: cfg.provider.type,
@@ -3057,7 +3328,7 @@ export async function runClientInterviewTurn(
         maxTokens: cfg.maxTokens,
         spanName: "interview_turn",
         traceId: generationTraceId,
-        usage: normalizeAiUsage(await streamed.totalUsage),
+        usage,
         evalSignals: {
           twyne_interview_mode: request.mode,
           twyne_message_count: request.messages.length,
@@ -3183,6 +3454,18 @@ export async function runClientInterviewTurn(
     });
   } catch (err) {
     if (onUpdate) {
+      await settleClientUsage({
+        requestSent: providerRequestWasSent(err),
+        traceId: generationTraceId,
+        attempt: 1,
+        source: clientUsageSourceForProvider(cfg.provider),
+        feature: "interview-turn",
+        provider: cfg.provider.type,
+        model: cfg.model,
+        outcome: "failed",
+        folioId: usageFolioId ?? undefined,
+        editorialActionId: `${generationTraceId}:action`,
+      });
       await captureAiGeneration({
         feature: "interview-turn",
         provider: cfg.provider.type,

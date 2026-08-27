@@ -12,6 +12,7 @@
  */
 
 import type { Agent } from "@atproto/api";
+import { reportApplicationError } from "./application-diagnostics";
 
 /**
  * OAuth scope requested from the user's PDS. `include:site.standard.authFull`
@@ -22,6 +23,7 @@ export const SCOPE = "atproto blob:image/* include:site.standard.authFull";
 export const AUTH_CALLBACK_PATH = "/auth/callback/";
 
 const HANDLE_RESOLVER = "https://bsky.social";
+export const PUBLIC_BSKY_APPVIEW = "https://public.api.bsky.app";
 
 export interface AtprotoSession {
   did: string;
@@ -109,6 +111,7 @@ async function getOAuthClient(): Promise<any> {
 
 // Cache the live OAuth session object so getAgent() can reuse it.
 let activeOAuthSession: any = null;
+let initSessionPromise: Promise<AtprotoSession | null> | null = null;
 
 /**
  * Complete a pending OAuth callback (the `?code&state` on the landing
@@ -121,6 +124,20 @@ export async function initSession(): Promise<AtprotoSession | null> {
   // Do not emit a known, unactionable warning during ordinary local writing;
   // signInWithBluesky performs the one-time move to the IP-literal origin.
   if (needsIpLiteralLoopback()) return null;
+
+  // AuthProvider can restart its visible task while the Convex client is
+  // booting. Keep OAuth callback exchange/session refresh single-flight so two
+  // overlapping initializations cannot race the rotating DPoP nonce.
+  if (initSessionPromise) return initSessionPromise;
+  initSessionPromise = restoreSession();
+  try {
+    return await initSessionPromise;
+  } finally {
+    initSessionPromise = null;
+  }
+}
+
+async function restoreSession(): Promise<AtprotoSession | null> {
   try {
     const client = await getOAuthClient();
     const result = await client.init();
@@ -132,7 +149,12 @@ export async function initSession(): Promise<AtprotoSession | null> {
     return resolveProfile(result.session);
   } catch (e) {
     // A failed restore should never block the rest of auth from loading.
-    console.warn("[atproto] initSession failed", e);
+    reportApplicationError("twyne:atproto:restore-session", e, {
+      source: "auth",
+      title: "Bluesky connection interrupted",
+      dedupeKey: "atproto-session",
+      metadata: { operation: "restore-atproto-session" },
+    });
     activeOAuthSession = null;
     return null;
   }
@@ -188,10 +210,35 @@ export function getActiveDid(): string | null {
 
 async function resolveProfile(session: any): Promise<AtprotoSession> {
   const did: string = session.did ?? session.sub;
+  const { Agent } = await import("@atproto/api");
+  // Profiles are public AppView data. Using the OAuth session here routes the
+  // request through the user's PDS and requires an audience-bound Bluesky RPC
+  // scope that existing Standard.site grants do not have.
+  const agent = new Agent(PUBLIC_BSKY_APPVIEW);
+  return resolveAtprotoProfile(
+    did,
+    (actor) => agent.getProfile({ actor }),
+    (error) => {
+      reportApplicationError("twyne:atproto:load-profile", error, {
+        source: "fetch",
+        title: "Bluesky profile unavailable",
+        variant: "warning",
+        dedupeKey: "atproto-profile",
+        metadata: { operation: "load-atproto-profile" },
+      });
+    },
+  );
+}
+
+export async function resolveAtprotoProfile(
+  did: string,
+  getProfile: (actor: string) => Promise<{
+    data: { handle: string; displayName?: string; avatar?: string };
+  }>,
+  onError?: (error: unknown) => void,
+): Promise<AtprotoSession> {
   try {
-    const { Agent } = await import("@atproto/api");
-    const agent = new Agent(session);
-    const res = await agent.getProfile({ actor: did });
+    const res = await getProfile(did);
     return {
       did,
       handle: res.data.handle,
@@ -201,7 +248,7 @@ async function resolveProfile(session: any): Promise<AtprotoSession> {
   } catch (e) {
     // The session is valid even if the profile lookup fails; fall back to
     // the DID as a display string.
-    console.warn("[atproto] getProfile failed", e);
+    onError?.(e);
     return { did, handle: did };
   }
 }

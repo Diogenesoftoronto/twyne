@@ -21,8 +21,12 @@ import {
   standardSitePublicationUrl,
 } from "./standard-site-paths";
 
-const PUBLICATION_META_KEY = "atproto-publication";
-const docMetaKey = (folioId: string) => `atproto-doc-${folioId}`;
+const LEGACY_PUBLICATION_META_KEY = "atproto-publication";
+const legacyDocMetaKey = (folioId: string) => `atproto-doc-${folioId}`;
+const publicationMetaKey = (did: string) =>
+  `atproto-publication:${encodeURIComponent(did)}`;
+const docMetaKey = (did: string, folioId: string) =>
+  `atproto-doc:${encodeURIComponent(did)}:${folioId}`;
 
 export interface PublicationRef {
   uri: string;
@@ -63,6 +67,64 @@ function rkeyFromUri(uri: string, collection: string): string {
     throw new Error(`PDS returned an invalid ${collection} URI`);
   }
   return parsed.rkey;
+}
+
+function publicationBelongsToDid(
+  publication: PublicationRef | null,
+  did: string,
+): publication is PublicationRef {
+  const parsed = publication?.uri ? parseAtUri(publication.uri) : null;
+  return (
+    !!parsed &&
+    parsed.did === did &&
+    parsed.collection === STANDARD_SITE_PUBLICATION_COLLECTION
+  );
+}
+
+function documentBelongsToDid(
+  document: DocumentRef | null,
+  did: string,
+): document is DocumentRef {
+  const parsed = document?.uri ? parseAtUri(document.uri) : null;
+  const publication = document?.publicationUri
+    ? parseAtUri(document.publicationUri)
+    : null;
+  return (
+    !!parsed &&
+    parsed.did === did &&
+    parsed.collection === STANDARD_SITE_DOCUMENT_COLLECTION &&
+    (!publication ||
+      (publication.did === did &&
+        publication.collection === STANDARD_SITE_PUBLICATION_COLLECTION))
+  );
+}
+
+async function loadPublicationRef(did: string): Promise<PublicationRef | null> {
+  const scoped = await loadMetaFromIdb<PublicationRef>(publicationMetaKey(did));
+  if (publicationBelongsToDid(scoped, did)) return scoped;
+
+  const legacy = await loadMetaFromIdb<PublicationRef>(
+    LEGACY_PUBLICATION_META_KEY,
+  );
+  if (!publicationBelongsToDid(legacy, did)) return null;
+  await saveMetaToIdb(publicationMetaKey(did), legacy);
+  await saveMetaToIdb(LEGACY_PUBLICATION_META_KEY, null);
+  return legacy;
+}
+
+async function loadDocumentRef(
+  did: string,
+  folioId: string,
+): Promise<DocumentRef | null> {
+  const scoped = await loadMetaFromIdb<DocumentRef>(docMetaKey(did, folioId));
+  if (documentBelongsToDid(scoped, did)) return scoped;
+
+  const legacyKey = legacyDocMetaKey(folioId);
+  const legacy = await loadMetaFromIdb<DocumentRef>(legacyKey);
+  if (!documentBelongsToDid(legacy, did)) return null;
+  await saveMetaToIdb(docMetaKey(did, folioId), legacy);
+  await saveMetaToIdb(legacyKey, null);
+  return legacy;
 }
 
 function publicationRecord(
@@ -153,7 +215,7 @@ async function putPublication(
   });
 
   const ref = { uri, name, url };
-  await saveMetaToIdb(PUBLICATION_META_KEY, ref);
+  await saveMetaToIdb(publicationMetaKey(parsed.did), ref);
   return ref;
 }
 
@@ -162,16 +224,16 @@ export async function ensurePublication(
   agent: Agent,
   opts: { name: string },
 ): Promise<PublicationRef> {
-  const cached = await loadMetaFromIdb<PublicationRef>(PUBLICATION_META_KEY);
+  const did = repoDid(agent);
+  const cached = await loadPublicationRef(did);
   if (cached?.uri) {
     try {
       return await putPublication(agent, cached.uri, opts.name);
     } catch {
-      await saveMetaToIdb(PUBLICATION_META_KEY, null);
+      await saveMetaToIdb(publicationMetaKey(did), null);
     }
   }
 
-  const did = repoDid(agent);
   try {
     const existing = await agent.com.atproto.repo.listRecords({
       repo: did,
@@ -226,7 +288,7 @@ export async function publishDocument(
   }
 
   const now = new Date().toISOString();
-  const prior = await loadMetaFromIdb<DocumentRef>(docMetaKey(folio.id));
+  const prior = await loadDocumentRef(did, folio.id);
   const publishedAt = prior?.publishedAt || now;
 
   let uri: string;
@@ -286,7 +348,7 @@ export async function publishDocument(
     publicationUri: publication.uri,
     publishedAt,
   };
-  await saveMetaToIdb(docMetaKey(folio.id), ref);
+  await saveMetaToIdb(docMetaKey(did, folio.id), ref);
 
   const viewerUrl = standardSiteDocumentUrl(did, publicationParts.rkey, rkey);
   return {
@@ -300,10 +362,10 @@ export async function publishDocument(
 /** Return the locally-known PDS publication state for a folio, if any. */
 export async function loadPublishedDocument(
   folioId: string,
+  did: string,
 ): Promise<PublishResult | null> {
-  const doc = await loadMetaFromIdb<DocumentRef>(docMetaKey(folioId));
-  const publication =
-    await loadMetaFromIdb<PublicationRef>(PUBLICATION_META_KEY);
+  const doc = await loadDocumentRef(did, folioId);
+  const publication = await loadPublicationRef(did);
   if (!doc?.uri || !publication?.uri) return null;
   const documentParts = parseAtUri(doc.uri);
   const publicationParts = parseAtUri(publication.uri);
@@ -331,12 +393,13 @@ export async function unpublishDocument(
   agent: Agent,
   folioId: string,
 ): Promise<boolean> {
-  const prior = await loadMetaFromIdb<DocumentRef>(docMetaKey(folioId));
+  const did = repoDid(agent);
+  const prior = await loadDocumentRef(did, folioId);
   if (!prior?.uri) return false;
   const parsed = parseAtUri(prior.uri);
   if (
     !parsed ||
-    parsed.did !== repoDid(agent) ||
+    parsed.did !== did ||
     parsed.collection !== STANDARD_SITE_DOCUMENT_COLLECTION
   ) {
     throw new Error(
@@ -348,6 +411,6 @@ export async function unpublishDocument(
     collection: STANDARD_SITE_DOCUMENT_COLLECTION,
     rkey: parsed.rkey,
   });
-  await saveMetaToIdb(docMetaKey(folioId), null);
+  await saveMetaToIdb(docMetaKey(did, folioId), null);
   return true;
 }

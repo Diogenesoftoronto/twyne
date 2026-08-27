@@ -1,4 +1,5 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
+import { AUTH_CALLBACK_PATH, SCOPE } from "../../utils/atproto";
 
 /**
  * ATProto OAuth client-metadata document.
@@ -8,13 +9,7 @@ import type { RequestHandler } from "@builder.io/qwik-city";
  * that way every deploy origin (production, preview, branch builds) is
  * self-describing without configuration. Loopback dev skips this endpoint
  * entirely (see src/utils/atproto.ts).
- *
- * Scope is kept in sync with SCOPE in src/utils/atproto.ts.
  */
-
-const SCOPE = "atproto blob:image/* include:site.standard.authFull";
-const AUTH_CALLBACK_PATH = "/auth/callback/";
-const PROD_HOSTS = new Set(["twyne.love", "www.twyne.love"]);
 
 function isLoopbackHost(hostname: string): boolean {
   return (
@@ -33,36 +28,37 @@ function isLoopbackHost(hostname: string): boolean {
  * "URL must use localhost…". Force `https` for every non-loopback host and
  * honor `x-forwarded-proto` when present.
  */
-function metadataOrigin(url: URL, forwardedProto?: string | null): string {
+export function metadataOrigin(url: URL): string {
   if (isLoopbackHost(url.hostname)) return url.origin;
-
-  if (!PROD_HOSTS.has(url.hostname)) {
-    const configured =
-      import.meta.env.PUBLIC_SITE_URL ||
-      import.meta.env.SITE_URL ||
-      import.meta.env.BETTER_AUTH_URL;
-    if (configured) return new URL(configured).origin;
+  if (url.port) {
+    throw new Error("ATProto OAuth client metadata cannot use a public port");
   }
-
-  const proto = forwardedProto?.split(",")[0]?.trim() || "https";
-  return `${proto}://${url.host}`;
+  return `https://${url.hostname}`;
 }
 
-export const onGet: RequestHandler = ({ json, url, request }) => {
-  const origin = metadataOrigin(
-    url,
-    request.headers.get("x-forwarded-proto"),
-  );
-  json(200, {
+export function oauthClientMetadata(origin: string) {
+  return {
     client_id: `${origin}/oauth-client-metadata.json`,
     client_name: "Twyne",
     client_uri: origin,
-    redirect_uris: [`${origin}${AUTH_CALLBACK_PATH}`, `${origin}/`],
+    redirect_uris: [`${origin}${AUTH_CALLBACK_PATH}`],
     scope: SCOPE,
     grant_types: ["authorization_code", "refresh_token"],
     response_types: ["code"],
     token_endpoint_auth_method: "none",
     application_type: "web",
     dpop_bound_access_tokens: true,
-  });
+  };
+}
+
+export const onGet: RequestHandler = ({ json, url }) => {
+  try {
+    json(200, oauthClientMetadata(metadataOrigin(url)));
+  } catch (error) {
+    json(400, {
+      error: "invalid_client_metadata_origin",
+      error_description:
+        error instanceof Error ? error.message : "Invalid OAuth client origin",
+    });
+  }
 };

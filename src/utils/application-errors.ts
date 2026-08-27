@@ -593,6 +593,7 @@ function normalizeConvex(
     codeFromTag(data?.code) ??
     codeFromTag(data?.kind) ??
     codeFromTag(data?.type) ??
+    authenticationCodeFromMessage(rawMessage) ??
     (status ? statusToCode(status, "convex") : undefined) ??
     inferCodeFromMessage(rawMessage, "convex");
   const retryAfterMs = normalizeRetryAfterMs(
@@ -640,6 +641,7 @@ function normalizeAuth(
   const code =
     codeFromTag(body?.code) ??
     codeFromTag(record.code) ??
+    authenticationCodeFromMessage(rawMessage) ??
     (status ? statusToCode(status, "auth") : undefined) ??
     inferCodeFromMessage(rawMessage, "auth");
   return createAppError(code, {
@@ -744,6 +746,27 @@ function validationKeyFromMessage(
   return undefined;
 }
 
+function authenticationCodeFromMessage(
+  message: string | undefined,
+): "AUTHENTICATION_REQUIRED" | "AUTHENTICATION_FAILED" | undefined {
+  if (!message) return undefined;
+  if (
+    /not signed in|not authenticated|sign.?in required|session expired/i.test(
+      message,
+    )
+  ) {
+    return "AUTHENTICATION_REQUIRED";
+  }
+  if (
+    /missing required scope|scope.?missing|use_dpop_nonce|dpop.*nonce.*mismatch/i.test(
+      message,
+    )
+  ) {
+    return "AUTHENTICATION_FAILED";
+  }
+  return undefined;
+}
+
 function inferCodeFromMessage(
   message: string | undefined,
   source: AppErrorSource,
@@ -766,9 +789,8 @@ function inferCodeFromMessage(
   if (MALFORMED_PATTERNS.some((pattern) => pattern.test(message))) {
     return "MALFORMED_RESPONSE";
   }
-  if (/not authenticated|sign.?in required|session expired/i.test(message)) {
-    return "AUTHENTICATION_REQUIRED";
-  }
+  const authenticationCode = authenticationCodeFromMessage(message);
+  if (authenticationCode) return authenticationCode;
   if (
     /invalid credentials|authentication failed|invalid login/i.test(message)
   ) {
@@ -799,6 +821,7 @@ function normalizeError(error: Error, options: AppErrorOptions): AppError {
   );
   return createAppError(
     codeFromTag(record.code) ??
+      authenticationCodeFromMessage(error.message) ??
       (status ? statusToCode(status, source) : undefined) ??
       inferCodeFromMessage(error.message, source),
     {
@@ -853,6 +876,7 @@ export function normalizeApplicationError(
         codeFromTag(record.code) ??
           codeFromTag(record.type) ??
           codeFromTag(record.kind) ??
+          authenticationCodeFromMessage(rawMessage) ??
           (status ? statusToCode(status, source) : undefined) ??
           inferCodeFromMessage(rawMessage, source),
         {

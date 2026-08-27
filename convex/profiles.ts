@@ -110,6 +110,38 @@ export function validateHandle(input: string): string | null {
   return null;
 }
 
+export interface PublicStatsPreferences {
+  writingHeatmap: boolean;
+  daysWritten30: boolean;
+  streak: "off" | "current" | "longest";
+  publicPieceCount: boolean;
+  folioCount: boolean;
+}
+
+/** Existing profiles keep only the heatmap that was already public. */
+export const LEGACY_PUBLIC_STATS: PublicStatsPreferences = {
+  writingHeatmap: true,
+  daysWritten30: false,
+  streak: "off",
+  publicPieceCount: false,
+  folioCount: false,
+};
+
+/** New profiles must make an explicit choice before sharing any statistic. */
+export const PRIVATE_PUBLIC_STATS: PublicStatsPreferences = {
+  writingHeatmap: false,
+  daysWritten30: false,
+  streak: "off",
+  publicPieceCount: false,
+  folioCount: false,
+};
+
+export function effectivePublicStats(
+  row: Pick<Doc<"handles">, "publicStats">,
+): PublicStatsPreferences {
+  return row.publicStats ?? LEGACY_PUBLIC_STATS;
+}
+
 /* ── Internal helpers ──────────────────────────────────────────── */
 
 async function requireIdentity(ctx: {
@@ -187,6 +219,7 @@ export const claimHandle = mutation({
       await ctx.db.insert("handles", {
         userId,
         handle: normalized,
+        publicStats: PRIVATE_PUBLIC_STATS,
         claimedAt: now,
         updatedAt: now,
       });
@@ -205,6 +238,37 @@ export const claimHandle = mutation({
     }
 
     return { handle: normalized, changed: true as const };
+  },
+});
+
+/** Replace the authenticated writer's explicit public-stat sharing choices. */
+export const updatePublicStats = mutation({
+  args: {
+    writingHeatmap: v.boolean(),
+    daysWritten30: v.boolean(),
+    streak: v.union(
+      v.literal("off"),
+      v.literal("current"),
+      v.literal("longest"),
+    ),
+    publicPieceCount: v.boolean(),
+    folioCount: v.boolean(),
+  },
+  returns: v.object({ ok: v.boolean() }),
+  handler: async (ctx, publicStats) => {
+    const userId = await requireIdentity(ctx);
+    const existing = await ctx.db
+      .query("handles")
+      .withIndex("by_userId", (q: any) => q.eq("userId", userId))
+      .unique();
+    if (!existing) {
+      throw new Error("Claim a handle before changing public statistics.");
+    }
+    await ctx.db.patch(existing._id, {
+      publicStats,
+      updatedAt: Date.now(),
+    });
+    return { ok: true };
   },
 });
 
@@ -243,7 +307,10 @@ export const updateProfile = mutation({
     if (args.avatarStorageId !== undefined) {
       // Clearing or replacing the avatar: delete the previous blob so we don't
       // leak orphaned storage objects.
-      if (existing.avatarStorageId && existing.avatarStorageId !== args.avatarStorageId) {
+      if (
+        existing.avatarStorageId &&
+        existing.avatarStorageId !== args.avatarStorageId
+      ) {
         await ctx.storage.delete(existing.avatarStorageId);
       }
       patch.avatarStorageId = args.avatarStorageId ?? undefined;
@@ -289,7 +356,9 @@ export const getMyHandle = query({
     if (!identity) return null;
     const row = await ctx.db
       .query("handles")
-      .withIndex("by_userId", (q: any) => q.eq("userId", identity.tokenIdentifier))
+      .withIndex("by_userId", (q: any) =>
+        q.eq("userId", identity.tokenIdentifier),
+      )
       .unique();
     return row ? await serializeHandle(ctx, row) : null;
   },
@@ -349,5 +418,6 @@ async function serializeHandle(ctx: { storage: any }, row: Doc<"handles">) {
     avatarUrl,
     claimedAt: row.claimedAt,
     updatedAt: row.updatedAt,
+    publicStats: effectivePublicStats(row),
   };
 }

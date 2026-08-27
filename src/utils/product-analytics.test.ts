@@ -24,6 +24,7 @@ const {
   captureProductEvent,
   countDraftWords,
   crossedDraftMilestones,
+  usageExportRowCountBucket,
   wordCountBucket,
 } = await import("./product-analytics");
 
@@ -41,14 +42,14 @@ describe("product analytics contract", () => {
       {
         event: "landing_cta_clicked",
         properties: {
-          analytics_version: 1,
+          analytics_version: 2,
           location: "hero",
           destination: "onboarding",
         },
       },
       {
         event: "draft_exported",
-        properties: { analytics_version: 1, format: "pdf" },
+        properties: { analytics_version: 2, format: "pdf" },
       },
     ]);
   });
@@ -75,7 +76,7 @@ describe("product analytics contract", () => {
     } as never);
 
     expect(payload).toEqual({
-      analytics_version: 1,
+      analytics_version: 2,
       source: "editor",
       folio_type: "draft",
     });
@@ -87,11 +88,13 @@ describe("product analytics contract", () => {
     expect(
       buildProductEventPayload("sign_in_failed", {
         method: "passkey",
+        flow: "signin",
         error_code: "AUTHENTICATION_FAILED",
       }),
     ).toEqual({
-      analytics_version: 1,
+      analytics_version: 2,
       method: "passkey",
+      flow: "signin",
       error_code: "AUTHENTICATION_FAILED",
     });
 
@@ -103,6 +106,65 @@ describe("product analytics contract", () => {
     expect(bypassed.error_code).toBe("INTERNAL_ERROR");
     expect(JSON.stringify(bypassed)).not.toContain("private draft");
     expect(JSON.stringify(bypassed)).not.toContain("example.test");
+  });
+
+  test("keeps auth events content-free while recording method and flow", () => {
+    expect(
+      buildProductEventPayload("sign_in_completed", {
+        provider: "convex",
+        method: "email_otp",
+        flow: "signup",
+        email: "private@example.test",
+      } as never),
+    ).toEqual({
+      analytics_version: 2,
+      provider: "convex",
+      method: "email_otp",
+      flow: "signup",
+    });
+  });
+
+  test("keeps Desk events aggregate and content-free", () => {
+    expect(
+      buildProductEventPayload("desk_viewed", {
+        signed_in: true,
+        range: "30d",
+        folio_id: "private-folio-id",
+        title: "Unannounced manuscript",
+        provider: "private-provider",
+        cost: 42,
+      } as never),
+    ).toEqual({
+      analytics_version: 2,
+      signed_in: true,
+      range: "30d",
+    });
+    expect(
+      buildProductEventPayload("usage_exported", {
+        format: "csv",
+        row_count_bucket: "10_99",
+        event_keys: ["private-event"],
+      } as never),
+    ).toEqual({
+      analytics_version: 2,
+      format: "csv",
+      row_count_bucket: "10_99",
+    });
+  });
+
+  test("buckets export size without reporting an exact row count", () => {
+    expect(
+      [-1, 1, 9, 10, 99, 100, 999, 1000].map(usageExportRowCountBucket),
+    ).toEqual([
+      "empty",
+      "1_9",
+      "1_9",
+      "10_99",
+      "10_99",
+      "100_999",
+      "100_999",
+      "1000_plus",
+    ]);
   });
 });
 

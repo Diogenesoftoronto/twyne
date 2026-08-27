@@ -6,6 +6,7 @@ import {
 } from "./standard-site-reader.server";
 
 const did = "did:plc:abcdefghijklmnopqrstuvwx";
+const webDid = "did:web:identity.example.com:writers:alice";
 const publicationRkey = "3mabcde234567";
 const documentRkey = "3mzyxwv765432";
 const publicationUri = `at://${did}/site.standard.publication/${publicationRkey}`;
@@ -22,6 +23,19 @@ function fetcher() {
     const url = new URL(input instanceof Request ? input.url : input);
     if (url.hostname === "plc.directory") {
       return json({
+        id: did,
+        service: [
+          {
+            id: "#atproto_pds",
+            type: "AtprotoPersonalDataServer",
+            serviceEndpoint: "https://pds.example.com",
+          },
+        ],
+      });
+    }
+    if (url.hostname === "identity.example.com") {
+      return json({
+        id: webDid,
         service: [
           {
             id: "#atproto_pds",
@@ -96,6 +110,63 @@ describe("Standard.site public reader", () => {
     });
     expect(result.documents).toHaveLength(1);
     expect(result.documents[0].url).toContain(`/${documentRkey}`);
+  });
+
+  test("resolves a self-hosted did:web identity through its DID document", async () => {
+    const webPublicationUri = `at://${webDid}/site.standard.publication/${publicationRkey}`;
+    const webFetcher = vi.fn(async (input: string | URL | Request) => {
+      const url = new URL(input instanceof Request ? input.url : input);
+      if (url.hostname === "identity.example.com") {
+        expect(url.pathname).toBe("/writers/alice/did.json");
+        return json({
+          id: webDid,
+          service: [
+            {
+              id: "#atproto_pds",
+              type: "AtprotoPersonalDataServer",
+              serviceEndpoint: "https://pds.example.com",
+            },
+          ],
+        });
+      }
+      if (url.pathname.endsWith("getRecord")) {
+        return json({
+          uri: webPublicationUri,
+          value: {
+            $type: "site.standard.publication",
+            name: "A Self-hosted Writer",
+            url: `https://twyne.love/at/${encodeURIComponent(webDid)}/${publicationRkey}`,
+          },
+        });
+      }
+      return json({ records: [] });
+    });
+
+    const result = await loadStandardSitePublication(
+      webDid,
+      publicationRkey,
+      webFetcher,
+    );
+
+    expect(result.publication.uri).toBe(webPublicationUri);
+    expect(webFetcher).toHaveBeenCalledWith(
+      "https://identity.example.com/writers/alice/did.json",
+      expect.any(Object),
+    );
+  });
+
+  test("rejects private did:web resolution targets before fetching", async () => {
+    const blockedFetcher = vi.fn();
+    for (const blockedDid of ["did:web:localhost", "did:web:localhost."]) {
+      await expect(
+        loadStandardSitePublication(
+          blockedDid,
+          publicationRkey,
+          blockedFetcher,
+        ),
+      ).rejects.toThrow("Unsupported ATProto DID");
+    }
+    expect(blockedFetcher).not.toHaveBeenCalled();
   });
 
   test("loads Markpub content and renders it without executable HTML or links", async () => {

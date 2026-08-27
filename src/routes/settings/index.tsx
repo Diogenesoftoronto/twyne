@@ -119,6 +119,14 @@ function formatBytes(bytes: number): string {
 
 /* ── Types ──────────────────────────────────────────────────────── */
 
+interface PublicStatsPreferences {
+  writingHeatmap: boolean;
+  daysWritten30: boolean;
+  streak: "off" | "current" | "longest";
+  publicPieceCount: boolean;
+  folioCount: boolean;
+}
+
 interface SettingsStore {
   settings: AiSettings;
   loaded: boolean;
@@ -204,6 +212,9 @@ interface SettingsStore {
   profileBio: string;
   profileBusy: boolean;
   profileToast: string | null;
+  publicStats: PublicStatsPreferences;
+  publicStatsBusy: boolean;
+  publicStatsToast: string | null;
   /** Resolved URL of the saved profile picture, or null if none. */
   profileAvatarUrl: string | null;
   /** True while an avatar upload/clear round-trip is in flight. */
@@ -512,6 +523,15 @@ export default component$(() => {
     profileBio: "",
     profileBusy: false,
     profileToast: null,
+    publicStats: {
+      writingHeatmap: false,
+      daysWritten30: false,
+      streak: "off",
+      publicPieceCount: false,
+      folioCount: false,
+    },
+    publicStatsBusy: false,
+    publicStatsToast: null,
     profileAvatarUrl: null,
     profileAvatarBusy: false,
     integrationTokensLoaded: false,
@@ -1135,18 +1155,24 @@ export default component$(() => {
     store.deleteDialogError = null;
     store.accountError = null;
     try {
-      const result = await client.mutation(api.account.deleteAccount, {});
-      // Wipe the local session and any synced state, then bounce to the home
-      // page so nothing authed lingers in memory.
+      const result = (await client.mutation(api.account.deleteAccount, {})) as {
+        identityPurged: boolean;
+        deletionScheduled: boolean;
+      };
+      if (!result.deletionScheduled) {
+        throw new Error("Account deletion was not scheduled.");
+      }
+      // The authenticated request has queued bounded server-side deletion.
+      // Clear this browser session while the resumable job finishes.
       try {
         await signOut();
       } catch {
-        /* sign-out is best-effort; the server account is already gone */
+        /* sign-out is best-effort; server-side deletion is already scheduled */
       }
       clearConvexSyncContext();
-      store.accountToast = result?.identityPurged
-        ? "Your account and synced data have been deleted."
-        : "Synced data deleted. We're finishing the account teardown — if you can still sign in, contact support@twyne.love.";
+      store.accountToast = result.identityPurged
+        ? "Account deletion started. Twyne is removing synced data in the background."
+        : "Account deletion started. Synced data is being removed in the background; identity teardown may still be finishing.";
       store.showDeleteDialog = false;
       store.deletingAccount = false;
       window.location.href = "/";
@@ -1269,12 +1295,21 @@ export default component$(() => {
         displayName: string | null;
         bio: string | null;
         avatarUrl: string | null;
+        publicStats: PublicStatsPreferences;
       } | null;
       store.handle = row?.handle ?? null;
       store.handleDraft = row?.handle ?? "";
       store.profileDisplayName = row?.displayName ?? "";
       store.profileBio = row?.bio ?? "";
       store.profileAvatarUrl = row?.avatarUrl ?? null;
+      if (row) {
+        store.publicStats = { ...row.publicStats };
+        // S1 returns the legacy effective preference (heatmap only) for rows
+        // that predate sharing controls. Persisting the complete object here
+        // turns that compatibility behavior into an explicit, reversible
+        // choice the first time the writer opens Settings.
+        await client.mutation(api.profiles.updatePublicStats, row.publicStats);
+      }
     } catch {
       // The Convex client may be in mid-reconnect; we'll retry on next track.
     } finally {
@@ -1385,6 +1420,40 @@ export default component$(() => {
       });
     } finally {
       store.profileBusy = false;
+    }
+  });
+
+  const handleSavePublicStats = $(async (next: PublicStatsPreferences) => {
+    const client = convexClientSig.value;
+    if (!client || store.publicStatsBusy) return;
+    const previous = { ...store.publicStats };
+    store.publicStats = { ...next };
+    store.publicStatsBusy = true;
+    store.publicStatsToast = null;
+    store.handleError = null;
+    try {
+      await client.mutation(api.profiles.updatePublicStats, next);
+      void captureProductEvent("public_profile_stats_updated", {
+        enabled_stat_count:
+          Number(next.writingHeatmap) +
+          Number(next.daysWritten30) +
+          Number(next.publicPieceCount) +
+          Number(next.folioCount) +
+          Number(next.streak !== "off"),
+      });
+      store.publicStatsToast = "Public statistics updated.";
+      setTimeout(() => (store.publicStatsToast = null), 3000);
+    } catch (error) {
+      store.publicStats = previous;
+      reportApplicationDiagnostic("twyne:settings:public-stats", error, {
+        operation: "update-public-stats",
+      });
+      store.handleError = normalizeApplicationError(error, {
+        source: "convex",
+        metadata: { operation: "update-public-stats" },
+      });
+    } finally {
+      store.publicStatsBusy = false;
     }
   });
 
@@ -4500,6 +4569,148 @@ export default component$(() => {
                         View your public profile →
                       </a>
                     </div>
+
+                    <div class="mt-6 border-t border-dashed border-[var(--color-paper-3)] pt-5">
+                      <p
+                        class="text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        Public writing statistics
+                      </p>
+                      <p class="mt-1 mb-4 text-xs leading-relaxed text-[var(--color-ink-light)]">
+                        Share only the writing facts you choose. AI usage,
+                        costs, tokens, providers, models, private folio names,
+                        and recent actions are never part of your public
+                        profile.
+                      </p>
+                      <div class="space-y-4">
+                        {(
+                          [
+                            {
+                              key: "writingHeatmap",
+                              label: "Writing activity heatmap",
+                              description:
+                                "Show your recent writing days and activity counts.",
+                            },
+                            {
+                              key: "daysWritten30",
+                              label: "Days written in the last 30",
+                              description:
+                                "Show the number of days you wrote during the current 30-day window.",
+                            },
+                            {
+                              key: "publicPieceCount",
+                              label: "Published piece count",
+                              description:
+                                "Show how many pieces are publicly available on your profile.",
+                            },
+                            {
+                              key: "folioCount",
+                              label: "Desk piece count",
+                              description:
+                                "Show only the count of private desk pieces, never their names or IDs.",
+                            },
+                          ] as const
+                        ).map((option) => (
+                          <label
+                            key={option.key}
+                            class="flex cursor-pointer items-center justify-between gap-4"
+                          >
+                            <span>
+                              <span
+                                class="block text-sm text-[var(--color-ink)]"
+                                style={{ fontFamily: "var(--font-display)" }}
+                              >
+                                {option.label}
+                              </span>
+                              <span
+                                class="mt-0.5 block text-[0.65rem] text-[var(--color-ink-muted)]"
+                                style={{
+                                  fontFamily: "var(--font-typewriter)",
+                                }}
+                              >
+                                {option.description}
+                              </span>
+                            </span>
+                            <input
+                              type="checkbox"
+                              checked={store.publicStats[option.key]}
+                              disabled={store.publicStatsBusy}
+                              onChange$={(event) => {
+                                void handleSavePublicStats({
+                                  ...store.publicStats,
+                                  [option.key]: (
+                                    event.target as HTMLInputElement
+                                  ).checked,
+                                });
+                              }}
+                              class="sr-only"
+                              aria-label={`Share ${option.label.toLowerCase()}`}
+                            />
+                            <span
+                              class={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
+                                store.publicStats[option.key]
+                                  ? "bg-[var(--color-vermilion)]"
+                                  : "bg-[var(--color-paper-3)]"
+                              }`}
+                              aria-hidden="true"
+                            >
+                              <span
+                                class={`inline-block h-3.5 w-3.5 transform rounded-full bg-[var(--color-paper)] transition-transform ${
+                                  store.publicStats[option.key]
+                                    ? "translate-x-5"
+                                    : "translate-x-1"
+                                }`}
+                              />
+                            </span>
+                          </label>
+                        ))}
+
+                        <div class="grid gap-1 sm:grid-cols-[1fr_13rem] sm:items-center sm:gap-4">
+                          <div>
+                            <span
+                              class="block text-sm text-[var(--color-ink)]"
+                              style={{ fontFamily: "var(--font-display)" }}
+                            >
+                              Writing streak
+                            </span>
+                            <span
+                              class="mt-0.5 block text-[0.65rem] text-[var(--color-ink-muted)]"
+                              style={{ fontFamily: "var(--font-typewriter)" }}
+                            >
+                              Keep it private, or share your current or longest
+                              streak.
+                            </span>
+                          </div>
+                          <SiteSelect
+                            value={store.publicStats.streak}
+                            options={[
+                              { value: "off", label: "Private" },
+                              { value: "current", label: "Current streak" },
+                              { value: "longest", label: "Longest streak" },
+                            ]}
+                            onChange$={(value) => {
+                              void handleSavePublicStats({
+                                ...store.publicStats,
+                                streak:
+                                  value as PublicStatsPreferences["streak"],
+                              });
+                            }}
+                            ariaLabel="Public writing streak"
+                            disabled={store.publicStatsBusy}
+                          />
+                        </div>
+                      </div>
+                      {store.publicStatsToast && (
+                        <p
+                          class="mt-3 text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-accent-green)]"
+                          style={{ fontFamily: "var(--font-typewriter)" }}
+                          role="status"
+                        >
+                          {store.publicStatsToast}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
               </section>
@@ -4677,10 +4888,11 @@ export default component$(() => {
                   Delete account
                 </h2>
                 <p class="text-xs text-[var(--color-ink-light)] mb-4">
-                  Permanently deletes your account and everything you've synced
-                  — folios, briefs, persona notes, rubric, published pieces, and
-                  payment state. Local-only browser data stays until you clear
-                  it. This cannot be undone.
+                  Starts permanent account deletion. Twyne removes synced data
+                  in resumable background batches after you sign out — folios,
+                  briefs, persona notes, usage history, rubric, published
+                  pieces, and payment state. Local-only browser data stays until
+                  you clear it. This cannot be undone.
                 </p>
                 {store.accountToast && (
                   <p
@@ -4716,8 +4928,8 @@ export default component$(() => {
                   }}
                 >
                   {store.deletingAccount
-                    ? "Deleting…"
-                    : "Delete my account and synced data"}
+                    ? "Scheduling deletion…"
+                    : "Start account deletion"}
                 </button>
               </section>
             )}
@@ -4756,8 +4968,8 @@ export default component$(() => {
       <ThemedDialog
         open={store.showDeleteDialog}
         title="Delete your account?"
-        message="This permanently deletes your Twyne account and every synced folio, brief, note, rubric result, and published piece. Export anything you want to keep first."
-        confirmLabel={store.deletingAccount ? "Deleting…" : "Delete account"}
+        message="This schedules permanent deletion of your Twyne account and synced data. Removal continues in resumable background batches after sign-out. Export anything you want to keep first."
+        confirmLabel={store.deletingAccount ? "Scheduling…" : "Start deletion"}
         tone="danger"
         busy={store.deletingAccount}
         confirmDisabled={store.deletingAccount}

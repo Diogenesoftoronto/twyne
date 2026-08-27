@@ -10,6 +10,8 @@ import {
 } from "@builder.io/qwik";
 import type posthog from "posthog-js";
 import { useAuth } from "./auth-context";
+import { ANALYTICS_VERSION } from "./analytics-version";
+import { authIdentityTransition, consumeAuthAttempt } from "./auth-analytics";
 import {
   FALLBACK_FEATURES,
   POSTHOG_FEATURE_FLAG_KEYS,
@@ -209,6 +211,7 @@ export const PostHogProvider = component$(() => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ track }) => {
     track(() => auth.value.user?.id);
+    track(() => auth.value.user?.analyticsId);
     track(() => auth.value.user?.email);
     track(() => auth.value.user?.name);
     track(() => auth.value.loading);
@@ -218,19 +221,47 @@ export const PostHogProvider = component$(() => {
     if (!client || auth.value.loading) return;
 
     if (auth.value.user) {
-      const previousUserId = client.get_property("$user_id");
-      if (previousUserId && previousUserId !== auth.value.user.id) {
+      const user = auth.value.user;
+      const analyticsId = user.analyticsId ?? user.id;
+      const previousUserId = optionalString(client.get_property("$user_id"));
+      const identityTransition = authIdentityTransition(
+        previousUserId,
+        user.id,
+        analyticsId,
+      );
+
+      if (identityTransition === "alias_legacy_id") {
+        // Before analytics v2 the browser used Better Auth's raw user ID,
+        // while authenticated server events used Convex's tokenIdentifier.
+        // Alias only that known same-account legacy ID; a different account
+        // must receive a clean anonymous identity instead.
+        client.alias(analyticsId, previousUserId);
+      } else if (identityTransition === "reset_other_account") {
         client.reset();
       }
-      client.identify(auth.value.user.id, {
-        email: auth.value.user.email,
-        name: auth.value.user.name,
+      client.identify(analyticsId, {
+        email: user.email,
+        name: user.name,
         auth_provider: auth.value.provider,
+        auth_identity_source:
+          auth.value.provider === "atproto"
+            ? "atproto_did"
+            : user.analyticsId
+              ? "convex_token_identifier"
+              : "better_auth_user_id_fallback",
       });
 
-      if (previousUserId !== auth.value.user.id) {
+      const attempt = consumeAuthAttempt();
+      if (attempt) {
         client.capture("sign_in_completed", {
-          analytics_version: 1,
+          analytics_version: ANALYTICS_VERSION,
+          provider: auth.value.provider ?? "convex",
+          method: attempt.method,
+          flow: attempt.flow,
+        });
+      } else if (identityTransition !== "already_identified") {
+        client.capture("auth_session_restored", {
+          analytics_version: ANALYTICS_VERSION,
           provider: auth.value.provider ?? "convex",
         });
       }

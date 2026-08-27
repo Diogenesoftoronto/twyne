@@ -18,6 +18,11 @@ export interface RevisionComparison {
   paragraphsAfter: number;
 }
 
+export interface RevisionPassageChange {
+  before: string | null;
+  after: string | null;
+}
+
 export interface RevisionTask {
   id: string;
   folioId: string;
@@ -71,6 +76,55 @@ function words(html: string): string[] {
 
 function paragraphs(html: string): number {
   return (html.match(/<(?:p|h[1-6]|li|blockquote)\b/gi) ?? []).length;
+}
+
+function decodeEntities(value: string): string {
+  const named: Record<string, string> = {
+    amp: "&",
+    apos: "'",
+    gt: ">",
+    lt: "<",
+    nbsp: " ",
+    quot: '"',
+  };
+  return value.replace(
+    /&(#x[\da-f]+|#\d+|[a-z]+);/gi,
+    (entity, code: string) => {
+      if (code[0] !== "#") return named[code.toLowerCase()] ?? entity;
+      const numeric =
+        code[1]?.toLowerCase() === "x"
+          ? Number.parseInt(code.slice(2), 16)
+          : Number.parseInt(code.slice(1), 10);
+      return Number.isInteger(numeric) && numeric >= 0 && numeric <= 0x10ffff
+        ? String.fromCodePoint(numeric)
+        : entity;
+    },
+  );
+}
+
+function passageText(html: string): string[] {
+  return decodeEntities(
+    html
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/(?:p|h[1-6]|li|blockquote|pre|div)>/gi, "\n")
+      .replace(/<[^>]*>/g, " "),
+  )
+    .split(/\n+/)
+    .map((passage) => passage.replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+function findNearby(
+  passages: string[],
+  target: string,
+  from: number,
+  distance: number,
+): number {
+  const end = Math.min(passages.length, from + distance + 1);
+  for (let index = from + 1; index < end; index += 1) {
+    if (passages[index] === target) return index;
+  }
+  return -1;
 }
 
 export async function loadRevisionHistory(
@@ -219,4 +273,76 @@ export function compareRevisions(
     paragraphsBefore: paragraphs(beforeHtml),
     paragraphsAfter: paragraphs(afterHtml),
   };
+}
+
+/**
+ * Return only the passages that differ between two manuscript versions.
+ *
+ * Exact passages are used as nearby anchors, so inserting one paragraph does
+ * not make every paragraph below it look rewritten. The bounded look-ahead
+ * keeps comparison linear for long manuscripts while still handling ordinary
+ * editorial insertions and removals cleanly.
+ */
+export function compareRevisionPassages(
+  beforeHtml: string,
+  afterHtml: string,
+): RevisionPassageChange[] {
+  const before = passageText(beforeHtml);
+  const after = passageText(afterHtml);
+  const changes: RevisionPassageChange[] = [];
+  const LOOK_AHEAD = 12;
+  let beforeIndex = 0;
+  let afterIndex = 0;
+
+  while (beforeIndex < before.length || afterIndex < after.length) {
+    if (before[beforeIndex] === after[afterIndex]) {
+      beforeIndex += 1;
+      afterIndex += 1;
+      continue;
+    }
+
+    if (beforeIndex >= before.length) {
+      changes.push({ before: null, after: after[afterIndex++] });
+      continue;
+    }
+    if (afterIndex >= after.length) {
+      changes.push({ before: before[beforeIndex++], after: null });
+      continue;
+    }
+
+    const nextAfterAnchor = findNearby(
+      after,
+      before[beforeIndex],
+      afterIndex,
+      LOOK_AHEAD,
+    );
+    const nextBeforeAnchor = findNearby(
+      before,
+      after[afterIndex],
+      beforeIndex,
+      LOOK_AHEAD,
+    );
+
+    const afterDistance =
+      nextAfterAnchor < 0
+        ? Number.POSITIVE_INFINITY
+        : nextAfterAnchor - afterIndex;
+    const beforeDistance =
+      nextBeforeAnchor < 0
+        ? Number.POSITIVE_INFINITY
+        : nextBeforeAnchor - beforeIndex;
+
+    if (afterDistance < beforeDistance) {
+      changes.push({ before: null, after: after[afterIndex++] });
+    } else if (beforeDistance < afterDistance) {
+      changes.push({ before: before[beforeIndex++], after: null });
+    } else {
+      changes.push({
+        before: before[beforeIndex++],
+        after: after[afterIndex++],
+      });
+    }
+  }
+
+  return changes;
 }

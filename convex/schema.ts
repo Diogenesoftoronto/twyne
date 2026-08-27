@@ -24,6 +24,62 @@ const collectionEntry = {
   updatedAt: v.number(),
 };
 
+const usageTokenFields = {
+  inputTokens: v.optional(v.number()),
+  outputTokens: v.optional(v.number()),
+  cacheReadTokens: v.optional(v.number()),
+  cacheWriteTokens: v.optional(v.number()),
+  reasoningTokens: v.optional(v.number()),
+  totalTokens: v.optional(v.number()),
+};
+
+const usagePricingSnapshot = v.object({
+  source: v.string(),
+  version: v.string(),
+  currency: v.literal("USD"),
+  inputMicrousdPerMillion: v.number(),
+  outputMicrousdPerMillion: v.number(),
+  cacheReadMicrousdPerMillion: v.optional(v.number()),
+  cacheWriteMicrousdPerMillion: v.optional(v.number()),
+  reasoningMicrousdPerMillion: v.optional(v.number()),
+  longContextThresholdTokens: v.optional(v.number()),
+  longInputMicrousdPerMillion: v.optional(v.number()),
+  longOutputMicrousdPerMillion: v.optional(v.number()),
+});
+
+const usageMetricFields = {
+  generations: v.number(),
+  completedGenerations: v.number(),
+  failedGenerations: v.number(),
+  logicalActions: v.number(),
+  completedActions: v.number(),
+  failedActions: v.number(),
+  actualCostMicrousd: v.number(),
+  estimatedCostMicrousd: v.number(),
+  localGenerations: v.number(),
+  unknownCostGenerations: v.number(),
+  creditMicrounits: v.number(),
+  inputTokens: v.number(),
+  outputTokens: v.number(),
+  cacheReadTokens: v.number(),
+  cacheWriteTokens: v.number(),
+  reasoningTokens: v.number(),
+  totalTokens: v.number(),
+  inputTokensReported: v.number(),
+  outputTokensReported: v.number(),
+  cacheReadTokensReported: v.number(),
+  cacheWriteTokensReported: v.number(),
+  reasoningTokensReported: v.number(),
+  totalTokensReported: v.number(),
+  inputTokensMissing: v.number(),
+  outputTokensMissing: v.number(),
+  cacheReadTokensMissing: v.number(),
+  cacheWriteTokensMissing: v.number(),
+  reasoningTokensMissing: v.number(),
+  totalTokensMissing: v.number(),
+  reportedTotalDiscrepancies: v.number(),
+};
+
 export default defineSchema({
   // Optimistic concurrency head for the bulk browser snapshot. Every push
   // compares the revision it last pulled with this row before writing, so two
@@ -160,6 +216,109 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_userId_day", ["userId", "day"]),
+
+  writingActivityDetails: defineTable({
+    userId: v.string(),
+    day: v.string(),
+    folioId: v.string(),
+    count: v.number(),
+    firstOccurredAt: v.number(),
+    lastOccurredAt: v.number(),
+  })
+    .index("by_userId_and_day", ["userId", "day"])
+    .index("by_userId_and_day_and_folioId", ["userId", "day", "folioId"]),
+
+  // Content-free, append-only provider-attempt ledger for My Desk. Raw rows
+  // and every denormalized aggregate are updated in one mutation.
+  aiUsageEvents: defineTable({
+    ownerId: v.string(),
+    eventKey: v.string(),
+    occurredAt: v.number(),
+    day: v.string(),
+    source: v.union(v.literal("hosted"), v.literal("byok"), v.literal("local")),
+    authority: v.union(
+      v.literal("server"),
+      v.literal("provider"),
+      v.literal("client_reported"),
+    ),
+    feature: v.string(),
+    provider: v.string(),
+    model: v.string(),
+    folioId: v.optional(v.string()),
+    editorialActionId: v.optional(v.string()),
+    traceId: v.string(),
+    attempt: v.number(),
+    outcome: v.union(v.literal("completed"), v.literal("failed")),
+    ...usageTokenFields,
+    costMicrousd: v.optional(v.number()),
+    costKind: v.union(
+      v.literal("actual"),
+      v.literal("estimated"),
+      v.literal("local"),
+      v.literal("unknown"),
+    ),
+    pricingVersion: v.optional(v.string()),
+    pricing: v.optional(usagePricingSnapshot),
+    creditMicrounits: v.optional(v.number()),
+  })
+    .index("by_ownerId_and_eventKey", ["ownerId", "eventKey"])
+    .index("by_ownerId_and_occurredAt", ["ownerId", "occurredAt"])
+    .index("by_ownerId_and_editorialActionId_and_outcome", [
+      "ownerId",
+      "editorialActionId",
+      "outcome",
+    ]),
+
+  aiUsageDailyTotals: defineTable({
+    ownerId: v.string(),
+    day: v.string(),
+    ...usageMetricFields,
+  }).index("by_ownerId_and_day", ["ownerId", "day"]),
+
+  aiUsageDailyBreakdowns: defineTable({
+    ownerId: v.string(),
+    day: v.string(),
+    dimension: v.union(
+      v.literal("feature"),
+      v.literal("provider_model"),
+      v.literal("folio"),
+    ),
+    key: v.string(),
+    ...usageMetricFields,
+  })
+    .index("by_ownerId_and_dimension_and_day", ["ownerId", "dimension", "day"])
+    .index("by_ownerId_and_day_and_dimension_and_key", [
+      "ownerId",
+      "day",
+      "dimension",
+      "key",
+    ]),
+
+  aiUsageLifetimeTotals: defineTable({
+    ownerId: v.string(),
+    ...usageMetricFields,
+  }).index("by_ownerId", ["ownerId"]),
+
+  aiUsageLifetimeBreakdowns: defineTable({
+    ownerId: v.string(),
+    dimension: v.union(
+      v.literal("feature"),
+      v.literal("provider_model"),
+      v.literal("folio"),
+    ),
+    key: v.string(),
+    ...usageMetricFields,
+  }).index("by_ownerId_and_dimension_and_key", ["ownerId", "dimension", "key"]),
+
+  // Tombstone and resumable cursor for writer-requested synchronized usage
+  // deletion. Its presence is also the ingestion barrier for this owner.
+  aiUsageDeletionJobs: defineTable({
+    ownerId: v.string(),
+    phase: v.number(),
+    deletedCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_ownerId", ["ownerId"]),
 
   customPersonas: defineTable({
     userId: v.string(),
@@ -370,6 +529,19 @@ export default defineSchema({
     bio: v.optional(v.string()),
     /** Convex storage id for the writer's profile picture, if set. */
     avatarStorageId: v.optional(v.id("_storage")),
+    publicStats: v.optional(
+      v.object({
+        writingHeatmap: v.boolean(),
+        daysWritten30: v.boolean(),
+        streak: v.union(
+          v.literal("off"),
+          v.literal("current"),
+          v.literal("longest"),
+        ),
+        publicPieceCount: v.boolean(),
+        folioCount: v.boolean(),
+      }),
+    ),
     claimedAt: v.number(),
     updatedAt: v.number(),
   })
@@ -451,6 +623,16 @@ export default defineSchema({
     .index("by_productSubject", ["productSubject"])
     .index("by_did", ["did"]),
 
+  accountDeletionJobs: defineTable({
+    ownerId: v.string(),
+    productSubject: v.string(),
+    email: v.optional(v.string()),
+    phase: v.number(),
+    deletedCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_ownerId", ["ownerId"]),
+
   // Populated only when E2E_OTP_SECRET is configured on a test deployment.
   e2eOtps: defineTable({
     email: v.string(),
@@ -517,6 +699,7 @@ export default defineSchema({
     lastSeenAt: v.number(),
   })
     .index("by_lixId", ["lixId"])
+    .index("by_userId", ["userId"])
     .index("by_lixId_userId", ["lixId", "userId"]),
 
   // ── Mobile app waitlist — public, unauthenticated signups. ──
@@ -538,5 +721,7 @@ export default defineSchema({
     identifier: v.string(),
     count: v.number(),
     windowStart: v.number(),
-  }).index("by_action_identifier", ["action", "identifier"]),
+  })
+    .index("by_action_identifier", ["action", "identifier"])
+    .index("by_identifier", ["identifier"]),
 });

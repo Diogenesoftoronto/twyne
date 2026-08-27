@@ -14,6 +14,7 @@ import {
 const MAX_RECORD_BYTES = 1_050_000;
 const REQUEST_TIMEOUT_MS = 7_000;
 const PLC_DID_RE = /^did:plc:[a-z2-7]{24}$/;
+const DID_WEB_PREFIX = "did:web:";
 
 type Fetcher = (
   input: string | URL | Request,
@@ -67,23 +68,77 @@ function stringField(record: UnknownRecord, key: string): string | null {
   return typeof value === "string" ? value : null;
 }
 
+function isDisallowedHost(host: string): boolean {
+  const normalized = host.toLowerCase().replace(/\.$/, "");
+  return (
+    normalized === "localhost" ||
+    normalized.endsWith(".localhost") ||
+    normalized.endsWith(".local") ||
+    normalized.endsWith(".internal") ||
+    /^\d{1,3}(?:\.\d{1,3}){3}$/.test(normalized) ||
+    normalized.startsWith("[")
+  );
+}
+
 function safeServiceEndpoint(value: unknown): string | null {
   if (typeof value !== "string") return null;
   try {
     const url = new URL(value);
-    const host = url.hostname.toLowerCase();
-    if (url.protocol !== "https:" || url.username || url.password) return null;
     if (
-      host === "localhost" ||
-      host.endsWith(".localhost") ||
-      host.endsWith(".local") ||
-      host.endsWith(".internal") ||
-      /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host) ||
-      host.startsWith("[")
+      url.protocol !== "https:" ||
+      url.username ||
+      url.password ||
+      isDisallowedHost(url.hostname)
     ) {
       return null;
     }
     return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+function didWebDocumentUrl(did: string): string | null {
+  if (!did.startsWith(DID_WEB_PREFIX)) return null;
+  const encodedSegments = did.slice(DID_WEB_PREFIX.length).split(":");
+  if (encodedSegments.length === 0 || encodedSegments.some((part) => !part)) {
+    return null;
+  }
+
+  try {
+    const host = decodeURIComponent(encodedSegments[0]);
+    const origin = new URL(`https://${host}`);
+    if (
+      origin.protocol !== "https:" ||
+      origin.username ||
+      origin.password ||
+      origin.port ||
+      origin.pathname !== "/" ||
+      isDisallowedHost(origin.hostname)
+    ) {
+      return null;
+    }
+
+    const path = encodedSegments.slice(1).map((segment) => {
+      const decoded = decodeURIComponent(segment);
+      if (
+        !decoded ||
+        decoded === "." ||
+        decoded === ".." ||
+        decoded.includes("/") ||
+        decoded.includes("\\") ||
+        [...decoded].some((character) => {
+          const code = character.charCodeAt(0);
+          return code <= 31 || code === 127;
+        })
+      ) {
+        throw new Error("Invalid did:web path");
+      }
+      return encodeURIComponent(decoded);
+    });
+    return path.length === 0
+      ? `${origin.origin}/.well-known/did.json`
+      : `${origin.origin}/${path.join("/")}/did.json`;
   } catch {
     return null;
   }
@@ -116,16 +171,12 @@ async function fetchJson(
 }
 
 async function resolvePds(did: string, fetcher: Fetcher): Promise<string> {
-  // PLC identities cover Bluesky and self-hosted PDS users while keeping DID
-  // resolution on one trusted origin. did:web support would require a fully
-  // DNS-aware SSRF defence before it is safe to add to a server-side reader.
-  if (!PLC_DID_RE.test(did)) throw new Error("Unsupported ATProto DID");
-  const document = recordObject(
-    await fetchJson(
-      `https://plc.directory/${encodeURIComponent(did)}`,
-      fetcher,
-    ),
-  );
+  const resolutionUrl = PLC_DID_RE.test(did)
+    ? `https://plc.directory/${encodeURIComponent(did)}`
+    : didWebDocumentUrl(did);
+  if (!resolutionUrl) throw new Error("Unsupported ATProto DID");
+  const document = recordObject(await fetchJson(resolutionUrl, fetcher));
+  if (document?.id !== did) throw new Error("ATProto DID document mismatch");
   const services = Array.isArray(document?.service) ? document.service : [];
   for (const candidate of services) {
     const service = recordObject(candidate);

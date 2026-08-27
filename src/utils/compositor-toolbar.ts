@@ -12,7 +12,7 @@ export const COMPOSITOR_TABS = [
   {
     id: "review",
     label: "Review",
-    groups: ["Comments", "Listening", "Proofing"],
+    groups: ["Comments", "Listening", "Versions", "Proofing"],
   },
   {
     id: "view",

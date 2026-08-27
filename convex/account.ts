@@ -1,194 +1,434 @@
-/**
- * Account deletion. The privacy policy promises users can "Delete your account
- * and synced data" once they've signed in — this is the workflow that backs
- * that promise.
- *
- * `deleteAccount` is auth-gated (the signed-in identity is the only authority,
- * per the Convex guideline — there is no userId argument) and wipes, in order:
- *
- *   1. Every app-owned row the user has synced (briefs, folios, persona notes,
- *      rubric, suggestions, room settings, lix snapshots, …) — the "synced
- *      data" the policy refers to.
- *   2. Their published pieces, comments, subscription, and admin self-removal.
- *   3. Best-effort: the better-auth identity (user, sessions, accounts) so the
- *      email and login credentials are purged and the account can't be reused.
- *
- * The synced-data deletion always succeeds and is the substantive guarantee.
- * The identity purge is defensive: if the better-auth component's internal
- * shape ever changes, it logs and the rest of the deletion still stands, the
- * caller is signed out, and the result reports `identityPurged: false` so we
- * can see it needs a follow-up.
- */
-import { mutation } from "./_generated/server";
+/** Bounded, resumable account and synced-data deletion. */
+import { makeFunctionReference } from "convex/server";
+import { v, type GenericId } from "convex/values";
+import {
+  internalMutation,
+  mutation,
+  type MutationCtx,
+} from "./_generated/server";
 import { components } from "./_generated/api";
+import type { DataModel } from "./_generated/dataModel";
+
+const DELETE_BATCH_SIZE = 25;
+const continueDeletionReference = makeFunctionReference<
+  "mutation",
+  { jobId: GenericId<"accountDeletionJobs"> },
+  null
+>("account:continueDeletion");
+
+type Row = { _id: GenericId<keyof DataModel & string> };
+type IndexedQuery = (ctx: MutationCtx, value: string) => Promise<Row[]>;
+
+const userQueries = {
+  syncHeads: (ctx, id) =>
+    ctx.db
+      .query("syncHeads")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  folioEntries: (ctx, id) =>
+    ctx.db
+      .query("folioEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  personaEntries: (ctx, id) =>
+    ctx.db
+      .query("personaEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  bibliographyEntries: (ctx, id) =>
+    ctx.db
+      .query("bibliographyEntries")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  briefs: (ctx, id) =>
+    ctx.db
+      .query("briefs")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  dossierInterviewStreams: (ctx, id) =>
+    ctx.db
+      .query("dossierInterviewStreams")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  personaNoteStreams: (ctx, id) =>
+    ctx.db
+      .query("personaNoteStreams")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  folios: (ctx, id) =>
+    ctx.db
+      .query("folios")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  folioContent: (ctx, id) =>
+    ctx.db
+      .query("folioContent")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  integrationTokens: (ctx, id) =>
+    ctx.db
+      .query("integrationTokens")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  writingActivity: (ctx, id) =>
+    ctx.db
+      .query("writingActivity")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  writingActivityDetails: (ctx, id) =>
+    ctx.db
+      .query("writingActivityDetails")
+      .withIndex("by_userId_and_day", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  customPersonas: (ctx, id) =>
+    ctx.db
+      .query("customPersonas")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  personaNotes: (ctx, id) =>
+    ctx.db
+      .query("personaNotes")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  aiFeedback: (ctx, id) =>
+    ctx.db
+      .query("aiFeedback")
+      .withIndex("by_userId_createdAt", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  personaReplies: (ctx, id) =>
+    ctx.db
+      .query("personaReplies")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  rubricResults: (ctx, id) =>
+    ctx.db
+      .query("rubricResults")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  suggestions: (ctx, id) =>
+    ctx.db
+      .query("suggestions")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  roomSettings: (ctx, id) =>
+    ctx.db
+      .query("roomSettings")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  appearance: (ctx, id) =>
+    ctx.db
+      .query("appearance")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  lixBlobs: (ctx, id) =>
+    ctx.db
+      .query("lixBlobs")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  bibliographies: (ctx, id) =>
+    ctx.db
+      .query("bibliographies")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  admins: (ctx, id) =>
+    ctx.db
+      .query("admins")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  subscriptions: (ctx, id) =>
+    ctx.db
+      .query("subscriptions")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  collaborators: (ctx, id) =>
+    ctx.db
+      .query("collaborators")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  presence: (ctx, id) =>
+    ctx.db
+      .query("presence")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+} satisfies Record<string, IndexedQuery>;
+
+const ownerQueries = {
+  aiUsageEvents: (ctx, id) =>
+    ctx.db
+      .query("aiUsageEvents")
+      .withIndex("by_ownerId_and_occurredAt", (q) => q.eq("ownerId", id))
+      .take(DELETE_BATCH_SIZE),
+  aiUsageDailyTotals: (ctx, id) =>
+    ctx.db
+      .query("aiUsageDailyTotals")
+      .withIndex("by_ownerId_and_day", (q) => q.eq("ownerId", id))
+      .take(DELETE_BATCH_SIZE),
+  aiUsageDailyBreakdowns: (ctx, id) =>
+    ctx.db
+      .query("aiUsageDailyBreakdowns")
+      .withIndex("by_ownerId_and_dimension_and_day", (q) => q.eq("ownerId", id))
+      .take(DELETE_BATCH_SIZE),
+  aiUsageLifetimeTotals: (ctx, id) =>
+    ctx.db
+      .query("aiUsageLifetimeTotals")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", id))
+      .take(DELETE_BATCH_SIZE),
+  aiUsageLifetimeBreakdowns: (ctx, id) =>
+    ctx.db
+      .query("aiUsageLifetimeBreakdowns")
+      .withIndex("by_ownerId_and_dimension_and_key", (q) => q.eq("ownerId", id))
+      .take(DELETE_BATCH_SIZE),
+  published: (ctx, id) =>
+    ctx.db
+      .query("published")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", id))
+      .take(DELETE_BATCH_SIZE),
+  userComments: (ctx, id) =>
+    ctx.db
+      .query("userComments")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", id))
+      .take(DELETE_BATCH_SIZE),
+  userCommentReplies: (ctx, id) =>
+    ctx.db
+      .query("userCommentReplies")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", id))
+      .take(DELETE_BATCH_SIZE),
+} satisfies Record<string, IndexedQuery>;
+
+type Phase =
+  | { kind: "user"; table: keyof typeof userQueries }
+  | { kind: "owner"; table: keyof typeof ownerQueries }
+  | {
+      kind:
+        | "images"
+        | "sharedLix"
+        | "handles"
+        | "providerIdentity"
+        | "emailOtp"
+        | "rateBuckets";
+    };
+
+const PHASES: readonly Phase[] = [
+  ...Object.keys(userQueries).map((table) => ({
+    kind: "user" as const,
+    table: table as keyof typeof userQueries,
+  })),
+  ...Object.keys(ownerQueries).map((table) => ({
+    kind: "owner" as const,
+    table: table as keyof typeof ownerQueries,
+  })),
+  { kind: "images" },
+  { kind: "sharedLix" },
+  { kind: "handles" },
+  { kind: "providerIdentity" },
+  { kind: "emailOtp" },
+  { kind: "rateBuckets" },
+];
+
+async function deleteRows(ctx: MutationCtx, rows: Row[]) {
+  for (const row of rows) await ctx.db.delete(row._id);
+  return rows.length;
+}
+
+async function deletePhase(
+  ctx: MutationCtx,
+  phase: Phase,
+  job: { ownerId: string; productSubject: string; email?: string },
+): Promise<number> {
+  if (phase.kind === "user")
+    return await deleteRows(
+      ctx,
+      await userQueries[phase.table](ctx, job.ownerId),
+    );
+  if (phase.kind === "owner")
+    return await deleteRows(
+      ctx,
+      await ownerQueries[phase.table](ctx, job.ownerId),
+    );
+  if (phase.kind === "images") {
+    const rows = await ctx.db
+      .query("images")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", job.ownerId))
+      .take(DELETE_BATCH_SIZE);
+    for (const row of rows) {
+      await ctx.storage.delete(row.storageId).catch(() => undefined);
+      await ctx.db.delete(row._id);
+    }
+    return rows.length;
+  }
+  if (phase.kind === "sharedLix") {
+    const rows = await ctx.db
+      .query("sharedLixBlobs")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", job.ownerId))
+      .take(DELETE_BATCH_SIZE);
+    for (const row of rows) {
+      const [collaborators, presence, locks] = await Promise.all([
+        ctx.db
+          .query("collaborators")
+          .withIndex("by_lixId", (q) => q.eq("lixId", row.lixId))
+          .take(100),
+        ctx.db
+          .query("presence")
+          .withIndex("by_lixId", (q) => q.eq("lixId", row.lixId))
+          .take(100),
+        ctx.db
+          .query("lixLocks")
+          .withIndex("by_lixId", (q) => q.eq("lixId", row.lixId))
+          .take(100),
+      ]);
+      await deleteRows(ctx, [...collaborators, ...presence, ...locks]);
+      await ctx.storage.delete(row.storageId).catch(() => undefined);
+      await ctx.db.delete(row._id);
+    }
+    return rows.length;
+  }
+  if (phase.kind === "handles") {
+    const rows = await ctx.db
+      .query("handles")
+      .withIndex("by_userId", (q) => q.eq("userId", job.ownerId))
+      .take(DELETE_BATCH_SIZE);
+    for (const row of rows) {
+      if (row.avatarStorageId)
+        await ctx.storage.delete(row.avatarStorageId).catch(() => undefined);
+      await ctx.db.delete(row._id);
+    }
+    return rows.length;
+  }
+  if (phase.kind === "providerIdentity") {
+    return await deleteRows(
+      ctx,
+      await ctx.db
+        .query("providerIdentities")
+        .withIndex("by_productSubject", (q) =>
+          q.eq("productSubject", job.productSubject),
+        )
+        .take(DELETE_BATCH_SIZE),
+    );
+  }
+  if (phase.kind === "emailOtp") {
+    if (!job.email) return 0;
+    return await deleteRows(
+      ctx,
+      await ctx.db
+        .query("e2eOtps")
+        .withIndex("by_email", (q) => q.eq("email", job.email!))
+        .take(DELETE_BATCH_SIZE),
+    );
+  }
+  return await deleteRows(
+    ctx,
+    await ctx.db
+      .query("rateBuckets")
+      .withIndex("by_identifier", (q) => q.eq("identifier", job.ownerId))
+      .take(DELETE_BATCH_SIZE),
+  );
+}
 
 export const deleteAccount = mutation({
   args: {},
+  returns: v.object({
+    deleted: v.record(v.string(), v.number()),
+    identityPurged: v.boolean(),
+    emailProvided: v.boolean(),
+    deletionScheduled: v.boolean(),
+  }),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Not signed in");
-    const userId = identity.tokenIdentifier;
-    const email = identity.email?.trim().toLowerCase() ?? null;
-    const deleted: Record<string, number> = {};
-
-    // ── Synced app data (per-user, keyed by userId). ──
-    deleted.briefs = await deleteByUserId(ctx, "briefs", userId);
-    deleted.folios = await deleteByUserId(ctx, "folios", userId);
-    // The row-per-item tables that replaced the three single-document
-    // collections. Missing one here would leave a deleted account's work
-    // behind, so they sit next to the legacy tables they superseded.
-    deleted.folioEntries = await deleteByUserId(ctx, "folioEntries", userId);
-    deleted.personaEntries = await deleteByUserId(
-      ctx,
-      "personaEntries",
-      userId,
-    );
-    deleted.bibliographyEntries = await deleteByUserId(
-      ctx,
-      "bibliographyEntries",
-      userId,
-    );
-    deleted.folioContent = await deleteByUserId(ctx, "folioContent", userId);
-    deleted.integrationTokens = await deleteByUserId(
-      ctx,
-      "integrationTokens",
-      userId,
-    );
-    deleted.customPersonas = await deleteByUserId(
-      ctx,
-      "customPersonas",
-      userId,
-    );
-    deleted.personaNotes = await deleteByUserId(ctx, "personaNotes", userId);
-    deleted.personaReplies = await deleteByUserId(
-      ctx,
-      "personaReplies",
-      userId,
-    );
-    deleted.rubricResults = await deleteByUserId(ctx, "rubricResults", userId);
-    deleted.suggestions = await deleteByUserId(ctx, "suggestions", userId);
-    deleted.roomSettings = await deleteByUserId(ctx, "roomSettings", userId);
-    deleted.appearance = await deleteByUserId(ctx, "appearance", userId);
-    deleted.lixBlobs = await deleteByUserId(ctx, "lixBlobs", userId);
-    deleted.bibliographies = await deleteByUserId(
-      ctx,
-      "bibliographies",
-      userId,
-    );
-    deleted.subscriptions = await deleteByUserId(ctx, "subscriptions", userId);
-
-    // ── Published pieces + comments (keyed by ownerId). ──
-    deleted.published = await deleteByOwner(ctx, "published", userId);
-    deleted.userComments = await deleteByOwner(ctx, "userComments", userId);
-    deleted.userCommentReplies = await deleteByOwner(
-      ctx,
-      "userCommentReplies",
-      userId,
-    );
-
-    // ── Admin roster: remove self. ──
-    deleted.admins = await deleteByUserId(ctx, "admins", userId);
-
-    // ── Writer handle (handles table). ──
-    deleted.handles = await deleteByUserId(ctx, "handles", userId);
-
-    // ── Test OTP records (keyed by email) — tidy up if we have the email. ──
-    if (email) {
-      const otps = await ctx.db
-        .query("e2eOtps")
-        .withIndex("by_email", (q) => q.eq("email", email))
-        .collect();
-      for (const o of otps) await ctx.db.delete(o._id);
-      deleted.e2eOtps = otps.length;
-    }
-
-    // ── Best-effort better-auth identity purge. ──
-    // Matched by email (which the identity carries for OTP/passkey accounts).
-    // Failures here never fail the whole operation: the synced data is already
-    // gone. The caller signs out client-side regardless of this outcome.
+    const ownerId = identity.tokenIdentifier;
+    const productSubject = identity.subject || identity.tokenIdentifier;
+    const email = identity.email?.trim().toLowerCase();
+    const existing = await ctx.db
+      .query("accountDeletionJobs")
+      .withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId))
+      .unique();
+    const now = Date.now();
+    const jobId =
+      existing?._id ??
+      (await ctx.db.insert("accountDeletionJobs", {
+        ownerId,
+        productSubject,
+        email,
+        phase: 0,
+        deletedCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      }));
     let identityPurged = false;
     if (email) {
       try {
         identityPurged = await purgeBetterAuthIdentity(ctx, email);
-      } catch (err) {
-        console.error("[twyne:account] auth identity purge failed:", err);
+      } catch (error) {
+        console.error("[twyne:account] auth identity purge failed:", error);
       }
     }
-
-    return { deleted, identityPurged, emailProvided: !!email };
+    await ctx.scheduler.runAfter(0, continueDeletionReference, { jobId });
+    return {
+      deleted: {},
+      identityPurged,
+      emailProvided: !!email,
+      deletionScheduled: true,
+    };
   },
 });
 
-/* ── Helpers ────────────────────────────────────────────────────── */
+export const continueDeletion = internalMutation({
+  args: { jobId: v.id("accountDeletionJobs") },
+  returns: v.null(),
+  handler: async (ctx, { jobId }) => {
+    const job = await ctx.db.get("accountDeletionJobs", jobId);
+    if (!job) return null;
+    const phase = PHASES[job.phase];
+    if (!phase) {
+      await ctx.db.delete(job._id);
+      return null;
+    }
+    const count = await deletePhase(ctx, phase, job);
+    await ctx.db.patch(job._id, {
+      phase: count < DELETE_BATCH_SIZE ? job.phase + 1 : job.phase,
+      deletedCount: job.deletedCount + count,
+      updatedAt: Date.now(),
+    });
+    await ctx.scheduler.runAfter(0, continueDeletionReference, { jobId });
+    return null;
+  },
+});
 
-async function deleteByUserId(
-  ctx: { db: any },
-  table: string,
-  userId: string,
-): Promise<number> {
-  const rows = await ctx.db
-    .query(table)
-    .withIndex("by_userId", (q: any) => q.eq("userId", userId))
-    .collect();
-  for (const r of rows) await ctx.db.delete(r._id);
-  return rows.length;
-}
-
-async function deleteByOwner(
-  ctx: { db: any },
-  table: string,
-  ownerId: string,
-): Promise<number> {
-  const rows = await ctx.db
-    .query(table)
-    .withIndex("by_ownerId", (q: any) => q.eq("ownerId", ownerId))
-    .collect();
-  for (const r of rows) await ctx.db.delete(r._id);
-  return rows.length;
-}
-
-/**
- * Delete the better-auth user row (and cascade sessions/accounts) for the
- * given email via the better-auth component's internal adapter. The user row
- * holds the email; once it's gone the account can't be signed into even if
- * credential rows linger. Returns true when a user was found and deleted.
- *
- * The component's `deleteMany` mutation requires `paginationOpts` (it paginates
- * results internally). We pass a generous page size; sessions/accounts are
- * always small (< 100).
- */
-async function purgeBetterAuthIdentity(
-  ctx: { runQuery: any; runMutation: any },
-  email: string,
-): Promise<boolean> {
-  const adapter = (components.betterAuth as any).adapter;
-
-  const user = await ctx.runQuery(adapter.findOne, {
-    model: "user",
-    where: [{ field: "email", operator: "eq", value: email }],
-  });
+async function purgeBetterAuthIdentity(ctx: MutationCtx, email: string) {
+  const adapter = (
+    components.betterAuth as unknown as {
+      adapter: { findOne: unknown; deleteMany: unknown };
+    }
+  ).adapter;
+  const user = (await ctx.runQuery(
+    adapter.findOne as never,
+    {
+      model: "user",
+      where: [{ field: "email", operator: "eq", value: email }],
+    } as never,
+  )) as { _id?: string } | null;
   if (!user?._id) return false;
-  const btUserId: string = user._id;
-
-  // Revoke active sessions and unlink auth accounts (OAuth/OTP) so nothing
-  // remains that could re-authenticate the account.
   for (const model of ["session", "account"]) {
-    await ctx.runMutation(adapter.deleteMany, {
+    await ctx.runMutation(
+      adapter.deleteMany as never,
+      {
+        input: {
+          model,
+          where: [{ field: "userId", operator: "eq", value: user._id }],
+        },
+        paginationOpts: { cursor: null, numItems: 1000 },
+      } as never,
+    );
+  }
+  await ctx.runMutation(
+    adapter.deleteMany as never,
+    {
       input: {
-        model,
-        where: [{ field: "userId", operator: "eq", value: btUserId }],
+        model: "user",
+        where: [{ field: "_id", operator: "eq", value: user._id }],
       },
       paginationOpts: { cursor: null, numItems: 1000 },
-    });
-  }
-
-  // Finally remove the user row (carries the email) itself.
-  await ctx.runMutation(adapter.deleteMany, {
-    input: {
-      model: "user",
-      where: [{ field: "_id", operator: "eq", value: btUserId }],
-    },
-    paginationOpts: { cursor: null, numItems: 1000 },
-  });
+    } as never,
+  );
   return true;
 }

@@ -60,6 +60,7 @@ describe("counts", () => {
       rubric: 0,
       comments: 0,
       citations: 0,
+      history: 0,
     });
   });
 

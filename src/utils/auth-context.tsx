@@ -9,11 +9,15 @@ import {
   type Signal,
 } from "@builder.io/qwik";
 import { authClient } from "./auth-client";
+import { analyticsIdFromConvexJwt } from "./auth-analytics";
+import { reportApplicationError } from "./application-diagnostics";
 import { setConvexSyncContext, clearConvexSyncContext } from "./convex-sync";
 import { useConvexClient } from "./convex-context";
 
 export interface AuthUser {
   id: string;
+  /** Stable identifier shared by browser and authenticated server analytics. */
+  analyticsId?: string;
   email: string;
   name?: string;
   image?: string;
@@ -22,6 +26,8 @@ export interface AuthUser {
 export interface AuthState {
   user: AuthUser | null;
   loading: boolean;
+  /** True only after a Better Auth token has been installed in Convex. */
+  convexAuthenticated?: boolean;
   /** Restored ATProto identity, present alongside a Better Auth session. */
   atproto?: {
     did: string;
@@ -41,6 +47,14 @@ export const AuthContext =
 
 export function useAuth(): Signal<AuthState> {
   return useContext(AuthContext);
+}
+
+export function hasAuthenticatedConvexIdentity(state: AuthState): boolean {
+  return (
+    state.provider === "convex" &&
+    state.convexAuthenticated === true &&
+    state.user !== null
+  );
 }
 
 export const AuthProvider = component$(() => {
@@ -64,6 +78,7 @@ export const AuthProvider = component$(() => {
         ? {
             user: {
               id: atproto.did,
+              analyticsId: atproto.did,
               email: atproto.handle,
               name: atproto.displayName ?? atproto.handle,
               image: atproto.avatar,
@@ -88,30 +103,60 @@ export const AuthProvider = component$(() => {
           name: sessionData.user.name ?? undefined,
           image: sessionData.user.image ?? undefined,
         };
+        let convexAuthenticated = false;
         if (convexClient.value) {
           try {
             const tokenResult = await (authClient as any).convex.token({
               fetchOptions: { throw: false },
             });
             const token = tokenResult?.data?.token as string | undefined;
-            if (token) convexClient.value.setAuth(async () => token);
-            else convexClient.value.setAuth(async () => null);
-          } catch {
+            user.analyticsId = analyticsIdFromConvexJwt(token);
+            if (token) {
+              convexClient.value.setAuth(async () => token);
+              setConvexSyncContext(convexClient.value, user.id);
+              convexAuthenticated = true;
+            } else {
+              convexClient.value.setAuth(async () => null);
+              clearConvexSyncContext();
+              reportApplicationError(
+                "twyne:auth:install-convex-token",
+                new Error("Authentication failed: Convex token unavailable"),
+                {
+                  source: "auth",
+                  title: "Cloud sync is paused",
+                  dedupeKey: "convex-auth",
+                  metadata: { operation: "install-convex-token" },
+                },
+              );
+            }
+          } catch (error) {
             convexClient.value.setAuth(async () => null);
+            clearConvexSyncContext();
+            reportApplicationError("twyne:auth:install-convex-token", error, {
+              source: "auth",
+              title: "Cloud sync is paused",
+              dedupeKey: "convex-auth",
+              metadata: { operation: "install-convex-token" },
+            });
           }
-          setConvexSyncContext(convexClient.value, user.id);
 
           // This mutation requires the live Better Auth Convex token above.
           // ATProto proof still comes from the official legacy browser OAuth
           // client; see providerIdentity.ts for the server-conversion boundary.
-          if (atproto) {
+          if (atproto && convexAuthenticated) {
             try {
               const { linkNotOrganicDid } = await import(
                 "./notorganic-provider"
               );
               await linkNotOrganicDid(convexClient.value, atproto.did);
             } catch (error) {
-              console.warn("[twyne:notorganic] DID link failed", error);
+              reportApplicationError("twyne:notorganic:link-did", error, {
+                source: "auth",
+                title: "Bluesky connection was not linked",
+                variant: "warning",
+                dedupeKey: "notorganic-did-link",
+                metadata: { operation: "link-atproto-identity" },
+              });
             }
           }
         } else {
@@ -121,6 +166,7 @@ export const AuthProvider = component$(() => {
           user,
           loading: false,
           provider: "convex",
+          convexAuthenticated,
           atproto: atproto ?? undefined,
         };
       } else {
@@ -128,6 +174,7 @@ export const AuthProvider = component$(() => {
           ? {
               user: {
                 id: atproto.did,
+                analyticsId: atproto.did,
                 email: atproto.handle,
                 name: atproto.displayName ?? atproto.handle,
                 image: atproto.avatar,
