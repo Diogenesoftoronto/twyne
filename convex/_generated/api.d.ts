@@ -46,6 +46,7 @@ import type * as sharedLix from "../sharedLix.js";
 import type * as streamSweep from "../streamSweep.js";
 import type * as sync from "../sync.js";
 import type * as testing from "../testing.js";
+import type * as usage from "../usage.js";
 import type * as userComments from "../userComments.js";
 import type * as voice from "../voice.js";
 import type * as waitlist from "../waitlist.js";
@@ -96,6 +97,7 @@ declare const fullApi: ApiFromModules<{
   streamSweep: typeof streamSweep;
   sync: typeof sync;
   testing: typeof testing;
+  usage: typeof usage;
   userComments: typeof userComments;
   voice: typeof voice;
   waitlist: typeof waitlist;

@@ -226,6 +226,50 @@ describe("auth and HTTP normalization", () => {
     expect(error.message).toBe("Sign in to continue.");
   });
 
+  test("maps raw Convex and ATProto auth failures to safe recovery", () => {
+    expect(
+      normalizeApplicationError(
+        new Error(
+          "[CONVEX M(userComments:deleteComment)] Server Error: Not signed in",
+        ),
+        { source: "convex" },
+      ),
+    ).toMatchObject({
+      code: "AUTHENTICATION_REQUIRED",
+      message: "Sign in to continue.",
+      recovery: { action: "sign-in", canRetry: true },
+    });
+
+    expect(
+      normalizeApplicationError(
+        Object.assign(
+          new Error(
+            'Missing required scope "rpc:app.bsky.actor.getProfile?aud=private-audience"',
+          ),
+          { status: 403, name: "ScopeMissingError" },
+        ),
+        { source: "auth" },
+      ),
+    ).toMatchObject({
+      code: "AUTHENTICATION_FAILED",
+      message: "We could not verify your sign-in. Please try again.",
+      recovery: { action: "sign-in", canRetry: true },
+    });
+
+    expect(
+      normalizeApplicationError(
+        {
+          error: "use_dpop_nonce",
+          message: 'DPoP "nonce" mismatch',
+        },
+        { source: "auth" },
+      ),
+    ).toMatchObject({
+      code: "AUTHENTICATION_FAILED",
+      recovery: { action: "sign-in", canRetry: true },
+    });
+  });
+
   test("normalizes fetch Responses without retaining URLs or bodies", () => {
     const error = normalizeApplicationError(
       new Response('{"prompt":"private draft"}', {

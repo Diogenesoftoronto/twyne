@@ -11,6 +11,8 @@
  *   - `meta`              : keyPath "key"      (active folio id, etc.)
  *   - `ai-settings`       : keyPath "key"      (single "current" key)
  *   - `lix-blob`          : keyPath "key"      (single "current" key)
+ *   - `ai-usage-events`   : keyPath "eventKey" (content-free local ledger)
+ *   - `writing-activity-detail`: keyPath "activityKey" (UTC day/folio counts)
  *
  * The DB version is bumped in `openDb()` when a migration is required;
  * see the `migrate` callback for the upgrade body.
@@ -38,16 +40,21 @@ import {
   DEFAULT_WRITER_SETTINGS,
 } from "../types";
 import { SEARCH_BACKEND_IDS } from "./research-backends";
+import type { UsageEvent, WritingActivityDetail } from "./usage-domain";
 
 const DB_NAME = "twyne";
 /**
  * Bumped to 2 to add the `voice-notes` store; bumped to 3 to add the
  * `models` store that holds downloaded on-device model files (the Supertonic
- * voice pack now, any future local model). The upgrade handler creates every
- * store conditionally, so this is purely additive for existing writers:
- * nothing already in the database is touched.
+ * voice pack now, any future local model); bumped to 4 for content-free usage
+ * and writing-activity ledgers. The upgrade handler creates every store
+ * conditionally, so this is purely additive for existing writers.
  */
-const DB_VERSION = 3;
+const DB_VERSION = 4;
+export const IDB_USAGE_EVENT_STORE = "ai-usage-events" as const;
+export const IDB_WRITING_ACTIVITY_STORE = "writing-activity-detail" as const;
+export const IDB_USAGE_OCCURRED_AT_INDEX = "by-occurred-at" as const;
+export const IDB_WRITING_DAY_INDEX = "by-day" as const;
 const AI_SETTINGS_STORAGE_KEY = "twyne.ai-settings.current";
 const WRITER_SETTINGS_STORAGE_KEY = "twyne.writer-settings.current";
 const APPARATUS_SETTINGS_STORAGE_KEY = "twyne.apparatus-settings.current";
@@ -72,6 +79,39 @@ interface MetaRecord {
   updatedAt: number;
 }
 
+export interface StoredUsageEventRecord {
+  eventKey: string;
+  occurredAt: number;
+  event: UsageEvent;
+  synchronizedAccountId?: string;
+  excludedFromSync?: boolean;
+}
+
+/** Add every store/index without mutating records in existing stores. */
+export function upgradeTwyneDatabase(db: IDBDatabase): void {
+  const ensureStore = (name: string, keyPath: string): IDBObjectStore | null =>
+    db.objectStoreNames.contains(name)
+      ? null
+      : db.createObjectStore(name, { keyPath });
+
+  ensureStore("folios", "id");
+  ensureStore("folio-content", "folioId");
+  ensureStore("brief", "folioId");
+  ensureStore("comments", "id");
+  ensureStore("personas", "id");
+  ensureStore("meta", "key");
+  ensureStore("ai-settings", "key");
+  ensureStore("lix-blob", "key");
+  ensureStore("voice-notes", "id");
+  ensureStore("models", "id");
+  const usage = ensureStore(IDB_USAGE_EVENT_STORE, "eventKey");
+  usage?.createIndex(IDB_USAGE_OCCURRED_AT_INDEX, "occurredAt", {
+    unique: false,
+  });
+  const writing = ensureStore(IDB_WRITING_ACTIVITY_STORE, "activityKey");
+  writing?.createIndex(IDB_WRITING_DAY_INDEX, "day", { unique: false });
+}
+
 /* ── Database lifecycle ─────────────────────────────────────────── */
 
 let _dbPromise: Promise<IDBDatabase> | null = null;
@@ -85,40 +125,7 @@ function openDb(): Promise<IDBDatabase> {
   _dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains("folios")) {
-        db.createObjectStore("folios", { keyPath: "id" });
-      }
-      if (!db.objectStoreNames.contains("folio-content")) {
-        db.createObjectStore("folio-content", { keyPath: "folioId" });
-      }
-      if (!db.objectStoreNames.contains("brief")) {
-        db.createObjectStore("brief", { keyPath: "folioId" });
-      }
-      if (!db.objectStoreNames.contains("comments")) {
-        db.createObjectStore("comments", { keyPath: "id" });
-      }
-      if (!db.objectStoreNames.contains("personas")) {
-        db.createObjectStore("personas", { keyPath: "id" });
-      }
-      if (!db.objectStoreNames.contains("meta")) {
-        db.createObjectStore("meta", { keyPath: "key" });
-      }
-      if (!db.objectStoreNames.contains("ai-settings")) {
-        db.createObjectStore("ai-settings", { keyPath: "key" });
-      }
-      if (!db.objectStoreNames.contains("lix-blob")) {
-        db.createObjectStore("lix-blob", { keyPath: "key" });
-      }
-      // v2: recorded voice notes, kept as Blobs alongside the transcripts
-      // that live on the comments they are attached to.
-      if (!db.objectStoreNames.contains("voice-notes")) {
-        db.createObjectStore("voice-notes", { keyPath: "id" });
-      }
-      // v3: downloaded on-device model files, keyed by their remote URL.
-      if (!db.objectStoreNames.contains("models")) {
-        db.createObjectStore("models", { keyPath: "id" });
-      }
+      upgradeTwyneDatabase(req.result);
     };
     req.onsuccess = () => resolve(req.result);
     req.onerror = () => reject(req.error);
@@ -889,6 +896,235 @@ export async function saveMetaToIdb(
     );
   } catch {
     /* ignore */
+  }
+}
+
+/* ── Content-free local usage ledgers ─────────────────────────── */
+
+export interface StoredUsageCursor {
+  occurredAt: number;
+  eventKey: string;
+}
+
+export interface StoredUsagePageInput {
+  from: number | null;
+  to: number;
+  after?: StoredUsageCursor;
+  limit: number;
+}
+
+function timestampRange(from: number | null, to: number): IDBKeyRange {
+  return from === null
+    ? IDBKeyRange.upperBound(to, true)
+    : IDBKeyRange.bound(from, to, false, true);
+}
+
+/** Insert once by eventKey. Existing attempts are successful no-ops. */
+export async function addUsageEventRecordToIdb(
+  record: StoredUsageEventRecord,
+): Promise<boolean> {
+  if (!isBrowser()) return false;
+  try {
+    return await tx(IDB_USAGE_EVENT_STORE, "readwrite", async (t) => {
+      const store = t.objectStore(IDB_USAGE_EVENT_STORE);
+      const existing = await reqAsPromise<StoredUsageEventRecord | undefined>(
+        store.get(record.eventKey),
+      );
+      if (existing) return false;
+      await reqAsPromise(store.add(record));
+      return true;
+    });
+  } catch {
+    return false;
+  }
+}
+
+/** Bounded chronological page; equal timestamps are ordered by eventKey. */
+export async function listUsageEventRecordsFromIdb(
+  input: StoredUsagePageInput,
+): Promise<StoredUsageEventRecord[]> {
+  if (!isBrowser()) return [];
+  const limit = Math.max(1, Math.min(200, Math.floor(input.limit)));
+  try {
+    return await tx(
+      IDB_USAGE_EVENT_STORE,
+      "readonly",
+      (t) =>
+        new Promise<StoredUsageEventRecord[]>((resolve, reject) => {
+          const rows: StoredUsageEventRecord[] = [];
+          const request = t
+            .objectStore(IDB_USAGE_EVENT_STORE)
+            .index(IDB_USAGE_OCCURRED_AT_INDEX)
+            .openCursor(timestampRange(input.from, input.to));
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            const cursor = request.result;
+            if (!cursor || rows.length >= limit) {
+              resolve(rows);
+              return;
+            }
+            const row = cursor.value as StoredUsageEventRecord;
+            const after = input.after;
+            const isAfter =
+              !after ||
+              row.occurredAt > after.occurredAt ||
+              (row.occurredAt === after.occurredAt &&
+                row.eventKey.localeCompare(after.eventKey) > 0);
+            if (isAfter) rows.push(row);
+            cursor.continue();
+          };
+        }),
+    );
+  } catch {
+    return [];
+  }
+}
+
+export async function markUsageEventsSynchronizedToIdb(
+  eventKeys: readonly string[],
+  accountId: string,
+): Promise<void> {
+  if (!isBrowser() || eventKeys.length === 0) return;
+  try {
+    await tx(IDB_USAGE_EVENT_STORE, "readwrite", async (t) => {
+      const store = t.objectStore(IDB_USAGE_EVENT_STORE);
+      for (const eventKey of eventKeys) {
+        const row = await reqAsPromise<StoredUsageEventRecord | undefined>(
+          store.get(eventKey),
+        );
+        if (!row || row.synchronizedAccountId) continue;
+        await reqAsPromise(
+          store.put({
+            ...row,
+            synchronizedAccountId: accountId,
+            excludedFromSync: undefined,
+          }),
+        );
+      }
+    });
+  } catch {
+    /* sync acknowledgement can retry safely */
+  }
+}
+
+/** Freeze currently-unassigned rows on this device before switching account. */
+export async function excludeUnsynchronizedUsageEventsFromIdb(): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await tx(
+      IDB_USAGE_EVENT_STORE,
+      "readwrite",
+      (t) =>
+        new Promise<void>((resolve, reject) => {
+          const store = t.objectStore(IDB_USAGE_EVENT_STORE);
+          const request = store.openCursor();
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            const cursor = request.result;
+            if (!cursor) {
+              resolve();
+              return;
+            }
+            const row = cursor.value as StoredUsageEventRecord;
+            if (!row.synchronizedAccountId && !row.excludedFromSync) {
+              cursor.update({ ...row, excludedFromSync: true });
+            }
+            cursor.continue();
+          };
+        }),
+    );
+  } catch {
+    /* preserve rows; unresolved switches remain safe by default */
+  }
+}
+
+export async function loadWritingActivityDetailFromIdb(
+  activityKey: string,
+): Promise<WritingActivityDetail | null> {
+  if (!isBrowser()) return null;
+  try {
+    return (
+      (await reqAsPromise<WritingActivityDetail | undefined>(
+        (await openDb())
+          .transaction(IDB_WRITING_ACTIVITY_STORE)
+          .objectStore(IDB_WRITING_ACTIVITY_STORE)
+          .get(activityKey),
+      )) ?? null
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function putWritingActivityDetailToIdb(
+  detail: WritingActivityDetail,
+): Promise<void> {
+  if (!isBrowser()) return;
+  try {
+    await reqAsPromise(
+      (await openDb())
+        .transaction(IDB_WRITING_ACTIVITY_STORE, "readwrite")
+        .objectStore(IDB_WRITING_ACTIVITY_STORE)
+        .put(detail),
+    );
+  } catch {
+    /* writing remains available if activity telemetry storage fails */
+  }
+}
+
+export async function listWritingActivityDetailsFromIdb(input: {
+  fromDay: string;
+  toDay: string;
+  limit: number;
+}): Promise<WritingActivityDetail[]> {
+  if (!isBrowser()) return [];
+  const limit = Math.max(1, Math.min(2_000, Math.floor(input.limit)));
+  try {
+    return await tx(
+      IDB_WRITING_ACTIVITY_STORE,
+      "readonly",
+      (t) =>
+        new Promise<WritingActivityDetail[]>((resolve, reject) => {
+          const rows: WritingActivityDetail[] = [];
+          const request = t
+            .objectStore(IDB_WRITING_ACTIVITY_STORE)
+            .index(IDB_WRITING_DAY_INDEX)
+            .openCursor(
+              IDBKeyRange.bound(input.fromDay, input.toDay, false, true),
+            );
+          request.onerror = () => reject(request.error);
+          request.onsuccess = () => {
+            const cursor = request.result;
+            if (!cursor || rows.length >= limit) {
+              resolve(rows);
+              return;
+            }
+            rows.push(cursor.value as WritingActivityDetail);
+            cursor.continue();
+          };
+        }),
+    );
+  } catch {
+    return [];
+  }
+}
+
+export async function deleteLocalUsageHistoryFromIdb(
+  input: {
+    includeWritingActivity?: boolean;
+  } = {},
+): Promise<void> {
+  if (!isBrowser()) return;
+  const stores = [
+    IDB_USAGE_EVENT_STORE,
+    ...(input.includeWritingActivity ? [IDB_WRITING_ACTIVITY_STORE] : []),
+  ];
+  try {
+    await tx(stores, "readwrite", (t) => {
+      for (const store of stores) t.objectStore(store).clear();
+    });
+  } catch {
+    /* explicit UI surfaces report their own retry state */
   }
 }
 

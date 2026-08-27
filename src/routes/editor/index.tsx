@@ -6,7 +6,7 @@ import {
   useVisibleTask$,
 } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { Link, useNavigate } from "@builder.io/qwik-city";
+import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
 import { ProjectBriefCard } from "../../components/brief/project-brief-card";
 import { AccountMenu } from "../../components/auth/account-menu";
 import { FolioMenu } from "../../components/folio/folio-menu";
@@ -32,7 +32,10 @@ import {
   saveMetaToIdb,
   loadPersonasFromIdb,
 } from "../../utils/idb";
-import { useAuth } from "../../utils/auth-context";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
 import { TwyneEditor } from "../../components/editor/twyne-editor";
 import { ShareDialog } from "../../components/collaboration/share-dialog";
 import { PersonasPanel } from "../../components/personas/personas-panel";
@@ -68,6 +71,7 @@ import {
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
 import type { AppError } from "../../types/application-errors";
 import { ApplicationNotice } from "../../components/ui/application-notice";
+import { VersionHistoryPanel } from "../../components/revisions/version-history-panel";
 import {
   createAppError,
   normalizeApplicationError,
@@ -85,6 +89,7 @@ import {
   crossedDraftMilestones,
   wordCountBucket,
 } from "../../utils/product-analytics";
+import { usageLedger } from "../../utils/usage-ledger";
 
 type RightPanel = PanelId;
 
@@ -193,7 +198,7 @@ function editorialDateline(now = new Date()): string {
 /**
  * The writer's room — the full editorial desk: the Drawer of folios on
  * the left, the manuscript in the centre, and the Editorial Board (Cast,
- * Rubric, Marginalia, Apparatus) on the right. The Apparatus runs research
+ * Rubric, Marginalia, Apparatus, Versions) on the right. The Apparatus runs research
  * agents in the background, debounced on the draft.
  *
  * First-run onboarding lives at /dossier/create; dossier refinement at
@@ -202,17 +207,20 @@ function editorialDateline(now = new Date()): string {
  */
 export default component$(() => {
   const nav = useNavigate();
+  const location = useLocation();
   const clientSig = useConvexClient();
   const auth = useAuth();
   // Controls the shared AccountMenu (Editor's Office); external triggers such
   // as the ?auth=1 deep link and the local-only nudge flip this open.
   const accountOpen = useSignal(false);
+  const opensVersionHistory =
+    location.url.searchParams.get("panel") === "history";
   const store = useStore<LayoutStore>({
-    rightPanel: "personas",
+    rightPanel: opensVersionHistory ? "history" : "personas",
     leftSidebarOpen: false,
     // Begin with the manuscript, not the entire editorial apparatus. The
     // board remains one click away and retains its unread badges.
-    rightPanelOpen: false,
+    rightPanelOpen: opensVersionHistory,
     panelsBeforeZen: null,
     zenActive: false,
     hydrated: false,
@@ -370,6 +378,9 @@ export default component$(() => {
         if (leaving) writeCrashMirror(folioId, html);
         void saveFolioContentToIdb(folioId, html).then(() => {
           clearCrashMirror();
+          void usageLedger
+            .recordWritingActivity({ folioId })
+            .catch(() => undefined);
           void createRevisionSnapshot({
             folioId,
             html,
@@ -451,7 +462,7 @@ export default component$(() => {
         } else {
           scheduleLocalPersist();
         }
-        markDirty(["folioContent", "folios"]);
+        markDirty(["folioContent", "folios"], folioId);
       }
     };
     window.addEventListener("twyne:content", contentHandler);
@@ -642,13 +653,15 @@ export default component$(() => {
   // authentication completes instead of requiring a reload.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ track }) => {
-    const userId = track(() => auth.value.user?.id);
+    const authenticated = track(() =>
+      hasAuthenticatedConvexIdentity(auth.value),
+    );
     const client = track(() => clientSig.value);
     const sharedId = new URLSearchParams(window.location.search).get("shared");
     if (!sharedId || store.sharedLixId === sharedId || store.joiningShared) {
       return;
     }
-    if (!userId || !client) {
+    if (!authenticated || !client) {
       accountOpen.value = true;
       return;
     }
@@ -843,6 +856,13 @@ export default component$(() => {
       label: "Apparatus",
       kicker: "Sources & sourcerers",
       accent: "var(--color-periwinkle)",
+    },
+    {
+      id: "history",
+      numeral: "V",
+      label: "Versions",
+      kicker: "Version history",
+      accent: "var(--color-sage)",
     },
   ];
   if (!store.hydrated) {
@@ -1104,6 +1124,15 @@ export default component$(() => {
               </Link>
 
               <Link
+                href="/desk/"
+                class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
+                style="font-family: var(--font-display); border-radius: 2px;"
+              >
+                <span class="dept-label block">My Desk</span>
+                Writing activity + AI usage
+              </Link>
+
+              <Link
                 href="/settings/"
                 class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
                 style="font-family: var(--font-display); border-radius: 2px;"
@@ -1319,22 +1348,23 @@ export default component$(() => {
                     );
                   })}
                 />
-                {store.activeFolioId && auth.value.user && (
-                  <ShareDialog
-                    folioId={store.activeFolioId}
-                    folioName={
-                      store.folios.find((f) => f.id === store.activeFolioId)
-                        ?.name ?? "Untitled"
-                    }
-                    onShared$={$((lixId: string, draftHtml?: string) => {
-                      if (draftHtml !== undefined) {
-                        store.editorSeed = draftHtml;
+                {store.activeFolioId &&
+                  hasAuthenticatedConvexIdentity(auth.value) && (
+                    <ShareDialog
+                      folioId={store.activeFolioId}
+                      folioName={
+                        store.folios.find((f) => f.id === store.activeFolioId)
+                          ?.name ?? "Untitled"
                       }
-                      store.sharedLixId = lixId;
-                      store.sharedRole = "owner";
-                    })}
-                  />
-                )}
+                      onShared$={$((lixId: string, draftHtml?: string) => {
+                        if (draftHtml !== undefined) {
+                          store.editorSeed = draftHtml;
+                        }
+                        store.sharedLixId = lixId;
+                        store.sharedRole = "owner";
+                      })}
+                    />
+                  )}
                 <AccountMenu open={accountOpen} />
                 <button
                   onClick$={() => {
@@ -1411,6 +1441,11 @@ export default component$(() => {
                   store.rightPanel = panel;
                   store.rightPanelOpen = true;
                   setVisiblePanel(panel);
+                  if (panel === "history") {
+                    window.dispatchEvent(
+                      new CustomEvent("twyne:version-history-opened"),
+                    );
+                  }
                 }}
                 onManuscriptFocus$={() => {
                   store.rightPanelOpen = false;
@@ -1436,6 +1471,11 @@ export default component$(() => {
             store.rightPanel = panel;
             store.rightPanelOpen = true;
             setVisiblePanel(panel);
+            if (panel === "history") {
+              window.dispatchEvent(
+                new CustomEvent("twyne:version-history-opened"),
+              );
+            }
           }}
         >
           {/* All panels stay mounted so their event listeners and in-progress
@@ -1474,6 +1514,18 @@ export default component$(() => {
                 ) ?? null
               }
             />
+          </div>
+          <div class={store.rightPanel === "history" ? "h-full" : "hidden"}>
+            {store.activeFolioId && (
+              <VersionHistoryPanel
+                key={`history-${store.activeFolioId}`}
+                activeFolioId={store.activeFolioId}
+                folioName={
+                  store.folios.find((folio) => folio.id === store.activeFolioId)
+                    ?.name ?? "Untitled folio"
+                }
+              />
+            )}
           </div>
         </EditorialBoardOverlay>
       </div>

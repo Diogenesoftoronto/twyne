@@ -25,6 +25,7 @@ const {
   hasConfiguredVoiceProvider,
   parseCitationFormatResult,
   parseMissingSourceResult,
+  providerRequestWasSent,
   providerSupportsFeature,
   resolveFeatureConfig,
   runClientVoiceTranscribe,
@@ -68,6 +69,20 @@ function makeSettings(overrides: Partial<AiSettings> = {}): AiSettings {
 }
 
 describe("ai-client provider resolution", () => {
+  test("distinguishes pre-send configuration failures from provider attempts", () => {
+    expect(providerRequestWasSent(new Error("invalid local options"))).toBe(
+      false,
+    );
+    expect(
+      providerRequestWasSent({
+        name: "AI_APICallError",
+        url: "https://api.example.test/v1/chat",
+        requestBodyValues: {},
+      }),
+    ).toBe(true);
+    expect(providerRequestWasSent({ statusCode: 429 })).toBe(true);
+  });
+
   test("opts into Responses API explicitly and keeps existing providers on chat", () => {
     expect(usesOpenAiResponsesApi({})).toBe(false);
     expect(usesOpenAiResponsesApi({ apiMode: "chat" })).toBe(false);

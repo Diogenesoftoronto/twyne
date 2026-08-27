@@ -7,8 +7,10 @@ import {
   capturePostHogEvent,
   maybeDisplayProgressSurvey,
 } from "./posthog-context";
+import { ANALYTICS_VERSION } from "./analytics-version";
+import type { AnalyticsAuthMethod, AuthFlow } from "./auth-analytics";
 
-export const ANALYTICS_VERSION = 1 as const;
+export { ANALYTICS_VERSION } from "./analytics-version";
 
 export type LandingCtaLocation = "header" | "hero" | "mid_page" | "footer";
 export type LandingCtaDestination =
@@ -18,7 +20,7 @@ export type LandingCtaDestination =
   | "pricing"
   | "sign_in"
   | "downloads";
-export type SignInMethod = "passkey" | "email_otp" | "bluesky";
+export type SignInMethod = AnalyticsAuthMethod;
 export type SignInProvider = "convex" | "atproto";
 export type FolioAnalyticsSource =
   | "landing"
@@ -70,15 +72,45 @@ export type DraftPublishDestination =
   | "standard_site";
 export type DossierMode = "first_run" | "refine";
 export type AnalyticsAiProvider = AiProviderType | "hosted" | "none";
+export type DeskAnalyticsRange = "7d" | "30d" | "90d" | "all";
+export type DeskAnalyticsSection =
+  | "activity"
+  | "day_detail"
+  | "cost"
+  | "features"
+  | "models"
+  | "tokens"
+  | "patterns"
+  | "recent_work"
+  | "data_controls";
+export type UsageExportRowCountBucket =
+  | "empty"
+  | "1_9"
+  | "10_99"
+  | "100_999"
+  | "1000_plus";
+export type UsageDeletionScope =
+  | "local"
+  | "synchronized"
+  | "local_and_synchronized";
 
 export interface ProductAnalyticsEventMap {
   landing_cta_clicked: {
     location: LandingCtaLocation;
     destination: LandingCtaDestination;
   };
-  sign_in_started: { method: SignInMethod };
-  sign_in_completed: { provider: SignInProvider };
-  sign_in_failed: { method: SignInMethod; error_code: AppErrorCode };
+  sign_in_started: { method: SignInMethod; flow: AuthFlow };
+  sign_in_completed: {
+    provider: SignInProvider;
+    method: SignInMethod;
+    flow: AuthFlow;
+  };
+  sign_in_failed: {
+    method: SignInMethod;
+    flow: AuthFlow;
+    error_code: AppErrorCode;
+  };
+  auth_session_restored: { provider: SignInProvider };
   folio_created: {
     source: FolioAnalyticsSource;
     folio_type: AnalyticsFolioType;
@@ -111,6 +143,15 @@ export interface ProductAnalyticsEventMap {
     provider: AnalyticsAiProvider;
     feature_override_count: number;
   };
+  desk_viewed: { signed_in: boolean; range: DeskAnalyticsRange };
+  desk_section_opened: { section: DeskAnalyticsSection };
+  usage_range_changed: { range: DeskAnalyticsRange };
+  usage_exported: {
+    format: "json" | "csv";
+    row_count_bucket: UsageExportRowCountBucket;
+  };
+  usage_history_deleted: { scope: UsageDeletionScope };
+  public_profile_stats_updated: { enabled_stat_count: number };
 }
 
 export type ProductEventName = keyof ProductAnalyticsEventMap;
@@ -128,9 +169,10 @@ export type ProductEventPayload<Event extends ProductEventName> =
  */
 const PRODUCT_EVENT_PROPERTY_KEYS = {
   landing_cta_clicked: ["location", "destination"],
-  sign_in_started: ["method"],
-  sign_in_completed: ["provider"],
-  sign_in_failed: ["method", "error_code"],
+  sign_in_started: ["method", "flow"],
+  sign_in_completed: ["provider", "method", "flow"],
+  sign_in_failed: ["method", "flow", "error_code"],
+  auth_session_restored: ["provider"],
   folio_created: ["source", "folio_type"],
   folio_opened: ["source", "folio_type"],
   draft_milestone_reached: ["milestone", "word_count_bucket"],
@@ -141,6 +183,12 @@ const PRODUCT_EVENT_PROPERTY_KEYS = {
   draft_published: ["destination"],
   dossier_completed: ["mode"],
   ai_settings_saved: ["provider", "feature_override_count"],
+  desk_viewed: ["signed_in", "range"],
+  desk_section_opened: ["section"],
+  usage_range_changed: ["range"],
+  usage_exported: ["format", "row_count_bucket"],
+  usage_history_deleted: ["scope"],
+  public_profile_stats_updated: ["enabled_stat_count"],
 } as const satisfies {
   [Event in ProductEventName]: readonly (keyof ProductAnalyticsEventMap[Event])[];
 };
@@ -172,6 +220,17 @@ export function buildProductEventPayload<Event extends ProductEventName>(
   }
 
   return payload as unknown as ProductEventPayload<Event>;
+}
+
+export function usageExportRowCountBucket(
+  count: number,
+): UsageExportRowCountBucket {
+  const rows = Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+  if (rows === 0) return "empty";
+  if (rows < 10) return "1_9";
+  if (rows < 100) return "10_99";
+  if (rows < 1_000) return "100_999";
+  return "1000_plus";
 }
 
 export async function captureProductEvent<Event extends ProductEventName>(

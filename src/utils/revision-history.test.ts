@@ -3,6 +3,7 @@ import { afterAll, beforeEach, describe, expect, test } from "bun:test";
 const meta = new Map<string, unknown>();
 
 const {
+  compareRevisionPassages,
   compareRevisions,
   createRevisionSnapshot,
   loadRevisionHistory,
@@ -85,6 +86,38 @@ describe("revision history", () => {
       paragraphsBefore: 2,
       paragraphsAfter: 2,
     });
+  });
+
+  test("shows rewritten passages without exposing unchanged manuscript text", () => {
+    expect(
+      compareRevisionPassages(
+        "<h1>Opening</h1><p>A plain claim.</p><p>The ending stays.</p>",
+        "<h1>Opening</h1><p>A supported claim.</p><p>The ending stays.</p>",
+      ),
+    ).toEqual([
+      {
+        before: "A plain claim.",
+        after: "A supported claim.",
+      },
+    ]);
+  });
+
+  test("anchors inserted passages so later paragraphs are not marked changed", () => {
+    expect(
+      compareRevisionPassages(
+        "<p>First.</p><p>Third.</p>",
+        "<p>First.</p><p>Second &amp; new.</p><p>Third.</p>",
+      ),
+    ).toEqual([{ before: null, after: "Second & new." }]);
+  });
+
+  test("leaves invalid numeric entities intact instead of throwing", () => {
+    expect(() =>
+      compareRevisionPassages(
+        "<p>Before &#99999999;</p>",
+        "<p>After &#99999999;</p>",
+      ),
+    ).not.toThrow();
   });
 
   test("deduplicates feedback tasks and carries them through completion", async () => {

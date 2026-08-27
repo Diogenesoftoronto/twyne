@@ -73,7 +73,19 @@ import type { ServerAiObservabilityContext } from "./posthog";
 import {
   createAiTraceId,
   normalizeAiUsage,
+  type AiUsage,
 } from "../src/utils/ai-deterministic-evals";
+import {
+  normalizeUsageAiFeature,
+  USAGE_LIMITS,
+  utcDayFromTimestamp,
+  type AiFeature,
+  type UsageEvent,
+} from "../src/utils/usage-domain";
+import {
+  estimateUsageCost,
+  resolveUsageCost,
+} from "../src/utils/usage-pricing";
 import {
   countWords,
   MIN_EDITOR_WORDS,
@@ -122,6 +134,118 @@ const writeInterviewStreamReference = makeFunctionReference<
   },
   unknown
 >("interviewStreams:write");
+
+const recordTrustedUsageReference = makeFunctionReference<
+  "mutation",
+  { ownerId: string; event: UsageEvent },
+  { inserted: boolean }
+>("usage:recordTrustedEvent");
+
+interface HostedUsageCapture {
+  ctx: ActionCtx;
+  ownerId: string;
+  provider: ProviderConfig;
+  feature: AiFeature | string;
+  traceId: string;
+  editorialActionId?: string;
+  folioId?: string;
+}
+
+function newHostedUsageCapture(
+  ctx: ActionCtx,
+  ownerId: string,
+  provider: ProviderConfig,
+  feature: AiFeature,
+): HostedUsageCapture {
+  return {
+    ctx,
+    ownerId,
+    provider,
+    feature,
+    traceId: createAiTraceId(feature),
+  };
+}
+
+async function recordHostedAttempt(
+  capture: HostedUsageCapture,
+  attempt: number,
+  outcome: "completed" | "failed",
+  usage?: AiUsage,
+) {
+  const occurredAt = Date.now();
+  const boundedUsage = Object.fromEntries(
+    Object.entries(usage ?? {}).filter(
+      ([, value]) =>
+        Number.isSafeInteger(value) &&
+        (value as number) >= 0 &&
+        (value as number) <= USAGE_LIMITS.tokenCount,
+    ),
+  ) as AiUsage;
+  const model = capture.provider.modelId.slice(0, USAGE_LIMITS.model);
+  const estimate = estimateUsageCost({
+    source: "hosted",
+    provider: capture.provider.label,
+    model,
+    usage: boundedUsage,
+  });
+  const cost = resolveUsageCost({ source: "hosted", estimate });
+  const event: UsageEvent = {
+    eventKey: `${capture.traceId}:${attempt}:${capture.provider.label}:${model}`,
+    occurredAt,
+    day: utcDayFromTimestamp(occurredAt),
+    source: "hosted",
+    authority: "server",
+    feature: normalizeUsageAiFeature(capture.feature),
+    provider: capture.provider.label,
+    model,
+    folioId: capture.folioId?.slice(0, USAGE_LIMITS.opaqueId),
+    editorialActionId: (capture.editorialActionId ?? capture.traceId).slice(
+      0,
+      USAGE_LIMITS.opaqueId,
+    ),
+    traceId: capture.traceId,
+    attempt,
+    outcome,
+    ...boundedUsage,
+    costMicrousd:
+      cost.kind === "actual" || cost.kind === "estimated"
+        ? cost.costMicrousd
+        : undefined,
+    costKind: cost.kind,
+    pricingVersion: cost.kind === "estimated" ? cost.pricingVersion : undefined,
+    pricing: cost.kind === "estimated" ? cost.pricing : undefined,
+  };
+  await capture.ctx.runMutation(recordTrustedUsageReference, {
+    ownerId: capture.ownerId,
+    event,
+  });
+}
+
+async function trackedGenerateText(
+  capture: HostedUsageCapture,
+  attempt: number,
+  generation: Parameters<typeof generateText>[0],
+) {
+  let result: Awaited<ReturnType<typeof generateText>>;
+  try {
+    result = await generateText(generation);
+  } catch (error) {
+    await recordHostedAttempt(capture, attempt, "failed").catch((recordError) =>
+      console.error(
+        "[twyne:usage] failed to record failed provider attempt",
+        recordError,
+      ),
+    );
+    throw error;
+  }
+  await recordHostedAttempt(
+    capture,
+    attempt,
+    "completed",
+    normalizeAiUsage(result.totalUsage),
+  );
+  return result;
+}
 
 function pickLegacyProvider(): ProviderConfig | null {
   const rivetUrl = process.env.RIVET_ENDPOINT;
@@ -373,7 +497,36 @@ async function streamNote(
   return { text, totalUsage };
 }
 
+async function trackedStreamNote(
+  target: NoteStreamTarget,
+  generation: Parameters<typeof streamText>[0],
+  capture: HostedUsageCapture,
+  attempt: number,
+) {
+  let result: Awaited<ReturnType<typeof streamNote>>;
+  try {
+    result = await streamNote(target, generation);
+  } catch (error) {
+    await recordHostedAttempt(capture, attempt, "failed").catch((recordError) =>
+      console.error(
+        "[twyne:usage] failed to record failed provider attempt",
+        recordError,
+      ),
+    );
+    throw error;
+  }
+  await recordHostedAttempt(
+    capture,
+    attempt,
+    "completed",
+    normalizeAiUsage(result.totalUsage),
+  );
+  return result;
+}
+
 async function runLlm(
+  ctx: ActionCtx,
+  ownerId: string,
   provider: ProviderConfig,
   req: AgentRequest,
   feature:
@@ -391,6 +544,16 @@ async function runLlm(
     req.persona.temperature ?? (provider.label === "openai" ? 0.6 : 0.4);
   const start = Date.now();
   const { tools, getAnchor } = buildQuoteTools(req.draftText);
+  const usageTraceId = observability?.traceId ?? createAiTraceId(feature);
+  const capture: HostedUsageCapture = {
+    ctx,
+    ownerId,
+    provider,
+    feature,
+    traceId: usageTraceId,
+    editorialActionId: observability?.editorialActionId,
+    folioId: observability?.folioId,
+  };
 
   try {
     const generation = {
@@ -413,8 +576,8 @@ async function runLlm(
       },
     };
     const first = stream
-      ? await streamNote(stream, generation)
-      : await generateText(generation);
+      ? await trackedStreamNote(stream, generation, capture, 1)
+      : await trackedGenerateText(capture, 1, generation);
     const text = first.text;
     let usage = normalizeAiUsage(first.totalUsage);
     let visibleText = stripReasoningTags(text);
@@ -423,7 +586,7 @@ async function runLlm(
     // Only regenerate when nothing visible survived — an unclosed block, which
     // in practice means the token budget cut the generation short.
     if (!visibleText) {
-      const retry = await generateText({
+      const retry = await trackedGenerateText(capture, 2, {
         model: provider.model,
         system,
         prompt: `${user}\n\nClose your <think> block, then write the note.`,
@@ -459,7 +622,7 @@ async function runLlm(
       maxTokens,
       spanName: feature,
       usage,
-      observability,
+      observability: { ...observability, traceId: usageTraceId },
     });
 
     const cleaned = visibleText.trim();
@@ -495,6 +658,7 @@ async function runLlm(
  * the narrative rubric review, neither of which speaks as a single persona.
  */
 async function runPlainLlm(
+  capture: HostedUsageCapture,
   provider: ProviderConfig,
   system: string,
   user: string,
@@ -502,7 +666,7 @@ async function runPlainLlm(
   feature: string,
 ): Promise<string> {
   const gen = async (prompt: string, suffix?: string) =>
-    generateText({
+    trackedGenerateText(capture, suffix ? 2 : 1, {
       model: provider.model,
       system,
       prompt,
@@ -876,6 +1040,14 @@ export const runInterviewTurn = action({
       transcript,
       startingMaterial: args.startingMaterial,
     });
+    const usageCapture: HostedUsageCapture = {
+      ctx,
+      ownerId: identity.tokenIdentifier,
+      provider,
+      feature: "interview-turn",
+      traceId,
+    };
+    let providerSettled = false;
     try {
       const generation = {
         model: provider.model,
@@ -928,6 +1100,8 @@ export const runInterviewTurn = action({
         }
         text = await streamed.text;
         usage = normalizeAiUsage(await streamed.totalUsage);
+        providerSettled = true;
+        await recordHostedAttempt(usageCapture, 1, "completed", usage);
         const finalSnapshot = createInterviewStreamSnapshot(
           text,
           nativeReasoning,
@@ -939,7 +1113,8 @@ export const runInterviewTurn = action({
           status: "complete",
         });
       } else {
-        const result = await generateText(generation);
+        const result = await trackedGenerateText(usageCapture, 1, generation);
+        providerSettled = true;
         text = result.text;
         usage = normalizeAiUsage(result.totalUsage);
       }
@@ -972,6 +1147,11 @@ export const runInterviewTurn = action({
         traceId,
       );
     } catch (error) {
+      if (!providerSettled) {
+        await recordHostedAttempt(usageCapture, 1, "failed").catch(
+          () => undefined,
+        );
+      }
       if (error instanceof Error && error.name === "ConvexError") {
         await flushArize();
         throw error;
@@ -1062,9 +1242,16 @@ export const runDossierCheck = action({
     const temperature = 0.2;
     const maxTokens = NO_OUTPUT_CEILING;
     const start = Date.now();
+    const usageCapture: HostedUsageCapture = {
+      ctx,
+      ownerId: identity.tokenIdentifier,
+      provider,
+      feature: "dossier-check",
+      traceId: createAiTraceId("dossier-check"),
+    };
 
     try {
-      const { text, totalUsage } = await generateText({
+      const { text, totalUsage } = await trackedGenerateText(usageCapture, 1, {
         model: provider.model,
         system,
         prompt: user,
@@ -1332,24 +1519,34 @@ export const suggestRewrite = action({
       const start = Date.now();
       const temperature = persona.temperature ?? 0.4;
       const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await generateText({
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature,
-        maxOutputTokens: maxTokens,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "persona_rewrite",
-          metadata: {
-            feature: "persona-rewrite",
-            persona: persona.id,
-            provider: provider.label,
-            model: provider.modelId,
-            level: args.level,
+      const { text } = await trackedGenerateText(
+        {
+          ctx,
+          ownerId: identity.tokenIdentifier,
+          provider,
+          feature: "persona-rewrite",
+          traceId: createAiTraceId("persona-rewrite"),
+        },
+        1,
+        {
+          model: provider.model,
+          system,
+          prompt: user,
+          temperature,
+          maxOutputTokens: maxTokens,
+          experimental_telemetry: {
+            isEnabled: tracingEnabled,
+            functionId: "persona_rewrite",
+            metadata: {
+              feature: "persona-rewrite",
+              persona: persona.id,
+              provider: provider.label,
+              model: provider.modelId,
+              level: args.level,
+            },
           },
         },
-      });
+      );
       const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
         feature: "persona-rewrite",
@@ -1478,6 +1675,8 @@ export const conveneRoom = action({
         // A background pass reads only the new material, so it needs far
         // fewer tokens than a full convene — and should cost less too.
         return await runLlm(
+          ctx,
+          identity.tokenIdentifier,
           provider,
           req,
           "persona-feedback",
@@ -1569,10 +1768,18 @@ export const analyzeRoom = action({
           instruction: "analyze",
         };
         try {
-          const r = await runLlm(provider, req, "persona-analysis", 1600, {
-            ...args.observability,
-            distinctId: identity.tokenIdentifier,
-          });
+          const r = await runLlm(
+            ctx,
+            identity.tokenIdentifier,
+            provider,
+            req,
+            "persona-analysis",
+            1600,
+            {
+              ...args.observability,
+              distinctId: identity.tokenIdentifier,
+            },
+          );
           return { personaId: persona.id, ...r };
         } catch (err) {
           throw reportedApplicationError(
@@ -1597,6 +1804,15 @@ export const analyzeRoom = action({
         };
       });
       synthesis = await runPlainLlm(
+        {
+          ctx,
+          ownerId: identity.tokenIdentifier,
+          provider,
+          feature: "room-synthesis",
+          traceId: createAiTraceId("room-synthesis"),
+          editorialActionId: args.observability?.editorialActionId,
+          folioId: args.observability?.folioId,
+        },
         provider,
         buildSynthesisSystemPrompt(),
         buildSynthesisPrompt(memoInput, brief, args.writerProfile),
@@ -1655,6 +1871,13 @@ export const reviewRubric = action({
     const brief = (args.brief ?? null) as ProjectBrief | null;
     try {
       const review = await runPlainLlm(
+        {
+          ctx,
+          ownerId: identity.tokenIdentifier,
+          provider,
+          feature: "rubric-review",
+          traceId: createAiTraceId("rubric-review"),
+        },
         provider,
         buildRubricReviewSystemPrompt(),
         buildRubricReviewPrompt({
@@ -1722,23 +1945,32 @@ export const judgeDraft = action({
       const start = Date.now();
       const temperature = persona.temperature ?? 0.2;
       const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await generateText({
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature,
-        maxOutputTokens: maxTokens,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "rubric_judge",
-          metadata: {
-            feature: "rubric-judge",
-            persona: persona.id,
-            provider: provider.label,
-            model: provider.modelId,
+      const { text } = await trackedGenerateText(
+        newHostedUsageCapture(
+          ctx,
+          identity.tokenIdentifier,
+          provider,
+          "rubric-judge",
+        ),
+        1,
+        {
+          model: provider.model,
+          system,
+          prompt: user,
+          temperature,
+          maxOutputTokens: maxTokens,
+          experimental_telemetry: {
+            isEnabled: tracingEnabled,
+            functionId: "rubric_judge",
+            metadata: {
+              feature: "rubric-judge",
+              persona: persona.id,
+              provider: provider.label,
+              model: provider.modelId,
+            },
           },
         },
-      });
+      );
       const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
         feature: "rubric-judge",
@@ -1824,23 +2056,32 @@ export const judgeEvidence = action({
       const start = Date.now();
       const temperature = 0.2;
       const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await generateText({
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature,
-        maxOutputTokens: maxTokens,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "rubric_judge_evidence",
-          metadata: {
-            feature: "rubric-judge",
-            persona: "evidence",
-            provider: provider.label,
-            model: provider.modelId,
+      const { text } = await trackedGenerateText(
+        newHostedUsageCapture(
+          ctx,
+          identity.tokenIdentifier,
+          provider,
+          "rubric-judge",
+        ),
+        1,
+        {
+          model: provider.model,
+          system,
+          prompt: user,
+          temperature,
+          maxOutputTokens: maxTokens,
+          experimental_telemetry: {
+            isEnabled: tracingEnabled,
+            functionId: "rubric_judge_evidence",
+            metadata: {
+              feature: "rubric-judge",
+              persona: "evidence",
+              provider: provider.label,
+              model: provider.modelId,
+            },
           },
         },
-      });
+      );
       const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
         feature: "rubric-judge",
@@ -1923,23 +2164,32 @@ export const judgeIntegrity = action({
       const start = Date.now();
       const temperature = 0.2;
       const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await generateText({
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature,
-        maxOutputTokens: maxTokens,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "rubric_judge_integrity",
-          metadata: {
-            feature: "rubric-judge",
-            persona: "integrity",
-            provider: provider.label,
-            model: provider.modelId,
+      const { text } = await trackedGenerateText(
+        newHostedUsageCapture(
+          ctx,
+          identity.tokenIdentifier,
+          provider,
+          "rubric-judge",
+        ),
+        1,
+        {
+          model: provider.model,
+          system,
+          prompt: user,
+          temperature,
+          maxOutputTokens: maxTokens,
+          experimental_telemetry: {
+            isEnabled: tracingEnabled,
+            functionId: "rubric_judge_integrity",
+            metadata: {
+              feature: "rubric-judge",
+              persona: "integrity",
+              provider: provider.label,
+              model: provider.modelId,
+            },
           },
         },
-      });
+      );
       const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
         feature: "rubric-judge",
@@ -2085,23 +2335,32 @@ export const judgeSufficiency = action({
       const start = Date.now();
       const temperature = 0.2;
       const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await generateText({
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature,
-        maxOutputTokens: maxTokens,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "rubric_judge_sufficiency",
-          metadata: {
-            feature: "rubric-judge",
-            persona: "sufficiency",
-            provider: provider.label,
-            model: provider.modelId,
+      const { text } = await trackedGenerateText(
+        newHostedUsageCapture(
+          ctx,
+          identity.tokenIdentifier,
+          provider,
+          "rubric-judge",
+        ),
+        1,
+        {
+          model: provider.model,
+          system,
+          prompt: user,
+          temperature,
+          maxOutputTokens: maxTokens,
+          experimental_telemetry: {
+            isEnabled: tracingEnabled,
+            functionId: "rubric_judge_sufficiency",
+            metadata: {
+              feature: "rubric-judge",
+              persona: "sufficiency",
+              provider: provider.label,
+              model: provider.modelId,
+            },
           },
         },
-      });
+      );
       const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
         feature: "rubric-judge",
@@ -2214,23 +2473,32 @@ export const judgeTargetFit = action({
       const start = Date.now();
       const temperature = 0.2;
       const maxTokens = NO_OUTPUT_CEILING;
-      const { text } = await generateText({
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature,
-        maxOutputTokens: maxTokens,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "rubric_judge_target_fit",
-          metadata: {
-            feature: "rubric-judge",
-            persona: "target-fit",
-            provider: provider.label,
-            model: provider.modelId,
+      const { text } = await trackedGenerateText(
+        newHostedUsageCapture(
+          ctx,
+          identity.tokenIdentifier,
+          provider,
+          "rubric-judge",
+        ),
+        1,
+        {
+          model: provider.model,
+          system,
+          prompt: user,
+          temperature,
+          maxOutputTokens: maxTokens,
+          experimental_telemetry: {
+            isEnabled: tracingEnabled,
+            functionId: "rubric_judge_target_fit",
+            metadata: {
+              feature: "rubric-judge",
+              persona: "target-fit",
+              provider: provider.label,
+              model: provider.modelId,
+            },
           },
         },
-      });
+      );
       const visibleText = stripReasoningTags(text);
       await captureServerAiGeneration({
         feature: "rubric-judge",
@@ -2329,23 +2597,32 @@ export const judgeCustomCriterion = action({
     });
 
     try {
-      const { text } = await generateText({
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature: 0.2,
-        maxOutputTokens: NO_OUTPUT_CEILING,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "rubric_judge_custom",
-          metadata: {
-            feature: "rubric-judge",
-            persona: "custom",
-            provider: provider.label,
-            model: provider.modelId,
+      const { text } = await trackedGenerateText(
+        newHostedUsageCapture(
+          ctx,
+          identity.tokenIdentifier,
+          provider,
+          "rubric-judge",
+        ),
+        1,
+        {
+          model: provider.model,
+          system,
+          prompt: user,
+          temperature: 0.2,
+          maxOutputTokens: NO_OUTPUT_CEILING,
+          experimental_telemetry: {
+            isEnabled: tracingEnabled,
+            functionId: "rubric_judge_custom",
+            metadata: {
+              feature: "rubric-judge",
+              persona: "custom",
+              provider: provider.label,
+              model: provider.modelId,
+            },
           },
         },
-      });
+      );
       const parsed = parseJudgeOutput(stripReasoningTags(text));
       await flushArize();
       if (parsed) return { ...parsed, provider: provider.label };
@@ -2427,22 +2704,31 @@ Respond as JSON, and only JSON, in this exact shape:
 {"criteria": [{"label": "<2-5 words>", "description": "<one sentence>"}]}`;
 
     try {
-      const { text } = await generateText({
-        model: provider.model,
-        system,
-        prompt: user,
-        temperature: 0.5,
-        maxOutputTokens: NO_OUTPUT_CEILING,
-        experimental_telemetry: {
-          isEnabled: tracingEnabled,
-          functionId: "rubric_suggest_criteria",
-          metadata: {
-            feature: "rubric-judge",
-            provider: provider.label,
-            model: provider.modelId,
+      const { text } = await trackedGenerateText(
+        newHostedUsageCapture(
+          ctx,
+          identity.tokenIdentifier,
+          provider,
+          "rubric-judge",
+        ),
+        1,
+        {
+          model: provider.model,
+          system,
+          prompt: user,
+          temperature: 0.5,
+          maxOutputTokens: NO_OUTPUT_CEILING,
+          experimental_telemetry: {
+            isEnabled: tracingEnabled,
+            functionId: "rubric_suggest_criteria",
+            metadata: {
+              feature: "rubric-judge",
+              provider: provider.label,
+              model: provider.modelId,
+            },
           },
         },
-      });
+      );
       await flushArize();
       const parsed = parseSuggestedCriteria(stripReasoningTags(text));
       if (parsed.length > 0)
@@ -2555,23 +2841,32 @@ Respond with JSON only: {"score": <int>, "rationale": "<one sentence in your voi
           const start = Date.now();
           const temperature = 0.2;
           const maxTokens = NO_OUTPUT_CEILING;
-          const { text } = await generateText({
-            model: provider.model,
-            system,
-            prompt: user,
-            temperature,
-            maxOutputTokens: maxTokens,
-            experimental_telemetry: {
-              isEnabled: tracingEnabled,
-              functionId: "rubric_judge_room",
-              metadata: {
-                feature: "rubric-judge",
-                persona: persona.id,
-                provider: provider.label,
-                model: provider.modelId,
+          const { text } = await trackedGenerateText(
+            newHostedUsageCapture(
+              ctx,
+              identity.tokenIdentifier,
+              provider,
+              "rubric-judge",
+            ),
+            1,
+            {
+              model: provider.model,
+              system,
+              prompt: user,
+              temperature,
+              maxOutputTokens: maxTokens,
+              experimental_telemetry: {
+                isEnabled: tracingEnabled,
+                functionId: "rubric_judge_room",
+                metadata: {
+                  feature: "rubric-judge",
+                  persona: persona.id,
+                  provider: provider.label,
+                  model: provider.modelId,
+                },
               },
             },
-          });
+          );
           const visibleText = stripReasoningTags(text);
           await captureServerAiGeneration({
             feature: "rubric-judge",
@@ -2631,7 +2926,10 @@ async function runHostedAgent(
   try {
     const identity = await ctx.auth.getUserIdentity();
     const userId = identity?.subject || identity?.tokenIdentifier;
+    if (!identity) throw applicationError("authentication_required");
     return await runLlm(
+      ctx,
+      identity.tokenIdentifier,
       provider,
       req,
       feature,

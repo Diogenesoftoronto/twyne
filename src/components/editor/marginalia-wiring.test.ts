@@ -46,7 +46,9 @@ describe("marginalia interaction wiring", () => {
       "src/components/editor/twyne-editor.tsx",
     ).text();
 
-    expect(editor).toContain("const result = reconcileCommentAnchors(threads, markIds)");
+    expect(editor).toContain(
+      "const result = reconcileCommentAnchors(threads, markIds)",
+    );
     expect(editor).toContain("await deleteUserComments(deletedIds)");
     expect(editor).toContain("api.userComments.deleteComment");
   });
@@ -61,7 +63,9 @@ describe("marginalia interaction wiring", () => {
     expect(editor).toContain("onToggleUserCommentResolved");
     expect(editor).toContain("api.userComments.setCommentResolved");
     expect(editor).toContain("resolved: detail.resolved");
-    expect(editor).toContain("rail comment resolve sync failed");
+    expect(editor).toContain(
+      'reportCommentSyncError("resolve-comment-from-rail", err)',
+    );
   });
 
   test("selection actions preserve the active manuscript range before clicks", async () => {

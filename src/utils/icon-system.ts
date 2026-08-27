@@ -10,6 +10,7 @@ import Diagram from "reicon/icons/Diagram";
 import FileCheck from "reicon/icons/FileCheck";
 import Fullscreen from "reicon/icons/Fullscreen";
 import Grid from "reicon/icons/Grid";
+import History from "reicon/icons/History";
 import Image from "reicon/icons/Image";
 import Keyboard from "reicon/icons/Keyboard";
 import Layout from "reicon/icons/Layout";
@@ -47,6 +48,7 @@ const TWYNE_ICONS = {
   "file-check": FileCheck,
   fullscreen: Fullscreen,
   grid: Grid,
+  history: History,
   image: Image,
   keyboard: Keyboard,
   layout: Layout,
@@ -97,6 +99,7 @@ export const COMPOSITOR_ICONS = {
   comment: "comment-add",
   find: "search",
   grammar: "file-check",
+  history: "history",
   outline: "list",
   keyboard: "keyboard",
   layout: "layout",

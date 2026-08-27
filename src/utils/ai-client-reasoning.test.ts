@@ -8,14 +8,16 @@
  * Nothing breaks; the app is simply twice as slow and twice as expensive on
  * exactly the models that can least afford it.
  */
-import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, mock, test } from "bun:test";
 import { createRequire } from "node:module";
 import type { AiSettings } from "../types";
 import type { AgentRequest } from "../../convex/agentPrompts";
+import type { ClientUsageAttemptInput } from "./usage-ledger";
 
 /** Replies handed to the mocked provider, one per call. */
 let replies: string[] = [];
 let calls: { prompt: string }[] = [];
+let usageAttempts: ClientUsageAttemptInput[] = [];
 
 // These mocks are process-global under Bun's full-suite worker, so re-register
 // them for this file and keep them to a narrow override: spread the real
@@ -59,7 +61,7 @@ mock.module("./ai-evals", () => ({
 // plain `./ai-client` import here can resolve to that mock instead of the
 // real module. Import a private instance — same pattern ai-orchestrator.test.ts
 // and ai-client-browser.test.ts use to stay immune to cross-file mocks.
-const { runClientAgent } = await import(
+const { runClientAgent, setClientUsageRecorderForTests } = await import(
   `./ai-client?ai-client-reasoning-test=${Date.now()}`
 );
 
@@ -103,6 +105,15 @@ function request(): AgentRequest {
 beforeEach(() => {
   replies = [];
   calls = [];
+  usageAttempts = [];
+  setClientUsageRecorderForTests(async (input: ClientUsageAttemptInput) => {
+    usageAttempts.push(structuredClone(input));
+    return null;
+  });
+});
+
+afterEach(() => {
+  setClientUsageRecorderForTests(undefined);
 });
 
 describe("reasoning models do not cost a second call", () => {
@@ -119,6 +130,13 @@ describe("reasoning models do not cost a second call", () => {
     );
 
     expect(calls).toHaveLength(1);
+    expect(usageAttempts).toHaveLength(1);
+    expect(usageAttempts[0]).toMatchObject({
+      requestSent: true,
+      attempt: 1,
+      source: "local",
+      outcome: "completed",
+    });
     expect(result?.text).toBe(
       "The vending machine image earns its keep. The sentence after it does not.",
     );
@@ -139,6 +157,14 @@ describe("reasoning models do not cost a second call", () => {
     );
 
     expect(calls).toHaveLength(2);
+    expect(usageAttempts).toHaveLength(2);
+    expect(usageAttempts.map((attempt) => attempt.attempt)).toEqual([1, 2]);
+    expect(new Set(usageAttempts.map((attempt) => attempt.traceId)).size).toBe(
+      1,
+    );
+    expect(
+      new Set(usageAttempts.map((attempt) => attempt.editorialActionId)).size,
+    ).toBe(1);
     expect(result?.text).toBe("The second paragraph repeats the first.");
   });
 

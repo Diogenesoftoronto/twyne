@@ -191,11 +191,12 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   useVisibleTask$(async ({ track }) => {
     track(() => auth.value.provider);
     track(() => props.activeFolioId);
-    if (auth.value.provider !== "atproto" || !props.activeFolioId) {
+    const did = track(() => auth.value.atproto?.did);
+    if (auth.value.provider !== "atproto" || !props.activeFolioId || !did) {
       pdsResult.value = null;
       return;
     }
-    pdsResult.value = await loadPublishedDocument(props.activeFolioId);
+    pdsResult.value = await loadPublishedDocument(props.activeFolioId, did);
   });
 
   /**

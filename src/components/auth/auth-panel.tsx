@@ -20,6 +20,10 @@ import { normalizeApplicationError } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { ApplicationNotice } from "../ui/application-notice";
 import { captureProductEvent } from "../../utils/product-analytics";
+import {
+  clearAuthAttempt,
+  rememberAuthAttempt,
+} from "../../utils/auth-analytics";
 
 /**
  * The Editor's Office sign-in panel.
@@ -138,7 +142,11 @@ export const AuthPanel = component$(() => {
   const handlePasskeySignIn = $(async () => {
     store.usingPasskey = true;
     store.error = null;
-    void captureProductEvent("sign_in_started", { method: "passkey" });
+    rememberAuthAttempt({ method: "passkey", flow: store.mode });
+    void captureProductEvent("sign_in_started", {
+      method: "passkey",
+      flow: store.mode,
+    });
     try {
       // No `autoFill` here: this is the explicit "use a passkey" button, so we
       // want the modal WebAuthn prompt to open immediately. `autoFill: true`
@@ -153,6 +161,7 @@ export const AuthPanel = component$(() => {
           result.error.code === "PASSKEY_NOT_FOUND" ||
           result.error.code === "AUTH_CANCELLED"
         ) {
+          clearAuthAttempt();
           store.error = null;
           // Our local "passkey" hint was wrong for this device — forget it so
           // we stop offering passkey-first next time.
@@ -171,8 +180,10 @@ export const AuthPanel = component$(() => {
           metadata: { operation: "passkey-sign-in" },
         });
         store.error = normalized;
+        clearAuthAttempt();
         void captureProductEvent("sign_in_failed", {
           method: "passkey",
+          flow: store.mode,
           error_code: normalized.code,
         });
       } else {
@@ -187,8 +198,10 @@ export const AuthPanel = component$(() => {
         metadata: { operation: "passkey-sign-in" },
       });
       store.error = normalized;
+      clearAuthAttempt();
       void captureProductEvent("sign_in_failed", {
         method: "passkey",
+        flow: store.mode,
         error_code: normalized.code,
       });
     } finally {
@@ -218,7 +231,11 @@ export const AuthPanel = component$(() => {
     }
     store.verifyingOtp = true;
     store.error = null;
-    void captureProductEvent("sign_in_started", { method: "email_otp" });
+    rememberAuthAttempt({ method: "email_otp", flow: store.mode });
+    void captureProductEvent("sign_in_started", {
+      method: "email_otp",
+      flow: store.mode,
+    });
     try {
       const result = await (authClient.signIn as any).emailOtp({
         email: store.email,
@@ -233,8 +250,10 @@ export const AuthPanel = component$(() => {
           metadata: { operation: "verify-otp" },
         });
         store.error = normalized;
+        clearAuthAttempt();
         void captureProductEvent("sign_in_failed", {
           method: "email_otp",
+          flow: store.mode,
           error_code: normalized.code,
         });
         return;
@@ -251,8 +270,10 @@ export const AuthPanel = component$(() => {
         metadata: { operation: "verify-otp" },
       });
       store.error = normalized;
+      clearAuthAttempt();
       void captureProductEvent("sign_in_failed", {
         method: "email_otp",
+        flow: store.mode,
         error_code: normalized.code,
       });
     } finally {
@@ -324,7 +345,11 @@ export const AuthPanel = component$(() => {
       return;
     }
     store.usingBluesky = true;
-    void captureProductEvent("sign_in_started", { method: "bluesky" });
+    rememberAuthAttempt({ method: "bluesky", flow: store.mode });
+    void captureProductEvent("sign_in_started", {
+      method: "bluesky",
+      flow: store.mode,
+    });
     try {
       // Redirects to the Bluesky consent screen and completes on return.
       await signInWithBluesky(handle);
@@ -337,8 +362,10 @@ export const AuthPanel = component$(() => {
         metadata: { operation: "atproto-sign-in" },
       });
       store.error = normalized;
+      clearAuthAttempt();
       void captureProductEvent("sign_in_failed", {
         method: "bluesky",
+        flow: store.mode,
         error_code: normalized.code,
       });
       store.usingBluesky = false;

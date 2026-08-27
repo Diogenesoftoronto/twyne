@@ -7,7 +7,10 @@ import {
   type PropFunction,
 } from "@builder.io/qwik";
 import { useConvexClient } from "../../utils/convex-context";
-import { useAuth } from "../../utils/auth-context";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
 import { api } from "../../../convex/_generated/api";
 import {
   promoteToShared,
@@ -84,9 +87,9 @@ export const ShareDialog = component$(
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async ({ track }) => {
       const client = track(clientSig);
-      const user = track(auth).user;
+      const authState = track(auth);
       const folioId = track(() => props.folioId);
-      if (!client || !user) return;
+      if (!client || !hasAuthenticatedConvexIdentity(authState)) return;
 
       // Check if this folio is already shared.
       try {
@@ -112,7 +115,10 @@ export const ShareDialog = component$(
     useVisibleTask$(({ track, cleanup }) => {
       const client = track(clientSig);
       const lixId = track(() => store.lixId);
-      if (!client || !lixId) {
+      const authenticated = track(() =>
+        hasAuthenticatedConvexIdentity(auth.value),
+      );
+      if (!client || !lixId || !authenticated) {
         presenceSig.value = [];
         return;
       }
@@ -143,7 +149,7 @@ export const ShareDialog = component$(
 
     const handleShare = $(async () => {
       const client = clientSig.value;
-      if (!client) return;
+      if (!client || !hasAuthenticatedConvexIdentity(auth.value)) return;
       store.sharing = true;
       store.error = null;
       try {
@@ -173,7 +179,12 @@ export const ShareDialog = component$(
 
     const handleInvite = $(async () => {
       const client = clientSig.value;
-      if (!client || !store.lixId) return;
+      if (
+        !client ||
+        !store.lixId ||
+        !hasAuthenticatedConvexIdentity(auth.value)
+      )
+        return;
       const email = store.inviteEmail.trim();
       if (!email || !email.includes("@")) {
         store.inviteError = null;
@@ -219,7 +230,12 @@ export const ShareDialog = component$(
 
     const handleRemoveCollab = $(async (targetUserId: string) => {
       const client = clientSig.value;
-      if (!client || !store.lixId) return;
+      if (
+        !client ||
+        !store.lixId ||
+        !hasAuthenticatedConvexIdentity(auth.value)
+      )
+        return;
       try {
         await client.mutation(api.collaboration.removeCollaborator, {
           lixId: store.lixId,
@@ -243,7 +259,12 @@ export const ShareDialog = component$(
 
     const handleUnshare = $(async () => {
       const client = clientSig.value;
-      if (!client || !store.lixId) return;
+      if (
+        !client ||
+        !store.lixId ||
+        !hasAuthenticatedConvexIdentity(auth.value)
+      )
+        return;
       try {
         await client.mutation(api.collaboration.unshareFolio, {
           lixId: store.lixId,

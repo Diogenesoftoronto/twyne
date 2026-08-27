@@ -38,10 +38,16 @@ import { computePageGeometry } from "./pagination-geometry";
 import { pxToRem, rootFontSize } from "../../utils/css-units";
 import { exportPdf } from "../../utils/exchange";
 import { buildFolioExportPayload } from "../../utils/folio-export";
-import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import {
+  reportApplicationDiagnostic,
+  reportApplicationError,
+} from "../../utils/application-diagnostics";
 import { detectCitations } from "../../utils/citations";
 import { useConvexClient } from "../../utils/convex-context";
-import { useAuth } from "../../utils/auth-context";
+import {
+  hasAuthenticatedConvexIdentity,
+  useAuth,
+} from "../../utils/auth-context";
 import { DEFAULT_COMPOSITOR_TAB } from "../../utils/compositor-toolbar";
 import {
   recaseTextSegments,
@@ -97,6 +103,7 @@ const REGISTRY_COMMAND_ALIASES: Partial<Record<EditorCommandId, string>> = {
   "table.delete-column": "deleteColumn",
   "table.delete-table": "deleteTable",
 };
+
 import { api } from "../../../convex/_generated/api";
 import {
   loadUserComments,
@@ -196,6 +203,15 @@ import type {
   TwyneEditorProps,
 } from "./editor-state";
 export type { EditorNote, EditorStore } from "./editor-state";
+
+function reportCommentSyncError(operation: string, thrown: unknown): void {
+  reportApplicationError(`twyne:editor:${operation}`, thrown, {
+    source: "convex",
+    title: "Comment sync is paused",
+    dedupeKey: "comment-sync",
+    metadata: { feature: "comments", operation },
+  });
+}
 
 /**
  * Walk every table in the editor mount and ensure the first row of each
@@ -638,7 +654,7 @@ export const TwyneEditor = component$(
                 const deletedIds = result.ghost.map((thread) => thread.id);
                 await deleteUserComments(deletedIds);
                 const client = clientSig.value;
-                if (client) {
+                if (client && hasAuthenticatedConvexIdentity(auth.value)) {
                   await Promise.all(
                     deletedIds.map(async (commentId) => {
                       try {
@@ -646,15 +662,15 @@ export const TwyneEditor = component$(
                           commentId,
                         });
                       } catch (err) {
-                        console.warn(
-                          "[twyne:editor] deleted comment sync failed:",
-                          err,
-                        );
+                        reportCommentSyncError("delete-orphan-comment", err);
                       }
                     }),
                   );
                 }
-                if (store.userCommentPopover?.id && deletedIds.includes(store.userCommentPopover.id)) {
+                if (
+                  store.userCommentPopover?.id &&
+                  deletedIds.includes(store.userCommentPopover.id)
+                ) {
                   store.userCommentPopover = null;
                 }
                 window.dispatchEvent(
@@ -864,10 +880,7 @@ export const TwyneEditor = component$(
         const finishSelectionPointer = () => {
           selectionPointerActive = false;
           document.removeEventListener("pointerup", finishSelectionPointer);
-          document.removeEventListener(
-            "pointercancel",
-            finishSelectionPointer,
-          );
+          document.removeEventListener("pointercancel", finishSelectionPointer);
           // Browser selection and ProseMirror selection settle after pointerup.
           // Waiting one frame makes the menu deterministic for a drag that
           // ends over either text or the manuscript's empty page area.
@@ -879,7 +892,11 @@ export const TwyneEditor = component$(
           document.addEventListener("pointerup", finishSelectionPointer);
           document.addEventListener("pointercancel", finishSelectionPointer);
         };
-        editor.view.dom.addEventListener("pointerdown", beginSelectionPointer, true);
+        editor.view.dom.addEventListener(
+          "pointerdown",
+          beginSelectionPointer,
+          true,
+        );
         cleanup(() => {
           editor.view.dom.removeEventListener(
             "pointerdown",
@@ -2122,7 +2139,7 @@ export const TwyneEditor = component$(
             text: reply.text,
           });
         } catch (err) {
-          console.warn("[twyne:editor] user comment reply sync failed:", err);
+          reportCommentSyncError("add-comment-reply", err);
         }
       }
       // Tell the Marginalia panel (and any other listener) the thread grew.
@@ -2144,14 +2161,14 @@ export const TwyneEditor = component$(
         store.userCommentPopover = { ...popover, resolved: updated.resolved };
       }
       const client = clientSig.value;
-      if (client && updated) {
+      if (client && updated && hasAuthenticatedConvexIdentity(auth.value)) {
         try {
           await client.mutation(api.userComments.setCommentResolved, {
             commentId,
             resolved: updated.resolved,
           });
         } catch (err) {
-          console.warn("[twyne:editor] resolve sync failed:", err);
+          reportCommentSyncError("resolve-comment", err);
         }
       }
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
@@ -2166,11 +2183,11 @@ export const TwyneEditor = component$(
         store.userCommentPopover = null;
       }
       const client = clientSig.value;
-      if (client) {
+      if (client && hasAuthenticatedConvexIdentity(auth.value)) {
         try {
           await client.mutation(api.userComments.deleteComment, { commentId });
         } catch (err) {
-          console.warn("[twyne:editor] delete comment sync failed:", err);
+          reportCommentSyncError("delete-comment", err);
         }
       }
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
@@ -2210,17 +2227,14 @@ export const TwyneEditor = component$(
         ).detail;
         if (!detail?.commentId || typeof detail.resolved !== "boolean") return;
         const client = clientSig.value;
-        if (!client) return;
+        if (!client || !hasAuthenticatedConvexIdentity(auth.value)) return;
         void client
           .mutation(api.userComments.setCommentResolved, {
             commentId: detail.commentId,
             resolved: detail.resolved,
           })
           .catch((err) => {
-            console.warn(
-              "[twyne:editor] rail comment resolve sync failed:",
-              err,
-            );
+            reportCommentSyncError("resolve-comment-from-rail", err);
           });
       };
       window.addEventListener("twyne:delete-user-comment", onDeleteUserComment);
@@ -2269,7 +2283,7 @@ export const TwyneEditor = component$(
             replies: [],
           });
           const client = clientSig.value;
-          if (client && folioId) {
+          if (client && folioId && hasAuthenticatedConvexIdentity(auth.value)) {
             try {
               await client.mutation(api.userComments.addComment, {
                 commentId,
@@ -2279,7 +2293,7 @@ export const TwyneEditor = component$(
                 anchor,
               });
             } catch (err) {
-              console.warn("[twyne:editor] addComment sync failed:", err);
+              reportCommentSyncError("add-comment", err);
             }
           }
           // The Marginalia panel lives in a sibling component and watches
@@ -2780,6 +2794,9 @@ export const TwyneEditor = component$(
           break;
         case "redo":
           chain.redo().run();
+          break;
+        case "versionHistory":
+          await onEditorialContext$?.("history");
           break;
         case "insertTable":
           chain.insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();

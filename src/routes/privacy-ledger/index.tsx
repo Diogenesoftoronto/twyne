@@ -116,24 +116,15 @@ export default component$(() => {
           ))}
         </section>
 
-        <footer class="mt-6 flex flex-wrap gap-4 text-sm">
-          <Link
-            class="text-[var(--color-vermilion)] hover:underline"
-            href="/settings/"
-          >
-            Change settings
+        <footer class="mt-6 flex flex-wrap items-center gap-3">
+          <Link class="btn-press" href="/settings/">
+            Review privacy settings
           </Link>
-          <Link
-            class="text-[var(--color-vermilion)] hover:underline"
-            href="/privacy/"
-          >
+          <Link class="btn-paper" href="/privacy/">
             Read the privacy policy
           </Link>
-          <Link
-            class="text-[var(--color-vermilion)] hover:underline"
-            href="/editor/"
-          >
-            Back to editor
+          <Link class="btn-paper" href="/editor/">
+            Return to editor
           </Link>
         </footer>
       </div>

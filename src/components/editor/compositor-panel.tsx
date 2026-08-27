@@ -820,6 +820,23 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
           <div
             class="compositor-group"
             data-compositor-tab="review"
+            data-group-label="Versions"
+            role="group"
+            aria-label="Versions"
+          >
+            <button
+              title="Compare and restore manuscript checkpoints"
+              aria-label="Open version history"
+              onClick$={() => runCommand("versionHistory")}
+              class="tool-btn"
+            >
+              <Icon name={COMPOSITOR_ICONS.history} size={16} /> Version history
+            </button>
+          </div>
+
+          <div
+            class="compositor-group"
+            data-compositor-tab="review"
             data-group-label="Proofing"
             role="group"
             aria-label="Proofing"

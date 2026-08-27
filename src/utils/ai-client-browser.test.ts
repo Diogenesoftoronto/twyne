@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, mock, test } from "bun:test";
 import type { AiProviderConfig, AiSettings } from "../types";
+import type { ClientUsageAttemptInput } from "./usage-ledger";
 
 /**
  * The synthesis module is loaded through a dynamic import inside
@@ -26,12 +27,11 @@ const {
   normalizeAiSettings,
   providerSupportsFeature,
   runClientVoiceSpeech,
+  setClientUsageRecorderForTests,
   stripManagedSupertonicProvider,
 } = await import(`./ai-client?ai-client-browser-test=${Date.now()}`);
-const {
-  BROWSER_TTS_PROVIDER_ID,
-  setBrowserTtsCapabilityOverride,
-} = await import("./browser-inference");
+const { BROWSER_TTS_PROVIDER_ID, setBrowserTtsCapabilityOverride } =
+  await import("./browser-inference");
 
 /** A settings box with nothing configured but the browser's own voice. */
 function browserOnlySettings(): AiSettings {
@@ -63,6 +63,7 @@ function browserVoiceSettings(): AiSettings {
 }
 
 afterEach(() => {
+  setClientUsageRecorderForTests(undefined);
   setBrowserTtsCapabilityOverride(undefined);
   synthesizeImpl = undefined;
   mock.restore();
@@ -109,9 +110,7 @@ describe("browser Supertonic provider auto-registration", () => {
 
   test("is narration-capable but never transcription-capable", () => {
     setBrowserTtsCapabilityOverride("wasm");
-    expect(providerSupportsFeature("supertonic", "voice-narration")).toBe(
-      true,
-    );
+    expect(providerSupportsFeature("supertonic", "voice-narration")).toBe(true);
     expect(providerSupportsFeature("supertonic", "voice-transcription")).toBe(
       false,
     );
@@ -164,6 +163,11 @@ describe("client voice speech with the browser voice", () => {
       responseFormat: "wav",
     }));
     synthesizeImpl = synthesize;
+    const usageAttempts: ClientUsageAttemptInput[] = [];
+    setClientUsageRecorderForTests(async (input: ClientUsageAttemptInput) => {
+      usageAttempts.push(structuredClone(input));
+      return null;
+    });
 
     const result = await runClientVoiceSpeech(
       { text: "Read this passage." },
@@ -177,6 +181,16 @@ describe("client voice speech with the browser voice", () => {
       "Read this passage.",
       expect.objectContaining({ speed: undefined }),
     );
+    expect(usageAttempts).toHaveLength(1);
+    expect(usageAttempts[0]).toMatchObject({
+      requestSent: true,
+      source: "local",
+      feature: "voice-narration",
+      provider: "supertonic",
+      model: "supertonic-tts",
+      outcome: "completed",
+    });
+    expect(usageAttempts[0].usage).toBeUndefined();
   });
 
   test("surfaces download-required when the pack is not on disk", async () => {
@@ -190,7 +204,10 @@ describe("client voice speech with the browser voice", () => {
       );
 
     await expect(
-      runClientVoiceSpeech({ text: "Read this passage." }, browserVoiceSettings()),
+      runClientVoiceSpeech(
+        { text: "Read this passage." },
+        browserVoiceSettings(),
+      ),
     ).rejects.toThrowError(/pack needed/);
   });
 });

@@ -7,6 +7,8 @@
  * normaliser can afford to import on every mount.
  */
 
+import type { AiProviderConfig } from "../types";
+
 /** Stable provider id for the auto-registered browser voice provider. */
 export const BROWSER_TTS_PROVIDER_ID = "browser-supertonic";
 
@@ -49,7 +51,9 @@ export const BROWSER_TTS_MANIFEST = [
   ["onnx/latent_denoiser.onnx_data", 132_098_880],
   ["onnx/voice_decoder.onnx", 59_921],
   ["onnx/voice_decoder.onnx_data", 101_353_472],
-  ...BROWSER_TTS_VOICES.map((voice) => [`voices/${voice}.bin`, 51_712] as const),
+  ...BROWSER_TTS_VOICES.map(
+    (voice) => [`voices/${voice}.bin`, 51_712] as const,
+  ),
 ] as const;
 
 export const BROWSER_TTS_MANIFEST_FILES = BROWSER_TTS_MANIFEST.map(
@@ -63,6 +67,43 @@ export const BROWSER_TTS_BUNDLE_BYTES = BROWSER_TTS_MANIFEST_FILES.reduce(
 );
 
 export type BrowserTtsDevice = "webgpu" | "wasm" | null;
+
+export type ClientUsageSource = "byok" | "local";
+
+const LOCAL_INFERENCE_PROVIDER_TYPES = new Set<AiProviderConfig["type"]>([
+  "litert",
+  "ollama",
+  "supertonic",
+]);
+
+function isLoopbackUrl(value: string | undefined): boolean {
+  if (!value) return false;
+  try {
+    const hostname = new URL(value).hostname.toLowerCase();
+    return (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1" ||
+      hostname === "[::1]" ||
+      hostname.endsWith(".localhost")
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Classify billing semantics, not transport. On-device and loopback models are
+ * local even though LiteRT/Ollama speak an OpenAI-compatible HTTP protocol.
+ */
+export function clientUsageSourceForProvider(
+  provider: Pick<AiProviderConfig, "type" | "baseUrl">,
+): ClientUsageSource {
+  return LOCAL_INFERENCE_PROVIDER_TYPES.has(provider.type) ||
+    isLoopbackUrl(provider.baseUrl)
+    ? "local"
+    : "byok";
+}
 
 /**
  * Test seam: lets a test pin the probe result instead of racing the rest of
@@ -94,7 +135,5 @@ export function isBrowserTtsSupported(): boolean {
   if (capabilityOverride !== undefined) return capabilityOverride !== null;
   // The model lands in IndexedDB, so a browser without it cannot hold the
   // pack — the download path is the whole point of the browser voice.
-  return (
-    browserTtsDevice() !== null && typeof indexedDB !== "undefined"
-  );
+  return browserTtsDevice() !== null && typeof indexedDB !== "undefined";
 }
