@@ -105,7 +105,7 @@
     "@better-auth/passkey": "^1.6.9",
     "@convex-dev/better-auth": "^0.12.0",
     "@huggingface/transformers": "^4.2.0",
-    "@lix-js/plugin-json": "0.1.8",
+    "@lix-js/plugin-json": "file:packages/lix-plugin-json",
     "@lix-js/sdk": "0.4.10",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@opentelemetry/api": "^1.9.1",

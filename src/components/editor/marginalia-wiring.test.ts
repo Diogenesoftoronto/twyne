@@ -84,8 +84,10 @@ describe("marginalia interaction wiring", () => {
 
     expect(editor).toContain("const finishSelectionPointer = () =>");
     expect(editor).toContain("requestAnimationFrame(refreshSelectionAction)");
-    expect(editor).toContain('editor.view.dom.addEventListener("pointerdown"');
-    expect(editor).toContain('document.addEventListener("pointerup"');
+    expect(editor).toMatch(
+      /editor\.view\.dom\.addEventListener\(\s*"pointerdown"/,
+    );
+    expect(editor).toMatch(/document\.addEventListener\(\s*"pointerup"/);
   });
 
   test("writer margins use the same hover-preview path as persona notes", async () => {

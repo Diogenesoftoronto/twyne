@@ -1,6 +1,8 @@
 # Build
 /dist
 packages/*/dist
+!packages/lix-plugin-json/dist/
+!packages/lix-plugin-json/dist/**
 /lib
 /lib-types
 /release
