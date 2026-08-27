@@ -14,7 +14,7 @@
         "@better-auth/passkey": "^1.6.9",
         "@convex-dev/better-auth": "^0.12.0",
         "@huggingface/transformers": "^4.2.0",
-        "@lix-js/plugin-json": "0.1.8",
+        "@lix-js/plugin-json": "file:packages/lix-plugin-json",
         "@lix-js/sdk": "0.4.10",
         "@modelcontextprotocol/sdk": "^1.30.0",
         "@opentelemetry/api": "^1.9.1",
@@ -489,7 +489,7 @@
 
     "@lit/reactive-element": ["@lit/reactive-element@2.1.2", "", { "dependencies": { "@lit-labs/ssr-dom-shim": "^1.5.0" } }, "sha512-pbCDiVMnne1lYUIaYNN5wrwQXDtHaYtg7YEFPeW+hws6U47WeFvISGUWekPGKWOP1ygrs0ef0o1VJMk1exos5A=="],
 
-    "@lix-js/plugin-json": ["@lix-js/plugin-json@0.1.8", "", { "dependencies": { "@lix-js/sdk": "0.4.7", "flat": "^6.0.1", "lit": "^3.2.1" } }, "sha512-Oi5dpPR5sYFzZlfy/tshlWjkbWokLmwEjQ4hlyb4yDb+mPo4MvtuKrdaTpLkzu9iAIz47sfqQEcT/Ng7XxYjPQ=="],
+    "@lix-js/plugin-json": ["@lix-js/plugin-json@file:packages/lix-plugin-json", { "dependencies": { "@lix-js/sdk": "0.4.7", "flat": "^6.0.1", "lit": "^3.2.1" } }],
 
     "@lix-js/sdk": ["@lix-js/sdk@0.4.10", "", { "dependencies": { "@lix-js/server-protocol-schema": "0.1.1", "dedent": "1.5.1", "human-id": "^4.1.1", "js-sha256": "^0.11.0", "kysely": "^0.28.12", "sqlite-wasm-kysely": "0.3.0", "uuid": "^14.0.0" } }, "sha512-0dMInAJK/67guTG5rRZaCEhvzC5cCXENOjaePA5AqMXrCE97kaY7SRor9e2vnoGsFIiGqXKlT0MCIoZj36G0gg=="],
 
