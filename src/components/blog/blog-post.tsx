@@ -32,7 +32,7 @@ export const BlogPost = component$<BlogPostProps>(
           <div class="mx-auto max-w-2xl px-6 pt-10 pb-6">
             <p class="text-center">
               <Link
-                href="/blog"
+                href="/blog/"
                 class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
                 style="font-family: var(--font-typewriter);"
               >
@@ -81,7 +81,7 @@ export const BlogPost = component$<BlogPostProps>(
               </p>
               <p class="mt-4">
                 <Link
-                  href="/blog"
+                  href="/blog/"
                   class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-vermilion)] hover:underline"
                   style="font-family: var(--font-typewriter);"
                 >

@@ -36,10 +36,14 @@ describe("public profile statistics boundary", () => {
     expect(profileSource).toContain("folioCount?: number");
   });
 
-  test("keeps the missing-profile response and generic metadata shape", () => {
+  test("keeps the missing-profile response and crawl-safe metadata shape", () => {
     expect(profileSource).toContain("No writer by that handle.");
+    expect(profileSource).toContain("status(404)");
     expect(profileSource).toContain(
-      'Writing by @${params.handle ?? ""} on Twyne.',
+      'loadedProfile.value.status === "unavailable"',
+    );
+    expect(profileSource).toContain(
+      "Published writing by @${handle} on Twyne.",
     );
     const headSource = profileSource.slice(
       profileSource.indexOf("export const head"),

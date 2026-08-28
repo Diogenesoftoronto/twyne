@@ -19,7 +19,7 @@ const PRIVATE_ROUTE_ROOTS = new Set([
 /** Canonicals always identify the public origin and never preserve tracking. */
 export function canonicalUrl(url: URL): string {
   const path =
-    url.pathname === "/" ? "/" : url.pathname.replace(/\/+$/, "") || "/";
+    url.pathname === "/" ? "/" : `${url.pathname.replace(/\/+$/, "")}/`;
   return new URL(path, TWYNE_SITE_ORIGIN).href;
 }
 

@@ -5,13 +5,13 @@ import { api } from "../../../convex/_generated/api";
 const SITE_ORIGIN = "https://twyne.love";
 const STATIC_PATHS = [
   "/",
-  "/docs",
-  "/faq",
-  "/pricing",
-  "/blog",
-  "/downloads",
-  "/terms",
-  "/privacy",
+  "/docs/",
+  "/faq/",
+  "/pricing/",
+  "/blog/",
+  "/downloads/",
+  "/terms/",
+  "/privacy/",
 ] as const;
 
 type SitemapEntry = {
@@ -52,9 +52,9 @@ async function publicEntries(): Promise<SitemapEntry[]> {
     return rows.flatMap((row) => {
       const path =
         row.kind === "blog"
-          ? `/blog/${encodeURIComponent(row.slug)}`
+          ? `/blog/${encodeURIComponent(row.slug)}/`
           : row.ownerHandle
-            ? `/${encodeURIComponent(row.ownerHandle)}/${encodeURIComponent(row.slug)}`
+            ? `/${encodeURIComponent(row.ownerHandle)}/${encodeURIComponent(row.slug)}/`
             : null;
       return path ? [{ path, lastmod: row.updatedAt }] : [];
     });

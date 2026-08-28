@@ -15,7 +15,7 @@ describe("Twyne search metadata", () => {
       canonicalUrl(
         new URL("https://preview.example/docs/?utm_source=test#shortcuts"),
       ),
-    ).toBe(`${TWYNE_SITE_ORIGIN}/docs`);
+    ).toBe(`${TWYNE_SITE_ORIGIN}/docs/`);
     expect(canonicalUrl(new URL("http://localhost:5173/"))).toBe(
       `${TWYNE_SITE_ORIGIN}/`,
     );
@@ -63,17 +63,17 @@ describe("crawler discovery files", () => {
   test("sitemap renders static and dynamic public URLs as absolute URLs", () => {
     const xml = sitemap.renderSitemap([
       { path: "/" },
-      { path: "/blog/field-notes", lastmod: Date.parse("2026-08-24") },
-      { path: "/writer/a%26b" },
+      { path: "/blog/field-notes/", lastmod: Date.parse("2026-08-24") },
+      { path: "/writer/a%26b/" },
     ]);
     expect(xml).toContain(`<loc>${TWYNE_SITE_ORIGIN}/</loc>`);
     expect(xml).toContain(
-      `<loc>${TWYNE_SITE_ORIGIN}/blog/field-notes</loc>`,
+      `<loc>${TWYNE_SITE_ORIGIN}/blog/field-notes/</loc>`,
     );
     expect(xml).toContain(
       `<lastmod>2026-08-24T00:00:00.000Z</lastmod>`,
     );
-    expect(xml).toContain(`${TWYNE_SITE_ORIGIN}/writer/a%26b`);
+    expect(xml).toContain(`${TWYNE_SITE_ORIGIN}/writer/a%26b/`);
     expect(xml).not.toContain("localhost");
   });
 

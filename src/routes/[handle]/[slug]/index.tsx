@@ -47,11 +47,16 @@ interface PublishedPiece {
 }
 
 export const usePublishedPiece = routeLoader$(
-  async ({ params }): Promise<PublishedPieceLoaderData> => {
+  async ({ params, status }): Promise<PublishedPieceLoaderData> => {
     const handle = (params.handle ?? "").toLowerCase();
     const slug = params.slug ?? "";
-    if (!handle || !slug) return { piece: null, status: "loaded" };
-    return loadPublishedPieceByHandleAndSlug(handle, slug);
+    if (!handle || !slug) {
+      status(404);
+      return { piece: null, status: "loaded" };
+    }
+    const result = await loadPublishedPieceByHandleAndSlug(handle, slug);
+    if (result.status === "loaded" && !result.piece) status(404);
+    return result;
   },
 );
 
@@ -121,7 +126,7 @@ export default component$(() => {
           <p class="text-center">
             {ownerHandle.value && (
               <Link
-                href={`/${ownerHandle.value}`}
+                href={`/${ownerHandle.value}/`}
                 class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
                 style="font-family: var(--font-typewriter);"
               >
@@ -208,7 +213,7 @@ export default component$(() => {
             {ownerHandle.value && (
               <p class="mt-12 pt-6 border-t border-dashed border-[var(--color-paper-3)]">
                 <Link
-                  href={`/${ownerHandle.value}`}
+                  href={`/${ownerHandle.value}/`}
                   class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-light)] hover:text-[var(--color-vermilion)]"
                   style="font-family: var(--font-typewriter);"
                 >

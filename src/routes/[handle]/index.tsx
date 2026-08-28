@@ -12,13 +12,22 @@
  */
 
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { type DocumentHead, useLocation, Link } from "@builder.io/qwik-city";
+import {
+  type DocumentHead,
+  useLocation,
+  Link,
+  routeLoader$,
+} from "@builder.io/qwik-city";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import {
   WritingHeatmap,
   type ActivityDay,
 } from "../../components/profile/writing-heatmap";
+import {
+  loadPublicWriterProfile,
+  type PublicWriterProfileLoaderData,
+} from "../../utils/published-metadata";
 
 interface Profile {
   handle: string;
@@ -48,14 +57,31 @@ interface PublicProfileStats {
   folioCountTruncated?: boolean;
 }
 
+export const useWriterProfile = routeLoader$(
+  async ({ params, status }): Promise<PublicWriterProfileLoaderData> => {
+    const handle = (params.handle ?? "").toLowerCase();
+    if (!handle) {
+      status(404);
+      return { profile: null, posts: [], status: "loaded" };
+    }
+
+    const result = await loadPublicWriterProfile(handle);
+    if (result.status === "loaded" && !result.profile) status(404);
+    return result;
+  },
+);
+
 export default component$(() => {
+  const loadedProfile = useWriterProfile();
   const loc = useLocation();
   const clientSig = useConvexClient();
-  const profile = useSignal<Profile | null>(null);
-  const posts = useSignal<PublishedSummary[]>([]);
+  const profile = useSignal<Profile | null>(loadedProfile.value.profile);
+  const posts = useSignal<PublishedSummary[]>(loadedProfile.value.posts);
   const publicStats = useSignal<PublicProfileStats | null>(null);
-  const isLoading = useSignal(true);
-  const missing = useSignal(false);
+  const isLoading = useSignal(loadedProfile.value.status === "unavailable");
+  const missing = useSignal(
+    loadedProfile.value.status === "loaded" && !loadedProfile.value.profile,
+  );
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
@@ -66,6 +92,14 @@ export default component$(() => {
       return;
     }
     try {
+      if (loadedProfile.value.status === "loaded") {
+        publicStats.value = await client.query(api.usage.getPublicStats, {
+          handle,
+          now: Date.now(),
+        });
+        return;
+      }
+
       const [profileData, postData, statsData] = await Promise.all([
         client.query(api.profiles.getProfile, {
           handle,
@@ -87,7 +121,9 @@ export default component$(() => {
       posts.value = postData;
       publicStats.value = statsData;
     } catch {
-      missing.value = true;
+      if (loadedProfile.value.status === "unavailable") {
+        missing.value = true;
+      }
     } finally {
       isLoading.value = false;
     }
@@ -263,7 +299,7 @@ export default component$(() => {
                   style="font-family: var(--font-display); font-weight: 700;"
                 >
                   <Link
-                    href={`/${handle}/${post.slug}`}
+                    href={`/${handle}/${post.slug}/`}
                     class="hover:text-[var(--color-vermilion)]"
                   >
                     {post.title}
@@ -294,13 +330,22 @@ function formatDate(timestamp: number): string {
   });
 }
 
-export const head: DocumentHead = ({ params }) => ({
-  title: `Twyne · @${params.handle ?? "writer"}`,
-  meta: [
-    {
-      name: "description",
-      content: `Writing by @${params.handle ?? ""} on Twyne.`,
-    },
-    { property: "og:title", content: `Twyne · @${params.handle ?? "writer"}` },
-  ],
-});
+export const head: DocumentHead = ({ params, resolveValue }) => {
+  const { profile } = resolveValue(useWriterProfile);
+  const handle = profile?.handle ?? params.handle ?? "writer";
+  const byline = profile?.displayName
+    ? `${profile.displayName} (@${handle})`
+    : `@${handle}`;
+  const title = `${byline} — Writing on Twyne`;
+  const description =
+    profile?.bio?.trim() || `Published writing by @${handle} on Twyne.`;
+
+  return {
+    title,
+    meta: [
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+    ],
+  };
+};
