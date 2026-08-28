@@ -38,10 +38,15 @@ interface BlogPostData {
 }
 
 export const useBlogPost = routeLoader$(
-  async ({ params }): Promise<PublishedPieceLoaderData> => {
+  async ({ params, status }): Promise<PublishedPieceLoaderData> => {
     const slug = params.slug ?? "";
-    if (!slug) return { piece: null, status: "loaded" };
-    return loadBlogPieceBySlug(slug);
+    if (!slug) {
+      status(404);
+      return { piece: null, status: "loaded" };
+    }
+    const result = await loadBlogPieceBySlug(slug);
+    if (result.status === "loaded" && !result.piece) status(404);
+    return result;
   },
 );
 

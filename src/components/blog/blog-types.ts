@@ -10,5 +10,4 @@ export interface PublicBlogPost {
   authorName: string | null;
   briefSummary: string | null;
   publishedAt: number;
-  updatedAt: number;
 }

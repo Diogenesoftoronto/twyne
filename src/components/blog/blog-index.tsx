@@ -95,7 +95,7 @@ export const BlogIndex = component$<BlogIndexProps>(
               {posts.map((post) => (
                 <li key={post.slug}>
                   <Link
-                    href={`/blog/${post.slug}`}
+                    href={`/blog/${post.slug}/`}
                     class="block group focus-ring"
                   >
                     <p

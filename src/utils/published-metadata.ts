@@ -18,6 +18,41 @@ export interface PublishedPieceLoaderData {
   status: "loaded" | "unavailable";
 }
 
+export interface PublicBlogPostMetadata {
+  slug: string;
+  ownerHandle: string | null;
+  title: string;
+  authorName: string | null;
+  briefSummary: string | null;
+  publishedAt: number;
+}
+
+export interface PublicBlogIndexLoaderData {
+  posts: PublicBlogPostMetadata[];
+  status: "loaded" | "unavailable";
+}
+
+export interface PublicWriterProfileMetadata {
+  handle: string;
+  displayName: string | null;
+  bio: string | null;
+  avatarUrl: string | null;
+}
+
+export interface PublicWriterPostMetadata {
+  slug: string;
+  ownerHandle: string | null;
+  title: string;
+  briefSummary: string | null;
+  publishedAt: number;
+}
+
+export interface PublicWriterProfileLoaderData {
+  profile: PublicWriterProfileMetadata | null;
+  posts: PublicWriterPostMetadata[];
+  status: "loaded" | "unavailable";
+}
+
 const DEFAULT_ARTICLE_DESCRIPTION = "A piece published on Twyne.";
 const DEFAULT_BLOG_DESCRIPTION = "A Twyne field note.";
 
@@ -33,6 +68,40 @@ function getConvexUrl(): string | undefined {
 function publishedClient(): ConvexHttpClient | null {
   const convexUrl = getConvexUrl();
   return convexUrl ? new ConvexHttpClient(convexUrl) : null;
+}
+
+export async function loadPublicBlogPosts(
+  limit = 50,
+): Promise<PublicBlogIndexLoaderData> {
+  const client = publishedClient();
+  if (!client) return { posts: [], status: "unavailable" };
+
+  try {
+    const posts = await client.query(api.published.listBlog, { limit });
+    return { posts, status: "loaded" };
+  } catch {
+    return { posts: [], status: "unavailable" };
+  }
+}
+
+export async function loadPublicWriterProfile(
+  handle: string,
+): Promise<PublicWriterProfileLoaderData> {
+  const client = publishedClient();
+  if (!client) {
+    return { profile: null, posts: [], status: "unavailable" };
+  }
+
+  try {
+    const normalizedHandle = handle.toLowerCase();
+    const [profile, posts] = await Promise.all([
+      client.query(api.profiles.getProfile, { handle: normalizedHandle }),
+      client.query(api.published.listByHandle, { handle: normalizedHandle }),
+    ]);
+    return { profile, posts, status: "loaded" };
+  } catch {
+    return { profile: null, posts: [], status: "unavailable" };
+  }
 }
 
 export async function loadPublishedPieceByHandleAndSlug(

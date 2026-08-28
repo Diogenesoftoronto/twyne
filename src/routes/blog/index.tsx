@@ -1,9 +1,9 @@
 /**
  * The blog index. A reverse-chronological stream of admin-authored
  * posts (`kind: "blog"` in the `published` table). The feed is
- * public — no auth — and fetched on the client (the project
- * has no Convex SSR bridge yet). Once a server-side client is
- * wired up, this can be promoted to `routeLoader$` for SEO.
+ * public — no auth — and fetched by a route loader so post links are present
+ * in the initial HTML. The client retries only when that server read is
+ * temporarily unavailable.
  *
  * Layout: editorial masthead on top, then a single column of
  * post cards. Each card is a link to `/blog/[slug]`. The page
@@ -13,7 +13,7 @@
  */
 
 import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { type DocumentHead } from "@builder.io/qwik-city";
+import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { BlogIndex } from "../../components/blog/blog-index";
@@ -23,15 +23,26 @@ import {
   normalizeApplicationError,
 } from "../../utils/application-errors";
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
+import {
+  loadPublicBlogPosts,
+  type PublicBlogIndexLoaderData,
+} from "../../utils/published-metadata";
+
+export const useBlogPosts = routeLoader$(
+  async (): Promise<PublicBlogIndexLoaderData> => loadPublicBlogPosts(),
+);
 
 export default component$(() => {
+  const loadedPosts = useBlogPosts();
   const clientSig = useConvexClient();
-  const posts = useSignal<PublicBlogPost[]>([]);
-  const isLoading = useSignal(true);
+  const posts = useSignal<PublicBlogPost[]>(loadedPosts.value.posts);
+  const isLoading = useSignal(loadedPosts.value.status === "unavailable");
   const errored = useSignal<string | null>(null);
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ cleanup }) => {
+    if (loadedPosts.value.status === "loaded") return;
+
     const client = clientSig.value;
     if (!client) {
       // Convex client isn't ready yet — bail and let the
@@ -46,19 +57,9 @@ export default component$(() => {
       return;
     }
     try {
-      // The `listBlog` query is registered in `convex/published.ts`
-      // but the generated `api.d.ts` predates it. A type cast
-      // keeps the wire shape correct without forcing a
-      // Convex regeneration — the next `npx convex dev` will
-      // pick the function up and the cast becomes redundant.
-      const data = await (
-        client.query as unknown as (
-          ref: unknown,
-          args: { limit?: number },
-        ) => Promise<PublicBlogPost[]>
-      )((api.published as unknown as { listBlog: unknown }).listBlog, {
+      const data = (await client.query(api.published.listBlog, {
         limit: 50,
-      });
+      })) as PublicBlogPost[];
       posts.value = data;
     } catch (err) {
       reportApplicationDiagnostic("twyne:blog:load-index", err, {
