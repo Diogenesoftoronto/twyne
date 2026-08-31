@@ -162,14 +162,18 @@ the `TWYNE_DESKTOP_URL` dev override, and platform caveats.
 
 ## Releases
 
-Releases use Bumpy bump files to generate changelog entries and version tags.
-The repo installs a `pre-push` hook on `bun install` that runs
-`bumpy check --hook pre-push`.
+Versioning uses Bun's package manager. `bun pm version` requires a clean working
+tree, updates `package.json`, and creates the version commit and `v<version>` tag.
+The `preversion`, `postversion`, and pre-push hooks run the same dependency-free
+release check so the package version, annotated tag, and tagged manifest cannot
+drift apart.
 
 ```bash
-bun run release:add      # add a bump file for a change
-bun run release:version  # consume bump files, update CHANGELOG.md, bump version
-bun run release:publish  # create git tags and GitHub releases
+bun run release:version patch  # or minor, major, prerelease, or an exact version
+bun run release:publish        # push the version commit and tag
+bun run release:check          # verify package.json and the corresponding tag
 ```
 
-Tagged releases are built by GitHub Actions. Each release uploads a `twyne-<version>.tar.gz` bundle containing the source, lockfile, production build output, and server entry point so people can download and run that version.
+The pushed tag triggers GitHub Actions, which generates the GitHub release notes
+and uploads a `twyne-<version>.tar.gz` bundle containing the source, lockfile,
+production build output, and server entry point.
