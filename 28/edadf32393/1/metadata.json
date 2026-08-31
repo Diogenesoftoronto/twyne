@@ -1,0 +1,83 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "28edadf32393",
+  "session_id": "01a05544-7ed1-7ed1-ae02-e54bc55f4c73",
+  "strategy": "manual-commit",
+  "created_at": "2026-08-31T01:49:41.252736049Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    ".bumpy/_config.json",
+    ".bumpy/release-0.18.0-install-fix.md",
+    ".bumpy/release-0.18.0.md",
+    ".bumpy/wide-red-swift.md",
+    ".githooks/pre-push.pre-entire",
+    "README.md",
+    "bun.lock",
+    "package.json",
+    "scripts/check-release-version.ts",
+    "stryker.config.json"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-sol",
+  "turn_id": "eeaf5199369c",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 166876,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2709760,
+    "output_tokens": 22915,
+    "api_call_count": 51
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-08-31T01:49:41.218774476Z",
+    "agent_lines": 42,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 40,
+    "total_committed": 42,
+    "total_lines_changed": 82,
+    "agent_percentage": 51.21951219512195,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 24,
+      "user_lines_removed": 52,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "README.md": 7,
+        "devenv.lock": 10,
+        "devenv.nix": 5,
+        "package.json": 2
+      },
+      "user_removed_per_file": {
+        ".bumpy/_config.json": 10,
+        ".bumpy/release-0.18.0-install-fix.md": 2,
+        ".bumpy/release-0.18.0.md": 2,
+        ".bumpy/wide-red-swift.md": 5,
+        ".githooks/pre-push.pre-entire": 4,
+        "README.md": 7,
+        "bun.lock": 3,
+        "devenv.lock": 10,
+        "devenv.nix": 2,
+        "package.json": 6,
+        "stryker.config.json": 1
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 106,
+      "agent_lines_removed": 49
+    }
+  ]
+}

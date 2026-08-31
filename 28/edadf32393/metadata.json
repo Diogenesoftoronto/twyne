@@ -3,11 +3,18 @@
   "checkpoint_id": "28edadf32393",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 2,
   "files_touched": [
+    ".bumpy/_config.json",
     ".bumpy/release-0.18.0-install-fix.md",
     ".bumpy/release-0.18.0.md",
-    "package.json"
+    ".bumpy/wide-red-swift.md",
+    ".githooks/pre-push.pre-entire",
+    "README.md",
+    "bun.lock",
+    "package.json",
+    "scripts/check-release-version.ts",
+    "stryker.config.json"
   ],
   "sessions": [
     {
@@ -16,13 +23,20 @@
       "compact_transcript": "/28/edadf32393/0/transcript.jsonl",
       "content_hash": "/28/edadf32393/0/content_hash.txt",
       "prompt": "/28/edadf32393/0/prompt.txt"
+    },
+    {
+      "metadata": "/28/edadf32393/1/metadata.json",
+      "transcript": "/28/edadf32393/1/full.jsonl",
+      "compact_transcript": "/28/edadf32393/1/transcript.jsonl",
+      "content_hash": "/28/edadf32393/1/content_hash.txt",
+      "prompt": "/28/edadf32393/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 289440,
+    "input_tokens": 456316,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 16285440,
-    "output_tokens": 33506,
-    "api_call_count": 125
+    "cache_read_tokens": 18995200,
+    "output_tokens": 56421,
+    "api_call_count": 176
   }
 }

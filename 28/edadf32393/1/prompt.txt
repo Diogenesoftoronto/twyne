@@ -1,0 +1,5 @@
+can you use bun pm version instead of .bumpy file for managing version so that we can get rid of dependency here
+
+---
+
+make sure that there are still hooks for all this as well
