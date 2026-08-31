@@ -10,7 +10,6 @@
   "_ignoreComment": "Agent tool dirs (.claude/.crush/.factory/.pi/...) hold symlinked skill folders that break Stryker's sandbox file copy (EISDIR). Ignore every root dot-dir except none-needed, plus build outputs and generated code, so the sandbox stays small and copy-safe.",
   "ignorePatterns": [
     ".agents",
-    ".bumpy",
     ".claude",
     ".codex",
     ".convex",
