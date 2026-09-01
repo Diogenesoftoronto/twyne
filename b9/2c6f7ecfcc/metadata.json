@@ -3,12 +3,14 @@
   "checkpoint_id": "b92c6f7ecfcc",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 5,
+  "checkpoints_count": 7,
   "files_touched": [
     "devenv.lock",
     "devenv.nix",
     "src/components/auth/account-menu.tsx",
     "src/components/auth/auth-panel.tsx",
+    "src/components/blog/blog-index.tsx",
+    "src/components/blog/blog-post.tsx",
     "src/components/desk/chart-table.tsx",
     "src/components/desk/daily-activity-chart.tsx",
     "src/components/desk/data-controls.tsx",
@@ -23,11 +25,15 @@
     "src/components/folio/folio-menu.tsx",
     "src/components/profile/writing-heatmap.tsx",
     "src/root.tsx",
+    "src/routes/[handle]/[slug]/index.tsx",
     "src/routes/[handle]/index.tsx",
+    "src/routes/blog/[slug]/index.tsx",
+    "src/routes/blog/index.tsx",
     "src/routes/desk/index.tsx",
     "src/routes/editor/index.tsx",
     "src/routes/oauth-client-metadata.json/index.ts",
     "src/routes/settings/index.tsx",
+    "src/routes/sitemap.xml/index.ts",
     "src/utils/auth-context.tsx",
     "src/utils/posthog-context.tsx"
   ],
@@ -45,13 +51,20 @@
       "compact_transcript": "/b9/2c6f7ecfcc/1/transcript.jsonl",
       "content_hash": "/b9/2c6f7ecfcc/1/content_hash.txt",
       "prompt": "/b9/2c6f7ecfcc/1/prompt.txt"
+    },
+    {
+      "metadata": "/b9/2c6f7ecfcc/2/metadata.json",
+      "transcript": "/b9/2c6f7ecfcc/2/full.jsonl",
+      "compact_transcript": "/b9/2c6f7ecfcc/2/transcript.jsonl",
+      "content_hash": "/b9/2c6f7ecfcc/2/content_hash.txt",
+      "prompt": "/b9/2c6f7ecfcc/2/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1212196,
+    "input_tokens": 1627058,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 61050112,
-    "output_tokens": 127173,
-    "api_call_count": 541
+    "cache_read_tokens": 74914560,
+    "output_tokens": 155400,
+    "api_call_count": 655
   }
 }

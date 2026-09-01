@@ -1,0 +1,5 @@
+does twyne have a sitemap? I am trying to improve the ability for Google and other search engines to index Twine, and I just am getting that really nothing at all from it's indexed and it's not being searched, and I really need to improve that so it actually search- it actually exists on results. So I need to fix this.
+
+---
+
+deploy
