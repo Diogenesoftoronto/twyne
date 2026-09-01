@@ -3,7 +3,7 @@
   "checkpoint_id": "b92c6f7ecfcc",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 12,
+  "checkpoints_count": 15,
   "files_touched": [
     ".dagger/package.json",
     ".dagger/src/index.ts",
@@ -18,6 +18,16 @@
     "package.json",
     "packages/lix-plugin-json/package.json",
     "packages/twyne-tools/package.json",
+    "public/assets/landing/closing-stamp-lg.webp",
+    "public/assets/landing/closing-stamp-sm.webp",
+    "public/assets/landing/plate-1-brief-lg.webp",
+    "public/assets/landing/plate-1-brief-sm.webp",
+    "public/assets/landing/plate-2-draft-lg.webp",
+    "public/assets/landing/plate-2-draft-sm.webp",
+    "public/assets/landing/plate-3-notes-lg.webp",
+    "public/assets/landing/plate-3-notes-sm.webp",
+    "public/assets/landing/plate-4-record-lg.webp",
+    "public/assets/landing/plate-4-record-sm.webp",
     "server.js",
     "src/components/auth/account-menu.tsx",
     "src/components/auth/auth-panel.tsx",
@@ -212,13 +222,20 @@
       "compact_transcript": "/b9/2c6f7ecfcc/5/transcript.jsonl",
       "content_hash": "/b9/2c6f7ecfcc/5/content_hash.txt",
       "prompt": "/b9/2c6f7ecfcc/5/prompt.txt"
+    },
+    {
+      "metadata": "/b9/2c6f7ecfcc/6/metadata.json",
+      "transcript": "/b9/2c6f7ecfcc/6/full.jsonl",
+      "compact_transcript": "/b9/2c6f7ecfcc/6/transcript.jsonl",
+      "content_hash": "/b9/2c6f7ecfcc/6/content_hash.txt",
+      "prompt": "/b9/2c6f7ecfcc/6/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 2793262,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 133105664,
-    "output_tokens": 283811,
-    "api_call_count": 1153
+    "input_tokens": 2822580,
+    "cache_creation_tokens": 3432486,
+    "cache_read_tokens": 177551795,
+    "output_tokens": 475955,
+    "api_call_count": 1371
   }
 }

@@ -1,0 +1,140 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "b92c6f7ecfcc",
+  "session_id": "a40cae62-e36f-4e91-ac80-373df93f64db",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-01T06:01:10.041552621Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "save_step_count": 3,
+  "files_touched": [
+    "devenv.lock",
+    "devenv.nix",
+    "package.json",
+    "public/assets/landing/closing-stamp-lg.webp",
+    "public/assets/landing/closing-stamp-sm.webp",
+    "public/assets/landing/plate-1-brief-lg.webp",
+    "public/assets/landing/plate-1-brief-sm.webp",
+    "public/assets/landing/plate-2-draft-lg.webp",
+    "public/assets/landing/plate-2-draft-sm.webp",
+    "public/assets/landing/plate-3-notes-lg.webp",
+    "public/assets/landing/plate-3-notes-sm.webp",
+    "public/assets/landing/plate-4-record-lg.webp",
+    "public/assets/landing/plate-4-record-sm.webp",
+    "src/components/editor/manuscript-panel.tsx",
+    "src/components/landing/landing-page.tsx",
+    "src/global.css",
+    "src/root.tsx",
+    "src/utils/exchange-print.test.ts",
+    "src/utils/exchange.ts",
+    "src/utils/typography-options.test.ts",
+    "src/utils/typography-options.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5[1m]",
+  "turn_id": "cb2fa4c64642",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 29318,
+    "cache_creation_tokens": 3432486,
+    "cache_read_tokens": 44446131,
+    "output_tokens": 192144,
+    "api_call_count": 218
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "claude-skill-toolu_0114tP1q5DWtxqbnDhRTt2VV",
+      "event_type": "tool_invocation",
+      "skill": {
+        "name": "claude-in-chrome"
+      },
+      "source": {
+        "agent": "claude-code",
+        "signal": "skill_tool_use",
+        "confidence": "explicit"
+      },
+      "turn_id": "cb2fa4c64642",
+      "transcript_anchor": {
+        "unit": "line",
+        "start": 424,
+        "end": 425,
+        "entry_ids": [
+          "d53fc158-3627-4808-9305-4e1747335ccf"
+        ],
+        "tool_use_id": "toolu_0114tP1q5DWtxqbnDhRTt2VV"
+      },
+      "native": {
+        "tool_name": "Skill",
+        "tool_use_id": "toolu_0114tP1q5DWtxqbnDhRTt2VV"
+      },
+      "collapse": {
+        "target": "tool_pair",
+        "label": "Skill: claude-in-chrome",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 3
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-01T06:01:09.457615553Z",
+    "agent_lines": 455,
+    "agent_removed": 0,
+    "human_added": 2367,
+    "human_modified": 218,
+    "human_removed": 0,
+    "total_committed": 3040,
+    "total_lines_changed": 3837,
+    "agent_percentage": 11.858222569715924,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 15,
+      "user_lines_removed": 12,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "devenv.lock": 10,
+        "devenv.nix": 5
+      },
+      "user_removed_per_file": {
+        "devenv.lock": 10,
+        "devenv.nix": 2
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 403,
+      "user_lines_removed": 36,
+      "agent_lines_added": 434,
+      "agent_lines_removed": 41,
+      "user_added_per_file": {
+        "src/components/landing/landing-page.tsx": 208,
+        "src/global.css": 195
+      },
+      "user_removed_per_file": {
+        "src/components/landing/landing-page.tsx": 13,
+        "src/global.css": 23
+      }
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 92,
+      "user_lines_removed": 170,
+      "agent_lines_added": 817,
+      "agent_lines_removed": 57,
+      "user_added_per_file": {
+        "src/components/landing/landing-page.tsx": 16,
+        "src/global.css": 76
+      },
+      "user_removed_per_file": {
+        "src/components/landing/landing-page.tsx": 16,
+        "src/global.css": 154
+      }
+    }
+  ]
+}

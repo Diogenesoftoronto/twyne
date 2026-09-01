@@ -1,0 +1,17 @@
+the new thing with the landing page of twyne is that it should include an updated surface more animations and actual images spreads. you can use codex for image generation capabilities
+
+---
+
+secondary cta should get some on hover effect.
+
+---
+
+.
+
+---
+
+[Image #2] this whole element here just isnt doing anything
+
+---
+
+.
