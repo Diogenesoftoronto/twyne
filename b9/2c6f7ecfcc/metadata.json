@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "b92c6f7ecfcc",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "devenv.lock",
+    "devenv.nix",
+    "src/components/auth/account-menu.tsx",
+    "src/components/auth/auth-panel.tsx",
+    "src/components/desk/chart-table.tsx",
+    "src/components/desk/daily-activity-chart.tsx",
+    "src/components/desk/data-controls.tsx",
+    "src/components/desk/desk-summary.tsx",
+    "src/components/desk/recent-work.tsx",
+    "src/components/desk/token-dimensions.tsx",
+    "src/components/desk/usage-breakdowns.tsx",
+    "src/components/desk/usage-cost.tsx",
+    "src/components/desk/usage-sync-controller.tsx",
+    "src/components/desk/writer-patterns.tsx",
+    "src/components/desk/writing-activity.tsx",
+    "src/components/folio/folio-menu.tsx",
+    "src/components/profile/writing-heatmap.tsx",
+    "src/root.tsx",
+    "src/routes/[handle]/index.tsx",
+    "src/routes/desk/index.tsx",
+    "src/routes/editor/index.tsx",
+    "src/routes/oauth-client-metadata.json/index.ts",
+    "src/routes/settings/index.tsx",
+    "src/utils/auth-context.tsx",
+    "src/utils/posthog-context.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b9/2c6f7ecfcc/0/metadata.json",
+      "transcript": "/b9/2c6f7ecfcc/0/full.jsonl",
+      "compact_transcript": "/b9/2c6f7ecfcc/0/transcript.jsonl",
+      "content_hash": "/b9/2c6f7ecfcc/0/content_hash.txt",
+      "prompt": "/b9/2c6f7ecfcc/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 922756,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 44764672,
+    "output_tokens": 93667,
+    "api_call_count": 416
+  }
+}
