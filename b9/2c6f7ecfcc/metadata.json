@@ -3,14 +3,17 @@
   "checkpoint_id": "b92c6f7ecfcc",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 8,
+  "checkpoints_count": 10,
   "files_touched": [
+    "README.md",
     "devenv.lock",
     "devenv.nix",
+    "package.json",
     "src/components/auth/account-menu.tsx",
     "src/components/auth/auth-panel.tsx",
     "src/components/blog/blog-index.tsx",
     "src/components/blog/blog-post.tsx",
+    "src/components/brief/project-brief-card.stories.tsx",
     "src/components/desk/chart-table.tsx",
     "src/components/desk/daily-activity-chart.tsx",
     "src/components/desk/data-controls.tsx",
@@ -22,8 +25,18 @@
     "src/components/desk/usage-sync-controller.tsx",
     "src/components/desk/writer-patterns.tsx",
     "src/components/desk/writing-activity.tsx",
+    "src/components/editor/document-outline.stories.tsx",
+    "src/components/editor/manuscript-panel.tsx",
+    "src/components/editor/table-insertion-grid.stories.tsx",
     "src/components/folio/folio-menu.tsx",
+    "src/components/landing/landing-page.tsx",
     "src/components/profile/writing-heatmap.tsx",
+    "src/components/ui/color-picker.stories.tsx",
+    "src/components/ui/editorial-loader.stories.tsx",
+    "src/components/ui/numeric-stepper.stories.tsx",
+    "src/components/ui/site-select.stories.tsx",
+    "src/components/ui/text-modal.stories.tsx",
+    "src/global.css",
     "src/root.tsx",
     "src/routes/[handle]/[slug]/index.tsx",
     "src/routes/[handle]/index.tsx",
@@ -35,7 +48,11 @@
     "src/routes/settings/index.tsx",
     "src/routes/sitemap.xml/index.ts",
     "src/utils/auth-context.tsx",
-    "src/utils/posthog-context.tsx"
+    "src/utils/exchange-print.test.ts",
+    "src/utils/exchange.ts",
+    "src/utils/posthog-context.tsx",
+    "src/utils/typography-options.test.ts",
+    "src/utils/typography-options.ts"
   ],
   "sessions": [
     {
@@ -65,13 +82,20 @@
       "compact_transcript": "/b9/2c6f7ecfcc/3/transcript.jsonl",
       "content_hash": "/b9/2c6f7ecfcc/3/content_hash.txt",
       "prompt": "/b9/2c6f7ecfcc/3/prompt.txt"
+    },
+    {
+      "metadata": "/b9/2c6f7ecfcc/4/metadata.json",
+      "transcript": "/b9/2c6f7ecfcc/4/full.jsonl",
+      "compact_transcript": "/b9/2c6f7ecfcc/4/transcript.jsonl",
+      "content_hash": "/b9/2c6f7ecfcc/4/content_hash.txt",
+      "prompt": "/b9/2c6f7ecfcc/4/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 1635123,
+    "input_tokens": 1995083,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 75387136,
-    "output_tokens": 156700,
-    "api_call_count": 661
+    "cache_read_tokens": 90309632,
+    "output_tokens": 209452,
+    "api_call_count": 819
   }
 }
