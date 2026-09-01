@@ -1,4 +1,4 @@
-import type { RequestHandler } from "@builder.io/qwik-city";
+import type { RequestHandler } from "@qwik.dev/router";
 import { relayTinkerRequest } from "../../../../utils/tinker-relay.server";
 
 export const onGet: RequestHandler = async ({ request, send }) => {

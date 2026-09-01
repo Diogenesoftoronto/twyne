@@ -6,8 +6,8 @@ import {
   useVisibleTask$,
   noSerialize,
   type NoSerialize,
-} from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import { Link } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
 import { renderMarkdown } from "../../utils/markdown";
 import {

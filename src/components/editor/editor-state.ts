@@ -1,4 +1,4 @@
-import type { NoSerialize, PropFunction } from "@builder.io/qwik";
+import type { NoSerialize, PropFunction } from "@qwik.dev/core";
 import type { Editor } from "@tiptap/core";
 import type {
   DocumentMeta,

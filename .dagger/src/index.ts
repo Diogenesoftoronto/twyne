@@ -95,7 +95,7 @@ export class Twyne {
     source: Directory,
   ): Promise<string> {
     return this.install(source)
-      .withExec(["bun", "test"])
+      .withExec(["bun", "run", "test"])
       .withExec(["bun", "run", "tools:test"])
       .stdout();
   }

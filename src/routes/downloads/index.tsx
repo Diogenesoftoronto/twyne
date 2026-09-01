@@ -6,8 +6,8 @@ import {
   $,
   type QRL,
   type Signal,
-} from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import type { DocumentHead } from "@qwik.dev/router";
 import { LegalPage } from "../../components/legal/legal-page";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";

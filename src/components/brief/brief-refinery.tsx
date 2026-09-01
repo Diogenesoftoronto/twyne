@@ -1,4 +1,4 @@
-import { component$, $, useStore, type PropFunction } from "@builder.io/qwik";
+import { component$, $, useStore, type PropFunction } from "@qwik.dev/core";
 import type { ProjectInterviewAnswers } from "../../types";
 import { DEFAULT_INTERVIEW_ANSWERS } from "../../utils/anti-tabula-rasa";
 

@@ -1,10 +1,8 @@
-import { createQwikCity } from "@builder.io/qwik-city/middleware/node";
-import qwikCityPlan from "@qwik-city-plan";
+import { createQwikRouter } from "@qwik.dev/router/middleware/node";
 import render from "./entry.ssr";
 
-const { router, notFound } = createQwikCity({
+const { router, notFound } = createQwikRouter({
   render,
-  qwikCityPlan,
 });
 
 export { router, notFound };

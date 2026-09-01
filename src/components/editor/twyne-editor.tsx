@@ -5,7 +5,7 @@ import {
   useVisibleTask$,
   noSerialize,
   $,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extension-placeholder";
 import { Highlight } from "@tiptap/extension-highlight";

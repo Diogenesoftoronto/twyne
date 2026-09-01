@@ -5,7 +5,7 @@ import {
   useVisibleTask$,
   $,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { useConvexClient } from "../../utils/convex-context";
 import {
   hasAuthenticatedConvexIdentity,

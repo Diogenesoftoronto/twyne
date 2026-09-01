@@ -3,7 +3,7 @@ import {
   useSignal,
   useVisibleTask$,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import type {
   EditorCommandContext,
   EditorCommandId,

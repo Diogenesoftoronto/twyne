@@ -1,4 +1,4 @@
-import { $ } from "@builder.io/qwik";
+import { $ } from "@qwik.dev/core";
 import type { Meta, StoryObj } from "storybook-framework-qwik";
 import { MentionDropdown } from "./mention-dropdown";
 import type { Mentionable } from "../../utils/mentions";

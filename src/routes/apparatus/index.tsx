@@ -4,8 +4,8 @@ import {
   useStylesScoped$,
   useVisibleTask$,
   $,
-} from "@builder.io/qwik";
-import { Link, type DocumentHead } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import { Link, type DocumentHead } from "@qwik.dev/router";
 import type { DetectedCitation, Folio } from "../../types";
 import { detectCitations } from "../../utils/citations";
 import {

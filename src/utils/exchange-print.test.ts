@@ -33,7 +33,15 @@ const layout = (over: Partial<LayoutSettings> = {}): LayoutSettings => ({
 describe("print stylesheet", () => {
   test("loads every font family the formatting menu can write", () => {
     const html = exportHtml(payload());
-    for (const family of ["DM+Sans", "Fraunces", "Lora", "Special+Elite"]) {
+    // Fraunces is no longer offered for new marks, but older manuscripts can
+    // still contain its persisted font-family stack and must export faithfully.
+    for (const family of [
+      "DM+Sans",
+      "Fraunces",
+      "Libre+Baskerville",
+      "Lora",
+      "Special+Elite",
+    ]) {
       expect(html).toContain(family);
     }
   });

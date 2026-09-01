@@ -139,7 +139,7 @@ function wrapStandaloneHtml(
 <title>${escapeHtml(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Special+Elite&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Special+Elite&display=swap" />
 <style>
   :root { color-scheme: light; }
   *, *::before, *::after { box-sizing: border-box; }
@@ -181,7 +181,7 @@ function wrapStandaloneHtml(
   .export-titleblock h1 {
     margin: 0;
     color: #1a1611;
-    font-family: "Fraunces", Georgia, serif;
+    font-family: "Libre Baskerville", Georgia, serif;
     font-size: clamp(2rem, 6vw, 3.5rem);
     font-weight: 600;
     line-height: 1.08;
@@ -244,7 +244,7 @@ function wrapStandaloneHtml(
     margin-bottom: 2rem;
   }
   .twyne-chrome.f { border-top: 1px solid #c7b89c; border-bottom: none; margin: 2rem 0 0; }
-  h1, h2, h3 { font-family: "Fraunces", Georgia, serif; font-weight: 600; }
+  h1, h2, h3 { font-family: "Libre Baskerville", Georgia, serif; font-weight: 600; }
   h1 { font-size: 2.1rem; margin-bottom: 1.4rem; }
   h2 { font-size: 1.4rem; margin-top: 2.2rem; }
   p { margin: 0 0 1.1rem; }
@@ -970,6 +970,128 @@ export function detectFormatFromFilename(filename: string): ExportFormat {
   return "markdown";
 }
 
+const HTML_IMPORT_NON_CONTENT_TAGS = [
+  "script",
+  "style",
+  "noscript",
+  "template",
+  "link",
+  "meta",
+  "base",
+  "iframe",
+  "object",
+  "embed",
+] as const;
+
+/**
+ * Let the browser repair an HTML document instead of trying to recognize its
+ * envelope with a regular expression. A missing `</body>` used to make the
+ * importer return the entire standalone file, including its print stylesheet,
+ * as manuscript content.
+ *
+ * Adding only missing envelope closers before parsing also keeps this helper
+ * deterministic under stricter DOMParser implementations used by tests. The
+ * browser parser remains responsible for the actual HTML tree construction.
+ */
+function normalizeHtmlEnvelope(html: string): string {
+  let normalized = html;
+  if (/<body(?:\s|>)/i.test(normalized) && !/<\/body\s*>/i.test(normalized)) {
+    const htmlClose = normalized.search(/<\/html\s*>/i);
+    normalized =
+      htmlClose === -1
+        ? `${normalized}</body>`
+        : `${normalized.slice(0, htmlClose)}</body>${normalized.slice(htmlClose)}`;
+  }
+  if (/<html(?:\s|>)/i.test(normalized) && !/<\/html\s*>/i.test(normalized)) {
+    normalized += "</html>";
+  }
+  return normalized;
+}
+
+function hasClass(element: Element, className: string): boolean {
+  return (element.getAttribute("class") ?? "").split(/\s+/).includes(className);
+}
+
+function directChildByTag(element: Element, tagName: string): Element | null {
+  const wanted = tagName.toLowerCase();
+  for (const child of Array.from(element.childNodes)) {
+    if (
+      child.nodeType === 1 &&
+      (child as Element).tagName.toLowerCase() === wanted
+    ) {
+      return child as Element;
+    }
+  }
+  return null;
+}
+
+function removeHtmlImportNonContent(root: Element): void {
+  for (const tag of HTML_IMPORT_NON_CONTENT_TAGS) {
+    for (const node of Array.from(root.getElementsByTagName(tag))) {
+      node.parentNode?.removeChild(node);
+    }
+  }
+}
+
+function serializeChildren(element: Element): string {
+  if (typeof (element as HTMLElement).innerHTML === "string") {
+    return (element as HTMLElement).innerHTML;
+  }
+
+  // XMLSerializer is available alongside DOMParser in browsers. The fallback
+  // keeps alternate DOM implementations usable without changing production
+  // behavior.
+  const serializer =
+    typeof XMLSerializer === "undefined" ? null : new XMLSerializer();
+  return Array.from(element.childNodes)
+    .map((child) =>
+      serializer
+        ? serializer.serializeToString(child)
+        : ((child as Node & { outerHTML?: string }).outerHTML ??
+          child.textContent ??
+          ""),
+    )
+    .join("");
+}
+
+function parseHtmlImport(text: string, filename: string): ImportResult {
+  if (typeof DOMParser === "undefined") {
+    throw new Error("HTML import requires a browser document parser.");
+  }
+
+  const document = new DOMParser().parseFromString(
+    normalizeHtmlEnvelope(text),
+    "text/html",
+  );
+  const titleElement = document.getElementsByTagName("title")[0];
+  const firstHeading = document.getElementsByTagName("h1")[0];
+  const filenameTitle = filename.replace(/\.html?$/i, "").trim();
+  const title =
+    titleElement?.textContent?.trim() ||
+    firstHeading?.textContent?.trim() ||
+    filenameTitle ||
+    "Imported piece";
+
+  const allElements = Array.from(document.getElementsByTagName("*"));
+  const exportDocument = allElements.find((element) =>
+    hasClass(element, "export-document"),
+  );
+  const twyneArticle = exportDocument
+    ? directChildByTag(exportDocument, "article")
+    : null;
+  const body =
+    document.body ?? document.getElementsByTagName("body")[0] ?? null;
+  const source = twyneArticle ?? body;
+
+  if (!source) {
+    return { title, html: "" };
+  }
+
+  const content = source.cloneNode(true) as Element;
+  removeHtmlImportNonContent(content);
+  return { title, html: serializeChildren(content).trim() };
+}
+
 export async function importAs(file: File): Promise<ImportResult> {
   const format = detectFormatFromFilename(file.name);
 
@@ -1014,16 +1136,7 @@ export async function importAs(file: File): Promise<ImportResult> {
   }
 
   if (format === "html") {
-    // Tiptap's schema expects well-formed HTML. We trust the user here;
-    // a more paranoid parser would sanitize, but the editor will
-    // gracefully drop unknown nodes.
-    const titleMatch = text.match(/<title>([\s\S]*?)<\/title>/i);
-    const title = titleMatch?.[1]?.trim() || "Imported piece";
-    // Strip the surrounding <html>/<head> envelope if present so the
-    // body lands inside the editor.
-    const bodyMatch = text.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-    const html = bodyMatch ? bodyMatch[1] : text;
-    return { title, html };
+    return parseHtmlImport(text, file.name);
   }
 
   if (format === "txt") {

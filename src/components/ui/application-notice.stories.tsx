@@ -1,4 +1,4 @@
-import { $ } from "@builder.io/qwik";
+import { $ } from "@qwik.dev/core";
 import type { Meta, StoryObj } from "storybook-framework-qwik";
 import { createAppError } from "../../utils/application-errors";
 import { ApplicationNotice } from "./application-notice";

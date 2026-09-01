@@ -1,4 +1,4 @@
-import { component$ } from "@builder.io/qwik";
+import { component$ } from "@qwik.dev/core";
 import type { DailyUsagePoint } from "../../utils/usage-summary";
 import { ChartTable } from "./chart-table";
 

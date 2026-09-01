@@ -1,4 +1,4 @@
-import { component$, type PropFunction } from "@builder.io/qwik";
+import { component$, type PropFunction } from "@qwik.dev/core";
 import type { LayoutSettings } from "../../types";
 import { PageFurnitureEditor } from "./page-furniture-editor";
 

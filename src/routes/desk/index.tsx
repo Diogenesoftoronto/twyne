@@ -4,8 +4,8 @@ import {
   useSignal,
   useStore,
   useVisibleTask$,
-} from "@builder.io/qwik";
-import { Link, type DocumentHead } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import { Link, type DocumentHead } from "@qwik.dev/router";
 import { api } from "../../../convex/_generated/api";
 import { DataControls } from "../../components/desk/data-controls";
 import {

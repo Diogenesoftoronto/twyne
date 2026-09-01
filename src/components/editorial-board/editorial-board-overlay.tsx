@@ -4,7 +4,7 @@ import {
   component$,
   useStore,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { steerBackgroundResearch } from "../../utils/background-research";
 import { ChatComposer } from "../ui/chat-composer";
 import type { ActivityCounts, PanelId } from "../../utils/panel-activity";

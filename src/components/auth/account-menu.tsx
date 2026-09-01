@@ -6,8 +6,8 @@ import {
   useStore,
   useVisibleTask$,
   type Signal,
-} from "@builder.io/qwik";
-import { useNavigate } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import { useNavigate } from "@qwik.dev/router";
 import {
   hasAuthenticatedConvexIdentity,
   useAuth,

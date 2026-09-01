@@ -4,7 +4,7 @@ import {
   useStore,
   useVisibleTask$,
   $,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { useConvexClient } from "../../utils/convex-context";
 import type { ProjectBrief, Persona } from "../../types";
 import {

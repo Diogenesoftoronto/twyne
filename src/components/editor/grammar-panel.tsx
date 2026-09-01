@@ -5,7 +5,7 @@ import {
   useVisibleTask$,
   type NoSerialize,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import type { Editor } from "@tiptap/core";
 import {
   checkGrammar,

@@ -4,9 +4,9 @@ import {
   useSignal,
   useStore,
   useVisibleTask$,
-} from "@builder.io/qwik";
-import { useNavigate } from "@builder.io/qwik-city";
-import type { DocumentHead } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import { useNavigate } from "@qwik.dev/router";
+import type { DocumentHead } from "@qwik.dev/router";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
 import { AuthPanel } from "../../../components/auth/auth-panel";

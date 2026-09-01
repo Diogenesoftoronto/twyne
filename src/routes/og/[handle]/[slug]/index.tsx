@@ -12,7 +12,7 @@
 
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import type { RequestHandler } from "@builder.io/qwik-city";
+import type { RequestHandler } from "@qwik.dev/router";
 import {
   articleDescription,
   loadPublishedPieceByHandleAndSlug,

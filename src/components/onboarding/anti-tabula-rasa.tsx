@@ -1,4 +1,4 @@
-import { component$, $, useStore, type PropFunction } from "@builder.io/qwik";
+import { component$, $, useStore, type PropFunction } from "@qwik.dev/core";
 import type {
   DossierAttachment,
   DossierCheckResult,

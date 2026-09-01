@@ -1,5 +1,5 @@
-import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
-import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { component$, useSignal, useVisibleTask$, $ } from "@qwik.dev/core";
+import { Link, type DocumentHead } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
 import { api } from "../../../convex/_generated/api";

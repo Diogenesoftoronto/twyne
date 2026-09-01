@@ -1,4 +1,4 @@
-import { component$, type PropFunction } from "@builder.io/qwik";
+import { component$, type PropFunction } from "@qwik.dev/core";
 import type { LayoutSettings } from "../../types";
 import { formatWordCount, readingTimeLabel } from "../../utils/document";
 import { formatFolioCount } from "../../utils/draft-thresholds";
@@ -169,7 +169,7 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
         <span>
           <LastSavedLine savedAt={store.lastSavedAt} /> ·{" "}
           {readingTimeLabel(store.meta.readingTime)} · set in Lora &amp;
-          Fraunces
+          Libre Baskerville
         </span>
       </div>
     </>

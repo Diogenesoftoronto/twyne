@@ -3,7 +3,7 @@ import {
   useStore,
   useVisibleTask$,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import type { Persona } from "../../types";
 import { loadPersonasFromIdb } from "../../utils/idb";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";

@@ -4,7 +4,7 @@ import {
   $,
   useSignal,
   useVisibleTask$,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import {
@@ -81,7 +81,7 @@ interface FolioMenuProps {
    * is responsible for loading the new content into the editor and
    * updating its own state.
    */
-  onImported$?: import("@builder.io/qwik").PropFunction<
+  onImported$?: import("@qwik.dev/core").PropFunction<
     (r: ImportResult) => void
   >;
 }
@@ -1123,7 +1123,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
 
 interface MenuItemProps {
   label: string;
-  onClick$: import("@builder.io/qwik").PropFunction<() => void>;
+  onClick$: import("@qwik.dev/core").PropFunction<() => void>;
 }
 
 const MenuItem = component$<MenuItemProps>((props) => {

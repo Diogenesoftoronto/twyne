@@ -1,5 +1,5 @@
-import { component$, useStore, useVisibleTask$ } from "@builder.io/qwik";
-import { Link, type DocumentHead, useNavigate } from "@builder.io/qwik-city";
+import { component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
+import { Link, type DocumentHead, useNavigate } from "@qwik.dev/router";
 import { useAuth } from "../../../utils/auth-context";
 
 interface CallbackStore {

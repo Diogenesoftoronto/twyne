@@ -1,6 +1,6 @@
-import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
-import { useNavigate, Link } from "@builder.io/qwik-city";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
+import { useNavigate, Link } from "@qwik.dev/router";
+import type { DocumentHead } from "@qwik.dev/router";
 import { AntiTabulaRasa } from "../../../components/onboarding/anti-tabula-rasa";
 import { ConversationalInterview } from "../../../components/onboarding/conversational-interview";
 import { ThemedDialog } from "../../../components/ui/themed-dialog";

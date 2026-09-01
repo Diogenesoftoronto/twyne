@@ -7,7 +7,7 @@ import {
   useStylesScoped$,
   useTask$,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 
 export type PageFurnitureKind = "header" | "footer";
 

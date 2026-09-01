@@ -1,6 +1,6 @@
-import { component$, $, useStore, useVisibleTask$ } from "@builder.io/qwik";
-import { Link, useNavigate } from "@builder.io/qwik-city";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import { component$, $, useStore, useVisibleTask$ } from "@qwik.dev/core";
+import { Link, useNavigate } from "@qwik.dev/router";
+import type { DocumentHead } from "@qwik.dev/router";
 import { AuthPanel } from "../../components/auth/auth-panel";
 import { loadProjectBrief } from "../../utils/anti-tabula-rasa";
 import { useAuth } from "../../utils/auth-context";

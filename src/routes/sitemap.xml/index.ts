@@ -1,5 +1,5 @@
 import { ConvexHttpClient } from "convex/browser";
-import type { RequestHandler } from "@builder.io/qwik-city";
+import type { RequestHandler } from "@qwik.dev/router";
 import { api } from "../../../convex/_generated/api";
 
 const SITE_ORIGIN = "https://twyne.love";

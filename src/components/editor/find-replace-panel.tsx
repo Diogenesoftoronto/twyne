@@ -6,7 +6,7 @@ import {
   useVisibleTask$,
   type NoSerialize,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import type { Editor } from "@tiptap/core";
 import { getFindReplaceState } from "./extensions/find-replace";
 
@@ -65,7 +65,9 @@ export const FindReplacePanel = component$<FindReplacePanelProps>((props) => {
       });
     }
     refresh();
-    cleanup(() => editor.off("transaction", refresh));
+    cleanup(() => {
+      editor.off("transaction", refresh);
+    });
   });
 
   const updateQuery = $(() => {

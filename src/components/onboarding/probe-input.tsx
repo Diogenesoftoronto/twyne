@@ -4,7 +4,7 @@ import {
   useStore,
   $,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import type { DossierProbe } from "../../types";
 import {
   BLANK_PATTERN,

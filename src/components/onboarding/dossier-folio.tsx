@@ -1,4 +1,4 @@
-import type { JSXOutput } from "@builder.io/qwik";
+import type { JSXOutput } from "@qwik.dev/core";
 import type { DossierFilingState } from "../../utils/dossier-filing";
 
 /**

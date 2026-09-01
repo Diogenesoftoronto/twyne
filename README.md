@@ -116,12 +116,14 @@ bun run dev   # Convex dev + Vite SSR
 Or, with devenv:
 
 ```bash
-devenv shell   # enter the pinned shell
-bun install
-bun run dev
+devenv tasks run twyne:install
+devenv up   # Convex dev + Vite SSR + Storybook
 ```
 
-The app runs locally with Vite, usually at `http://localhost:5173/`.
+The app runs at `http://127.0.0.1:5173/` and Storybook at
+`http://127.0.0.1:6006/`. Run `devenv down` to stop the workspace. Use
+`devenv tasks list` to discover the namespaced check, test, build, codegen, and
+Storybook build tasks.
 
 ## Build
 

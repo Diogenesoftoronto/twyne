@@ -12,8 +12,8 @@
  * engage.
  */
 
-import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
-import { type DocumentHead, routeLoader$ } from "@builder.io/qwik-city";
+import { component$, useSignal, useVisibleTask$ } from "@qwik.dev/core";
+import { type DocumentHead, routeLoader$ } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { BlogIndex } from "../../components/blog/blog-index";

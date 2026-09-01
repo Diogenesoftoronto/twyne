@@ -5,7 +5,7 @@ import {
   $,
   type PropFunction,
   useVisibleTask$,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import {
   type InterviewMessage,
   type InterviewTurnResult,

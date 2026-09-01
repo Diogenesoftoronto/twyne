@@ -1,4 +1,4 @@
-import { $, component$, useSignal, type QRL } from "@builder.io/qwik";
+import { $, component$, useSignal, type QRL } from "@qwik.dev/core";
 import type { UsageSummary } from "../../utils/usage-summary";
 import { captureProductEvent } from "../../utils/product-analytics";
 import { ChartTable } from "./chart-table";

@@ -56,7 +56,7 @@
   --color-persona-reader: #2c4a7c; /* cobalt */
 
   /* ── Type stack ──────────────────────────────────────── */
-  --font-display: "Fraunces", "Playfair Display", Georgia, serif;
+  --font-display: "Libre Baskerville", "Playfair Display", Georgia, serif;
   --font-serif: "Lora", "Crimson Pro", Georgia, "Times New Roman", serif;
   --font-sans: "DM Sans", "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Fira Code", monospace;
@@ -80,6 +80,39 @@
   --color-accent: var(--color-vermilion);
   --color-rule: var(--color-paper-3);
   --color-crimson: var(--color-vermilion-2);
+}
+
+/* Qwik Router 2 wraps client-side navigation in the browser View Transition
+ * API. Keep the room steady while the next page arrives like a fresh sheet. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: 120ms ease-in both twyne-page-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: 220ms cubic-bezier(0.22, 1, 0.36, 1) both twyne-page-in;
+  }
+
+  @keyframes twyne-page-out {
+    to {
+      opacity: 0;
+      transform: translateY(-0.2rem);
+    }
+  }
+
+  @keyframes twyne-page-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.35rem);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }
 
 /* Narration follows the prose without disturbing its Markdown structure. */
@@ -695,7 +728,7 @@ body {
  * `::first-letter` beats the inline `font-family` / `font-size` that the
  * type controls write onto the surrounding span, so anything hard-coded
  * here is a rule the writer cannot override. Setting a manuscript in
- * Special Elite used to leave its most prominent glyph in Fraunces.
+ * Special Elite used to leave its most prominent glyph in the display face.
  *
  * `font-family: inherit` puts the letter back under the writer's control.
  * The size stays proportional — a drop cap that ignored the type scale
@@ -2496,13 +2529,21 @@ body {
   font-size: 0.78rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+/* Shared masthead hover: a vermilion rule drawn in from the left. The
+   sign-in link sits in the same masthead but keeps its own smaller type,
+   so the sweep lives here rather than inside .landing-nav-link. */
+.landing-nav-link,
+.landing-signin-link {
+  position: relative;
   color: var(--color-ink-light);
   transition:
     color 0.15s ease,
     letter-spacing 0.2s ease;
-  position: relative;
 }
-.landing-nav-link::after {
+.landing-nav-link::after,
+.landing-signin-link::after {
   content: "";
   position: absolute;
   left: 0;
@@ -2514,13 +2555,16 @@ body {
   transform-origin: left;
   transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.landing-nav-link:hover {
+.landing-nav-link:hover,
+.landing-signin-link:hover {
   color: var(--color-vermilion);
 }
-.landing-nav-link:hover::after {
+.landing-nav-link:hover::after,
+.landing-signin-link:hover::after {
   transform: scaleX(1);
 }
-.landing-nav-link:focus-visible {
+.landing-nav-link:focus-visible,
+.landing-signin-link:focus-visible {
   outline: 2px solid var(--color-vermilion);
   outline-offset: 3px;
 }
@@ -2588,6 +2632,462 @@ body {
   .landing-rise-2,
   .landing-rise-3 {
     animation: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+ * Landing photo essay — the plates
+ *   .landing-hero     : full-bleed photograph the hero type is set on
+ *   .landing-plate    : one alternating image/text spread
+ *   [data-reveal]     : scroll-triggered fade + rise
+ *
+ * The reveal's hidden start state is scoped to [data-reveal-ready],
+ * which JS sets. Without JS nothing is ever hidden, so the SSR'd
+ * page reads exactly as it did before — and stays crawlable.
+ * ───────────────────────────────────────────────────────────── */
+
+/* ── Hero: the type is set on the desk ──
+ * Full-bleed out of .landing-shell's centred column. .landing-page already
+ * sets `overflow: clip`, so 100vw can't raise a scrollbar.
+ *
+ * The hero is a fixed dark plate in every theme — its ink is hard-coded
+ * cream rather than themed, because the ground underneath is a dark
+ * photograph in foolscap, broadsheet and nightpress alike. Only the feather
+ * at top and bottom is theme-aware, so the plate dissolves into whatever
+ * colour the page happens to be.
+ */
+.landing-hero {
+  --hero-ink: #f7f0dd;
+  --hero-ink-soft: #dbcfb6;
+  /* The page vermilion goes muddy on near-black, so the hero's editor's
+     marks — the strike rule and the caret — use a brighter one. */
+  --mark: #f2564e;
+  --mark-dim: #a99b83;
+  position: relative;
+  isolation: isolate;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  min-height: min(84vh, 720px);
+  padding: 5rem 1.25rem;
+  background: #17130f;
+}
+.landing-hero__photo {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: 50% 50%;
+  animation: landing-hero-drift 26s ease-in-out infinite alternate;
+}
+/* Slow ken-burns. Off-screen animations are throttled by the browser, so
+   this costs nothing once the hero has scrolled away. */
+@keyframes landing-hero-drift {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.07);
+  }
+}
+/* Scrim. The radial darkens the middle so the headline always has ground to
+   sit on whatever the photograph is doing; the linear feathers the plate
+   into the page above and below. */
+.landing-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(
+      180deg,
+      var(--color-paper) 0%,
+      color-mix(in srgb, var(--color-paper) 52%, transparent) 7%,
+      transparent 17%,
+      transparent 85%,
+      color-mix(in srgb, var(--color-paper) 52%, transparent) 95%,
+      var(--color-paper) 100%
+    ),
+    radial-gradient(
+      ellipse 72% 66% at 50% 50%,
+      rgba(12, 10, 8, 0.84) 0%,
+      rgba(12, 10, 8, 0.6) 52%,
+      rgba(12, 10, 8, 0.3) 100%
+    );
+}
+.landing-hero__inner {
+  position: relative;
+  z-index: 1;
+  /* The hero centres its child with `place-items`, which also makes the grid
+     item size to its content — so the block was 729px wide against the
+     fallback face and 768px once the webfont landed, sliding the whole hero
+     sideways on load (measured at 0.042 CLS). Take the full column instead
+     and let max-width do the constraining. */
+  width: 100%;
+}
+/* Libre Baskerville sets wider than Fraunces did, so the headline takes a
+   slightly smaller ceiling and looser leading than a display serif would. */
+.landing-hero .landing-title {
+  color: var(--hero-ink);
+  font-size: clamp(2.1rem, 5vw, 3.6rem);
+  letter-spacing: -0.018em;
+  line-height: 1.08;
+}
+.landing-hero .landing-deck {
+  color: var(--hero-ink-soft);
+}
+/* The page's primary CTA is ink-on-paper, which vanishes against the desk —
+   so on the hero it answers in vermilion, and the secondary is outlined in
+   the hero's own cream. */
+.landing-hero .broadsheet-cta {
+  background: var(--color-vermilion);
+  color: #fdf8ec;
+}
+.landing-hero .broadsheet-cta:hover {
+  background: var(--color-vermilion-2);
+}
+.landing-hero .broadsheet-cta.secondary {
+  background: transparent;
+  color: var(--hero-ink);
+  border-color: color-mix(in srgb, var(--hero-ink) 55%, transparent);
+}
+.landing-hero .broadsheet-cta.secondary:hover {
+  background: color-mix(in srgb, var(--hero-ink) 12%, transparent);
+  border-color: var(--hero-ink);
+  color: #fdf8ec;
+}
+.landing-hero .broadsheet-cta:focus-visible {
+  outline-color: var(--hero-ink);
+}
+
+/* ── The hero headline, typed and then corrected ──
+   The line types itself out, a copy-editor takes a rule through a word, and
+   the correction is written after it. Frames come from the component; this
+   is the look of a single frame.
+
+   Everything here is scoped tightly enough to beat `.landing-hero
+   .landing-title`, which sets the hero's cream ink. */
+.landing-rotator-line {
+  display: block;
+}
+@media (min-width: 768px) {
+  /* Headlines run to one or two lines. Reserve the taller so the deck and
+     the CTAs beneath never jump as the headline changes. */
+  .landing-rotator-line {
+    min-height: 2.16em;
+  }
+}
+.landing-rotator {
+  display: inline;
+}
+.landing-rotator.is-leaving {
+  display: inline-block;
+  animation: landing-rotator-out 0.6s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+@keyframes landing-rotator-out {
+  to {
+    opacity: 0;
+    transform: translateY(-0.34em);
+  }
+}
+
+/* The struck words stay legible under the rule — a correction shows its
+   working, it doesn't hide it — but drop back so the replacement leads. */
+.landing-title .landing-rotator__struck {
+  position: relative;
+  color: var(--mark-dim, var(--color-ink-muted));
+}
+.landing-title .landing-rotator__struck::after {
+  content: "";
+  position: absolute;
+  left: -0.03em;
+  right: -0.03em;
+  top: 0.52em;
+  height: 0.07em;
+  border-radius: 0.04em;
+  background: var(--mark, var(--color-vermilion));
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: landing-strike 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes landing-strike {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.landing-title .landing-rotator__caret {
+  display: inline-block;
+  width: 0.07em;
+  height: 0.78em;
+  margin-left: 0.07em;
+  vertical-align: -0.02em;
+  background: var(--mark, var(--color-vermilion));
+  animation: type-blink 1.05s steps(1, end) infinite;
+}
+
+/* The deck changes with the headline; it is keyed, so this replays.
+ *
+ * It also has to reserve its own height. Two things move it otherwise: the
+ * decks differ in line count once they wrap (four lines vs three on a phone),
+ * and before the webfont lands the fallback sets shorter. Either one drags
+ * the CTAs underneath it — measured at 0.04 CLS before this reserve. */
+.landing-rotator-deck {
+  min-height: 6.9em;
+  animation: landing-deck-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (min-width: 640px) {
+  /* Past the wrap point every deck settles to two lines. */
+  .landing-rotator-deck {
+    min-height: 3.5em;
+  }
+}
+@keyframes landing-deck-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Headings that type themselves in when scrolled to ──
+   Each character is its own step, delayed by its position, so the reveal
+   reads as keystrokes rather than a fade. Characters are visible by default
+   and only hidden once the observer is installed, so a page without JS
+   simply reads. */
+@keyframes landing-type-in {
+  to {
+    opacity: 1;
+  }
+}
+.landing-typed__word {
+  display: inline-block;
+  white-space: pre;
+}
+/* The keystrokes replace the container fade — one reveal, not two. */
+[data-reveal-ready] [data-reveal].landing-typed-reveal {
+  opacity: 1;
+  transform: none;
+}
+[data-reveal-ready] .landing-typed-reveal .landing-typed__char {
+  opacity: 0;
+}
+[data-reveal-ready] .landing-typed-reveal.is-revealed .landing-typed__char,
+[data-reveal-ready]
+  [data-reveal].is-revealed
+  .landing-typed-reveal
+  .landing-typed__char {
+  animation: landing-type-in 1ms steps(1, end) forwards;
+  animation-delay: calc(var(--i) * 34ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-rotator.is-leaving,
+  .landing-rotator-deck {
+    animation: none;
+  }
+  .landing-title .landing-rotator__struck::after {
+    animation: none;
+    transform: scaleX(1);
+  }
+  /* A caret that cannot blink is just a stray mark. */
+  .landing-title .landing-rotator__caret {
+    display: none;
+  }
+  [data-reveal-ready] .landing-typed-reveal .landing-typed__char {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+/* ── One spread ── */
+.landing-plate {
+  display: grid;
+  gap: 1.75rem;
+  align-items: center;
+}
+@media (min-width: 768px) {
+  .landing-plate {
+    grid-template-columns: 1fr 1fr;
+    gap: 3.5rem;
+  }
+  /* A portrait plate at half-width stands taller than its facing copy and
+     opens a dead gap, so give it a narrower column than the landscape ones. */
+  .landing-plate--portrait {
+    grid-template-columns: 0.66fr 1fr;
+  }
+  .landing-plate--portrait.landing-plate--right {
+    grid-template-columns: 1fr 0.66fr;
+  }
+  /* Odd plates keep the photograph left; even plates flip it right. */
+  .landing-plate--right .landing-plate__figure {
+    order: 2;
+  }
+}
+
+/* Each plate carries its own --tilt and --drift so the set reads as prints
+   dropped on a desk rather than cells in a grid. Values come from the data. */
+.landing-plate__figure {
+  --tilt: -1.6deg;
+  --drift-x: 0px;
+  --drift-y: 0px;
+  margin: 0;
+  padding: 0.5rem 0.5rem 1.4rem;
+  background: var(--color-paper-soft);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
+  border-radius: 2px;
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent) inset,
+    0 26px 44px -32px color-mix(in srgb, var(--shade) 52%, transparent),
+    0 3px 9px -6px color-mix(in srgb, var(--shade) 40%, transparent);
+  transform: translate(var(--drift-x), var(--drift-y)) rotate(var(--tilt));
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s ease;
+}
+/* Picking one up off the pile: it straightens and lifts. */
+.landing-plate__figure:hover {
+  transform: translate(var(--drift-x), calc(var(--drift-y) - 6px))
+    rotate(calc(var(--tilt) * 0.15)) scale(1.012);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent) inset,
+    0 44px 70px -34px color-mix(in srgb, var(--shade) 60%, transparent),
+    0 5px 14px -8px color-mix(in srgb, var(--shade) 45%, transparent);
+}
+
+/* Plates fall in and land, over-rotated on the way down and settling into
+   their tilt. The easing overshoots slightly so each one touches down. */
+[data-reveal-ready] [data-reveal].landing-plate__figure {
+  opacity: 0;
+  transform: translate(var(--drift-x), calc(var(--drift-y) - 46px))
+    rotate(calc(var(--tilt) * 3.4)) scale(1.05);
+  transition:
+    opacity 0.55s ease,
+    transform 0.9s cubic-bezier(0.2, 0.9, 0.25, 1.06);
+}
+[data-reveal-ready] [data-reveal].landing-plate__figure.is-revealed {
+  opacity: 1;
+  transform: translate(var(--drift-x), var(--drift-y)) rotate(var(--tilt));
+}
+[data-reveal-ready] [data-reveal].landing-plate__figure.is-revealed:hover {
+  transform: translate(var(--drift-x), calc(var(--drift-y) - 6px))
+    rotate(calc(var(--tilt) * 0.15)) scale(1.012);
+}
+
+.landing-plate__frame {
+  overflow: hidden;
+  border-radius: 2px;
+  aspect-ratio: 3 / 2;
+  background: var(--color-paper-3);
+}
+.landing-plate__frame--portrait {
+  aspect-ratio: 4 / 5;
+}
+.landing-plate__frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Photographic bleed behind the closing CTA. Washed right back and
+   feathered at the edges so it reads as paper texture, not a picture. */
+.landing-closing-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.18;
+  pointer-events: none;
+  mask-image: radial-gradient(
+    ellipse at center,
+    #000 30%,
+    transparent 78%
+  );
+}
+[data-theme="nightpress"] .landing-closing-photo {
+  opacity: 0.26;
+}
+
+.landing-plate__label {
+  display: inline-block;
+  font-family: var(--font-typewriter);
+  font-size: 0.68rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-vermilion);
+  transform: rotate(-1.1deg);
+  transform-origin: left center;
+}
+
+/* ── Scroll reveal ── */
+[data-reveal-ready] [data-reveal] {
+  opacity: 0;
+  transform: translateY(16px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+[data-reveal-ready] [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── Scroll-linked parallax on the plates ──
+   Pure CSS via scroll-driven animations: no rAF listener, nothing
+   added to Qwik's resumable page. Firefox has no support yet and
+   simply gets a clean static photograph. */
+@keyframes landing-plate-parallax {
+  from {
+    transform: translateY(-12px) scale(1.08);
+  }
+  to {
+    transform: translateY(12px) scale(1.08);
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .landing-plate__frame img {
+      animation: landing-plate-parallax linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+  }
+}
+
+/* ── Theme fit ── */
+/* Nightpress: knock the photographs back so they don't glare
+   against the #191714 page. */
+[data-theme="nightpress"] .landing-plate__frame img {
+  filter: brightness(0.9) contrast(1.02);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-hero__photo {
+    animation: none;
+  }
+  .landing-plate__figure {
+    transition: none;
+  }
+  /* Keep the scatter — it's composition, not motion — but drop the flight. */
+  [data-reveal-ready] [data-reveal].landing-plate__figure {
+    opacity: 1;
+    transform: translate(var(--drift-x), var(--drift-y)) rotate(var(--tilt));
+  }
+  /* Never hide content when motion is unwelcome. */
+  [data-reveal-ready] [data-reveal] {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 
@@ -2836,6 +3336,10 @@ body {
   text-transform: uppercase;
   border: 0;
   cursor: pointer;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease;
 }
 .broadsheet-cta:hover {
   background: var(--color-vermilion);
@@ -2848,6 +3352,15 @@ body {
   background: transparent;
   color: var(--color-ink);
   border: 1px solid var(--color-ink);
+}
+/* The secondary sets `background: transparent` at the same specificity as
+   `.broadsheet-cta:hover` and later in the file, so it silently cancelled the
+   base hover — the outline variant had no hover state at all. It answers in
+   vermilion rather than filling solid, so it stays subordinate to the primary. */
+.broadsheet-cta.secondary:hover {
+  background: color-mix(in srgb, var(--color-vermilion) 10%, transparent);
+  border-color: var(--color-vermilion);
+  color: var(--color-vermilion);
 }
 
 /* ── Reduced motion ──────────────────────────────────────── */
@@ -2864,6 +3377,7 @@ body {
     animation: none !important;
   }
   .sidebar-transition,
+  .broadsheet-cta,
   .landing-button,
   .landing-feature-card,
   .portrait {
