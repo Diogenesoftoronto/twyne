@@ -4,7 +4,7 @@ import {
   sync$,
   useSignal,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 
 export const TABLE_GRID_DEFAULT_ROWS = 8;
 export const TABLE_GRID_DEFAULT_COLUMNS = 10;

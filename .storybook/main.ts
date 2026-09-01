@@ -7,6 +7,12 @@ const config: StorybookConfig = {
     // Don't phone home with anonymous usage telemetry.
     disableTelemetry: true,
   },
+  viteFinal: async (viteConfig) => ({
+    ...viteConfig,
+    // Qwik 2 validates Vite's base strictly. Storybook supplies `./` for a
+    // portable static build, but its preview is served from the site root.
+    base: "/",
+  }),
 };
 
 export default config;

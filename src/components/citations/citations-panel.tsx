@@ -1,5 +1,5 @@
-import { component$, useStore, $, useVisibleTask$ } from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
+import { component$, useStore, $, useVisibleTask$ } from "@qwik.dev/core";
+import { Link } from "@qwik.dev/router";
 import type {
   AiSettings,
   CitationInsertionDetail,

@@ -1,4 +1,4 @@
-import { component$, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
 import { useSpeechPlayer } from "../../utils/use-speech-player";
 import {
   currentSpeechSourceOffset,
@@ -282,211 +282,215 @@ export const GlobalSpeechPlayer = component$(() => {
   // get one honest clip-level highlight; elapsed duration is never converted
   // into manufactured word timing. The Highlight API preserves Markdown DOM.
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ cleanup }) => {
-    let activeMap: SpeechTextMap | null = null;
-    let activeId = "";
-    let activeMapDirty = false;
-    let textObserver: MutationObserver | null = null;
-    let lastSentence = "";
-    let pointerId: number | null = null;
-    let pointerType = "";
-    let pointerStart = { x: 0, y: 0 };
-    let resumeAfterSeek = false;
-    let didSeek = false;
+  useVisibleTask$(
+    ({ cleanup }) => {
+      let activeMap: SpeechTextMap | null = null;
+      let activeId = "";
+      let activeMapDirty = false;
+      let textObserver: MutationObserver | null = null;
+      let lastSentence = "";
+      let pointerId: number | null = null;
+      let pointerType = "";
+      let pointerStart = { x: 0, y: 0 };
+      let resumeAfterSeek = false;
+      let didSeek = false;
 
-    const clearActive = () => {
-      textObserver?.disconnect();
-      textObserver = null;
-      if (activeMap) {
-        delete activeMap.root.dataset.speechActive;
-        activeMap.root.classList.remove("is-speech-seeking");
-      }
-      activeMap = null;
-      activeId = "";
-      activeMapDirty = false;
-      lastSentence = "";
-      clearSpeechHighlights();
-    };
-
-    const sync = () => {
-      const snapshot = speechState();
-      if (
-        !snapshot.id ||
-        snapshot.status === "idle" ||
-        snapshot.status === "error"
-      ) {
-        clearActive();
-        return;
-      }
-
-      if (
-        snapshot.id !== activeId ||
-        !activeMap?.root.isConnected ||
-        activeMapDirty
-      ) {
-        clearActive();
-        const root = findSpeechTarget(snapshot.id);
-        if (!root) return;
-        activeMap = buildSpeechTextMap(root);
-        activeId = snapshot.id;
-        textObserver = new MutationObserver(() => {
-          activeMapDirty = true;
-        });
-        textObserver.observe(root, {
-          childList: true,
-          characterData: true,
-          subtree: true,
-        });
-        root.dataset.speechActive = snapshot.status;
-      } else {
-        activeMap.root.dataset.speechActive = snapshot.status;
-      }
-
-      if (!activeMap) {
+      const clearActive = () => {
+        textObserver?.disconnect();
+        textObserver = null;
+        if (activeMap) {
+          delete activeMap.root.dataset.speechActive;
+          activeMap.root.classList.remove("is-speech-seeking");
+        }
+        activeMap = null;
+        activeId = "";
+        activeMapDirty = false;
+        lastSentence = "";
         clearSpeechHighlights();
-        return;
-      }
-      const api = speechHighlightApi();
-      if (!api) return;
-      clearSpeechHighlights();
+      };
 
-      const native = alignmentRangeAtTime(
-        snapshot.alignment,
-        snapshot.currentTime,
-      );
-      const nativeStart = native
-        ? activeMap.spokenStart + native.sourceStart
-        : null;
-      const nativeEnd = native
-        ? activeMap.spokenStart + native.sourceEnd
-        : null;
-      const timelineWord =
-        nativeStart === null
-          ? null
-          : (activeMap.timeline.words.find(
-              (word) =>
-                nativeStart >= word.start && nativeStart < word.sentenceEnd,
-            ) ?? null);
-      const sentenceStart =
-        timelineWord?.sentenceStart ?? activeMap.spokenStart;
-      const sentenceEnd = timelineWord?.sentenceEnd ?? activeMap.spokenEnd;
-      const sentence = textRange(activeMap, sentenceStart, sentenceEnd);
-      const word =
-        native?.precision === "word" &&
-        nativeStart !== null &&
-        nativeEnd !== null
-          ? textRange(activeMap, nativeStart, nativeEnd)
+      const sync = () => {
+        const snapshot = speechState();
+        if (
+          !snapshot.id ||
+          snapshot.status === "idle" ||
+          snapshot.status === "error"
+        ) {
+          clearActive();
+          return;
+        }
+
+        if (
+          snapshot.id !== activeId ||
+          !activeMap?.root.isConnected ||
+          activeMapDirty
+        ) {
+          clearActive();
+          const root = findSpeechTarget(snapshot.id);
+          if (!root) return;
+          activeMap = buildSpeechTextMap(root);
+          activeId = snapshot.id;
+          textObserver = new MutationObserver(() => {
+            activeMapDirty = true;
+          });
+          textObserver.observe(root, {
+            childList: true,
+            characterData: true,
+            subtree: true,
+          });
+          root.dataset.speechActive = snapshot.status;
+        } else {
+          activeMap.root.dataset.speechActive = snapshot.status;
+        }
+
+        if (!activeMap) {
+          clearSpeechHighlights();
+          return;
+        }
+        const api = speechHighlightApi();
+        if (!api) return;
+        clearSpeechHighlights();
+
+        const native = alignmentRangeAtTime(
+          snapshot.alignment,
+          snapshot.currentTime,
+        );
+        const nativeStart = native
+          ? activeMap.spokenStart + native.sourceStart
           : null;
-      if (sentence) {
-        api.registry.set(SENTENCE_HIGHLIGHT, new api.Highlight(sentence));
-      }
-      if (word) api.registry.set(WORD_HIGHLIGHT, new api.Highlight(word));
+        const nativeEnd = native
+          ? activeMap.spokenStart + native.sourceEnd
+          : null;
+        const timelineWord =
+          nativeStart === null
+            ? null
+            : (activeMap.timeline.words.find(
+                (word) =>
+                  nativeStart >= word.start && nativeStart < word.sentenceEnd,
+              ) ?? null);
+        const sentenceStart =
+          timelineWord?.sentenceStart ?? activeMap.spokenStart;
+        const sentenceEnd = timelineWord?.sentenceEnd ?? activeMap.spokenEnd;
+        const sentence = textRange(activeMap, sentenceStart, sentenceEnd);
+        const word =
+          native?.precision === "word" &&
+          nativeStart !== null &&
+          nativeEnd !== null
+            ? textRange(activeMap, nativeStart, nativeEnd)
+            : null;
+        if (sentence) {
+          api.registry.set(SENTENCE_HIGHLIGHT, new api.Highlight(sentence));
+        }
+        if (word) api.registry.set(WORD_HIGHLIGHT, new api.Highlight(word));
 
-      const sentenceKey = `${activeId}:${sentenceStart}`;
-      if (sentence && sentenceKey !== lastSentence && pointerId === null) {
-        lastSentence = sentenceKey;
-        scrollRangeIntoView(sentence, activeMap.root);
-      }
-    };
+        const sentenceKey = `${activeId}:${sentenceStart}`;
+        if (sentence && sentenceKey !== lastSentence && pointerId === null) {
+          lastSentence = sentenceKey;
+          scrollRangeIntoView(sentence, activeMap.root);
+        }
+      };
 
-    const seekFromPoint = (x: number, y: number) => {
-      const snapshot = speechState();
-      if (
-        !activeMap ||
-        snapshot.id !== activeId ||
-        snapshot.duration <= 0 ||
-        (snapshot.status !== "playing" && snapshot.status !== "paused")
-      ) {
-        return;
-      }
-      const offset = caretOffsetFromPoint(activeMap, x, y);
-      if (offset === null) return;
-      const native = alignmentRangeAtSourceOffset(
-        snapshot.alignment,
-        offset - activeMap.spokenStart,
-      );
-      if (!native) return;
-      seekSpeech(native.audioStart);
-      didSeek = true;
-    };
+      const seekFromPoint = (x: number, y: number) => {
+        const snapshot = speechState();
+        if (
+          !activeMap ||
+          snapshot.id !== activeId ||
+          snapshot.duration <= 0 ||
+          (snapshot.status !== "playing" && snapshot.status !== "paused")
+        ) {
+          return;
+        }
+        const offset = caretOffsetFromPoint(activeMap, x, y);
+        if (offset === null) return;
+        const native = alignmentRangeAtSourceOffset(
+          snapshot.alignment,
+          offset - activeMap.spokenStart,
+        );
+        if (!native) return;
+        seekSpeech(native.audioStart);
+        didSeek = true;
+      };
 
-    const onPointerDown = (event: PointerEvent) => {
-      if (event.button !== 0 || pointerId !== null || !activeMap) return;
-      const target = event.target instanceof Element ? event.target : null;
-      const root = target?.closest<HTMLElement>("[data-speech-id]");
-      if (
-        root !== activeMap.root ||
-        target?.closest("a, button, input, select, textarea")
-      ) {
-        return;
-      }
-      const snapshot = speechState();
-      if (
-        snapshot.id !== activeId ||
-        snapshot.duration <= 0 ||
-        snapshot.alignment.length === 0 ||
-        (snapshot.status !== "playing" && snapshot.status !== "paused")
-      ) {
-        return;
-      }
+      const onPointerDown = (event: PointerEvent) => {
+        if (event.button !== 0 || pointerId !== null || !activeMap) return;
+        const target = event.target instanceof Element ? event.target : null;
+        const root = target?.closest<HTMLElement>("[data-speech-id]");
+        if (
+          root !== activeMap.root ||
+          target?.closest("a, button, input, select, textarea")
+        ) {
+          return;
+        }
+        const snapshot = speechState();
+        if (
+          snapshot.id !== activeId ||
+          snapshot.duration <= 0 ||
+          snapshot.alignment.length === 0 ||
+          (snapshot.status !== "playing" && snapshot.status !== "paused")
+        ) {
+          return;
+        }
 
-      pointerId = event.pointerId;
-      pointerType = event.pointerType;
-      pointerStart = { x: event.clientX, y: event.clientY };
-      resumeAfterSeek = snapshot.status === "paused";
-      didSeek = false;
-      activeMap.root.classList.add("is-speech-seeking");
-      if (pointerType !== "touch") {
+        pointerId = event.pointerId;
+        pointerType = event.pointerType;
+        pointerStart = { x: event.clientX, y: event.clientY };
+        resumeAfterSeek = snapshot.status === "paused";
+        didSeek = false;
+        activeMap.root.classList.add("is-speech-seeking");
+        if (pointerType !== "touch") {
+          event.preventDefault();
+          activeMap.root.setPointerCapture?.(event.pointerId);
+          seekFromPoint(event.clientX, event.clientY);
+        }
+      };
+
+      const onPointerMove = (event: PointerEvent) => {
+        if (event.pointerId !== pointerId || pointerType === "touch") return;
         event.preventDefault();
-        activeMap.root.setPointerCapture?.(event.pointerId);
         seekFromPoint(event.clientX, event.clientY);
-      }
-    };
+      };
 
-    const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerId !== pointerId || pointerType === "touch") return;
-      event.preventDefault();
-      seekFromPoint(event.clientX, event.clientY);
-    };
+      const finishPointer = (event: PointerEvent, cancelled = false) => {
+        if (event.pointerId !== pointerId) return;
+        if (
+          !cancelled &&
+          pointerType === "touch" &&
+          Math.hypot(
+            event.clientX - pointerStart.x,
+            event.clientY - pointerStart.y,
+          ) < 8
+        ) {
+          seekFromPoint(event.clientX, event.clientY);
+        }
+        activeMap?.root.classList.remove("is-speech-seeking");
+        if (resumeAfterSeek && didSeek) resumeSpeech();
+        pointerId = null;
+        pointerType = "";
+        resumeAfterSeek = false;
+        didSeek = false;
+        sync();
+      };
+      const onPointerCancel = (event: PointerEvent) =>
+        finishPointer(event, true);
 
-    const finishPointer = (event: PointerEvent, cancelled = false) => {
-      if (event.pointerId !== pointerId) return;
-      if (
-        !cancelled &&
-        pointerType === "touch" &&
-        Math.hypot(
-          event.clientX - pointerStart.x,
-          event.clientY - pointerStart.y,
-        ) < 8
-      ) {
-        seekFromPoint(event.clientX, event.clientY);
-      }
-      activeMap?.root.classList.remove("is-speech-seeking");
-      if (resumeAfterSeek && didSeek) resumeSpeech();
-      pointerId = null;
-      pointerType = "";
-      resumeAfterSeek = false;
-      didSeek = false;
+      window.addEventListener("twyne:speech", sync);
+      document.addEventListener("pointerdown", onPointerDown);
+      document.addEventListener("pointermove", onPointerMove);
+      document.addEventListener("pointerup", finishPointer);
+      document.addEventListener("pointercancel", onPointerCancel);
       sync();
-    };
-    const onPointerCancel = (event: PointerEvent) => finishPointer(event, true);
 
-    window.addEventListener("twyne:speech", sync);
-    document.addEventListener("pointerdown", onPointerDown);
-    document.addEventListener("pointermove", onPointerMove);
-    document.addEventListener("pointerup", finishPointer);
-    document.addEventListener("pointercancel", onPointerCancel);
-    sync();
-
-    cleanup(() => {
-      clearActive();
-      window.removeEventListener("twyne:speech", sync);
-      document.removeEventListener("pointerdown", onPointerDown);
-      document.removeEventListener("pointermove", onPointerMove);
-      document.removeEventListener("pointerup", finishPointer);
-      document.removeEventListener("pointercancel", onPointerCancel);
-    });
-  });
+      cleanup(() => {
+        clearActive();
+        window.removeEventListener("twyne:speech", sync);
+        document.removeEventListener("pointerdown", onPointerDown);
+        document.removeEventListener("pointermove", onPointerMove);
+        document.removeEventListener("pointerup", finishPointer);
+        document.removeEventListener("pointercancel", onPointerCancel);
+      });
+    },
+    { strategy: "document-ready" },
+  );
 
   if (player.state.status === "idle") return null;
 

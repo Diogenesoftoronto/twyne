@@ -3,7 +3,7 @@ import {
   useSignal,
   useVisibleTask$,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { speechState, type SpeechStatus } from "../../utils/speech";
 
 interface SpeechTransportProps {

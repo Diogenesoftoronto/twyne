@@ -2,7 +2,7 @@
   "name": "twyne",
   "description": "Twyne — The writer's room, AI-powered editing with a room full of editors",
   "engines": {
-    "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
+    "node": "^20.19.0 || >=22.12.0"
   },
   "engines-annotation": "Mostly required by sharp which needs a Node-API v9 compatible runtime",
   "private": true,
@@ -26,7 +26,7 @@
     "desktop": "electrobun dev && electrobun run",
     "desktop.build": "electrobun build",
     "dev": "concurrently --names \"CONVEX,VITE\" --prefix-colors cyan,magenta \"npx convex dev\" \"vite --mode ssr\"",
-    "dev.frontend": "vite --mode ssr",
+    "dev.frontend": "vite --mode ssr --host 127.0.0.1 --port 5173 --strictPort",
     "dev.backend": "npx convex dev",
     "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
     "fmt": "prettier --write .",
@@ -37,7 +37,7 @@
     "serve": "node server.js",
     "storybook": "storybook dev -p 6006",
     "storybook.build": "storybook build",
-    "test": "bun test",
+    "test": "bun test --conditions=production --preload ./tests/qwik-test-preload.ts",
     "tools:build": "bun run --cwd packages/twyne-tools build",
     "tools:check": "bun run --cwd packages/twyne-tools check",
     "tools:test": "bun --cwd packages/twyne-tools test",
@@ -62,8 +62,8 @@
     "test:mutation": "stryker run"
   },
   "devDependencies": {
-    "@builder.io/qwik": "^1.19.2",
-    "@builder.io/qwik-city": "^1.19.2",
+    "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-beta.42",
+    "@builder.io/qwik-city": "npm:@qwik.dev/router@2.0.0-beta.42",
     "@edge-runtime/vm": "^5.0.0",
     "@eslint/js": "^9",
     "@playwright/test": "^1.61.0",
@@ -76,7 +76,7 @@
     "electrobun": "^1.18.1",
     "entities": "^8.0.0",
     "eslint": "9.32.0",
-    "eslint-plugin-qwik": "^1.19.2",
+    "eslint-plugin-qwik": "2.0.0-beta.40",
     "globals": "16.4.0",
     "prettier": "3.6.2",
     "storybook": "^10",
@@ -87,11 +87,14 @@
     "typescript-eslint": "8.38.0",
     "typescript-plugin-css-modules": "latest",
     "undici": "^6.21.0",
-    "vite": "7.3.1",
-    "vite-tsconfig-paths": "^4.2.1",
-    "vitest": "^4.1.10"
+    "vite": "8.2.2",
+    "vitest": "^4.1.10",
+    "@qwik.dev/core": "2.0.0-beta.42",
+    "@qwik.dev/router": "2.0.0-beta.42"
   },
   "overrides": {
+    "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-beta.42",
+    "@builder.io/qwik-city": "npm:@qwik.dev/router@2.0.0-beta.42",
     "undici": "^6.21.0"
   },
   "dependencies": {

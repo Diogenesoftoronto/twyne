@@ -1,4 +1,4 @@
-import { component$, type PropFunction } from "@builder.io/qwik";
+import { component$, type PropFunction } from "@qwik.dev/core";
 import type { ProjectBrief } from "../../types";
 import { isAnswered, probeSummaryLine } from "../../utils/dossier-probes";
 

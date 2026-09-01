@@ -4,8 +4,8 @@ import {
   useStylesScoped$,
   useVisibleTask$,
   $,
-} from "@builder.io/qwik";
-import { Link, useNavigate, type DocumentHead } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import { Link, useNavigate, type DocumentHead } from "@qwik.dev/router";
 import type { Folio } from "../../types";
 import {
   loadFoliosFromIdb,

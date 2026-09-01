@@ -1,4 +1,4 @@
-import { component$, type PropFunction } from "@builder.io/qwik";
+import { component$, type PropFunction } from "@qwik.dev/core";
 import type { Editor } from "@tiptap/core";
 import { findTable } from "@tiptap/pm/tables";
 import {

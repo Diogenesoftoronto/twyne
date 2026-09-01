@@ -3,8 +3,8 @@ import {
   useStore,
   useStylesScoped$,
   useVisibleTask$,
-} from "@builder.io/qwik";
-import { Link, type DocumentHead } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import { Link, type DocumentHead } from "@qwik.dev/router";
 import type { RubricResult } from "../../types";
 import {
   loadActiveFolioIdFromIdb,

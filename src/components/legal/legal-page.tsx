@@ -1,5 +1,5 @@
-import { component$, Slot, useStylesScoped$ } from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
+import { component$, Slot, useStylesScoped$ } from "@qwik.dev/core";
+import { Link } from "@qwik.dev/router";
 
 interface TocEntry {
   /** Anchor id of the section heading. */

@@ -4,7 +4,7 @@ import {
   useSignal,
   useVisibleTask$,
   type QRL,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import type { UsageRange } from "../../utils/usage-domain";
 import { usageLedger } from "../../utils/usage-ledger";
 import {

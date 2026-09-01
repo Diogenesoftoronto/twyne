@@ -1,4 +1,4 @@
-import type { RequestHandler } from "@builder.io/qwik-city";
+import type { RequestHandler } from "@qwik.dev/router";
 
 const ROBOTS = `# Twyne — robots.txt
 # Public pages are crawlable. Workspace and authentication routes emit a

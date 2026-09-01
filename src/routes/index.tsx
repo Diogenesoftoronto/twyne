@@ -1,6 +1,6 @@
-import { component$, $ } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
-import { useNavigate } from "@builder.io/qwik-city";
+import { component$, $ } from "@qwik.dev/core";
+import type { DocumentHead } from "@qwik.dev/router";
+import { useNavigate } from "@qwik.dev/router";
 import { LandingPage } from "../components/landing/landing-page";
 import type { Folio } from "../types";
 import { useAuth } from "../utils/auth-context";

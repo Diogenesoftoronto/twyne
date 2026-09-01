@@ -4,8 +4,8 @@ import {
   $,
   useStylesScoped$,
   useVisibleTask$,
-} from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import { Link } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import type { Persona, RoomSettings, AssistanceLevel } from "../../types";

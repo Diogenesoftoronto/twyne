@@ -5,7 +5,7 @@ import {
   useStore,
   useVisibleTask$,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { useAuth } from "../../utils/auth-context";
 import { signInWithBluesky, signOutBluesky } from "../../utils/atproto";
 import { signOut, emailOtp, authClient } from "../../utils/auth-client";

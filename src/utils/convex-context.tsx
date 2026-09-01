@@ -10,7 +10,7 @@ import {
   noSerialize,
   type NoSerialize,
   type Signal,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import { ConvexClient, type ConvexClientOptions } from "convex/browser";
 import { capturePostHogEvent } from "./posthog-context";
 import {
@@ -75,30 +75,33 @@ export const ConvexProvider = component$(
 
     // Keep the client creation on the client side so SSR never evaluates browser state.
     // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(({ cleanup, track }) => {
-      const trackedUrl = track(() => url);
+    useVisibleTask$(
+      ({ cleanup, track }) => {
+        const trackedUrl = track(() => url);
 
-      if (clientSignal.value || !trackedUrl) {
-        return;
-      }
-
-      const createdClient = new ConvexClient(trackedUrl, {
-        ...options,
-        logger:
-          options?.logger ?? (isDev ? true : createProductionConvexLogger()),
-        verbose: options?.verbose ?? false,
-        reportDebugInfoToConvex: options?.reportDebugInfoToConvex ?? false,
-      });
-      clientSignal.value = noSerialize(createdClient);
-
-      cleanup(() => {
-        if (clientSignal.value === createdClient) {
-          clientSignal.value = null;
+        if (clientSignal.value || !trackedUrl) {
+          return;
         }
 
-        void createdClient.close();
-      });
-    });
+        const createdClient = new ConvexClient(trackedUrl, {
+          ...options,
+          logger:
+            options?.logger ?? (isDev ? true : createProductionConvexLogger()),
+          verbose: options?.verbose ?? false,
+          reportDebugInfoToConvex: options?.reportDebugInfoToConvex ?? false,
+        });
+        clientSignal.value = noSerialize(createdClient);
+
+        cleanup(() => {
+          if (clientSignal.value === createdClient) {
+            clientSignal.value = null;
+          }
+
+          void createdClient.close();
+        });
+      },
+      { strategy: "document-ready" },
+    );
 
     return <Slot />;
   },

@@ -1,4 +1,4 @@
-import { component$, type PropFunction, useSignal, useTask$ } from "@builder.io/qwik";
+import { component$, type PropFunction, useSignal, useTask$ } from "@qwik.dev/core";
 
 /**
  * Modal for collecting a multi-line text payload — notes, footnotes,

@@ -1,5 +1,5 @@
-import { component$ } from "@builder.io/qwik";
-import { Link, routeLoader$, type DocumentHead } from "@builder.io/qwik-city";
+import { component$ } from "@qwik.dev/core";
+import { Link, routeLoader$, type DocumentHead } from "@qwik.dev/router";
 import {
   loadStandardSitePublication,
   standardSiteRouteDid,

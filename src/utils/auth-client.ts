@@ -5,7 +5,7 @@ import {
 } from "@convex-dev/better-auth/client/plugins";
 import { passkeyClient } from "@better-auth/passkey/client";
 import { emailOTPClient } from "better-auth/client/plugins";
-import { isDev } from "@builder.io/qwik/build";
+import { isDev } from "@qwik.dev/core/build";
 
 const convexSiteUrl = import.meta.env.VITE_CONVEX_SITE_URL as string | undefined;
 

@@ -4,11 +4,10 @@
  */
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, type UserConfig } from "vite";
-import { qwikVite } from "@builder.io/qwik/optimizer";
-import { qwikCity } from "@builder.io/qwik-city/vite";
-import tsconfigPaths from "vite-tsconfig-paths";
+import { qwikVite } from "@qwik.dev/core/optimizer";
+import { qwikRouter } from "@qwik.dev/router/vite";
 import { fileURLToPath } from "node:url";
-import pkg from "./package.json";
+import pkg from "./package.json" with { type: "json" };
 
 type PkgDep = Record<string, string>;
 const { dependencies = {}, devDependencies = {} } = pkg as any as {
@@ -19,12 +18,14 @@ const { dependencies = {}, devDependencies = {} } = pkg as any as {
 errorOnDuplicatesPkgDeps(devDependencies, dependencies);
 
 /**
- * Note that Vite normally starts from `index.html` but the qwikCity plugin makes start at `src/entry.ssr.tsx` instead.
+ * Note that Vite normally starts from `index.html`, but the Qwik Router plugin
+ * starts from `src/entry.ssr.tsx` instead.
  */
-export default defineConfig(({ command, mode }): UserConfig => {
+export default defineConfig((): UserConfig => {
   return {
-    plugins: [tailwindcss(), qwikCity(), qwikVite(), tsconfigPaths({ root: "." })],
+    plugins: [tailwindcss(), qwikRouter(), qwikVite()],
     resolve: {
+      tsconfigPaths: true,
       // `@atproto/jwk-jose` imports `jose`, whose exports map exposes a
       // `browser` build (WebCrypto) and a `node` build (`node:crypto`).
       // Without `browser` in the condition list the client bundle pulls the
@@ -41,9 +42,10 @@ export default defineConfig(({ command, mode }): UserConfig => {
     },
     // This tells Vite which dependencies to pre-build in dev mode.
     optimizeDeps: {
-      // Put problematic deps that break bundling here, mostly those with binaries.
-      // For example ['better-sqlite3'] if you use that in server functions.
-      exclude: [],
+      // Resvg is only used by server-side OG image routes. Vite 8's Rolldown
+      // scanner otherwise follows its platform switch and tries to parse both
+      // native Linux `.node` bindings as JavaScript during dev startup.
+      exclude: ["@resvg/resvg-js"],
     },
 
     /**
@@ -102,7 +104,7 @@ function errorOnDuplicatesPkgDeps(
   );
 
   // any errors for missing "qwik-city-plan"
-  // [PLUGIN_ERROR]: Invalid module "@qwik-city-plan" is not a valid package
+  // [PLUGIN_ERROR]: Invalid module "@qwik-router-config" is not a valid package
   msg = `Move qwik packages ${qwikPkg.join(", ")} to devDependencies`;
 
   if (qwikPkg.length > 0) {

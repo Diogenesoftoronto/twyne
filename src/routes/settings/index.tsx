@@ -1,5 +1,5 @@
-import { component$, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
-import { Link, type DocumentHead } from "@builder.io/qwik-city";
+import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
+import { Link, type DocumentHead } from "@qwik.dev/router";
 import { ApplicationNotice } from "../../components/ui/application-notice";
 import { SearchableModelSelect } from "../../components/ui/searchable-model-select";
 import { ThemedDialog } from "../../components/ui/themed-dialog";

@@ -1,5 +1,5 @@
-import { component$, type PropFunction } from "@builder.io/qwik";
-import { Link } from "@builder.io/qwik-city";
+import { component$, type PropFunction } from "@qwik.dev/core";
+import { Link } from "@qwik.dev/router";
 
 /**
  * The single chrome shared by /dossier/create and /dossier/refine.

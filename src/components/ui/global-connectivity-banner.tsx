@@ -1,4 +1,4 @@
-import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$ } from "@qwik.dev/core";
 import { createAppError } from "../../utils/application-errors";
 import { ApplicationNotice } from "./application-notice";
 
@@ -13,19 +13,22 @@ export const GlobalConnectivityBanner = component$(() => {
   const offline = useSignal(false);
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ cleanup }) => {
-    if (typeof navigator === "undefined") return;
-    const sync = () => {
-      offline.value = navigator.onLine === false;
-    };
-    sync();
-    window.addEventListener("online", sync);
-    window.addEventListener("offline", sync);
-    cleanup(() => {
-      window.removeEventListener("online", sync);
-      window.removeEventListener("offline", sync);
-    });
-  });
+  useVisibleTask$(
+    ({ cleanup }) => {
+      if (typeof navigator === "undefined") return;
+      const sync = () => {
+        offline.value = navigator.onLine === false;
+      };
+      sync();
+      window.addEventListener("online", sync);
+      window.addEventListener("offline", sync);
+      cleanup(() => {
+        window.removeEventListener("online", sync);
+        window.removeEventListener("offline", sync);
+      });
+    },
+    { strategy: "document-ready" },
+  );
 
   if (!offline.value) return null;
 

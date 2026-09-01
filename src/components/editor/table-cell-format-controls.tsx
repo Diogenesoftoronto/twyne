@@ -1,4 +1,4 @@
-import { component$, useSignal, type PropFunction } from "@builder.io/qwik";
+import { component$, useSignal, type PropFunction } from "@qwik.dev/core";
 import { ColorPicker } from "../ui/color-picker";
 import {
   CELL_BORDER_STYLES,

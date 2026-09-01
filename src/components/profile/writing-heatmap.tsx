@@ -3,7 +3,7 @@
  * days as week-columns of 7 day-squares, colored by activity count.
  */
 
-import { component$, type QRL } from "@builder.io/qwik";
+import { component$, type QRL } from "@qwik.dev/core";
 
 export interface ActivityDay {
   day: string; // "YYYY-MM-DD"

@@ -1,4 +1,4 @@
-import type { RequestHandler } from "@builder.io/qwik-city";
+import type { RequestHandler } from "@qwik.dev/router";
 
 /** Preserve old bookmarks while keeping version history inside the editor. */
 export const onGet: RequestHandler = ({ redirect }) => {

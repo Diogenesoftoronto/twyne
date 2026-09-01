@@ -1,4 +1,4 @@
-import { component$, type PropFunction } from "@builder.io/qwik";
+import { component$, type PropFunction } from "@qwik.dev/core";
 import ImgApprovalStamp from "../../media/approval-stamp.svg?jsx";
 import { renderMarkdown } from "../../utils/markdown";
 import { SpeakButton } from "../ui/speak-button";

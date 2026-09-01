@@ -16,8 +16,8 @@ export interface FontChoice {
 /**
  * Only the families the app actually loads, plus the three generics.
  *
- * `root.tsx` pulls Fraunces, Lora, DM Sans and Special Elite from Google
- * Fonts. Offering anything else would be a lie: the writer would pick it, see
+ * `root.tsx` pulls Libre Baskerville, Lora, DM Sans and Special Elite from
+ * Google Fonts. Offering anything else would be a lie: the writer would pick it, see
  * it locally because their machine happens to have it, and their reader would
  * get a fallback. A font menu is a promise about what the document will look
  * like somewhere else.
@@ -26,8 +26,8 @@ export const FONT_CHOICES: readonly FontChoice[] = [
   { id: "serif", label: "Lora (serif)", stack: '"Lora", Georgia, serif' },
   {
     id: "display",
-    label: "Fraunces (display)",
-    stack: '"Fraunces", Georgia, serif',
+    label: "Libre Baskerville (display)",
+    stack: '"Libre Baskerville", Georgia, serif',
   },
   {
     id: "sans",

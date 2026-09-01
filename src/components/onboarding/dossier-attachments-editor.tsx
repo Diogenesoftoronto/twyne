@@ -1,4 +1,4 @@
-import { component$, $, useStore, type PropFunction } from "@builder.io/qwik";
+import { component$, $, useStore, type PropFunction } from "@qwik.dev/core";
 import type { DossierAttachment } from "../../types";
 
 const MAX_DOCUMENT_CHARS = 2000;

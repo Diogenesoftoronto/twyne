@@ -4,7 +4,7 @@ import {
   useTask$,
   $,
   type QRL,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import type { ModelsDevModel } from "../../utils/models-dev";
 import { searchModelsDevModels } from "../../utils/models-dev";
 

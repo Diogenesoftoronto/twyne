@@ -1,4 +1,4 @@
-import { component$, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useVisibleTask$ } from "@qwik.dev/core";
 import type { ConvexClient } from "convex/browser";
 import { api } from "../../../convex/_generated/api";
 import { useAuth } from "../../utils/auth-context";
@@ -47,46 +47,49 @@ export const UsageSyncController = component$(() => {
   const clientSignal = useConvexClient();
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ cleanup, track }) => {
-    const client = track(() => clientSignal.value);
-    const provider = track(() => auth.value.provider);
-    const accountId = track(() => auth.value.user?.analyticsId);
-    if (!client || provider !== "convex" || !accountId) return;
+  useVisibleTask$(
+    ({ cleanup, track }) => {
+      const client = track(() => clientSignal.value);
+      const provider = track(() => auth.value.provider);
+      const accountId = track(() => auth.value.user?.analyticsId);
+      if (!client || provider !== "convex" || !accountId) return;
 
-    let disposed = false;
-    let running = false;
-    const synchronize = async () => {
-      if (disposed || running || !navigator.onLine) return;
-      running = true;
-      try {
-        const result = await syncLocalUsageHistory({
-          accountId,
-          uploader: createConvexUsageUploader(client),
-        });
-        if (!disposed) announceUsageSync(result);
-      } catch {
-        // Usage telemetry is an enhancement and must never interrupt writing.
-        if (!disposed) {
-          announceUsageSync({
-            status: "partial",
-            uploaded: 0,
-            batches: 0,
+      let disposed = false;
+      let running = false;
+      const synchronize = async () => {
+        if (disposed || running || !navigator.onLine) return;
+        running = true;
+        try {
+          const result = await syncLocalUsageHistory({
+            accountId,
+            uploader: createConvexUsageUploader(client),
           });
+          if (!disposed) announceUsageSync(result);
+        } catch {
+          // Usage telemetry is an enhancement and must never interrupt writing.
+          if (!disposed) {
+            announceUsageSync({
+              status: "partial",
+              uploaded: 0,
+              batches: 0,
+            });
+          }
+        } finally {
+          running = false;
         }
-      } finally {
-        running = false;
-      }
-    };
+      };
 
-    void synchronize();
-    window.addEventListener("online", synchronize);
-    window.addEventListener(USAGE_SYNC_REQUEST_EVENT, synchronize);
-    cleanup(() => {
-      disposed = true;
-      window.removeEventListener("online", synchronize);
-      window.removeEventListener(USAGE_SYNC_REQUEST_EVENT, synchronize);
-    });
-  });
+      void synchronize();
+      window.addEventListener("online", synchronize);
+      window.addEventListener(USAGE_SYNC_REQUEST_EVENT, synchronize);
+      cleanup(() => {
+        disposed = true;
+        window.removeEventListener("online", synchronize);
+        window.removeEventListener(USAGE_SYNC_REQUEST_EVENT, synchronize);
+      });
+    },
+    { strategy: "document-ready" },
+  );
 
   return null;
 });

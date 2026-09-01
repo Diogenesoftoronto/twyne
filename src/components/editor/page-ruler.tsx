@@ -4,7 +4,7 @@ import {
   $,
   sync$,
   type PropFunction,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import {
   MARGIN_RANGE,
   resolveMargins,

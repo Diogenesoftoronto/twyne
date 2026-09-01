@@ -1,5 +1,5 @@
-import { component$, useStylesScoped$ } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import { component$, useStylesScoped$ } from "@qwik.dev/core";
+import type { DocumentHead } from "@qwik.dev/router";
 import { LegalPage } from "../../components/legal/legal-page";
 
 interface QA {

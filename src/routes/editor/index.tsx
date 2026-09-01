@@ -4,9 +4,9 @@ import {
   useSignal,
   useStore,
   useVisibleTask$,
-} from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
-import { Link, useLocation, useNavigate } from "@builder.io/qwik-city";
+} from "@qwik.dev/core";
+import type { DocumentHead } from "@qwik.dev/router";
+import { Link, useLocation, useNavigate } from "@qwik.dev/router";
 import { ProjectBriefCard } from "../../components/brief/project-brief-card";
 import { AccountMenu } from "../../components/auth/account-menu";
 import { FolioMenu } from "../../components/folio/folio-menu";

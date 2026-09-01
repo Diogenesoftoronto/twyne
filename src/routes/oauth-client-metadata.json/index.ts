@@ -1,4 +1,4 @@
-import type { RequestHandler } from "@builder.io/qwik-city";
+import type { RequestHandler } from "@qwik.dev/router";
 import { AUTH_CALLBACK_PATH, SCOPE } from "../../utils/atproto";
 
 /**

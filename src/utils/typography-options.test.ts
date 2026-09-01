@@ -21,7 +21,7 @@ describe("font choices", () => {
     // writer sees it locally and their reader gets a fallback.
     const loaded = [
       "Lora",
-      "Fraunces",
+      "Libre Baskerville",
       "DM Sans",
       "Special Elite",
       "ui-monospace",

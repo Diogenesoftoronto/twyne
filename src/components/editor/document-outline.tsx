@@ -5,7 +5,7 @@ import {
   type NoSerialize,
   type PropFunction,
   type QRL,
-} from "@builder.io/qwik";
+} from "@qwik.dev/core";
 import {
   focusOutlineHeading,
   type DocumentOutlineHeading,

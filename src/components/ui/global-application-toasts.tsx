@@ -1,4 +1,4 @@
-import { component$, useStore, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
 import type { AppError } from "../../types/application-errors";
 import {
   APPLICATION_ERROR_TOAST_EVENT,
@@ -38,50 +38,54 @@ export const GlobalApplicationToasts = component$(() => {
   const store = useStore<{ items: ToastEntry[] }>({ items: [] });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ cleanup }) => {
-    const dismissTimers = new Map<string, ReturnType<typeof setTimeout>>();
-    const dismiss = (id: string) => {
-      store.items = store.items.filter((item) => item.id !== id);
-      const timer = dismissTimers.get(id);
-      if (timer) clearTimeout(timer);
-      dismissTimers.delete(id);
-    };
-    const onToast = (event: Event) => {
-      const detail = (event as CustomEvent<ApplicationErrorToastDetail>).detail;
-      if (!detail?.error) return;
-      const key = toastKey(detail);
-      const existing = store.items.find((item) => item.key === key);
-      if (existing) {
-        store.items = store.items.map((item) =>
-          item.key === key ? { ...detail, id: existing.id, key } : item,
-        );
-        return;
-      }
-      const entry: ToastEntry = {
-        ...detail,
-        id: detail.error.referenceId,
-        key,
+  useVisibleTask$(
+    ({ cleanup }) => {
+      const dismissTimers = new Map<string, ReturnType<typeof setTimeout>>();
+      const dismiss = (id: string) => {
+        store.items = store.items.filter((item) => item.id !== id);
+        const timer = dismissTimers.get(id);
+        if (timer) clearTimeout(timer);
+        dismissTimers.delete(id);
       };
-      store.items = [...store.items, entry].slice(-2);
-      dismissTimers.set(
-        entry.id,
-        setTimeout(() => dismiss(entry.id), 12_000),
-      );
-    };
+      const onToast = (event: Event) => {
+        const detail = (event as CustomEvent<ApplicationErrorToastDetail>)
+          .detail;
+        if (!detail?.error) return;
+        const key = toastKey(detail);
+        const existing = store.items.find((item) => item.key === key);
+        if (existing) {
+          store.items = store.items.map((item) =>
+            item.key === key ? { ...detail, id: existing.id, key } : item,
+          );
+          return;
+        }
+        const entry: ToastEntry = {
+          ...detail,
+          id: detail.error.referenceId,
+          key,
+        };
+        store.items = [...store.items, entry].slice(-2);
+        dismissTimers.set(
+          entry.id,
+          setTimeout(() => dismiss(entry.id), 12_000),
+        );
+      };
 
-    window.addEventListener(APPLICATION_ERROR_TOAST_EVENT, onToast);
-    const connection = connectApplicationErrorToastHost();
-    for (const pending of connection.pending) {
-      onToast(
-        new CustomEvent(APPLICATION_ERROR_TOAST_EVENT, { detail: pending }),
-      );
-    }
-    cleanup(() => {
-      window.removeEventListener(APPLICATION_ERROR_TOAST_EVENT, onToast);
-      connection.disconnect();
-      for (const timer of dismissTimers.values()) clearTimeout(timer);
-    });
-  });
+      window.addEventListener(APPLICATION_ERROR_TOAST_EVENT, onToast);
+      const connection = connectApplicationErrorToastHost();
+      for (const pending of connection.pending) {
+        onToast(
+          new CustomEvent(APPLICATION_ERROR_TOAST_EVENT, { detail: pending }),
+        );
+      }
+      cleanup(() => {
+        window.removeEventListener(APPLICATION_ERROR_TOAST_EVENT, onToast);
+        connection.disconnect();
+        for (const timer of dismissTimers.values()) clearTimeout(timer);
+      });
+    },
+    { strategy: "document-ready" },
+  );
 
   if (store.items.length === 0) return null;
 

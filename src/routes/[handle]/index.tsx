@@ -11,13 +11,13 @@
  * profile, to avoid user enumeration.
  */
 
-import { component$, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, useVisibleTask$ } from "@qwik.dev/core";
 import {
   type DocumentHead,
   useLocation,
   Link,
   routeLoader$,
-} from "@builder.io/qwik-city";
+} from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import {
