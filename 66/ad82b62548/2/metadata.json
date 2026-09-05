@@ -1,0 +1,72 @@
+{
+  "cli_version": "0.10.2",
+  "checkpoint_id": "66ad82b62548",
+  "session_id": "ses_f94cd6aacffeyoX1OTNnfozBg0",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-05T09:49:32.356475558Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    ".githooks/pre-push.pre-entire",
+    ".gitignore",
+    "README.md",
+    "devenv.lock",
+    "devenv.nix",
+    "package.json",
+    "scripts/install-git-hooks.mjs"
+  ],
+  "agent": "OpenCode",
+  "model": "fugu-ultra-v1.1",
+  "turn_id": "d00f64c70b19",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 1
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-05T09:49:32.318939815Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 3,
+    "human_removed": 25,
+    "total_committed": 0,
+    "total_lines_changed": 28,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 95,
+      "user_lines_removed": 32,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".githooks/pre-commit": 14,
+        ".githooks/pre-push": 1,
+        ".githooks/pre-push.legacy": 10,
+        ".gitignore": 1,
+        "README.md": 3,
+        "devenv.lock": 39,
+        "devenv.nix": 20,
+        "devenv.yaml": 7
+      },
+      "user_removed_per_file": {
+        ".githooks/pre-push": 6,
+        ".githooks/pre-push.pre-entire": 4,
+        "README.md": 3,
+        "devenv.lock": 1,
+        "package.json": 2,
+        "scripts/install-git-hooks.mjs": 16
+      }
+    }
+  ]
+}
