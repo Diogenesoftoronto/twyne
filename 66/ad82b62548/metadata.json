@@ -3,7 +3,7 @@
   "checkpoint_id": "66ad82b62548",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 3,
+  "checkpoints_count": 4,
   "files_touched": [
     ".githooks/pre-push.pre-entire",
     ".gitignore",
@@ -34,6 +34,13 @@
       "compact_transcript": "/66/ad82b62548/2/transcript.jsonl",
       "content_hash": "/66/ad82b62548/2/content_hash.txt",
       "prompt": "/66/ad82b62548/2/prompt.txt"
+    },
+    {
+      "metadata": "/66/ad82b62548/3/metadata.json",
+      "transcript": "/66/ad82b62548/3/full.jsonl",
+      "compact_transcript": "/66/ad82b62548/3/transcript.jsonl",
+      "content_hash": "/66/ad82b62548/3/content_hash.txt",
+      "prompt": "/66/ad82b62548/3/prompt.txt"
     }
   ],
   "token_usage": {
@@ -41,6 +48,6 @@
     "cache_creation_tokens": 0,
     "cache_read_tokens": 559360,
     "output_tokens": 3398,
-    "api_call_count": 14
+    "api_call_count": 15
   }
 }
