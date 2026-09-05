@@ -166,9 +166,9 @@ the `TWYNE_DESKTOP_URL` dev override, and platform caveats.
 
 Versioning uses Bun's package manager. `bun pm version` requires a clean working
 tree, updates `package.json`, and creates the version commit and `v<version>` tag.
-The `preversion`, `postversion`, and pre-push hooks run the same dependency-free
-release check so the package version, annotated tag, and tagged manifest cannot
-drift apart.
+The `preversion` and `postversion` scripts plus Devenv's native pre-push
+hook run the same dependency-free release check so the package version,
+annotated tag, and tagged manifest cannot drift apart.
 
 ```bash
 bun run release:version patch  # or minor, major, prerelease, or an exact version

@@ -91,3 +91,4 @@ stryker.log
 
 # devenv (nix dev shell) — local build cache
 .devenv/
+.pre-commit-config.yaml

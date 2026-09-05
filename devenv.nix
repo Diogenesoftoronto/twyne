@@ -71,6 +71,11 @@
     exec = "bun run storybook.build";
   };
 
+  tasks."twyne:release:check" = {
+    description = "Verify package version and release tag consistency";
+    exec = "bun run release:check";
+  };
+
   tasks."twyne:ci" = {
     description = "Run checks, tests, and production builds";
     after = [
@@ -79,6 +84,22 @@
       "twyne:build"
       "twyne:storybook:build"
     ];
+  };
+
+  git-hooks.hooks = {
+    twyne-release-check = {
+      enable = true;
+      name = "Twyne release consistency";
+      entry = "devenv tasks run twyne:release:check";
+      language = "system";
+      pass_filenames = false;
+      always_run = true;
+      # Bun creates the version commit before its annotated tag exists.
+      # preversion/postversion guard that transition; only check pushes here.
+      stages = [
+        "pre-push"
+      ];
+    };
   };
 
   # `devenv up` is the complete local workspace: Convex, the Qwik app, and
