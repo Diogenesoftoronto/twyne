@@ -16,8 +16,6 @@
     "build.types": "tsc --incremental --noEmit",
     "build.server": "vite build --ssr src/entry.preview.tsx",
     "deploy": "bun run build.client && bun run build.server && bun server.js",
-    "prepare": "node scripts/install-git-hooks.mjs",
-    "hooks:install": "node scripts/install-git-hooks.mjs",
     "preversion": "bun run release:check",
     "postversion": "bun run release:check",
     "release:check": "bun scripts/check-release-version.ts",
