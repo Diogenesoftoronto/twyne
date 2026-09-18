@@ -1,0 +1,1819 @@
+Here’s the Twyne editor-fix list from this conversation:
+
+1. **Fix slash-command menu positioning**
+   - The `/` command menu can extend below the visible screen, especially when editing near the bottom.
+   - It should reposition/flip itself so the entire menu remains visible.
+   - Scrolling through commands shouldn’t cause the menu or selected item to disappear off-screen.
+
+2. **Fix slash-command focus**
+   - Focus is inconsistent when the slash-command menu first opens.
+   - Keyboard interaction sometimes doesn’t work initially and then starts working later.
+   - Opening `/` should immediately put the command menu into the expected keyboard-navigation state.
+   - Arrow keys should reliably navigate the options without requiring mouse interaction first.
+
+3. **Keep the active slash-command item visible**
+   - When navigating downward with the keyboard, the menu should automatically scroll to keep the currently highlighted command visible.
+   - Essentially `scrollIntoView` behavior for the active option.
+
+4. **Fix bottom-of-editor behavior**
+   - There were UI problems specifically when typing/entering content near the bottom of the editor after removing empty space.
+   - This sounded related to viewport/layout behavior around the caret and slash-command UI.
+   - Test typing, Enter, `/`, selection, and scrolling when the caret is at the very bottom of the document.
+
+5. **Fix the offline banner blocking navigation**
+   - When the service/backend is offline, Twyne shows an offline banner at the top.
+   - The banner currently covers the navigation bar and prevents access to parts of the application.
+   - The layout should reserve space for the banner or otherwise display it without obscuring/intercepting the navigation.
+
+6. **Test Twyne's actual offline behavior**
+   - Local saving **already appears to work**, so this isn't a request to build local persistence from scratch.
+   - Verify systematically what continues working while the service is unavailable.
+   - In particular, users should still be able to navigate around the application and use functionality that doesn't actually require the server.
+   - The offline indicator shouldn't make an otherwise-functional offline application unusable.
+
+7. **Support dragging selected text**
+   - Select text by dragging/highlighting it.
+   - Drag that selection elsewhere in the document.
+   - Show the insertion/caret location where it will land.
+   - Dropping should **move** the selected text to that position.
+   - This should work for paragraphs and larger blocks, not just a few characters.
+   - The goal is normal native-editor behavior: rearranging prose by dragging selections.
+
+There was also a possible **H1-related issue**, but you weren't sure there was actually a bug there, so I'd leave that as **"reproduce before filing"** rather than treating it as a confirmed fix.
+
+The highest-leverage cluster is probably **editor interaction correctness**: slash-menu focus/positioning + bottom-of-viewport behavior + selection drag/drop. Those are all cases where Twyne should behave like users' existing mental model of a text editor rather than introducing Twyne-specific interaction rules.
+
+---
+
+<task-notification>
+<task-id>a81079b5fb3c13e13</task-id>
+<tool-use-id>toolu_012SCqSBtP7jin3KK9iznYVi</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/3dfc20ed-0d99-4c4e-b75b-46b0860bb2b2/tasks/a81079b5fb3c13e13.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore offline banner and layout" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture. Here are my findings.
+
+---
+
+# 1. The offline banner — every participating file
+
+**The banner itself:** `/home/diogenes/Projects/twyne/src/components/ui/global-connectivity-banner.tsx` (48 lines, the whole file):
+
+```tsx
+export const GlobalConnectivityBanner = component$(() =&gt; {
+  const offline = useSignal(false);
+  useVisibleTask$(({ cleanup }) =&gt; {
+      if (typeof navigator === "undefined") return;
+      const sync = () =&gt; { offline.value = navigator.onLine === false; };
+      sync();
+      window.addEventListener("online", sync);
+      window.addEventListener("offline", sync);
+      cleanup(() =&gt; { /* removeEventListener x2 */ });
+    }, { strategy: "document-ready" });
+
+  if (!offline.value) return null;
+
+  return (
+    &lt;div class="sticky top-0 z-50 w-full"&gt;      // ← line 36, the whole problem
+      &lt;ApplicationNotice variant="outage" title="You are offline"
+        error={createAppError("NETWORK_UNAVAILABLE", {
+          source: "fetch",
+          recovery: { action: "check-connection", canRetry: false },
+          metadata: { operation: "connectivity" },
+        })} /&gt;
+    &lt;/div&gt;
+  );
+});
+```
+
+**Mounted at:** `/home/diogenes/Projects/twyne/src/root.tsx:89` — a direct child of `&lt;body&gt;`, *outside* `&lt;ConvexProvider&gt;` and *before* `&lt;RouterOutlet/&gt;`:
+
+```tsx
+&lt;body lang="en"&gt;
+  &lt;GlobalConnectivityBanner /&gt;     // line 89
+  &lt;GlobalApplicationToasts /&gt;      // line 90
+  &lt;ConvexProvider url={convexUrl}&gt;
+    &lt;AuthProvider&gt;&lt;PostHogProvider&gt;
+      &lt;UsageSyncController /&gt;
+      &lt;RouterOutlet /&gt;             // line 95 — every page renders here
+```
+
+**Rendering chrome it depends on:**
+- `/home/diogenes/Projects/twyne/src/components/ui/application-notice.tsx` — the `&lt;section&gt;` that actually paints. Line 78-90: opaque background via `color-mix(in srgb, var(--color-vermilion) 12%, var(--color-paper))`, `role="alert"`, `aria-live="assertive"`, padding `p-3.5` (compact not passed). No `pointer-events` declaration anywhere.
+- `/home/diogenes/Projects/twyne/src/utils/application-errors.ts:48-49` — `NETWORK_UNAVAILABLE` message: "We could not reach the service. Check your connection and try again."
+- `/home/diogenes/Projects/twyne/src/types/application-errors.ts` — `AppError` type + `check-connection` recovery action.
+
+**Other connectivity-status participants (separate from the banner):**
+- `/home/diogenes/Projects/twyne/src/utils/convex-sync.ts:243-268` (`SyncStatus` union incl. `{kind:"offline"}` from `navigator.onLine`), `:876-883` `bindNetworkStatusEvents()`.
+- `/home/diogenes/Projects/twyne/src/components/editor/sync-indicator-helpers.ts:19-61` — the in-editor sync dot. `"Offline — your changes are still being saved locally"`.
+- `/home/diogenes/Projects/twyne/src/routes/desk/index.tsx:224,231,345,386` — `remoteState: "offline"` fallback.
+- `/home/diogenes/Projects/twyne/src/components/desk/desk-summary.tsx:25,75`.
+- `/home/diogenes/Projects/twyne/src/components/editor/twyne-editor.tsx:495-502` — offline image-upload adapter (data: URLs), `:1716` online/offline wiring.
+- `/home/diogenes/Projects/twyne/src/components/rubric/rubric-panel.tsx:279` — keyword-heuristic fallback when offline.
+- `/home/diogenes/Projects/twyne/src/routes/settings/index.tsx:770,803`.
+
+There are **no tests and no stories** for the banner — `grep -rln "GlobalConnectivityBanner"` returns only `root.tsx` and the component itself.
+
+---
+
+# 2. Positioning, layering, and exactly why it eats the nav
+
+## The banner
+`src/components/ui/global-connectivity-banner.tsx:36` → `class="sticky top-0 z-50 w-full"`, i.e. `position: sticky; top: 0; z-index: 50; width: 100%`.
+
+## The z-scale it violates
+`src/global.css:68-75` defines a semantic scale that the rest of the app uses:
+
+```css
+:root {
+  --z-dropdown: 30;
+  --z-sticky: 20;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+}
+```
+
+The banner's `z-50` is **`--z-modal`** — modal altitude, for a passive status strip. Everything in the app chrome sits below it:
+- Editor sticky toolbar (`twyne-editor.tsx:3043`): `class="sticky top-0"` + `style={{ zIndex: "var(--z-sticky)" }}` → **20**
+- Find/replace, slash menu, dropdowns → `var(--z-dropdown)` → **30**
+- Overlays → `var(--z-overlay)` → **40**
+
+So the banner outranks the editor's own sticky toolbar by 30 levels.
+
+## The nav/header — there is no shared one
+**There is no `src/routes/layout.tsx`. There are no nested layouts at all** (`find src/routes -name "layout*.tsx"` → empty). `root.tsx` renders `&lt;RouterOutlet/&gt;` directly into `&lt;body&gt;`; each route ships its own header. The three that matter:
+
+| Location | Markup | Position | z-index |
+|---|---|---|---|
+| `src/routes/editor/index.tsx:1238-1240` | `&lt;header class="border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]"&gt;` (the TWYNE masthead: drawer toggle, home link, "File a dossier", `FolioMenu`) | **static** (normal flow) | **auto** |
+| `src/components/landing/landing-page.tsx:312-313` | `&lt;header class="grid ... py-5"&gt;` + `&lt;nav class="hidden items-center gap-6 sm:flex"&gt;` | **static** | auto |
+| `src/routes/desk/index.tsx:397-399` | `&lt;nav aria-label="Desk navigation" class="mb-5 flex ..."&gt;` | **static** | auto |
+
+None of them is sticky, none sets a z-index, none creates a stacking context, and **nothing anywhere reserves vertical space for a banner** — `grep -- "--header|--nav|--banner|header-height|nav-height"` across `src/global.css` and the app returns **zero hits**. No spacer element, no `padding-top` on a shell, no CSS custom property.
+
+## The concrete mechanism of the overlap
+
+The editor is the acute case. `src/routes/editor/index.tsx`:
+
+```
+885:  &lt;div class="min-h-screen relative"&gt;          ← `relative`, no z-index → NO stacking context
+937:    &lt;div class="editor-workspace-shell flex h-screen bg-[var(--color-paper)] overflow-hidden"&gt;
+1238:      &lt;header class="border-b-2 border-double ..."&gt;   ← the masthead, static
+```
+
+Four things combine:
+
+1. **Height is not reserved, it is *added*.** The banner is a block in `&lt;body&gt;`'s normal flow *above* `RouterOutlet`. When it appears, body content height becomes `bannerHeight + 100vh`, because the shell at line 937 is a hard `h-screen` (`height: 100vh`) with `overflow-hidden`. The document now scrolls by exactly the banner's height (~68-76px at `p-3.5` with a title line plus a message line), and the bottom of the editor shell is pushed below the fold — the editor's internal panes never see the reduced space because `100vh` ignores the banner entirely.
+
+2. **On that scroll, `sticky` detaches and covers.** The banner's sticky containing block is `&lt;body&gt;`'s content box, which spans the whole (now taller) document, so it stays pinned at `top: 0` through the entire scroll range. The masthead at line 1238 does *not* scroll — it is inside the `overflow-hidden` 100vh shell — so as soon as the user scrolls the body by even a few pixels, the masthead slides up *underneath* the pinned banner.
+
+3. **Nothing can paint over it.** `z-50` against the root stacking context (body), while `min-h-screen relative` at line 885 has `z-index: auto` and therefore creates no stacking context to trap the banner. The masthead is `z-index: auto` in flow, so it is painted before and below. The editor's own sticky toolbar at `--z-sticky: 20` also loses.
+
+4. **It intercepts every click in that band.** `ApplicationNotice` renders an opaque `&lt;section&gt;` with **no `pointer-events: none`** anywhere in the chain — not on the `sticky` wrapper, not on the section. So the full-width strip is a live hit-target sitting over the masthead's top band, swallowing clicks on the drawer toggle, the `TWYNE` home link, "File a dossier", and `FolioMenu`.
+
+Compare with the *correct* pattern already in the codebase — the toast region, `src/global.css:3809-3818`:
+
+```css
+.application-toast-region {
+  position: fixed;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
+  z-index: var(--z-toast);
+  display: grid;
+  width: min(28rem, calc(100vw - 2rem));
+  gap: 0.65rem;
+  pointer-events: none;        /* ← region is inert */
+}
+.application-toast { pointer-events: auto; }   /* ← only the card is clickable */
+```
+
+The banner is the sibling of this region in `root.tsx` (line 89 vs 90) and does none of it.
+
+A fifth, secondary issue: the banner renders only after hydration (`strategy: "document-ready"`), so on an offline cold load the SSR/cached shell paints without it, then the banner appears and shoves the entire page down — an unmitigated layout shift on top of the overlap.
+
+Also note `z-50` **ties** with every route-level modal (`fixed inset-0 z-50` in `suggestion-panel.tsx:23`, `citations-panel.tsx:980`, `folio-menu.tsx:681,759`, `apparatus/index.tsx:1253`, `personas-panel.tsx:2668`). Those win on DOM order only because `RouterOutlet` comes after the banner in `&lt;body&gt;` — a fragile tie, not a designed order.
+
+---
+
+# 3. Root layout structure — summary
+
+```
+src/root.tsx  (the ONLY layout; no src/routes/layout.tsx exists)
+└── &lt;body lang="en"&gt;                       ← normal block flow, no flex, no grid
+    ├── &lt;GlobalConnectivityBanner/&gt;        ← sticky top-0 z-50, IN FLOW, adds height
+    ├── &lt;GlobalApplicationToasts/&gt;         ← position:fixed, z-toast(60), pointer-events:none
+    └── &lt;ConvexProvider&gt;&lt;AuthProvider&gt;&lt;PostHogProvider&gt;
+        ├── &lt;UsageSyncController/&gt;
+        ├── &lt;RouterOutlet/&gt;                ← each route brings its own &lt;header&gt;/&lt;nav&gt;
+        ├── &lt;GlobalSpeechPlayer/&gt;          ← fixed bottom-3 (ui/global-speech-player.tsx:506)
+        └── SW registration script (prod only)
+```
+
+- No sticky app header. No spacer. No `--header-height` / `--banner-height` custom property (confirmed by grep).
+- `&lt;body&gt;` CSS is at `src/global.css:316-333` — only fonts, colour, and the paper-grain background gradients. No `overflow`, no `position`, no `padding-top` hook.
+- Route shells are each independently `min-h-screen` (`desk:395`, `settings:1540`, `library:126`, `apparatus:479`, `[handle]:135`, …), and the editor is the one hard `h-screen ... overflow-hidden` (`editor/index.tsx:937`).
+
+---
+
+# 4. Offline behaviour — what actually works
+
+**This app is genuinely local-first.** Two decisive facts:
+
+- **`grep -rn "routeLoader\$\|server\$(" src` returns ZERO hits.** Nothing gates navigation or render on a server round-trip. All data comes from IndexedDB in `useVisibleTask$` after hydration.
+- The Convex client is created **client-side only**, in a `useVisibleTask$` with `strategy: "document-ready"` (`src/utils/convex-context.tsx:78-104`), and it is optional: `if (clientSignal.value || !trackedUrl) return;`. Consumers hold `Signal&lt;NoSerialize&lt;ConvexClient&gt; | null&gt;` and null-check it. Losing the backend leaves the client's own WebSocket retrying in the background; the production logger (`:39-66`) swallows the noise into PostHog `$exception` events rather than surfacing it.
+
+**Local persistence** — `/home/diogenes/Projects/twyne/src/utils/idb.ts`, DB `twyne`, `DB_VERSION = 4`, stores: `folios`, `folio-content`, `brief`, `comments`, `personas`, `meta`, `ai-settings`, `lix-blob`, `ai-usage-events`, `writing-activity-detail`, plus `voice-notes` and `models`. Version history is Lix (`@lix-js/sdk` 0.4.10, `@lix-js/plugin-json` vendored at `packages/lix-plugin-json`), its blob stored in the `lix-blob` store. **No Yjs, no y-indexeddb, no Dexie.** `convex-sync.ts` writes through to IDB first (`saveFoliosToIdb`, `saveFolioContentToIdb` at `:1016,1038,1215,1222`) and queues pushes.
+
+**Service worker** — `/home/diogenes/Projects/twyne/src/routes/service-worker.ts`, registered from `root.tsx:20-26,97-102` (production only, `!isDev`). Policy in `/home/diogenes/Projects/twyne/src/utils/offline-cache-policy.ts`:
+- Navigations to the 12 `WRITING_SHELL_PATHS` (`:11-24`: `/editor/`, `/desk/`, `/library/`, `/settings/`, `/personas/`, `/rubric/`, `/revisions/`, `/analysis/`, `/apparatus/`, `/onboarding/`, `/dossier/create/`, `/dossier/refine/`) are **network-first with cached-shell fallback** (`networkFirstShell`, service-worker.ts:57-72).
+- `REQUIRED_OFFLINE_SHELLS = ["/editor/", "/dossier/create/"]` (`:26`) must precache or the install fails — deliberately, so a flaky update can't replace a working worker.
+- `/build/*` is cache-first (content-addressed); `/assets/*` and the static root set are stale-while-revalidate.
+- Privacy-conscious: shells are fetched with `credentials: "omit"` and stored only if `canStorePublicResponse`; `hasSensitiveRequestHeaders` (`:71-78`) refuses anything carrying `authorization`, `range`, `x-qwik-fullpath`, or `x-qwik-route-path`. Only content-free shells are cached — manuscripts never touch Cache Storage.
+- PWA manifest at `/home/diogenes/Projects/twyne/public/manifest.json`, `display: standalone`, linked from `root.tsx:67-72` (prod only).
+
+**Keeps working offline:** loading `/editor/` and `/dossier/create/` cold from the SW shell; opening/editing/saving folios; the brief, comments, personas, rubric results; Lix version history; theme/settings; image insert (falls back to base64 data URLs, `twyne-editor.tsx:495-502`); the desk's local ledger.
+
+**Breaks offline:** cross-device sync (queued, `SyncStatus.kind === "offline"`, work stays safe locally); every AI call (`ai-client.ts`, personas, `mcp-research.ts`, TTS `supertonic-tts.ts` unless the model is already in the `models` store); the desk's `synchronized` remote totals (`remoteState → "offline"`); auth/sign-in; collaboration/share; ATProto publishing; the **Google Fonts stylesheet** (`root.tsx:82-85`) is not in any cache list, so a cold offline load falls back to `Georgia`/`system-ui`/`Courier New`; and the 10 non-required shell routes only work offline if you happened to visit them while online.
+
+---
+
+# 5. CSS conventions
+
+**Tailwind v4, via the Vite plugin — no config file.** `@tailwindcss/vite ^4.2.4` + `tailwindcss ^4.2.4` (`package.json:69,82`). There is **no `tailwind.config.*` and no `postcss.config.*`**; `src/global.css:1` is simply `@import "tailwindcss";`.
+
+**Everything lives in one 5000+ line global stylesheet:** `/home/diogenes/Projects/twyne/src/global.css`, imported once at `root.tsx:18`. **No CSS modules.** Styling is Tailwind utilities in `class=` + arbitrary-value token refs like `bg-[var(--color-paper)]` / `text-[var(--color-ink)]`, plus hand-written semantic classes in `global.css` (`.folio`, `.btn-paper`, `.btn-press`, `.dept-label`, `.icon-btn`, `.focus-ring`, `.application-toast-region`, …). Inline `style=` strings are used freely for typography.
+
+**Design tokens** are in the Tailwind v4 `@theme { }` block, `src/global.css:14-66` — paper/ink ramp (`--color-paper`, `--color-paper-2/3/-soft`, `--color-ink`, `--color-ink-light`, `--color-ink-muted`, `--color-editor-bg`), departmental accents (`--color-vermilion`, `--color-periwinkle`, `--color-sage`, `--color-mustard`, `--color-blush`, `--color-cobalt`), persona colours, and the type stack (`--font-display` Libre Baskerville, `--font-serif` Lora, `--font-sans` DM Sans, `--font-typewriter` Special Elite, `--font-mono`).
+
+Two follow-on `:root` blocks: the **z-scale at `:68-75`** (quoted above) and alias tokens at `:78-86` (`--color-accent`, `--color-rule`, `--color-crimson`). Theming is runtime-swapped by `src/utils/theme.ts` via an inline bootstrap script (`root.tsx:63-66`) that stamps the palette on `&lt;html&gt;` before first paint.
+
+---
+
+# Implications for your fix
+
+The minimal, convention-matching change is confined to `global-connectivity-banner.tsx:36` — mirror `.application-toast-region`:
+
+- `position: fixed` instead of `sticky`, so it stops injecting height into `&lt;body&gt;` and stops fighting the `h-screen` editor shell.
+- `z-index: var(--z-toast)` (60) or a new `--z-banner` added to the scale at `global.css:68-75` — **not** the raw `z-50`, which collides with `--z-modal`.
+- `pointer-events: none` on the wrapper with `pointer-events: auto` on the notice, so the strip can never intercept a masthead click.
+- Because there is **no shared layout and no header-height variable**, a top-pinned full-width banner has nothing to push against on any of the ~21 routes. Either dock it somewhere the chrome isn't (bottom-centre, beside the speech player at `global-speech-player.tsx:506`; or top-*right* under the toasts), or introduce a real `--twyne-banner-height` in `global.css` and have the editor shell use `h-[calc(100vh-var(--twyne-banner-height,0px))]` instead of `h-screen` at `editor/index.tsx:937`. Consider also passing `compact` to `ApplicationNotice` (halves the strip height, `application-notice.tsx:79`) and note there is currently no test coverage to catch a regression here.</result>
+<usage><subagent_tokens>102035</subagent_tokens><tool_uses>30</tool_uses><duration_ms>210937</duration_ms></usage>
+</task-notification>
+
+---
+
+when it comes  to the h1 and the are other short cuts for writing markdown that i would expect that don't work also i woould love if the application got local models in offline working right, say miniCPM5 for in browser stuff, check out keating to see the model there working, we have that in both browser and
+
+---
+
+<task-notification>
+<task-id>a49843002338399c7</task-id>
+<tool-use-id>toolu_01Bs536opAXCbCokrc1JbCas</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/3dfc20ed-0d99-4c4e-b75b-46b0860bb2b2/tasks/a49843002338399c7.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore slash command menu" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have the complete picture. Here is the detailed report.
+
+---
+
+# Slash-Command Menu — Full Investigation
+
+## 0. Framework confirmation
+
+**Qwik 2**, beta. `/home/diogenes/Projects/twyne/package.json`:
+- `"@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-beta.42"` (alias), plus direct `"@qwik.dev/core": "2.0.0-beta.42"`.
+- Editor files import from `"@qwik.dev/core"` directly (not the alias).
+- Editor is **TipTap 3 / ProseMirror** inside a Qwik `component$`.
+- Test runner: **`bun test`** — `"test": "bun test --conditions=production --preload ./tests/qwik-test-preload.ts"`. The preload (`/home/diogenes/Projects/twyne/tests/qwik-test-preload.ts`) stubs `globalThis.__EXPERIMENTAL__` because Bun imports Qwik source directly without the Vite feature-table replacement. Note `vitest ^4.1.10` is also a devDependency (used by Storybook), but **every editor test file imports `from "bun:test"`**.
+
+---
+
+## 1. `src/components/editor/slash-command-menu.tsx` (241 lines)
+
+### Props (lines 17–27)
+```ts
+interface SlashCommandMenuProps {
+  open: boolean;
+  query: string;
+  context?: EditorCommandContext;
+  platform?: ShortcutPlatform;
+  /** Fixed viewport coordinates supplied by the TipTap integration. */
+  left: number;
+  top: number;
+  onSelect$: PropFunction&lt;(commandId: EditorCommandId) =&gt; void&gt;;
+  onClose$: PropFunction&lt;() =&gt; void&gt;;
+}
+```
+Only `left`/`top` are supplied — **there is no `width`, `height`, `maxHeight`, or placement prop**, and no way for the parent to express "flip above".
+
+### Exported pure helpers (unit-tested)
+- `reconcileSlashSelection(candidates, selectedCommandId)` — lines 36–47. Keeps selection pinned to a **command ID**, falls back to `candidates[0]`, returns `null` for an empty set.
+- `moveSlashSelection(candidates, selectedCommandId, direction)` — lines 50–63. Wraps modulo `candidates.length`.
+- `optionId(commandId)` — line 65, sanitises the ID into `slash-command-&lt;id&gt;` for `aria-activedescendant`.
+
+### Active-index tracking (lines 71–80)
+**There is no numeric index.** Selection is a `useSignal&lt;SlashSelectionId&gt;(null)` holding an `EditorCommandId | null`:
+```ts
+const selectedCommandId = useSignal&lt;SlashSelectionId&gt;(null);
+const candidates: SlashCommandCandidate[] = fuzzySlashCommands(
+  props.query, props.context, props.platform ?? "mac",
+);
+const visibleSelection = reconcileSlashSelection(candidates, selectedCommandId.value);
+```
+`candidates` is recomputed **synchronously in the render body** on every re-render (not `useComputed$`).
+
+### Keyboard handling (lines 82–141) — `useVisibleTask$`
+```ts
+// eslint-disable-next-line qwik/no-use-visible-task
+useVisibleTask$(({ cleanup, track }) =&gt; {
+  const open = track(() =&gt; props.open);
+  const query = track(() =&gt; props.query);
+  const currentCandidates = fuzzySlashCommands(query, props.context, props.platform ?? "mac");
+  selectedCommandId.value = reconcileSlashSelection(currentCandidates, selectedCommandId.value);
+  if (!open) return;
+
+  const onKeyDown = (event: KeyboardEvent) =&gt; { /* Escape / ArrowDown / ArrowUp / Enter */ };
+  window.addEventListener("keydown", onKeyDown, true);   // ← line 139, CAPTURE phase
+  cleanup(() =&gt; window.removeEventListener("keydown", onKeyDown, true));
+});
+```
+Key facts:
+- Listener is on **`window`, capture phase (`true`)**, not on the menu element. This is what makes the menu work while the caret stays in ProseMirror.
+- The task **re-runs on every keystroke** (it tracks `props.query`), so the listener is torn down and re-added per character.
+- `props.context` and `props.platform` are read **untracked** inside the task.
+- Inside the handler, candidates are **re-derived at keypress time** (lines 105–109) with the deliberate comment: *"A rapid query change must never leave Enter acting on the candidate array from the prior render."*
+- `event.preventDefault()` is called for Escape/ArrowDown/ArrowUp/Enter, but **`stopPropagation()` is never called**. This happens to be safe — see §3 note on ProseMirror's `eventBelongsToView`.
+- `Enter` guards `event.isComposing` (line 126). Arrow keys do **not**.
+- Only `ArrowDown`/`ArrowUp` are handled — no `Home`/`End`/`PageUp`/`PageDown`/`Tab`.
+- `if (visibleCandidates.length === 0) return;` (line 110) sits **after** the Escape branch, so Escape still closes an empty menu.
+
+### DOM refs
+**None.** There is no `useSignal&lt;HTMLElement&gt;()`, no `ref={}` attribute anywhere in the file. The root `&lt;div&gt;`, the scroll container, and the option `&lt;button&gt;`s are all unreferenced.
+
+### scrollIntoView
+**Absent.** Grep across `src/` shows `scrollIntoView` in `document-outline.tsx:52`, `twyne-editor.tsx:1936` and `:3382`, `comments-panel.tsx:217`, `personas-panel.tsx:1142`, `find-replace.ts`, `note-editing.ts`, `section-reorder.ts` — but **never** in `slash-command-menu.tsx`. Arrowing past the visible window of the `max-h-80` scroller moves `aria-activedescendant` and the highlight but the row stays off-screen.
+
+### Positioning (lines 143–159)
+```tsx
+if (!props.open) return null;
+
+return (
+  &lt;div
+    class="fixed w-72 overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)] shadow-lg"
+    style={{
+      left: `${props.left}px`,
+      top: `${props.top}px`,
+      zIndex: "var(--z-dropdown)",
+      borderRadius: "2px",
+    }}
+    role="listbox"
+    aria-label="Insert command"
+    aria-activedescendant={visibleSelection ? optionId(visibleSelection) : undefined}
+  &gt;
+```
+- `position: fixed`, **top-left anchored only**. No `bottom`, no `right`, no `maxHeight`, **no clamping of `left` or `top` against the viewport**.
+- Width fixed at `w-72` = **288px**.
+- `--z-dropdown: 30` (`/home/diogenes/Projects/twyne/src/global.css:68`).
+- I grepped `twyne-editor.tsx` for `transform` / `scale(` / `zoom`: only two hits at lines 402/406 inside a `useStyles$` keyframe-ish rule for a different element. **No ancestor establishes a containing block**, so `position: fixed` really is viewport-relative and matches `coordsAtPos` output. Good news for a fix — you can clamp purely in viewport space.
+
+### Height budget (relevant to the off-screen bug)
+- Header `&lt;p&gt;` (line 160): `px-3 py-2 text-[0.62rem]` ≈ **~29–33px**.
+- List container (line 175): `class="max-h-80 overflow-y-auto py-1"` → **max 320px** + 8px padding.
+- So the menu's max rendered height is roughly **~360px**, while `top` is set to `caretBottom + 6` with no upward flip. With a caret in the last ~360px of the viewport the menu hangs off the bottom.
+- There are **21 slash commands** declared (`grep -c "    slash: {" src/utils/editor-commands.ts` → 21), so with an empty query the list is always at its `max-h-80` cap plus group headers.
+
+### Item rendering (lines 167–237)
+- Empty state: `"No commands match."` (line 172).
+- Grouping is computed **inline during the map** (lines 177–179): a group header renders when `index === 0` or the previous candidate's group differs. `slashGroup()` (line 29) reads `candidate.command.slash?.group ?? "Commands"`. **Group headers are siblings inside the same wrapper `&lt;div&gt;` as the button**, so any scroll-into-view logic must target the `&lt;button&gt;`, not the wrapper, or the header will be scrolled instead.
+- Each option is a `&lt;button id={optionId(...)} role="option" aria-selected={isSelected}&gt;`.
+- Highlight is class-only: `bg-[var(--color-paper-2)] text-[var(--color-vermilion)]` vs `hover:bg-[var(--color-paper-soft)]`.
+- `onMouseEnter$` sets `selectedCommandId.value` — mouse hover and keyboard share one selection signal (mouse movement over the list will fight arrow-key navigation once scrolling is added).
+- `onMouseDown$={(event) =&gt; event.preventDefault()}` (line 205) — **this is the deliberate focus-retention mechanism**: it prevents the button from stealing focus from the contenteditable.
+- `onClick$` calls `props.onSelect$(...)`.
+
+### Focus — the actual behaviour
+The menu is **never focused**. There is no `tabindex`, no `.focus()` call, no focus trap. Focus stays in `.ProseMirror` at all times; the menu is a purely visual overlay driven by a capture-phase window listener. Consequences:
+- `role="listbox"` + `aria-activedescendant` are on a **non-focusable div**, so assistive tech never announces the active option. The correct ARIA combobox pattern would put `aria-activedescendant` / `aria-controls` / `aria-expanded` on the contenteditable host.
+- Any other focused element in the page (e.g. the find/replace input, a panel textarea) will **also** be subject to the capture-phase handler — the handler does not check `event.target`. If the slash state somehow stays open while focus is in an `&lt;input&gt;`, Arrow/Enter there get hijacked.
+
+---
+
+## 2. `src/components/editor/popover-positioning.ts` (147 lines)
+
+Pure math, **zero Qwik imports** — deliberately so, per the file header. Written for the persona-note popover and the margin card; **the slash menu does not import it.**
+
+### Constants (lines 10–19)
+```ts
+export const POPOVER_CARD_WIDTH = 340;
+export const POPOVER_CARD_MARGIN = 8;
+export const MARGIN_CARD_GAP = 12;
+export const POPOVER_CARD_IDEAL_HEIGHT = 520;
+```
+Note `POPOVER_CARD_WIDTH = 340` ≠ the slash menu's 288 (`w-72`) — any reuse needs a width parameter, which the current API does **not** accept (it's a module constant, not a field on `PopoverView`).
+
+### Types (lines 21–56)
+```ts
+export type PopoverPlacement = "below" | "above";
+
+export interface PopoverGeometry {
+  x: number;
+  top: number | null;      // null when bottom-anchored above
+  bottom: number | null;   // null when top-anchored below
+  maxH: number;
+  placement: PopoverPlacement;
+}
+
+export interface AnchorRect { left: number; top: number; bottom: number }
+
+export interface PopoverView {
+  vw: number;
+  vh: number;
+  rect: AnchorRect;
+  idealH?: number;   // defaults to POPOVER_CARD_IDEAL_HEIGHT
+}
+
+export interface MarginCardView extends PopoverView {
+  page: { left: number; right: number };
+}
+```
+
+### `computePopoverGeometry(view: PopoverView): PopoverGeometry` (lines 107–147)
+**Yes — this is exactly the flip/clamp logic you want.** Documented rules at lines 94–106:
+1. Prefer below (`rect.bottom + margin`).
+2. Flip above **only** when `spaceBelow &lt; idealH &amp;&amp; spaceAbove &gt; spaceBelow`. Ties fall through to below.
+3. Clamp `maxH` to the winning side's space, so the card never overlaps the anchor.
+
+```ts
+const x = Math.max(margin, Math.min(view.rect.left, view.vw - POPOVER_CARD_WIDTH - margin));
+const belowTop = view.rect.bottom + margin;
+const aboveBottomCoord = view.rect.top - margin;
+const spaceBelow = Math.max(0, view.vh - margin - belowTop);
+const spaceAbove = Math.max(0, aboveBottomCoord - margin);
+const flipAbove = spaceBelow &lt; idealH &amp;&amp; spaceAbove &gt; spaceBelow;
+
+if (flipAbove) {
+  const maxH = Math.max(0, Math.min(idealH, spaceAbove));
+  return { x, top: null, bottom: Math.max(0, view.vh - view.rect.top + margin), maxH, placement: "above" };
+}
+const maxH = Math.max(0, Math.min(idealH, spaceBelow));
+return { x, top: belowTop, bottom: null, maxH, placement: "below" };
+```
+Deliberate design note (lines 100–103): the flipped card is **bottom-anchored** so it grows upward and doesn't jitter as content streams in. That reasoning applies to the slash menu too, where the list length changes as the query is typed.
+
+**API limitation for your fix:** `POPOVER_CARD_WIDTH` is hard-coded inside the function. To reuse for a 288px menu you'd need to add an optional `width?: number` to `PopoverView` (defaulting to `POPOVER_CARD_WIDTH`) — a small, test-covered change.
+
+### `computeMarginCardGeometry(view: MarginCardView)` (lines 64–92)
+Right-margin-first, left-margin fallback, clamp-to-edge otherwise; always returns `placement: "below"` with a top clamped into `[margin, vh - maxH - margin]`. This is the one `twyne-editor.tsx` actually imports (line 169), used at lines 1126, 2042, 2381.
+
+---
+
+## 3. `src/components/editor/twyne-editor.tsx` (3450 lines)
+
+### Imports (lines 169, 185–186)
+```ts
+import { computeMarginCardGeometry } from "./popover-positioning";
+...
+import { SlashCommand, getSlashCommandState } from "./extensions/slash-command";
+import { SlashCommandMenu } from "./slash-command-menu";
+```
+
+### State — `useStore`, not signals (lines 258, 320–323)
+```ts
+const store = useStore&lt;EditorStore&gt;({ ... });
+// ...
+  slashOpen: false,
+  slashQuery: "",
+  slashLeft: 0,
+  slashTop: 0,
+```
+Declared in `/home/diogenes/Projects/twyne/src/components/editor/editor-state.ts:143-146`:
+```ts
+slashOpen: boolean;
+slashQuery: string;
+slashLeft: number;
+slashTop: number;
+```
+**Four flat numbers/strings — no placement, no maxHeight field.** A fix that adds flip/clamp needs new fields here (e.g. `slashPlacement`, `slashBottom`, `slashMaxH`) or a single `slashGeometry: PopoverGeometry | null`.
+
+### Position computation — the off-screen bug (lines 1018–1032)
+```ts
+const refreshSlashMenu = () =&gt; {
+  const slash = getSlashCommandState(editor.state);
+  store.slashOpen = slash.open;
+  store.slashQuery = slash.query;
+  if (!slash.open) return;
+  try {
+    const coords = editor.view.coordsAtPos(slash.to);
+    store.slashLeft = coords.left;
+    store.slashTop = coords.bottom + 6;      // ← always below, never clamped, never flipped
+  } catch {
+    store.slashOpen = false;
+  }
+};
+editor.on("transaction", refreshSlashMenu);
+refreshSlashMenu();
+```
+This is **the single site to fix**. Observations:
+- `coordsAtPos(slash.to)` returns **viewport coordinates** — directly compatible with `position: fixed`, and with `computePopoverGeometry`'s `rect`.
+- Hard-coded `+ 6` gap (the popover module uses `POPOVER_CARD_MARGIN = 8`).
+- `coords.left` is not clamped against `window.innerWidth - 288`, so a caret near the right edge also pushes the menu off-screen horizontally (a second, unreported bug in the same line).
+- `coords` has `.top`, `.bottom`, `.left`, `.right` — everything `AnchorRect` needs (`{ left, top, bottom }`).
+- **Bound only to `editor.on("transaction", ...)`.** I grepped for scroll/resize listeners in this file: the only hits are `onScrollToNote` / `onScrollToSuggestion` custom events (lines 1648, 1848). There is **no `window.addEventListener("scroll" | "resize")`** anywhere — so scrolling the manuscript while the menu is open leaves the menu frozen at stale viewport coordinates. Worth fixing alongside.
+- Cleanup: `editor.off("transaction", refreshSlashMenu)` at **line 1915**, inside the big `cleanup(() =&gt; { ... })` of the editor-init `useVisibleTask$` (which begins at **line 488**).
+
+### Selection handler (lines 2956–2963)
+```ts
+const selectSlashCommand = $(async (commandId: EditorCommandId) =&gt; {
+  const editor = store.editor;
+  if (!editor) return;
+  editor.commands.removeSlashCommandQuery();
+  await runRegistryCommand(commandId);
+  editor.commands.focus();
+  store.slashOpen = false;
+});
+```
+`runRegistryCommand` (line 2895) dispatches by ID; several branches **open another UI instead of editing** (`insert.image` → `store.showImageInput = true`, `insert.table` → `store.showTableInsertion = true`, `insert.mermaid`, `insert.endnote`, `insert.footnote`…). Note the ordering hazard: `editor.commands.focus()` runs **after** `runRegistryCommand`, so for those branches focus is yanked back into the manuscript immediately after opening a dialog — a plausible source of "inconsistent keyboard focus".
+
+### JSX usage (lines 3163–3182)
+```tsx
+&lt;SlashCommandMenu
+  open={store.slashOpen}
+  query={store.slashQuery}
+  left={store.slashLeft}
+  top={store.slashTop}
+  context={{
+    hasSelection: store.hasSelection,
+    inTable: !!store.active.isInTable,
+    canMergeCells: !!store.active.canMergeCells,
+    canSplitCell: !!store.active.canSplitCell,
+    canUndo: store.canUndo,
+    canRedo: store.canRedo,
+    hasDocument: true,
+    paginationActive: store.paginationActive,
+  }}
+  onSelect$={selectSlashCommand}
+  onClose$={() =&gt; {
+    store.editor?.commands.closeSlashCommand();
+    store.slashOpen = false;
+  }}
+/&gt;
+```
+**`platform` is not passed** → the menu falls back to `props.platform ?? "mac"`, so every shortcut hint renders with Mac glyphs (`⌘↩`) on Linux/Windows. `shortcutPlatform()` already exists in `/home/diogenes/Projects/twyne/src/utils/keybindings.ts:66-85` (uses `navigator.userAgentData?.platform ?? navigator.platform`) and is the natural default for `shortcutHints` — the menu's explicit `"mac"` fallback defeats it. Low-risk bonus fix.
+
+Also note `context` is rebuilt as a **fresh object literal on every render**, which is why the menu can't safely `track()` it.
+
+### Keyboard interception — the full chain
+Three layers, in this order for a keydown while the menu is open:
+
+1. **`slash-command-menu.tsx:139`** — `window` keydown, **capture**. Runs first. `preventDefault()` on Escape/Arrows/Enter.
+2. **`twyne-editor.tsx:1481`** — `window.addEventListener("keydown", onGlobalKeydown)` (bubble phase, defined lines 1443–1481). This matches `EDITOR_KEYBINDINGS` chords via `chordMatches` and runs `runRegistryCommand`, then handles global Escape (closing `notePopover`, `userCommentPopover`, `suggestionPopover`, `openPicker`, find/replace, outline). It **does not check `event.defaultPrevented`** and **does not know about `store.slashOpen`** — so a plain Escape pressed with the slash menu open runs *both* the menu's close and the global popover-closing sweep. Same for any registry chord.
+3. **`twyne-editor.tsx:1408`** — `el.addEventListener("keydown", ...)` on the editor element: typing-suppression for the hover-note preview (disarms hover, closes unpinned previews).
+4. **ProseMirror's own `view.dom` keydown** — TipTap/PM keymaps (Enter → splitBlock, etc.).
+
+**Important verified detail:** layer 1's `preventDefault()` *does* successfully suppress ProseMirror. I checked `node_modules/prosemirror-view/dist/index.js`: `initInput` (line 3085) gates every handler on `eventBelongsToView(view, event)`, and `eventBelongsToView` (line 3125) returns `false` when `event.defaultPrevented` for bubbling events (line 3128). Keydown bubbles, so PM bails. **So Enter does not split the block** — no bug there. But this also means you should *not* "fix" it by adding `stopPropagation()` carelessly; the real gap is layer 2, which sees the event regardless.
+
+### Slash detection plugin — `src/components/editor/extensions/slash-command.ts` (114 lines)
+```ts
+export interface SlashCommandState { open: boolean; query: string; from: number; to: number }
+const CLOSED: SlashCommandState = { open: false, query: "", from: 0, to: 0 };
+export const slashCommandPluginKey = new PluginKey&lt;SlashCommandState&gt;("slashCommand");
+```
+`stateAtCursor` (lines 26–49) — requires an **empty selection** in a textblock, then:
+```ts
+const match = /(?:^|\s)\/([^\s/]*)$/.exec(before);
+...
+return { open: true, query, from: $from.start() + slashOffset, to: selection.from };
+```
+Commands (lines 61–80): `closeSlashCommand()` sets `tr.setMeta(key, { close: true })`; `removeSlashCommandQuery()` does `tr.delete(current.from, current.to)` + the same close meta.
+
+Keyboard shortcut (lines 82–89): the extension binds **`Escape`** to `closeSlashCommand` when open. Because the menu's capture listener already `preventDefault()`s Escape, **this TipTap binding is effectively dead code at runtime** (PM bails on `defaultPrevented`); it only fires when the menu component isn't mounted.
+
+Plugin `apply` (lines 98–102): `if (!tr.docChanged &amp;&amp; !tr.selectionSet) return previous;` — so the state only recomputes on doc/selection changes, which is why `refreshSlashMenu` on `"transaction"` is sufficient for content but useless for scrolling.
+
+`getSlashCommandState(state)` (lines 109–113) returns `CLOSED` when the plugin isn't installed.
+
+---
+
+## 4. Utils
+
+### `src/utils/slash-command-filter.ts` (91 lines)
+- `SlashCommandCandidate { command: EditorCommandDefinition; score: number; shortcut: string | null }`
+- `fuzzyCommandScore(command, query): number | null` (lines 28–64). Tiered scoring: exact label `1000` → label prefix `800 - lengthDelta` → word prefix `650 - index*10` → substring in haystack `500 - min(pos,200)` → ordered-subsequence `250 - min(gapPenalty,200)` → `null` (excluded). Empty query returns `0` for everything.
+- `fuzzySlashCommands(query, context = {}, platform = "mac"): SlashCommandCandidate[]` (lines 66–91). Calls `getSlashCommands("", context)` (note: **empty** query — filtering is done entirely by the fuzzy scorer), attaches `shortcutHints(command.id, platform)[0] ?? null`, and sorts by `score desc`, then `slash.group` alphabetically, then `slash.order`.
+  - Because the primary sort key is `score`, when the user types a query **candidates from different groups interleave**, and the group headers in the menu re-emit per run. This matters for scroll-into-view: the rendered list is not stably grouped.
+  - With an **empty** query every score is `0`, so the sort degenerates to group-alpha + order — the stable default listing.
+- It is a **pure function called on every render and on every keystroke** inside the visible task — no memoisation anywhere.
+
+### `src/utils/editor-commands.ts` (~700 lines)
+- `EditorCommandGroup` (lines 10–19): `text | paragraph | structure | insert | review | navigation | table | history | view`.
+- `EditorCommandContext` (lines 21–31): `hasSelection`, `inTable`, `canMergeCells`, `canSplitCell`, `canUndo`, `canRedo`, `hasDocument`, `paginationActive`, `readOnly`.
+- `EditorCommandAvailability` (33–43) and `EditorCommandSurface` (45–49: `toolbar | slash | shortcut-dialog | manual`).
+- `SlashCommandMetadata` (51–58): `group: "Write" | "Structure" | "Insert" | "Review"`, `keywords?`, `order: number`.
+- `EditorCommandDefinition` (60–69): `id, label, description, group, searchTerms, availability, surfaces, slash?`.
+- `EDITOR_COMMANDS` (line 87, `as const` array); `EditorCommandId = (typeof EDITOR_COMMANDS)[number]["id"]` (line 576).
+- `getEditorCommand(id)` (591) via a `Map` (587).
+- `isEditorCommandAvailable(command, context)` (598–632) — exhaustive switch over availability.
+- `filterEditorCommands(options)` (653–679) — every whitespace-separated term must match `searchableText`.
+- `getSlashCommands(query, context)` (682–695) — `filterEditorCommands({ query, surface: "slash", context })` then sorts by `slash.group` then `slash.order`.
+- **21 commands** carry a `slash:` block.
+
+---
+
+## 5. Existing tests
+
+### `src/components/editor/slash-command-menu.test.ts` (49 lines, `bun:test`)
+Covers **only the two pure selection helpers** — nothing renders, no DOM, no positioning, no keyboard.
+```ts
+import { describe, expect, test } from "bun:test";
+...
+function candidate(id: EditorCommandId): SlashCommandCandidate {
+  const command = EDITOR_COMMANDS.find((entry) =&gt; entry.id === id);
+  if (!command) throw new Error(`Missing editor command fixture: ${id}`);
+  return { command, score: 0, shortcut: null };
+}
+```
+Four cases: preserve-selection-on-reorder, fall back to first when selection disappears, `null` for empty set, wrap-around arrow navigation.
+
+### `src/components/editor/popover-positioning.test.ts` (199 lines, `bun:test`)
+Thorough and a **perfect template** for a slash-menu geometry test. 11 cases:
+- Margin card: right margin when it fits; left when right is cramped; clamp to viewport edge when neither fits (asserts `x &gt;= MARGIN_CARD_GAP`, `x + WIDTH &lt;= vw - GAP`, `top + maxH &lt;= vh - GAP`).
+- Popover: below in a tall viewport; clamp x left (`rect.left = -100`); clamp x right; **"flips above when the bottom would clip and there is more room on top"** (lines 97–117, `vh: 600, rect.bottom: 580` → `placement === "above"`, `top === null`, `bottom === 488`); shrink-in-place; **"clamps space above to zero in a tiny viewport"** (`vh: 40` → `maxH === 0`); max height for tall viewports; custom `idealH`; **"does not overlap the anchor when flipped above"** (lines 181–198, asserts `vh - bottom - maxH &lt;= rect.top - margin`).
+
+The comment at lines 128–135 is worth reading before touching the flip rule — the author explicitly noted an ambiguous case and wrote the assertion as `expect(["above","below"]).toContain(geom.placement)` rather than pinning it.
+
+### Adjacent tests worth knowing
+- `src/components/editor/extensions/slash-command.test.ts` (55 lines) — uses `withEditor` from `./test-harness` (`/home/diogenes/Projects/twyne/src/components/editor/test-harness.ts`) to build a real TipTap editor in Bun. Covers open-on-`/hea`, no-open for `one/two`, `removeSlashCommandQuery` retains surrounding prose, Escape doesn't alter HTML. **This is your route to an integration test.**
+- `src/utils/slash-command-filter.test.ts` (47 lines) — scoring order, abbreviations (`"mmd"` → mermaid), exclusion, availability gating (`review.comment` hidden without selection), and `expect(pageBreak?.shortcut).toBe("⌘↩")` — note this test **relies on the mac default**, so changing the platform default would need this updated.
+- `src/components/editor/document-outline.test.ts` — the house idiom for testing `scrollIntoView` **without a DOM**: hand-rolled object literals cast `as unknown as HTMLElement` with `scrollIntoView: (...args) =&gt; scrollCalls.push(args)`. Paired with the extractable pure function `focusOutlineHeadingElement(id, root: ParentNode = document)` in `document-outline.tsx:38-53`. **Copy this pattern** — extract a pure `scrollActiveOptionIntoView(container, optionEl)` helper and test it with stubs.
+
+---
+
+## Summary for your three fixes
+
+**A. Off-screen at the bottom.** Single root cause at `twyne-editor.tsx:1024-1026`. `computePopoverGeometry` in `popover-positioning.ts:107` already implements flip+clamp and is fully tested; it needs an optional `width` field on `PopoverView` (currently hard-codes `POPOVER_CARD_WIDTH = 340` vs the menu's 288). Then `EditorStore` (`editor-state.ts:143-146`) needs `bottom`/`maxH`/`placement`, the props interface (`slash-command-menu.tsx:17-27`) needs to accept them, and the root div (line 146) needs to honour `bottom` + `maxHeight` instead of the fixed `max-h-80` on the inner scroller. `left` is unclamped horizontally too. Separately, nothing recomputes position on scroll/resize (no such listener exists in the file).
+
+**B. Inconsistent keyboard focus.** The menu never takes focus by design (`onMouseDown$` preventDefault at line 205 keeps the caret in ProseMirror; the window capture listener at line 139 does all the work). The real inconsistencies are: (i) the global bubble-phase handler at `twyne-editor.tsx:1443-1481` is unaware of `store.slashOpen` and does not check `defaultPrevented`, so Escape and registry chords double-fire; (ii) the capture handler doesn't filter on `event.target`, so it acts even if focus is in an input; (iii) `selectSlashCommand` (line 2961) calls `editor.commands.focus()` *after* `runRegistryCommand`, which for the dialog-opening branches (`insert.image`, `insert.table`, `insert.mermaid`, notes) steals focus back from the dialog just opened; (iv) ARIA is broken — `aria-activedescendant` sits on an unfocusable `div`.
+
+**C. No scrollIntoView.** There are **no refs at all** in the file. You need a `useSignal&lt;HTMLElement | undefined&gt;()` on the `max-h-80` scroll container (line 175) plus either per-option refs or a `querySelector(`#${optionId(sel)}`)` lookup, driven from a `useVisibleTask$` tracking `selectedCommandId.value`. Target the `&lt;button&gt;`, not its wrapper `&lt;div&gt;` (the wrapper also contains the group header). The house idiom for making this testable under `bun test` is `document-outline.tsx:38-53` + `document-outline.test.ts`.</result>
+<usage><subagent_tokens>111128</subagent_tokens><tool_uses>40</tool_uses><duration_ms>284070</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a7ba17e9be2e657b1</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/3dfc20ed-0d99-4c4e-b75b-46b0860bb2b2/tasks/a7ba17e9be2e657b1.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore ProseMirror setup and DnD" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have a complete picture. Here is the full report.
+
+---
+
+# 1. Editor engine
+
+**Tiptap v3 on ProseMirror.** From `/home/diogenes/Projects/twyne/package.json` (`dependencies`), all pinned at `^3.22.4` unless noted:
+
+```
+@tiptap/core                 ^3.22.4
+@tiptap/pm                   ^3.22.4
+@tiptap/starter-kit          ^3.22.4
+@tiptap/extension-highlight  ^3.22.4
+@tiptap/extension-image      ^3.22.4
+@tiptap/extension-link       ^3.22.4
+@tiptap/extension-placeholder ^3.22.4
+@tiptap/extension-subscript  3.22.4   (exact)
+@tiptap/extension-superscript 3.22.4  (exact)
+@tiptap/extension-table      ^3.22.4
+@tiptap/extension-table-cell / -header / -row  ^3.22.4
+@tiptap/extension-task-item / -task-list       ^3.22.4
+@tiptap/extension-text-align ^3.22.4
+@tiptap/extension-text-style 3.22.4   (exact)
+@tiptap/extension-typography ^3.22.4
+@tiptap/extension-underline  ^3.22.4
+```
+
+No lexical, no slate. Framework is **Qwik 2** (`@qwik.dev/core@2.0.0-beta.42`) — this matters enormously for section 2. Tailwind v4 via `@tailwindcss/vite`.
+
+## Editor instantiation
+
+`/home/diogenes/Projects/twyne/src/components/editor/twyne-editor.tsx:688` — `new Editor({...})` inside a `useVisibleTask$`. The mount element is looked up by id at line 490:
+
+```ts
+// twyne-editor.tsx:490
+const el = document.getElementById("twyne-editor-mount");
+if (!el) {
+  console.warn("[twyne:editor] #twyne-editor-mount not found in DOM");
+```
+
+### Full extension list (`twyne-editor.tsx:691-770`)
+
+| Extension | Config |
+|---|---|
+| `StarterKit` | `heading: { levels: [1,2,3] }`, `link: false`, `underline: false` |
+| `ImageNode` (custom) | `uploadAdapter`, `onUploadError` |
+| `...createTableCoreExtensions({ resizable: true })` | Table/Row/Header/Cell |
+| `TableCellFormat` (custom) | |
+| `Placeholder` | `"Begin writing from the brief. The room of editors is listening..."` |
+| `Highlight` | `multicolor: true` |
+| `Underline`, `Subscript`, `Superscript` | |
+| `TextStyleKit` | `lineHeight: false` |
+| `TextAlign` | `types: ["heading","paragraph"]`, 4 alignments |
+| `TiptapLink` | `openOnClick: true`, `autolink: true`, class `editor-link` |
+| `Typography` | |
+| `TaskList` / `TaskItem` | `nested: true` |
+| `CommentMark`, `PersonaNoteMark`, `SuggestionMark` | custom marks |
+| `MermaidDiagram`, `InlineNoteNode` | custom nodes |
+| `RemoteCursors` | `{ cursors: [] }` |
+| `MarkAnchorWidgets`, `Indent`, `FindReplace`, `SlashCommand` | custom |
+| `...MathExtensions` | |
+| **`SectionReorder`** | **custom drag extension — see §2** |
+| `ParagraphFormat`, `PageBreakNode` | |
+| `Pagination` | `layout`, `getTailElement: () =&gt; document.querySelector(".manuscript-notes")`, `onPaginate` |
+
+**StarterKit defaults that remain ON** (verified in `node_modules/@tiptap/starter-kit/dist/index.js:42-88`):
+
+```js
+import { Dropcursor, Gapcursor, TrailingNode, UndoRedo } from "@tiptap/extensions";
+...
+if (this.options.dropcursor !== false) extensions.push(Dropcursor.configure(this.options.dropcursor));
+if (this.options.gapcursor  !== false) extensions.push(Gapcursor.configure(this.options.gapcursor));
+if (this.options.trailingNode !== false) extensions.push(TrailingNode.configure(...));
+```
+
+Only `link` and `underline` are disabled, so **Dropcursor, Gapcursor, TrailingNode, UndoRedo, ListKeymap are all active.**
+
+### editorProps — the complete set (`twyne-editor.tsx:772-800`)
+
+```ts
+editorProps: {
+  attributes: {
+    class: "ProseMirror",
+  },
+  handleDrop: (view, event, _slice, moved) =&gt; {
+    if (moved) return false;
+    const coords = { left: event.clientX, top: event.clientY };
+    const pos = view.posAtCoords(coords);
+    if (!pos) return false;
+
+    const html = event.dataTransfer?.getData("text/html");
+    if (html) {
+      if (html.includes("&lt;table") || html.includes("&lt;img")) {
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = html;
+        const img = tempDiv.querySelector("img");
+        if (img?.src) {
+          const node = view.state.schema.nodes.image.create({
+            src: img.src,
+            alt: img.alt || "",
+          });
+          const tr = view.state.tr.insert(pos.pos, node);
+          view.dispatch(tr);
+          return true;
+        }
+      }
+    }
+
+    return false;
+  },
+},
+onUpdate: ({ editor: e }) =&gt; { scheduleLiveMeta(e); scheduleDerive(e); },
+```
+
+**There is no `handleKeyDown`, no `handleDOMEvents`, no `handleClick`, no `handlePaste` in `editorProps`.** A repo-wide grep confirms only three files declare PM prop handlers at all:
+
+```
+src/components/editor/extensions/section-reorder.ts:222:  handleDOMEvents: {
+src/components/editor/extensions/image-node.ts:658:  handlePaste: ...
+src/components/editor/twyne-editor.tsx:772:  editorProps: {
+```
+
+Note `attributes.class = "ProseMirror"` is redundant (PM sets it anyway) but harmless.
+
+---
+
+# 2. Drag and drop — the core findings
+
+## 2a. Dropcursor / Gapcursor
+
+- **Dropcursor: ENABLED** (StarterKit default, not disabled).
+- **Gapcursor: ENABLED** (StarterKit default) — **but its CSS is missing.** `node_modules/@tiptap/extensions/dist/index.js:185` shows Gapcursor is a bare plugin wrapper with no style injection:
+  ```js
+  var Gapcursor = Extension4.create({
+    name: "gapCursor",
+    addProseMirrorPlugins() { return [gapCursor()]; },
+    extendNodeSchema(extension) { ... allowGapCursor ... }
+  });
+  ```
+  A repo-wide grep for `ProseMirror-gapcursor` returns **zero hits** in `src/`. `prosemirror-gapcursor/style/gapcursor.css` is never imported. So the gap cursor is functionally active but **invisible** — the writer gets no caret when they click into a gap before/after an atom node (image, math, mermaid, page break, endnote).
+
+## 2b. The three drag systems, layered on one another
+
+### (i) Qwik `preventdefault:` on the scroll container — the biggest suspect
+
+`/home/diogenes/Projects/twyne/src/components/editor/manuscript-panel.tsx:42-51`, verbatim:
+
+```tsx
+      &lt;div
+        class="flex-1 overflow-y-auto overflow-x-auto"
+        style="background: var(--color-editor-bg);"
+        preventdefault:dragover
+        preventdefault:dragleave
+        preventdefault:drop
+        onDragOver$={props.onDragOver$}
+        onDragLeave$={props.onDragLeave$}
+        onDrop$={props.onDrop$}
+      &gt;
+```
+
+This div is the **ancestor of the entire ProseMirror DOM** (`#twyne-editor-mount` is nested inside it at line 102).
+
+**Critical mechanism:** Qwik registers its delegated listeners on the document in the **capture phase**, and calls `preventDefault()` *before* the event ever reaches ProseMirror. From `node_modules/@qwik.dev/core/dist/qwikloader.debug.js`:
+
+```js
+// line 379 — note the 4th arg `true` = capture
+roots.forEach((root) =&gt; addEventListener(root, eventName, processElementEvent, true, passive));
+
+// line ~28 — signature
+var addEventListener = (el, eventName, handler, capture = false, passive = false) =&gt;
+    el.addEventListener(eventName, handler, { capture, passive });
+
+// line 150 — inside dispatch(), walking target → ancestors
+if (allowPreventDefault &amp;&amp; element.hasAttribute("preventdefault:" + kebabName)) ev.preventDefault();
+```
+
+So on **every** `dragover`, `dragleave`, and `drop` anywhere inside the manuscript, `event.preventDefault()` fires at document-capture, ahead of `view.dom`'s handlers, ahead of Dropcursor, ahead of `SectionReorder.handleDOMEvents`, ahead of `editorProps.handleDrop`.
+
+For `dragover` this is benign-to-helpful (it's how you mark a drop target). For **`drop` it cancels the browser's native drop default for the whole subtree** — and it's applied unconditionally to text-selection drags, file drags, everything.
+
+### (ii) The `.drag-overlay` fires on internal text drags
+
+`twyne-editor.tsx:2450-2460`:
+
+```ts
+    const handleDragOver = $(() =&gt; {
+      store.isDragOver = true;
+    });
+
+    const handleDragLeave = $(() =&gt; {
+      store.isDragOver = false;
+    });
+
+    const handleDrop = $(() =&gt; {
+      store.isDragOver = false;
+    });
+```
+
+Wired at `twyne-editor.tsx:3244-3246`. There is **no filtering on `dataTransfer.types`** — dragging a text selection inside the manuscript sets `isDragOver = true`, which renders (`manuscript-panel.tsx:52-56`):
+
+```tsx
+        {store.isDragOver &amp;&amp; (
+          &lt;div class="drag-overlay"&gt;
+            &lt;span&gt;Drop plate or tabular here&lt;/span&gt;
+          &lt;/div&gt;
+        )}
+```
+
+`src/global.css:1458-1470`:
+
+```css
+/* Drag-over overlay */
+.drag-overlay {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-vermilion) 7%, transparent);
+  border: 2px dashed var(--color-vermilion);
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+```
+
+`pointer-events: none` means it does **not** block the drop — good. But it is `position: fixed; inset: 0`, covering the viewport, and it appears the moment you start dragging selected text, announcing "Drop plate or tabular here". Worse: `dragleave` fires every time the pointer crosses an element boundary, so `isDragOver` flips true/false continuously during a drag, causing a Qwik re-render storm mid-drag over the ProseMirror-managed DOM.
+
+### (iii) `SectionReorder` — custom block drag handles on every heading
+
+`/home/diogenes/Projects/twyne/src/components/editor/extensions/section-reorder.ts`. The whole file is drag code; the load-bearing parts:
+
+**Handle widget (lines 40-53)** — a `draggable=true` widget decoration injected before *every* heading:
+
+```ts
+function dragHandle(id: string, label: string): HTMLElement {
+  const handle = document.createElement("span");
+  handle.dataset.sectionDragHandle = id;
+  handle.draggable = true;
+  handle.contentEditable = "false";
+  handle.className = "twyne-section-drag-handle";
+  handle.setAttribute("role", "button");
+  handle.setAttribute("aria-label", `Move section: ${label}`);
+  handle.setAttribute("title", `Drag to move ${label}`);
+  handle.textContent = "⋮⋮";
+  handle.style.cssText =
+    "position:absolute;transform:translate(-1.5rem,.2rem);cursor:grab;user-select:none;opacity:.55;";
+  return handle;
+}
+```
+
+Placed at line 60-69 via `Decoration.widget(heading.from, ..., { side: -1, key: ... })`, using `buildDocumentOutline(doc).flat` — which includes **h1 through h6** (`src/utils/document-outline.ts:4-5`, `MIN_HEADING_LEVEL = 1`).
+
+Note: `.twyne-section-drag-handle` has **no CSS rule anywhere in the repo** — all styling is the inline `cssText` above. That's the only `user-select: none` in any editor component.
+
+**`handleDOMEvents` (lines 222-325):**
+
+```ts
+handleDOMEvents: {
+  dragstart(view, event) {
+    const handle = eventElement(event)?.closest&lt;HTMLElement&gt;("[data-section-drag-handle]");
+    const sourceId = handle?.dataset.sectionDragHandle;
+    if (!sourceId) return false;          // ← native text drag falls through, OK
+    event.dataTransfer?.setData(SECTION_DRAG_MIME, sourceId);
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = "move";
+    view.dispatch(...dragStart meta...);
+    return true;
+  },
+  dragover(view, event) {
+    const pluginState = sectionReorderPluginKey.getState(view.state);
+    if (!pluginState?.draggingId) return false;   // ← gates on section drag, OK
+    const hovered = headingAtEvent(view, event);
+    if (!hovered) return false;
+    ...
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
+    ...
+    return true;
+  },
+  drop(view, event) {
+    const pluginState = sectionReorderPluginKey.getState(view.state);
+    const sourceId =
+      pluginState?.draggingId ||
+      event.dataTransfer?.getData(SECTION_DRAG_MIME);
+    const hovered = headingAtEvent(view, event);
+    if (!sourceId || !hovered) return false;
+    // DOM event handlers do not implicitly cancel browser behavior.
+    // Cancel before validation so an invalid self-drop cannot insert
+    // the draggable widget's text into the editable manuscript.
+    event.preventDefault();
+    ...
+    return true;
+  },
+  dragend(view) {
+    clearDrag(view);
+    return false;
+  },
+},
+```
+
+The gating is correct in principle (`return false` lets PM's native text-drag path run). But note `dragend` dispatches a transaction on *every* drag end, including plain text drags — `clearDrag` always fires `view.dispatch(...)`.
+
+**`headingAtEvent` (lines 101-134) — relevant to your H1 suspicion:**
+
+```ts
+  const atCoords = view.posAtCoords({ left: event.clientX, top: event.clientY });
+  if (!atCoords) return null;
+  let target = outline.flat[0];              // ← defaults to the FIRST heading
+  for (const heading of outline.flat) {
+    if (heading.from &gt; atCoords.pos) break;
+    target = heading;
+  }
+```
+
+Any drop whose coordinates resolve *before* the first heading still snaps to `outline.flat[0]` — i.e. the document's H1. Combined with the `dropPlacement` midpoint test (lines 136-144), a drop in the top region of the document always targets the H1.
+
+### (iv) Node-level `draggable` flags
+
+```
+src/components/editor/extensions/image-node.ts:561:  draggable: true,     // ImageNode, atom + isolating
+src/components/editor/extensions/image-node.ts:374:  this.image.draggable = false;   // inner &lt;img&gt; in the NodeView
+src/components/editor/extensions/mermaid-node.ts:28:  draggable: true,
+src/components/editor/extensions/math.ts:293:  draggable: true,
+src/components/editor/extensions/page-break-node.ts:39:  draggable: false,
+src/components/editor/extensions/section-reorder.ts:43:  handle.draggable = true,
+```
+
+### (v) `image-node.ts` drop handling (lines 638-657)
+
+```ts
+          handleDrop: (view, event, _slice, moved) =&gt; {
+            if (moved) return false;
+            const files = imageFilesFromList(event.dataTransfer?.files);
+            if (files.length === 0) return false;
+            event.preventDefault();
+            const at = view.posAtCoords({ left: event.clientX, top: event.clientY });
+            insertImageFiles(this.editor, files, adapter, at?.pos, onUploadError);
+            return true;
+          },
+```
+
+Correctly gated on `moved` and on actual files.
+
+## 2c. CSS that could block dragging
+
+- **`-webkit-user-drag`: zero occurrences anywhere in `src/`.**
+- **`user-select` in editor code: exactly one** — `section-reorder.ts:51` on the handle itself (correct). In `global.css` the hits at 147, 376-377, 857, 5248 are on chrome/UI (`.twyne-page-spacer` at 376-377 is `pointer-events: none; user-select: none;`, the ruler at 5248-5250 is `user-select: none; touch-action: none;`). **None apply to `.ProseMirror` text.**
+- **`pointer-events`**: no rule applies to `.ProseMirror` or its text. The relevant editor-adjacent ones are `.twyne-page-spacer { pointer-events: none }` (global.css:376), `.drag-overlay { pointer-events: none }` (1468), table resize handles (1067/1078/1097).
+
+**Conclusion for §2:** nothing in CSS blocks dragging. The three real hazards are, in order: **the capture-phase `preventdefault:drop` on the scroll container**, **the unfiltered `.drag-overlay` re-render storm on every drag**, and **the invisible gap cursor**.
+
+---
+
+# 3. Scroll container &amp; bottom-of-editor geometry
+
+## Who scrolls
+
+**Not the window.** A nested flex/overflow chain:
+
+1. `src/routes/editor/index.tsx:937` — `&lt;div class="editor-workspace-shell flex h-screen bg-[var(--color-paper)] overflow-hidden"&gt;`
+2. `:1236` — `&lt;div class="editor-workspace-main flex-1 flex flex-col min-w-0"&gt;`
+3. `:1425` — `&lt;div class="relative flex flex-1 min-h-0 overflow-hidden"&gt;` — *"The manuscript owns the remaining height beneath the masthead."*
+4. `:1427` — `&lt;div class="h-full min-w-0 flex-1 overflow-auto bg-[var(--color-paper-soft)]"&gt;` ← **outer scroller**, wraps `&lt;TwyneEditor&gt;`
+5. `twyne-editor.tsx:3029` — `&lt;div class="flex flex-1 flex-col min-h-0"&gt;`
+6. `manuscript-panel.tsx:43` — `&lt;div class="flex-1 overflow-y-auto overflow-x-auto"&gt;` ← **inner scroller** (the one with `preventdefault:drop`)
+7. `manuscript-panel.tsx:65-87` — `.page-canvas.twyne-editor` (padding carrier)
+8. `manuscript-panel.tsx:101-105` — `#twyne-editor-mount` → ProseMirror
+
+There are **two nested `overflow:auto` containers** (steps 4 and 6). Step 4's child is `h-full`-less and the inner one is `flex-1`, so in practice #6 scrolls — but #4 is a live second scroller. `pagination.ts:421` calls `options.getScroller?.() ?? resolveScroller(view.dom)`, which walks up to whichever it finds first.
+
+## Where height / padding is set
+
+**Page canvas padding** (`manuscript-panel.tsx:74-86`):
+
+```tsx
+          style={{
+            ...(store.paginationActive
+              ? {
+                  width: "var(--page-w)",
+                  "flex-shrink": "0",
+                  "min-height": `${props.canvasMinHeight}px`,
+                }
+              : { "max-width": "var(--doc-width, 48rem)" }),
+            "padding-left": "var(--doc-pad-left, 3rem)",
+            "padding-right": "var(--doc-pad-right, 3rem)",
+            "padding-top": "var(--doc-pad-y, 2.5rem)",
+            "padding-bottom": "var(--doc-pad-bottom, 4rem)",
+          }}
+```
+
+**`--doc-pad-bottom` is written live** from `twyne-editor.tsx:436` (paginated) and `:451` (continuous):
+
+```ts
+root.style.setProperty("--doc-pad-bottom", `${m.bottom}rem`);
+```
+
+`m` comes from `resolveMargins(layout)` in `src/types/index.ts:402-411`:
+
+```ts
+    bottom: layout.marginBottom ?? (layout.margin === "roomy" ? 5 : 4),
+```
+
+But `DEFAULT_LAYOUT` (`src/types/index.ts:419-420`) overrides that fallback:
+
+```ts
+  marginTop: 1,
+  marginBottom: 1,
+```
+
+**So in practice `--doc-pad-bottom` resolves to `1rem`, not the `4rem` CSS fallback.** The `4rem` default in the inline style never applies once the visible task runs. That alone accounts for "the empty space at the bottom disappeared" — 16px of bottom padding under the last line.
+
+**Editor min-heights:**
+
+```css
+/* global.css:706 */
+.twyne-editor .ProseMirror {
+  outline: none;
+  min-height: 60vh;
+  ...
+}
+
+/* global.css:493 — paginated only */
+.page-canvas.is-paginated .ProseMirror {
+  min-height: var(--page-content-h, 60vh);
+}
+```
+
+```ts
+// twyne-editor.tsx:340 (useStyles$)
+    .twyne-editor {
+      min-height: 100%;
+    }
+```
+
+**There is no scroll-past-end padding on the scroller itself.** Below the ProseMirror mount the only content is the conditional `.manuscript-notes` block (`manuscript-panel.tsx:108-151`, `mt-10 pt-6`), then the scroller ends. The colophon bar (`manuscript-panel.tsx:155-174`, `sticky bottom-0`) is a *sibling outside* the scroller, so it's a fixed footer row, not overlaying content.
+
+`canvasMinHeight` (`twyne-editor.tsx:2529-2532`) only applies in paginated mode:
+
+```ts
+    const canvasMinHeight = () =&gt; {
+      const g = computePageGeometry(store.layout, rootFontSize());
+      return Math.max(0, store.pageCount * (g.pageH + g.gap) - g.gap);
+    };
+```
+
+## Git history — was bottom space removed recently?
+
+I checked the last 25 commits and `git log -p` over `global.css`, `manuscript-panel.tsx`, `twyne-editor.tsx`.
+
+- Commit **`3c1de51` "refactor: simplify the writing workspace"** (Aug 14 2026) moved the scroller div out of `twyne-editor.tsx` into the new `manuscript-panel.tsx` **verbatim**. The diff shows the exact lines removed from one file and added to the other:
+  ```
+  -            class="flex-1 overflow-y-auto overflow-x-auto"
+  -                    "min-height": `${canvasMinHeight()}px`,
+  -              "padding-bottom": "var(--doc-pad-bottom, 4rem)",
+  ```
+  This was a pure extraction — no geometry change.
+- `git log -S"preventdefault:dragover"` → only `cc51b65` (initial release) and `3c1de51` (the move). **The `preventdefault:drop` has been there since day one.** Same for `drag-overlay`.
+- The only real bottom-space removals in history are old: `05f27a8` removed two `min-height: 100vh` and several `padding-bottom` rules — but on **legal/landing pages**, not the editor.
+- `34fa49c` **added** `min-height: var(--page-content-h, 60vh)` and removed `margin-bottom: 0.85em` from a paragraph rule.
+
+**No recent commit removed editor bottom padding.** The "no empty space at the bottom" is structural: `--doc-pad-bottom` = `1rem` from `DEFAULT_LAYOUT.marginBottom`, plus no scroll-past-end affordance on the scroller. Also note `global.css:719-722` sets `.twyne-editor .ProseMirror p { margin-bottom: 0.45em; }` — a tight trailing margin.
+
+**Scroll APIs in play:**
+```
+src/components/editor/extensions/pagination.ts:453:   if (Math.abs(delta) &gt; 1) scroller.scrollTop += delta;   // caret anchoring across repagination
+src/components/editor/extensions/find-replace.ts:203,330,366:  tr.scrollIntoView()
+src/components/editor/note-editing.ts:128:  editor.state.tr.setSelection(selection).scrollIntoView()
+src/components/editor/document-outline.tsx:52:  element.scrollIntoView({ block: "center", behavior: "auto" })
+src/components/editor/twyne-editor.tsx:1936 / 3382:  dom.scrollIntoView({ behavior, block: "center" })
+```
+**No `scrollMargin` or `scrollThreshold` is configured on the Editor anywhere** — PM's defaults (5px/0) apply, which with a 1rem bottom pad means the caret can sit flush against the bottom edge while typing.
+
+---
+
+# 4. CSS setup
+
+- **Tailwind v4**, via `@tailwindcss/vite` (`vite.config.ts:5,26`).
+- **One global stylesheet**: `/home/diogenes/Projects/twyne/src/global.css` (~5600 lines), imported once at `src/root.tsx:18`. It opens with `@import "tailwindcss";` and defines the design tokens in an `@theme { }` block.
+- Two scoped stylesheets: `src/components/editor/math/math.css` and `math/katex.min.css`.
+- Some editor CSS is injected at runtime via Qwik `useStyles$` in `twyne-editor.tsx:339-378` (the `.twyne-editor { min-height: 100% }` + zen-mode rules).
+
+Key editor rules verbatim (`src/global.css`):
+
+```css
+/* ── Tiptap manuscript page ──────────────────────────────── */
+.twyne-editor .ProseMirror {          /* :706 */
+  outline: none;
+  min-height: 60vh;
+  font-family: var(--font-serif);
+  font-size: 1.125rem;
+  line-height: 1.8;
+  color: var(--color-ink);
+  font-feature-settings: "kern", "liga", "onum" 1;
+}
+
+.twyne-editor .ProseMirror p {        /* :719 */
+  margin-bottom: 0.45em;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* :3643 — a SECOND rule on the same selector, later in the file */
+.twyne-editor .ProseMirror {
+  counter-reset: twyne-endnote twyne-footnote;
+}
+```
+
+That second block at 3643 carries a warning comment at `:365-368`:
+
+```css
+/* Nothing here may set `counter-reset` or `contain` inside .ProseMirror:
+ * endnote numbering is a CSS counter scoped to that single element, and a
+ * new counter scope would silently renumber every footnote in the folio. */
+```
+
+Canvas background (`manuscript-panel.tsx:44`): the scroller is `background: var(--color-editor-bg)` — `#fbf6e7` in light, `#201d18` in dark (`global.css:22, 271`).
+
+---
+
+# 5. Heading / H1 handling
+
+Every heading-related site:
+
+```ts
+// twyne-editor.tsx:80-82 — paragraph-format style map
+  "paragraph.heading-1": "h1",
+  "paragraph.heading-2": "h2",
+  "paragraph.heading-3": "h3",
+
+// :693 — schema limit
+              heading: { levels: [1, 2, 3] },
+
+// :727
+              types: ["heading", "paragraph"],
+
+// :918-920 — active-state readback
+            h1: editor.isActive("heading", { level: 1 }),
+            h2: editor.isActive("heading", { level: 2 }),
+            h3: editor.isActive("heading", { level: 3 }),
+
+// :947-948
+          const paragraphAttrs = editor.isActive("heading")
+            ? editor.getAttributes("heading")
+
+// :960 — note: a heading is ALWAYS treated as keep-with-next
+          paragraphAttrs.keepWithNext === true || editor.isActive("heading");
+
+// :2750-2761 — command dispatch
+        // heading a heading would not match anyone's expectation.
+        case "h1":
+          chain.toggleHeading({ level: 1 }).run();
+        case "h2": ... level: 2 ...
+        case "h3": ... level: 3 ...
+```
+
+### Things that look like real H1 hazards
+
+**(a) Schema allows only h1–h3, but the outline walks h1–h6.** `document-outline.ts:4-5` sets `MIN_HEADING_LEVEL = 1; MAX_HEADING_LEVEL = 6`, and `section-reorder.ts:106` queries `closest("h1, h2, h3, h4, h5, h6")`. Harmless today, but the two disagree.
+
+**(b) Every drop near the top of the document resolves to the H1.** `section-reorder.ts:126` — `let target = outline.flat[0];` with no guard for "coordinates are above the first heading."
+
+**(c) The H1 has a `::after` pseudo-element and is centered** (`global.css:748-768`):
+
+```css
+.twyne-editor .ProseMirror h1 {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-top: 1.2em;
+  margin-bottom: 0.45em;
+  line-height: 1.1;
+  color: var(--color-ink);
+  text-align: center;
+}
+
+.twyne-editor .ProseMirror h1::after {
+  content: "✦";
+  display: block;
+  text-align: center;
+  color: var(--color-vermilion);
+  font-size: 1rem;
+  margin-top: 0.3em;
+  letter-spacing: 0.5em;
+}
+```
+
+The `::after` is a `display: block` generated box **inside** the contenteditable `&lt;h1&gt;`. That is a classic source of caret/selection anomalies: clicking below the H1 text but on the ✦ row resolves to a position ProseMirror does not expect, and `view.posAtCoords` inside `headingAtEvent` (`section-reorder.ts:121`) will resolve those pixels to the H1. It also collides with the `SectionReorder` drag handle, which is `position: absolute` at the heading's *static position* — for a `text-align: center` H1 that static position is the centered line origin, so the ⋮⋮ handle lands **1.5rem left of the centered text**, i.e. floating in the middle of the page rather than in the left margin, unlike for h2/h3.
+
+**(d) The drop cap interacts with H1 ordering** (`global.css:738-746`):
+
+```css
+.twyne-editor .ProseMirror &gt; p:first-of-type::first-letter {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: min(4.2em, 5rem);
+  float: left;
+  line-height: 0.85;
+  margin: 0.08em 0.12em -0.05em 0;
+  color: var(--color-vermilion);
+}
+```
+
+`:first-of-type` matches the first `&lt;p&gt;` child regardless of whether an H1 precedes it — so a document starting with an H1 still gets a floated drop cap on the paragraph under it, and the float interacts with the H1's `::after` block box directly above.
+
+**(e) `keepWithNext` is forced true for all headings** (`twyne-editor.tsx:960`), which feeds the pagination engine — an H1 near a page boundary will always push to the next sheet.
+
+---
+
+## Summary of the highest-value leads
+
+1. **`preventdefault:drop` / `preventdefault:dragover` / `preventdefault:dragleave`** at `manuscript-panel.tsx:45-47`, executing in Qwik's **document capture phase** (`qwikloader.debug.js:150` + `:379` with `capture=true`), ahead of every ProseMirror handler, on the container that wraps the entire editor. Present since the initial commit.
+2. **`handleDragOver`/`handleDragLeave` fire unfiltered** (`twyne-editor.tsx:2450-2460`) — a text-selection drag raises a fullscreen "Drop plate or tabular here" overlay and thrashes Qwik re-renders mid-drag.
+3. **Gapcursor enabled but its stylesheet never imported** — invisible caret at every atom-node gap.
+4. **`--doc-pad-bottom` resolves to `1rem`** (`DEFAULT_LAYOUT.marginBottom: 1`, `types/index.ts:420`), not the `4rem` CSS fallback, and there is no scroll-past-end padding on either scroller, and no `scrollMargin` on the Editor.
+5. **Two nested `overflow:auto` scrollers** (`routes/editor/index.tsx:1427` and `manuscript-panel.tsx:43`) that `pagination.ts:421`'s `resolveScroller` has to disambiguate.
+6. **`section-reorder.ts:126`** defaults any unresolved drop to `outline.flat[0]` — the H1 — and the H1's `display:block` `::after` ✦ plus `text-align:center` puts its drag handle in the wrong place and creates an unusual caret target.</result>
+<usage><subagent_tokens>146646</subagent_tokens><tool_uses>64</tool_uses><duration_ms>450532</duration_ms></usage>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>a86b5c61769e01981</task-id>
+<tool-use-id>REDACTED</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/3dfc20ed-0d99-4c4e-b75b-46b0860bb2b2/tasks/a86b5c61769e01981.output</output-file>
+<status>completed</status>
+<summary>Agent "Explore keating local models" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>I have both pictures. Here are the findings.
+
+---
+
+# Part A — Keating's in-browser local model
+
+Keating's monorepo root is `/home/diogenes/Projects/keating`; the web app lives in `web/`. **The local model story is two independent runtimes, not one shared one.**
+
+## 1. Runtimes and exact versions
+
+From `/home/diogenes/Projects/keating/web/package.json`:
+
+| Package | Version | Section |
+|---|---|---|
+| `@huggingface/transformers` | `^4.2.0` | `dependencies` (line 56) |
+| `@earendil-works/pi-ai` | `^0.84.2` | `dependencies` (line 53) |
+| `@earendil-works/pi-agent-core` | `^0.84.2` | `dependencies` |
+| `onnxruntime-web` | `1.29.0` | `overrides` (line 40) |
+| `onnxruntime-node` | `1.29.0` | `overrides` (line 39) |
+| `onnxruntime-common` | `1.29.0` | `overrides` (line 38) |
+
+The three `onnxruntime-*` entries are **pins in `overrides`**, not direct deps — they exist to force a single ORT version under transformers.js. The root `/home/diogenes/Projects/keating/package.json:73` pins `"@earendil-works/pi-ai": "0.80.2"` (older than web's `^0.84.2` — a version skew worth noting).
+
+No `web-llm`, `wllama`, `node-llama-cpp`, or `gguf` anywhere. `ollama` is absent too.
+
+## 2. Browser path — `transformers.js` + WebGPU
+
+**`/home/diogenes/Projects/keating/web/src/stores/local-model.ts`** (550 lines) is the whole browser engine. It's a hand-rolled observable store class `LocalModelStore`, exported as a singleton `localModel` (line 550).
+
+Loading (`performLoad`, ~line 268 onward) — **dynamic import** to keep the runtime out of the main bundle:
+
+```ts
+const { AutoProcessor, AutoTokenizer, AutoModelForCausalLM, env } = await import(
+    "@huggingface/transformers"
+);
+
+// Never attempt to resolve models from the app's own origin.
+env.allowLocalModels = false;
+env.useBrowserCache = true;
+```
+
+then:
+
+```ts
+const model = await AutoModelForCausalLM.from_pretrained(spec.id, {
+    dtype: spec.dtype as any,
+    device: "webgpu",
+    progress_callback: (event: any) =&gt; { ... },
+});
+```
+
+**Device is hardcoded `"webgpu"`** — there is no WASM fallback for the LLM path (unlike TTS). A `checkWebGpuAvailable()` preflight (line ~155) requests an adapter and additionally verifies the `shader-f16` feature before attempting the load, because every f16 export fails at session creation without it.
+
+**Cancellation** is implemented by monkey-patching `env.fetch`, since `from_pretrained` takes no `AbortSignal`:
+
+```ts
+// `from_pretrained` takes no abort signal, but every request it makes
+// goes through this hook, so cancelling really does stop the transfer.
+const controller = new AbortController();
+this.abortLoad = controller;
+this.baseFetch ??= env.fetch;
+const baseFetch = this.baseFetch;
+env.fetch = (input: string | URL, init?: any) =&gt;
+    baseFetch(input, { ...init, signal: controller.signal });
+```
+
+There is an `epoch` counter (`loadEpoch`) so a superseded load's rejection is swallowed rather than surfacing as a failure banner.
+
+**Inference** — `LocalModelStore.generate(prompt, options, onToken)` (line ~430):
+
+```ts
+const formattedPrompt = tokenizer.apply_chat_template(messages, {
+    add_generation_prompt: true,
+    enable_thinking: false,   // Gemma 4's thinking channel is noise here
+    tokenize: false,
+});
+const { TextStreamer } = await import("@huggingface/transformers");
+const streamer = new TextStreamer(tokenizer, {
+    skip_prompt: true, skip_special_tokens: true,
+    callback_function: onToken ? (text: string) =&gt; onToken(text) : undefined,
+});
+const outputs = await model.generate({ ...inputs, max_new_tokens: ..., do_sample, temperature, streamer });
+```
+
+So: **streaming yes**, via transformers.js `TextStreamer` token callback.
+
+**No Web Worker.** I grepped — there is no worker anywhere in the local-model path. Generation runs on the main thread. (Keating *does* have a `SharedArrayBuffer` sandbox — `web/src/keating/nodepod-runtime.ts:233` — but that's "nodepod", an unrelated in-browser Node sandbox.)
+
+## 3. Weight caching — Cache Storage, **not** OPFS/IndexedDB
+
+**`/home/diogenes/Projects/keating/web/src/lib/model-cache.ts`**:
+
+```ts
+export const TRANSFORMERS_CACHE_NAMES = [
+	"transformers-cache",
+	"experimental_transformers-hash-cache",
+] as const;
+```
+
+with the comment: *"Names mirror the library defaults; we never override `env.cacheKey`"*. Weights go into the browser's **Cache Storage** via transformers.js's own `env.useBrowserCache = true`. This module only reads/deletes those buckets for the settings UI (size display, "remove download"), sizing entries from `content-length` headers — *"Headers only — never read a multi-gigabyte body to measure it."* It degrades to empty when `caches` is undefined (insecure contexts, private-mode Firefox).
+
+Eviction is manual: `localModel.removeDownload(modelId)` → `deleteCachedModel()`. No automatic eviction policy.
+
+## 4. Provider interface — `@earendil-works/pi-ai`, **not** Vercel AI SDK
+
+Keating does **not** use `LanguageModelV1/V2`. It uses `@earendil-works/pi-ai`'s `Model&lt;Api&gt;` / `Context` / `AssistantMessage` abstraction, and adds `"browser"` as a synthetic `Api`/`provider` value.
+
+**`/home/diogenes/Projects/keating/web/src/hooks/keating-stream.ts`** is the dispatcher. Line 357 onward:
+
+```ts
+export async function hybridStreamFn(model: Model&lt;Api&gt;, context: Context, options?: KeatingStreamOptions) {
+	if (model.provider === DESKTOP_OFFLINE_PROVIDER) return desktopOfflineStream(context, options);
+	const { hostedWebSearch = true, ...requestOptions } = options ?? {};
+	const cleanOptions = normalizeProviderStreamOptions(model, requestOptions);
+	captureSessionModelContext(model, context);
+	if (model.provider === "browser") {
+		recordSessionTransport({ provider: model.provider, model: model.id, transport: "browser", hostedWebSearch: false });
+		...
+		return normalizeToolCallStream(await createBrowserStreamFn()(model, context, cleanOptions), context);
+	}
+	// ... hosted providers below
+```
+
+`createBrowserStreamFn()` (line ~218) is the adapter: it builds a `createAssistantMessageEventStream()` and pushes `start` / `text_start` / `text_delta` / `text_end` events, feeding `localModel.generate`'s `onToken` straight into `text_delta`. It reports zero usage/cost:
+
+```ts
+const defaultFields = {
+    api: "browser" as const,
+    provider: "browser" as const,
+    model: modelId,
+    usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0,
+             cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 } },
+};
+```
+
+Note the browser adapter **flattens the conversation** — it filters to user messages only, joins them with `\n\n`, and prepends the system prompt as plain text (`keating-stream.ts:263-280`). No multi-turn role structure, no tool calling.
+
+Catalog integration: `/home/diogenes/Projects/keating/web/src/lib/model-catalog.ts:62` `makeBrowserModels()` synthesizes `Model&lt;Api&gt;` records with `api: "browser"`, `provider: "browser"`, `cost: 0`, `contextWindow: 0`. `discoverModels()` unshifts them into the selector, but **only those whose `checkWebGpuAvailable()` returned available**.
+
+Key predicate in `/home/diogenes/Projects/keating/web/src/lib/provider-models.ts:404`:
+
+```ts
+function providerNeedsKey(provider: string): boolean {
+	return provider !== "browser" &amp;&amp; provider !== DESKTOP_OFFLINE_PROVIDER;
+}
+```
+
+and `resolveAvailableChatModel()` (line ~420) is the first-run fallback chain: **desktop-offline native → notorganic → openai-codex → anthropic → openai → google → browser WebGPU model**. The browser model is the last-resort free option.
+
+## 5. Browser vs native — separate adapters behind one dispatcher
+
+They share the **pi-ai `Model&lt;Api&gt;` + `createAssistantMessageEventStream` contract** and nothing else. Two sibling adapters, both selected in `hybridStreamFn`:
+
+**Native (Electrobun/Electron desktop):** `/home/diogenes/Projects/keating/web/src/lib/desktop-offline.ts` declares a `window.keatingOffline` bridge:
+
+```ts
+export interface DesktopOfflineBridge {
+	status(): Promise&lt;DesktopOfflineStatus&gt;;
+	download(): Promise&lt;void&gt;;
+	cancelDownload(): Promise&lt;void&gt;;
+	remove(): Promise&lt;void&gt;;
+	generate(input: { prompt: string; maxTokens?: number; temperature?: number }): Promise&lt;string&gt;;
+	cancelGeneration(): Promise&lt;void&gt;;
+}
+declare global { interface Window { keatingOffline?: DesktopOfflineBridge } }
+```
+
+`/home/diogenes/Projects/keating/web/src/keating/desktop-offline-stream.ts` wraps it — *"Keep native inference in Electron; the renderer never receives file paths or a local server credential."* Crucially the native path is **non-streaming**: `bridge.generate()` returns a whole string.
+
+The native side is `/home/diogenes/Projects/keating/desktop/src/offline-runtime.ts` + `offline-contract.ts`. It **spawns a bundled LiteRT executable as a child process** (not a server, not `node-llama-cpp`), probing it with `--probe` expecting the literal `"keating-litert-0.16.0"`:
+
+```ts
+// desktop/src/offline-contract.ts:21
+export const OFFLINE_MODEL = {
+  file: "MiniCPM5-2B_int4.litertlm",
+  url: "https://huggingface.co/mlboydaisuke/MiniCPM5-2B-LiteRT/resolve/02e8a867ae318e633f2372ac81fc78dc4d8448e7/MiniCPM5-2B_int4.litertlm",
+  bytes: 1553670064,
+  sha256: "9858563beafbc6d5e0d25fcee3827541515296a9302ed3d088b16a58d4fbe7b8",
+};
+```
+
+Weights are verified by size + SHA-256 (`verifyModel`), downloaded to a `.partial` then renamed, and may ship pre-bundled. Prompt size is capped at 24 KB; text only.
+
+So: **same base checkpoint (MiniCPM5-2B), two different export formats** — ONNX q4f16 for browser, int4 `.litertlm` for native. The weights are emphatically *not* shared.
+
+## 6. Models actually shipped
+
+`/home/diogenes/Projects/keating/web/src/stores/local-model.ts:45` `BROWSER_MODELS`, corroborated by `/home/diogenes/Projects/keating/docs/browser-models.md`:
+
+| Model | Repo | dtype | Size | Kind |
+|---|---|---|---|---|
+| **MiniCPM5 2B (default)** | `RASMUS/MiniCPM5-2B-ONNX` | q4f16 | ~1.84 GB (1,834,210,185 B graph+weights) | text |
+| LFM 2.5 2.6B | `LiquidAI/LFM2.5-2.6B-ONNX` | q4f16 | ~1.55–1.6 GB | text |
+| Gemma 4 E4B | `onnx-community/gemma-4-E4B-it-ONNX` | q4f16 | ~5.2 GB | multimodal |
+| Gemma 4 E2B | `onnx-community/gemma-4-E2B-it-ONNX` | q4f16 | ~3.4 GB | multimodal |
+
+`DEFAULT_BROWSER_MODEL_ID = "RASMUS/MiniCPM5-2B-ONNX"`. Native = `mlboydaisuke/MiniCPM5-2B-LiteRT` int4, 1.55 GB.
+
+## 7. Documented gotchas — `docs/browser-models.md` is genuinely valuable
+
+This doc is the single best artifact for your purposes. Its four hard requirements:
+
+1. **ONNX in transformers.js layout.** *"GGUF, MLX, safetensors, and onnxruntime-genai layouts are all unloadable — the loader fetches paths that do not exist and fails as a 404."*
+2. **4-bit or 8-bit only.** *"ONNX Runtime's `MatMulNBits` kernel accepts nothing else; sub-4-bit weights fail at session creation with `bits must be 4 or 8`. That string lives in the ORT WASM binary, so no loader-side dtype config works around it."* A q2 Gemma export *"Shipped briefly and failed in production."*
+3. **Architecture transformers.js implements** (`lfm2`, `lfm2_moe`, `lfm2_vl`, `qwen3`, Gemma families). No `trust_remote_code`.
+4. **Download ≈ VRAM footprint.**
+
+Plus a "Queued" table (LFM2 1.2B at 0.76 GB is *"the smallest option found anywhere"*; Bonsai 1.7B q4 is *"the one entry that would run on a GPU **without** `shader-f16`"*) and a "Ruled out" section covering Maple Preview, Bonsai 27B, Gemma 12B.
+
+Other gotchas:
+- **WebGPU is mandatory** for the LLM. `classifyLocalModelError()` (line ~106) translates raw errors into guidance: *"requires Chrome 113+ or Edge 113+"*, `shader-f16` missing, OOM (*"Close other GPU-heavy tabs"*), 404, network.
+- **COOP/COEP are set** — `web/vite.config.ts:647-648` and `web/nitro.config.ts:5-6`:
+  ```
+  "Cross-Origin-Opener-Policy": "same-origin",
+  "Cross-Origin-Embedder-Policy": "credentialless",
+  ```
+  Note `credentialless` rather than `require-corp`, plus `Cross-Origin-Resource-Policy: cross-origin` in dev. These appear to be there for the nodepod SharedArrayBuffer sandbox, but they also enable multithreaded ORT-WASM.
+- **Download UX** is elaborate: `lib/model-download-progress.ts` (`DownloadTracker`, phases `checking → downloading → preparing → ready`), repaint throttled to ~7 fps (`PROGRESS_NOTIFY_INTERVAL_MS = 140`), and a `PREPARING_DELAY_MS = 1200` heuristic because *"Cached weights emit no progress events at all, so say 'preparing' rather than sitting at 0% for the whole load."* UI in `web/src/components/ModelDownloadBar.tsx` and `ModelSelector.tsx`.
+- **No cache-eviction policy.** Manual delete only.
+- LiteRT-LM's JS runtime is explicitly ruled out for browser: *"currently documents support only for the web-specific Gemma 4 E2B/E4B bundles; general `.litertlm` files are not yet supported."*
+
+---
+
+# Part B — Twyne's AI provider architecture
+
+## 1. `src/utils/ai-client.ts` (3555 lines) — Vercel AI SDK v6
+
+Deps in `/home/diogenes/Projects/twyne/package.json`: `ai@^6.0.204`, `@ai-sdk/openai@^3.0.71`, `@ai-sdk/anthropic@^3.0.84`, `@ai-sdk/google@^3.0.82`, and — already present — **`@huggingface/transformers@^4.2.0`** (line 107).
+
+**Model construction** — `createModel(config, modelOverride)` at **line 264**, returns `Promise&lt;LanguageModel | null&gt;`. It's a `switch` on `config.type` with a dynamic `import()` per branch:
+
+```ts
+case "litert": {
+  // Desktop-only native model exposed as an OpenAI-compatible server on
+  // loopback by the Electrobun shell. No real key; baseUrl is the local
+  // endpoint discovered from the desktop bridge.
+  const { createOpenAI } = await import("@ai-sdk/openai");
+  const openai = createOpenAI({ apiKey: config.apiKey || "local", baseURL: config.baseUrl });
+  return openAiLanguageModel(openai, config, modelId);
+}
+```
+
+```ts
+case "fishaudio":
+case "supertonic":
+  // Voice only — there is no language model to build. Callers fall back
+  // to the server path, which is the correct behaviour.
+  return null;
+```
+
+`openAiLanguageModel()` (line 170) picks `.responses(id)` vs `.chat(id)` per `config.apiMode`.
+
+**Request/streaming/abort** — `runOnce(...)` at ~line 858 is the single execution primitive. The presence of an `onText` callback is the streaming switch:
+
+```ts
+if (!onText) {
+  const result = await generateText({ model, system, prompt, temperature, maxOutputTokens, ...(providerOptions ? { providerOptions } : {}), ...(tools ? { tools, stopWhen } : {}) });
+  return { text: result.text, usage: normalizeAiUsage(result.totalUsage), providerRequestId: await providerRequestIdFromResult(result) };
+}
+
+const result = streamText({ model, system, prompt, temperature, maxOutputTokens, ... });
+```
+
+It then walks `result.fullStream` handling `text-delta` / `reasoning-start` / `reasoning-delta` / `reasoning-end` / `error`, through a **frame coalescer**:
+
+```ts
+// Provider events arrive per token; components should not re-render per
+// token. The coalescer delivers the latest snapshot once per frame.
+const accumulator = createGenerationStreamAccumulator();
+const coalescer = createFrameCoalescer(onText);
+```
+
+(`src/utils/generation-stream.ts`.)
+
+**Abort:** notably, `runOnce` does **not** thread an `abortSignal` into `generateText`/`streamText`. The only `AbortSignal.timeout(...)` in the AI paths is in the eval harness. This is a gap if you want cancellable local inference.
+
+`generateTrackedText(...)` (line 947) is the layer above: trace ids, usage ledger, folio attribution, retry, and tool budgeting:
+
+```ts
+const toolCount = tools ? Object.keys(tools).length : 0;
+const stopWhen = tools ? stepCountIs(toolCount &gt; 1 ? 6 : 3) : undefined;
+```
+
+It also **discards and re-runs** any reply containing reasoning tags — the eval harness flags this as a blocker for LFM2.5 (see §4).
+
+## 2. Provider shape — what a new provider must implement
+
+`/home/diogenes/Projects/twyne/src/types/index.ts:805`:
+
+```ts
+export interface AiProviderConfig {
+  id: string;
+  name: string;
+  type: AiProviderType;
+  modelsDevId?: string;
+  apiKey: string;
+  baseUrl?: string;
+  defaultModel: string;
+  availableModels?: string[];
+  modelModalities?: Record&lt;string, AiModelModalities&gt;;
+  apiMode?: "chat" | "responses";
+  modelReasoning?: Record&lt;string, AiModelReasoningSetting&gt;;
+  modelReasoningOptions?: Record&lt;string, AiModelReasoningOption[]&gt;;
+}
+```
+
+`AiProviderType` union ends (line ~795):
+
+```ts
+  // Voice only, spoken in the browser: Supertonic runs fully on-device via
+  // WebGPU/WASM (transformers.js) with the model downloaded once. No key, no
+  // server, no account — the free/offline voice. Auto-registered by the
+  // browser bridge, never configured by hand.
+  | "supertonic"
+  // Desktop-only: native LiteRT (Gemma 4 E4B) served on loopback by the
+  // Electrobun shell. Auto-registered, never added by hand — see desktop-bridge.
+  | "litert";
+```
+
+**Provider registry** = `PROVIDER_METAS: ProviderMeta[]` at `src/types/index.ts:1069`, consumed by `src/routes/settings/index.tsx`. Entries for the local ones:
+
+```ts
+{ type: "ollama", label: "Ollama", defaultModels: [], needsBaseUrl: true,
+  defaultBaseUrl: "http://127.0.0.1:11434/v1", apiKeyOptional: true, defaultApiKey: "ollama" },
+{ type: "litert", label: "Local — Gemma 4 E4B", defaultModels: ["gemma-4-e4b"], needsBaseUrl: true },
+{ type: "supertonic", label: "Browser — offline voice (Supertonic)", defaultModels: ["supertonic-tts"],
+  needsBaseUrl: false, apiKeyOptional: true, defaultApiKey: "local", voiceOnly: true },
+```
+
+**To add a browser LLM provider you'd need, minimally:** a new `AiProviderType` member, a `PROVIDER_METAS` entry, a `createModel()` case returning a `LanguageModel`, a `clientUsageSourceForProvider` classification, and — if auto-registered — a strip/inject pair (below).
+
+### The auto-registration pattern (this is your template)
+
+`src/utils/ai-client.ts:2988-3110`. Managed providers are **injected on load, stripped on persist**:
+
+- `stripManagedLocalProviders()` (line 2988) → `stripManagedSupertonicProvider()` + `stripManagedDesktopLocalProvider()`
+- `withBrowserSupertonicProvider(settings)` (line 3053):
+
+```ts
+function withBrowserSupertonicProvider(settings: AiSettings): AiSettings {
+  if (!isBrowserTtsSupported()) return settings;
+  const provider: AiProviderConfig = {
+    id: BROWSER_TTS_PROVIDER_ID,
+    name: "Browser — offline voice",
+    type: "supertonic",
+    apiKey: "browser",
+    defaultModel: BROWSER_TTS_MODEL_ID,
+    availableModels: [BROWSER_TTS_MODEL_ID],
+  };
+  ...
+  return { ...settings, providers,
+    // Don't claim the default slot: the writer's own keyed provider wins.
+    defaultProviderId: settings.defaultProviderId };
+}
+```
+
+- `withDesktopLocalProvider(settings)` (line 3086) does the same for LiteRT but **does** claim the default slot when unset, and forces `advancedMode: true`.
+
+Doc comment at 3023: *"The browser's on-device voice (Supertonic) is injected exactly like the desktop LiteRT model: a managed provider the writer never configures by hand. It is stripped on persist and re-injected on every load."*
+
+## 3. `src/utils/notorganic-provider.ts` (modified in working tree, 1056 bytes)
+
+It is **not** an AI provider — it's the billing/identity bridge to NotOrganic via Convex function references:
+
+- `linkNotOrganicDid(client, did)` → mutation `providerIdentity:linkDidFromLegacyBrowserSession`
+- `getNotOrganicWallet(client)` → action `providerIdentity:getWalletState`
+- `createNotOrganicCheckout(client, {planId, packId, successUrl})` → action `providerIdentity:createProviderCheckout`, returns `{ checkoutUrl }`
+
+(Contrast with Keating, where `notorganic-provider` genuinely *is* an inference provider with a `NOTORGANIC_DEFAULT_MODEL` and an `inference-fetch`. Twyne's is the payments half only.) Related: `src/utils/subscription-plan.ts` — `TWYNE_PRO_PLAN` (`twyne_pro_v2`, $29/mo, $10 credit) and `availableCreditPacks()`.
+
+## 4. The local-model eval harness — already exists and is well-developed
+
+`package.json` script: `"eval:local": "tsx evals/run-local-model.ts"`.
+
+**`/home/diogenes/Projects/twyne/evals/run-local-model.ts`** (~430 lines). Defaults: `LOCAL_MODEL_ID = "LFM2.5-2.6B"`, `LOCAL_MODEL_BASE_URL = http://localhost:8080/v1`, served by **llama.cpp**:
+
+```
+llama-server -hf LiquidAI/LFM2.5-2.6B-GGUF --jinja -c 8192
+```
+
+Its header states the thesis plainly:
+
+&gt; *"the candidate engine for signed-out / free mode... None of them can answer the only question that matters for a 2.6B on-device model: **can it drive the `quote_passage` tool?**"*
+
+It runs the **real production path** — `convex/agentPrompts`, `convex/agentTools`, `generateText` with `stopWhen: stepCountIs(3)`, `TEMPERATURE = 0.4`, `MAX_OUTPUT_TOKENS = 1024` — changing only the endpoint. Two modes per case (`tools` / `notools`) to separate tool competence from analysis competence.
+
+**The finding you most need to know about**, from the `wouldRegenerate` metric:
+
+```ts
+/**
+ * `hasReasoningTags` on the raw text. LFM2.5's chat template always opens a
+ * `&lt;think&gt;` block, and `generateTrackedText` DISCARDS AND RE-RUNS any reply
+ * where this is true — so on this model every call would silently cost two.
+ * Counted rather than assumed, because it decides whether free mode needs a
+ * per-provider "reasoning is expected here" flag before it can ship.
+ */
+wouldRegenerate: boolean;
+```
+
+Outputs `evals/local-model-scores.json` + `evals/local-model-runs.json` (the latter shaped for `evals/judge.ts`). Headline metric is `anchoredRate`. It also warns if zero tool calls + zero errors, pointing at the missing `--jinja`.
+
+Note: **the harness targets a loopback llama.cpp server, not in-browser inference.** There is currently no in-browser LLM in Twyne.
+
+## 5. `src/utils/supertonic-tts.ts` (366 lines) — the caching precedent
+
+This is exactly the precedent you suspected, and the pattern differs from Keating's in an important way.
+
+Split across three files:
+- **`src/utils/browser-inference.ts`** (4.6 KB, dependency-free) — capability detection + the manifest. Kept separate deliberately: *"`supertonic-tts.ts` pulls in the full transformers.js runtime, which is hundreds of kilobytes the main bundle must not carry."*
+- **`src/utils/models-cache.ts`** — generic download/evict.
+- **`src/utils/supertonic-tts.ts`** — the transformers.js layer.
+
+**Model:** `onnx-community/Supertonic-TTS-ONNX`, ~262 MB across 9 model files + 9 voice embeddings (`BROWSER_TTS_MANIFEST`, `browser-inference.ts:44`). Biggest: `onnx/latent_denoiser.onnx_data` at 132,098,880 B.
+
+**Device selection** — unlike Keating, WASM is a real fallback:
+
+```ts
+export function browserTtsDevice(): BrowserTtsDevice {
+  if (capabilityOverride !== undefined) return capabilityOverride;
+  if (typeof window === "undefined" || typeof navigator === "undefined") return null;
+  if ("gpu" in navigator &amp;&amp; navigator.gpu) return "webgpu";
+  if (typeof WebAssembly !== "undefined") return "wasm";
+  return null;
+}
+```
+
+**Caching = IndexedDB `models` store, keyed by remote URL**, with an `env.fetch` redirect — a genuinely different design from Keating's "let transformers.js use Cache Storage":
+
+```ts
+export function installSupertonicFetchHook(): void {
+  if (fetchHookInstalled || typeof window === "undefined") return;
+  fetchHookInstalled = true;
+  const originalFetch = env.fetch.bind(env) as typeof fetch;
+  env.fetch = async (input: string | URL, init?: RequestInit) =&gt; {
+    const url = typeof input === "string" ? input : input.toString();
+    if (url.startsWith(REMOTE_BASE)) {
+      const bytes = await readModelBytes(url);
+      if (bytes) {
+        return new Response(bytes, { status: 200, headers: { "content-type": "application/octet-stream" } });
+      }
+    }
+    return originalFetch(url, init);
+  };
+}
+```
+
+Doc comment: *"Once the pack is on disk, this hook answers those fetches from IndexedDB instead of the network, so a reading works with no connectivity at all."*
+
+**The store** — `src/utils/idb.ts:106` `ensureStore("models", "id")`; record type at line 1197:
+
+```ts
+export interface ModelFileRecord { id: string; blob: Blob; bytes: number; updatedAt: number; }
+```
+
+with `saveModelFileToIdb` / `loadModelFileFromIdb` / `listModelFilesFromIdb(prefix)` / `deleteModelFileFromIdb` (lines 1205-1265). `listModelFilesFromIdb` does a full `getAll()` then filters by prefix — fine for ~18 files, worth noting if you add GB-scale LLM weights.
+
+**`src/utils/models-cache.ts`** header states the intent outright:
+
+&gt; *"The download-and-evict capability that both the Supertonic voice pack **and any future local model** share."*
+
+`downloadModelBundle(id, manifest, {signal, onProgress})` fetches **sequentially** — *"so a browser's connection pool is never competing with the page's own traffic, and each file lands whole"* — with a proper `AbortSignal` and a listener registry (`onModelDownload(id, listener)`). `modelDownloadState()` derives `not-downloaded | downloading | ready | error` from bytes on disk without touching the network. `evictModelBundle` deletes by shared URL prefix.
+
+Pipeline loading is memoized with a warm-up pass:
+
+```ts
+const tts = (await pipeline("text-to-speech", SUPERTONIC_MODEL_ID, { device, progress_callback: () =&gt; {} })) as TextToAudioPipeline;
+// Warm up so the first real reading is not the one that pays for shader compilation.
+await tts("Hello", { speaker_embeddings: new Float32Array(1 * 101 * 128), num_inference_steps: 1, speed: 1.0 });
+```
+
+Errors are structured `AppError`s with a `download-required` recovery action so the UI can point at the download rather than claiming the voice is broken.
+
+**No Web Worker here either** — TTS runs on the main thread.
+
+## 6. Online/offline and "free mode"
+
+**There is no online/offline branch inside the AI paths.** I grepped `navigator.onLine` across `src/` — the only hit near AI is `src/components/desk/usage-sync-controller.tsx:60`. Connectivity awareness lives in `src/components/ui/global-connectivity-banner.tsx`, `src/routes/desk/index.tsx`, `src/utils/convex-sync.ts`, and `src/utils/image-upload.ts` (`mode: "online" | "offline"`). `src/utils/offline-cache-policy.ts` is a service-worker shell/static caching policy — *"Manuscripts and other writer data remain in IndexedDB/Lix; no route response containing that data belongs in Cache Storage"* — unrelated to models.
+
+What plays the role of "free mode" is the **fallback chain** in `/home/diogenes/Projects/twyne/src/utils/ai-orchestrator.ts`:
+
+```
+ *   1. Client-side AI (BYOK) — if user has configured providers
+ *   2. Convex server action — the existing server-side path
+ *   3. Local deterministic fallback — always works, no network
+```
+
+`runAiWithFallback()` gates step 1 on `hasConfiguredAiProvider(settings)` (`ai-client.ts:440`), which deliberately excludes voice-only providers, and tags results `client-${provider}`. The ultimate fallback returns *"The room is quiet. Try again when connected."*
+
+Billing classification is in `browser-inference.ts:69`:
+
+```ts
+const LOCAL_INFERENCE_PROVIDER_TYPES = new Set&lt;AiProviderConfig["type"]&gt;(["litert", "ollama", "supertonic"]);
+...
+/**
+ * Classify billing semantics, not transport. On-device and loopback models are
+ * local even though LiteRT/Ollama speak an OpenAI-compatible HTTP protocol.
+ */
+export function clientUsageSourceForProvider(provider): "byok" | "local"
+```
+
+`ClientUsageSource = "byok" | "local"` feeds the usage ledger (`src/utils/usage-ledger.ts`, `usage-domain.ts`).
+
+## 7. Where a browser LLM would plug in — concretely
+
+The seam is clean. `createModel()` at `ai-client.ts:264` returns `LanguageModel | null`; everything above it (`runOnce`, `generateTrackedText`, tools, tracing, usage) is provider-agnostic. Twyne already has `@huggingface/transformers` installed, a `models` IndexedDB store with download/evict/progress, and the managed-provider inject/strip pattern.
+
+Four things to be aware of:
+
+1. **You'd need to write an AI-SDK `LanguageModelV2` adapter** around transformers.js — Keating's approach (a bespoke `hybridStreamFn` branch bypassing the provider interface) won't transfer, because Twyne's `createModel` must hand back a real `LanguageModel`. Keating's `createBrowserStreamFn` is a useful reference for the *event shape*, not the *interface*.
+2. **Tool calling is load-bearing** in Twyne (`quote_passage` anchors editorial notes) and Keating's browser path has none. The `eval:local` harness exists precisely to measure this.
+3. **The `&lt;think&gt;` re-run bug** — `generateTrackedText` discards replies with reasoning tags, doubling cost on LFM2.5. The eval's `wouldRegenerate` metric says a per-provider "reasoning is expected" flag is needed before free mode ships.
+4. **Two competing cache strategies now exist** — Keating uses transformers.js's native Cache Storage (`useBrowserCache = true`); Twyne uses IndexedDB blobs + an `env.fetch` redirect. Twyne's gives true offline + precise eviction; Keating's is less code. They conflict if both run in one app, since Twyne's fetch hook is installed globally on `env.fetch` and Keating-style loading would bypass it.</result>
+<usage><subagent_tokens>161394</subagent_tokens><tool_uses>45</tool_uses><duration_ms>314287</duration_ms></usage>
+</task-notification>
+
+---
+
+.
