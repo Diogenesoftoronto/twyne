@@ -1,0 +1,46 @@
+› what are some other interesting out of the box ways we could use jev that would help a writer or improve the product
+
+---
+
+Wired, with one deliberate stop short of the finish line.
+
+## The architecture you asked for
+
+You're right that this belongs in Not Organic, and the codebase agreed more than I expected — `convex/lib/notorganic.ts` already had `providerJsonRequest()`, the exact helper a `/judgement` route needs, and `providerIdentity.ts` already calls `/v1/wallet` and `/v1/billing/checkout` that way. So this wasn't a new pattern, just an unused one.
+
+**Twyne side** (`convex/systemOne.ts`) now prefers Not Organic and falls back to a direct key only for local dev:
+
+```
+notOrganicEnabled()  →  POST /v1/judgement   (DPoP product assertion, capability judgement:evaluate)
+TYPESAFE_API_KEY     →  direct TypeSafe       (developer machines only)
+neither              →  { ok: false, error: "unconfigured" }
+```
+
+One decision worth flagging: **Not Organic wins even when both are configured.** A machine with both is mid-migration, and silently preferring the local key there ships a surface never exercised against the real boundary.
+
+**Provider side** — `apps/gateway/src/judgement.ts` is installed. Modelled on Tavus, because Jev has the same shape problem: it isn't chat, so forcing it through `/v1/chat/completions` would mean inventing a prompt envelope and parsing text back out — the exact round trip the model exists to remove.
+
+Per-customer inspection works through the real ledger: `store.reserve` → `markDispatched` → `markAccepted` → `settle`, billed on Jev's actual `usage.input_tokens`. Pricing lands neatly — $0.042/Mtok input with free output is exactly **0.042 microUSD per input token**, so a full rubric pass is ~59 microUSD.
+
+## What I stopped short of
+
+The remaining three edits are to `types.ts`, `main.ts` and `app.ts` — **all three are already dirty in your provider repo**, along with `proxy.ts` and `auth.ts`. Interleaving with in-flight work there is how changes get tangled, so I staged exact snippets in `apps/gateway/src/judgement.INSTALL.md` instead. Say the word and I'll apply them.
+
+Two bugs I caught in my own module by typechecking it in place:
+- **Telemetry was leaking identity** — I passed properties where `distinctId` goes. `PortkeyProxy` keys analytics by an HMAC pseudonym of the account ID, never the raw ID. Fixed to match, with a TODO to export `pseudonym()` rather than keep my copy.
+- A brace error that closed the class early.
+
+Remaining errors are only the three `typesafe` config references — install step 2.
+
+## Also wired
+
+`runRubricPass()` in `rubric-grade.ts` — the missing seam joining pure grading to transport. Takes a caller, returns a `RubricGrade`, degrades rather than throws. **1104 tests pass, 0 fail**; typecheck and Prettier clean.
+
+I did **not** refactor `rubric-panel.tsx`. It has six existing frontier-call paths across ~800 lines, and doing that safely in the same breath as an auth-boundary change would make both hard to review. It's now a one-function call away.
+
+Next: apply the three gateway edits, set `TYPESAFE_API_KEY` on the **gateway** service (not Twyne's Convex), then wire the panel. ----
+finish the applicatioon and add these otherr cool option
+
+---
+
+hey don't manual test things here i will go and do those ui checks, don't bother with tests either pure implementation.

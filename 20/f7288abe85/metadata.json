@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "20f7288abe85",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/agents.ts",
+    "convex/lib/judgementContract.ts",
+    "convex/lib/rateLimit.ts",
+    "convex/providerIdentity.ts",
+    "convex/systemOne.ts",
+    "devenv.lock",
+    "src/components/editor/manuscript-panel.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/rubric/rubric-panel.tsx",
+    "src/components/writing-tools/writing-tools.tsx",
+    "src/global.css",
+    "src/routes/editor/index.tsx",
+    "src/routes/pricing/index.tsx",
+    "src/routes/rubric/index.tsx",
+    "src/routes/writing-tools/index.tsx",
+    "src/types/index.ts",
+    "src/utils/feature-flags.ts",
+    "src/utils/notorganic-provider.ts",
+    "src/utils/rubric-judgement-result.test.ts",
+    "src/utils/rubric-judgement-result.ts",
+    "src/utils/writing-lenses.test.ts",
+    "src/utils/writing-lenses.ts",
+    "src/utils/writing-tools-storage.test.ts",
+    "src/utils/writing-tools-storage.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/20/f7288abe85/0/metadata.json",
+      "transcript": "/20/f7288abe85/0/full.jsonl",
+      "compact_transcript": "/20/f7288abe85/0/transcript.jsonl",
+      "content_hash": "/20/f7288abe85/0/content_hash.txt",
+      "prompt": "/20/f7288abe85/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 167694,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 4888320,
+    "output_tokens": 21938,
+    "api_call_count": 47
+  }
+}
