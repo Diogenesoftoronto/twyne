@@ -1,0 +1,111 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "6795b64e2ec2",
+  "session_id": "01a0b6c8-324a-7d60-a2fa-a16f00cc5a18",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-20T06:03:25.776604104Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 2,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/agents.ts",
+    "convex/lib/rateLimit.ts",
+    "convex/providerIdentity.ts",
+    "convex/systemOne.ts",
+    "devenv.lock",
+    "src/components/editor/manuscript-panel.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/global.css",
+    "src/routes/pricing/index.tsx",
+    "src/utils/brief-coach.test.ts",
+    "src/utils/feature-flags.ts",
+    "src/utils/notorganic-provider.ts",
+    "src/utils/passage-triage.test.ts",
+    "src/utils/rubric-grade.test.ts",
+    "src/utils/rubric-grade.ts"
+  ],
+  "agent": "Codex",
+  "model": "fugu-ultra",
+  "turn_id": "30462eb1374b",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 677508,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 36229146,
+    "output_tokens": 55372,
+    "api_call_count": 93
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-20T06:03:25.663684747Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 130,
+    "human_removed": 2110,
+    "total_committed": 862,
+    "total_lines_changed": 2240,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 3127,
+      "user_lines_removed": 100,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "convex/_generated/api.d.ts": 2,
+        "convex/agents.ts": 22,
+        "convex/lib/providerCheckout.ts": 19,
+        "convex/lib/rateLimit.ts": 9,
+        "convex/providerIdentity.ts": 26,
+        "convex/systemOne.ts": 142,
+        "devenv.lock": 12,
+        "docs/pricing-rollout.md": 23,
+        "e2e/drag-selection.e2e.ts": 215,
+        "src/components/editor/manuscript-panel.tsx": 44,
+        "src/components/editor/twyne-editor.tsx": 17,
+        "src/global.css": 48,
+        "src/routes/pricing/index.tsx": 166,
+        "src/utils/brief-coach.test.ts": 298,
+        "src/utils/brief-coach.ts": 288,
+        "src/utils/feature-flags.ts": 1,
+        "src/utils/file-drag.test.ts": 39,
+        "src/utils/file-drag.ts": 26,
+        "src/utils/note-gate.test.ts": 253,
+        "src/utils/note-gate.ts": 284,
+        "src/utils/notorganic-provider.ts": 2,
+        "src/utils/passage-triage.ts": 233,
+        "src/utils/rubric-grade.test.ts": 231,
+        "src/utils/rubric-grade.ts": 258,
+        "src/utils/subscription-plan.test.ts": 37,
+        "src/utils/subscription-plan.ts": 47,
+        "src/utils/system-one.test.ts": 129,
+        "src/utils/system-one.ts": 216,
+        "tests/provider-checkout.test.ts": 40
+      },
+      "user_removed_per_file": {
+        "convex/agents.ts": 49,
+        "convex/providerIdentity.ts": 5,
+        "devenv.lock": 12,
+        "src/components/editor/manuscript-panel.tsx": 7,
+        "src/components/editor/twyne-editor.tsx": 1,
+        "src/routes/pricing/index.tsx": 23,
+        "src/utils/feature-flags.ts": 1,
+        "src/utils/notorganic-provider.ts": 2
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 3391,
+      "agent_lines_removed": 100
+    }
+  ]
+}

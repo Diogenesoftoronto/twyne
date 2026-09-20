@@ -1,0 +1,5 @@
+.
+
+---
+
+get this wired, tbh the typesafe api key and deployment should work through notorganic in actuality rather than tied through this deployment directly that is what i would really prefer, notorganic should part of an api that just works with jev as a model to use, with maybe a /judgement api route. that way we can have all the different sites use that pretty easily and then we can also inspect per customer and stuff as well.
