@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.20.1
+
+<sub>2026-09-20</sub>
+
+- Connect Not Organic from Settings through a verified, one-time sign-in
+  exchange. Unverified browser identity claims cannot authorize hosted spending.
+- Correct the production token audience for hosted editorial judgements.
+- Declare the editor test DOM dependency so clean installs run the full suite.
+
 ## 0.20.0
 
 <sub>2026-09-20</sub>

@@ -140,26 +140,6 @@ export const AuthProvider = component$(() => {
                 metadata: { operation: "install-convex-token" },
               });
             }
-
-            // This mutation requires the live Better Auth Convex token above.
-            // ATProto proof still comes from the official legacy browser OAuth
-            // client; see providerIdentity.ts for the server-conversion boundary.
-            if (atproto && convexAuthenticated) {
-              try {
-                const { linkNotOrganicDid } = await import(
-                  "./notorganic-provider"
-                );
-                await linkNotOrganicDid(convexClient.value, atproto.did);
-              } catch (error) {
-                reportApplicationError("twyne:notorganic:link-did", error, {
-                  source: "auth",
-                  title: "Bluesky connection was not linked",
-                  variant: "warning",
-                  dedupeKey: "notorganic-did-link",
-                  metadata: { operation: "link-atproto-identity" },
-                });
-              }
-            }
           } else {
             clearConvexSyncContext();
           }

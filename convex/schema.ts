@@ -614,7 +614,10 @@ export default defineSchema({
   providerIdentities: defineTable({
     productSubject: v.string(),
     did: v.string(),
-    verificationMethod: v.literal("legacy_atproto_browser_oauth"),
+    verificationMethod: v.union(
+      v.literal("legacy_atproto_browser_oauth"),
+      v.literal("notorganic_pkce"),
+    ),
     sessionVersion: v.number(),
     verifiedAt: v.number(),
     createdAt: v.number(),

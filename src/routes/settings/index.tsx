@@ -1,6 +1,7 @@
 import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { ApplicationNotice } from "../../components/ui/application-notice";
+import { NotOrganicConnection } from "../../components/settings/notorganic-connection";
 import { SearchableModelSelect } from "../../components/ui/searchable-model-select";
 import { ThemedDialog } from "../../components/ui/themed-dialog";
 import { NumericStepper } from "../../components/ui/numeric-stepper";
@@ -1591,6 +1592,7 @@ export default component$(() => {
 
         {store.loaded && (
           <div class="space-y-8">
+            <NotOrganicConnection />
             {/* ── Appearance ── */}
             <section class="folio p-5">
               <h2
