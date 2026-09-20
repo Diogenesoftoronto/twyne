@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "1d456a573164",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "convex/_generated/api.d.ts",
+    "convex/agents.ts",
+    "convex/providerIdentity.ts",
+    "devenv.lock",
+    "src/components/editor/manuscript-panel.tsx",
+    "src/components/editor/twyne-editor.tsx",
+    "src/global.css",
+    "src/routes/pricing/index.tsx",
+    "src/utils/feature-flags.ts",
+    "src/utils/notorganic-provider.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/1d/456a573164/0/metadata.json",
+      "transcript": "/1d/456a573164/0/full.jsonl",
+      "compact_transcript": "/1d/456a573164/0/transcript.jsonl",
+      "content_hash": "/1d/456a573164/0/content_hash.txt",
+      "prompt": "/1d/456a573164/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 268,
+    "cache_creation_tokens": 923653,
+    "cache_read_tokens": 17753609,
+    "output_tokens": 141767,
+    "api_call_count": 136,
+    "subagent_tokens": {
+      "input_tokens": 54,
+      "cache_creation_tokens": 325609,
+      "cache_read_tokens": 1864612,
+      "output_tokens": 10222,
+      "api_call_count": 27
+    }
+  }
+}
