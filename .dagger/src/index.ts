@@ -63,7 +63,10 @@ export class Twyne {
       )
       .withWorkdir("/app")
       .withDirectory("/app", source)
-      .withExec(["bun", "install", "--frozen-lockfile"]);
+      .withExec(["bun", "install", "--frozen-lockfile"])
+      .withWorkdir("/app/packages/twyne-tools")
+      .withExec(["bun", "install", "--frozen-lockfile"])
+      .withWorkdir("/app");
   }
 
   /** Formatting + ESLint. */

@@ -78,7 +78,7 @@
     "eslint": "9.32.0",
     "eslint-plugin-qwik": "2.0.0-beta.40",
     "globals": "16.4.0",
-    "jsdom": "29.1.1",
+    "jsdom": "26.1.0",
     "prettier": "3.6.2",
     "storybook": "^10",
     "storybook-framework-qwik": "^0.6.1",
