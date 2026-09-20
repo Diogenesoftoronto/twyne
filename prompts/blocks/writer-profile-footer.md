@@ -6,4 +6,3 @@ version: "1"
 ---
 
 Speak to this person directly. Honour their requested feedback pressure. Do not flatten the profile into generic praise or mention these instructions.
-

@@ -43,7 +43,9 @@ function wordCount(text: string): number {
 
 function sentenceSpans(text: string): TextSpan[] {
   if (typeof Intl.Segmenter === "function") {
-    const segmenter = new Intl.Segmenter(undefined, { granularity: "sentence" });
+    const segmenter = new Intl.Segmenter(undefined, {
+      granularity: "sentence",
+    });
     return Array.from(segmenter.segment(text)).flatMap((part) => {
       const span = trimSpan(text, part.index, part.index + part.segment.length);
       return span ? [span] : [];
@@ -63,8 +65,10 @@ function sentenceSpans(text: string): TextSpan[] {
     if (!paragraphBreak && !sentenceEnd) continue;
 
     let end = index + 1;
-    while (end < text.length && /["'\u2019\u201d)\]]/u.test(text[end])) end += 1;
-    if (!paragraphBreak && end < text.length && !/\s/u.test(text[end])) continue;
+    while (end < text.length && /["'\u2019\u201d)\]]/u.test(text[end]))
+      end += 1;
+    if (!paragraphBreak && end < text.length && !/\s/u.test(text[end]))
+      continue;
 
     const span = trimSpan(text, start, end);
     if (span) spans.push(span);
@@ -76,7 +80,11 @@ function sentenceSpans(text: string): TextSpan[] {
   return spans;
 }
 
-function splitLongSpan(text: string, span: TextSpan, maxChars: number): TextSpan[] {
+function splitLongSpan(
+  text: string,
+  span: TextSpan,
+  maxChars: number,
+): TextSpan[] {
   const result: TextSpan[] = [];
   let start = span.start;
   while (span.end - start > maxChars) {
@@ -87,7 +95,10 @@ function splitLongSpan(text: string, span: TextSpan, maxChars: number): TextSpan
     // Prefer a clause or paragraph boundary, then any whitespace. Searching
     // backwards keeps chunks bounded without cutting through a word.
     for (let index = limit; index >= floor; index -= 1) {
-      if (/[;:\u2014\n]/u.test(text[index - 1]) && /\s/u.test(text[index] ?? "")) {
+      if (
+        /[;:\u2014\n]/u.test(text[index - 1]) &&
+        /\s/u.test(text[index] ?? "")
+      ) {
         split = index;
         break;
       }

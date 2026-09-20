@@ -36,8 +36,7 @@ export const BlogIndex = component$<BlogIndexProps>(
               class="mt-3 text-sm text-[var(--color-ink-muted)]"
               style="font-family: var(--font-serif);"
             >
-              Updates, experiments, and editorial notes from the
-              writer's room.
+              Updates, experiments, and editorial notes from the writer's room.
             </p>
             <p class="mt-4">
               <Link

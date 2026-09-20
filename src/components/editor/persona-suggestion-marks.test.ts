@@ -89,7 +89,9 @@ describe("PersonaNoteMark", () => {
         expect(editor.getHTML()).toContain('data-persona-note-id="n-second"');
 
         expect(removePersonaNoteMarkById(editor, "n-first")).toBe(true);
-        expect(editor.getHTML()).not.toContain('data-persona-note-id="n-first"');
+        expect(editor.getHTML()).not.toContain(
+          'data-persona-note-id="n-first"',
+        );
         expect(editor.getHTML()).toContain('data-persona-note-id="n-second"');
         expect(
           Array.from(

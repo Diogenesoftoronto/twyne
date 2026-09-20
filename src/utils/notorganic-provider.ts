@@ -13,7 +13,7 @@ const walletState = makeFunctionReference<
 
 const providerCheckout = makeFunctionReference<
   "action",
-  { planId: string; successUrl?: string },
+  { planId?: string; packId?: string; successUrl?: string },
   { checkoutUrl: string }
 >("providerIdentity:createProviderCheckout");
 
@@ -30,7 +30,7 @@ export function getNotOrganicWallet(client: ConvexClient): Promise<unknown> {
 
 export function createNotOrganicCheckout(
   client: ConvexClient,
-  input: { planId: string; successUrl?: string },
+  input: { planId?: string; packId?: string; successUrl?: string },
 ): Promise<{ checkoutUrl: string }> {
   return client.action(providerCheckout, input);
 }

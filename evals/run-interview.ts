@@ -258,7 +258,9 @@ function parseInterviewOutput(text: string): ParsedTurn {
   }
 
   const dossierSegment = extractTaggedJson(visible, "DOSSIER");
-  const fields = dossierSegment ? normalizeDossierFields(dossierSegment.value) : [];
+  const fields = dossierSegment
+    ? normalizeDossierFields(dossierSegment.value)
+    : [];
   const reply = dossierSegment
     ? stripTaggedJson(visible, dossierSegment)
     : visible;
@@ -561,11 +563,16 @@ async function main(): Promise<void> {
         AbortSignal.timeout(60_000),
       );
       const parsed = parseInterviewOutput(raw);
-      const actualBehavior = parsed.kind === "synthesize" ? "synthesize" : "question";
+      const actualBehavior =
+        parsed.kind === "synthesize" ? "synthesize" : "question";
 
       // Protocol adherence
       const protocol = await judge(
-        PROTOCOL_ADHERENCE_TEMPLATE(transcript, parsed.rawOutput, row.expectedBehavior),
+        PROTOCOL_ADHERENCE_TEMPLATE(
+          transcript,
+          parsed.rawOutput,
+          row.expectedBehavior,
+        ),
         CHOICES.protocol,
         AbortSignal.timeout(90_000),
       );
@@ -582,7 +589,11 @@ async function main(): Promise<void> {
 
       // Focus discipline
       const focus = await judge(
-        FOCUS_DISCIPLINE_TEMPLATE(transcript, parsed.rawOutput, row.distractionPresent),
+        FOCUS_DISCIPLINE_TEMPLATE(
+          transcript,
+          parsed.rawOutput,
+          row.distractionPresent,
+        ),
         CHOICES.focus,
         AbortSignal.timeout(90_000),
       );
@@ -601,7 +612,11 @@ async function main(): Promise<void> {
 
       // Dossier grounding
       const grounding = await judge(
-        DOSSIER_GROUNDING_TEMPLATE(transcript, parsed.rawOutput, parsed.dossierFields),
+        DOSSIER_GROUNDING_TEMPLATE(
+          transcript,
+          parsed.rawOutput,
+          parsed.dossierFields,
+        ),
         CHOICES.grounding,
         AbortSignal.timeout(90_000),
       );
@@ -643,11 +658,19 @@ async function main(): Promise<void> {
         tags: row.tags,
         expectedBehavior: row.expectedBehavior,
         actualBehavior: "[error]",
-        protocol: { label: "?", score: null, explanation: `[error] ${message}` },
+        protocol: {
+          label: "?",
+          score: null,
+          explanation: `[error] ${message}`,
+        },
         question: null,
         focus: { label: "?", score: null, explanation: `[error] ${message}` },
         timing: { label: "?", score: null, explanation: `[error] ${message}` },
-        grounding: { label: "?", score: null, explanation: `[error] ${message}` },
+        grounding: {
+          label: "?",
+          score: null,
+          explanation: `[error] ${message}`,
+        },
         dossierFieldsClaimed: [],
         expectedDossierFields: row.expectedDossierFields,
         outputExcerpt: `[error] ${message}`,
@@ -661,7 +684,9 @@ async function main(): Promise<void> {
   // Summary
   const protocolOk = scores.filter((s) => s.protocol.score === 1).length;
   const questionScores = scores.filter((s) => s.question !== null);
-  const questionOk = questionScores.filter((s) => s.question!.score === 1).length;
+  const questionOk = questionScores.filter(
+    (s) => s.question!.score === 1,
+  ).length;
   const focusOk = scores.filter((s) => s.focus.score === 1).length;
   const timingOk = scores.filter((s) => s.timing.score === 1).length;
   const groundingOk = scores.filter((s) => s.grounding.score === 1).length;
@@ -669,12 +694,24 @@ async function main(): Promise<void> {
 
   console.log("");
   console.log(`[twyne:interview] summary (${n} cases):`);
-  console.log(`  protocol-adherence   ${protocolOk}/${n}  (${Math.round((protocolOk / n) * 100)}%)`);
-  console.log(`  question-quality     ${questionOk}/${questionScores.length}  (${questionScores.length > 0 ? Math.round((questionOk / questionScores.length) * 100) : 0}%)`);
-  console.log(`  focus-discipline     ${focusOk}/${n}  (${Math.round((focusOk / n) * 100)}%)`);
-  console.log(`  conclusion-timing    ${timingOk}/${n}  (${Math.round((timingOk / n) * 100)}%)`);
-  console.log(`  dossier-grounding    ${groundingOk}/${n}  (${Math.round((groundingOk / n) * 100)}%)`);
-  console.log(`[twyne:interview] wrote ${scores.length} scores to evals/interview-scores.json`);
+  console.log(
+    `  protocol-adherence   ${protocolOk}/${n}  (${Math.round((protocolOk / n) * 100)}%)`,
+  );
+  console.log(
+    `  question-quality     ${questionOk}/${questionScores.length}  (${questionScores.length > 0 ? Math.round((questionOk / questionScores.length) * 100) : 0}%)`,
+  );
+  console.log(
+    `  focus-discipline     ${focusOk}/${n}  (${Math.round((focusOk / n) * 100)}%)`,
+  );
+  console.log(
+    `  conclusion-timing    ${timingOk}/${n}  (${Math.round((timingOk / n) * 100)}%)`,
+  );
+  console.log(
+    `  dossier-grounding    ${groundingOk}/${n}  (${Math.round((groundingOk / n) * 100)}%)`,
+  );
+  console.log(
+    `[twyne:interview] wrote ${scores.length} scores to evals/interview-scores.json`,
+  );
 
   if (failures > 0) process.exitCode = 1;
 }

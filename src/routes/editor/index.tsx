@@ -46,6 +46,8 @@ import {
   EditorialBoardOverlay,
   type EditorialBoardTab,
 } from "../../components/editorial-board/editorial-board-overlay";
+import { BOARD_TABS } from "../../components/editorial-board/board-tabs";
+import { editorialDateline, folioNumeral } from "../../utils/editorial-format";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { markDirty, loadRoomSettingsLocally } from "../../utils/convex-sync";
@@ -90,6 +92,8 @@ import {
   wordCountBucket,
 } from "../../utils/product-analytics";
 import { usageLedger } from "../../utils/usage-ledger";
+import { startLiveReview } from "../../utils/live-review";
+import { LiveReviewStatus } from "../../components/writing-tools/live-review-status";
 
 type RightPanel = PanelId;
 
@@ -156,44 +160,9 @@ interface LayoutStore {
 }
 
 /* ────────────────────────────────────────────────────────────────
- *  Editorial dateline — formatted like a print magazine masthead.
- *  e.g. "Vol. I · No. 117 · Sunday, the 26th of April, 2026"
+ *  Editorial dateline lives in utils/editorial-format.ts so the landing
+ *  preview renders the same masthead line. Folio numerals too.
  * ──────────────────────────────────────────────────────────────── */
-function editorialDateline(now = new Date()): string {
-  const days = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const day = now.getDate();
-  const ordinal = (n: number) => {
-    const s = ["th", "st", "nd", "rd"];
-    const v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
-  };
-  const start = new Date(now.getFullYear(), 0, 0);
-  const diff = (now.getTime() - start.getTime()) / 86400000;
-  const dayOfYear = Math.floor(diff);
-  return `Vol. I · No. ${dayOfYear} · ${days[now.getDay()]}, the ${ordinal(day)} of ${months[now.getMonth()]}, ${now.getFullYear()}`;
-}
 
 /**
  * The writer's room — the full editorial desk: the Drawer of folios on
@@ -387,7 +356,9 @@ export default component$(() => {
             source: "automatic",
           });
           // "Saved Xs ago" means on disk, so stamp it only once IDB commits.
-          window.dispatchEvent(new CustomEvent("twyne:draft-saved"));
+          window.dispatchEvent(
+            new CustomEvent("twyne:draft-saved", { detail: { folioId } }),
+          );
         });
       }
       if (folioArrayDirty) {
@@ -707,6 +678,21 @@ export default component$(() => {
     }
   });
 
+  // Review is owned by the workspace, so closing the board cannot stop it.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(
+    ({ track, cleanup }) => {
+      const hydrated = track(() => store.hydrated);
+      const folioId = track(() => store.activeFolioId);
+      const client = track(() => clientSig.value);
+      track(() => auth.value.user);
+      track(() => store.brief);
+      if (hydrated && folioId)
+        cleanup(startLiveReview(client ?? null, folioId));
+    },
+    { strategy: "document-ready" },
+  );
+
   // Each folio owns its own research and editorial-room process. Tracking the
   // active id stops the previous room before opening the next one, including
   // ordinary drawer switches that do not navigate away from /editor.
@@ -828,43 +814,9 @@ export default component$(() => {
     await nav(`/dossier/create/?folio=${encodeURIComponent(newFolio.id)}`);
   });
 
-  const panelTabs: EditorialBoardTab[] = [
-    {
-      id: "personas",
-      numeral: "I",
-      label: "Cast",
-      kicker: "Editors in residence",
-      accent: "var(--color-vermilion)",
-    },
-    {
-      id: "rubric",
-      numeral: "II",
-      label: "Rubric",
-      kicker: "Dept. of Rigor",
-      accent: "var(--color-cobalt)",
-    },
-    {
-      id: "comments",
-      numeral: "III",
-      label: "Marginalia",
-      kicker: "Notes in the margin",
-      accent: "var(--color-mustard)",
-    },
-    {
-      id: "citations",
-      numeral: "IV",
-      label: "Apparatus",
-      kicker: "Sources & sourcerers",
-      accent: "var(--color-periwinkle)",
-    },
-    {
-      id: "history",
-      numeral: "V",
-      label: "Versions",
-      kicker: "Version history",
-      accent: "var(--color-sage)",
-    },
-  ];
+  // The board's tabs live in board-tabs.ts so the landing preview renders
+  // the same five. Keep the explicit type so a shape change here is loud.
+  const panelTabs: EditorialBoardTab[] = BOARD_TABS;
   if (!store.hydrated) {
     return (
       <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
@@ -990,19 +942,7 @@ export default component$(() => {
                       })}
                     >
                       <span class="dept-label block">
-                        Folio{" "}
-                        {[
-                          "I",
-                          "II",
-                          "III",
-                          "IV",
-                          "V",
-                          "VI",
-                          "VII",
-                          "VIII",
-                          "IX",
-                          "X",
-                        ][idx] ?? idx + 1}
+                        Folio {folioNumeral(idx)}
                       </span>
                       {folio.name}
                     </button>
@@ -1104,6 +1044,22 @@ export default component$(() => {
                 <span class="dept-label block">The Full Analysis</span>
                 Cast analysis report
               </Link>
+
+              <button
+                onClick$={() => {
+                  store.rightPanel = "rubric";
+                  store.rightPanelOpen = true;
+                  setVisiblePanel("rubric");
+                  window.dispatchEvent(
+                    new CustomEvent("twyne:open-live-review"),
+                  );
+                }}
+                class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
+                style="font-family: var(--font-display); border-radius: 2px;"
+              >
+                <span class="dept-label block">Writing tools</span>
+                Explore revisions, voice, and evidence
+              </button>
 
               <Link
                 href="/apparatus/"
@@ -1422,9 +1378,12 @@ export default component$(() => {
           )}
 
           {/* The manuscript owns the remaining height beneath the masthead. */}
+          {store.activeFolioId && !store.zenActive && (
+            <LiveReviewStatus folioId={store.activeFolioId} />
+          )}
           <div class="relative flex flex-1 min-h-0 overflow-hidden">
             {/* Editor */}
-            <div class="h-full min-w-0 flex-1 overflow-auto bg-[var(--color-paper-soft)]">
+            <div class="h-full min-w-0 flex-1 overflow-auto scroll-pb-12 bg-[var(--color-paper-soft)]">
               <TwyneEditor
                 key={`editor-${store.activeFolioId ?? "none"}-${store.sharedLixId ?? "solo"}-${store.folioKey}`}
                 initialContent={store.editorSeed}

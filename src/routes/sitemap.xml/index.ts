@@ -71,9 +71,7 @@ function renderSitemap(entries: SitemapEntry[]): string {
     .map(
       ({ path, lastmod }) =>
         `  <url><loc>${escapeXml(`${SITE_ORIGIN}${path}`)}</loc>${
-          lastmod
-            ? `<lastmod>${new Date(lastmod).toISOString()}</lastmod>`
-            : ""
+          lastmod ? `<lastmod>${new Date(lastmod).toISOString()}</lastmod>` : ""
         }</url>`,
     )
     .join("\n");

@@ -22,6 +22,7 @@ import type {
   Folio,
   AiSettings,
   WriterSettings,
+  WriterProfile,
   ApparatusResearchProvider,
   ApparatusSettings,
   McpServerConfig,
@@ -195,27 +196,70 @@ function normalizeWriterSettings(value: unknown): WriterSettings {
     v.profile && typeof v.profile === "object"
       ? (v.profile as Partial<WriterSettings["profile"]>)
       : {};
+  const normalizedProfile: WriterProfile = {
+    displayName:
+      typeof profile.displayName === "string"
+        ? profile.displayName.slice(0, 120)
+        : DEFAULT_WRITER_PROFILE.displayName,
+    personalFacts:
+      typeof profile.personalFacts === "string"
+        ? profile.personalFacts.slice(0, 4000)
+        : DEFAULT_WRITER_PROFILE.personalFacts,
+    feedbackStyle:
+      profile.feedbackStyle === "direct" || profile.feedbackStyle === "gentle"
+        ? profile.feedbackStyle
+        : DEFAULT_WRITER_PROFILE.feedbackStyle,
+    feedbackNotes:
+      typeof profile.feedbackNotes === "string"
+        ? profile.feedbackNotes.slice(0, 2000)
+        : DEFAULT_WRITER_PROFILE.feedbackNotes,
+  };
+
+  if (typeof profile.primaryGenre === "string") {
+    normalizedProfile.primaryGenre = profile.primaryGenre.slice(0, 80);
+  }
+  if (
+    profile.experienceLevel === "emerging" ||
+    profile.experienceLevel === "practicing" ||
+    profile.experienceLevel === "published" ||
+    profile.experienceLevel === "expert"
+  ) {
+    normalizedProfile.experienceLevel = profile.experienceLevel;
+  }
+  if (Array.isArray(profile.feedbackFocus)) {
+    normalizedProfile.feedbackFocus = profile.feedbackFocus
+      .filter((f): f is string => typeof f === "string")
+      .slice(0, 10);
+  }
+  if (
+    profile.praisePreference === "minimal" ||
+    profile.praisePreference === "balanced" ||
+    profile.praisePreference === "encouraging"
+  ) {
+    normalizedProfile.praisePreference = profile.praisePreference;
+  }
+  if (
+    profile.critiqueTone === "direct" ||
+    profile.critiqueTone === "socratic" ||
+    profile.critiqueTone === "analytical"
+  ) {
+    normalizedProfile.critiqueTone = profile.critiqueTone;
+  }
+  if (
+    profile.factChecking === "strict" ||
+    profile.factChecking === "flexible" ||
+    profile.factChecking === "creative"
+  ) {
+    normalizedProfile.factChecking = profile.factChecking;
+  }
+  if (typeof profile.feedbackAvoid === "string") {
+    normalizedProfile.feedbackAvoid = profile.feedbackAvoid.slice(0, 2000);
+  }
+
   return {
     interviewStyle:
       v.interviewStyle === "conversational" ? "conversational" : "form",
-    profile: {
-      displayName:
-        typeof profile.displayName === "string"
-          ? profile.displayName.slice(0, 120)
-          : DEFAULT_WRITER_PROFILE.displayName,
-      personalFacts:
-        typeof profile.personalFacts === "string"
-          ? profile.personalFacts.slice(0, 4000)
-          : DEFAULT_WRITER_PROFILE.personalFacts,
-      feedbackStyle:
-        profile.feedbackStyle === "direct" || profile.feedbackStyle === "gentle"
-          ? profile.feedbackStyle
-          : DEFAULT_WRITER_PROFILE.feedbackStyle,
-      feedbackNotes:
-        typeof profile.feedbackNotes === "string"
-          ? profile.feedbackNotes.slice(0, 2000)
-          : DEFAULT_WRITER_PROFILE.feedbackNotes,
-    },
+    profile: normalizedProfile,
   };
 }
 

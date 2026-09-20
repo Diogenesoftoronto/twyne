@@ -83,19 +83,14 @@ export async function migrateLegacyEditorialArtifacts(
     ),
   ]);
 
-  const [
-    legacyRubric,
-    legacyLixRubric,
-    legacyAnalysis,
-    criteria,
-    history,
-  ] = await Promise.all([
-    loadRubricResultFromIdb(),
-    readFileAsJson<RubricResult>("/rubric-result.json"),
-    loadRoomAnalysisFromIdb(),
-    loadMetaFromIdb<RubricCriterionSpec[]>("rubric-criteria"),
-    loadMetaFromIdb<RubricHistoryEntry[]>("rubric-history"),
-  ]);
+  const [legacyRubric, legacyLixRubric, legacyAnalysis, criteria, history] =
+    await Promise.all([
+      loadRubricResultFromIdb(),
+      readFileAsJson<RubricResult>("/rubric-result.json"),
+      loadRoomAnalysisFromIdb(),
+      loadMetaFromIdb<RubricCriterionSpec[]>("rubric-criteria"),
+      loadMetaFromIdb<RubricHistoryEntry[]>("rubric-history"),
+    ]);
   const rubric = legacyRubric ?? legacyLixRubric;
   if (rubric) {
     await saveRubricResultToIdb(

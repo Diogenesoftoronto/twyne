@@ -68,7 +68,8 @@ export function codexSettingsFromEnv(
     apiKey: env.TWYNE_CODEX_API_KEY?.trim() || undefined,
     model: env.TWYNE_CODEX_MODEL?.trim() || undefined,
     providerLabel: env.TWYNE_CODEX_PROVIDER_LABEL?.trim() || undefined,
-    wireApi: wire === "chat" ? "chat" : wire === "responses" ? "responses" : undefined,
+    wireApi:
+      wire === "chat" ? "chat" : wire === "responses" ? "responses" : undefined,
   };
 }
 

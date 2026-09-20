@@ -48,7 +48,11 @@ async function seedFolio(page: Page, html: string) {
           createdAt: now,
           updatedAt: now,
         });
-        t.objectStore("folio-content").put({ folioId: id, html, updatedAt: now });
+        t.objectStore("folio-content").put({
+          folioId: id,
+          html,
+          updatedAt: now,
+        });
         t.objectStore("meta").put({
           key: "active-folio-id",
           value: id,

@@ -5,11 +5,7 @@ import {
   sync$,
   type PropFunction,
 } from "@qwik.dev/core";
-import {
-  MARGIN_RANGE,
-  resolveMargins,
-  type LayoutSettings,
-} from "../../types";
+import { MARGIN_RANGE, resolveMargins, type LayoutSettings } from "../../types";
 
 interface PageRulerProps {
   layout: LayoutSettings;
@@ -31,7 +27,12 @@ function rootFontSize(): number {
   return Number.isFinite(size) && size > 0 ? size : 16;
 }
 
-function clampMargin(edge: Edge, rem: number, opposite: number, pageWidthRem: number): number {
+function clampMargin(
+  edge: Edge,
+  rem: number,
+  opposite: number,
+  pageWidthRem: number,
+): number {
   const range = MARGIN_RANGE[edge];
   // Never let the two margins meet: a text column narrower than this is not
   // a layout choice, it is a broken document the writer cannot type into.
@@ -136,7 +137,10 @@ export const PageRuler = component$<PageRulerProps>((props) => {
 
   // A tick every rem, which at the default type size is a comfortable
   // approximation of a ruler's inch marks without pretending to be inches.
-  const ticks = Array.from({ length: Math.max(0, Math.floor(width)) }, (_, i) => i + 1);
+  const ticks = Array.from(
+    { length: Math.max(0, Math.floor(width)) },
+    (_, i) => i + 1,
+  );
 
   return (
     <div
@@ -173,7 +177,10 @@ export const PageRuler = component$<PageRulerProps>((props) => {
           aria-valuenow={Number(m.left.toFixed(2))}
           aria-valuetext={`Left margin ${m.left.toFixed(2)} rem`}
           onPointerDown$={(e, el) => onHandleDown("left", e, el)}
-          onKeyDown$={[preventScrollKeys, $((e: KeyboardEvent) => onHandleKey("left", e))]}
+          onKeyDown$={[
+            preventScrollKeys,
+            $((e: KeyboardEvent) => onHandleKey("left", e)),
+          ]}
         />
         <button
           type="button"
@@ -188,7 +195,10 @@ export const PageRuler = component$<PageRulerProps>((props) => {
           aria-valuenow={Number(m.right.toFixed(2))}
           aria-valuetext={`Right margin ${m.right.toFixed(2)} rem`}
           onPointerDown$={(e, el) => onHandleDown("right", e, el)}
-          onKeyDown$={[preventScrollKeys, $((e: KeyboardEvent) => onHandleKey("right", e))]}
+          onKeyDown$={[
+            preventScrollKeys,
+            $((e: KeyboardEvent) => onHandleKey("right", e)),
+          ]}
         />
 
         {dragging.value && readout.value && (

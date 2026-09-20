@@ -32,7 +32,7 @@ describe("stripReasoningTags", () => {
   test("removes normal think blocks and preserves visible answer text", () => {
     expect(
       stripReasoningTags(
-        "\u003Cthink\u003E reasoning content \u003C/think\u003E\nOn: \"The opening...\"",
+        '\u003Cthink\u003E reasoning content \u003C/think\u003E\nOn: "The opening..."',
       ),
     ).toBe('On: "The opening..."');
   });
@@ -71,9 +71,9 @@ describe("stripReasoningTags", () => {
   });
 
   test("treats repeated orphan closers without letting depth go negative", () => {
-    expect(
-      stripReasoningTags("A\u003C/think\u003E\u003C/think\u003EB"),
-    ).toBe("AB");
+    expect(stripReasoningTags("A\u003C/think\u003E\u003C/think\u003EB")).toBe(
+      "AB",
+    );
   });
 
   test("treats a self-closer with interior whitespace as a closer", () => {
@@ -100,7 +100,9 @@ describe("hasReasoningTags", () => {
 
   test("catches aliases, orphan closers, and malformed self-closers", () => {
     expect(
-      hasReasoningTags("\u003Cthinking\u003Eprivate\u003C/thinking\u003EAnswer"),
+      hasReasoningTags(
+        "\u003Cthinking\u003Eprivate\u003C/thinking\u003EAnswer",
+      ),
     ).toBe(true);
     expect(hasReasoningTags("Answer\u003C/think\u003E")).toBe(true);
     expect(hasReasoningTags("Answer\u003Cthink/\u003E")).toBe(true);
@@ -115,13 +117,11 @@ describe("hasReasoningTags", () => {
 
   test("matches tags with attributes and interior whitespace", () => {
     expect(
-      hasReasoningTags(
-        "\u003Cthink class=\"ct\"\u003Eprivate response answer",
-      ),
+      hasReasoningTags('\u003Cthink class="ct"\u003Eprivate response answer'),
     ).toBe(true);
-    expect(hasReasoningTags("\u003C think \u003E private response answer")).toBe(
-      true,
-    );
+    expect(
+      hasReasoningTags("\u003C think \u003E private response answer"),
+    ).toBe(true);
     expect(hasReasoningTags("\u003Cthink \u003E private answer")).toBe(true);
     expect(hasReasoningTags("\u003Cthink / \u003E private answer")).toBe(true);
   });

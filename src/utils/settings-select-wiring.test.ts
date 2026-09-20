@@ -10,7 +10,21 @@ describe("settings dropdown wiring", () => {
   test("uses the site dropdown for every settings choice", () => {
     expect(settingsSource).not.toContain("<select");
     expect(settingsSource).not.toContain("<option");
-    expect(settingsSource.match(/<SiteSelect/g)?.length).toBe(11);
+    const controls = settingsSource.match(/<SiteSelect[\s\S]*?\/>/g) ?? [];
+    for (const label of [
+      "Primary genre",
+      "Experience level",
+      "Feedback pressure",
+      "Critique delivery style",
+      "Praise preference",
+      "Fact adherence mode",
+      "Research provider",
+      "Public writing streak",
+    ]) {
+      expect(
+        controls.some((control) => control.includes(`ariaLabel="${label}"`)),
+      ).toBe(true);
+    }
   });
 
   test("keeps model-derived reasoning choices on the site dropdown", () => {

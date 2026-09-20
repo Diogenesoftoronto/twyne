@@ -78,7 +78,11 @@ export const ThemedDialog = component$((props: ThemedDialogProps) => {
                 props.onInput$?.((e.target as HTMLInputElement).value)
               }
               onKeyDown$={(e) => {
-                if (e.key === "Enter" && !props.confirmDisabled && !props.busy) {
+                if (
+                  e.key === "Enter" &&
+                  !props.confirmDisabled &&
+                  !props.busy
+                ) {
                   void props.onConfirm$?.();
                 }
               }}
@@ -101,7 +105,10 @@ export const ThemedDialog = component$((props: ThemedDialogProps) => {
         )}
 
         <div class="mt-5 flex items-center justify-end gap-2">
-          <button onClick$={() => props.onCancel$?.()} class="btn-paper text-xs">
+          <button
+            onClick$={() => props.onCancel$?.()}
+            class="btn-paper text-xs"
+          >
             {props.cancelLabel ?? "Cancel"}
           </button>
           <button

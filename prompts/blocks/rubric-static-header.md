@@ -6,4 +6,3 @@ version: "1"
 
 STATIC-FEATURE NOTES:
 {staticLines}
-

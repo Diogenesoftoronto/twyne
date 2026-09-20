@@ -1,23 +1,27 @@
 # Changelog
 
+## 0.20.0
 
+<sub>2026-09-20</sub>
 
-
-
-
-
-
-
-
-
-
-
-
+- Review follows your writing automatically. Quick passage checks appear beside
+  the manuscript, while saved drafts update rubric marks, passage feedback,
+  dossier coaching, and writing lenses in the background.
+- Pause automatic review at any time. Cached judgements, bounded requests, and
+  stale-result protection keep feedback tied to the current draft.
+- Writing tools share the editor's paper styling and use supplied revisions,
+  sources, notes, and focus passages. Judgement-only reviews no longer invent
+  persona scores.
+- Native text dragging, drop carets, mobile tour visibility, equation editing,
+  and text dialogs are more dependable.
+- Updated workspace previews, download availability, and hosted credit controls.
+  New subscription checkout remains gated until provider activation.
 
 ## 0.18.0
+
 <sub>2026-08-27</sub>
 
--  *(minor)*
+- _(minor)_
   Twyne 0.18 gives every writer a private, local-first desk for understanding
   their work, their editorial activity, and the cost of AI assistance.
 
@@ -40,9 +44,10 @@
   dependable across the writing room.
 
 ## 0.17.0
+
 <sub>2026-08-24</sub>
 
--  *(minor)*
+- _(minor)_
   Twyne 0.17 files the dossier as a working paper beside the manuscript and makes
   the path from brief to desk easier to trust.
 
@@ -62,9 +67,10 @@
   state instead of toggling out of sync.
 
 ## 0.16.0
+
 <sub>2026-08-22</sub>
 
--  *(minor)*
+- _(minor)_
   Twyne 0.16 moves editorial help onto the manuscript and turns the Apparatus
   into a fact-checker.
 
@@ -101,7 +107,8 @@
 
   **Settings count properly.** Token budgets and temperatures use a real stepper
   instead of bare number fields.
--  *(patch)*
+
+- _(patch)_
   Recognize the formats writers actually type when choosing research discipline.
   A Dossier reading "reported feature", "opinion column", "investigative piece",
   or "book review" fell through to the general mandate instead of the nonfiction
@@ -110,19 +117,21 @@
   must-flag and must-not-flag passages, scored without a judge model.
 
 ## 0.15.1
+
 <sub>2026-08-15</sub>
 
--  *(patch)*
+- _(patch)_
   Split the editor into focused panel modules, use one substantive-folio threshold
   for editorial feedback, and remove the slow dossier research canvas.
--  *(patch)*
+- _(patch)_
   Start long manuscript narration from semantic chunks, stream provider audio,
   and use native speech alignment when the provider supplies it.
 
 ## 0.15.0
+
 <sub>2026-08-14</sub>
 
--  *(minor)*
+- _(minor)_
   Twyne 0.15 makes the writing desk easier to read, navigate, and discover.
 
   **The compositor now behaves like a document editor.** Home, Insert, Review,
@@ -142,9 +151,10 @@
   routes out of search results.
 
 ## 0.14.0
+
 <sub>2026-08-12</sub>
 
--  *(minor)*
+- _(minor)_
   Twyne 0.14 makes the writing room calmer to use and easier to understand.
 
   **Editorial help stays in the room.** Grammar, citations, rubrics, comments,
@@ -160,13 +170,14 @@
   wired through explicit controls with safer local defaults and useful feedback
   when a provider or capability is unavailable.
 
-  This is a broad usability and editorial workflow improvement, so it ships as
-  a minor release.
+This is a broad usability and editorial workflow improvement, so it ships as
+a minor release.
 
 ## 0.13.0
+
 <sub>2026-08-11</sub>
 
--  *(minor)*
+- _(minor)_
   Twyne 0.13 turns the writing desk into a place you can inspect, recover, and
   extend without giving up its local-first center.
 
@@ -199,12 +210,13 @@
   The distinction stays explicit: Twyne credentials authorize Twyne, and provider
   credentials stay on their provider's native transport.
 
-  This is a broad new product surface, so it ships as a minor release.
+This is a broad new product surface, so it ships as a minor release.
 
 ## 0.12.0
+
 <sub>2026-08-07</sub>
 
--  *(minor)*
+- _(minor)_
   The room writes where you can see it, and models that think first stop costing
   twice.
 
@@ -240,9 +252,10 @@
   model can be judged on whether it can actually anchor a note to a passage.
 
 ## 0.11.0
+
 <sub>2026-08-05</sub>
 
--  *(minor)*
+- _(minor)_
   Twyne grows a way out of the browser, a canonical home for published work, and
   an honest account of what its editors are doing — none of it at the cost of the
   draft leaving the machine it was written on.
@@ -278,17 +291,19 @@
   and ids are not carried, and only stable error codes are sent, never raw
   messages.
 
-  New surface rather than a change in behaviour, so it goes out as a minor.
+New surface rather than a change in behaviour, so it goes out as a minor.
 
 ## 0.10.0
+
 <sub>2026-08-02</sub>
 
--  *(minor)* - Theme engine, background research, editor and mention improvements
+- _(minor)_ - Theme engine, background research, editor and mention improvements
 
 ## 0.9.0
+
 <sub>2026-08-02</sub>
 
--  *(minor)*
+- _(minor)_
   A single consolidation commit lands the work that had accumulated in the working tree — broad surface area, no one headline feature, but the manuscript gained a real math layer, real tables, and a find-replace that stays open while you edit.
 
   **Math, in the page.** KaTeX fonts and a math node extension render equations inline, with a math-render path that handles the block form. The fonts ship locally so rendering does not depend on a CDN, and the same renderer is exercised by its own test.
@@ -301,12 +316,13 @@
 
   **Image upload, palette, form-probes.** Images land through an image-node extension with an inspector, the Convex images function stores them, and a typographic palette and form-probe utilities round out the surface. A section-reorder test, a table-cell-format test, and a typography-options module with its own test back the new behaviour.
 
-  The shape of the release is a broad catch-up rather than a single feature, so it goes out as a minor.
+The shape of the release is a broad catch-up rather than a single feature, so it goes out as a minor.
 
 ## 0.8.0
+
 <sub>2026-08-02</sub>
 
--  *(minor)*
+- _(minor)_
   The dossier interview remembers what the writer already wrote.
 
   **Start over stops being destructive.** Wiping the dossier used to wipe
@@ -326,15 +342,17 @@
   indicator and title.
 
 ## 0.7.0
+
 <sub>2026-08-02</sub>
 
--  *(minor)*
+- _(minor)_
   Dossier UX cleanup: shared top bar with persistent Form/Conversation mode switch and Start-over (carries the manuscript forward into /dossier/create), plus removal of redundant in-body Close/Cancel exit buttons across dossier routes.
 
 ## 0.6.0
+
 <sub>2026-08-01</sub>
 
--  *(minor)*
+- _(minor)_
   Every folio is its own workspace, and the interview thinks out loud.
 
   **Folio-scoped sync.** Notes, replies, suggestions, rubric results and the room's analysis are now stored and indexed per folio rather than per writer, so switching pieces switches the whole editorial context instead of carrying the last piece's marginalia into the next one. Rows written before the change carry no folio and are still readable.
@@ -342,7 +360,8 @@
   **The interview streams.** Dossier interview turns arrive as they are generated, with the model's reasoning and its answer tracked as separate phases so the thinking can be shown while it happens without leaking into the answer. Streams are persisted, so a reload mid-question does not lose the turn.
 
   **Choosing a model is searchable.** Provider catalogues are read from models.dev, and the model pickers in settings are type-to-filter rather than a long unsorted list. Adds a relay for Tinker's OpenAI-compatible endpoint so Tinker models can be used as a BYOK provider.
--  *(minor)*
+
+- _(minor)_
   The page is yours to set, and the desk stops being a dead end.
 
   **A ruler you can drag.** Page layout was a popover of rem sliders, which asks a writer to translate "3.25 rem" into a picture of their page. There is now a Word-style ruler above the manuscript, spanning exactly the page it describes: the shaded ends are the margins, the pale middle is the live text column, and dragging a marker moves the edge of the text with the draft reflowing under your hand. Margins are independent left and right rather than one symmetric value, the arrow keys drive the markers for anyone not using a mouse, and documents saved before the ruler still open to the page their writer chose.
@@ -351,34 +370,36 @@
 
   **Export as PDF.** From the File menu or straight from the layout tool, since page setup and printing belong together. The PDF carries your own margins and page numbers, and the text stays selectable and searchable. Two silent bugs went with it: exports were dropping the layout entirely and quietly falling back to the default page, and one export path read the saved copy rather than the open editor, so the last sentence you typed could go missing.
 
-  **Reading aloud actually works.** Two separate faults each broke it on their own. Narration was gated on having *any* voice-capable provider, so a writer running an LLM for the room and Google for dictation resolved to no narrator at all, failed, and never reached the hosted fallback. And playback was requested after synthesis had already returned, by which point the browser no longer considered the press a user gesture and refused to make noise — every attempt failed identically. A blocked playback now says the browser blocked it rather than blaming your API key.
+  **Reading aloud actually works.** Two separate faults each broke it on their own. Narration was gated on having _any_ voice-capable provider, so a writer running an LLM for the room and Google for dictation resolved to no narrator at all, failed, and never reached the hosted fallback. And playback was requested after synthesis had already returned, by which point the browser no longer considered the press a user gesture and refused to make noise — every attempt failed identically. A blocked playback now says the browser blocked it rather than blaming your API key.
 
   **One place to write from.** The message composer is a single surface holding the text, the microphone and the send key, instead of three stacked controls. Enter sends, Shift+Enter breaks the line, the box grows with what you write, and dictation lands in the draft you are looking at rather than in a second box asking you to approve your own words twice.
 
   **The editor is no longer a one-way door.** The blog, the manual, the FAQ, the press room, preferences, terms and privacy were reachable only from the landing page footer — so once you were at the desk, you were stuck there. They are all in the drawer now. Signing in also stops redirecting you to the editor, and the front page stops bouncing anyone who has ever filed a brief, which together had made the landing page unreachable for returning writers.
 
-  The manuscript's decorative header and footer bars have been removed from the page.
+The manuscript's decorative header and footer bars have been removed from the page.
 
 ## 0.5.0
+
 <sub>2026-07-30</sub>
 
--  *(minor)*
+- _(minor)_
   The editorial room speaks like five different people: each persona now has a distinct mid-century voice, lore, and influences (and may run on its own model/temperature). Personas quote the draft through a tool instead of retyping it, so notes pin to real passages. Adds "Expand to full analysis" (per-editor memos + a room synthesis) and a full-page narrative rubric review.
--  *(minor)*
+- _(minor)_
   Expand the editorial apparatus workflow with richer citation handling, folio-scoped exports, markdown exchange support, endnote markers, and evaluation tooling.
--  *(minor)* - Add agent workflows, waitlist/profile pages, and editor apparatus improvements
--  *(minor)*
+- _(minor)_ - Add agent workflows, waitlist/profile pages, and editor apparatus improvements
+- _(minor)_
   The room stops waiting to be asked, and the rubric starts grading the piece you actually filed.
 
   **The editors read as you write.** Once you've added ~300 net new words and paused for two minutes, all five read the new paragraphs — not the whole draft — and leave quiet "in passing" notes in the Cast panel. A five-minute floor and a per-session cap keep unasked spending bounded, and **Read as I write** turns it off. Twyne now keeps a paragraph-level record of how the draft has moved, and that digest goes into every pass, including the ones you request, so convening reads a trajectory instead of a cold snapshot.
 
   **The rubric is gated on relevance.** The static scorer measures shape and never reads the brief, so fluent prose about the wrong subject scored 10/10 on pacing, vocabulary and paragraph shape. A new Target Fit judge scores relevance independently of craft and caps every shape-derived criterion by it; lowering target fit can now only lower a grade, never raise it. The criteria are also yours: disable or reweight the shipped spine, add your own for the room to judge, or ask it to suggest criteria fitted to your format. Each pass is recorded, so the panel shows the run of grades.
 
-  **Voice, both directions.** Every editor, memo and review can be read aloud in a voice of its own, and the manuscript itself can be read back to you. Margin notes and interview answers can be spoken: Twyne keeps the recording *and* a transcript you edit before it saves. Adds Fish Audio as a voice-only BYOK provider — it is never offered to the language features, so configuring it alone can't strand the room.
+  **Voice, both directions.** Every editor, memo and review can be read aloud in a voice of its own, and the manuscript itself can be read back to you. Margin notes and interview answers can be spoken: Twyne keeps the recording _and_ a transcript you edit before it saves. Adds Fish Audio as a voice-only BYOK provider — it is never offered to the language features, so configuring it alone can't strand the room.
 
   **The interview asks better questions.** Alongside the seven prose fields, the interviewer now generates typed follow-ups — multiple choice, fill-in-the-blanks, scales — from what you've already told it, in both the chat and the form. The answers are stored structured and reach every judge.
 
-  Panel tabs carry unread counts, so work arriving while you're looking elsewhere is no longer silent.
--  *(patch)* - Set up Bumpy release tooling
--  *(patch)* - Force https in OAuth client metadata behind TLS-terminating proxy (fixes ATProto loopback validation error in prod)
--  *(patch)* - Switched evals and agents from direct provider calls to Portkey for LLM routing.
+Panel tabs carry unread counts, so work arriving while you're looking elsewhere is no longer silent.
+
+- _(patch)_ - Set up Bumpy release tooling
+- _(patch)_ - Force https in OAuth client metadata behind TLS-terminating proxy (fixes ATProto loopback validation error in prod)
+- _(patch)_ - Switched evals and agents from direct provider calls to Portkey for LLM routing.

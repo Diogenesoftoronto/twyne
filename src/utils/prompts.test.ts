@@ -48,10 +48,9 @@ describe("prompts loader (bun fallback)", () => {
   });
 
   test("renders a Group C block with substituted values", () => {
-    const out = renderPrompt(
-      getPrompt("blocks/writer-profile-name").body,
-      { displayName: "Anne" },
-    );
+    const out = renderPrompt(getPrompt("blocks/writer-profile-name").body, {
+      displayName: "Anne",
+    });
     expect(out.trim()).toBe("- Name: Anne");
   });
 

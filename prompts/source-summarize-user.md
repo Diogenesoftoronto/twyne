@@ -11,6 +11,7 @@ Title: {title}
 {urlLine}
 
 Based on the title{domainSuffix}, provide:
+
 1. A 1-2 sentence summary of what this source likely argues or covers
 2. 2-3 key claims or findings (inferred from the title/context)
 3. A relevance score (1-10) for academic writing

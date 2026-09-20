@@ -15,10 +15,7 @@ export function countWords(text: string): number {
   for (let i = 0; i < text.length; i++) {
     const code = text.charCodeAt(i);
     // space, tab, LF, CR, VT, FF, NBSP
-    const isSpace =
-      code === 32 ||
-      (code >= 9 && code <= 13) ||
-      code === 160;
+    const isSpace = code === 32 || (code >= 9 && code <= 13) || code === 160;
     if (isSpace) {
       inWord = false;
     } else if (!inWord) {

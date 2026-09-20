@@ -134,7 +134,8 @@ export function pickSearchTool(handle: McpServerHandle): McpToolInfo | null {
   }
   const scored = handle.tools
     .map((tool) => {
-      const haystack = `${tool.name} ${tool.title ?? ""} ${tool.description ?? ""}`.toLowerCase();
+      const haystack =
+        `${tool.name} ${tool.title ?? ""} ${tool.description ?? ""}`.toLowerCase();
       let score = 0;
       for (const hint of SEARCH_NAME_HINTS) {
         if (tool.name.toLowerCase().includes(hint)) score += 3;
@@ -150,7 +151,9 @@ export function pickSearchTool(handle: McpServerHandle): McpToolInfo | null {
   return scored[0]?.tool ?? null;
 }
 
-function properties(tool: McpToolInfo): Record<string, Record<string, unknown>> {
+function properties(
+  tool: McpToolInfo,
+): Record<string, Record<string, unknown>> {
   const props = tool.inputSchema?.properties;
   return props && typeof props === "object"
     ? (props as Record<string, Record<string, unknown>>)
@@ -324,7 +327,14 @@ function extractSources(structured: unknown, maxResults: number): Source[] {
   if (direct.length) return direct;
   if (typeof structured !== "object") return [];
   const rec = structured as Record<string, unknown>;
-  for (const key of ["results", "sources", "documents", "items", "data", "hits"]) {
+  for (const key of [
+    "results",
+    "sources",
+    "documents",
+    "items",
+    "data",
+    "hits",
+  ]) {
     const hit = toSources(rec[key], maxResults);
     if (hit.length) return hit;
   }
@@ -335,7 +345,9 @@ function extractSources(structured: unknown, maxResults: number): Source[] {
 
 /** MCP tool names allow characters the model-facing namespace should not. */
 function toolKey(serverId: string, toolName: string): string {
-  return `mcp_${serverId}_${toolName}`.replace(/[^a-zA-Z0-9_]/g, "_").slice(0, 60);
+  return `mcp_${serverId}_${toolName}`
+    .replace(/[^a-zA-Z0-9_]/g, "_")
+    .slice(0, 60);
 }
 
 const MAX_TOOL_RESULT_CHARS = 8000;
@@ -391,7 +403,10 @@ export async function buildMcpToolSet(
             if (structured !== undefined) {
               const json = JSON.stringify(structured);
               return json.length > MAX_TOOL_RESULT_CHARS
-                ? { truncated: true, result: json.slice(0, MAX_TOOL_RESULT_CHARS) }
+                ? {
+                    truncated: true,
+                    result: json.slice(0, MAX_TOOL_RESULT_CHARS),
+                  }
                 : { result: structured };
             }
             return { result: text.slice(0, MAX_TOOL_RESULT_CHARS) };
@@ -456,14 +471,17 @@ export async function readMcpResource(
   for (const handle of handles) {
     if (!handle.config.useResources) continue;
     const known = handle.resources.some(
-      (r) => r.uri === uri || fillUriTemplate(r.uri, templateValues) === resolved,
+      (r) =>
+        r.uri === uri || fillUriTemplate(r.uri, templateValues) === resolved,
     );
     if (!known) continue;
     try {
       const res = await handle.client.readResource({ uri: resolved });
       // Contents are either text or a base64 blob; only text is citable here.
       const text = (res.contents ?? [])
-        .map((entry) => ("text" in entry && typeof entry.text === "string" ? entry.text : ""))
+        .map((entry) =>
+          "text" in entry && typeof entry.text === "string" ? entry.text : "",
+        )
         .join("\n")
         .trim();
       if (!text) continue;

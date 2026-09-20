@@ -1,6 +1,7 @@
 import {
   component$,
   useStore,
+  useTask$,
   useVisibleTask$,
   $,
   type PropFunction,
@@ -9,7 +10,7 @@ import { Link } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import type { ProjectBrief } from "../../types";
-import { loadDraftText } from "../../utils/anti-tabula-rasa";
+import { htmlToPlainText } from "../../utils/anti-tabula-rasa";
 import {
   scoreStaticFeatures,
   scoreSufficiency,
@@ -24,6 +25,7 @@ import {
   saveRubricResultToIdb,
   loadAiSettingsFromIdb,
   loadFolioContentFromIdb,
+  loadActiveFolioIdFromIdb,
 } from "../../utils/idb";
 import { createRevisionSnapshot } from "../../utils/revision-history";
 import type { AiSettings } from "../../types";
@@ -34,16 +36,19 @@ import {
   runClientIntegrityJudge,
   runClientTargetFitJudge,
   runClientCustomCriterionJudge,
-  runClientRubricReview,
   normalizeAiSettings,
 } from "../../utils/ai-client";
 import { draftReadiness, MIN_RUBRIC_WORDS } from "../../utils/draft-thresholds";
 import { renderMarkdown } from "../../utils/markdown";
 import { ApplicationNotice } from "../ui/application-notice";
-import { SpeakButton } from "../ui/speak-button";
 import { EditorialLoader } from "../ui/editorial-loader";
 import { NumericStepper } from "../ui/numeric-stepper";
 import { GradeStamp } from "./grade-stamp";
+import { LiveReviewPanel } from "../writing-tools/live-review-panel";
+import {
+  liveReviewSnapshot,
+  type LiveReviewSnapshot,
+} from "../../utils/live-review";
 import {
   playRubricGradeCue,
   playRubricPaperCue,
@@ -73,6 +78,12 @@ import {
 } from "../../utils/rubric-criteria";
 import { toAgentPersona } from "../../../convex/agentPrompts";
 import { truncateGalleySummary } from "../../utils/galley-summary";
+import { requestActiveDraftSnapshot } from "../../utils/collaboration";
+import { runRubricPass, type RubricGrade } from "../../utils/rubric-grade";
+import {
+  judgementRubricResult,
+  rubricDraftFingerprint,
+} from "../../utils/rubric-judgement-result";
 
 interface RubricStore {
   result: RubricResult | null;
@@ -102,6 +113,10 @@ interface RubricStore {
   section: RubricSection;
   /** Criteria whose reasoning is open, keyed by criterion id. */
   openCriteria: Record<string, boolean>;
+  contextFolioId: string;
+  contextBrief: string;
+  runId: number;
+  status: string;
 }
 
 /**
@@ -135,11 +150,23 @@ interface RubricResult {
   targetFit?: number;
   /** The same criteria re-scored by the writer's own weights, 0-100. */
   writerScore?: number;
+  judgementGrade?: RubricGrade;
+  draftFingerprint?: string;
+  scoringMethod?: "judgement" | "room";
 }
 
 interface RubricPanelProps {
   brief: ProjectBrief | null;
   activeFolioId: string;
+}
+
+/** Include edits still waiting for the editor's persistence debounce. */
+async function loadRubricDraftHtml(folioId: string): Promise<string> {
+  try {
+    return requestActiveDraftSnapshot(folioId);
+  } catch {
+    return loadFolioContentFromIdb(folioId);
+  }
 }
 
 export const RubricPanel = component$(
@@ -163,19 +190,96 @@ export const RubricPanel = component$(
       newCriterionDescription: "",
       suggestions: [],
       isSuggesting: false,
-      section: "marks",
+      section: "review",
       openCriteria: {},
+      contextFolioId: activeFolioId,
+      contextBrief: JSON.stringify(brief),
+      runId: 0,
+      status: "",
     });
 
-    const analyze = $(async () => {
+    useTask$(({ track }) => {
+      const folioId = track(() => activeFolioId);
+      const briefKey = track(() => JSON.stringify(brief));
+      if (store.contextFolioId !== folioId || store.contextBrief !== briefKey) {
+        store.contextFolioId = folioId;
+        store.contextBrief = briefKey;
+        store.runId++;
+        store.isAnalyzing = false;
+        store.isReviewing = false;
+        store.result = null;
+        store.resultFresh = false;
+        store.streamingReview = "";
+        store.status = "";
+        store.error = null;
+      }
+    });
+
+    const runAnalysis = $(async (frontierOnly = false) => {
+      if (store.isAnalyzing || store.isReviewing) return;
+      const folioId = activeFolioId;
+      const runId = ++store.runId;
+      const specs = store.criteriaSpecs.map((spec) => ({ ...spec }));
+      const briefKey = JSON.stringify(brief);
+      const current = () =>
+        store.runId === runId &&
+        store.contextFolioId === folioId &&
+        store.contextBrief === briefKey;
       store.isAnalyzing = true;
       store.resultFresh = false;
       store.error = null;
+      store.status = "";
       try {
         if (await primeRubricFeedback()) {
           playRubricPaperCue();
         }
-        const draftText = await loadDraftText();
+        const revisionHtml = await loadRubricDraftHtml(folioId);
+        const draftText = htmlToPlainText(revisionHtml);
+        if (!current()) return;
+        const fingerprint = await rubricDraftFingerprint(draftText);
+        const stillFresh = async () =>
+          current() &&
+          (await loadActiveFolioIdFromIdb()) === folioId &&
+          htmlToPlainText(await loadRubricDraftHtml(folioId)) === draftText &&
+          JSON.stringify(store.criteriaSpecs) === JSON.stringify(specs) &&
+          current();
+        const saveResult = async (result: RubricResult) => {
+          if (!(await stillFresh())) {
+            if (current())
+              store.status =
+                "The draft or criteria changed during this reading. Run the rubric again for the current version.";
+            return;
+          }
+          store.result = result;
+          store.resultFresh = true;
+          store.judges = result.judges;
+          await saveRubricResultToIdb(result, folioId);
+          const history = await appendRubricHistory(
+            {
+              folioId,
+              at: result.timestamp,
+              overall: result.overallScore,
+              grade: result.overallGrade,
+              targetFit: result.targetFit,
+              scoringMethod: result.scoringMethod,
+              perCriterion: Object.fromEntries(
+                result.criteria.map((criterion) => [
+                  criterion.id,
+                  criterion.score,
+                ]),
+              ),
+            },
+            folioId,
+          );
+          if (current()) store.history = history;
+          await createRevisionSnapshot({
+            folioId,
+            html: revisionHtml,
+            label: `Rubric pass · ${result.overallScore}/100`,
+            source: "rubric",
+            force: true,
+          });
+        };
         const client = clientSig.value;
         const readiness = draftReadiness(draftText, MIN_RUBRIC_WORDS);
         if (!readiness.ok) {
@@ -192,6 +296,36 @@ export const RubricPanel = component$(
         // 1. Run the static-feature scorer in the browser (cheap, deterministic).
         const staticScore = scoreStaticFeatures(draftText);
         store.static = staticScore;
+
+        // One typed request marks every enabled criterion, including custom ones.
+        // The independent room reading remains available alongside the live review.
+        if (!frontierOnly && client) {
+          const pass = await runRubricPass(
+            (input) => client.action(api.systemOne.ask, input),
+            {
+              draft: draftText,
+              audience: brief?.answers.audience,
+              goal: brief?.answers.goal,
+            },
+            specs,
+          );
+          if (!current()) return;
+          const result = pass.ok
+            ? judgementRubricResult({
+                folioId,
+                fingerprint,
+                grade: pass.grade,
+                specs,
+                staticScore,
+              })
+            : null;
+          if (result) {
+            await saveResult(result);
+            return;
+          }
+          store.status =
+            "Quick judgement is unavailable. Asking the room for this reading.";
+        }
 
         // 2. Run the five personas as judges. Try client AI first (BYOK),
         //    then Convex server action, then local heuristic.
@@ -229,6 +363,7 @@ export const RubricPanel = component$(
           }
         }
 
+        if (!current()) return;
         if (judges.length === 0 && client) {
           try {
             const personasForServer = defaultPersonas().map(toAgentPersona);
@@ -246,6 +381,7 @@ export const RubricPanel = component$(
           }
         }
 
+        if (!current()) return;
         if (judges.length === 0) {
           store.error = createAppError(
             hasConfiguredAiProvider(settings)
@@ -292,6 +428,7 @@ export const RubricPanel = component$(
         } catch {
           sufficiency = localSufficiency();
         }
+        if (!current()) return;
 
         // 2c. Dedicated LLM judges for evidence & integrity when we can
         //     reach one. These catch what the static regex/density scorers
@@ -370,6 +507,7 @@ export const RubricPanel = component$(
         } catch {
           evidence = localEvidence();
         }
+        if (!current()) return;
 
         let integrity: { score: number; rationale: string; provider?: string };
         try {
@@ -397,6 +535,7 @@ export const RubricPanel = component$(
         } catch {
           integrity = localIntegrity();
         }
+        if (!current()) return;
 
         // 2d. The relevance gate. Everything above judges how *well* the draft
         //     is written; this judges whether it is about the right thing at
@@ -461,7 +600,7 @@ export const RubricPanel = component$(
         //    rather than failing the pass — a broken custom criterion must not
         //    cost the writer the rest of their rubric.
         const customCriteria = await Promise.all(
-          activeCustomCriteria(store.criteriaSpecs).map(async (spec) => {
+          activeCustomCriteria(specs).map(async (spec) => {
             try {
               const res = settings2
                 ? await runClientCustomCriterionJudge(
@@ -510,7 +649,7 @@ export const RubricPanel = component$(
         // Honour the writer's enable/disable choices on the spine, keep their
         // ordering, and append what they added themselves.
         const enabledIds = new Set(
-          store.criteriaSpecs.filter((s) => s.enabled).map((s) => s.id),
+          specs.filter((s) => s.enabled).map((s) => s.id),
         );
         const visibleCriteria = [
           ...criteria.filter((c) => enabledIds.has(c.id)),
@@ -518,7 +657,9 @@ export const RubricPanel = component$(
         ];
 
         const result: RubricResult = {
-          folioId: activeFolioId,
+          folioId,
+          scoringMethod: "room",
+          draftFingerprint: fingerprint,
           criteria: visibleCriteria,
           overallScore: combined.combined,
           overallGrade: combined.grade,
@@ -529,134 +670,92 @@ export const RubricPanel = component$(
           targetFit: targetFit.score,
           writerScore:
             weightedCriteriaScore(
-              store.criteriaSpecs,
+              specs,
               Object.fromEntries(visibleCriteria.map((c) => [c.id, c.score])),
             ) ?? undefined,
         };
-        store.result = result;
-        store.resultFresh = true;
-        void saveRubricResultToIdb(result, activeFolioId);
-        store.history = await appendRubricHistory(
-          {
-            folioId: activeFolioId,
-            at: result.timestamp,
-            overall: result.overallScore,
-            grade: result.overallGrade,
-            targetFit: targetFit.score,
-            perCriterion: Object.fromEntries(
-              visibleCriteria.map((c) => [c.id, c.score]),
-            ),
-          },
-          activeFolioId,
-        );
-        const revisionHtml = await loadFolioContentFromIdb(activeFolioId);
-        await createRevisionSnapshot({
-          folioId: activeFolioId,
-          html: revisionHtml,
-          label: `Rubric pass · ${result.overallScore}/100`,
-          source: "rubric",
-          force: true,
-        });
+        await saveResult(result);
+      } catch (error) {
+        if (current())
+          store.error = normalizeApplicationError(error, {
+            metadata: { feature: "rubric", operation: "analyze" },
+          });
       } finally {
-        store.isAnalyzing = false;
-        if (store.resultFresh && store.result) {
+        if (current()) store.isAnalyzing = false;
+        if (current() && store.resultFresh && store.result) {
           playRubricGradeCue(store.result.overallGrade);
         }
       }
     });
 
-    const generateReview = $(async () => {
-      const result = store.result;
-      if (!result || store.isReviewing) return;
-      store.isReviewing = true;
-      store.streamingReview = "";
-      store.error = null;
-      try {
-        const draftText = await loadDraftText();
-        const combined = combineJudgesAndStatic(
-          result.judges,
-          result.staticScore,
-          brief ?? null,
-          result.targetFit ?? UNJUDGED_TARGET_FIT,
-        );
-        const payload = {
-          combined: result.overallScore,
-          grade: result.overallGrade,
-          judgeMean: combined.judgeMean,
-          minJudge: combined.minJudge,
-          staticTotal: combined.staticTotal,
-          judges: result.judges.map((j) => ({
-            personaId: j.personaId,
-            score: j.score,
-            rationale: j.rationale,
-          })),
-          staticFeedback: result.staticScore.feedback,
-        };
-
-        let review = "";
-        let reviewProvider = "local";
-        const settings = store.aiSettings;
-        if (hasConfiguredAiProvider(settings) && settings) {
-          const res = await runClientRubricReview(
-            { ...payload, brief: brief ?? null, draftText },
-            settings,
-            (snapshot) => {
-              store.streamingReview = snapshot.text;
-            },
-          );
-          if (res) {
-            review = res.text;
-            reviewProvider = `client-${res.provider}`;
-          }
-        }
-        if (!review && clientSig.value) {
-          const res = (await clientSig.value.action(api.agents.reviewRubric, {
-            ...payload,
-            brief: brief ?? null,
-            draftText,
-          })) as { review: string; provider: string };
-          review = res.review;
-          reviewProvider = res.provider;
-        }
-
-        if (review) {
-          const updated: RubricResult = { ...result, review, reviewProvider };
-          store.result = updated;
-          void saveRubricResultToIdb(updated, activeFolioId);
-        } else {
-          store.error = createAppError("CONFIGURATION_ERROR", {
-            recovery: { action: "choose-provider", canRetry: false },
-            metadata: { feature: "rubric", operation: "review" },
-          });
-        }
-      } catch (error) {
-        store.error = normalizeApplicationError(error, {
-          metadata: { feature: "rubric", operation: "review" },
-        });
-      } finally {
-        store.isReviewing = false;
-        store.streamingReview = "";
-      }
-    });
+    const analyze = $(() => runAnalysis(false));
+    const askRoom = $(() => runAnalysis(true));
 
     // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(async () => {
-      const cached = await loadRubricResultFromIdb(activeFolioId);
+    useVisibleTask$(async ({ track, cleanup }) => {
+      const folioId = track(() => activeFolioId);
+      let cancelled = false;
+      cleanup(() => {
+        cancelled = true;
+      });
+      const [cached, aiRaw, specs, history] = await Promise.all([
+        loadRubricResultFromIdb(folioId),
+        loadAiSettingsFromIdb(),
+        loadCriteriaSpecs(folioId),
+        loadRubricHistory(folioId),
+      ]);
+      if (cancelled || store.contextFolioId !== folioId) return;
       if (cached && !store.result) {
         store.result = cached;
         store.resultFresh = false;
         store.judges = cached.judges ?? [];
         store.static = cached.staticScore ?? null;
       }
-      const aiRaw = await loadAiSettingsFromIdb();
       store.aiSettings = normalizeAiSettings(aiRaw);
-      const [specs, history] = await Promise.all([
-        loadCriteriaSpecs(activeFolioId),
-        loadRubricHistory(activeFolioId),
-      ]);
       store.criteriaSpecs = specs;
       store.history = history;
+      if (store.result) {
+        store.result.writerScore =
+          weightedCriteriaScore(
+            specs,
+            Object.fromEntries(
+              store.result.criteria.map((criterion) => [
+                criterion.id,
+                criterion.score,
+              ]),
+            ),
+          ) ?? undefined;
+      }
     });
+
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(
+      ({ cleanup }) => {
+        const update = (event?: Event) => {
+          const snapshot = event
+            ? (event as CustomEvent<LiveReviewSnapshot>).detail
+            : liveReviewSnapshot();
+          if (snapshot.folioId !== activeFolioId) return;
+          store.resultFresh = snapshot.status === "current";
+          if (snapshot.result?.rubric && !store.isAnalyzing) {
+            store.result = snapshot.result.rubric;
+            store.judges = snapshot.result.rubric.judges;
+            store.static = snapshot.result.rubric.staticScore;
+          }
+        };
+        const open = () => {
+          store.section = "review";
+        };
+        update();
+        window.addEventListener("twyne:live-review", update);
+        window.addEventListener("twyne:open-live-review", open);
+        cleanup(() => {
+          window.removeEventListener("twyne:live-review", update);
+          window.removeEventListener("twyne:open-live-review", open);
+        });
+      },
+      { strategy: "document-ready" },
+    );
 
     /** Open or close one criterion's reasoning. */
     const toggleCriterionOpen = $((id: string) => {
@@ -670,6 +769,23 @@ export const RubricPanel = component$(
 
     const persistSpecs = $(async (next: RubricCriterionSpec[]) => {
       store.criteriaSpecs = next;
+      // Reweight cached marks immediately. Changing a slider performs no inference.
+      if (store.result) {
+        const scores = store.result.judgementGrade
+          ? Object.fromEntries(
+              Object.values(store.result.judgementGrade.criteria).map(
+                (criterion) => [criterion.id, criterion.score],
+              ),
+            )
+          : Object.fromEntries(
+              store.result.criteria.map((criterion) => [
+                criterion.id,
+                criterion.score,
+              ]),
+            );
+        store.result.writerScore =
+          weightedCriteriaScore(next, scores) ?? undefined;
+      }
       await saveCriteriaSpecs(next, activeFolioId);
     });
 
@@ -729,7 +845,9 @@ export const RubricPanel = component$(
           });
           return;
         }
-        const draftText = await loadDraftText();
+        const draftText = htmlToPlainText(
+          await loadRubricDraftHtml(activeFolioId),
+        );
         const res = (await client.action(api.agents.suggestRubricCriteria, {
           brief: brief ?? null,
           draftText: draftText.slice(0, 4000),
@@ -761,19 +879,34 @@ export const RubricPanel = component$(
       return "var(--color-accent-red)";
     };
 
+    const comparableHistory = store.history.filter(
+      (entry) =>
+        (entry.scoringMethod ?? "room") ===
+        (store.result?.scoringMethod ?? "room"),
+    );
+
     return (
       <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
+        {store.status && (
+          <p
+            role="status"
+            class="px-4 py-2 text-xs text-[var(--color-ink-muted)]"
+          >
+            {store.status}
+          </p>
+        )}
         {!store.result && !store.isAnalyzing && (
-          <div class="flex flex-1 flex-col items-center justify-center px-6 py-8 text-center">
+          <div class="flex flex-shrink-0 flex-col px-4 py-4">
             <p
               class="max-w-xs text-sm text-[var(--color-ink-light)]"
               style="font-family: var(--font-serif); font-style: italic;"
             >
-              Score this folio against the room and your criteria.
+              Review follows your saved draft. Marks appear here as the reading
+              finishes.
             </p>
             <div class="mt-4 flex items-center justify-center">
               <button onClick$={analyze} class="btn-press">
-                Run rubric
+                Refresh marks
               </button>
             </div>
             {store.error && (
@@ -794,13 +927,19 @@ export const RubricPanel = component$(
           <div class="rubric-proof flex flex-1 items-center justify-center">
             <EditorialLoader
               personas={DEFAULT_PERSONAS}
-              label="Five judges reading"
+              label="Reading your draft"
             />
           </div>
         )}
 
         {store.result && !store.isAnalyzing && (
-          <div class="flex-1 min-h-0 flex flex-col">
+          <div
+            class={
+              store.section === "review"
+                ? "flex-shrink-0 flex flex-col"
+                : "flex-1 min-h-0 flex flex-col"
+            }
+          >
             {/* The verdict. Stays on screen whichever reading is open. */}
             <div
               class={[
@@ -816,6 +955,11 @@ export const RubricPanel = component$(
                   animated={store.resultFresh}
                 />
                 <div class="flex-1 min-w-0">
+                  <p class="panel-meta text-[var(--color-ink-muted)]">
+                    {store.result.scoringMethod === "judgement"
+                      ? "Judgement marks"
+                      : "Room reading"}
+                  </p>
                   <p
                     class="text-2xl text-[var(--color-ink)]"
                     style="font-family: var(--font-display); font-weight: 600;"
@@ -829,7 +973,7 @@ export const RubricPanel = component$(
                   {store.result.writerScore !== undefined && (
                     <p
                       class="panel-meta mt-0.5 text-[var(--color-ink-muted)]"
-                      title="The same criteria re-scored under the weights you set. The grade above is the fixed editorial instrument, so the two can be compared over time."
+                      title="The cached marks recalculated using your current criterion weights. Changing weights does not request another reading."
                     >
                       {store.result.writerScore} by your weights
                     </p>
@@ -843,6 +987,12 @@ export const RubricPanel = component$(
               >
                 {truncateGalleySummary(store.result.summary)}
               </p>
+              {store.result.judgementGrade && (
+                <p class="panel-meta mt-1 text-[var(--color-ink-muted)]">
+                  {store.result.judgementGrade.model} · Model estimates; your
+                  editorial judgement comes first.
+                </p>
+              )}
               {store.error && (
                 <div class="mt-3">
                   <ApplicationNotice
@@ -859,13 +1009,13 @@ export const RubricPanel = component$(
             </div>
 
             {/* The trend line — the rubric as a trajectory, not a snapshot. */}
-            {store.history.length >= 2 && (
+            {comparableHistory.length >= 2 && (
               <div class="border-b border-dashed border-[var(--color-paper-3)] px-4 py-2">
                 <div class="flex items-baseline justify-between">
                   <p class="dept-label">History</p>
-                  <ScoreDeltaBadge delta={scoreDelta(store.history)} />
+                  <ScoreDeltaBadge delta={scoreDelta(comparableHistory)} />
                 </div>
-                <Sparkline history={store.history} />
+                <Sparkline history={comparableHistory} />
               </div>
             )}
 
@@ -976,60 +1126,34 @@ export const RubricPanel = component$(
               {/* ── The Room: five judges, each given room to be read ── */}
               {store.section === "room" && (
                 <div class="px-4 py-3 space-y-3">
+                  {store.result.judges.length === 0 && (
+                    <div class="py-4 text-center">
+                      <p class="mb-3 text-sm text-[var(--color-ink-light)]">
+                        These marks came from a quick judgement. Ask the editors
+                        for an independent reading with written feedback.
+                      </p>
+                      <button
+                        onClick$={askRoom}
+                        disabled={store.isReviewing}
+                        class="btn-paper"
+                      >
+                        Ask the room
+                      </button>
+                    </div>
+                  )}
                   {store.result.judges.map((judge) => (
                     <JudgeCard key={judge.personaId} judge={judge} />
                   ))}
                 </div>
               )}
-
-              {/* ── Review: the long-form argument behind the grade ── */}
-              {store.section === "review" && (
-                <div class="px-4 py-4">
-                  {store.result.review ? (
-                    <>
-                      <div class="flex items-center justify-end">
-                        <SpeakButton
-                          compact
-                          id="rubric-review"
-                          text={store.result.review}
-                          label="the critic"
-                        />
-                      </div>
-                      <div
-                        data-speech-id="rubric-review"
-                        class="comment-markdown mt-2 text-[var(--color-ink)]"
-                        style="font-family: var(--font-serif);"
-                        dangerouslySetInnerHTML={renderMarkdown(
-                          store.result.review,
-                        )}
-                      />
-                    </>
-                  ) : store.isReviewing && store.streamingReview.trim() ? (
-                    <div
-                      class="comment-markdown text-[var(--color-ink)]"
-                      style="font-family: var(--font-serif);"
-                      aria-live="polite"
-                      dangerouslySetInnerHTML={renderMarkdown(
-                        store.streamingReview,
-                      )}
-                    />
-                  ) : (
-                    <div class="py-5 text-center">
-                      <button
-                        onClick$={generateReview}
-                        disabled={store.isReviewing}
-                        class="btn-paper"
-                      >
-                        {store.isReviewing ? "Writing…" : "Generate review"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
             </div>
 
             <div class="flex items-center gap-3 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-2.5">
-              <button onClick$={analyze} class="btn-paper flex-1 text-xs">
+              <button
+                onClick$={analyze}
+                disabled={store.isReviewing}
+                class="btn-paper flex-1 text-xs"
+              >
                 ↻ Run again
               </button>
               <Link
@@ -1041,6 +1165,16 @@ export const RubricPanel = component$(
             </div>
           </div>
         )}
+        {/* Keep notebook controls mounted when the first grade arrives or the writer changes tabs. */}
+        <div
+          class={
+            store.section === "review" && !store.isAnalyzing
+              ? "flex-1 min-h-0 overflow-y-auto"
+              : "hidden"
+          }
+        >
+          <LiveReviewPanel folioId={activeFolioId} />
+        </div>
       </div>
     );
   },

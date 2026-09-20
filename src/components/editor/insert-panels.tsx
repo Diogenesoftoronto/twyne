@@ -88,6 +88,8 @@ export const InsertPanels = component$<InsertPanelsProps>((props) => {
         rows={8}
         minHeightRem={14}
         submitLabel="Insert diagram"
+        preview="mermaid"
+        previewLabel="Diagram preview"
         onCancel$={props.onCancelMermaid$}
         onConfirm$={props.onConfirmMermaid$}
       />

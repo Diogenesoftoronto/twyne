@@ -139,7 +139,10 @@ export async function readFileAsJson<T>(path: string): Promise<T | null> {
   return parsed as T | null;
 }
 
-export async function writeFileAsJson(path: string, data: unknown): Promise<void> {
+export async function writeFileAsJson(
+  path: string,
+  data: unknown,
+): Promise<void> {
   const lix = await getLix();
   const encoded = new TextEncoder().encode(JSON.stringify(data));
   const existing = await lix.db
@@ -155,10 +158,7 @@ export async function writeFileAsJson(path: string, data: unknown): Promise<void
       .where("path", "=", path)
       .execute();
   } else {
-    await lix.db
-      .insertInto("file")
-      .values({ path, data: encoded })
-      .execute();
+    await lix.db.insertInto("file").values({ path, data: encoded }).execute();
   }
   markDirty();
 }
@@ -183,7 +183,11 @@ async function kvUpsert(key: string, value: string): Promise<void> {
     .select("key")
     .executeTakeFirst();
   if (existing) {
-    await lix.db.updateTable("key_value").set({ value }).where("key", "=", key).execute();
+    await lix.db
+      .updateTable("key_value")
+      .set({ value })
+      .where("key", "=", key)
+      .execute();
   } else {
     await lix.db.insertInto("key_value").values({ key, value }).execute();
   }
@@ -196,7 +200,8 @@ export interface DraftBlock {
   html: string;
 }
 
-const blockKey = (folioId: string, blockId: string) => `tw:draft:${folioId}:block:${blockId}`;
+const blockKey = (folioId: string, blockId: string) =>
+  `tw:draft:${folioId}:block:${blockId}`;
 const orderKey = (folioId: string) => `tw:draft:${folioId}:order`;
 
 /**
@@ -241,7 +246,10 @@ const mirroredOrder = new Map<string, string>();
  * changed blocks, and it returns without touching the database at all when
  * nothing changed.
  */
-export async function syncDraftToLix(folioId: string, html: string): Promise<void> {
+export async function syncDraftToLix(
+  folioId: string,
+  html: string,
+): Promise<void> {
   if (!folioId) return;
   const blocks = splitBlocks(html);
   const next = new Map(blocks.map((b) => [b.id, b.html]));
@@ -322,7 +330,9 @@ export interface ProposeBlockEditArgs {
  * Open an editor's proposed block edit as an isolated branch. Returns the
  * branch (version) id, which the suggestion carries until accept/strike.
  */
-export async function proposeBlockEdit(args: ProposeBlockEditArgs): Promise<string> {
+export async function proposeBlockEdit(
+  args: ProposeBlockEditArgs,
+): Promise<string> {
   const version = await createAgentVersion(args.personaName);
   await writeBlockInVersion(version.id, args.folioId, args.blockId, args.html);
   return version.id;
@@ -351,7 +361,9 @@ export async function getCurrentVersion(): Promise<LixVersion> {
   return { id: row.id, name: row.name };
 }
 
-export async function createAgentVersion(agentName: string): Promise<LixVersion> {
+export async function createAgentVersion(
+  agentName: string,
+): Promise<LixVersion> {
   const lix = await getLix();
   const current = await getCurrentVersion();
   const version = await createVersion({
@@ -369,7 +381,9 @@ export async function switchToVersion(versionId: string): Promise<void> {
   markDirty();
 }
 
-export async function mergeAgentChanges(sourceVersionId: string): Promise<void> {
+export async function mergeAgentChanges(
+  sourceVersionId: string,
+): Promise<void> {
   const lix = await getLix();
   const current = await getCurrentVersion();
   const sourceVersion = await lix.db
@@ -388,10 +402,7 @@ export async function mergeAgentChanges(sourceVersionId: string): Promise<void> 
 
 export async function listVersions(): Promise<LixVersion[]> {
   const lix = await getLix();
-  const rows = await lix.db
-    .selectFrom("version")
-    .selectAll()
-    .execute();
+  const rows = await lix.db.selectFrom("version").selectAll().execute();
   return rows.map((r) => ({ id: r.id, name: r.name }));
 }
 
@@ -407,10 +418,16 @@ export async function createChangeProposal(
     .insertInto("key_value")
     .values([
       { key: `${PROPOSAL_PREFIX}-${proposalId}-status`, value: "open" },
-      { key: `${PROPOSAL_PREFIX}-${proposalId}-source`, value: sourceVersionId },
+      {
+        key: `${PROPOSAL_PREFIX}-${proposalId}-source`,
+        value: sourceVersionId,
+      },
       { key: `${PROPOSAL_PREFIX}-${proposalId}-target`, value: target.id },
       { key: `${PROPOSAL_PREFIX}-${proposalId}-author`, value: authorName },
-      { key: `${PROPOSAL_PREFIX}-${proposalId}-created`, value: String(Date.now()) },
+      {
+        key: `${PROPOSAL_PREFIX}-${proposalId}-created`,
+        value: String(Date.now()),
+      },
     ])
     .execute();
 
@@ -435,7 +452,9 @@ export async function listChangeProposals(): Promise<LixChangeProposal[]> {
 
   const proposals: LixChangeProposal[] = [];
   for (const row of rows) {
-    const id = row.key.replace(`${PROPOSAL_PREFIX}-`, "").replace("-status", "");
+    const id = row.key
+      .replace(`${PROPOSAL_PREFIX}-`, "")
+      .replace("-status", "");
     const sourceRow = await lix.db
       .selectFrom("key_value")
       .where("key", "=", `${PROPOSAL_PREFIX}-${id}-source`)
@@ -470,7 +489,9 @@ export async function listChangeProposals(): Promise<LixChangeProposal[]> {
   return proposals;
 }
 
-export async function acceptChangeProposal(proposal: LixChangeProposal): Promise<void> {
+export async function acceptChangeProposal(
+  proposal: LixChangeProposal,
+): Promise<void> {
   const lix = await getLix();
   await mergeAgentChanges(proposal.sourceVersionId);
   await lix.db
@@ -481,7 +502,9 @@ export async function acceptChangeProposal(proposal: LixChangeProposal): Promise
   markDirty();
 }
 
-export async function rejectChangeProposal(proposal: LixChangeProposal): Promise<void> {
+export async function rejectChangeProposal(
+  proposal: LixChangeProposal,
+): Promise<void> {
   const lix = await getLix();
   await lix.db
     .updateTable("key_value")

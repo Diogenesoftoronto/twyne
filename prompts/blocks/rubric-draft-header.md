@@ -8,4 +8,3 @@ DRAFT (for reference):
 """
 {draftBody}
 """
-

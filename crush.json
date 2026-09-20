@@ -4,7 +4,12 @@
     "typescript": {
       "command": "/home/diogenes/.local/share/zed/languages/vtsls/node_modules/.bin/vtsls",
       "args": ["--stdio"],
-      "filetypes": ["typescript", "typescriptreact", "javascript", "javascriptreact"],
+      "filetypes": [
+        "typescript",
+        "typescriptreact",
+        "javascript",
+        "javascriptreact"
+      ],
       "root_markers": ["tsconfig.json", "package.json"]
     },
     "css": {
@@ -15,8 +20,19 @@
     "tailwind": {
       "command": "/home/diogenes/.local/share/zed/languages/tailwindcss-language-server/node_modules/.bin/tailwindcss-language-server",
       "args": ["--stdio"],
-      "filetypes": ["typescript", "typescriptreact", "javascript", "javascriptreact", "html", "css"],
-      "root_markers": ["tailwind.config.js", "tailwind.config.ts", "package.json"]
+      "filetypes": [
+        "typescript",
+        "typescriptreact",
+        "javascript",
+        "javascriptreact",
+        "html",
+        "css"
+      ],
+      "root_markers": [
+        "tailwind.config.js",
+        "tailwind.config.ts",
+        "package.json"
+      ]
     },
     "json": {
       "command": "/home/diogenes/.local/share/zed/languages/json-language-server/node_modules/.bin/vscode-json-language-server",
@@ -31,7 +47,13 @@
   },
   "options": {
     "auto_lsp": true,
-    "context_paths": ["AGENTS.md", "CLAUDE.md", "PRODUCT.md", "justfile", "package.json"],
+    "context_paths": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "PRODUCT.md",
+      "justfile",
+      "package.json"
+    ],
     "disabled_skills": [
       "crush-config",
       "find-skills",

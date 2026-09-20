@@ -78,7 +78,9 @@ export function normalizeText(text: string): string {
  * The first substantive sentence of a draft — a deterministic anchor for the
  * local fallback generator, which has no model and so cannot call the tool.
  */
-export function firstSubstantiveSentence(draftText: string): string | undefined {
+export function firstSubstantiveSentence(
+  draftText: string,
+): string | undefined {
   for (const passage of draftPassages(draftText)) {
     if (passage.split(/\s+/).length >= 4) return passage;
   }

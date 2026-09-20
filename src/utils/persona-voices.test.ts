@@ -69,7 +69,9 @@ describe("persona voices", () => {
     for (let left = 0; left < prompts.length; left++) {
       for (let right = left + 1; right < prompts.length; right++) {
         const a = new Set(prompts[left]!.toLowerCase().match(/[a-zæ]+/g) ?? []);
-        const b = new Set(prompts[right]!.toLowerCase().match(/[a-zæ]+/g) ?? []);
+        const b = new Set(
+          prompts[right]!.toLowerCase().match(/[a-zæ]+/g) ?? [],
+        );
         const intersection = [...a].filter((word) => b.has(word)).length;
         const union = new Set([...a, ...b]).size;
         expect(intersection / union).toBeLessThan(0.82);
@@ -149,6 +151,36 @@ describe("synthesis + review prompts", () => {
     expect(out).toContain("Speak to this person directly");
   });
 
+  test("writer profile serializes detailed form options into prompt context", () => {
+    const out = buildUserPrompt({
+      persona: toAgentPersona(PERSONAS[0]),
+      brief: null,
+      draftText: "A draft sentence with enough context to read.",
+      writerProfile: {
+        displayName: "Mara",
+        personalFacts: "Historian specializing in medieval trade routes.",
+        feedbackStyle: "direct",
+        feedbackNotes: "Check that dates and routes are accurate.",
+        primaryGenre: "academic",
+        experienceLevel: "published",
+        feedbackFocus: ["argument", "evidence"],
+        praisePreference: "minimal",
+        critiqueTone: "socratic",
+        factChecking: "strict",
+        feedbackAvoid: "Do not suggest fictionalizing real events.",
+      },
+    });
+    expect(out).toContain("Primary genre/form: academic");
+    expect(out).toContain("Experience level: published");
+    expect(out).toContain("Priority feedback focus: argument, evidence");
+    expect(out).toContain("Praise preference: minimal");
+    expect(out).toContain("Critique delivery tone: socratic");
+    expect(out).toContain("Fact adherence mode: strict");
+    expect(out).toContain(
+      "Explicitly avoid in feedback:\nDo not suggest fictionalizing real events.",
+    );
+  });
+
   test("brief attachments are serialized into prompt context", () => {
     const out = buildUserPrompt({
       persona: toAgentPersona(PERSONAS[0]),
@@ -199,7 +231,9 @@ describe("synthesis + review prompts", () => {
       judgeMean: 7,
       minJudge: 6,
       staticTotal: 6.5,
-      judges: [{ personaId: "devil", score: 6, rationale: "thin in the middle" }],
+      judges: [
+        { personaId: "devil", score: 6, rationale: "thin in the middle" },
+      ],
       staticFeedback: ["Citations are sparse."],
       brief: null,
       draftText: "A draft.",
@@ -348,7 +382,12 @@ describe("particulars reach the judges", () => {
       brief: {
         ...brief,
         probes: [
-          { id: "p3", kind: "choice" as const, prompt: "Unanswered?", options: ["a", "b"] },
+          {
+            id: "p3",
+            kind: "choice" as const,
+            prompt: "Unanswered?",
+            options: ["a", "b"],
+          },
         ],
       },
       draftText: "Some draft text.",

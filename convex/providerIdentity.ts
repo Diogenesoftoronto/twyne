@@ -7,6 +7,8 @@ import {
   providerJsonRequest,
 } from "./lib/notorganic";
 
+import { providerCheckoutSelection } from "./lib/providerCheckout";
+
 const didValidator = v.string();
 
 function productSubject(identity: {
@@ -134,10 +136,19 @@ export const getWalletState = action({
 
 export const createProviderCheckout = action({
   args: {
-    planId: v.string(),
+    planId: v.optional(v.string()),
+    packId: v.optional(v.string()),
     successUrl: v.optional(v.string()),
   },
-  handler: async (ctx, { planId, successUrl }) => {
+  handler: async (ctx, { planId, packId, successUrl }) => {
+    const selection = providerCheckoutSelection(
+      { planId, packId },
+      {
+        NOTORGANIC_ENABLED: process.env.NOTORGANIC_ENABLED,
+        NOTORGANIC_TWYNE_PRO_V2_ENABLED:
+          process.env.NOTORGANIC_TWYNE_PRO_V2_ENABLED,
+      },
+    );
     const link = await linkedDidForAction(ctx);
     const token = await issueNotOrganicAccessToken({
       did: link.did,
@@ -148,8 +159,19 @@ export const createProviderCheckout = action({
     const returnUrl =
       successUrl ??
       `${(process.env.SITE_URL ?? "https://www.twyne.love").replace(/\/$/, "")}/pricing?checkout=success`;
-    if (!returnUrl.startsWith("https://")) {
-      throw new Error("Provider checkout requires an HTTPS success URL");
+    const expectedOrigin = new URL(
+      process.env.SITE_URL ?? "https://www.twyne.love",
+    ).origin;
+    const parsedReturn = new URL(returnUrl);
+    if (
+      parsedReturn.protocol !== "https:" ||
+      parsedReturn.origin !== expectedOrigin ||
+      parsedReturn.username ||
+      parsedReturn.password
+    ) {
+      throw new Error(
+        "Provider checkout requires a same-site HTTPS success URL",
+      );
     }
     const checkout = await providerJsonRequest<{ url: string }>(
       "/v1/billing/checkout",
@@ -157,7 +179,7 @@ export const createProviderCheckout = action({
       {
         method: "POST",
         body: JSON.stringify({
-          product_id: planId,
+          ...selection,
           return_url: returnUrl,
         }),
       },

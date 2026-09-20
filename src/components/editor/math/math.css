@@ -130,6 +130,49 @@
   color: Canvas;
 }
 
+/* Live preview inside the LaTeX source editor: same KaTeX output the
+   NodeView renders after save, so the writer sees the equation while typing.
+   Purely presentational — saving still goes through the form submit. */
+.twyne-math-source-preview {
+  overflow: auto;
+  max-height: 12rem;
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.65rem;
+  background: Canvas;
+  color: CanvasText;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.twyne-math-source-preview-hint {
+  color: color-mix(in srgb, currentColor 60%, transparent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+.twyne-math-source-preview-output {
+  display: inline-block;
+  max-width: 100%;
+}
+
+.twyne-math-source-preview-error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+  border-color: #a84632;
+  background: #fff2ee;
+  color: #742718;
+  text-align: left;
+}
+
+.twyne-math-source-preview-message {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
 .ProseMirror-selectednode.twyne-math {
   outline: 2px solid currentColor;
   outline-offset: 2px;

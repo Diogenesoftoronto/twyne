@@ -182,6 +182,7 @@ export const SPINE_CRITERIA: ReadonlyArray<
 
 /** One recorded rubric pass, for the trend line. */
 export interface RubricHistoryEntry {
+  scoringMethod?: "judgement" | "room";
   /** Folio whose rubric run produced this point. */
   folioId?: string;
   at: number;
@@ -192,6 +193,9 @@ export interface RubricHistoryEntry {
 }
 
 export interface RubricResult {
+  judgementGrade?: import("../utils/rubric-grade").RubricGrade;
+  draftFingerprint?: string;
+  scoringMethod?: "judgement" | "room";
   /** Folio whose manuscript was graded. */
   folioId?: string;
   criteria: RubricCriterion[];
@@ -871,6 +875,18 @@ export type AiFeature =
   | "interview-turn"
   | "dossier-check";
 
+export type WriterExperienceLevel =
+  | "emerging"
+  | "practicing"
+  | "published"
+  | "expert";
+
+export type CritiqueTone = "direct" | "socratic" | "analytical";
+
+export type PraisePreference = "minimal" | "balanced" | "encouraging";
+
+export type FactAdherenceMode = "strict" | "flexible" | "creative";
+
 /** Private context the room may use to speak to this writer as a person. */
 export interface WriterProfile {
   /** Name the editors should use when addressing the writer. */
@@ -881,6 +897,20 @@ export interface WriterProfile {
   feedbackStyle: "direct" | "balanced" | "gentle";
   /** Writer-authored guidance about what feedback should notice or avoid. */
   feedbackNotes: string;
+  /** Primary literary genre or form the writer produces. */
+  primaryGenre?: string;
+  /** The writer's background or experience level. */
+  experienceLevel?: WriterExperienceLevel;
+  /** Priority feedback dimensions the writer cares most about. */
+  feedbackFocus?: string[];
+  /** How much praise/encouragement the writer wants alongside critique. */
+  praisePreference?: PraisePreference;
+  /** Preferred critique framing (direct prescriptions, Socratic questions, or analytical diagnosis). */
+  critiqueTone?: CritiqueTone;
+  /** How strictly the room must respect the writer's established facts and domain truths. */
+  factChecking?: FactAdherenceMode;
+  /** Things the writer specifically dislikes or wants the room to avoid in feedback. */
+  feedbackAvoid?: string;
 }
 
 export const DEFAULT_WRITER_PROFILE: WriterProfile = {

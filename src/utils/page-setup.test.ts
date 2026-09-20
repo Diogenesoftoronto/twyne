@@ -5,13 +5,7 @@ import {
   resolvePageSetup,
   type LayoutSettings,
 } from "../types";
-import {
-  formatMargin,
-  inToPx,
-  pxToIn,
-  pxToRem,
-  remToPx,
-} from "./css-units";
+import { formatMargin, inToPx, pxToIn, pxToRem, remToPx } from "./css-units";
 
 /**
  * Page setup arrived after pagination did, which means every folio written

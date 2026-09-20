@@ -92,7 +92,8 @@ export async function withEditor(
   install("MouseEvent", dom.window.MouseEvent);
   install(
     "requestAnimationFrame",
-    (cb: FrameRequestCallback) => setTimeout(() => cb(0), 0) as unknown as number,
+    (cb: FrameRequestCallback) =>
+      setTimeout(() => cb(0), 0) as unknown as number,
   );
   install("cancelAnimationFrame", (id: number) => clearTimeout(id));
 

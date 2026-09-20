@@ -233,7 +233,11 @@ export function split(text: string): string[] {
       }
 
       // A period followed by lowercase joins, not ends ("e.g. that").
-      if (c === "." && nextNonSpace < bufferLen && /[a-z]/.test(text[nextNonSpace])) {
+      if (
+        c === "." &&
+        nextNonSpace < bufferLen &&
+        /[a-z]/.test(text[nextNonSpace])
+      ) {
         ++i;
         continue;
       }

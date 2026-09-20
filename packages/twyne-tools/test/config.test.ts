@@ -7,7 +7,9 @@ import { loadCredentials, readConfig, writeConfig } from "../src/config.js";
 const temporaryDirectories: string[] = [];
 
 afterEach(async () => {
-  await Promise.all(temporaryDirectories.splice(0).map((path) => rm(path, { recursive: true })));
+  await Promise.all(
+    temporaryDirectories.splice(0).map((path) => rm(path, { recursive: true })),
+  );
 });
 
 async function configPath(): Promise<string> {
@@ -28,7 +30,8 @@ describe("credential config", () => {
       apiUrl: "https://twyne.example",
       accessToken: "twyne_pat_secret",
     });
-    if (process.platform !== "win32") expect((await stat(path)).mode & 0o777).toBe(0o600);
+    if (process.platform !== "win32")
+      expect((await stat(path)).mode & 0o777).toBe(0o600);
   });
 
   test("environment credentials take precedence as a complete pair", async () => {
@@ -36,7 +39,10 @@ describe("credential config", () => {
       TWYNE_API_URL: "https://env.example",
       TWYNE_ACCESS_TOKEN: "twyne_pat_environment",
     });
-    expect(credentials).toMatchObject({ source: "environment", apiUrl: "https://env.example" });
+    expect(credentials).toMatchObject({
+      source: "environment",
+      apiUrl: "https://env.example",
+    });
     await expect(
       loadCredentials({ TWYNE_ACCESS_TOKEN: "twyne_pat_environment" }),
     ).rejects.toThrow("Set both");

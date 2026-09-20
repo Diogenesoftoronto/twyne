@@ -37,6 +37,7 @@ import {
 import { computePageGeometry } from "./pagination-geometry";
 import { pxToRem, rootFontSize } from "../../utils/css-units";
 import { exportPdf } from "../../utils/exchange";
+import { isFileDrag } from "../../utils/file-drag";
 import { buildFolioExportPayload } from "../../utils/folio-export";
 import {
   reportApplicationDiagnostic,
@@ -142,6 +143,7 @@ import { RemoteCursors } from "./extensions/remote-cursors";
 import { type RemoteCursor } from "./extensions/remote-cursors";
 import { Indent } from "./extensions/indent";
 import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
+import { QuickReview, startQuickReview } from "./extensions/quick-review";
 import { PageBreakNode } from "./extensions/page-break-node";
 import { Pagination, type PaginationInfo } from "./extensions/pagination";
 import { ParagraphFormat } from "./extensions/paragraph-format";
@@ -155,6 +157,7 @@ import {
   stopWatchingRemote,
 } from "../../utils/collaboration";
 import mermaid from "mermaid";
+import { initializeTwyneMermaid } from "./mermaid-theme";
 import {
   syncDraftToLix,
   mergeAgentChanges,
@@ -695,6 +698,16 @@ export const TwyneEditor = component$(
               // and one command surface for each feature.
               link: false,
               underline: false,
+              // `color: false` suppresses prosemirror-dropcursor's inline
+              // background so the whole appearance comes from the stylesheet.
+              // The default is a 1px `currentColor` hairline, which is nearly
+              // invisible against body text — and this caret is the only thing
+              // telling a writer where their dragged selection will land.
+              dropcursor: {
+                color: false,
+                width: 2,
+                class: "twyne-dropcursor",
+              },
             }),
             ImageNode.configure({
               uploadAdapter: imageUploadAdapter,
@@ -748,6 +761,7 @@ export const TwyneEditor = component$(
             InlineNoteNode,
             RemoteCursors.configure({ cursors: [] }),
             MarkAnchorWidgets,
+            QuickReview,
             Indent,
             FindReplace,
             SlashCommand,
@@ -806,11 +820,23 @@ export const TwyneEditor = component$(
           },
         });
 
+        if (activeFolioId && !readOnly) {
+          cleanup(
+            startQuickReview(
+              editor,
+              () => clientSig.value,
+              activeFolioId,
+              brief ?? null,
+            ),
+          );
+        }
+
         // ProseMirror handles pointer events inside its own managed DOM and
         // can stop them before Qwik's delegated listener reaches the mount
         // wrapper. A drag selection is only final on pointer release, so
         // keep the action card out of the transaction churn until then.
         let selectionPointerActive = false;
+        let nativeTextDragActive = false;
         const dismissEditorialFurniture = () => {
           store.showImageInput = false;
           store.selectionAction = null;
@@ -841,6 +867,10 @@ export const TwyneEditor = component$(
 
         /** Record the finished text range as a durable manuscript action. */
         const refreshSelectionAction = () => {
+          if (nativeTextDragActive) {
+            store.selectionAction = null;
+            return;
+          }
           const { from, to } = editor.state.selection;
           store.hasSelection = from !== to;
           if (from !== to && editor.state.selection instanceof TextSelection) {
@@ -892,12 +922,27 @@ export const TwyneEditor = component$(
           document.addEventListener("pointerup", finishSelectionPointer);
           document.addEventListener("pointercancel", finishSelectionPointer);
         };
+        // A native text drag emits pointercancel. It is not a completed selection:
+        // reopening the action card here covers the paragraph the writer wants to drop onto.
+        const beginTextDrag = () => {
+          nativeTextDragActive = true;
+          store.selectionAction = null;
+        };
+        const finishTextDrag = () => {
+          nativeTextDragActive = false;
+          selectionPointerActive = false;
+          requestAnimationFrame(refreshSelectionAction);
+        };
+        editor.view.dom.addEventListener("dragstart", beginTextDrag, true);
+        document.addEventListener("dragend", finishTextDrag);
         editor.view.dom.addEventListener(
           "pointerdown",
           beginSelectionPointer,
           true,
         );
         cleanup(() => {
+          editor.view.dom.removeEventListener("dragstart", beginTextDrag, true);
+          document.removeEventListener("dragend", finishTextDrag);
           editor.view.dom.removeEventListener(
             "pointerdown",
             beginSelectionPointer,
@@ -905,6 +950,39 @@ export const TwyneEditor = component$(
           );
           document.removeEventListener("pointerup", finishSelectionPointer);
           document.removeEventListener("pointercancel", finishSelectionPointer);
+        });
+
+        // ── Mod-A is always the document, never the page ──
+        // ProseMirror's own keymap selects the document on Mod-A, but only
+        // when the key reaches it unmodified: focus on a widget inside the
+        // manuscript (a math source textarea, an inspector button) lets the
+        // browser fall through to a page-wide selection instead. Capture on
+        // the view root — ahead of ProseMirror's bubble listener — so the
+        // outcome is deterministic wherever the writer is working:
+        //   field (input/textarea/select) → native field selection
+        //   anywhere else in the mount   → the whole manuscript, nothing more
+        const selectManuscript = (e: KeyboardEvent) => {
+          if (e.key.toLowerCase() !== "a" || e.shiftKey || e.altKey) return;
+          if (!e.ctrlKey && !e.metaKey) return;
+          const target = e.target as HTMLElement | null;
+          if (
+            target &&
+            (target.matches("input, textarea, select") ||
+              (target.isContentEditable && !target.closest(".ProseMirror")))
+          ) {
+            return;
+          }
+          e.preventDefault();
+          e.stopPropagation();
+          editor.commands.selectAll();
+        };
+        editor.view.dom.addEventListener("keydown", selectManuscript, true);
+        cleanup(() => {
+          editor.view.dom.removeEventListener(
+            "keydown",
+            selectManuscript,
+            true,
+          );
         });
 
         const refreshActive = () => {
@@ -1035,7 +1113,10 @@ export const TwyneEditor = component$(
         applyDocumentMeta(store.meta, editor.getText());
 
         // ── Mermaid rendering ──
-        mermaid.initialize({ startOnLoad: false, theme: "base" });
+        // Shared theme with the insert-dialog preview, so the manuscript and
+        // the preview never drift apart. Renders wait for the theme so the
+        // first paint isn't unthemed.
+        const mermaidReady = initializeTwyneMermaid();
         function renderMermaid() {
           // Most manuscripts contain no diagram at all; there is no reason to
           // schedule a frame and hand Mermaid the document to scan for one.
@@ -1046,12 +1127,14 @@ export const TwyneEditor = component$(
             return !hasDiagram;
           });
           if (!hasDiagram) return;
-          requestAnimationFrame(() => {
-            mermaid
-              .run({ querySelector: ".twyne-mermaid-diagram" })
-              .catch(() => {
-                // Mermaid syntax errors are benign; leave the source visible.
-              });
+          void mermaidReady.then(() => {
+            requestAnimationFrame(() => {
+              mermaid
+                .run({ querySelector: ".twyne-mermaid-diagram" })
+                .catch(() => {
+                  // Mermaid syntax errors are benign; leave the source visible.
+                });
+            });
           });
         }
         renderMermaid();
@@ -1471,6 +1554,7 @@ export const TwyneEditor = component$(
             }
           }
           if (e.key !== "Escape") return;
+          store.selectionAction = null;
           if (store.notePopover) store.notePopover = null;
           if (store.userCommentPopover) store.userCommentPopover = null;
           if (store.suggestionPopover) store.suggestionPopover = null;
@@ -2447,7 +2531,12 @@ export const TwyneEditor = component$(
       }
     });
 
-    const handleDragOver = $(() => {
+    // Only a file drag gets the "Drop plate or tabular here" prompt. Dragging a
+    // selection through the manuscript is an ordinary editing gesture, and
+    // raising a full-surface overlay for it both lies about what will happen and
+    // re-renders the panel on every dragover frame.
+    const handleDragOver = $((event: DragEvent) => {
+      if (!isFileDrag(event.dataTransfer)) return;
       store.isDragOver = true;
     });
 

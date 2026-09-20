@@ -6,7 +6,12 @@ import { DEFAULT_MCP_SERVER } from "../types";
 
 function handle(tools: McpToolInfo[], searchToolName = ""): McpServerHandle {
   return {
-    config: { ...DEFAULT_MCP_SERVER, id: "s1", url: "https://x/mcp", searchToolName },
+    config: {
+      ...DEFAULT_MCP_SERVER,
+      id: "s1",
+      url: "https://x/mcp",
+      searchToolName,
+    },
     client: {} as McpServerHandle["client"],
     route: "direct",
     tools,
@@ -38,7 +43,10 @@ describe("pickSearchTool", () => {
   test("auto-detects by name over description", () => {
     const chosen = pickSearchTool(
       handle([
-        { name: "create_page", description: "Make a page you can search later" },
+        {
+          name: "create_page",
+          description: "Make a page you can search later",
+        },
         { name: "find_documents", description: "Locate documents" },
       ]),
     );
@@ -148,18 +156,22 @@ describe("readToolResult", () => {
 
   test("surfaces the error flag", () => {
     expect(
-      readToolResult({ isError: true, content: [{ type: "text", text: "boom" }] })
-        .isError,
+      readToolResult({
+        isError: true,
+        content: [{ type: "text", text: "boom" }],
+      }).isError,
     ).toBe(true);
   });
 });
 
 describe("fillUriTemplate", () => {
   test("expands named values and escapes them", () => {
-    expect(fillUriTemplate("notes://{folder}/{file}", {
-      folder: "my notes",
-      file: "draft.md",
-    })).toBe("notes://my%20notes/draft.md");
+    expect(
+      fillUriTemplate("notes://{folder}/{file}", {
+        folder: "my notes",
+        file: "draft.md",
+      }),
+    ).toBe("notes://my%20notes/draft.md");
   });
 
   test("leaves unknown variables in place rather than emptying them", () => {

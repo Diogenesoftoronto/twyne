@@ -117,7 +117,9 @@ export async function isModelBundleDownloaded(
 ): Promise<boolean> {
   if (!canPersist() || manifest.length === 0) return false;
   const stored = new Map<string, number>();
-  for (const rec of await listModelFilesFromIdb(bundleStoragePrefix(manifest))) {
+  for (const rec of await listModelFilesFromIdb(
+    bundleStoragePrefix(manifest),
+  )) {
     stored.set(rec.id, rec.bytes);
   }
   return manifest.every((file) => stored.get(file.url) === file.size);

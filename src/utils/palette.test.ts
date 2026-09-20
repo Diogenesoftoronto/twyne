@@ -37,7 +37,11 @@ describe("the palette is actually a palette", () => {
   test("every swatch carries a literal colour, not only a variable", () => {
     // A mark styled with var(--color-mustard) renders nothing in an exported
     // standalone HTML file. Colour that leaves the app has to be a literal.
-    for (const s of [...INK_SWATCHES, ...TEXT_SWATCHES, ...HIGHLIGHT_SWATCHES]) {
+    for (const s of [
+      ...INK_SWATCHES,
+      ...TEXT_SWATCHES,
+      ...HIGHLIGHT_SWATCHES,
+    ]) {
       expect(s.hex).toMatch(/^#[0-9a-f]{6}$/i);
       expect(s.cssVar).toMatch(/^var\(--/);
     }

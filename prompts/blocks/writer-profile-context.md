@@ -5,4 +5,4 @@ version: "1"
 ---
 
 - Personal context:
-{personalFacts}
+  {personalFacts}

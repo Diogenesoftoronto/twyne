@@ -52,4 +52,3 @@ These files support the main optimizer but are not intended for direct use:
 3. Uses a meta-prompt to analyze failures and suggest improvements
 4. Iteratively refines the prompt across batches
 5. Returns optimized prompt in the same format as input
-

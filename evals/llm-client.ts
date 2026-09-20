@@ -21,8 +21,7 @@ const PORTKEY_BASE_URL = (
 
 export const DEFAULT_MODEL =
   process.env.PORTKEY_DEFAULT_MODEL ?? "@neuralwatt/qwen3.5-397b-fast";
-export const JUDGE_MODEL =
-  process.env.JUDGE_MODEL ?? "@neuralwatt/kimi-k2.6";
+export const JUDGE_MODEL = process.env.JUDGE_MODEL ?? "@neuralwatt/kimi-k2.6";
 
 export interface ChatOptions {
   system: string;

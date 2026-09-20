@@ -21,9 +21,9 @@ const statuses: SyncStatus[] = [
 describe("statusColor", () => {
   test("returns the danger colour for offline and error", () => {
     expect(statusColor({ kind: "offline" })).toBe("var(--color-vermilion)");
-    expect(
-      statusColor({ kind: "error", lastErrorAt: NOW, message: "x" }),
-    ).toBe("var(--color-vermilion)");
+    expect(statusColor({ kind: "error", lastErrorAt: NOW, message: "x" })).toBe(
+      "var(--color-vermilion)",
+    );
   });
 
   test("returns the quiet paper-3 colour while pending or syncing", () => {
@@ -40,9 +40,7 @@ describe("statusColor", () => {
   });
 
   test("returns the muted ink colour while local-only", () => {
-    expect(statusColor({ kind: "local-only" })).toBe(
-      "var(--color-ink-muted)",
-    );
+    expect(statusColor({ kind: "local-only" })).toBe("var(--color-ink-muted)");
   });
 
   test("covers every status kind with no default fallthrough", () => {
@@ -64,9 +62,9 @@ describe("statusLabel", () => {
   });
 
   test("embeds the synced timestamp in the label", () => {
-    expect(statusLabel({ kind: "synced", lastSyncedAt: NOW - 12_000 }, NOW)).toMatch(
-      /12s ago/,
-    );
+    expect(
+      statusLabel({ kind: "synced", lastSyncedAt: NOW - 12_000 }, NOW),
+    ).toMatch(/12s ago/);
   });
 
   test("embeds the error message in the error label", () => {

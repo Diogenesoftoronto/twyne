@@ -2,10 +2,7 @@ import { internalMutation, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { applicationError } from "./lib/applicationErrors";
 
-const phaseValidator = v.union(
-  v.literal("reasoning"),
-  v.literal("answer"),
-);
+const phaseValidator = v.union(v.literal("reasoning"), v.literal("answer"));
 const statusValidator = v.union(
   v.literal("running"),
   v.literal("complete"),

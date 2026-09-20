@@ -12,5 +12,8 @@ declare module "wav-encoder" {
     symmetric?: boolean;
   }
 
-  export function encode(data: AudioData, opts?: EncodeOptions): Promise<ArrayBuffer>;
+  export function encode(
+    data: AudioData,
+    opts?: EncodeOptions,
+  ): Promise<ArrayBuffer>;
 }

@@ -1,4 +1,12 @@
-import { chmod, lstat, mkdir, readFile, rename, unlink, writeFile } from "node:fs/promises";
+import {
+  chmod,
+  lstat,
+  mkdir,
+  readFile,
+  rename,
+  unlink,
+  writeFile,
+} from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 
@@ -17,7 +25,9 @@ export interface Credentials {
   configPath?: string;
 }
 
-export function defaultConfigPath(env: NodeJS.ProcessEnv = process.env): string {
+export function defaultConfigPath(
+  env: NodeJS.ProcessEnv = process.env,
+): string {
   if (env.TWYNE_CONFIG_PATH?.trim()) return env.TWYNE_CONFIG_PATH.trim();
   const base = env.XDG_CONFIG_HOME?.trim() || join(homedir(), ".config");
   return join(base, "twyne", "config.json");
@@ -52,9 +62,14 @@ function parseConfig(value: unknown): TwyneConfig {
   }
   const input = value as Record<string, unknown>;
   if (input.version !== CONFIG_VERSION) {
-    throw new Error(`Unsupported Twyne config version: ${String(input.version)}`);
+    throw new Error(
+      `Unsupported Twyne config version: ${String(input.version)}`,
+    );
   }
-  if (typeof input.apiUrl !== "string" || typeof input.accessToken !== "string") {
+  if (
+    typeof input.apiUrl !== "string" ||
+    typeof input.accessToken !== "string"
+  ) {
     throw new Error("Twyne config must contain apiUrl and accessToken");
   }
   return {
@@ -69,7 +84,8 @@ async function assertSecureConfig(path: string): Promise<void> {
   if (stat.isSymbolicLink()) {
     throw new Error(`Refusing to read symlinked Twyne config: ${path}`);
   }
-  if (!stat.isFile()) throw new Error(`Twyne config is not a regular file: ${path}`);
+  if (!stat.isFile())
+    throw new Error(`Twyne config is not a regular file: ${path}`);
   if (process.platform !== "win32" && (stat.mode & 0o077) !== 0) {
     throw new Error(
       `Twyne config permissions are too open (${(stat.mode & 0o777).toString(8)}); run chmod 600 ${path}`,
@@ -77,13 +93,16 @@ async function assertSecureConfig(path: string): Promise<void> {
   }
 }
 
-export async function readConfig(path = defaultConfigPath()): Promise<TwyneConfig> {
+export async function readConfig(
+  path = defaultConfigPath(),
+): Promise<TwyneConfig> {
   await assertSecureConfig(path);
   let parsed: unknown;
   try {
     parsed = JSON.parse(await readFile(path, "utf8"));
   } catch (error) {
-    if (error instanceof SyntaxError) throw new Error(`Twyne config is not valid JSON: ${path}`);
+    if (error instanceof SyntaxError)
+      throw new Error(`Twyne config is not valid JSON: ${path}`);
     throw error;
   }
   return parseConfig(parsed);
@@ -97,7 +116,9 @@ export async function loadCredentials(
   const envToken = env.TWYNE_ACCESS_TOKEN?.trim();
   if (envUrl || envToken) {
     if (!envUrl || !envToken) {
-      throw new Error("Set both TWYNE_API_URL and TWYNE_ACCESS_TOKEN, or neither");
+      throw new Error(
+        "Set both TWYNE_API_URL and TWYNE_ACCESS_TOKEN, or neither",
+      );
     }
     return {
       apiUrl: normalizeApiUrl(envUrl),
@@ -147,7 +168,9 @@ export async function writeConfig(
   return path;
 }
 
-export async function deleteConfig(path = defaultConfigPath()): Promise<boolean> {
+export async function deleteConfig(
+  path = defaultConfigPath(),
+): Promise<boolean> {
   try {
     await unlink(path);
     return true;

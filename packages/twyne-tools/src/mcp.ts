@@ -11,7 +11,11 @@ import {
   type ExportFormat,
 } from "./archive.js";
 import { TwyneClient } from "./client.js";
-import { FOLIO_INCLUDES, type CitationEntry, type FolioInclude } from "./types.js";
+import {
+  FOLIO_INCLUDES,
+  type CitationEntry,
+  type FolioInclude,
+} from "./types.js";
 
 export const TWYNE_MCP_TOOL_NAMES = [
   "twyne_list_folios",
@@ -75,12 +79,16 @@ const citationEntry = z.looseObject({
   accessedAt: z.number().optional(),
 });
 
-export function registerTwyneTools(server: McpServer, client: TwyneClient): void {
+export function registerTwyneTools(
+  server: McpServer,
+  client: TwyneClient,
+): void {
   server.registerTool(
     "twyne_list_folios",
     {
       title: "List Twyne folios",
-      description: "List the authenticated writer's Twyne folios with IDs, names, types, and timestamps.",
+      description:
+        "List the authenticated writer's Twyne folios with IDs, names, types, and timestamps.",
       inputSchema: {},
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
@@ -98,13 +106,18 @@ export function registerTwyneTools(server: McpServer, client: TwyneClient): void
         include: z
           .array(includeValue)
           .optional()
-          .describe("Optional fields to include; omit to fetch the complete folio bundle"),
+          .describe(
+            "Optional fields to include; omit to fetch the complete folio bundle",
+          ),
       },
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
     async ({ folioId, include }) =>
       resultOf(async () => {
-        const bundle = await client.getFolio(folioId, include as FolioInclude[] | undefined);
+        const bundle = await client.getFolio(
+          folioId,
+          include as FolioInclude[] | undefined,
+        );
         if (!bundle) throw new Error(`Folio not found: ${folioId}`);
         return bundle;
       }),
@@ -114,11 +127,15 @@ export function registerTwyneTools(server: McpServer, client: TwyneClient): void
     "twyne_create_folio",
     {
       title: "Create a Twyne folio",
-      description: "Create a draft, notes, or outline folio, optionally with manuscript HTML and a project brief.",
+      description:
+        "Create a draft, notes, or outline folio, optionally with manuscript HTML and a project brief.",
       inputSchema: {
         name: z.string().trim().min(1).max(240),
         type: folioType.optional().default("draft"),
-        html: z.string().optional().describe("Tiptap-compatible manuscript HTML"),
+        html: z
+          .string()
+          .optional()
+          .describe("Tiptap-compatible manuscript HTML"),
         brief: z.unknown().optional(),
       },
       annotations: { destructiveHint: false, idempotentHint: false },
@@ -171,14 +188,16 @@ export function registerTwyneTools(server: McpServer, client: TwyneClient): void
     "twyne_search_folios",
     {
       title: "Search Twyne folios",
-      description: "Search folio names and manuscript text, returning ranked snippets for fast retrieval.",
+      description:
+        "Search folio names and manuscript text, returning ranked snippets for fast retrieval.",
       inputSchema: {
         query: z.string().trim().min(1),
         limit: z.number().int().min(1).max(50).optional().default(20),
       },
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
-    async ({ query, limit }) => resultOf(() => client.searchFolios(query, limit)),
+    async ({ query, limit }) =>
+      resultOf(() => client.searchFolios(query, limit)),
   );
 
   server.registerTool(
@@ -191,7 +210,13 @@ export function registerTwyneTools(server: McpServer, client: TwyneClient): void
         sources: z
           .array(
             z.object({
-              name: z.string().trim().min(1).describe("Filename including .twyne.json, .md, .html, or .txt"),
+              name: z
+                .string()
+                .trim()
+                .min(1)
+                .describe(
+                  "Filename including .twyne.json, .md, .html, or .txt",
+                ),
               content: z.string(),
               type: folioType.optional(),
             }),
@@ -212,13 +237,19 @@ export function registerTwyneTools(server: McpServer, client: TwyneClient): void
         "Export selected folios, or all folios when IDs are omitted. Archive is the bulk Twyne archive-v2 format; Markdown, HTML, and text require one folio.",
       inputSchema: {
         folioIds: z.array(folioId).max(500).optional(),
-        format: z.enum(["archive", "markdown", "html", "txt"]).optional().default("archive"),
+        format: z
+          .enum(["archive", "markdown", "html", "txt"])
+          .optional()
+          .default("archive"),
       },
       annotations: { readOnlyHint: true, idempotentHint: true },
     },
     async ({ folioIds, format }) =>
       resultOf(async () =>
-        exportBundles(await fetchFolioBundles(client, folioIds), format as ExportFormat),
+        exportBundles(
+          await fetchFolioBundles(client, folioIds),
+          format as ExportFormat,
+        ),
       ),
   );
 
@@ -284,9 +315,14 @@ export async function runMcpServer(): Promise<void> {
   await server.connect(transport);
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   runMcpServer().catch((error) => {
-    console.error(`twyne-mcp: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `twyne-mcp: ${error instanceof Error ? error.message : String(error)}`,
+    );
     process.exitCode = 1;
   });
 }

@@ -185,8 +185,7 @@ const UNIVERSAL_CLAIM =
 // bracketed refs like "[3]" invisible to this check.
 const SOURCE_MARKER =
   /\b(?:according to|study|studies|research|data|survey|report|census|doi:)\b|https?:\/\//i;
-const SOURCE_CITATION =
-  /\(\s*[A-Z][A-Za-z-]+,\s*\d{4}\s*\)|\[\d+\]/;
+const SOURCE_CITATION = /\(\s*[A-Z][A-Za-z-]+,\s*\d{4}\s*\)|\[\d+\]/;
 
 /**
  * Moving-average type-token ratio (MATTR). A raw type-token ratio
@@ -396,7 +395,9 @@ export function scoreSufficiency(
   const score = clamp(
     0,
     10,
-    coverageRatio * 4 + engagementRatio * 4 + scoreLengthAdequacy(wordCount) * 2,
+    coverageRatio * 4 +
+      engagementRatio * 4 +
+      scoreLengthAdequacy(wordCount) * 2,
   );
 
   const feedback = `${coveredKeywords.length}/${keywords.length} key term${
@@ -578,7 +579,9 @@ export function combineJudgesAndStatic(
   // The harshest single judge, weighted heavily on its own — one persona
   // calling the draft broken shouldn't get diluted away by an average.
   const minJudge =
-    judges.length > 0 ? clamp(0, 10, Math.min(...judges.map((j) => j.score))) : 5;
+    judges.length > 0
+      ? clamp(0, 10, Math.min(...judges.map((j) => j.score)))
+      : 5;
 
   const staticTotal = staticScore.total;
   const fit = clamp(0, 10, targetFit);
@@ -673,7 +676,9 @@ function buildSummary(
     parts.push(
       `Target fit is ${targetFit}/10 — the draft is only partly doing the job the brief set, so the shape measurements below are capped at ${shapeCeiling(
         targetFit,
-      ).toFixed(1)}/10 and count for less in the grade. Well-formed sentences about the wrong thing are still the wrong thing.`,
+      ).toFixed(
+        1,
+      )}/10 and count for less in the grade. Well-formed sentences about the wrong thing are still the wrong thing.`,
     );
   }
   parts.push(

@@ -92,9 +92,9 @@ describe("floating table toolbar stacked cell-format row", () => {
     expect(stack.placement).toBe("above");
     expect(stack.cellRowTop).not.toBeNull();
     // The cell row must hover above the table's top edge, never cover it.
-    expect(stack.cellRowTop! + TABLE_CELL_FORMAT_PANEL_HEIGHT).toBeLessThanOrEqual(
-      300 - TABLE_TOOLBAR_GAP,
-    );
+    expect(
+      stack.cellRowTop! + TABLE_CELL_FORMAT_PANEL_HEIGHT,
+    ).toBeLessThanOrEqual(300 - TABLE_TOOLBAR_GAP);
   });
 
   test("does not reserve panel room when the cell row is hidden", () => {
@@ -172,9 +172,9 @@ describe("floating table toolbar stacked cell-format row", () => {
     );
     expect(stack.placement).toBe("below");
     expect(stack.cellRowTop).not.toBeNull();
-    expect(stack.cellRowTop! + TABLE_CELL_FORMAT_PANEL_HEIGHT).toBeLessThanOrEqual(
-      700 - 8,
-    );
+    expect(
+      stack.cellRowTop! + TABLE_CELL_FORMAT_PANEL_HEIGHT,
+    ).toBeLessThanOrEqual(700 - 8);
   });
 });
 

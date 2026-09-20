@@ -105,7 +105,9 @@ interface PluginState {
   configVersion: number;
 }
 
-export const paginationPluginKey = new PluginKey<PluginState>("twynePagination");
+export const paginationPluginKey = new PluginKey<PluginState>(
+  "twynePagination",
+);
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -133,7 +135,10 @@ function spacerWidget(height: number, page: number, forced: boolean) {
   };
 }
 
-function buildDecorations(doc: any, breaks: readonly PageBreak[]): DecorationSet {
+function buildDecorations(
+  doc: any,
+  breaks: readonly PageBreak[],
+): DecorationSet {
   if (breaks.length === 0) return DecorationSet.empty;
   const decos = breaks.map((b) =>
     Decoration.widget(b.pos, spacerWidget(b.height, b.page, b.forced), {
@@ -183,9 +188,7 @@ function measureBlocks(
 
     const dom = view.nodeDOM(nodePos);
     const el =
-      dom && (dom as HTMLElement).nodeType === 1
-        ? (dom as HTMLElement)
-        : null;
+      dom && (dom as HTMLElement).nodeType === 1 ? (dom as HTMLElement) : null;
 
     const forcedBreak = node.type.name === "pageBreak";
     // Headings must not be stranded as the last block on a page. This mirrors

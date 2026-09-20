@@ -169,6 +169,10 @@ export async function saveCriteriaSpecs(
   folioId?: string | null,
 ): Promise<void> {
   await saveMetaToIdb(criteriaKey(folioId), specs);
+  if (typeof window !== "undefined")
+    window.dispatchEvent(
+      new CustomEvent("twyne:criteria-changed", { detail: { folioId } }),
+    );
 }
 
 export async function loadRubricHistory(

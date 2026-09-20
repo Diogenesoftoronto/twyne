@@ -53,9 +53,9 @@ describe("lixBlobs auth", () => {
     const ctx = makeCtx("auth-user");
     const blob = new ArrayBuffer(1);
 
-    await handler<(ctx: unknown, args: { blob: ArrayBuffer }) => Promise<unknown>>(
-      upsert,
-    )(ctx as never, { blob });
+    await handler<
+      (ctx: unknown, args: { blob: ArrayBuffer }) => Promise<unknown>
+    >(upsert)(ctx as never, { blob });
 
     expect(ctx.rows[0]).toMatchObject({ userId: "auth-user", blob });
   });
@@ -63,9 +63,9 @@ describe("lixBlobs auth", () => {
   test("get queries by the Convex auth identity", async () => {
     const ctx = makeCtx("auth-user");
 
-    await handler<(ctx: unknown, args: Record<string, never>) => Promise<unknown>>(
-      get,
-    )(ctx as never, {});
+    await handler<
+      (ctx: unknown, args: Record<string, never>) => Promise<unknown>
+    >(get)(ctx as never, {});
 
     expect(ctx.predicates).toContainEqual({
       field: "userId",

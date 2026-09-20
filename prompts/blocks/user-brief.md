@@ -6,6 +6,7 @@ version: "1"
 ---
 
 PROJECT BRIEF (verbatim, do not invent new facts)
+
 - Title: {workingTitle}
 - Format: {format}
 - Audience: {audience}
@@ -13,4 +14,3 @@ PROJECT BRIEF (verbatim, do not invent new facts)
 - Tone: {tone}
 - Constraints: {constraints}
 - Success signal: {successSignal}
-

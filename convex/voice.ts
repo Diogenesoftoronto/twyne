@@ -155,7 +155,8 @@ export const transcribeSpeech = action({
     );
     form.append("model", model);
     form.append("response_format", "json");
-    if (args.prompt?.trim()) form.append("prompt", args.prompt.trim().slice(0, 800));
+    if (args.prompt?.trim())
+      form.append("prompt", args.prompt.trim().slice(0, 800));
 
     const res = await fetch(`${OPENAI_AUDIO_BASE}/audio/transcriptions`, {
       method: "POST",

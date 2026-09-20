@@ -64,7 +64,9 @@ describe("pageBreak node", () => {
       const sel = editor.state.selection;
       expect(sel.constructor.name).toBe("TextSelection");
       expect(sel.$from.parent.type.name).toBe("paragraph");
-      const nodeBefore = editor.state.doc.resolve(sel.$from.before()).nodeBefore;
+      const nodeBefore = editor.state.doc.resolve(
+        sel.$from.before(),
+      ).nodeBefore;
       expect(nodeBefore?.type.name).toBe("pageBreak");
     });
   });
@@ -95,19 +97,20 @@ describe("pageBreak node", () => {
   test("Mod-Enter yields inside a code block so exitCode still works", async () => {
     // Mod-Enter is bound three ways: hard break, exitCode, and now this.
     // Escaping a code block has no other keystroke, so it wins there.
-    await withEditor({ content: "<pre><code>let x = 1</code></pre>" }, ({
-      editor,
-    }) => {
-      editor.commands.setTextSelection(5);
-      expect(editor.isActive("codeBlock")).toBe(true);
+    await withEditor(
+      { content: "<pre><code>let x = 1</code></pre>" },
+      ({ editor }) => {
+        editor.commands.setTextSelection(5);
+        expect(editor.isActive("codeBlock")).toBe(true);
 
-      const before = editor.getHTML();
-      const handled = editor.commands.keyboardShortcut("Mod-Enter");
-      // Whatever exitCode did or did not do, we must not have inserted a
-      // page break into the code block.
-      expect(editor.getHTML()).not.toContain("page-break");
-      expect(handled || before !== editor.getHTML()).toBeTruthy();
-    });
+        const before = editor.getHTML();
+        const handled = editor.commands.keyboardShortcut("Mod-Enter");
+        // Whatever exitCode did or did not do, we must not have inserted a
+        // page break into the code block.
+        expect(editor.getHTML()).not.toContain("page-break");
+        expect(handled || before !== editor.getHTML()).toBeTruthy();
+      },
+    );
   });
 
   test("Mod-Enter inserts a break in ordinary prose", async () => {

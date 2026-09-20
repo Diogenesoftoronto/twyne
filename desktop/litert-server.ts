@@ -87,7 +87,10 @@ async function waitForServerReady(
     }
 
     const exited = await Promise.race([
-      proc.exited.then(() => true, () => true),
+      proc.exited.then(
+        () => true,
+        () => true,
+      ),
       Bun.sleep(STARTUP_POLL_MS).then(() => false),
     ]);
     if (exited) return "exited";

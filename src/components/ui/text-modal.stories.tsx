@@ -45,6 +45,26 @@ export const LargeSourceEditor: Story = {
   },
 };
 
+export const DiagramWithLivePreview: Story = {
+  args: {
+    kicker: "Insert",
+    title: "Add a diagram",
+    description:
+      "Write a Mermaid diagram spec. It will render in-line where the cursor sits.",
+    inputLabel: "Diagram source",
+    placeholder:
+      "graph TD; A[Manuscript] --> B{Reviewed?}; B -->|Yes| C[Publish]; B -->|No| D[Revise]; D --> A",
+    initialValue:
+      "graph TD; A[Manuscript] --> B{Reviewed?}; B -->|Yes| C[Publish]; B -->|No| D[Revise]; D --> A",
+    helpText: "Cmd/Ctrl + Enter to insert · Esc to cancel.",
+    rows: 8,
+    minHeightRem: 14,
+    submitLabel: "Insert diagram",
+    preview: "mermaid",
+    previewLabel: "Diagram preview",
+  },
+};
+
 export const SubmitDisabled: Story = {
   args: {
     initialValue: "A note that still needs a source.",

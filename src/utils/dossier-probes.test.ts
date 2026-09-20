@@ -24,14 +24,23 @@ describe("normalizeProbe — rejection", () => {
     ["an unknown kind", { kind: "essay", prompt: "p" }],
     ["a missing prompt", { kind: "choice", prompt: "  ", options: ["a", "b"] }],
     ["a choice with no options", { kind: "choice", prompt: "p" }],
-    ["a choice with one option", { kind: "choice", prompt: "p", options: ["a"] }],
+    [
+      "a choice with one option",
+      { kind: "choice", prompt: "p", options: ["a"] },
+    ],
     ["blanks with no template", { kind: "blanks", prompt: "p" }],
     [
       "blanks whose template has no blank",
       { kind: "blanks", prompt: "p", template: "no blank here" },
     ],
-    ["a scale whose range is inverted", { kind: "scale", prompt: "p", min: 5, max: 2 }],
-    ["a scale with no range at all", { kind: "scale", prompt: "p", min: 3, max: 3 }],
+    [
+      "a scale whose range is inverted",
+      { kind: "scale", prompt: "p", min: 5, max: 2 },
+    ],
+    [
+      "a scale with no range at all",
+      { kind: "scale", prompt: "p", min: 3, max: 3 },
+    ],
   ])("rejects %s", (_label, input) => {
     expect(normalizeProbe(input)).toBeNull();
   });
@@ -45,7 +54,11 @@ describe("normalizeProbe — rejection", () => {
       }),
     ).not.toBeNull();
     expect(
-      normalizeProbe({ kind: "choice", prompt: "p", options: ["Essay", "Essay"] }),
+      normalizeProbe({
+        kind: "choice",
+        prompt: "p",
+        options: ["Essay", "Essay"],
+      }),
     ).toBeNull();
   });
 });
@@ -84,7 +97,12 @@ describe("normalizeProbe — acceptance", () => {
     expect(bare.min).toBe(1);
     expect(bare.max).toBe(5);
 
-    const huge = normalizeProbe({ kind: "scale", prompt: "p", min: 0, max: 100 })!;
+    const huge = normalizeProbe({
+      kind: "scale",
+      prompt: "p",
+      min: 0,
+      max: 100,
+    })!;
     expect(huge.max).toBe(10);
   });
 
@@ -142,13 +160,15 @@ describe("isAnswered", () => {
 
   test("whitespace is not an answer", () => {
     expect(isAnswered(probe({ answer: "   " }))).toBe(false);
-    expect(isAnswered(probe({ kind: "multi", answer: ["", "  "] }))).toBe(false);
+    expect(isAnswered(probe({ kind: "multi", answer: ["", "  "] }))).toBe(
+      false,
+    );
   });
 
   test("a partly-filled blanks sentence counts as answered", () => {
-    expect(
-      isAnswered(probe({ kind: "blanks", answer: ["moved", ""] })),
-    ).toBe(true);
+    expect(isAnswered(probe({ kind: "blanks", answer: ["moved", ""] }))).toBe(
+      true,
+    );
   });
 
   test("zero is a real scale answer", () => {
@@ -217,7 +237,12 @@ describe("blankAnswer", () => {
     expect(blankAnswer({ id: "p", kind: "choice", prompt: "p" })).toBe("");
     expect(blankAnswer({ id: "p", kind: "multi", prompt: "p" })).toEqual([]);
     expect(
-      blankAnswer({ id: "p", kind: "blanks", prompt: "p", template: "a ___ b ___" }),
+      blankAnswer({
+        id: "p",
+        kind: "blanks",
+        prompt: "p",
+        template: "a ___ b ___",
+      }),
     ).toEqual(["", ""]);
     expect(
       blankAnswer({ id: "p", kind: "scale", prompt: "p", min: 1, max: 5 }),

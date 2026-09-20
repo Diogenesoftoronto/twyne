@@ -51,7 +51,8 @@ function isPrivateIpv4(host: string): boolean {
   const parts = host.split(".");
   if (parts.length !== 4) return false;
   const octets = parts.map((p) => Number(p));
-  if (octets.some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return false;
+  if (octets.some((n) => !Number.isInteger(n) || n < 0 || n > 255))
+    return false;
   const [a, b] = octets;
   if (a === 10 || a === 127 || a === 0) return true;
   if (a === 172 && b >= 16 && b <= 31) return true;

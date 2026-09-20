@@ -492,7 +492,9 @@ describe("speakQueue", () => {
 
     expect(calls.filter((text) => text === failedChunk)).toHaveLength(2);
     expect(speakModule.currentSpeechText()).toBe(failedChunk);
-    expect(speakModule.currentSpeechSourceOffset()).toBe(text.indexOf(failedChunk));
+    expect(speakModule.currentSpeechSourceOffset()).toBe(
+      text.indexOf(failedChunk),
+    );
   });
 
   test("reading a single passage abandons a queue that was running", async () => {

@@ -45,6 +45,12 @@ import { getCachedAiSettings } from "./ai-orchestrator";
 import { loadWriterSettingsFromIdb } from "./idb";
 import { savePersonaNoteLocally } from "./convex-sync";
 import { reportApplicationDiagnostic } from "./application-diagnostics";
+import { liveReviewSnapshot } from "./live-review";
+import { rubricDraftFingerprint } from "./rubric-judgement-result";
+import { htmlToPlainText } from "./anti-tabula-rasa";
+import { loadFolioContentFromIdb, loadMetaFromIdb } from "./idb";
+import { selectForAttention } from "./passage-triage";
+import { reviewEditorialNote } from "./editorial-note-review";
 
 /** Wait for another substantive folio before automatically reading again. */
 export const WORD_DELTA_THRESHOLD = WORDS_PER_FOLIO;
@@ -108,6 +114,7 @@ let lastReadText = "";
 /** Most recent draft text seen, so the idle timer has something to work on. */
 let latestText = "";
 let running = false;
+let generation = 0;
 
 export function snapshot(): BackgroundRoomSnapshot {
   return {
@@ -157,6 +164,7 @@ export function startBackgroundRoom(args: {
   baselineText?: string;
 }): void {
   const folioChanged = args.folioId !== activeFolioId;
+  generation++;
   activeClient = args.client ?? null;
   activeBrief = args.brief;
   activeFolioId = args.folioId;
@@ -199,6 +207,7 @@ export function setBackgroundRoomEnabled(next: boolean): void {
 }
 
 export function stopBackgroundRoom(): void {
+  generation++;
   clearIdleTimer();
   enabled = false;
   activeClient = null;
@@ -303,8 +312,22 @@ export async function runPass(): Promise<PersonaFeedback[]> {
   running = true;
   setStatus("reading");
   const folioId = activeFolioId!;
+  const token = generation;
+  const brief = activeBrief;
+  const client = activeClient;
+  const personas = [...activePersonas];
+  const current = () =>
+    generation === token &&
+    activeFolioId === folioId &&
+    enabled &&
+    latestText === draftText;
 
   try {
+    if (
+      (await loadMetaFromIdb<boolean>("live-review-enabled")) === false ||
+      !current()
+    )
+      return [];
     // Record the movement before the call, so the digest the editors receive
     // includes the material they are about to read.
     const entry = entryFromDiff(diff);
@@ -312,13 +335,47 @@ export async function runPass(): Promise<PersonaFeedback[]> {
       ? await appendTrajectory(folioId, entry)
       : await loadTrajectory(folioId);
     const digest = trajectoryDigest(history);
-    const newMaterial = diff.added.join("\n\n");
+    let newMaterial = diff.added.join("\n\n");
+    const review = liveReviewSnapshot();
+    if (
+      review.folioId === folioId &&
+      review.result &&
+      review.status === "current"
+    ) {
+      const fingerprint = await rubricDraftFingerprint(
+        htmlToPlainText(await loadFolioContentFromIdb(folioId)),
+      );
+      const covered = review.result.passages.filter((item) =>
+        diff.added.includes(item.passage.text),
+      );
+      if (
+        current() &&
+        fingerprint === review.result.fingerprint &&
+        diff.added.every((text) =>
+          covered.some((item) => item.passage.text === text),
+        )
+      ) {
+        const selected = selectForAttention(covered, 3);
+        if (!selected.length) {
+          lastReadText = draftText;
+          state.pendingWords = 0;
+          setStatus("idle");
+          return [];
+        }
+        newMaterial = selected.map((item) => item.passage.text).join("\n\n");
+      }
+    }
+    if (!current()) return [];
 
     const responses = await conveneQuietly({
       draftText,
       newMaterial,
       trajectory: digest,
+      brief,
+      client,
+      personas,
     });
+    if (!current()) return [];
     if (responses.length === 0) {
       setStatus("idle");
       return [];
@@ -326,11 +383,37 @@ export async function runPass(): Promise<PersonaFeedback[]> {
 
     const timestamp = Date.now();
     const notes: PersonaFeedback[] = [];
+    const writerProfile = (await loadWriterSettingsFromIdb()).profile;
     for (const r of responses) {
-      const persona = activePersonas.find((p) => p.id === r.personaId);
+      const persona = personas.find((p) => p.id === r.personaId);
       if (!persona || !r.text.trim()) continue;
+      if (client) {
+        const verdict = await reviewEditorialNote(
+          (request) =>
+            client.action(api.systemOne.ask, {
+              ...request,
+              state: Object.fromEntries(
+                Object.entries(request.state).map(([key, value]) => [
+                  key,
+                  typeof value === "string" ? value : JSON.stringify(value),
+                ]),
+              ),
+            }),
+          {
+            note: r.text,
+            quote: r.anchor,
+            draft: draftText,
+            brief,
+            persona,
+            profile: writerProfile,
+          },
+        );
+        if (!current()) return [];
+        // Quality uncertainty is left to the writer. A definite source/constraint conflict is withheld.
+        if (verdict?.vetoed) continue;
+      }
       const note: PersonaFeedback = {
-        folioId: activeFolioId!,
+        folioId,
         personaId: r.personaId,
         personaName: persona.name,
         personaColor: persona.color,
@@ -342,9 +425,15 @@ export async function runPass(): Promise<PersonaFeedback[]> {
         origin: "background",
       };
       notes.push(note);
-      await savePersonaNoteLocally(note, activeBrief, activeFolioId!);
+      if (
+        !current() ||
+        (await loadMetaFromIdb<boolean>("live-review-enabled")) === false
+      )
+        return [];
+      await savePersonaNoteLocally(note, brief, folioId);
     }
 
+    if (!current()) return [];
     lastReadText = draftText;
     state.pendingWords = 0;
     state.lastPassAt = timestamp;
@@ -363,7 +452,7 @@ export async function runPass(): Promise<PersonaFeedback[]> {
       feature: "background-room",
       operation: "pass",
     });
-    setStatus("error", (err as Error)?.message);
+    if (current()) setStatus("error", (err as Error)?.message);
     return [];
   } finally {
     running = false;
@@ -391,18 +480,21 @@ async function conveneQuietly(input: {
   draftText: string;
   newMaterial: string;
   trajectory: string;
+  brief: ProjectBrief | null;
+  client: ConvexClient | null;
+  personas: Persona[];
 }): Promise<QuietResponse[]> {
   const settings = await getCachedAiSettings();
   const writerProfile = (await loadWriterSettingsFromIdb()).profile;
 
   if (hasConfiguredAiProvider(settings)) {
     const results = await Promise.all(
-      activePersonas.map(async (p) => {
+      input.personas.map(async (p) => {
         const res = await runClientAgent(
           "persona-feedback",
           {
             persona: toAgentPersona(p),
-            brief: activeBrief,
+            brief: input.brief,
             draftText: input.draftText,
             writerProfile,
             newMaterial: input.newMaterial,
@@ -425,10 +517,10 @@ async function conveneQuietly(input: {
     return results.filter((r): r is QuietResponse => r !== null);
   }
 
-  if (!activeClient) return [];
-  const result = (await activeClient.action(api.agents.conveneRoom, {
-    personas: activePersonas.map(toAgentPersona),
-    brief: activeBrief ?? null,
+  if (!input.client) return [];
+  const result = (await input.client.action(api.agents.conveneRoom, {
+    personas: input.personas.map(toAgentPersona),
+    brief: input.brief ?? null,
     draftText: input.draftText,
     writerProfile,
     newMaterial: input.newMaterial,
@@ -448,6 +540,7 @@ export async function currentTrajectoryDigest(): Promise<string> {
 
 /** Test seam: reset all module state between cases. */
 export function __resetForTests(): void {
+  generation++;
   clearIdleTimer();
   state.status = "off";
   state.pendingWords = 0;

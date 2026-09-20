@@ -31,8 +31,7 @@ describe("bibliography citation formatting", () => {
         url: "https://example.com/source",
         doi: "10.1234/example",
         publisher: "Example Press",
-        formatted:
-          "Rivera, Mara. \"Against Flat Sources.\" Example Press, 2024.",
+        formatted: 'Rivera, Mara. "Against Flat Sources." Example Press, 2024.',
         style: "mla",
       },
       "folio-active",
@@ -46,12 +45,12 @@ describe("bibliography citation formatting", () => {
       date: "2024",
       style: "mla",
       formattedCitation:
-        "Rivera, Mara. \"Against Flat Sources.\" Example Press, 2024.",
+        'Rivera, Mara. "Against Flat Sources." Example Press, 2024.',
       accessedAt: 1234,
       createdAt: 1234,
     });
     expect(formatCitation(entry, "mla")).toBe(
-      "Rivera, Mara. \"Against Flat Sources.\" Example Press, 2024.",
+      'Rivera, Mara. "Against Flat Sources." Example Press, 2024.',
     );
   });
 
@@ -69,7 +68,9 @@ describe("bibliography citation formatting", () => {
       1234,
     );
 
-    expect(formatCitation(entry, "apa")).not.toBe("MLA-only formatted citation.");
+    expect(formatCitation(entry, "apa")).not.toBe(
+      "MLA-only formatted citation.",
+    );
     expect(formatCitation(entry, "apa")).toContain("(2024)");
   });
 
@@ -124,7 +125,9 @@ describe("bibliography citation formatting", () => {
       1234,
     );
 
-    expect(formatMla(entry)).toBe('Rivera, Mara. "Against Flat Sources." 2024,');
+    expect(formatMla(entry)).toBe(
+      'Rivera, Mara. "Against Flat Sources." 2024,',
+    );
     expect(formatMla(entry)).not.toContain("accessed");
   });
 });
@@ -142,8 +145,12 @@ describe("bibliography folio ownership", () => {
       { ...base, id: "b", folioId: "folio-b" },
       { ...base, id: "legacy", folioId: "" },
     ];
-    expect(bibliographyForFolio(entries, "folio-a").map((entry) => entry.id)).toEqual(["a"]);
-    expect(bibliographyForFolio(entries, "folio-b").map((entry) => entry.id)).toEqual(["b"]);
+    expect(
+      bibliographyForFolio(entries, "folio-a").map((entry) => entry.id),
+    ).toEqual(["a"]);
+    expect(
+      bibliographyForFolio(entries, "folio-b").map((entry) => entry.id),
+    ).toEqual(["b"]);
   });
 
   test("does not guess an owner for legacy or missing folio ids", () => {
@@ -157,8 +164,14 @@ describe("bibliography folio ownership", () => {
       { ...base, id: "a", folioId: "folio-a" },
       { ...base, id: "b", folioId: "folio-b" },
     ];
-    expect(findBibliographyEntryByUrl(entries, base.url, "folio-a")?.id).toBe("a");
-    expect(findBibliographyEntryByUrl(entries, base.url, "folio-b")?.id).toBe("b");
-    expect(findBibliographyEntryByUrl(entries, base.url, "folio-c")).toBeUndefined();
+    expect(findBibliographyEntryByUrl(entries, base.url, "folio-a")?.id).toBe(
+      "a",
+    );
+    expect(findBibliographyEntryByUrl(entries, base.url, "folio-b")?.id).toBe(
+      "b",
+    );
+    expect(
+      findBibliographyEntryByUrl(entries, base.url, "folio-c"),
+    ).toBeUndefined();
   });
 });

@@ -4,14 +4,19 @@ import ArrowDown from "reicon/icons/ArrowDown";
 import ArrowLeft from "reicon/icons/ArrowLeft";
 import ArrowRight from "reicon/icons/ArrowRight";
 import ArrowUp from "reicon/icons/ArrowUp";
+import BrowserTerminal from "reicon/icons/BrowserTerminal";
 import Code from "reicon/icons/Code";
+import Command from "reicon/icons/Command";
 import CommentPlus from "reicon/icons/CommentPlus";
+import Devices from "reicon/icons/Devices";
 import Diagram from "reicon/icons/Diagram";
 import FileCheck from "reicon/icons/FileCheck";
 import Fullscreen from "reicon/icons/Fullscreen";
 import Grid from "reicon/icons/Grid";
+import Grid2 from "reicon/icons/Grid2";
 import History from "reicon/icons/History";
 import Image from "reicon/icons/Image";
+import Iphone from "reicon/icons/Iphone";
 import Keyboard from "reicon/icons/Keyboard";
 import Layout from "reicon/icons/Layout";
 import Link from "reicon/icons/Link";
@@ -42,14 +47,19 @@ const TWYNE_ICONS = {
   "arrow-left": ArrowLeft,
   "arrow-right": ArrowRight,
   "arrow-up": ArrowUp,
+  "browser-terminal": BrowserTerminal,
   code: Code,
+  command: Command,
   "comment-add": CommentPlus,
+  devices: Devices,
   diagram: Diagram,
   "file-check": FileCheck,
   fullscreen: Fullscreen,
   grid: Grid,
+  "grid-2": Grid2,
   history: History,
   image: Image,
+  iphone: Iphone,
   keyboard: Keyboard,
   layout: Layout,
   link: Link,

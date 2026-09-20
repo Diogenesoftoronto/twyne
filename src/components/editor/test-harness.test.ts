@@ -19,9 +19,9 @@ describe("test-harness", () => {
       },
       ({ editor }) => {
         const html = editor.getHTML();
-        expect(html).toContain("data-comment-id=\"c1\"");
-        expect(html).toContain("data-persona-note-id=\"n1\"");
-        expect(html).toContain("data-suggestion-id=\"s1\"");
+        expect(html).toContain('data-comment-id="c1"');
+        expect(html).toContain('data-persona-note-id="n1"');
+        expect(html).toContain('data-suggestion-id="s1"');
       },
     );
   });

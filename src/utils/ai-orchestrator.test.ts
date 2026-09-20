@@ -4,9 +4,11 @@ import type { AiSettings } from "../types";
 
 const mockState: {
   settings: AiSettings | null;
-  clientResult:
-    | { text: string; type: "suggestion" | "perspective"; provider: string }
-    | null;
+  clientResult: {
+    text: string;
+    type: "suggestion" | "perspective";
+    provider: string;
+  } | null;
   runClientCalls: Array<{ feature: string; settings: AiSettings | null }>;
 } = {
   settings: null,
@@ -52,7 +54,11 @@ mock.module("./ai-client", () => ({
       perFeature: {},
       showProviderTags: false,
     },
-  runClientAgent: async (feature: string, _req: unknown, settings: AiSettings) => {
+  runClientAgent: async (
+    feature: string,
+    _req: unknown,
+    settings: AiSettings,
+  ) => {
     mockState.runClientCalls.push({ feature, settings });
     return mockState.clientResult;
   },

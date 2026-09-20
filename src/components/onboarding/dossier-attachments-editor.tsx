@@ -188,9 +188,9 @@ export const DossierAttachmentsEditor = component$(
               >
                 <div class="min-w-0">
                   <p
-                  class="text-sm font-semibold text-[var(--color-ink)] truncate"
-                  style="font-family: var(--font-display);"
-                >
+                    class="text-sm font-semibold text-[var(--color-ink)] truncate"
+                    style="font-family: var(--font-display);"
+                  >
                     [{a.kind === "link" ? "link" : "doc"}] {a.title}
                   </p>
                   <p

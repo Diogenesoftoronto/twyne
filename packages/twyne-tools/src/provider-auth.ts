@@ -26,8 +26,7 @@ export function sdkAuthInvocation(
   }
 
   if (action === "login") return { command: "ant", args: ["auth", "login"] };
-  if (action === "status")
-    return { command: "ant", args: ["auth", "status"] };
+  if (action === "status") return { command: "ant", args: ["auth", "status"] };
   return { command: "ant", args: ["auth", "logout"] };
 }
 

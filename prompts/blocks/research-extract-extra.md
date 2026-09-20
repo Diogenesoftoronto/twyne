@@ -4,6 +4,5 @@ notes: |
 version: "1"
 ---
 
-
 Extra directions from the writer:
 {instructions}

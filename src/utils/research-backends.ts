@@ -292,5 +292,8 @@ export async function runSearchBackend(
     };
   }
   const body = await res.json();
-  return { ok: true, results: toSources(adapter.extract(body, config), req.maxResults) };
+  return {
+    ok: true,
+    results: toSources(adapter.extract(body, config), req.maxResults),
+  };
 }

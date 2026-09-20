@@ -223,12 +223,7 @@ describe("bootstrap script", () => {
     const root = fakeRoot();
     const seen: Record<string, unknown> = {};
     // Run the script body against stand-ins for the globals it touches.
-    new Function(
-      "document",
-      "localStorage",
-      "window",
-      THEME_BOOTSTRAP_SCRIPT,
-    )(
+    new Function("document", "localStorage", "window", THEME_BOOTSTRAP_SCRIPT)(
       { documentElement: root },
       {
         getItem: () =>

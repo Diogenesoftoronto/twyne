@@ -7,7 +7,10 @@ import {
 describe("interview streaming parts", () => {
   test("keeps native reasoning separate from the visible answer", () => {
     expect(
-      createInterviewStreamSnapshot("What kind of reader is this for?", "The audience is still vague."),
+      createInterviewStreamSnapshot(
+        "What kind of reader is this for?",
+        "The audience is still vague.",
+      ),
     ).toEqual({
       text: "What kind of reader is this for?",
       reasoning: "The audience is still vague.",
@@ -45,8 +48,8 @@ describe("interview streaming parts", () => {
   });
 
   test("withholds partial contract markers at chunk boundaries", () => {
-    expect(createInterviewStreamSnapshot("Who should read it?\nDOSS").text).toBe(
-      "Who should read it?",
-    );
+    expect(
+      createInterviewStreamSnapshot("Who should read it?\nDOSS").text,
+    ).toBe("Who should read it?");
   });
 });

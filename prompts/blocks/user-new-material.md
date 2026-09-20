@@ -8,4 +8,3 @@ NEW MATERIAL (written since you last read — this is what you are reading now)
 """
 {newMaterialBody}
 """
-

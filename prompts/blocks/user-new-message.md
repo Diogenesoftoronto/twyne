@@ -8,4 +8,3 @@ WRITER'S NEW MESSAGE:
 "{userMessage}"
 
 Address the message directly.
-

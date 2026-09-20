@@ -73,7 +73,7 @@ it had at that point. A typical run on 50 rows with `gpt-5` lands around
 
 The optimizer returns the candidate it liked best under its internal
 Agent → Evaluator → Meta-Prompt loop. It's not always an improvement; it
-is *always* a candidate. The decision to take it is yours, in the diff
+is _always_ a candidate. The decision to take it is yours, in the diff
 review. Treat the output as "a colleague proposed this", not "the system
 decided this".
 
