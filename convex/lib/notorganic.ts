@@ -12,8 +12,7 @@ export const NOTORGANIC_MODEL_ALIASES = [
   "audio",
   "realtime",
 ] as const;
-export type NotOrganicModelAlias =
-  (typeof NOTORGANIC_MODEL_ALIASES)[number];
+export type NotOrganicModelAlias = (typeof NOTORGANIC_MODEL_ALIASES)[number];
 
 export interface ProductAssertionInput {
   readonly did: string;
@@ -52,10 +51,7 @@ function base64url(input: string | Uint8Array): string {
     typeof input === "string" ? new TextEncoder().encode(input) : input;
   let binary = "";
   for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary)
-    .replace(/=/g, "")
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_");
+  return btoa(binary).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
 }
 
 function decodeBase64(value: string): Uint8Array {
@@ -111,7 +107,8 @@ export function notOrganicOpenAiRoute(
   issuer = NOTORGANIC_DEFAULT_ISSUER,
   fetchImpl: typeof fetch = fetch,
 ): NotOrganicOpenAiRoute {
-  if (!token.accessToken) throw new Error("A provider access token is required");
+  if (!token.accessToken)
+    throw new Error("A provider access token is required");
   if (!feature.trim()) throw new Error("A feature is required");
   return {
     baseURL: `${issuer.replace(/\/$/, "")}/v1`,
@@ -201,6 +198,7 @@ export async function signProductAssertion(
   privateKey: string,
   options: {
     readonly issuer?: string;
+    readonly audience?: string;
     readonly keyId?: string;
     readonly nowSeconds?: number;
     readonly jti?: string;
@@ -222,7 +220,7 @@ export async function signProductAssertion(
     typ: "notorganic/assertion+jwt",
     iss: NOTORGANIC_PRODUCT,
     sub: input.did,
-    aud: options.issuer ?? NOTORGANIC_DEFAULT_ISSUER,
+    aud: options.audience ?? options.issuer ?? NOTORGANIC_DEFAULT_ISSUER,
     jti: options.jti ?? crypto.randomUUID(),
     iat,
     exp: iat + NOTORGANIC_ASSERTION_TTL_SECONDS,
@@ -305,6 +303,7 @@ export async function issueNotOrganicAccessToken(
   const issuer = notOrganicIssuer(env);
   const assertion = await signProductAssertion(input, privateKey, {
     issuer,
+    audience: env.NOTORGANIC_AUDIENCE ?? "notorganic",
     keyId: env.NOTORGANIC_ASSERTION_KEY_ID,
   });
   return exchangeProductAssertion(assertion, {
@@ -327,10 +326,7 @@ export function assertUniqueDidLink(
   ) {
     throw new Error("This DID is already linked to another Twyne account");
   }
-  if (
-    existingBySubject &&
-    existingBySubject.did !== requested.did
-  ) {
+  if (existingBySubject && existingBySubject.did !== requested.did) {
     throw new Error("This Twyne account is already linked to another DID");
   }
 }
@@ -353,13 +349,13 @@ export async function providerJsonRequest<T>(
   headers.set("content-type", "application/json");
   headers.set("x-notorganic-product", NOTORGANIC_PRODUCT);
   headers.set("x-notorganic-feature", options.feature);
-  const response = await createDpopFetch(
-    token,
-    options.fetch ?? fetch,
-  )(`${issuer}${path}`, {
-    ...init,
-    headers,
-  });
+  const response = await createDpopFetch(token, options.fetch ?? fetch)(
+    `${issuer}${path}`,
+    {
+      ...init,
+      headers,
+    },
+  );
   if (!response.ok) {
     const detail = await response.text().catch(() => "");
     throw new Error(

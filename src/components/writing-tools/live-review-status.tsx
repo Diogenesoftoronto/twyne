@@ -1,4 +1,5 @@
 import { component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
+import { Link } from "@qwik.dev/router";
 import { loadMetaFromIdb, saveMetaToIdb } from "../../utils/idb";
 import {
   liveReviewSnapshot,
@@ -13,6 +14,7 @@ export const LiveReviewStatus = component$<{ folioId: string }>(
       detail: "",
       enabled: true,
       expanded: false,
+      unavailable: false,
     });
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(
@@ -42,6 +44,7 @@ export const LiveReviewStatus = component$<{ folioId: string }>(
             ? (event as CustomEvent<LiveReviewSnapshot>).detail
             : liveReviewSnapshot();
           if (detail.folioId !== folioId || state.detail) return;
+          state.unavailable = detail.status === "unavailable";
           if (["paused", "offline", "unavailable"].includes(detail.status))
             state.label = detail.message;
         };
@@ -94,6 +97,11 @@ export const LiveReviewStatus = component$<{ folioId: string }>(
         </div>
         {state.expanded && state.detail && (
           <p class="live-review-status__detail">{state.detail}</p>
+        )}
+        {state.unavailable && (
+          <Link href="/settings/" class="panel-meta focus-ring">
+            Review account and AI settings ↗
+          </Link>
         )}
       </div>
     );

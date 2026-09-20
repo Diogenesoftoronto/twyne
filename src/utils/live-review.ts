@@ -226,6 +226,15 @@ export function startLiveReview(
         })) as Response;
         if (!response.ok || !response.answers) {
           transportUnavailable = true;
+          if (
+            [
+              "account not linked",
+              "signed out",
+              "no credit",
+              "unconfigured",
+            ].includes(response.error ?? "")
+          )
+            throw new Error(response.error);
           throw new Error("unavailable");
         }
         if (Object.keys(input.questions).some((id) => !response.answers?.[id]))
@@ -452,17 +461,30 @@ export function startLiveReview(
       window.dispatchEvent(
         new CustomEvent("twyne:rubric-updated", { detail: { folioId } }),
       );
-    } catch {
+    } catch (error) {
       if (current()) {
         failures++;
+        const reason = error instanceof Error ? error.message : "";
+        const accountMessages: Record<string, string> = {
+          "account not linked":
+            "Connect Not Organic in Settings to enable automatic review.",
+          "signed out":
+            "Sign in and connect Not Organic in Settings to enable automatic review.",
+          "no credit":
+            "Your Not Organic account needs credit to continue reviewing.",
+          unconfigured:
+            "Hosted review is not configured. Your draft is saved as usual.",
+        };
         setStatus(
           "unavailable",
-          "Review is temporarily unavailable. Your draft is saved; another reading will be tried shortly.",
+          accountMessages[reason] ??
+            "Review is temporarily unavailable. Your draft is saved; another reading will be tried shortly.",
         );
-        timer = setTimeout(
-          schedule,
-          Math.min(300_000, 30_000 * 2 ** Math.min(failures, 4)),
-        );
+        if (!accountMessages[reason])
+          timer = setTimeout(
+            schedule,
+            Math.min(300_000, 30_000 * 2 ** Math.min(failures, 4)),
+          );
       }
     } finally {
       running = false;

@@ -1,5 +1,13 @@
 import { v } from "convex/values";
-import { action, internalQuery, mutation, query } from "./_generated/server";
+import {
+  action,
+  internalQuery,
+  internalMutation,
+  mutation,
+  query,
+} from "./_generated/server";
+import { makeFunctionReference } from "convex/server";
+import { redeemProviderLink } from "./lib/providerLink";
 import {
   assertUniqueDidLink,
   issueNotOrganicAccessToken,
@@ -21,12 +29,13 @@ function productSubject(identity: {
 export const getLinkedDidBySubject = internalQuery({
   args: { productSubject: v.string() },
   handler: async (ctx, { productSubject }) => {
-    return await ctx.db
+    const link = await ctx.db
       .query("providerIdentities")
       .withIndex("by_productSubject", (q) =>
         q.eq("productSubject", productSubject),
       )
       .unique();
+    return link?.verificationMethod === "notorganic_pkce" ? link : null;
   },
 });
 
@@ -35,34 +44,32 @@ export const getMyProviderIdentity = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
-    return await ctx.db
+    const link = await ctx.db
       .query("providerIdentities")
       .withIndex("by_productSubject", (q) =>
         q.eq("productSubject", productSubject(identity)),
       )
       .unique();
+    return link?.verificationMethod === "notorganic_pkce" ? link : null;
   },
 });
 
-/**
- * Link the DID restored by the official browser ATProto OAuth client to the
- * currently authenticated Better Auth subject.
- *
- * Boundary: Convex verifies the Better Auth side. The DID proof is the
- * already-verified legacy browser OAuth session, not a server-owned ATProto
- * callback. A future server OAuth conversion must replace this argument with
- * a one-time server-verifiable authorization code before it can create Better
- * Auth sessions for ATProto-only users.
- */
+/** Legacy clients must reverify ownership through the provider authorization flow. */
 export const linkDidFromLegacyBrowserSession = mutation({
   args: { did: didValidator },
-  handler: async (ctx, { did }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("A Better Auth session is required");
+  handler: async () => {
+    throw new Error(
+      "Connect Not Organic from Settings to verify account ownership.",
+    );
+  },
+});
+
+export const saveVerifiedLink = internalMutation({
+  args: { did: didValidator, subject: v.string(), sessionVersion: v.number() },
+  handler: async (ctx, { did, subject, sessionVersion }) => {
     if (!/^did:[a-z0-9]+:[A-Za-z0-9._:%-]+$/.test(did)) {
       throw new Error("Invalid DID");
     }
-    const subject = productSubject(identity);
     const [existingByDid, existingBySubject] = await Promise.all([
       ctx.db
         .query("providerIdentities")
@@ -81,6 +88,8 @@ export const linkDidFromLegacyBrowserSession = mutation({
     const now = Date.now();
     if (existingBySubject) {
       await ctx.db.patch(existingBySubject._id, {
+        verificationMethod: "notorganic_pkce",
+        sessionVersion,
         verifiedAt: now,
         updatedAt: now,
       });
@@ -89,12 +98,38 @@ export const linkDidFromLegacyBrowserSession = mutation({
     return await ctx.db.insert("providerIdentities", {
       did,
       productSubject: subject,
-      verificationMethod: "legacy_atproto_browser_oauth",
-      sessionVersion: 1,
+      verificationMethod: "notorganic_pkce",
+      sessionVersion,
       verifiedAt: now,
       createdAt: now,
       updatedAt: now,
     });
+  },
+});
+
+export const completeProviderLink = action({
+  args: { code: v.string(), verifier: v.string() },
+  returns: v.object({ did: v.string() }),
+  handler: async (ctx, args): Promise<{ did: string }> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity)
+      throw new Error("Sign in to Twyne before connecting Not Organic.");
+    const link = await redeemProviderLink(
+      args,
+      process.env.SITE_URL ?? "https://twyne.love",
+      notOrganicIssuer(),
+    );
+    await ctx.runMutation(
+      makeFunctionReference<
+        "mutation",
+        { did: string; subject: string; sessionVersion: number }
+      >("providerIdentity:saveVerifiedLink"),
+      {
+        ...link,
+        subject: productSubject(identity),
+      },
+    );
+    return { did: link.did };
   },
 });
 

@@ -8,6 +8,7 @@ import {
   exchangeProductAssertion,
   notOrganicEnabled,
   notOrganicOpenAiRoute,
+  issueNotOrganicAccessToken,
   signProductAssertion,
 } from "../convex/lib/notorganic";
 
@@ -84,6 +85,30 @@ describe("Not Organic product assertions", () => {
       "https://api.notorganic.info/v1/auth/token/exchange",
     );
     expect(result.accessToken).toBe("provider-token");
+  });
+
+  test("uses the configured token audience independently of the API issuer", async () => {
+    await issueNotOrganicAccessToken(
+      {
+        did: "did:plc:alice",
+        feature: "judgement",
+        capabilities: ["judgement:evaluate"],
+      },
+      {
+        NOTORGANIC_ENABLED: "true",
+        NOTORGANIC_ASSERTION_PRIVATE_KEY: pem,
+        NOTORGANIC_ISSUER: "https://api.notorganic.info",
+        NOTORGANIC_AUDIENCE: "notorganic",
+      },
+      (async (url, init) => {
+        expect(String(url)).toBe(
+          "https://api.notorganic.info/v1/auth/token/exchange",
+        );
+        const payload = JSON.parse(String(init?.body));
+        expect(decode(payload.assertion.split(".")[1]).aud).toBe("notorganic");
+        return Response.json({ access_token: "provider-token" });
+      }) as typeof fetch,
+    );
   });
 
   test("routes hosted aliases with product and feature metadata", async () => {
