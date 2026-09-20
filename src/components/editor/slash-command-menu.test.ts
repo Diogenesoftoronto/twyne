@@ -41,11 +41,11 @@ describe("slash command menu selection", () => {
   });
 
   test("arrow navigation wraps within the visible result set", () => {
-    expect(moveSlashSelection([heading, quote], "paragraph.heading-1", -1)).toBe(
-      "paragraph.blockquote",
-    );
-    expect(moveSlashSelection([heading, quote], "paragraph.blockquote", 1)).toBe(
-      "paragraph.heading-1",
-    );
+    expect(
+      moveSlashSelection([heading, quote], "paragraph.heading-1", -1),
+    ).toBe("paragraph.blockquote");
+    expect(
+      moveSlashSelection([heading, quote], "paragraph.blockquote", 1),
+    ).toBe("paragraph.heading-1");
   });
 });

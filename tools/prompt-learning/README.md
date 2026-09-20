@@ -52,11 +52,11 @@ export GEMINI_API_KEY="your-google-key"
 prompt-learn [OPTIONS] COMMAND [ARGS]
 ```
 
-| Option | Description |
-|--------|-------------|
+| Option            | Description                                      |
+| ----------------- | ------------------------------------------------ |
 | `--verbose`, `-v` | Enable detailed output with progress information |
-| `--version` | Show version and exit |
-| `--help` | Show help message |
+| `--version`       | Show version and exit                            |
+| `--help`          | Show help message                                |
 
 ### `prompt-learn optimize`
 
@@ -66,17 +66,17 @@ The core command for optimizing prompts using natural language feedback.
 prompt-learn optimize [OPTIONS]
 ```
 
-| Option | Short | Required | Default | Description |
-|--------|-------|----------|---------|-------------|
-| `--prompt` | `-p` | **Yes** | - | The baseline prompt to optimize |
-| `--dataset` | `-d` | **Yes** | - | Path to CSV or JSON dataset |
-| `--feedback-columns` | `-f` | **Yes** | - | Column name(s) containing feedback (comma-separated, or use -f multiple times) |
-| `--output-column` | `-o` | **Yes** | `output` | Column name containing LLM outputs |
-| `--model` | `-m` | No | `gpt-4` | Model to use for optimization |
-| `--provider` | - | No | `openai` | Provider: `openai` or `google` |
-| `--context-size` | `-c` | No | `128000` | Context window size in tokens |
-| `--budget` | `-b` | No | `5.00` | Maximum budget in USD |
-| `--save` | `-s` | No | - | Path to save optimized prompt |
+| Option               | Short | Required | Default  | Description                                                                    |
+| -------------------- | ----- | -------- | -------- | ------------------------------------------------------------------------------ |
+| `--prompt`           | `-p`  | **Yes**  | -        | The baseline prompt to optimize                                                |
+| `--dataset`          | `-d`  | **Yes**  | -        | Path to CSV or JSON dataset                                                    |
+| `--feedback-columns` | `-f`  | **Yes**  | -        | Column name(s) containing feedback (comma-separated, or use -f multiple times) |
+| `--output-column`    | `-o`  | **Yes**  | `output` | Column name containing LLM outputs                                             |
+| `--model`            | `-m`  | No       | `gpt-4`  | Model to use for optimization                                                  |
+| `--provider`         | -     | No       | `openai` | Provider: `openai` or `google`                                                 |
+| `--context-size`     | `-c`  | No       | `128000` | Context window size in tokens                                                  |
+| `--budget`           | `-b`  | No       | `5.00`   | Maximum budget in USD                                                          |
+| `--save`             | `-s`  | No       | -        | Path to save optimized prompt                                                  |
 
 **Examples:**
 
@@ -136,13 +136,13 @@ Test and iterate on image generation prompts using Google's image models.
 prompt-learn image [OPTIONS]
 ```
 
-| Option | Short | Required | Default | Description |
-|--------|-------|----------|---------|-------------|
-| `--prompt` | `-p` | **Yes** | - | Image generation prompt |
-| `--iterations` | `-i` | No | `5` | Number of images to generate |
-| `--output-dir` | `-o` | No | `./image_outputs` | Directory to save images |
-| `--evaluate` | `-e` | No | `false` | Enable human-in-the-loop feedback |
-| `--budget` | `-b` | No | `2.00` | Maximum budget in USD |
+| Option         | Short | Required | Default           | Description                       |
+| -------------- | ----- | -------- | ----------------- | --------------------------------- |
+| `--prompt`     | `-p`  | **Yes**  | -                 | Image generation prompt           |
+| `--iterations` | `-i`  | No       | `5`               | Number of images to generate      |
+| `--output-dir` | `-o`  | No       | `./image_outputs` | Directory to save images          |
+| `--evaluate`   | `-e`  | No       | `false`           | Enable human-in-the-loop feedback |
+| `--budget`     | `-b`  | No       | `2.00`            | Maximum budget in USD             |
 
 **Examples:**
 
@@ -170,6 +170,7 @@ Feedback columns are the core mechanism that drives prompt optimization. They co
 ### Dataset Structure
 
 Your dataset must include:
+
 1. **Input columns**: Variables used in your prompt template (e.g., `{text}`, `{input}`)
 2. **Output column**: The LLM's response for each input
 3. **Feedback column(s)**: Natural language critique of each output
@@ -226,11 +227,11 @@ print(f"Improvements: {results['improvements']}")
 ```
 
 The image evaluator uses Gemini vision to assess:
+
 - **Prompt adherence**: How well the image matches the prompt
 - **Visual quality**: Composition, lighting, detail
 - **Artistic appeal**: Aesthetic value, creativity
 - **Consistency**: Similarity across multiple generations
-
 
 ## Cost Tracking
 
@@ -241,6 +242,7 @@ prompt-learn --verbose optimize -p "..." -d data.csv -f feedback
 ```
 
 Output includes:
+
 - Per-batch cost estimates
 - Running total cost
 - Budget remaining
@@ -365,6 +367,7 @@ optimized_ruleset = optimizer.optimize(
 #### `PromptLearningOptimizer`
 
 **Constructor:**
+
 ```python
 PromptLearningOptimizer(
     prompt: Union[PromptVersion, str, List[Dict[str, str]]],

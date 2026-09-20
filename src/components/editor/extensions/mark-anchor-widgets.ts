@@ -72,9 +72,7 @@ function buildDecorations(doc: PmNode): DecorationSet {
         doc
           .resolve(prevPos)
           .marks()
-          .some(
-            (m) => kindFor(m.type.name) === kind && idForMark(m) === id,
-          );
+          .some((m) => kindFor(m.type.name) === kind && idForMark(m) === id);
       if (continues) continue;
 
       // Otherwise this is the start of a new run: scan forward to

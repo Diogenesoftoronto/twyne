@@ -170,6 +170,15 @@ export const RATE_LIMITS = {
   researchFree: { limit: 5, windowMs: 60_000 },
   /** Room convene (fans out to one LLM call per persona): 6 per minute. */
   agentRoom: { limit: 6, windowMs: 60_000 },
+  /**
+   * System One (Jev), Pro tier: 60 per minute per user. Deliberately loose —
+   * a batched rubric pass costs ~$0.00006, and the surface is meant to run on
+   * a typing pause. This limit guards our key against a runaway loop, not the
+   * user against their own writing.
+   */
+  systemOne: { limit: 60, windowMs: 60_000 },
+  /** System One, signed-in free tier: 20 per minute per user. */
+  systemOneFree: { limit: 20, windowMs: 60_000 },
   /** Handle claim attempts: 5 per minute per user. */
   handleClaim: { limit: 5, windowMs: 60_000 },
   /** Avatar upload URL requests: 10 per minute per user. */

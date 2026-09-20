@@ -9,19 +9,29 @@ import {
 } from "@qwik.dev/core";
 import type { DocumentHead } from "@qwik.dev/router";
 import { LegalPage } from "../../components/legal/legal-page";
+import { Icon } from "../../components/ui/icon";
+import type { TwyneIconName } from "../../utils/icon-system";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
+import changelogRaw from "../../../CHANGELOG.md?raw";
+import { RELEASE_NOTES_COUNT, parseChangelog } from "../../utils/changelog";
 
-/** Where the native desktop bundles are published (one asset per platform). */
-const RELEASES_LATEST =
-  "https://github.com/Diogenesoftoronto/twyne/releases/latest";
+/**
+ * The latest releases, read from the repo's own changelog so the notes on
+ * this page can never drift from the published history — and visitors read
+ * what changed without leaving the site.
+ */
+const RELEASE_NOTES = parseChangelog(changelogRaw).slice(
+  0,
+  RELEASE_NOTES_COUNT,
+);
 
 type DesktopPlatformId = "macos" | "windows" | "linux";
 
 interface Platform {
   id: DesktopPlatformId;
   name: string;
-  glyph: string;
+  icon: TwyneIconName;
   format: string;
   note: string;
   href: string;
@@ -31,7 +41,7 @@ const PLATFORMS: Platform[] = [
   {
     id: "macos",
     name: "macOS",
-    glyph: "⌘",
+    icon: "command",
     format: "Apple silicon & Intel · .tar.gz",
     note: "Universal native shell. Unzip and drag Twyne to Applications.",
     href: "/download/macos",
@@ -39,7 +49,7 @@ const PLATFORMS: Platform[] = [
   {
     id: "windows",
     name: "Windows",
-    glyph: "⊞",
+    icon: "grid-2",
     format: "Windows 10/11 · .tar.gz",
     note: "Native window over the live app. Extract and run the bundled executable.",
     href: "/download/windows",
@@ -47,7 +57,7 @@ const PLATFORMS: Platform[] = [
   {
     id: "linux",
     name: "Linux",
-    glyph: "⌂",
+    icon: "browser-terminal",
     format: "x86_64 · .tar.gz",
     note: "Native shell for most modern distributions. Extract and launch.",
     href: "/download/linux",
@@ -73,7 +83,7 @@ type WaitlistStatus = "idle" | "submitting" | "joined" | "error";
 interface MobilePlatform {
   id: "ios" | "android";
   name: string;
-  glyph: string;
+  icon: TwyneIconName;
   note: string;
 }
 
@@ -81,13 +91,13 @@ const MOBILE_PLATFORMS: MobilePlatform[] = [
   {
     id: "ios",
     name: "iOS",
-    glyph: "◈",
+    icon: "iphone",
     note: "A pocket-sized folio: draft, review persona notes, and publish from your phone.",
   },
   {
     id: "android",
     name: "Android",
-    glyph: "▲",
+    icon: "devices",
     note: "Same room, same personas — built for the phone in your other pocket.",
   },
 ];
@@ -115,7 +125,7 @@ function mobileWaitlistCard(props: {
         aria-hidden="true"
       />
       <span class="dl-glyph" aria-hidden="true">
-        {platform.glyph}
+        <Icon name={platform.icon} size={26} />
       </span>
       <span class="dl-name">{platform.name}</span>
       <span class="dl-format">Coming soon</span>
@@ -208,9 +218,7 @@ export default component$(() => {
     },
   );
 
-  const submitIos = $(() =>
-    joinWaitlist("ios", iosEmail, iosStatus, iosError),
-  );
+  const submitIos = $(() => joinWaitlist("ios", iosEmail, iosStatus, iosError));
   const submitAndroid = $(() =>
     joinWaitlist("android", androidEmail, androidStatus, androidError),
   );
@@ -287,6 +295,7 @@ export default component$(() => {
     .dl-glyph {
       font-size: 1.6rem;
       line-height: 1;
+      color: var(--color-ink);
     }
     .dl-name {
       font-family: var(--font-display);
@@ -421,6 +430,23 @@ export default component$(() => {
     .dl-card-soon {
       background: var(--color-paper);
     }
+    .dl-releases {
+      list-style: none;
+      margin: 0.5rem 0 1rem;
+      padding: 0;
+      display: grid;
+      gap: 1rem;
+    }
+    .dl-release-head {
+      margin: 0;
+      font-family: var(--font-typewriter);
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      color: var(--color-ink);
+    }
+    .dl-release-head span {
+      color: var(--color-ink-muted);
+    }
     .dl-waitlist-form {
       display: flex;
       flex-wrap: wrap;
@@ -466,15 +492,15 @@ export default component$(() => {
         { id: "mobile", label: "Mobile apps" },
         { id: "web", label: "Web & install" },
         { id: "your-data", label: "Your data travels with you" },
-        { id: "release-notes", label: "Release notes & source" },
+        { id: "release-notes", label: "Release notes" },
       ]}
     >
       <div class="doc-callout">
         <p>
           The desktop app is a thin native shell around the live workspace at
           twyne.love — sync, hosted AI, publishing, and sign-in all behave the
-          same as the web. Pick a platform below, or simply keep writing in
-          your browser. Either way, your local-first folios stay yours.
+          same as the web. Pick a platform below, or simply keep writing in your
+          browser. Either way, your local-first folios stay yours.
         </p>
       </div>
 
@@ -482,8 +508,8 @@ export default component$(() => {
         Desktop app
       </h2>
       <p class="doc-p">
-        Native builds for macOS, Windows, and Linux. Each download is
-        published to the latest GitHub release and opens Twyne in its own
+        Native builds for macOS, Windows, and Linux. Each download is published
+        with the release and served from this site, and opens Twyne in its own
         window. A few reasons it's worth the extra click over a browser tab:
       </p>
 
@@ -493,9 +519,9 @@ export default component$(() => {
           browser chrome around your writing.
         </li>
         <li>
-          Smoother ATProto sign-in — the app registers a{" "}
-          <code>twyne://</code> URL scheme so OAuth callbacks land back in the
-          app directly, instead of bouncing through a browser redirect.
+          Smoother ATProto sign-in — the app registers a <code>twyne://</code>{" "}
+          URL scheme so OAuth callbacks land back in the app directly, instead
+          of bouncing through a browser redirect.
         </li>
         <li>
           Its own dock or taskbar icon and app-switcher entry, separate from
@@ -513,7 +539,8 @@ export default component$(() => {
       >
         {detected.value ? (
           <>
-            Looks like you're on <strong>
+            Looks like you're on{" "}
+            <strong>
               {PLATFORMS.find((p) => p.id === detected.value)?.name}
             </strong>
             — that card's stamped below.
@@ -538,12 +565,12 @@ export default component$(() => {
               />
             )}
             <span class="dl-glyph" aria-hidden="true">
-              {p.glyph}
+              <Icon name={p.icon} size={26} />
             </span>
             <span class="dl-name">{p.name}</span>
             <span class="dl-format">{p.format}</span>
             <p class="dl-note">{p.note}</p>
-            <a class="dl-btn" href={p.href} target="_blank" rel="noreferrer">
+            <a class="dl-btn" href={p.href}>
               Download for {p.name}
             </a>
           </div>
@@ -562,8 +589,7 @@ export default component$(() => {
       </h2>
       <p class="doc-p">
         iOS and Android apps are in the works. Leave your email and we'll let
-        you know the day they land — no spam, just one message when it's
-        ready.
+        you know the day they land — no spam, just one message when it's ready.
       </p>
 
       <div class="dl-grid">
@@ -588,8 +614,8 @@ export default component$(() => {
       </h2>
       <p class="doc-p">
         No download required. Twyne runs in any modern browser and can be
-        installed as a Progressive Web App for a standalone window, dock
-        icon, and offline-friendly local-first storage.
+        installed as a Progressive Web App for a standalone window, dock icon,
+        and offline-friendly local-first storage.
       </p>
 
       <div class="dl-web">
@@ -615,29 +641,47 @@ export default component$(() => {
           browser's IndexedDB until you choose to sync.
         </li>
         <li>
-          Sign in on any build to sync the same projects across desktop and
-          web.
+          Sign in on any build to sync the same projects across desktop and web.
         </li>
         <li>
-          Bring your own AI key, or use hosted AI — both work identically
-          across platforms.
+          Bring your own AI key, or use hosted AI — both work identically across
+          platforms.
         </li>
         <li>
-          Export any folio as Markdown, HTML, text, or a .twyne.json backup,
-          on any device.
+          Export any folio as Markdown, HTML, text, or a .twyne.json backup, on
+          any device.
         </li>
       </ul>
 
       <h2 id="release-notes" class="doc-h2">
-        Release notes &amp; source
+        Release notes
       </h2>
+      {RELEASE_NOTES.length > 0 ? (
+        <ol class="dl-releases">
+          {RELEASE_NOTES.map((release) => (
+            <li key={release.version} class="dl-release">
+              <p class="dl-release-head">
+                <strong>{release.version}</strong>
+                {release.date && <span> · {release.date}</span>}
+              </p>
+              {release.highlights.length > 0 && (
+                <ul class="dl-checks">
+                  {release.highlights.map((highlight) => (
+                    <li key={highlight}>{highlight}</li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p class="doc-p">
+          Fresh out of the press room — notes for the latest release will appear
+          here.
+        </p>
+      )}
       <p class="doc-p">
-        Every build is published with generated notes on GitHub. See what
-        changed, grab an earlier version, or read the source on the{" "}
-        <a href={RELEASES_LATEST} target="_blank" rel="noreferrer">
-          releases page
-        </a>
-        . Questions about a build can go to{" "}
+        Questions about a build can go to{" "}
         <a href="mailto:support@twyne.love">support@twyne.love</a>.
       </p>
     </LegalPage>

@@ -210,8 +210,7 @@ export async function connectMcpServer(
   convex: ConvexClient | null,
 ): Promise<McpServerHandle> {
   const canRelay = Boolean(convex) && config.connection !== "direct";
-  const forceRelay =
-    config.connection === "proxy" || relayOnly.has(config.id);
+  const forceRelay = config.connection === "proxy" || relayOnly.has(config.id);
 
   let client: Client | null = null;
   let route: "direct" | "relay" = "direct";
@@ -298,7 +297,10 @@ export async function connectEnabledServers(
   const settled = await Promise.all(
     enabled.map(async (config) => {
       try {
-        return { ok: true as const, handle: await connectMcpServer(config, convex) };
+        return {
+          ok: true as const,
+          handle: await connectMcpServer(config, convex),
+        };
       } catch (error) {
         return {
           ok: false as const,

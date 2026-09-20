@@ -99,7 +99,9 @@ async function openEditor(page: Page, html: string) {
 }
 
 const paragraphs = (n: number, text = "Lorem ipsum dolor sit amet, ") =>
-  Array.from({ length: n }, (_, i) => `<p>${text.repeat(6)} (${i})</p>`).join("");
+  Array.from({ length: n }, (_, i) => `<p>${text.repeat(6)} (${i})</p>`).join(
+    "",
+  );
 
 test.describe("paginated canvas", () => {
   test("no block straddles a sheet boundary", async ({ page }) => {
@@ -119,7 +121,8 @@ test.describe("paginated canvas", () => {
 
       const bad: string[] = [];
       for (const el of Array.from(pm.children)) {
-        if ((el as HTMLElement).classList.contains("twyne-page-spacer")) continue;
+        if ((el as HTMLElement).classList.contains("twyne-page-spacer"))
+          continue;
         const r = el.getBoundingClientRect();
         if (r.height === 0) continue;
         // Position relative to the canvas padding box, which is page 0's
@@ -206,8 +209,11 @@ test.describe("paginated canvas", () => {
     // A4 is taller than Letter, so the same prose needs no more pages — and
     // the count must actually have been recomputed rather than frozen.
     expect(a4).toBeGreaterThan(0);
-    expect(await page.evaluate(() => (window as any).__twynePagination.geometry.pageH))
-      .toBeGreaterThan(1056 - 1);
+    expect(
+      await page.evaluate(
+        () => (window as any).__twynePagination.geometry.pageH,
+      ),
+    ).toBeGreaterThan(1056 - 1);
     expect(letter).toBeGreaterThan(1);
   });
 
@@ -223,7 +229,9 @@ test.describe("paginated canvas", () => {
     expect(await page.locator(".twyne-page-sheet").count()).toBe(0);
   });
 
-  test("a table taller than a page starts on a fresh page", async ({ page }) => {
+  test("a table taller than a page starts on a fresh page", async ({
+    page,
+  }) => {
     // The v1 contract: blocks break atomically. A widget decoration cannot
     // live inside <tbody>, so a table is never split.
     const rows = Array.from(

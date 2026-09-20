@@ -36,7 +36,10 @@ async function openEditor(page: Page) {
     });
     const now = Date.now();
     await new Promise<void>((resolve, reject) => {
-      const t = db.transaction(["folios", "folio-content", "meta"], "readwrite");
+      const t = db.transaction(
+        ["folios", "folio-content", "meta"],
+        "readwrite",
+      );
       t.objectStore("folios").put({
         id: "e2e-speech",
         name: "Speech fixture",
@@ -65,13 +68,15 @@ async function openEditor(page: Page) {
 test.describe("read aloud transport", () => {
   test("the control is present and starts idle", async ({ page }) => {
     await openEditor(page);
-    const play = page.getByRole("button", { name: /read the selection aloud/i });
+    const play = page.getByRole("button", {
+      name: /read the selection aloud/i,
+    });
     await expect(play).toBeVisible();
     await expect(play).toHaveText(/read/i);
     // Nothing to stop or seek until something is sounding.
-    await expect(page.getByRole("button", { name: "Stop reading" })).toHaveCount(
-      0,
-    );
+    await expect(
+      page.getByRole("button", { name: "Stop reading" }),
+    ).toHaveCount(0);
   });
 
   test("a failed reading reports itself instead of going silent", async ({
@@ -80,7 +85,9 @@ test.describe("read aloud transport", () => {
     // No voice provider is configured in the test environment and there is no
     // account, so synthesis must fail. The point is that it fails *visibly*.
     await openEditor(page);
-    await page.getByRole("button", { name: /read the selection aloud/i }).click();
+    await page
+      .getByRole("button", { name: /read the selection aloud/i })
+      .click();
 
     const notice = page.locator('.twyne-toolbar [role="status"]');
     await expect(notice).toBeVisible({ timeout: 15_000 });
@@ -109,7 +116,9 @@ test.describe("read aloud transport", () => {
     expect(log[log.length - 1]).toBe("error");
   });
 
-  test("the speech manager exposes pause, resume and stop", async ({ page }) => {
+  test("the speech manager exposes pause, resume and stop", async ({
+    page,
+  }) => {
     // The transport is only as good as the manager underneath it; check the
     // state machine directly rather than trying to synthesise real audio.
     await openEditor(page);

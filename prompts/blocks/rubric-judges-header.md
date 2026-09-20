@@ -6,4 +6,3 @@ version: "1"
 
 JUDGES' VERDICTS:
 {judgeLines}
-

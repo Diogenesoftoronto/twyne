@@ -259,7 +259,9 @@ function parseSdkProvider(value: string | undefined): SdkProvider {
 async function providerCommand(args: string[], io: CliIo): Promise<void> {
   const action = args.shift();
   if (action !== "login" && action !== "status" && action !== "logout") {
-    throw new Error("Usage: twyne provider login|status|logout codex|anthropic");
+    throw new Error(
+      "Usage: twyne provider login|status|logout codex|anthropic",
+    );
   }
   const parsed = commandArgs(args, {});
   const provider = parseSdkProvider(parsed.positionals[0]);

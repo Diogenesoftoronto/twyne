@@ -30,6 +30,7 @@ import {
   DEFAULT_AI_SETTINGS,
   DEFAULT_APPARATUS_SETTINGS,
   DEFAULT_MCP_SERVER,
+  DEFAULT_WRITER_PROFILE,
   PROVIDER_METAS,
 } from "../../types";
 import {
@@ -497,12 +498,7 @@ export default component$(() => {
     mcpProbes: {},
     mcpProbeBusy: null,
     writerStyle: "form",
-    writerProfile: {
-      displayName: "",
-      personalFacts: "",
-      feedbackStyle: "balanced",
-      feedbackNotes: "",
-    },
+    writerProfile: { ...DEFAULT_WRITER_PROFILE },
     writerToast: null,
     deletingAccount: false,
     accountToast: null,
@@ -744,6 +740,17 @@ export default component$(() => {
     });
     store.writerToast = "Writer context saved";
     setTimeout(() => (store.writerToast = null), 1800);
+  });
+
+  const toggleFeedbackFocus$ = $(async (focusId: string) => {
+    const current = store.writerProfile.feedbackFocus ?? [];
+    const next = current.includes(focusId)
+      ? current.filter((id) => id !== focusId)
+      : [...current, focusId];
+    await saveWriterProfile({
+      ...store.writerProfile,
+      feedbackFocus: next,
+    });
   });
 
   const persistApparatusSettings = $(async (settings: ApparatusSettings) => {
@@ -1831,7 +1838,7 @@ export default component$(() => {
                 while you draft. It stays in this browser and is not part of
                 your public profile.
               </p>
-              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div class="mt-4 grid gap-4 sm:grid-cols-3">
                 <label class="block">
                   <span
                     class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
@@ -1858,6 +1865,75 @@ export default component$(() => {
                     class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
                     style={{ fontFamily: "var(--font-typewriter)" }}
                   >
+                    Primary genre / form
+                  </span>
+                  <SiteSelect
+                    value={store.writerProfile.primaryGenre ?? "essay"}
+                    ariaLabel="Primary genre"
+                    options={[
+                      { value: "essay", label: "Essay / Commentary" },
+                      { value: "fiction", label: "Literary Fiction" },
+                      { value: "journalism", label: "Journalism / Reporting" },
+                      { value: "nonfiction", label: "General Non-fiction" },
+                      { value: "academic", label: "Academic / Research" },
+                      { value: "memoir", label: "Memoir / Narrative" },
+                      { value: "poetry", label: "Poetry" },
+                      { value: "technical", label: "Technical & Systems" },
+                      { value: "philosophy", label: "Philosophy & Criticism" },
+                    ]}
+                    onChange$={(value) => {
+                      void saveWriterProfile({
+                        ...store.writerProfile,
+                        primaryGenre: value,
+                      });
+                    }}
+                  />
+                </label>
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Experience level
+                  </span>
+                  <SiteSelect
+                    value={store.writerProfile.experienceLevel ?? "practicing"}
+                    ariaLabel="Experience level"
+                    options={[
+                      {
+                        value: "emerging",
+                        label: "Emerging — developing voice & craft",
+                      },
+                      {
+                        value: "practicing",
+                        label: "Practicing — drafts regularly",
+                      },
+                      {
+                        value: "published",
+                        label: "Published — experienced author",
+                      },
+                      {
+                        value: "expert",
+                        label: "Specialist — domain authority",
+                      },
+                    ]}
+                    onChange$={(value) => {
+                      void saveWriterProfile({
+                        ...store.writerProfile,
+                        experienceLevel:
+                          value as WriterProfile["experienceLevel"],
+                      });
+                    }}
+                  />
+                </label>
+              </div>
+
+              <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
                     Feedback pressure
                   </span>
                   <SiteSelect
@@ -1869,32 +1945,196 @@ export default component$(() => {
                       { value: "gentle", label: "Gentle, protect momentum" },
                     ]}
                     onChange$={(value) => {
-                      const feedbackStyle =
-                        value as WriterProfile["feedbackStyle"];
                       void saveWriterProfile({
                         ...store.writerProfile,
-                        feedbackStyle,
+                        feedbackStyle: value as WriterProfile["feedbackStyle"],
+                      });
+                    }}
+                  />
+                </label>
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Critique delivery style
+                  </span>
+                  <SiteSelect
+                    value={store.writerProfile.critiqueTone ?? "direct"}
+                    ariaLabel="Critique delivery style"
+                    options={[
+                      {
+                        value: "direct",
+                        label: "Direct — concrete prescriptions",
+                      },
+                      {
+                        value: "socratic",
+                        label: "Socratic — question premises",
+                      },
+                      {
+                        value: "analytical",
+                        label: "Diagnostic — reader observations",
+                      },
+                    ]}
+                    onChange$={(value) => {
+                      void saveWriterProfile({
+                        ...store.writerProfile,
+                        critiqueTone: value as WriterProfile["critiqueTone"],
+                      });
+                    }}
+                  />
+                </label>
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Praise preference
+                  </span>
+                  <SiteSelect
+                    value={store.writerProfile.praisePreference ?? "balanced"}
+                    ariaLabel="Praise preference"
+                    options={[
+                      {
+                        value: "minimal",
+                        label: "Minimal — straight to critique",
+                      },
+                      {
+                        value: "balanced",
+                        label: "Balanced — affirm strengths",
+                      },
+                      {
+                        value: "encouraging",
+                        label: "Encouraging — lead with praise",
+                      },
+                    ]}
+                    onChange$={(value) => {
+                      void saveWriterProfile({
+                        ...store.writerProfile,
+                        praisePreference:
+                          value as WriterProfile["praisePreference"],
+                      });
+                    }}
+                  />
+                </label>
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Fact adherence mode
+                  </span>
+                  <SiteSelect
+                    value={store.writerProfile.factChecking ?? "strict"}
+                    ariaLabel="Fact adherence mode"
+                    options={[
+                      {
+                        value: "strict",
+                        label: "Strict — enforce stated facts",
+                      },
+                      {
+                        value: "flexible",
+                        label: "Flexible — allow interpretation",
+                      },
+                      {
+                        value: "creative",
+                        label: "Creative — imaginative freedom",
+                      },
+                    ]}
+                    onChange$={(value) => {
+                      void saveWriterProfile({
+                        ...store.writerProfile,
+                        factChecking: value as WriterProfile["factChecking"],
                       });
                     }}
                   />
                 </label>
               </div>
+
+              <div class="mt-4">
+                <span
+                  class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-2"
+                  style={{ fontFamily: "var(--font-typewriter)" }}
+                >
+                  Priority feedback focus (click to toggle)
+                </span>
+                <div class="flex flex-wrap gap-2">
+                  {[
+                    { id: "structure", label: "Structure & Flow" },
+                    { id: "argument", label: "Argument & Logic" },
+                    { id: "evidence", label: "Evidence & Facts" },
+                    { id: "voice", label: "Voice & Tone" },
+                    { id: "pacing", label: "Pacing & Rhythm" },
+                    { id: "line-edits", label: "Line-level Craft" },
+                  ].map((focusItem) => {
+                    const active = (
+                      store.writerProfile.feedbackFocus ?? [
+                        "argument",
+                        "voice",
+                        "structure",
+                      ]
+                    ).includes(focusItem.id);
+                    return (
+                      <button
+                        key={focusItem.id}
+                        type="button"
+                        onClick$={() => void toggleFeedbackFocus$(focusItem.id)}
+                        class={`px-2.5 py-1 text-xs rounded-[3px] border transition-colors ${
+                          active
+                            ? "border-[var(--color-vermilion)] bg-[var(--color-vermilion)]/10 text-[var(--color-ink)] font-medium"
+                            : "border-[var(--color-paper-3)] text-[var(--color-ink-muted)] hover:border-[var(--color-ink-light)]"
+                        }`}
+                        style={{ fontFamily: "var(--font-typewriter)" }}
+                      >
+                        {active ? "✓ " : "+ "}
+                        {focusItem.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <label class="block">
+                  <span
+                    class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    Personal facts &amp; lived background
+                  </span>
+                  <textarea
+                    value={store.writerProfile.personalFacts}
+                    rows={4}
+                    placeholder="Your background, lived experience, subjects you know well, or facts the room must respect and not contradict. One fact per line works well."
+                    onInput$={(e) => {
+                      store.writerProfile = {
+                        ...store.writerProfile,
+                        personalFacts: (e.target as HTMLTextAreaElement).value,
+                      };
+                    }}
+                    onBlur$={() => void saveWriterProfile(store.writerProfile)}
+                    class="w-full text-sm px-3 py-2 border border-[var(--color-paper-3)] bg-[var(--color-paper)] focus:border-[var(--color-vermilion)] focus:outline-none resize-y"
+                    style={{ borderRadius: "2px" }}
+                  />
+                </label>
+              </div>
+
               <div class="mt-4 grid gap-4 sm:grid-cols-2">
                 <label class="block">
                   <span
                     class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
                     style={{ fontFamily: "var(--font-typewriter)" }}
                   >
-                    Personal facts
+                    How I like feedback
                   </span>
                   <textarea
-                    value={store.writerProfile.personalFacts}
-                    rows={5}
-                    placeholder="Your background, lived experience, subjects you know well, or constraints the room should remember. One detail per line works well."
+                    value={store.writerProfile.feedbackNotes}
+                    rows={4}
+                    placeholder="For example: question my assumptions before fixing sentences; do not praise every paragraph; flag places where I am hiding behind abstraction."
                     onInput$={(e) => {
                       store.writerProfile = {
                         ...store.writerProfile,
-                        personalFacts: (e.target as HTMLTextAreaElement).value,
+                        feedbackNotes: (e.target as HTMLTextAreaElement).value,
                       };
                     }}
                     onBlur$={() => void saveWriterProfile(store.writerProfile)}
@@ -1907,16 +2147,16 @@ export default component$(() => {
                     class="block text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-light)] mb-1"
                     style={{ fontFamily: "var(--font-typewriter)" }}
                   >
-                    How I like feedback
+                    Things to avoid in feedback
                   </span>
                   <textarea
-                    value={store.writerProfile.feedbackNotes}
-                    rows={5}
-                    placeholder="For example: question my assumptions before fixing sentences; do not praise every paragraph; flag places where I am hiding behind abstraction."
+                    value={store.writerProfile.feedbackAvoid ?? ""}
+                    rows={4}
+                    placeholder="Specific pet peeves or off-limits critique moves (e.g., don't suggest plot twists, no patronizing praise, don't nitpick commas)."
                     onInput$={(e) => {
                       store.writerProfile = {
                         ...store.writerProfile,
-                        feedbackNotes: (e.target as HTMLTextAreaElement).value,
+                        feedbackAvoid: (e.target as HTMLTextAreaElement).value,
                       };
                     }}
                     onBlur$={() => void saveWriterProfile(store.writerProfile)}

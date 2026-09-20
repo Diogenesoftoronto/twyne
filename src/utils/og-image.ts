@@ -81,7 +81,8 @@ function wrapLines(
   if (lines.length === maxLines) {
     const last = lines[maxLines - 1];
     if (last.length > maxChars) {
-      lines[maxLines - 1] = `${last.slice(0, Math.max(0, maxChars - 1)).trimEnd()}…`;
+      lines[maxLines - 1] =
+        `${last.slice(0, Math.max(0, maxChars - 1)).trimEnd()}…`;
     }
   }
   return lines;

@@ -1,4 +1,8 @@
-import { loadCredentials, normalizeApiUrl, type Credentials } from "./config.js";
+import {
+  loadCredentials,
+  normalizeApiUrl,
+  type Credentials,
+} from "./config.js";
 import type {
   CitationEntry,
   Folio,
@@ -61,11 +65,16 @@ export class TwyneClient {
     return TwyneClient.fromCredentials(credentials);
   }
 
-  static fromCredentials(credentials: Pick<Credentials, "apiUrl" | "accessToken">): TwyneClient {
+  static fromCredentials(
+    credentials: Pick<Credentials, "apiUrl" | "accessToken">,
+  ): TwyneClient {
     return new TwyneClient(credentials);
   }
 
-  async request<T>(request: IntegrationRequest, signal?: AbortSignal): Promise<T> {
+  async request<T>(
+    request: IntegrationRequest,
+    signal?: AbortSignal,
+  ): Promise<T> {
     let response: Response;
     try {
       response = await this.fetchImpl(this.endpoint, {
@@ -81,13 +90,19 @@ export class TwyneClient {
       });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      throw new TwyneApiError(`Could not reach Twyne: ${detail}`, 0, request.operation);
+      throw new TwyneApiError(
+        `Could not reach Twyne: ${detail}`,
+        0,
+        request.operation,
+      );
     }
 
     const text = await response.text();
     let body: IntegrationSuccess<T> | IntegrationFailure | undefined;
     try {
-      body = text ? (JSON.parse(text) as IntegrationSuccess<T> | IntegrationFailure) : undefined;
+      body = text
+        ? (JSON.parse(text) as IntegrationSuccess<T> | IntegrationFailure)
+        : undefined;
     } catch {
       throw new TwyneApiError(
         `Twyne returned a non-JSON response (${response.status})`,
@@ -125,7 +140,10 @@ export class TwyneClient {
   }
 
   putFolio(input: PutFolioInput, signal?: AbortSignal): Promise<Folio> {
-    const request: IntegrationRequest = { operation: "folios.put", folio: input.folio };
+    const request: IntegrationRequest = {
+      operation: "folios.put",
+      folio: input.folio,
+    };
     if (input.html !== undefined) request.html = input.html;
     if (input.brief !== undefined) request.brief = input.brief;
     if (input.expectedUpdatedAt !== undefined) {
@@ -134,7 +152,11 @@ export class TwyneClient {
     return this.request(request, signal);
   }
 
-  searchFolios(search: string, limit = 20, signal?: AbortSignal): Promise<SearchResult[]> {
+  searchFolios(
+    search: string,
+    limit = 20,
+    signal?: AbortSignal,
+  ): Promise<SearchResult[]> {
     return this.request({ operation: "folios.search", search, limit }, signal);
   }
 
@@ -154,6 +176,9 @@ export class TwyneClient {
     entries: CitationEntry[],
     signal?: AbortSignal,
   ): Promise<{ saved: number }> {
-    return this.request({ operation: "citations.put", folioId, entries }, signal);
+    return this.request(
+      { operation: "citations.put", folioId, entries },
+      signal,
+    );
   }
 }

@@ -23,7 +23,7 @@ const CASES = [
     mustInclude: [
       "hasConfiguredAiProvider",
       "runClientJudge",
-      "runClientRubricReview",
+      "LiveReviewPanel",
       "runClientTargetFitJudge",
       "runClientCustomCriterionJudge",
     ],
@@ -75,10 +75,18 @@ describe("BYOK feature coverage", () => {
   test("does not reintroduce legacy advancedMode gating in the feature callers", async () => {
     for (const entry of CASES) {
       const source = await Bun.file(entry.path).text();
-      expect(source).not.toContain("settings?.advancedMode && settings.providers.length > 0");
-      expect(source).not.toContain("settings2?.advancedMode && settings2.providers.length > 0");
-      expect(source).not.toContain("if (!settings.advancedMode || settings.providers.length === 0)");
-      expect(source).not.toContain("if (settings.advancedMode && settings.providers.length > 0)");
+      expect(source).not.toContain(
+        "settings?.advancedMode && settings.providers.length > 0",
+      );
+      expect(source).not.toContain(
+        "settings2?.advancedMode && settings2.providers.length > 0",
+      );
+      expect(source).not.toContain(
+        "if (!settings.advancedMode || settings.providers.length === 0)",
+      );
+      expect(source).not.toContain(
+        "if (settings.advancedMode && settings.providers.length > 0)",
+      );
     }
   });
 });

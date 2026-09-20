@@ -310,60 +310,39 @@ const linkedDidReference = makeFunctionReference<
   { did: string; sessionVersion: number } | null
 >("providerIdentity:getLinkedDidBySubject");
 
-/**
- * Prefer the feature-flagged shared provider for linked users. Any missing
- * identity, link, configuration, or exchange failure falls through to the
- * existing Rivet/Portkey/BYO chain and ultimately the deterministic local
- * generator.
- */
+/** Hosted Not Organic failures must never spend against our legacy provider keys. */
 async function pickProvider(
   ctx: ActionCtx,
   feature: string,
   alias: NotOrganicModelAlias = "balanced",
 ): Promise<ProviderConfig | null> {
-  if (notOrganicEnabled()) {
-    try {
-      const identity = await ctx.auth.getUserIdentity();
-      if (identity) {
-        const link = await ctx.runQuery(linkedDidReference, {
-          productSubject: identity.subject || identity.tokenIdentifier,
-        });
-        if (link) {
-          const token = await issueNotOrganicAccessToken({
-            did: link.did,
-            feature,
-            capabilities: [`infer:${alias}`],
-            sessionVersion: link.sessionVersion,
-          });
-          const route = notOrganicOpenAiRoute(
-            token,
-            alias,
-            feature,
-            notOrganicIssuer(),
-          );
-          const provider = createOpenAI({
-            baseURL: route.baseURL,
-            apiKey: route.apiKey,
-            headers: route.headers,
-            fetch: route.fetch,
-          });
-          return {
-            model: provider.chat(route.model),
-            // Preserve the public response union: Not Organic is an
-            // OpenAI-compatible transport, distinguished by alias + headers.
-            label: "openai",
-            modelId: alias,
-          };
-        }
-      }
-    } catch (error) {
-      console.warn(
-        `[twyne:notorganic] ${feature} unavailable; using existing provider fallback`,
-        error,
-      );
-    }
-  }
-  return pickLegacyProvider();
+  if (!notOrganicEnabled()) return pickLegacyProvider();
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) throw new Error("Sign in before using hosted AI.");
+  const link = await ctx.runQuery(linkedDidReference, {
+    productSubject: identity.subject || identity.tokenIdentifier,
+  });
+  if (!link)
+    throw new Error("Link your Not Organic account before using hosted AI.");
+  const token = await issueNotOrganicAccessToken({
+    did: link.did,
+    feature,
+    capabilities: [`infer:${alias}`],
+    sessionVersion: link.sessionVersion,
+  });
+  const route = notOrganicOpenAiRoute(
+    token,
+    alias,
+    feature,
+    notOrganicIssuer(),
+  );
+  const provider = createOpenAI({
+    baseURL: route.baseURL,
+    apiKey: route.apiKey,
+    headers: route.headers,
+    fetch: route.fetch,
+  });
+  return { model: provider.chat(route.model), label: "openai", modelId: alias };
 }
 
 const typeKeywords: Record<FeedbackType, RegExp> = {
@@ -799,6 +778,38 @@ const writerProfileValidator = v.optional(
       v.literal("gentle"),
     ),
     feedbackNotes: v.string(),
+    primaryGenre: v.optional(v.string()),
+    experienceLevel: v.optional(
+      v.union(
+        v.literal("emerging"),
+        v.literal("practicing"),
+        v.literal("published"),
+        v.literal("expert"),
+      ),
+    ),
+    feedbackFocus: v.optional(v.array(v.string())),
+    praisePreference: v.optional(
+      v.union(
+        v.literal("minimal"),
+        v.literal("balanced"),
+        v.literal("encouraging"),
+      ),
+    ),
+    critiqueTone: v.optional(
+      v.union(
+        v.literal("direct"),
+        v.literal("socratic"),
+        v.literal("analytical"),
+      ),
+    ),
+    factChecking: v.optional(
+      v.union(
+        v.literal("strict"),
+        v.literal("flexible"),
+        v.literal("creative"),
+      ),
+    ),
+    feedbackAvoid: v.optional(v.string()),
   }),
 );
 

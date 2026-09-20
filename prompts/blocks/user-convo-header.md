@@ -6,4 +6,3 @@ version: "1"
 
 PRIOR CONVERSATION (most recent last):
 {convoTurns}
-

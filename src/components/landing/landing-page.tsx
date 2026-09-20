@@ -5,7 +5,13 @@ import {
   type PropFunction,
 } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
-import { WorkspacePreview } from "./workspace-preview";
+import { WorkspaceTour } from "./workspace-tour";
+import {
+  BriefPlatePreview,
+  DraftPlatePreview,
+  NotesPlatePreview,
+  SourcesPlatePreview,
+} from "./plate-previews";
 import { AccountMenu } from "../auth/account-menu";
 import { useAuth } from "../../utils/auth-context";
 import ImgGriffinMark from "~/media/assets/griffin-mark.svg?jsx";
@@ -17,9 +23,8 @@ interface LandingPageProps {
   onSkipToEditor$?: PropFunction<(location: LandingCtaLocation) => void>;
 }
 
-/** Where the Electrobun desktop builds are published (GitHub Releases). */
-const DESKTOP_DOWNLOAD_URL =
-  "https://github.com/Diogenesoftoronto/twyne/releases/latest";
+/** Where the desktop builds live on this site (first-party downloads). */
+const DESKTOP_DOWNLOAD_URL = "/downloads/";
 
 /**
  * The hero headline types itself out, then a copy-editor strikes a word and
@@ -155,83 +160,56 @@ const typedSpans = (text: string) => {
   });
 };
 
-const annotations = [
-  {
-    id: "dossier",
-    tag: "The Dossier",
-    note: "Your brief and saved drafts stay pinned beside the manuscript.",
-    accent: "var(--color-cobalt)",
-    position: "left-3 top-[7rem] -rotate-1",
-  },
-  {
-    id: "manuscript",
-    tag: "The Manuscript",
-    note: "A long-form editor that stays out of the way while you write.",
-    accent: "var(--color-ink)",
-    position: "left-1/2 -translate-x-1/2 bottom-8 rotate-[0.6deg]",
-  },
-  {
-    id: "cast",
-    tag: "The Cast",
-    note: "Five editors read along and critique the draft against your brief.",
-    accent: "var(--color-vermilion)",
-    position: "right-3 top-[7rem] rotate-1",
-  },
-];
-
 /**
- * The four movements of a piece, each shown as a photographic plate
- * facing its text. `side` is where the photograph sits on desktop;
- * plates alternate so the page reads like a magazine spread.
+ * The four movements of a piece, each shown as a live UI preview facing
+ * its text. `side` is where the plate sits on desktop; plates alternate so
+ * the page reads like a magazine spread. The previews are the product's own
+ * components fed canned data — no screenshots to go stale.
  */
 const steps = [
   {
     numeral: "I",
     title: "Answer the brief",
     body: "Ten minutes of questions about audience, purpose, and what good looks like. The interview becomes a project brief that every tool in the room reads, so no draft starts from a blank page.",
-    slug: "product-brief-v2",
+    preview: BriefPlatePreview,
     orientation: "portrait" as const,
     side: "left" as const,
     tilt: "-2.6deg",
     driftX: "-8px",
     driftY: "-12px",
-    alt: "A writer completing Twyne's structured project brief on a tablet, with fields for audience, purpose, tone, evidence, and success.",
   },
   {
     numeral: "II",
     title: "Write the draft",
     body: "A serious long-form editor with saved drafts and focus tools. Your work stays on your machine, organized into folios you can return to between sessions.",
-    slug: "product-draft-v2",
+    preview: DraftPlatePreview,
     orientation: "landscape" as const,
     side: "right" as const,
     tilt: "1.9deg",
     driftX: "7px",
     driftY: "16px",
-    alt: "Twyne's long-form manuscript editor open on a laptop with a document outline and saved drafts beside the page.",
   },
   {
     numeral: "III",
     title: "Take the notes",
     body: "The Skeptic, the Gentle Reader, the Line Editor, the Critic: each persona marks up the draft in the margin while a rubric grades thesis, structure, style, and evidence against the brief.",
-    slug: "product-notes-v2",
+    preview: NotesPlatePreview,
     orientation: "portrait" as const,
     side: "left" as const,
     tilt: "-1.5deg",
     driftX: "11px",
     driftY: "-6px",
-    alt: "A manuscript in Twyne with five color-coded editorial notes anchored in the margin and a scoring rubric alongside it.",
   },
   {
     numeral: "IV",
     title: "Check the record",
     body: "Twyne detects URLs, DOIs, ISBNs, and footnotes as you cite them, and keeps every source in one place where it can be inspected and verified.",
-    slug: "product-sources-v2",
+    preview: SourcesPlatePreview,
     orientation: "landscape" as const,
     side: "right" as const,
     tilt: "2.8deg",
     driftX: "-6px",
     driftY: "10px",
-    alt: "Twyne's source desk linking a manuscript to verified web, journal, book, and footnote records.",
   },
 ];
 
@@ -317,14 +295,9 @@ export const LandingPage = component$<LandingPageProps>(
               <a class="landing-nav-link" href="#how-it-works">
                 How it works
               </a>
-              <a
-                class="landing-nav-link"
-                href={DESKTOP_DOWNLOAD_URL}
-                target="_blank"
-                rel="noreferrer"
-              >
+              <Link class="landing-nav-link" href={DESKTOP_DOWNLOAD_URL}>
                 Desktop app
-              </a>
+              </Link>
               <Link class="landing-nav-link" href="/pricing/">
                 Pricing
               </Link>
@@ -369,50 +342,50 @@ export const LandingPage = component$<LandingPageProps>(
               decoding="async"
             />
             <div class="landing-hero__inner mx-auto max-w-3xl text-center">
-            <h1
-              class="landing-title ink-bleed landing-rotator-line"
-              aria-label={HEADLINES[0].lead}
-            >
-              <span
-                class={[
-                  "landing-rotator",
-                  currentFrame.leaving ? "is-leaving" : "",
-                ]}
-                aria-hidden="true"
+              <h1
+                class="landing-title ink-bleed landing-rotator-line"
+                aria-label={HEADLINES[0].lead}
               >
-                {currentFrame.runs.map((run, runIndex) => (
-                  <span
-                    key={runIndex}
-                    class={run.struck ? "landing-rotator__struck" : ""}
-                  >
-                    {run.text}
-                  </span>
-                ))}
-                <span class="landing-rotator__caret" />
-              </span>
-            </h1>
-            <p
-              key={currentFrame.headline}
-              class="landing-deck landing-rotator-deck mx-auto mt-6 max-w-2xl text-base sm:text-lg"
-            >
-              {HEADLINES[currentFrame.headline].deck}
-            </p>
-            <div class="landing-rise-3 mt-9 flex flex-wrap items-center justify-center gap-3">
-              <button
-                onClick$={() => onStartBrief$("hero")}
-                class="broadsheet-cta"
-              >
-                Start your brief →
-              </button>
-              {onSkipToEditor$ && (
-                <button
-                  onClick$={() => onSkipToEditor$("hero")}
-                  class="broadsheet-cta secondary"
+                <span
+                  class={[
+                    "landing-rotator",
+                    currentFrame.leaving ? "is-leaving" : "",
+                  ]}
+                  aria-hidden="true"
                 >
-                  Skip to the editor
+                  {currentFrame.runs.map((run, runIndex) => (
+                    <span
+                      key={runIndex}
+                      class={run.struck ? "landing-rotator__struck" : ""}
+                    >
+                      {run.text}
+                    </span>
+                  ))}
+                  <span class="landing-rotator__caret" />
+                </span>
+              </h1>
+              <p
+                key={currentFrame.headline}
+                class="landing-deck landing-rotator-deck mx-auto mt-6 max-w-2xl text-base sm:text-lg"
+              >
+                {HEADLINES[currentFrame.headline].deck}
+              </p>
+              <div class="landing-rise-3 mt-9 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick$={() => onStartBrief$("hero")}
+                  class="broadsheet-cta"
+                >
+                  Start your brief →
                 </button>
-              )}
-            </div>
+                {onSkipToEditor$ && (
+                  <button
+                    onClick$={() => onSkipToEditor$("hero")}
+                    class="broadsheet-cta secondary"
+                  >
+                    Skip to the editor
+                  </button>
+                )}
+              </div>
             </div>
           </section>
 
@@ -421,46 +394,7 @@ export const LandingPage = component$<LandingPageProps>(
             id="editorial-room"
             class="landing-rise-3 mt-16 scroll-mt-8 md:mt-24"
           >
-            <div class="relative w-full" style={{ height: "min(80vh, 800px)" }}>
-              <WorkspacePreview />
-              {annotations.map((a) => (
-                <div
-                  key={a.id}
-                  class={`landing-annotation hidden lg:block ${a.position}`}
-                  aria-hidden="true"
-                >
-                  <p class="tag" style={{ color: a.accent }}>
-                    {a.tag}
-                  </p>
-                  <p class="note">{a.note}</p>
-                </div>
-              ))}
-            </div>
-            <ul class="mx-auto mt-6 max-w-xl space-y-3 px-2 lg:hidden">
-              {annotations.map((a) => (
-                <li key={a.id} class="flex items-baseline gap-3">
-                  <span
-                    class="text-sm leading-none"
-                    style={{ color: a.accent }}
-                    aria-hidden="true"
-                  >
-                    ✦
-                  </span>
-                  <p
-                    class="text-[0.95rem] leading-relaxed text-[var(--color-ink-light)]"
-                    style="font-family: var(--font-serif);"
-                  >
-                    <strong
-                      class="font-semibold text-[var(--color-ink)]"
-                      style="font-family: var(--font-display);"
-                    >
-                      {a.tag}.
-                    </strong>{" "}
-                    {a.note}
-                  </p>
-                </li>
-              ))}
-            </ul>
+            <WorkspaceTour />
           </section>
 
           <div
@@ -482,21 +416,7 @@ export const LandingPage = component$<LandingPageProps>(
             <ol class="mt-14 space-y-20 md:mt-20 md:space-y-28">
               {steps.map((step) => {
                 const portrait = step.orientation === "portrait";
-                // Widths are the plate's real pixel dimensions on disk —
-                // the generator tops out at 1536 on the long edge, so
-                // nothing here is an upscale.
-                // Portrait plates render in the narrow 0.66fr column (~404px),
-                // so 880 is still comfortably past 2x — and the dense
-                // annotated plate compresses badly at any larger size.
-                const lgW = portrait ? 880 : 1536;
-                const lgH = portrait ? 1100 : 1024;
-                // The essay is capped at max-w-6xl (72rem), so past that
-                // width the column stops growing. Portrait plates sit in the
-                // narrower 0.66fr column — saying so lets the browser drop to
-                // the -sm file on 1x displays instead of over-fetching.
-                const sizes = portrait
-                  ? "(min-width: 1200px) 26rem, (min-width: 768px) 40vw, 92vw"
-                  : "(min-width: 1200px) 34rem, (min-width: 768px) 46vw, 92vw";
+                const Preview = step.preview;
                 return (
                   <li
                     key={step.numeral}
@@ -511,22 +431,8 @@ export const LandingPage = component$<LandingPageProps>(
                       data-reveal
                       style={`--tilt: ${step.tilt}; --drift-x: ${step.driftX}; --drift-y: ${step.driftY}`}
                     >
-                      <div
-                        class={[
-                          "landing-plate__frame",
-                          portrait ? "landing-plate__frame--portrait" : "",
-                        ]}
-                      >
-                        <img
-                          src={`/assets/landing/${step.slug}-lg.webp`}
-                          srcset={`/assets/landing/${step.slug}-sm.webp ${lgW / 2}w, /assets/landing/${step.slug}-lg.webp ${lgW}w`}
-                          sizes={sizes}
-                          width={lgW}
-                          height={lgH}
-                          alt={step.alt}
-                          loading="lazy"
-                          decoding="async"
-                        />
+                      <div class="landing-plate__frame">
+                        <Preview />
                       </div>
                     </figure>
                     <div data-reveal style="--reveal-delay: 120ms;">
@@ -610,14 +516,12 @@ export const LandingPage = component$<LandingPageProps>(
                   style="font-family: var(--font-serif);"
                 >
                   Prefer your own desk?{" "}
-                  <a
+                  <Link
                     class="landing-download-link underline decoration-[var(--color-vermilion)] decoration-1 underline-offset-4 hover:text-[var(--color-ink)]"
                     href={DESKTOP_DOWNLOAD_URL}
-                    target="_blank"
-                    rel="noreferrer"
                   >
                     Download Twyne for desktop
-                  </a>{" "}
+                  </Link>{" "}
                   — Mac, Windows &amp; Linux.
                 </p>
               </div>

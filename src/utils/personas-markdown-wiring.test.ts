@@ -15,9 +15,7 @@ describe("Room of Editors Markdown wiring", () => {
     expect(source).toContain(
       "dangerouslySetInnerHTML={renderMarkdown(r.text)}",
     );
-    expect(source).toContain(
-      "store.streamingReplies[feedback.noteId]?.text",
-    );
+    expect(source).toContain("store.streamingReplies[feedback.noteId]?.text");
     expect(source).not.toContain(
       "<p\n                    class={`text-[14px] leading-6",
     );

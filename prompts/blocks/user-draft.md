@@ -8,4 +8,3 @@ DRAFT (the manuscript as it stands — {wordCount} words)
 """
 {draftBody}
 """
-

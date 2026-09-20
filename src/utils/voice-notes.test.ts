@@ -1,4 +1,12 @@
-import { afterAll, afterEach, beforeEach, describe, expect, setSystemTime, test } from "bun:test";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  setSystemTime,
+  test,
+} from "bun:test";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
 const originalWindow = globalThis.window;
@@ -40,7 +48,8 @@ class FakeMediaRecorder {
 }
 
 function lastRecorder(): FakeMediaRecorder {
-  return (globalThis as Record<string, unknown>).__lastFakeRecorder as FakeMediaRecorder;
+  return (globalThis as Record<string, unknown>)
+    .__lastFakeRecorder as FakeMediaRecorder;
 }
 
 function installBrowserGlobals(overrides: Record<string, unknown> = {}) {

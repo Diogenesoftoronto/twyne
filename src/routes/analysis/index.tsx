@@ -181,8 +181,8 @@ export default component$(() => {
               ❧
             </p>
             <p class="mt-3 text-sm text-[var(--color-ink-light)] max-w-md mx-auto">
-              No analysis on file yet. Open the room in the right panel and
-              run <em>Full analysis</em> to start.
+              No analysis on file yet. Open the room in the right panel and run{" "}
+              <em>Full analysis</em> to start.
             </p>
             <Link href="/editor" class="btn-press mt-4 inline-block text-sm">
               ← Back to desk

@@ -12,7 +12,7 @@ export function flag(value: unknown): boolean {
 }
 
 export interface FeatureFlags {
-  /** Show the Creem pricing page + its nav links. */
+  /** Show the pricing page and its navigation links. */
   pricing: boolean;
   /**
    * Surface the desktop-only native LiteRT local model (Gemma 4 E4B). This

@@ -504,9 +504,7 @@ export default component$(() => {
                 <textarea
                   value={store.newVoice}
                   onInput$={(e) => {
-                    store.newVoice = (
-                      e.target as HTMLTextAreaElement
-                    ).value;
+                    store.newVoice = (e.target as HTMLTextAreaElement).value;
                   }}
                   placeholder="Voiceprint: diction, sentence rhythm, warmth, humor, and point of view"
                   class="room-textarea"
@@ -518,7 +516,9 @@ export default component$(() => {
                       e.target as HTMLTextAreaElement
                     ).value;
                   }}
-                  placeholder={"Signature moves, one per line\nQuote the strongest phrase\nEnd on a question"}
+                  placeholder={
+                    "Signature moves, one per line\nQuote the strongest phrase\nEnd on a question"
+                  }
                   class="room-textarea"
                 />
                 <textarea
@@ -528,7 +528,9 @@ export default component$(() => {
                       e.target as HTMLTextAreaElement
                     ).value;
                   }}
-                  placeholder={"Never does, one per line\nNo praise sandwiches\nNo craft jargon"}
+                  placeholder={
+                    "Never does, one per line\nNo praise sandwiches\nNo craft jargon"
+                  }
                   class="room-textarea"
                 />
                 <textarea

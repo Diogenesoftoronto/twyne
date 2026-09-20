@@ -7,19 +7,22 @@ This repository contains an enhanced version of **Prompt Learning (PL)**, a nove
 ## 🚀 What's New in This Enhanced Fork
 
 ### CLI Interface
+
 - **Command-line tool** for prompt optimization workflows
-- **Image generation testing** with Google's "nano banana" models  
+- **Image generation testing** with Google's "nano banana" models
 - **Budget limiting** with real-time cost tracking
 - **Verbose mode** with detailed progress information
 - **Comprehensive help** system with examples
 
 ### Provider Support
+
 - **OpenAI integration** (GPT-3.5, GPT-4)
 - **Google AI integration** (Gemini 2.5 Flash, Pro) with search grounding
 - **Token counting** with provider-specific optimizations
 - **Cost tracking** across all providers
 
 ### Production Features
+
 - **Dependency injection** for clean architecture
 - **Performance optimization** with 67x faster token counting
 - **Comprehensive error handling** with custom exceptions
@@ -27,6 +30,7 @@ This repository contains an enhanced version of **Prompt Learning (PL)**, a nove
 - **Human-in-the-loop evaluation** for image generation
 
 ### Developer Experience
+
 - **Comprehensive unit tests** (40 tests covering all components)
 - **Type hints** throughout the codebase
 - **Clean separation** of concerns with interfaces
@@ -43,6 +47,7 @@ pip install prompt-learn
 ### CLI Usage
 
 **Optimize prompts with natural language feedback:**
+
 ```bash
 # Basic optimization with default $5 budget
 prompt-learn optimize \
@@ -51,7 +56,7 @@ prompt-learn optimize \
   --feedback-columns human_rating \
   --provider openai
 
-# Use Google AI for cost-effective optimization  
+# Use Google AI for cost-effective optimization
 prompt-learn optimize \
   --prompt "Your prompt here" \
   --dataset data.csv \
@@ -61,6 +66,7 @@ prompt-learn optimize \
 ```
 
 **Test image generation prompts:**
+
 ```bash
 # Generate images with budget control
 prompt-learn image \
@@ -77,6 +83,7 @@ prompt-learn image \
 ```
 
 **Run with verbose output:**
+
 ```bash
 prompt-learn --verbose optimize \
   --prompt "Your prompt" \
@@ -112,6 +119,7 @@ optimized_prompt = optimizer.optimize(
 ## 🔧 Environment Setup
 
 Set your API keys:
+
 ```bash
 export OPENAI_API_KEY="your-openai-key"
 export GOOGLE_API_KEY="your-google-ai-key"  # or GEMINI_API_KEY

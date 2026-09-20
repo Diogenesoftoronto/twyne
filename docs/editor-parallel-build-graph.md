@@ -88,15 +88,15 @@ flowchart TD
 
 ## Execution waves
 
-| Wave | Parallel tasks | Gate |
-|---|---|---|
-| 0 | Finish Phase 2 regression checks | Formatting and colour-picker APIs stable |
-| 1 | Command registry, Find/Replace, outline, inline notes, header/footer editor, math, table core, image backend | Focused tests pass for each module |
-| 2 | Shortcut dialog, slash menu, section dragging, table shading, Convex codegen followed by image frontend | Foundation contracts available |
-| 3 | Editor integration, export integration, documentation integration | Feature APIs stable |
-| 4 | Focused tests, typecheck, lint, and formatting check in parallel | Integrated tree passes static and unit gates |
-| 5 | Production build | Wave 4 passes |
-| 6 | Independent browser suites | Built application available |
+| Wave | Parallel tasks                                                                                               | Gate                                         |
+| ---- | ------------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| 0    | Finish Phase 2 regression checks                                                                             | Formatting and colour-picker APIs stable     |
+| 1    | Command registry, Find/Replace, outline, inline notes, header/footer editor, math, table core, image backend | Focused tests pass for each module           |
+| 2    | Shortcut dialog, slash menu, section dragging, table shading, Convex codegen followed by image frontend      | Foundation contracts available               |
+| 3    | Editor integration, export integration, documentation integration                                            | Feature APIs stable                          |
+| 4    | Focused tests, typecheck, lint, and formatting check in parallel                                             | Integrated tree passes static and unit gates |
+| 5    | Production build                                                                                             | Wave 4 passes                                |
+| 6    | Independent browser suites                                                                                   | Built application available                  |
 
 The longest critical path is:
 
@@ -543,4 +543,3 @@ The implementation rule is:
 > Build the remaining roadmap mostly in parallel. Serialize only shared
 > contracts, generated code, central integration, production build, and final
 > runtime verification.
-

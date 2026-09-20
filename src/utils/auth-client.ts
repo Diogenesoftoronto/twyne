@@ -7,7 +7,9 @@ import { passkeyClient } from "@better-auth/passkey/client";
 import { emailOTPClient } from "better-auth/client/plugins";
 import { isDev } from "@qwik.dev/core/build";
 
-const convexSiteUrl = import.meta.env.VITE_CONVEX_SITE_URL as string | undefined;
+const convexSiteUrl = import.meta.env.VITE_CONVEX_SITE_URL as
+  | string
+  | undefined;
 
 /* ── Dev-mode passthrough ──
  * In local dev the Convex backend isn't wired up. Return a no-op client so
@@ -26,21 +28,22 @@ const mockClient = {
   },
 } as any;
 
-export const authClient = isDev && !convexSiteUrl
-  ? mockClient
-  : createAuthClient({
-      baseURL: convexSiteUrl,
-      plugins: [
-        passkeyClient(),
-        emailOTPClient(),
-        // `crossDomainClient()` ships a `getActions` signature that
-        // drifts from the `BetterAuthClientPlugin` constraint in this
-        // better-auth version. The runtime contract is fine; suppress
-        // the structural-typing noise.
-        crossDomainClient() as any,
-        convexClient(),
-      ],
-    });
+export const authClient =
+  isDev && !convexSiteUrl
+    ? mockClient
+    : createAuthClient({
+        baseURL: convexSiteUrl,
+        plugins: [
+          passkeyClient(),
+          emailOTPClient(),
+          // `crossDomainClient()` ships a `getActions` signature that
+          // drifts from the `BetterAuthClientPlugin` constraint in this
+          // better-auth version. The runtime contract is fine; suppress
+          // the structural-typing noise.
+          crossDomainClient() as any,
+          convexClient(),
+        ],
+      });
 
 export const {
   signIn,

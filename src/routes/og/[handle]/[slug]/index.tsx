@@ -19,11 +19,7 @@ import {
 } from "../../../../utils/published-metadata";
 import { renderArticleOgPng } from "../../../../utils/og-image";
 
-export const onGet: RequestHandler = async ({
-  params,
-  send,
-  cacheControl,
-}) => {
+export const onGet: RequestHandler = async ({ params, send, cacheControl }) => {
   cacheControl({
     public: true,
     maxAge: 60 * 60, // 1h at the client/CDN edge

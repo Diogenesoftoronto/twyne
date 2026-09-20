@@ -1,11 +1,7 @@
 [
   {
     "case_id": "iv-early-minimal",
-    "tags": [
-      "early",
-      "minimal-info",
-      "should-continue"
-    ],
+    "tags": ["early", "minimal-info", "should-continue"],
     "expectedBehavior": "question",
     "actualBehavior": "[error]",
     "protocol": {
@@ -30,18 +26,12 @@
       "explanation": "[error] BIFROST_BASE_URL is required"
     },
     "dossierFieldsClaimed": [],
-    "expectedDossierFields": [
-      "workingTitle"
-    ],
+    "expectedDossierFields": ["workingTitle"],
     "outputExcerpt": "[error] BIFROST_BASE_URL is required"
   },
   {
     "case_id": "iv-early-vague",
-    "tags": [
-      "early",
-      "vague",
-      "should-probe"
-    ],
+    "tags": ["early", "vague", "should-probe"],
     "expectedBehavior": "question",
     "actualBehavior": "[error]",
     "protocol": {
@@ -71,11 +61,7 @@
   },
   {
     "case_id": "iv-mid-partial",
-    "tags": [
-      "mid",
-      "partial-info",
-      "should-continue-with-dossier"
-    ],
+    "tags": ["mid", "partial-info", "should-continue-with-dossier"],
     "expectedBehavior": "question_with_dossier",
     "actualBehavior": "[error]",
     "protocol": {
@@ -100,20 +86,12 @@
       "explanation": "[error] BIFROST_BASE_URL is required"
     },
     "dossierFieldsClaimed": [],
-    "expectedDossierFields": [
-      "workingTitle",
-      "audience",
-      "goal"
-    ],
+    "expectedDossierFields": ["workingTitle", "audience", "goal"],
     "outputExcerpt": "[error] BIFROST_BASE_URL is required"
   },
   {
     "case_id": "iv-complete-all-fields",
-    "tags": [
-      "late",
-      "all-fields-covered",
-      "should-synthesize"
-    ],
+    "tags": ["late", "all-fields-covered", "should-synthesize"],
     "expectedBehavior": "synthesize",
     "actualBehavior": "[error]",
     "protocol": {
@@ -150,11 +128,7 @@
   },
   {
     "case_id": "iv-complete-terse",
-    "tags": [
-      "late",
-      "terse-but-complete",
-      "should-synthesize"
-    ],
+    "tags": ["late", "terse-but-complete", "should-synthesize"],
     "expectedBehavior": "synthesize",
     "actualBehavior": "[error]",
     "protocol": {
@@ -179,21 +153,12 @@
       "explanation": "[error] BIFROST_BASE_URL is required"
     },
     "dossierFieldsClaimed": [],
-    "expectedDossierFields": [
-      "workingTitle",
-      "audience",
-      "goal",
-      "tone"
-    ],
+    "expectedDossierFields": ["workingTitle", "audience", "goal", "tone"],
     "outputExcerpt": "[error] BIFROST_BASE_URL is required"
   },
   {
     "case_id": "iv-distracted-writer",
-    "tags": [
-      "mid",
-      "distracted",
-      "should-refocus"
-    ],
+    "tags": ["mid", "distracted", "should-refocus"],
     "expectedBehavior": "question",
     "actualBehavior": "[error]",
     "protocol": {
@@ -218,9 +183,7 @@
       "explanation": "[error] BIFROST_BASE_URL is required"
     },
     "dossierFieldsClaimed": [],
-    "expectedDossierFields": [
-      "workingTitle"
-    ],
+    "expectedDossierFields": ["workingTitle"],
     "outputExcerpt": "[error] BIFROST_BASE_URL is required"
   },
   {
@@ -255,17 +218,12 @@
       "explanation": "[error] BIFROST_BASE_URL is required"
     },
     "dossierFieldsClaimed": [],
-    "expectedDossierFields": [
-      "workingTitle"
-    ],
+    "expectedDossierFields": ["workingTitle"],
     "outputExcerpt": "[error] BIFROST_BASE_URL is required"
   },
   {
     "case_id": "iv-refine-mode",
-    "tags": [
-      "refine",
-      "should-refine-not-restart"
-    ],
+    "tags": ["refine", "should-refine-not-restart"],
     "expectedBehavior": "question_with_dossier",
     "actualBehavior": "[error]",
     "protocol": {
@@ -303,11 +261,7 @@
   },
   {
     "case_id": "iv-contradictory-writer",
-    "tags": [
-      "mid",
-      "contradictory",
-      "should-flag-contradiction"
-    ],
+    "tags": ["mid", "contradictory", "should-flag-contradiction"],
     "expectedBehavior": "question",
     "actualBehavior": "[error]",
     "protocol": {
@@ -332,20 +286,12 @@
       "explanation": "[error] BIFROST_BASE_URL is required"
     },
     "dossierFieldsClaimed": [],
-    "expectedDossierFields": [
-      "workingTitle",
-      "audience"
-    ],
+    "expectedDossierFields": ["workingTitle", "audience"],
     "outputExcerpt": "[error] BIFROST_BASE_URL is required"
   },
   {
     "case_id": "iv-complete-unusual-format",
-    "tags": [
-      "late",
-      "all-fields",
-      "unusual-format",
-      "should-synthesize"
-    ],
+    "tags": ["late", "all-fields", "unusual-format", "should-synthesize"],
     "expectedBehavior": "synthesize",
     "actualBehavior": "[error]",
     "protocol": {

@@ -74,11 +74,14 @@ const PROVIDERS: Record<ProviderId, ProviderSpec> = {
     fetchUrl: "https://api.fetch.tinyfish.ai/v1/fetch",
     search: (key, query, context, limit) => ({
       url: providerSearchUrl("https://api.search.tinyfish.ai/v1/search"),
-      init: jsonPost({ authorization: `Bearer ${key}` }, {
-        query,
-        context,
-        num_results: limit,
-      }),
+      init: jsonPost(
+        { authorization: `Bearer ${key}` },
+        {
+          query,
+          context,
+          num_results: limit,
+        },
+      ),
     }),
     path: (b) => (b as { results?: unknown })?.results,
   },
@@ -87,12 +90,15 @@ const PROVIDERS: Record<ProviderId, ProviderSpec> = {
     fetchUrl: "https://api.exa.ai/contents",
     search: (key, query, _context, limit) => ({
       url: providerSearchUrl("https://api.exa.ai/search"),
-      init: jsonPost({ "x-api-key": key }, {
-        query,
-        numResults: limit,
-        type: "auto",
-        contents: { text: { maxCharacters: 600 } },
-      }),
+      init: jsonPost(
+        { "x-api-key": key },
+        {
+          query,
+          numResults: limit,
+          type: "auto",
+          contents: { text: { maxCharacters: 600 } },
+        },
+      ),
     }),
     path: (b) => (b as { results?: unknown })?.results,
   },
@@ -101,11 +107,14 @@ const PROVIDERS: Record<ProviderId, ProviderSpec> = {
     fetchUrl: "https://api.tavily.com/extract",
     search: (key, query, _context, limit) => ({
       url: providerSearchUrl("https://api.tavily.com/search"),
-      init: jsonPost({ authorization: `Bearer ${key}` }, {
-        query,
-        max_results: limit,
-        search_depth: "advanced",
-      }),
+      init: jsonPost(
+        { authorization: `Bearer ${key}` },
+        {
+          query,
+          max_results: limit,
+          search_depth: "advanced",
+        },
+      ),
     }),
     path: (b) => (b as { results?: unknown })?.results,
   },
@@ -155,10 +164,7 @@ const PROVIDERS: Record<ProviderId, ProviderSpec> = {
   },
 };
 
-function jsonPost(
-  headers: Record<string, string>,
-  body: unknown,
-): RequestInit {
+function jsonPost(headers: Record<string, string>, body: unknown): RequestInit {
   return {
     method: "POST",
     headers: { "content-type": "application/json", ...headers },
@@ -171,7 +177,9 @@ function providerSearchUrl(fallback: string): string {
 }
 
 function providerId(): ProviderId {
-  const raw = (process.env.RESEARCH_PROVIDER ?? "tinyfish").trim().toLowerCase();
+  const raw = (process.env.RESEARCH_PROVIDER ?? "tinyfish")
+    .trim()
+    .toLowerCase();
   return raw in PROVIDERS ? (raw as ProviderId) : "tinyfish";
 }
 
@@ -202,7 +210,8 @@ function normalize(value: unknown, limit: number): Source[] {
     out.push({
       title: str("title", "name") ?? "(untitled)",
       url,
-      snippet: str("snippet", "description", "text", "content", "summary") ?? "",
+      snippet:
+        str("snippet", "description", "text", "content", "summary") ?? "",
       author: str("author", "byline"),
       publisher: str("publisher", "source", "site"),
       date: str("date", "published", "publishedDate"),
@@ -349,10 +358,7 @@ export const searchSources = action({
 
 export const fetchSource = action({
   args: { url: v.string() },
-  handler: async (
-    ctx,
-    args,
-  ): Promise<FetchedSource & { provider: string }> => {
+  handler: async (ctx, args): Promise<FetchedSource & { provider: string }> => {
     const identity = await ctx.auth.getUserIdentity();
     const isPro = identity
       ? await userIsPro(ctx, identity.tokenIdentifier)

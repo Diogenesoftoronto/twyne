@@ -83,7 +83,9 @@ describe("renderMarkdown", () => {
   });
 
   test("mixes lists and paragraphs across blocks", () => {
-    const html = renderMarkdown("Intro paragraph.\n\n- a\n- b\n\nClosing paragraph.");
+    const html = renderMarkdown(
+      "Intro paragraph.\n\n- a\n- b\n\nClosing paragraph.",
+    );
     expect(html).toContain("<p>Intro paragraph.</p>");
     expect(html).toContain("<li>a</li>");
     expect(html).toContain("<li>b</li>");

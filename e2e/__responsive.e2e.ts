@@ -2,37 +2,66 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function seedFolio(page: Page, html: string) {
   await page.goto("/");
-  await page.evaluate(async ({ html }) => {
-    const db: IDBDatabase = await new Promise((resolve, reject) => {
-      const req = indexedDB.open("twyne", 2);
-      req.onupgradeneeded = () => {
-        const d = req.result;
-        for (const [name, keyPath] of [
-          ["folios", "id"], ["folio-content", "folioId"], ["brief", "folioId"],
-          ["comments", "id"], ["personas", "id"], ["meta", "key"],
-          ["ai-settings", "key"], ["lix-blob", "key"], ["voice-notes", "id"],
-        ] as const) {
-          if (!d.objectStoreNames.contains(name)) d.createObjectStore(name, { keyPath });
-        }
-      };
-      req.onsuccess = () => resolve(req.result);
-      req.onerror = () => reject(req.error);
-    });
-    const now = Date.now();
-    const id = "e2e-responsive";
-    await new Promise<void>((resolve, reject) => {
-      const t = db.transaction(["folios", "folio-content", "meta"], "readwrite");
-      t.objectStore("folios").put({ id, name: "R", type: "draft", createdAt: now, updatedAt: now });
-      t.objectStore("folio-content").put({ folioId: id, html, updatedAt: now });
-      t.objectStore("meta").put({ key: "active-folio-id", value: id, updatedAt: now });
-      t.oncomplete = () => resolve();
-      t.onerror = () => reject(t.error);
-    });
-  }, { html });
+  await page.evaluate(
+    async ({ html }) => {
+      const db: IDBDatabase = await new Promise((resolve, reject) => {
+        const req = indexedDB.open("twyne", 2);
+        req.onupgradeneeded = () => {
+          const d = req.result;
+          for (const [name, keyPath] of [
+            ["folios", "id"],
+            ["folio-content", "folioId"],
+            ["brief", "folioId"],
+            ["comments", "id"],
+            ["personas", "id"],
+            ["meta", "key"],
+            ["ai-settings", "key"],
+            ["lix-blob", "key"],
+            ["voice-notes", "id"],
+          ] as const) {
+            if (!d.objectStoreNames.contains(name))
+              d.createObjectStore(name, { keyPath });
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      });
+      const now = Date.now();
+      const id = "e2e-responsive";
+      await new Promise<void>((resolve, reject) => {
+        const t = db.transaction(
+          ["folios", "folio-content", "meta"],
+          "readwrite",
+        );
+        t.objectStore("folios").put({
+          id,
+          name: "R",
+          type: "draft",
+          createdAt: now,
+          updatedAt: now,
+        });
+        t.objectStore("folio-content").put({
+          folioId: id,
+          html,
+          updatedAt: now,
+        });
+        t.objectStore("meta").put({
+          key: "active-folio-id",
+          value: id,
+          updatedAt: now,
+        });
+        t.oncomplete = () => resolve();
+        t.onerror = () => reject(t.error);
+      });
+    },
+    { html },
+  );
 }
 
 test.describe("editor chrome at small sizes", () => {
-  test("the toolbar is one scrollable row on a phone, not six wrapped ones", async ({ page }) => {
+  test("the toolbar is one scrollable row on a phone, not six wrapped ones", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 390, height: 780 });
     await seedFolio(page, "<p>Body.</p>");
     await page.goto("/editor/");
@@ -48,13 +77,16 @@ test.describe("editor chrome at small sizes", () => {
         flexWrap: cs.flexWrap,
         overflowX: cs.overflowX,
         rows: new Set(
-          Array.from(el.children).map((c) => Math.round(c.getBoundingClientRect().top)),
+          Array.from(el.children).map((c) =>
+            Math.round(c.getBoundingClientRect().top),
+          ),
         ).size,
         // How wide is the editor column itself? A 122px toolbar on a 390px
         // phone is a shell problem, not a toolbar problem.
-        canvasW: document.querySelector(".page-canvas")?.getBoundingClientRect().width,
-        shell: Array.from(document.querySelectorAll("aside")).map(
-          (a) => Math.round(a.getBoundingClientRect().width),
+        canvasW: document.querySelector(".page-canvas")?.getBoundingClientRect()
+          .width,
+        shell: Array.from(document.querySelectorAll("aside")).map((a) =>
+          Math.round(a.getBoundingClientRect().width),
         ),
       };
     });
@@ -77,7 +109,9 @@ test.describe("editor chrome at small sizes", () => {
     expect(m.scrollW).toBeLessThanOrEqual(m.clientW + 1);
   });
 
-  test("the layout panel fits the viewport and every control is reachable", async ({ page }) => {
+  test("the layout panel fits the viewport and every control is reachable", async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 900, height: 700 });
     await seedFolio(page, "<p>Body.</p>");
     await page.goto("/editor/");
@@ -88,15 +122,28 @@ test.describe("editor chrome at small sizes", () => {
     await expect(panel).toBeVisible();
     const m = await panel.evaluate((el) => {
       const r = el.getBoundingClientRect();
-      return { w: r.width, h: r.height, bottom: r.bottom, scrollH: el.scrollHeight, clientH: el.clientHeight };
+      return {
+        w: r.width,
+        h: r.height,
+        bottom: r.bottom,
+        scrollH: el.scrollHeight,
+        clientH: el.clientHeight,
+      };
     });
     console.log("LAYOUT panel:", JSON.stringify(m), "viewportH 700");
     expect(m.w).toBeGreaterThan(280);
     expect(m.bottom).toBeLessThanOrEqual(701);
 
-    for (const label of ["Left margin, rem", "Right margin, rem", "Top margin, rem", "Bottom margin, rem"]) {
+    for (const label of [
+      "Left margin, rem",
+      "Right margin, rem",
+      "Top margin, rem",
+      "Bottom margin, rem",
+    ]) {
       await expect(page.getByRole("slider", { name: label })).toBeVisible();
     }
-    await expect(page.getByRole("button", { name: /Save as PDF/ })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Save as PDF/ }),
+    ).toBeVisible();
   });
 });

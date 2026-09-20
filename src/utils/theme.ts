@@ -146,7 +146,8 @@ export const THEME_PRESETS: readonly ThemePreset[] = [
   {
     id: "foolscap",
     label: "Foolscap",
-    description: "Cool grey-white with the yellow taken out. Easiest on tired eyes.",
+    description:
+      "Cool grey-white with the yellow taken out. Easiest on tired eyes.",
     dark: false,
     tokens: {
       paper: "#eef0f1",
@@ -162,7 +163,8 @@ export const THEME_PRESETS: readonly ThemePreset[] = [
   {
     id: "broadsheet",
     label: "Broadsheet",
-    description: "Near-white and high contrast. Maximum legibility, minimum tint.",
+    description:
+      "Near-white and high contrast. Maximum legibility, minimum tint.",
     dark: false,
     tokens: {
       paper: "#ffffff",
@@ -243,7 +245,8 @@ export function isValidHexColor(value: unknown): value is string {
  * blob should cost you your theme, not the app.
  */
 export function normalizeThemePreference(value: unknown): ThemePreference {
-  if (!value || typeof value !== "object") return { ...DEFAULT_THEME_PREFERENCE };
+  if (!value || typeof value !== "object")
+    return { ...DEFAULT_THEME_PREFERENCE };
   const raw = value as Record<string, unknown>;
   const preset = PRESET_IDS.has(raw.preset as string)
     ? (raw.preset as ThemePresetId)

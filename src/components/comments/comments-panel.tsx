@@ -474,10 +474,7 @@ export const CommentsPanel = component$(
         "twyne:ask-persona-on-comment",
         onSelectionRequest,
       );
-      window.addEventListener(
-        "twyne:user-comment-mentions",
-        onMentionRequest,
-      );
+      window.addEventListener("twyne:user-comment-mentions", onMentionRequest);
       cleanup(() => {
         window.removeEventListener(
           "twyne:ask-persona-on-comment",

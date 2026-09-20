@@ -53,11 +53,36 @@ export interface Swatch {
  * silently the same paint as two others.
  */
 export const INK_SWATCHES: readonly Swatch[] = [
-  { id: "vermilion", label: "Vermilion", hex: "#c1272d", cssVar: "var(--color-vermilion)" },
-  { id: "mustard", label: "Mustard", hex: "#d4a017", cssVar: "var(--color-mustard)" },
-  { id: "cobalt", label: "Cobalt", hex: "#2c4a7c", cssVar: "var(--color-cobalt)" },
-  { id: "forest", label: "Forest", hex: "#5b7a3a", cssVar: "var(--color-accent-green)" },
-  { id: "periwinkle", label: "Periwinkle", hex: "#5c6bc0", cssVar: "var(--color-periwinkle)" },
+  {
+    id: "vermilion",
+    label: "Vermilion",
+    hex: "#c1272d",
+    cssVar: "var(--color-vermilion)",
+  },
+  {
+    id: "mustard",
+    label: "Mustard",
+    hex: "#d4a017",
+    cssVar: "var(--color-mustard)",
+  },
+  {
+    id: "cobalt",
+    label: "Cobalt",
+    hex: "#2c4a7c",
+    cssVar: "var(--color-cobalt)",
+  },
+  {
+    id: "forest",
+    label: "Forest",
+    hex: "#5b7a3a",
+    cssVar: "var(--color-accent-green)",
+  },
+  {
+    id: "periwinkle",
+    label: "Periwinkle",
+    hex: "#5c6bc0",
+    cssVar: "var(--color-periwinkle)",
+  },
   { id: "sage", label: "Sage", hex: "#8a9a5b", cssVar: "var(--color-sage)" },
   { id: "blush", label: "Blush", hex: "#e8a598", cssVar: "var(--color-blush)" },
   { id: "ink", label: "Ink", hex: "#1f1b16", cssVar: "var(--color-ink)" },
@@ -72,14 +97,44 @@ export const INK_SWATCHES: readonly Swatch[] = [
  */
 export const TEXT_SWATCHES: readonly Swatch[] = [
   { id: "ink", label: "Ink", hex: "#1f1b16", cssVar: "var(--color-ink)" },
-  { id: "vermilion", label: "Vermilion", hex: "#c1272d", cssVar: "var(--color-vermilion)" },
-  { id: "cobalt", label: "Cobalt", hex: "#2c4a7c", cssVar: "var(--color-cobalt)" },
+  {
+    id: "vermilion",
+    label: "Vermilion",
+    hex: "#c1272d",
+    cssVar: "var(--color-vermilion)",
+  },
+  {
+    id: "cobalt",
+    label: "Cobalt",
+    hex: "#2c4a7c",
+    cssVar: "var(--color-cobalt)",
+  },
   // No "forest" here: #5b7a3a scores 4.16 against paper, just under AA, and
   // it is the same hue as olive below. One green, dark enough to read.
-  { id: "olive", label: "Olive", hex: "#556134", cssVar: "var(--color-text-olive)" },
-  { id: "periwinkle", label: "Periwinkle", hex: "#454f9e", cssVar: "var(--color-text-periwinkle)" },
-  { id: "amber", label: "Amber", hex: "#7a5a07", cssVar: "var(--color-text-amber)" },
-  { id: "sienna", label: "Sienna", hex: "#964f40", cssVar: "var(--color-text-sienna)" },
+  {
+    id: "olive",
+    label: "Olive",
+    hex: "#556134",
+    cssVar: "var(--color-text-olive)",
+  },
+  {
+    id: "periwinkle",
+    label: "Periwinkle",
+    hex: "#454f9e",
+    cssVar: "var(--color-text-periwinkle)",
+  },
+  {
+    id: "amber",
+    label: "Amber",
+    hex: "#7a5a07",
+    cssVar: "var(--color-text-amber)",
+  },
+  {
+    id: "sienna",
+    label: "Sienna",
+    hex: "#964f40",
+    cssVar: "var(--color-text-sienna)",
+  },
 ];
 
 /**
@@ -88,12 +143,42 @@ export const TEXT_SWATCHES: readonly Swatch[] = [
  * clears WCAG AA on top of it.
  */
 export const HIGHLIGHT_SWATCHES: readonly Swatch[] = [
-  { id: "butter", label: "Butter", hex: "#fbeaa8", cssVar: "var(--color-highlight-butter)" },
-  { id: "rose", label: "Rose", hex: "#f8d3d4", cssVar: "var(--color-highlight-rose)" },
-  { id: "sky", label: "Sky", hex: "#cfe0f2", cssVar: "var(--color-highlight-sky)" },
-  { id: "mint", label: "Mint", hex: "#d5e6c4", cssVar: "var(--color-highlight-mint)" },
-  { id: "lilac", label: "Lilac", hex: "#dcdff4", cssVar: "var(--color-highlight-lilac)" },
-  { id: "peach", label: "Peach", hex: "#fadfd5", cssVar: "var(--color-highlight-peach)" },
+  {
+    id: "butter",
+    label: "Butter",
+    hex: "#fbeaa8",
+    cssVar: "var(--color-highlight-butter)",
+  },
+  {
+    id: "rose",
+    label: "Rose",
+    hex: "#f8d3d4",
+    cssVar: "var(--color-highlight-rose)",
+  },
+  {
+    id: "sky",
+    label: "Sky",
+    hex: "#cfe0f2",
+    cssVar: "var(--color-highlight-sky)",
+  },
+  {
+    id: "mint",
+    label: "Mint",
+    hex: "#d5e6c4",
+    cssVar: "var(--color-highlight-mint)",
+  },
+  {
+    id: "lilac",
+    label: "Lilac",
+    hex: "#dcdff4",
+    cssVar: "var(--color-highlight-lilac)",
+  },
+  {
+    id: "peach",
+    label: "Peach",
+    hex: "#fadfd5",
+    cssVar: "var(--color-highlight-peach)",
+  },
 ];
 
 /** The manuscript's body ink, for contrast checks against a highlight. */
@@ -118,7 +203,9 @@ export function swatchByHex(
 
 /* ── Contrast, so a colour choice cannot quietly break readability ── */
 
-export function parseHex(hex: string): { r: number; g: number; b: number } | null {
+export function parseHex(
+  hex: string,
+): { r: number; g: number; b: number } | null {
   const m = /^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(hex.trim());
   if (!m) return null;
   let body = m[1];

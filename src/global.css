@@ -702,6 +702,54 @@ body {
     0 2px 0 color-mix(in srgb, var(--shade) 5%, transparent);
 }
 
+/* ── Drop caret and gap cursor ────────────────────────────
+   Where a dragged selection will land, and where the caret sits between two
+   block nodes. Both extensions ship enabled via StarterKit but neither draws
+   anything useful on its own: prosemirror-gapcursor has no styles at all
+   without its stylesheet, and the drop caret defaults to a 1px hairline in the
+   body text colour. Vermilion matches the editorial marks elsewhere in the
+   manuscript, so the insertion point reads as an instruction rather than
+   as part of the prose. */
+.twyne-editor .twyne-dropcursor {
+  background-color: var(--color-vermilion);
+  border-radius: 1px;
+  box-shadow: 0 0 0 1px
+    color-mix(in srgb, var(--color-vermilion) 25%, transparent);
+}
+
+.twyne-editor .ProseMirror-gapcursor {
+  display: none;
+  pointer-events: none;
+  position: absolute;
+}
+
+.twyne-editor .ProseMirror-gapcursor::after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: -2px;
+  width: 1.25rem;
+  border-top: 2px solid var(--color-vermilion);
+  animation: twyne-gapcursor-blink 1.1s steps(2, start) infinite;
+}
+
+@keyframes twyne-gapcursor-blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twyne-editor .ProseMirror-gapcursor::after {
+    animation: none;
+  }
+}
+
+.twyne-editor .ProseMirror-focused .ProseMirror-gapcursor,
+.twyne-editor .ProseMirror-gapcursor:focus {
+  display: block;
+}
+
 /* ── Tiptap manuscript page ──────────────────────────────── */
 .twyne-editor .ProseMirror {
   outline: none;
@@ -2569,31 +2617,173 @@ body {
   outline-offset: 3px;
 }
 
-/* Annotation slips pinned over the workspace preview */
-.landing-annotation {
+/* Room-tour hotspots pinned over the workspace preview */
+@keyframes tour-pulse {
+  0% {
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--hotspot-accent) 55%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 10px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+.tour-hotspot {
   position: absolute;
   z-index: 2;
-  pointer-events: none;
-  max-width: 15.5rem;
-  padding: 0.6rem 0.8rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  translate: -50% -50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  line-height: 1;
+  color: var(--hotspot-accent);
+  background: var(--color-paper);
+  border: 1.5px solid var(--hotspot-accent);
+  border-radius: 999px;
+  box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--shade) 60%, transparent);
+  animation: tour-pulse 2.4s ease-out infinite;
+  cursor: pointer;
+}
+.tour-hotspot:hover {
+  transform: scale(1.12);
+}
+@media (min-width: 64rem) {
+  .tour-hotspot {
+    display: flex;
+  }
+}
+.tour-hotspot.is-active {
+  background: var(--hotspot-accent);
+  color: var(--color-paper);
+  animation: none;
+}
+.tour-hotspot:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
+}
+
+/* Room-tour reader slip floating over the preview */
+.tour-slip-anchor {
+  position: absolute;
+  z-index: 3;
+  width: 0;
+  height: 0;
+}
+.tour-slip {
+  position: absolute;
+  left: 0;
+  translate: -50% 0;
+  width: 15.5rem;
+  padding: 0.6rem 0.8rem 0.7rem;
   background: var(--color-paper-soft);
   border: 1px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  border-left: 3px solid var(--slip-accent);
   border-radius: 2px;
-  box-shadow: 0 14px 28px -18px
-    color-mix(in srgb, var(--shade) 50%, transparent);
+  box-shadow: 0 18px 34px -18px
+    color-mix(in srgb, var(--shade) 60%, transparent);
+  text-align: left;
 }
-.landing-annotation .tag {
+.tour-slip--above {
+  bottom: 18px;
+}
+.tour-slip--below {
+  top: 18px;
+}
+.tour-slip__tag {
   font-family: var(--font-typewriter);
-  font-size: 0.72rem;
+  font-size: 0.66rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--slip-accent);
 }
-.landing-annotation .note {
-  margin-top: 0.2rem;
+.tour-slip__note {
+  margin-top: 0.25rem;
   font-family: var(--font-serif);
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   line-height: 1.45;
   color: var(--color-ink-light);
+}
+.tour-slip__controls {
+  margin-top: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.tour-slip__dots {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+/* Narrow screens: the slip docks as a bottom sheet so it never leaves
+   the frame or covers the hotspot it describes. */
+@media (max-width: 1023.98px) {
+  .tour-slip-anchor {
+    left: 50% !important;
+    top: auto !important;
+    bottom: 0.75rem;
+  }
+  .tour-slip--above,
+  .tour-slip--below {
+    top: auto;
+    bottom: 0;
+  }
+  .tour-slip {
+    width: min(22rem, calc(100vw - 4rem));
+  }
+}
+
+/* Room-tour slip controls */
+.tour-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  color: var(--color-ink-light);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 22%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+.tour-step:hover {
+  color: var(--color-ink);
+  border-color: var(--color-vermilion);
+}
+.tour-step:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
+}
+.tour-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 30%, transparent);
+  background: transparent;
+  cursor: pointer;
+}
+.tour-dot.is-active {
+  background: var(--dot-accent);
+  border-color: var(--dot-accent);
+  transform: scale(1.25);
+}
+.tour-dot:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-hotspot {
+    animation: none;
+  }
 }
 
 /* Step numerals in the how-it-works ledger */
@@ -2939,7 +3129,7 @@ body {
   --drift-x: 0px;
   --drift-y: 0px;
   margin: 0;
-  padding: 0.5rem 0.5rem 1.4rem;
+  padding: 0.5rem;
   background: var(--color-paper-soft);
   border: 1px solid color-mix(in srgb, var(--color-ink) 16%, transparent);
   border-radius: 2px;
@@ -2981,14 +3171,13 @@ body {
     rotate(calc(var(--tilt) * 0.15)) scale(1.012);
 }
 
+/* The frame hugs the preview content — the previews are live components
+   with their own natural height, not photographs, so a fixed ratio would
+   leave a dead band under the shorter ones. */
 .landing-plate__frame {
   overflow: hidden;
   border-radius: 2px;
-  aspect-ratio: 3 / 2;
   background: var(--color-paper-3);
-}
-.landing-plate__frame--portrait {
-  aspect-ratio: 4 / 5;
 }
 .landing-plate__frame img {
   width: 100%;
@@ -3007,11 +3196,7 @@ body {
   object-fit: cover;
   opacity: 0.18;
   pointer-events: none;
-  mask-image: radial-gradient(
-    ellipse at center,
-    #000 30%,
-    transparent 78%
-  );
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 78%);
 }
 [data-theme="nightpress"] .landing-closing-photo {
   opacity: 0.26;
@@ -5676,5 +5861,146 @@ a {
   }
   .carriage-input {
     transition: none;
+  }
+}
+
+/* Review uses the same paper, ink, forms, and narrow manuscript furniture. */
+.live-review-status {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--color-paper-3);
+  padding: 0.25rem 1rem;
+  background: var(--color-paper-2);
+  color: var(--color-ink-light);
+}
+.live-review-status__line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2rem;
+}
+.live-review-status__label,
+.live-review-status__finding {
+  font: 0.75rem/1.4 var(--font-sans);
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: left;
+}
+.live-review-status__finding {
+  color: var(--color-cobalt);
+  min-height: 2rem;
+}
+.live-review-status__toggle {
+  flex-shrink: 0;
+  font: 0.7rem/1.4 var(--font-sans);
+  min-height: 2rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.live-review-status__detail {
+  max-width: 70ch;
+  padding: 0.4rem 0 0.6rem;
+  font: 0.875rem/1.6 var(--font-serif);
+  color: var(--color-ink);
+}
+.live-review-panel {
+  padding: 1rem;
+  text-align: left;
+  font: 0.875rem/1.6 var(--font-serif);
+  min-width: 0;
+}
+.live-review-panel__section {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--color-paper-3);
+}
+.live-review-panel__disclosure {
+  color: var(--color-ink-light);
+  font-size: 0.75rem;
+  margin: 0.5rem 0;
+}
+.live-review-passage {
+  padding: 0.5rem 0;
+}
+.live-review-passage summary {
+  cursor: pointer;
+  color: var(--color-ink);
+  min-height: 2rem;
+}
+.live-review-passage blockquote {
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  border-left: 2px solid var(--color-cobalt);
+  overflow-wrap: anywhere;
+}
+.twyne-quick-review-passage {
+  position: relative;
+}
+.twyne-quick-review-marker {
+  position: absolute;
+  right: -1.75rem;
+  top: 0;
+  width: 1.5rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: 2px;
+  background: var(--color-paper-2);
+  color: var(--color-cobalt);
+  font: 0.8rem var(--font-typewriter);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 150ms ease-out;
+}
+.twyne-quick-review-marker:hover {
+  background: var(--color-paper-3);
+}
+.twyne-quick-review-marker:focus-visible {
+  outline: 2px solid var(--color-cobalt);
+  outline-offset: 2px;
+}
+.twyne-quick-review-card {
+  position: fixed;
+  margin: 0;
+  width: min(20rem, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  padding: 1rem;
+  border: 1px solid var(--color-ink);
+  border-radius: 2px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: 0.875rem/1.6 var(--font-serif);
+}
+.twyne-quick-review-card strong {
+  font-family: var(--font-display);
+}
+.twyne-quick-review-card p {
+  margin: 0.5rem 0;
+}
+.twyne-quick-review-card small {
+  display: block;
+  color: var(--color-ink-light);
+  margin-bottom: 0.75rem;
+}
+.zen-mode .twyne-quick-review-marker {
+  display: none;
+}
+@media (max-width: 40rem) {
+  .live-review-status {
+    padding-inline: 0.5rem;
+  }
+  .twyne-quick-review-marker {
+    right: -1.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .twyne-quick-review-marker {
+    transition: none;
+  }
+}
+@media print {
+  .live-review-status,
+  .twyne-quick-review-marker,
+  .twyne-quick-review-card {
+    display: none !important;
   }
 }

@@ -19,9 +19,16 @@
  * the transformers.js runtime stays out of the main bundle.
  */
 
-import { env, pipeline, type TextToAudioPipeline } from "@huggingface/transformers";
+import {
+  env,
+  pipeline,
+  type TextToAudioPipeline,
+} from "@huggingface/transformers";
 import { encode as encodeWav } from "wav-encoder";
-import { createAppError, normalizeApplicationError } from "./application-errors";
+import {
+  createAppError,
+  normalizeApplicationError,
+} from "./application-errors";
 import {
   BROWSER_TTS_MANIFEST_FILES,
   BROWSER_TTS_PROVIDER_ID,
@@ -55,7 +62,9 @@ export const SUPERTONIC_VOICES = BROWSER_TTS_VOICES;
 export type SupertonicVoice = (typeof SUPERTONIC_VOICES)[number];
 
 /** A known voice id, or the default when the writer named something else. */
-export function normalizeSupertonicVoice(voice: string | undefined): SupertonicVoice {
+export function normalizeSupertonicVoice(
+  voice: string | undefined,
+): SupertonicVoice {
   if (voice && (SUPERTONIC_VOICES as readonly string[]).includes(voice)) {
     return voice as SupertonicVoice;
   }
@@ -101,7 +110,10 @@ export function onSupertonicStatus(
 }
 
 async function readStatus(): Promise<SupertonicStatus> {
-  const state = await modelDownloadState(SUPERTONIC_BUNDLE_ID, SUPERTONIC_MANIFEST_FILES);
+  const state = await modelDownloadState(
+    SUPERTONIC_BUNDLE_ID,
+    SUPERTONIC_MANIFEST_FILES,
+  );
   return { ...state, id: SUPERTONIC_BUNDLE_ID, device: supertonicDevice() };
 }
 
@@ -181,10 +193,12 @@ export function disposeSupertonicPipeline(): void {
  * through `onSupertonicStatus` and the callback. Throws AbortError when the
  * writer stops the download.
  */
-export async function downloadSupertonicPack(opts: {
-  signal?: AbortSignal;
-  onProgress?: (state: ModelDownloadState) => void;
-} = {}): Promise<void> {
+export async function downloadSupertonicPack(
+  opts: {
+    signal?: AbortSignal;
+    onProgress?: (state: ModelDownloadState) => void;
+  } = {},
+): Promise<void> {
   const device = supertonicDevice();
   if (!device) {
     throw createAppError("CONFIGURATION_ERROR", {
@@ -215,7 +229,10 @@ export async function clearSupertonicPack(): Promise<void> {
 
 /** True when every file of the pack is on disk. */
 export async function isSupertonicReady(): Promise<boolean> {
-  return isModelBundleDownloaded(SUPERTONIC_BUNDLE_ID, SUPERTONIC_MANIFEST_FILES);
+  return isModelBundleDownloaded(
+    SUPERTONIC_BUNDLE_ID,
+    SUPERTONIC_MANIFEST_FILES,
+  );
 }
 
 /* ── Synthesis ───────────────────────────────────────────────────── */
@@ -351,7 +368,11 @@ export async function synthesizeSupertonic(
       responseFormat: "wav",
     };
   } catch (err) {
-    if (err && typeof (err as Error).message === "string" && (err as Error).message.startsWith("Downloading")) {
+    if (
+      err &&
+      typeof (err as Error).message === "string" &&
+      (err as Error).message.startsWith("Downloading")
+    ) {
       throw createAppError("NETWORK_UNAVAILABLE", {
         source: "fetch",
         recovery: { action: "retry", canRetry: true },

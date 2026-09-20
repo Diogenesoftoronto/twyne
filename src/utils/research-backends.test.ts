@@ -1,9 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  SEARCH_BACKENDS,
-  searchBackend,
-  toSources,
-} from "./research-backends";
+import { SEARCH_BACKENDS, searchBackend, toSources } from "./research-backends";
 import type { SearchBackendConfig } from "../types";
 
 const req = { query: "who said it", context: "a claim", maxResults: 5 };
@@ -52,7 +48,10 @@ describe("search backend adapters", () => {
       ),
     ).toEqual([{ url: "https://a" }]);
     expect(
-      SEARCH_BACKENDS.serper.extract({ organic: [{ url: "https://b" }] }, config()),
+      SEARCH_BACKENDS.serper.extract(
+        { organic: [{ url: "https://b" }] },
+        config(),
+      ),
     ).toEqual([{ url: "https://b" }]);
   });
 
@@ -75,7 +74,9 @@ describe("search backend adapters", () => {
   });
 
   test("an unknown backend id falls back rather than throwing", () => {
-    expect(searchBackend("nope" as SearchBackendConfig["id"]).id).toBe("tinyfish");
+    expect(searchBackend("nope" as SearchBackendConfig["id"]).id).toBe(
+      "tinyfish",
+    );
   });
 });
 

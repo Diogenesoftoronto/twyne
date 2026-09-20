@@ -572,10 +572,7 @@ async function scoreRubricIntegrityRow(
   };
 }
 
-type QualityRow =
-  | RubricJudgeRow
-  | RubricEvidenceRow
-  | RubricIntegrityRow;
+type QualityRow = RubricJudgeRow | RubricEvidenceRow | RubricIntegrityRow;
 
 interface PairAxis {
   /** Key under which the two slots are stored (persona id or "evidence" / "integrity"). */
@@ -588,8 +585,16 @@ interface PairAxis {
 
 const PAIR_AXES: Record<string, PairAxis> = {
   "rubric-judge": { persona: "_persona_", strong: "strong", weak: "weak" },
-  "rubric-evidence": { persona: "evidence", strong: "grounded", weak: "padded" },
-  "rubric-integrity": { persona: "integrity", strong: "honest", weak: "bullshit" },
+  "rubric-evidence": {
+    persona: "evidence",
+    strong: "grounded",
+    weak: "padded",
+  },
+  "rubric-integrity": {
+    persona: "integrity",
+    strong: "honest",
+    weak: "bullshit",
+  },
 };
 
 function draftQuality(r: QualityRow): string | undefined {
@@ -602,9 +607,7 @@ function axisPersona(r: QualityRow): string {
 }
 
 /** Axis-blind dedupe for quality pairs across the three judge tasks. */
-function buildDiscriminationPairs(
-  rows: QualityRow[],
-): DiscriminationPair[] {
+function buildDiscriminationPairs(rows: QualityRow[]): DiscriminationPair[] {
   const byQuality = new Map<
     string,
     { strong?: QualityRow; weak?: QualityRow; axis: PairAxis }
@@ -793,11 +796,11 @@ async function main(): Promise<void> {
   ).length;
   const pairsByTask = {
     "rubric-judge": pairs.filter((p) => p.persona.includes("rubric-judge::")),
-    "rubric-evidence": pairs.filter(
-      (p) => p.persona.includes("rubric-evidence::"),
+    "rubric-evidence": pairs.filter((p) =>
+      p.persona.includes("rubric-evidence::"),
     ),
-    "rubric-integrity": pairs.filter(
-      (p) => p.persona.includes("rubric-integrity::"),
+    "rubric-integrity": pairs.filter((p) =>
+      p.persona.includes("rubric-integrity::"),
     ),
   };
   const pairsPassed = pairs.filter((p) => p.passed).length;

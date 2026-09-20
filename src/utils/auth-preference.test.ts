@@ -237,8 +237,7 @@ describe("auth-preference", () => {
   test("attempts to wipe corrupted data even when removal fails", () => {
     let removeAttempted = false;
     installStorageShim({
-      getItem: (k) =>
-        k === "twyne.auth.preferredMethod" ? "{not json" : null,
+      getItem: (k) => (k === "twyne.auth.preferredMethod" ? "{not json" : null),
       setItem: () => {},
       removeItem: () => {
         removeAttempted = true;

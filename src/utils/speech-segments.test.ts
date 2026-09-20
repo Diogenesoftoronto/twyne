@@ -16,10 +16,14 @@ describe("segmentSpeechText", () => {
   test("creates semantic chunks before a long document finishes", () => {
     const sentence =
       "The editor reads a deliberate sentence with enough detail to sound natural.";
-    const source = Array.from({ length: 18 }, (_, index) =>
-      `${sentence.slice(0, -1)} ${index + 1}.`,
+    const source = Array.from(
+      { length: 18 },
+      (_, index) => `${sentence.slice(0, -1)} ${index + 1}.`,
     ).join(" ");
-    const chunks = segmentSpeechText(source, { targetWords: 35, maxChars: 500 });
+    const chunks = segmentSpeechText(source, {
+      targetWords: 35,
+      maxChars: 500,
+    });
 
     expect(chunks.length).toBeGreaterThan(2);
     for (const chunk of chunks) {
@@ -49,7 +53,8 @@ describe("segmentSpeechText", () => {
         `Sentence ${index + 1} carries stable wording for the narration cache.`,
     );
     const before = segmentSpeechText(sentences.join(" "));
-    sentences[18] = "Sentence 19 carries revised wording for the narration cache.";
+    sentences[18] =
+      "Sentence 19 carries revised wording for the narration cache.";
     const after = segmentSpeechText(sentences.join(" "));
 
     expect(after).toHaveLength(before.length);
@@ -64,7 +69,10 @@ describe("segmentSpeechText", () => {
       (_, index) => `word${index}`,
     ).join(" ");
     const source = `First paragraph.\n\n${longClause}; then the sentence ends.`;
-    const chunks = segmentSpeechText(source, { targetWords: 20, maxChars: 140 });
+    const chunks = segmentSpeechText(source, {
+      targetWords: 20,
+      maxChars: 140,
+    });
 
     expect(chunks.length).toBeGreaterThan(2);
     for (const chunk of chunks) {

@@ -255,7 +255,8 @@ export function paginate(
 
   const closeRun = (nextStart: number, forced: boolean) => {
     // How far the ink on this page actually reaches.
-    const inkExtent = stackInkBottom(metrics, tops, nextStart - 1) - tops[runStart];
+    const inkExtent =
+      stackInkBottom(metrics, tops, nextStart - 1) - tops[runStart];
     // How far the *stack* advances before the next page's first block, which
     // includes the margin collapsing at the boundary. The grid is defined on
     // this, because it is what shifts the following blocks.

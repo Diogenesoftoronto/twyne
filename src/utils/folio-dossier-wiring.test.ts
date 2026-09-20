@@ -33,17 +33,11 @@ describe("folio dossier wiring", () => {
   });
 
   test("dossier create and refine save against the selected folio", async () => {
-    const create = await Bun.file(
-      "src/routes/dossier/create/index.tsx",
-    ).text();
-    const refine = await Bun.file(
-      "src/routes/dossier/refine/index.tsx",
-    ).text();
+    const create = await Bun.file("src/routes/dossier/create/index.tsx").text();
+    const refine = await Bun.file("src/routes/dossier/refine/index.tsx").text();
     expect(create).toContain("saveProjectBriefForFolio(folioId, brief)");
     expect(refine).toContain("loadProjectBriefForFolio(store.folioId)");
-    expect(refine).toContain(
-      "saveProjectBriefForFolio(store.folioId, next)",
-    );
+    expect(refine).toContain("saveProjectBriefForFolio(store.folioId, next)");
   });
 
   test("sync carries a collection of per-folio dossiers", async () => {
@@ -53,7 +47,9 @@ describe("folio dossier wiring", () => {
     expect(client).toContain("loadAllBriefsFromIdb");
     expect(client).toContain("briefs: snap.briefs");
     expect(server).toContain("briefs: v.optional(");
-    expect(schema).toContain('.index("by_userId_folioId", ["userId", "folioId"])');
+    expect(schema).toContain(
+      '.index("by_userId_folioId", ["userId", "folioId"])',
+    );
   });
 
   test("room notes, replies, analysis, rubric, and suggestions use folio scope", async () => {

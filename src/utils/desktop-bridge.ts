@@ -26,9 +26,12 @@ function read(): DesktopContext {
   }
   const params = new URLSearchParams(window.location.search);
   const isDesktop = params.get("platform") === "desktop";
-  const localAi = isDesktop && (params.get("localAi") === "1" || params.get("localAi") === "true");
+  const localAi =
+    isDesktop &&
+    (params.get("localAi") === "1" || params.get("localAi") === "true");
   const portRaw = params.get("localPort");
-  const localPort = portRaw && /^\d+$/.test(portRaw) ? parseInt(portRaw, 10) : null;
+  const localPort =
+    portRaw && /^\d+$/.test(portRaw) ? parseInt(portRaw, 10) : null;
   _ctx = { isDesktop, localAi, localPort };
   return _ctx;
 }

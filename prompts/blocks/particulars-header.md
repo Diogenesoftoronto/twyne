@@ -6,4 +6,3 @@ version: "1"
 
 PARTICULARS (specific commitments the writer made during the interview — treat these as binding as the brief above)
 {probeLines}
-

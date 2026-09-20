@@ -181,8 +181,7 @@ export function computeTableToolbarStackPosition(
   toolbar: TableToolbarMetrics = {},
 ): TableToolbarStackPosition {
   const toolbarHeight = toolbar.height ?? TABLE_TOOLBAR_IDEAL_HEIGHT;
-  const panelHeight =
-    toolbar.cellPanelHeight ?? TABLE_CELL_FORMAT_PANEL_HEIGHT;
+  const panelHeight = toolbar.cellPanelHeight ?? TABLE_CELL_FORMAT_PANEL_HEIGHT;
   const stackedHeight =
     toolbarHeight + TABLE_TOOLBAR_GAP + (showCellFormatRow ? panelHeight : 0);
   const metrics = {
@@ -325,7 +324,10 @@ export function createTableToolbarController(
     // where it must sit. Re-measure on the next frame and reposition if the
     // guess was wrong — otherwise an underestimate leaves the panel parked on
     // the table's first row until the next unrelated event.
-    if (resettling || typeof targetWindow.requestAnimationFrame !== "function") {
+    if (
+      resettling ||
+      typeof targetWindow.requestAnimationFrame !== "function"
+    ) {
       return;
     }
     resettling = true;
@@ -438,27 +440,27 @@ export const FloatingTableToolbar = component$<FloatingTableToolbarProps>(
                   {ACTION_GROUP_LABELS[group]}
                 </span>
                 {actions.map((action) => (
-                <button
-                  key={action.id}
-                  type="button"
-                  disabled={!snapshot.availability[action.id]}
-                  class={[
-                    "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-transparent hover:border-[var(--color-paper-3)] hover:bg-[var(--color-paper)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-vermilion)] disabled:cursor-not-allowed disabled:opacity-35",
-                    action.destructive
-                      ? "text-[var(--color-vermilion)]"
-                      : "text-[var(--color-ink-light)] hover:text-[var(--color-ink)]",
-                  ]}
-                  title={action.label}
-                  aria-label={action.label}
-                  onClick$={() =>
-                    props.onIntent$({
-                      kind: "action",
-                      action: action.id,
-                    })
-                  }
-                >
-                  <Icon name={TABLE_ACTION_ICONS[action.id]} size={17} />
-                </button>
+                  <button
+                    key={action.id}
+                    type="button"
+                    disabled={!snapshot.availability[action.id]}
+                    class={[
+                      "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-transparent hover:border-[var(--color-paper-3)] hover:bg-[var(--color-paper)] focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--color-vermilion)] disabled:cursor-not-allowed disabled:opacity-35",
+                      action.destructive
+                        ? "text-[var(--color-vermilion)]"
+                        : "text-[var(--color-ink-light)] hover:text-[var(--color-ink)]",
+                    ]}
+                    title={action.label}
+                    aria-label={action.label}
+                    onClick$={() =>
+                      props.onIntent$({
+                        kind: "action",
+                        action: action.id,
+                      })
+                    }
+                  >
+                    <Icon name={TABLE_ACTION_ICONS[action.id]} size={17} />
+                  </button>
                 ))}
               </div>
             );

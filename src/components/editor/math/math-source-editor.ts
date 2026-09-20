@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/core";
+import { renderLatex, type MathDisplayMode } from "./math-renderer";
 
 export type MathNodeName = "inlineMath" | "blockMath";
 
@@ -71,6 +72,17 @@ export function createMathSourceEditor(
   const actions = document.createElement("span");
   actions.className = "twyne-math-source-actions";
 
+  const preview = document.createElement("div");
+  preview.className = "twyne-math-source-preview";
+  preview.setAttribute("aria-live", "polite");
+  preview.setAttribute(
+    "aria-label",
+    `${options.nodeName === "blockMath" ? "Block" : "Inline"} equation preview`,
+  );
+
+  const display: MathDisplayMode =
+    options.nodeName === "blockMath" ? "block" : "inline";
+
   const save = document.createElement("button");
   save.className = "twyne-math-source-save";
   save.type = "submit";
@@ -83,7 +95,59 @@ export function createMathSourceEditor(
 
   actions.append(save, cancel);
   label.append(input);
-  form.append(label, actions);
+  form.append(label, preview, actions);
+
+  // Live preview: same renderer the NodeView uses once the edit is saved,
+  // debounced so typing doesn't re-render KaTeX per keystroke. The preview
+  // never writes back to the document — saving still goes through the
+  // Tiptap transaction pipeline in `submit`.
+  let previewGeneration = 0;
+  let previewTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const showPreviewPlaceholder = (message: string) => {
+    preview.className = "twyne-math-source-preview";
+    preview.replaceChildren();
+    const hint = document.createElement("span");
+    hint.className = "twyne-math-source-preview-hint";
+    hint.textContent = message;
+    preview.append(hint);
+  };
+
+  const renderPreview = async () => {
+    const generation = ++previewGeneration;
+    const source = input.value;
+    if (!source.trim()) {
+      showPreviewPlaceholder("A live preview of the equation appears here.");
+      return;
+    }
+    const result = await renderLatex(source, display);
+    if (generation !== previewGeneration) return;
+    preview.replaceChildren();
+    if (result.error) {
+      preview.className =
+        "twyne-math-source-preview twyne-math-source-preview-error";
+      const prefix = document.createElement("strong");
+      prefix.textContent = "Invalid LaTeX";
+      const detail = document.createElement("span");
+      detail.className = "twyne-math-source-preview-message";
+      detail.textContent = result.error;
+      preview.append(prefix, detail);
+      return;
+    }
+    preview.className = "twyne-math-source-preview";
+    const output = document.createElement("span");
+    output.className = "twyne-math-source-preview-output";
+    output.innerHTML = result.html;
+    preview.append(output);
+  };
+
+  const schedulePreview = () => {
+    if (previewTimer) clearTimeout(previewTimer);
+    previewTimer = setTimeout(() => {
+      previewTimer = null;
+      void renderPreview();
+    }, 300);
+  };
 
   const closeAndFocusNode = () => {
     const pos = options.getPos();
@@ -130,9 +194,13 @@ export function createMathSourceEditor(
 
   const cancelEdit = () => closeAndFocusNode();
 
+  const onPreviewInput = () => schedulePreview();
+
   form.addEventListener("submit", submit);
   input.addEventListener("keydown", keydown);
+  input.addEventListener("input", onPreviewInput);
   cancel.addEventListener("click", cancelEdit);
+  void renderPreview();
 
   return {
     dom: form,
@@ -142,8 +210,11 @@ export function createMathSourceEditor(
       input.setSelectionRange(input.value.length, input.value.length);
     },
     destroy: () => {
+      previewGeneration++;
+      if (previewTimer) clearTimeout(previewTimer);
       form.removeEventListener("submit", submit);
       input.removeEventListener("keydown", keydown);
+      input.removeEventListener("input", onPreviewInput);
       cancel.removeEventListener("click", cancelEdit);
     },
   };

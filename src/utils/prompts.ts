@@ -45,7 +45,10 @@ export interface LoadedPrompt {
 type RawModule = string | { default: string } | undefined;
 
 /** Strip YAML-ish frontmatter from a markdown file body. */
-function splitFrontmatter(raw: string): { frontmatter: PromptFrontmatter; body: string } {
+function splitFrontmatter(raw: string): {
+  frontmatter: PromptFrontmatter;
+  body: string;
+} {
   // Frontmatter must be the very first line, fenced by `---` on its own line
   // and closed with `---` on its own line. Keeps the loader honest: anything
   // that doesn't match is treated as pure body so we never silently drop text.
@@ -220,7 +223,10 @@ export function getPrompt(name: string): LoadedPrompt {
 }
 
 /** Convenience: render a prompt by basename with the given vars. */
-export function prompt(name: string, vars: Record<string, string | number | undefined> = {}): string {
+export function prompt(
+  name: string,
+  vars: Record<string, string | number | undefined> = {},
+): string {
   const loaded = load(name);
   return renderPrompt(loaded.body, vars);
 }
@@ -314,7 +320,8 @@ export const promptNames = {
   attachmentDocOmitted: "blocks/attachment-doc-omitted",
   clientInterviewSystem: "blocks/client-interview-system",
   clientInterviewRefineAppendix: "blocks/client-interview-refine-appendix",
-  clientInterviewManuscriptAppendix: "blocks/client-interview-manuscript-appendix",
+  clientInterviewManuscriptAppendix:
+    "blocks/client-interview-manuscript-appendix",
   refineAppendix: "blocks/refine-appendix",
   manuscriptAppendix: "blocks/manuscript-appendix",
   researchExtractExisting: "blocks/research-extract-existing",

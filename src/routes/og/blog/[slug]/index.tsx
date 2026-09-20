@@ -19,11 +19,7 @@ import {
 } from "../../../../utils/published-metadata";
 import { renderArticleOgPng } from "../../../../utils/og-image";
 
-export const onGet: RequestHandler = async ({
-  params,
-  send,
-  cacheControl,
-}) => {
+export const onGet: RequestHandler = async ({ params, send, cacheControl }) => {
   cacheControl({
     public: true,
     maxAge: 60 * 60, // 1h at the client/CDN edge
@@ -38,7 +34,8 @@ export const onGet: RequestHandler = async ({
     const { piece } = await loadBlogPieceBySlug(slug);
     if (piece) {
       const author =
-        piece.authorName ?? (piece.ownerHandle ? `@${piece.ownerHandle}` : null);
+        piece.authorName ??
+        (piece.ownerHandle ? `@${piece.ownerHandle}` : null);
       png = renderArticleOgPng({
         title: piece.title,
         summary: blogDescription(piece),

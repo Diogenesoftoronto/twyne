@@ -45,8 +45,14 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function requireFolio(value: unknown, index: number): Folio {
-  if (!isRecord(value) || typeof value.name !== "string" || !value.name.trim()) {
-    throw new Error(`Archive folio ${index + 1} must contain a non-empty folio.name`);
+  if (
+    !isRecord(value) ||
+    typeof value.name !== "string" ||
+    !value.name.trim()
+  ) {
+    throw new Error(
+      `Archive folio ${index + 1} must contain a non-empty folio.name`,
+    );
   }
   if (value.id !== undefined && typeof value.id !== "string") {
     throw new Error(`Archive folio ${index + 1} has an invalid folio.id`);
@@ -54,7 +60,10 @@ function requireFolio(value: unknown, index: number): Folio {
   return value as Folio;
 }
 
-export function createArchive(folios: FolioBundle[], now = new Date()): TwyneArchiveV2 {
+export function createArchive(
+  folios: FolioBundle[],
+  now = new Date(),
+): TwyneArchiveV2 {
   return {
     format: TWYNE_ARCHIVE_FORMAT,
     version: TWYNE_ARCHIVE_VERSION,
@@ -75,14 +84,19 @@ export function parseArchive(input: string | unknown): TwyneArchiveV2 {
     }
   }
   if (!isRecord(parsed)) throw new Error("Twyne archive must be a JSON object");
-  if (parsed.format !== TWYNE_ARCHIVE_FORMAT || parsed.version !== TWYNE_ARCHIVE_VERSION) {
+  if (
+    parsed.format !== TWYNE_ARCHIVE_FORMAT ||
+    parsed.version !== TWYNE_ARCHIVE_VERSION
+  ) {
     throw new Error(
       `Expected a ${TWYNE_ARCHIVE_FORMAT} version ${TWYNE_ARCHIVE_VERSION} bundle`,
     );
   }
-  if (!Array.isArray(parsed.folios)) throw new Error("Twyne archive folios must be an array");
+  if (!Array.isArray(parsed.folios))
+    throw new Error("Twyne archive folios must be an array");
   const folios = parsed.folios.map((entry, index): FolioBundle => {
-    if (!isRecord(entry)) throw new Error(`Archive folio ${index + 1} must be an object`);
+    if (!isRecord(entry))
+      throw new Error(`Archive folio ${index + 1} must be an object`);
     const folio = requireFolio(entry.folio, index);
     if (entry.html !== undefined && typeof entry.html !== "string") {
       throw new Error(`Archive folio ${index + 1} has invalid html`);
@@ -95,7 +109,10 @@ export function parseArchive(input: string | unknown): TwyneArchiveV2 {
   return {
     format: TWYNE_ARCHIVE_FORMAT,
     version: TWYNE_ARCHIVE_VERSION,
-    exportedAt: typeof parsed.exportedAt === "string" ? parsed.exportedAt : new Date(0).toISOString(),
+    exportedAt:
+      typeof parsed.exportedAt === "string"
+        ? parsed.exportedAt
+        : new Date(0).toISOString(),
     folios,
   };
 }
@@ -139,16 +156,22 @@ export function htmlToMarkdown(html: string): string {
     html
       .replace(/<style[\s\S]*?<\/style>/gi, "")
       .replace(/<script[\s\S]*?<\/script>/gi, "")
-      .replace(/<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi, (_match, level, body) =>
-        `${"#".repeat(Number(level))} ${stripHtml(body)}\n\n`,
+      .replace(
+        /<h([1-6])[^>]*>([\s\S]*?)<\/h\1>/gi,
+        (_match, level, body) =>
+          `${"#".repeat(Number(level))} ${stripHtml(body)}\n\n`,
       )
-      .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_match, href, body) =>
-        `[${stripHtml(body)}](${href})`,
+      .replace(
+        /<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,
+        (_match, href, body) => `[${stripHtml(body)}](${href})`,
       )
       .replace(/<(strong|b)[^>]*>([\s\S]*?)<\/\1>/gi, "**$2**")
       .replace(/<(em|i)[^>]*>([\s\S]*?)<\/\1>/gi, "*$2*")
       .replace(/<code[^>]*>([\s\S]*?)<\/code>/gi, "`$1`")
-      .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (_match, body) => `- ${stripHtml(body)}\n`)
+      .replace(
+        /<li[^>]*>([\s\S]*?)<\/li>/gi,
+        (_match, body) => `- ${stripHtml(body)}\n`,
+      )
       .replace(/<br\s*\/?\s*>/gi, "\n")
       .replace(/<\/(p|blockquote|pre|div)>/gi, "\n\n")
       .replace(/<[^>]+>/g, "")
@@ -158,7 +181,11 @@ export function htmlToMarkdown(html: string): string {
   );
 }
 
-function inferredTitle(name: string, content: string, format: "markdown" | "html" | "txt"): string {
+function inferredTitle(
+  name: string,
+  content: string,
+  format: "markdown" | "html" | "txt",
+): string {
   if (format === "html") {
     const title = content.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1];
     if (title?.trim()) return decodeHtml(title.trim());
@@ -176,7 +203,8 @@ function inferredTitle(name: string, content: string, format: "markdown" | "html
 
 export function detectSourceFormat(name: string): ParsedImport["sourceFormat"] {
   const lower = name.toLowerCase();
-  if (lower.endsWith(".twyne.json") || lower.endsWith(".json")) return "archive";
+  if (lower.endsWith(".twyne.json") || lower.endsWith(".json"))
+    return "archive";
   if (lower.endsWith(".html") || lower.endsWith(".htm")) return "html";
   if (lower.endsWith(".txt")) return "txt";
   if (lower.endsWith(".md") || lower.endsWith(".markdown")) return "markdown";
@@ -191,13 +219,22 @@ export function parseImportSource(source: ImportSource): ParsedImport {
   const title = inferredTitle(source.name, source.content, sourceFormat);
   let html: string;
   if (sourceFormat === "markdown") {
-    html = marked.parse(source.content, { async: false, breaks: true, gfm: true }) as string;
+    html = marked.parse(source.content, {
+      async: false,
+      breaks: true,
+      gfm: true,
+    }) as string;
   } else if (sourceFormat === "html") {
-    html = source.content.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ?? source.content;
+    html =
+      source.content.match(/<body[^>]*>([\s\S]*?)<\/body>/i)?.[1] ??
+      source.content;
   } else {
     html = source.content
       .split(/\r?\n\s*\r?\n/)
-      .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\r?\n/g, "<br />")}</p>`)
+      .map(
+        (paragraph) =>
+          `<p>${escapeHtml(paragraph).replace(/\r?\n/g, "<br />")}</p>`,
+      )
       .join("\n");
   }
   return {
@@ -206,7 +243,10 @@ export function parseImportSource(source: ImportSource): ParsedImport {
   };
 }
 
-export async function importSources(client: TwyneClient, sources: ImportSource[]): Promise<ImportSummary> {
+export async function importSources(
+  client: TwyneClient,
+  sources: ImportSource[],
+): Promise<ImportSummary> {
   const imported: Folio[] = [];
   const warnings: string[] = [];
   let citationsSaved = 0;
@@ -220,7 +260,10 @@ export async function importSources(client: TwyneClient, sources: ImportSource[]
       });
       imported.push(folio);
       if (bundle.citations?.length && folio.id) {
-        const result = await client.putCitations(folio.id, bundle.citations as CitationEntry[]);
+        const result = await client.putCitations(
+          folio.id,
+          bundle.citations as CitationEntry[],
+        );
         citationsSaved += result.saved;
       }
       const skipped = ["feedback", "rubric", "suggestions"].filter(
@@ -236,10 +279,15 @@ export async function importSources(client: TwyneClient, sources: ImportSource[]
   return { imported, citationsSaved, warnings };
 }
 
-export async function fetchFolioBundles(client: TwyneClient, ids?: string[]): Promise<FolioBundle[]> {
+export async function fetchFolioBundles(
+  client: TwyneClient,
+  ids?: string[],
+): Promise<FolioBundle[]> {
   const folioIds = ids?.length
     ? ids
-    : (await client.listFolios()).flatMap((folio) => (folio.id ? [folio.id] : []));
+    : (await client.listFolios()).flatMap((folio) =>
+        folio.id ? [folio.id] : [],
+      );
   const bundles: FolioBundle[] = [];
   for (const id of folioIds) {
     const bundle = await client.getFolio(id);
@@ -264,7 +312,10 @@ function standaloneHtml(bundle: FolioBundle): string {
   return `<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n<title>${escapeHtml(title)}</title>\n</head>\n<body>\n<article>\n${bundle.html ?? ""}\n</article>\n</body>\n</html>\n`;
 }
 
-export function exportBundles(bundles: FolioBundle[], format: ExportFormat): ExportArtifact {
+export function exportBundles(
+  bundles: FolioBundle[],
+  format: ExportFormat,
+): ExportArtifact {
   if (format === "archive") {
     return {
       format,
@@ -274,7 +325,9 @@ export function exportBundles(bundles: FolioBundle[], format: ExportFormat): Exp
     };
   }
   if (bundles.length !== 1) {
-    throw new Error(`${format} export requires exactly one folio; use archive for bulk export`);
+    throw new Error(
+      `${format} export requires exactly one folio; use archive for bulk export`,
+    );
   }
   const bundle = bundles[0];
   if (!bundle) throw new Error("No folio was selected for export");

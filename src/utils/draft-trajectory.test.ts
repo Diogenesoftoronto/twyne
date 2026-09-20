@@ -22,14 +22,14 @@ describe("paragraphTextFromHtml", () => {
    * boundaries have to survive for the trajectory to mean anything.
    */
   test("preserves paragraph boundaries", () => {
-    expect(toParagraphs(paragraphTextFromHtml("<p>one</p><p>two</p>"))).toEqual([
-      "one",
-      "two",
-    ]);
+    expect(toParagraphs(paragraphTextFromHtml("<p>one</p><p>two</p>"))).toEqual(
+      ["one", "two"],
+    );
   });
 
   test("treats headings, list items and blockquotes as blocks", () => {
-    const html = "<h2>Title</h2><ul><li>a</li><li>b</li></ul><blockquote>q</blockquote>";
+    const html =
+      "<h2>Title</h2><ul><li>a</li><li>b</li></ul><blockquote>q</blockquote>";
     expect(toParagraphs(paragraphTextFromHtml(html))).toEqual([
       "Title",
       "a",

@@ -15,8 +15,7 @@ import type { UserComment } from "./user-comments";
 beforeAll(() => {
   if (typeof DOMParser === "undefined") {
     const dom = new JSDOM("<!DOCTYPE html><html><body></body></html>");
-    (globalThis as { DOMParser?: unknown }).DOMParser =
-      dom.window.DOMParser;
+    (globalThis as { DOMParser?: unknown }).DOMParser = dom.window.DOMParser;
   }
 });
 
@@ -33,10 +32,7 @@ const sampleThread = (id: string): UserComment => ({
 
 describe("reconcileCommentAnchors", () => {
   test("a thread with a matching mark is live", () => {
-    const result = reconcileCommentAnchors(
-      [sampleThread("c-1")],
-      ["c-1"],
-    );
+    const result = reconcileCommentAnchors([sampleThread("c-1")], ["c-1"]);
     expect(result.live.map((c) => c.id)).toEqual(["c-1"]);
     expect(result.ghost).toEqual([]);
     expect(result.headless).toEqual([]);
@@ -45,10 +41,7 @@ describe("reconcileCommentAnchors", () => {
   test("a thread with no matching mark is a ghost", () => {
     // The marked passage was deleted; the thread body survives
     // in `/user-comments.json` and is now unreachable.
-    const result = reconcileCommentAnchors(
-      [sampleThread("c-1")],
-      [],
-    );
+    const result = reconcileCommentAnchors([sampleThread("c-1")], []);
     expect(result.live).toEqual([]);
     expect(result.ghost.map((c) => c.id)).toEqual(["c-1"]);
     expect(result.headless).toEqual([]);
@@ -58,10 +51,7 @@ describe("reconcileCommentAnchors", () => {
     // The mark was set but persistNewComment hasn't landed
     // yet (or failed). Transient — the editor's own retry
     // should resolve it.
-    const result = reconcileCommentAnchors(
-      [],
-      ["c-pending"],
-    );
+    const result = reconcileCommentAnchors([], ["c-pending"]);
     expect(result.live).toEqual([]);
     expect(result.ghost).toEqual([]);
     expect(result.headless).toEqual(["c-pending"]);

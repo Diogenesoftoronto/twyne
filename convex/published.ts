@@ -70,16 +70,13 @@ function sanitizeHtml(html: string): string {
   }
   // Browser: use a DOMParser to drop nodes outright.
   const doc = new DOMParser().parseFromString(html, "text/html");
-  doc.querySelectorAll("script, style, iframe, object, embed").forEach((el) =>
-    el.remove(),
-  );
+  doc
+    .querySelectorAll("script, style, iframe, object, embed")
+    .forEach((el) => el.remove());
   doc.querySelectorAll("*").forEach((el) => {
     for (const attr of Array.from(el.attributes)) {
       if (/^on/i.test(attr.name)) el.removeAttribute(attr.name);
-      if (
-        attr.name === "href" &&
-        /^\s*javascript:/i.test(attr.value ?? "")
-      ) {
+      if (attr.name === "href" && /^\s*javascript:/i.test(attr.value ?? "")) {
         el.removeAttribute("href");
       }
     }
@@ -102,9 +99,7 @@ export const publish = mutation({
      * admin roster — non-admins asking for the blog kind fall
      * back to "post" with a flag in the response.
      */
-    kind: v.optional(
-      v.union(v.literal("post"), v.literal("blog")),
-    ),
+    kind: v.optional(v.union(v.literal("post"), v.literal("blog"))),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -299,10 +294,8 @@ export const listByHandle = query({
     const normalized = handle.toLowerCase();
     const rows = await ctx.db
       .query("published")
-      .withIndex(
-        "by_ownerHandle_kind_publishedAt",
-        (q) =>
-          q.eq("ownerHandle", normalized).eq("kind", "post"),
+      .withIndex("by_ownerHandle_kind_publishedAt", (q) =>
+        q.eq("ownerHandle", normalized).eq("kind", "post"),
       )
       .collect();
     return rows
@@ -324,9 +317,7 @@ export const listBlog = query({
   handler: async (ctx, { limit }) => {
     const rows = await ctx.db
       .query("published")
-      .withIndex("by_kind_publishedAt", (q) =>
-        q.eq("kind", "blog"),
-      )
+      .withIndex("by_kind_publishedAt", (q) => q.eq("kind", "blog"))
       .order("desc")
       .take(Math.min(Math.max(limit ?? 50, 1), 200));
     return rows.map((r) => ({

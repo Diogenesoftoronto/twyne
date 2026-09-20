@@ -121,8 +121,8 @@ export const BriefRefinery = component$(
                     style="font-family: var(--font-serif); font-style: italic;"
                   >
                     Every field is visible at a glance. Tweak what needs
-                    changing and save. The rest of the room will pick up the
-                    new brief on the next pass.
+                    changing and save. The rest of the room will pick up the new
+                    brief on the next pass.
                   </p>
                 </div>
                 {onCancel$ && (
@@ -182,9 +182,8 @@ export const BriefRefinery = component$(
                           onInput$={(e) => {
                             store.answers = {
                               ...store.answers,
-                              [field.key]: (
-                                e.target as HTMLTextAreaElement
-                              ).value,
+                              [field.key]: (e.target as HTMLTextAreaElement)
+                                .value,
                             };
                             store.touched = true;
                           }}
@@ -199,8 +198,7 @@ export const BriefRefinery = component$(
                           onInput$={(e) => {
                             store.answers = {
                               ...store.answers,
-                              [field.key]: (e.target as HTMLInputElement)
-                                .value,
+                              [field.key]: (e.target as HTMLInputElement).value,
                             };
                             store.touched = true;
                           }}
@@ -216,23 +214,18 @@ export const BriefRefinery = component$(
 
               {/* Actions */}
               <div class="mt-7 flex items-center justify-end gap-3 pt-5 border-t border-dashed border-[var(--color-paper-3)]">
-                <span class="text-xs text-[var(--color-ink-muted)]" style="font-family: var(--font-serif); font-style: italic;">
-                  {store.touched
-                    ? "Unsaved changes"
-                    : "No changes yet"}
+                <span
+                  class="text-xs text-[var(--color-ink-muted)]"
+                  style="font-family: var(--font-serif); font-style: italic;"
+                >
+                  {store.touched ? "Unsaved changes" : "No changes yet"}
                 </span>
                 {onCancel$ && (
-                  <button
-                    onClick$={onCancel$}
-                    class="btn-paper"
-                  >
+                  <button onClick$={onCancel$} class="btn-paper">
                     Cancel
                   </button>
                 )}
-                <button
-                  onClick$={handleSave}
-                  class="btn-press"
-                >
+                <button onClick$={handleSave} class="btn-press">
                   Save changes →
                 </button>
               </div>

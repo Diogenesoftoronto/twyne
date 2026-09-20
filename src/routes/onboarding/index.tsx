@@ -453,8 +453,7 @@ export const head: DocumentHead = {
   meta: [
     {
       name: "description",
-      content:
-        "First-time onboarding before opening a new dossier in Twyne.",
+      content: "First-time onboarding before opening a new dossier in Twyne.",
     },
   ],
 };

@@ -1,4 +1,5 @@
 import type { ElectrobunConfig } from "electrobun";
+import { version } from "./package.json";
 
 const localAiEnabled =
   process.env.TWYNE_DESKTOP_LOCAL_AI === "true" ||
@@ -29,7 +30,7 @@ export default {
   app: {
     name: "Twyne",
     identifier: "love.twyne.desktop",
-    version: "0.2.0",
+    version,
     // Custom scheme reserved for ATProto OAuth deep-link callbacks (macOS).
     urlSchemes: ["twyne"],
   },

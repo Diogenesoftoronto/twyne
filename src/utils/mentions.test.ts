@@ -86,7 +86,9 @@ describe("mentions", () => {
   });
 
   test("names with spaces are reachable by their first word", () => {
-    expect(filterMentionables(items, "ally").map((i) => i.id)).toEqual(["ally"]);
+    expect(filterMentionables(items, "ally").map((i) => i.id)).toEqual([
+      "ally",
+    ]);
     expect(applyMention("cc @Ally", "Ally Reyes").text).toBe("cc @Ally Reyes ");
   });
 

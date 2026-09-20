@@ -106,25 +106,25 @@ which is what makes the account-seeding path send everything.
 
 ## Where each kind of data actually lives
 
-| Data | Local home | Convex table | Written by | Cadence |
-|---|---|---|---|---|
-| Draft HTML | IndexedDB + Lix | `folioContent` | snapshot push | ≤ every 4s, only if changed |
-| Folio list | IndexedDB | `folioEntries` (row per folio) | snapshot push | ≤ every 4s, changed folios only |
-| Dossier / brief | IndexedDB + Lix file | `briefs` | snapshot push | ≤ every 4s |
-| Persona notes | IndexedDB | `personaNotes` | snapshot push **and** `putPersonaNote` | on file + every 4s |
-| Replies | IndexedDB | `personaReplies` | snapshot push **and** `addPersonaReply` | on send + every 4s |
-| Rubric results | IndexedDB | `rubricResults` | snapshot push | ≤ every 4s |
-| Bibliography | Lix file | `bibliographyEntries` (row per entry) | snapshot push | ≤ every 4s, changed entries only |
-| Custom personas | IndexedDB | `personaEntries` (row per persona) | snapshot push **and** `putCustomPersonas` | on edit + every 4s |
-| Room settings | IndexedDB | `roomSettings` | `putRoomSettings` only | on change |
-| Theme | IndexedDB | `appearance` | `putAppearance` only | on change |
-| AI / writer settings | localStorage + IDB | — | never synced | — |
-| Notes being generated | — | `personaNoteStreams` | server action | ≤ 10/s per persona |
-| Interview turn | — | `dossierInterviewStreams` | server action | ≤ 10/s |
-| Presence | — | `presence` | heartbeat | every 3s while collaborating |
-| Writing streak | — | `writingActivity` | `recordActivity` | throttled to 2 min |
-| Published pieces | — | `published` + PDS | publish flow | on publish |
-| Lix snapshot blob | IndexedDB | `lixBlobs` | **nothing** (see finding 9) | never |
+| Data                  | Local home           | Convex table                          | Written by                                | Cadence                          |
+| --------------------- | -------------------- | ------------------------------------- | ----------------------------------------- | -------------------------------- |
+| Draft HTML            | IndexedDB + Lix      | `folioContent`                        | snapshot push                             | ≤ every 4s, only if changed      |
+| Folio list            | IndexedDB            | `folioEntries` (row per folio)        | snapshot push                             | ≤ every 4s, changed folios only  |
+| Dossier / brief       | IndexedDB + Lix file | `briefs`                              | snapshot push                             | ≤ every 4s                       |
+| Persona notes         | IndexedDB            | `personaNotes`                        | snapshot push **and** `putPersonaNote`    | on file + every 4s               |
+| Replies               | IndexedDB            | `personaReplies`                      | snapshot push **and** `addPersonaReply`   | on send + every 4s               |
+| Rubric results        | IndexedDB            | `rubricResults`                       | snapshot push                             | ≤ every 4s                       |
+| Bibliography          | Lix file             | `bibliographyEntries` (row per entry) | snapshot push                             | ≤ every 4s, changed entries only |
+| Custom personas       | IndexedDB            | `personaEntries` (row per persona)    | snapshot push **and** `putCustomPersonas` | on edit + every 4s               |
+| Room settings         | IndexedDB            | `roomSettings`                        | `putRoomSettings` only                    | on change                        |
+| Theme                 | IndexedDB            | `appearance`                          | `putAppearance` only                      | on change                        |
+| AI / writer settings  | localStorage + IDB   | —                                     | never synced                              | —                                |
+| Notes being generated | —                    | `personaNoteStreams`                  | server action                             | ≤ 10/s per persona               |
+| Interview turn        | —                    | `dossierInterviewStreams`             | server action                             | ≤ 10/s                           |
+| Presence              | —                    | `presence`                            | heartbeat                                 | every 3s while collaborating     |
+| Writing streak        | —                    | `writingActivity`                     | `recordActivity`                          | throttled to 2 min               |
+| Published pieces      | —                    | `published` + PDS                     | publish flow                              | on publish                       |
+| Lix snapshot blob     | IndexedDB            | `lixBlobs`                            | **nothing** (see finding 9)               | never                            |
 
 ## Sequence — signing in
 
@@ -204,19 +204,19 @@ sequenceDiagram
 
 The action cannot push to the browser — it returns once, at the end. The
 database is the only live channel, which is the entire reason `streamId`
-exists: the client mints it, subscribes, *then* calls the action.
+exists: the client mints it, subscribes, _then_ calls the action.
 
 ## Write-cadence budget
 
-| Writer | Trigger | Peak rate |
-|---|---|---|
-| `pushAll` | typing | ≤ 15/min, changed rows only |
-| `personaNoteStreams` | convened room | ≤ 10/s × 5 personas, for the length of a generation |
-| `dossierInterviewStreams` | interview turn | ≤ 10/s |
-| `presence` heartbeat | collaborating | 20/min per participant |
-| `writingActivity` | typing | 0.5/min |
-| `rateBuckets` | any rate-limited call | 1 per call |
-| stream sweep | cron | ≤ 400 deletes/hour |
+| Writer                    | Trigger               | Peak rate                                           |
+| ------------------------- | --------------------- | --------------------------------------------------- |
+| `pushAll`                 | typing                | ≤ 15/min, changed rows only                         |
+| `personaNoteStreams`      | convened room         | ≤ 10/s × 5 personas, for the length of a generation |
+| `dossierInterviewStreams` | interview turn        | ≤ 10/s                                              |
+| `presence` heartbeat      | collaborating         | 20/min per participant                              |
+| `writingActivity`         | typing                | 0.5/min                                             |
+| `rateBuckets`             | any rate-limited call | 1 per call                                          |
+| stream sweep              | cron                  | ≤ 400 deletes/hour                                  |
 
 Note that the two `1.5s` and `4s` intervals in `collaboration.ts` and
 `share-dialog.tsx` are **local** polls — Lix state and a dialog refresh — not
@@ -266,7 +266,7 @@ database in one `v.bytes()` column, but nothing writes it (finding 9), so it
 was left alone rather than migrated.
 
 **6. Two independent write paths reach the same tables.** Persona notes,
-replies, and custom personas are written both by the bulk snapshot push *and*
+replies, and custom personas are written both by the bulk snapshot push _and_
 by granular mutations (`putPersonaNote`, `addPersonaReply`,
 `putCustomPersonas`) called straight from components. Nothing coordinates them;
 last writer wins. It is not currently causing corruption because both write the

@@ -129,15 +129,17 @@ export async function loadBlogPieceBySlug(
   if (!client) return { piece: null, status: "unavailable" };
 
   try {
-    const listBlog = (api.published as unknown as {
-      listBlog: unknown;
-    }).listBlog;
-    const all = (await (
+    const listBlog = (
+      api.published as unknown as {
+        listBlog: unknown;
+      }
+    ).listBlog;
+    const all = await (
       client.query as unknown as (
         ref: unknown,
         args: { limit?: number },
       ) => Promise<Array<{ slug: string }>>
-    )(listBlog, { limit: 200 }));
+    )(listBlog, { limit: 200 });
     if (!all.some((piece) => piece.slug === slug)) {
       return { piece: null, status: "loaded" };
     }

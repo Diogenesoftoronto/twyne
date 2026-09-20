@@ -67,12 +67,8 @@ describe("crawler discovery files", () => {
       { path: "/writer/a%26b/" },
     ]);
     expect(xml).toContain(`<loc>${TWYNE_SITE_ORIGIN}/</loc>`);
-    expect(xml).toContain(
-      `<loc>${TWYNE_SITE_ORIGIN}/blog/field-notes/</loc>`,
-    );
-    expect(xml).toContain(
-      `<lastmod>2026-08-24T00:00:00.000Z</lastmod>`,
-    );
+    expect(xml).toContain(`<loc>${TWYNE_SITE_ORIGIN}/blog/field-notes/</loc>`);
+    expect(xml).toContain(`<lastmod>2026-08-24T00:00:00.000Z</lastmod>`);
     expect(xml).toContain(`${TWYNE_SITE_ORIGIN}/writer/a%26b/`);
     expect(xml).not.toContain("localhost");
   });

@@ -15,7 +15,11 @@
  * nothing at all, and never into a broken control the writer cannot answer.
  */
 
-import type { DossierProbe, ProbeKind, ProjectInterviewAnswers } from "../types";
+import type {
+  DossierProbe,
+  ProbeKind,
+  ProjectInterviewAnswers,
+} from "../types";
 
 const PROBE_KINDS: ProbeKind[] = ["choice", "multi", "blanks", "scale"];
 
@@ -87,12 +91,14 @@ export function normalizeProbe(value: unknown): DossierProbe | null {
   }
 
   // scale
-  const min = typeof raw.min === "number" && Number.isFinite(raw.min)
-    ? Math.round(raw.min)
-    : 1;
-  const max = typeof raw.max === "number" && Number.isFinite(raw.max)
-    ? Math.round(raw.max)
-    : 5;
+  const min =
+    typeof raw.min === "number" && Number.isFinite(raw.min)
+      ? Math.round(raw.min)
+      : 1;
+  const max =
+    typeof raw.max === "number" && Number.isFinite(raw.max)
+      ? Math.round(raw.max)
+      : 5;
   if (max <= min) return null;
   return {
     ...base,
@@ -109,7 +115,9 @@ export function normalizeProbe(value: unknown): DossierProbe | null {
 export function normalizeProbes(value: unknown): DossierProbe[] {
   const list = Array.isArray(value)
     ? value
-    : value && typeof value === "object" && Array.isArray((value as Record<string, unknown>).probes)
+    : value &&
+        typeof value === "object" &&
+        Array.isArray((value as Record<string, unknown>).probes)
       ? ((value as Record<string, unknown>).probes as unknown[])
       : [];
   return list

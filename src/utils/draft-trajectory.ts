@@ -205,9 +205,7 @@ export function trajectoryDigest(
 
   const movement: string[] = [];
   if (netWords !== 0) {
-    movement.push(
-      `${netWords > 0 ? "+" : "−"}${Math.abs(netWords)} words net`,
-    );
+    movement.push(`${netWords > 0 ? "+" : "−"}${Math.abs(netWords)} words net`);
   }
   if (added > 0) {
     movement.push(`${added} paragraph${added === 1 ? "" : "s"} added`);
@@ -257,6 +255,7 @@ export function trajectorySummaryLine(entries: TrajectoryEntry[]): string {
   if (last.removedCount > 0) {
     parts.push(`${last.removedCount} cut`);
   }
-  if (parts.length === 0) return `Revised ${relativeTime(Date.now() - last.at)}`;
+  if (parts.length === 0)
+    return `Revised ${relativeTime(Date.now() - last.at)}`;
   return `${parts.join(", ")} · ${relativeTime(Date.now() - last.at)}`;
 }

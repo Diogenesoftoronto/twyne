@@ -1,14 +1,19 @@
-import { afterEach, afterAll, beforeAll, describe, expect, mock, test } from "bun:test";
+import {
+  afterEach,
+  afterAll,
+  beforeAll,
+  describe,
+  expect,
+  mock,
+  test,
+} from "bun:test";
 
 /**
  * The store layer is mocked so the bundle logic can be tested without a real
  * IndexedDB. Records mimic the real store's content key: files land under
  * their full remote URL, and listing filters by a prefix.
  */
-const store = new Map<
-  string,
-  { blob: Blob; bytes: number }
->();
+const store = new Map<string, { blob: Blob; bytes: number }>();
 
 mock.module("./idb", () => ({
   saveModelFileToIdb: async (id: string, blob: Blob) => {
@@ -24,11 +29,8 @@ mock.module("./idb", () => ({
   },
 }));
 
-const {
-  evictModelBundle,
-  isModelBundleDownloaded,
-  modelDownloadState,
-} = await import(`./models-cache?models-cache-test=${Date.now()}`);
+const { evictModelBundle, isModelBundleDownloaded, modelDownloadState } =
+  await import(`./models-cache?models-cache-test=${Date.now()}`);
 
 const REMOTE_BASE = "https://huggingface.co/example/voice-model/resolve/main/";
 const manifest = [

@@ -2,9 +2,7 @@ type BrowserGlobalsLockState = {
   tail: Promise<void>;
 };
 
-const BROWSER_GLOBALS_LOCK_KEY = Symbol.for(
-  "twyne.test.browser-globals-lock",
-);
+const BROWSER_GLOBALS_LOCK_KEY = Symbol.for("twyne.test.browser-globals-lock");
 
 export async function lockBrowserGlobalsForTestFile(): Promise<() => void> {
   const g = globalThis as typeof globalThis & {

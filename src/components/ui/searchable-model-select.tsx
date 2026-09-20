@@ -1,10 +1,4 @@
-import {
-  component$,
-  useSignal,
-  useTask$,
-  $,
-  type QRL,
-} from "@qwik.dev/core";
+import { component$, useSignal, useTask$, $, type QRL } from "@qwik.dev/core";
 import type { ModelsDevModel } from "../../utils/models-dev";
 import { searchModelsDevModels } from "../../utils/models-dev";
 
@@ -67,8 +61,7 @@ export const SearchableModelSelect = component$<SearchableModelSelectProps>(
               if (exact && typed) {
                 choose(
                   props.models.find(
-                    (model) =>
-                      model.id.toLowerCase() === typed.toLowerCase(),
+                    (model) => model.id.toLowerCase() === typed.toLowerCase(),
                   )?.id ?? typed,
                 );
               } else if (typed) {

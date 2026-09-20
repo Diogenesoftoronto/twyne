@@ -1,7 +1,13 @@
-import { component$, type PropFunction } from "@qwik.dev/core";
+import {
+  component$,
+  useSignal,
+  useVisibleTask$,
+  type PropFunction,
+} from "@qwik.dev/core";
 import type { LayoutSettings } from "../../types";
 import { formatWordCount, readingTimeLabel } from "../../utils/document";
 import { formatFolioCount } from "../../utils/draft-thresholds";
+import { isFileDrag } from "../../utils/file-drag";
 import type { EditorStore } from "./editor-state";
 import { PageChrome, type PageChromeProps } from "./page-chrome";
 import { PageRuler } from "./page-ruler";
@@ -19,9 +25,9 @@ interface ManuscriptPanelProps {
   pageWidthRem: number;
   canvasMinHeight: number;
   pageChromeGeometry: PageChromeGeometry;
-  onDragOver$: PropFunction<() => void>;
-  onDragLeave$: PropFunction<() => void>;
-  onDrop$: PropFunction<() => void>;
+  onDragOver$: PropFunction<(event: DragEvent) => void>;
+  onDragLeave$: PropFunction<(event: DragEvent) => void>;
+  onDrop$: PropFunction<(event: DragEvent) => void>;
   onLayoutChange$: PropFunction<(next: LayoutSettings) => void>;
   onHeaderCommit$: PropFunction<(value: string) => void>;
   onFooterCommit$: PropFunction<(value: string) => void>;
@@ -36,15 +42,46 @@ interface ManuscriptPanelProps {
 export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
   const { store } = props;
   const onJumpToNote$ = props.onJumpToNote$;
+  const scrollerRef = useSignal<HTMLDivElement>();
+
+  /**
+   * Stop the browser navigating away from a file dropped on the manuscript.
+   *
+   * This used to be Qwik's `preventdefault:dragover` / `:drop` attributes, but
+   * those fire from qwikloader's single document-level *capture* listener, so
+   * they cancelled the event before ProseMirror ever saw it — and ProseMirror
+   * ignores any event whose default is already prevented. That silently
+   * disabled dragging a selection, the drop cursor that shows where it will
+   * land, and image file drops, all at once.
+   *
+   * Listening in the bubble phase inverts the order: ProseMirror gets first
+   * refusal, and if it handled the drop it has already called preventDefault by
+   * the time the event reaches us. We only step in for a file that landed on
+   * the surrounding margin, where nothing else is listening.
+   */
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    const el = scrollerRef.value;
+    if (!el) return;
+    const guard = (event: DragEvent) => {
+      if (event.defaultPrevented) return;
+      if (!isFileDrag(event.dataTransfer)) return;
+      event.preventDefault();
+    };
+    el.addEventListener("dragover", guard);
+    el.addEventListener("drop", guard);
+    cleanup(() => {
+      el.removeEventListener("dragover", guard);
+      el.removeEventListener("drop", guard);
+    });
+  });
 
   return (
     <>
       <div
-        class="flex-1 overflow-y-auto overflow-x-auto"
+        ref={scrollerRef}
+        class="flex-1 overflow-y-auto overflow-x-auto scroll-pb-12"
         style="background: var(--color-editor-bg);"
-        preventdefault:dragover
-        preventdefault:dragleave
-        preventdefault:drop
         onDragOver$={props.onDragOver$}
         onDragLeave$={props.onDragLeave$}
         onDrop$={props.onDrop$}
@@ -168,8 +205,8 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
         </span>
         <span>
           <LastSavedLine savedAt={store.lastSavedAt} /> ·{" "}
-          {readingTimeLabel(store.meta.readingTime)} · set in Lora &amp;
-          Libre Baskerville
+          {readingTimeLabel(store.meta.readingTime)} · set in Lora &amp; Libre
+          Baskerville
         </span>
       </div>
     </>

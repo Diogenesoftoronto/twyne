@@ -29,7 +29,10 @@ const MONTH_NAMES = new Set([
   "december",
 ]);
 
-export function detectCitations(text: string, baseOffset = 0): DetectedCitation[] {
+export function detectCitations(
+  text: string,
+  baseOffset = 0,
+): DetectedCitation[] {
   const citations: DetectedCitation[] = [];
   const seen = new Set<string>();
 
@@ -49,10 +52,15 @@ export function detectCitations(text: string, baseOffset = 0): DetectedCitation[
     const start = index + raw.indexOf(trimmed);
     while (/[.,;:]$/.test(trimmed)) trimmed = trimmed.slice(0, -1);
     while (/[)\]}]$/.test(trimmed)) {
-      const open = trimmed.endsWith(")") ? "(" : trimmed.endsWith("]") ? "[" : "{";
+      const open = trimmed.endsWith(")")
+        ? "("
+        : trimmed.endsWith("]")
+          ? "["
+          : "{";
       const close = trimmed.at(-1);
       const opens = (trimmed.match(new RegExp(`\\${open}`, "g")) ?? []).length;
-      const closes = (trimmed.match(new RegExp(`\\${close}`, "g")) ?? []).length;
+      const closes = (trimmed.match(new RegExp(`\\${close}`, "g")) ?? [])
+        .length;
       if (closes <= opens) break;
       trimmed = trimmed.slice(0, -1);
     }

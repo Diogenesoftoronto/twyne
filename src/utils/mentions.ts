@@ -90,10 +90,7 @@ function escapeRegExp(s: string): string {
 }
 
 /** Mentionables @-named (whole word) anywhere in the text. */
-export function mentionedIn(
-  text: string,
-  items: Mentionable[],
-): Mentionable[] {
+export function mentionedIn(text: string, items: Mentionable[]): Mentionable[] {
   return items.filter((item) =>
     new RegExp(`@${escapeRegExp(item.name)}\\b`, "i").test(text),
   );

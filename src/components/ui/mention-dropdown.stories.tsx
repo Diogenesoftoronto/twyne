@@ -4,9 +4,27 @@ import { MentionDropdown } from "./mention-dropdown";
 import type { Mentionable } from "../../utils/mentions";
 
 const personas: Mentionable[] = [
-  { id: "reader", name: "Reader", kind: "persona", icon: "👁", color: "#2563eb" },
-  { id: "editor", name: "Editor", kind: "persona", icon: "✎", color: "#b45309" },
-  { id: "devil", name: "Devil's Advocate", kind: "persona", icon: "🜂", color: "#b91c1c" },
+  {
+    id: "reader",
+    name: "Reader",
+    kind: "persona",
+    icon: "👁",
+    color: "#2563eb",
+  },
+  {
+    id: "editor",
+    name: "Editor",
+    kind: "persona",
+    icon: "✎",
+    color: "#b45309",
+  },
+  {
+    id: "devil",
+    name: "Devil's Advocate",
+    kind: "persona",
+    icon: "🜂",
+    color: "#b91c1c",
+  },
 ];
 
 const personasAndCollaborators: Mentionable[] = [

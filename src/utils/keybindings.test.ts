@@ -66,7 +66,9 @@ describe("keybinding registry", () => {
     ).toBe(true);
     expect(chordMatches({ key: "Tab" }, "Tab")).toBe(true);
     expect(chordMatches({ key: "Tab", shiftKey: true }, "Tab")).toBe(false);
-    expect(chordMatches({ key: "Tab", shiftKey: true }, "Shift-Tab")).toBe(true);
+    expect(chordMatches({ key: "Tab", shiftKey: true }, "Shift-Tab")).toBe(
+      true,
+    );
   });
 
   test("a command can expose alternative bindings", () => {

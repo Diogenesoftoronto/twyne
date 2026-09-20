@@ -50,7 +50,7 @@ by Twyne.
 ## Relationship to Keating
 
 Twyne's PDS publishing uses the same Standard.site document format that
-Keating reads, but it creates or reuses the writer's *Twyne* publication. It
+Keating reads, but it creates or reuses the writer's _Twyne_ publication. It
 does not automatically add a post to Keating's configured publication. To put
 the same work in Keating, create or update a `site.standard.document` in the
 ATProto repository configured for Keating, point its `site` field at Keating's

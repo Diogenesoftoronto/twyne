@@ -219,8 +219,7 @@ export function findBibliographyEntryByUrl(
   if (!hasResolvableUrl(url)) return undefined;
   const target = normalizeUrl(url);
   return bibliography.find(
-    (entry) =>
-      entry.folioId === folioId && normalizeUrl(entry.url) === target,
+    (entry) => entry.folioId === folioId && normalizeUrl(entry.url) === target,
   );
 }
 

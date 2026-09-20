@@ -5,4 +5,5 @@ version: "1"
 ---
 
 ### {personaName} ({role})
+
 {text}

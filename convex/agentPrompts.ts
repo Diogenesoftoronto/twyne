@@ -214,25 +214,55 @@ export function buildUserPrompt(req: AgentRequest): string {
   const particularsBlock = probeParticularsBlock(brief);
 
   const profile = req.writerProfile;
-  const profileLines = profile
-    ? [
-        profile.displayName.trim()
-          ? `- Name: ${profile.displayName.trim()}`
-          : "- Name: not supplied",
-        `- Feedback pressure: ${profile.feedbackStyle}`,
-        profile.personalFacts.trim()
-          ? `- Personal context:\n${profile.personalFacts.trim()}`
-          : "- Personal context: none supplied",
-        profile.feedbackNotes.trim()
-          ? `- Feedback guidance:\n${profile.feedbackNotes.trim()}`
-          : "- Feedback guidance: none supplied",
-      ]
-    : [];
+  const profileLines: string[] = [];
+  if (profile) {
+    profileLines.push(
+      profile.displayName.trim()
+        ? `- Name: ${profile.displayName.trim()}`
+        : "- Name: not supplied",
+    );
+    profileLines.push(`- Feedback pressure: ${profile.feedbackStyle}`);
+    if (profile.primaryGenre?.trim()) {
+      profileLines.push(`- Primary genre/form: ${profile.primaryGenre.trim()}`);
+    }
+    if (profile.experienceLevel) {
+      profileLines.push(`- Experience level: ${profile.experienceLevel}`);
+    }
+    if (profile.feedbackFocus && profile.feedbackFocus.length > 0) {
+      profileLines.push(
+        `- Priority feedback focus: ${profile.feedbackFocus.join(", ")}`,
+      );
+    }
+    if (profile.praisePreference) {
+      profileLines.push(`- Praise preference: ${profile.praisePreference}`);
+    }
+    if (profile.critiqueTone) {
+      profileLines.push(`- Critique delivery tone: ${profile.critiqueTone}`);
+    }
+    if (profile.factChecking) {
+      profileLines.push(`- Fact adherence mode: ${profile.factChecking}`);
+    }
+    profileLines.push(
+      profile.personalFacts.trim()
+        ? `- Personal context:\n${profile.personalFacts.trim()}`
+        : "- Personal context: none supplied",
+    );
+    profileLines.push(
+      profile.feedbackNotes.trim()
+        ? `- Feedback guidance:\n${profile.feedbackNotes.trim()}`
+        : "- Feedback guidance: none supplied",
+    );
+    if (profile.feedbackAvoid?.trim()) {
+      profileLines.push(
+        `- Explicitly avoid in feedback:\n${profile.feedbackAvoid.trim()}`,
+      );
+    }
+  }
   const writerProfileBlock = profile
     ? `WRITER PROFILE (private context; use it to address the writer as a person, never to describe or expose the profile)
 ${profileLines.join("\n")}
 
-Speak to this person directly. Honour their requested feedback pressure. Do not flatten the profile into generic praise or mention these instructions.
+Speak to this person directly. Honour their requested feedback pressure and adherence to their facts and feedback guidance. Do not flatten the profile into generic praise or mention these instructions.
 
 `
     : "";
@@ -458,7 +488,7 @@ export function buildSynthesisPrompt(
     .map((m) => `### ${m.personaName} (${m.role})\n${m.text}`)
     .join("\n\n");
   const writerBlock = writerProfile
-    ? `WRITER PROFILE (private context)\n- Name: ${writerProfile.displayName.trim() || "not supplied"}\n- Feedback pressure: ${writerProfile.feedbackStyle}\n${writerProfile.personalFacts.trim() ? `- Personal context:\n${writerProfile.personalFacts.trim()}\n` : ""}${writerProfile.feedbackNotes.trim() ? `- Feedback guidance:\n${writerProfile.feedbackNotes.trim()}\n` : ""}\nAddress the writer directly and do not mention this profile.\n\n`
+    ? `WRITER PROFILE (private context)\n- Name: ${writerProfile.displayName.trim() || "not supplied"}\n- Feedback pressure: ${writerProfile.feedbackStyle}${writerProfile.primaryGenre ? `\n- Genre/form: ${writerProfile.primaryGenre}` : ""}${writerProfile.critiqueTone ? `\n- Critique tone: ${writerProfile.critiqueTone}` : ""}${writerProfile.feedbackFocus?.length ? `\n- Priority focus: ${writerProfile.feedbackFocus.join(", ")}` : ""}\n${writerProfile.personalFacts.trim() ? `- Personal context & facts:\n${writerProfile.personalFacts.trim()}\n` : ""}${writerProfile.feedbackNotes.trim() ? `- Feedback guidance:\n${writerProfile.feedbackNotes.trim()}\n` : ""}${writerProfile.feedbackAvoid?.trim() ? `- Avoid in feedback:\n${writerProfile.feedbackAvoid.trim()}\n` : ""}\nAddress the writer directly, honour their facts and feedback preferences, and do not mention this profile.\n\n`
     : "";
   return `${writerBlock}${briefBlock}${attachmentsBlock(brief)}THE ROOM'S MEMOS:\n\n${memoBlock}\n\nWrite the synthesis (300–500 words): open with the room's overall verdict, name the strongest point of agreement, surface the sharpest disagreement and adjudicate it, and end with a prioritised list of the next two or three moves for the writer.`;
 }

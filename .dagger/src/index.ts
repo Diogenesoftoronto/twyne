@@ -27,19 +27,6 @@ import {
 /** Pinned to match `packageManager` in package.json. */
 const BUN_IMAGE = "oven/bun:1.3.6";
 
-/** Paths we never want to upload into the build container. */
-const SOURCE_IGNORE = [
-  "node_modules",
-  ".git",
-  ".dagger/sdk",
-  "dist",
-  "server",
-  "release",
-  "build-output",
-  "desktop/build",
-  "tmp",
-];
-
 @object()
 export class Twyne {
   /**
@@ -49,7 +36,22 @@ export class Twyne {
    */
   @func()
   install(
-    @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
+    @argument({
+      defaultPath: "/",
+      ignore: [
+        "node_modules",
+        ".git",
+        ".dagger/sdk",
+        "dist",
+        "server",
+        "release",
+        "build-output",
+        "desktop/build",
+        "tmp",
+        ".env*",
+        ".entire",
+      ],
+    })
     source: Directory,
   ): Container {
     return dag
@@ -67,7 +69,22 @@ export class Twyne {
   /** Formatting + ESLint. */
   @func()
   async lint(
-    @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
+    @argument({
+      defaultPath: "/",
+      ignore: [
+        "node_modules",
+        ".git",
+        ".dagger/sdk",
+        "dist",
+        "server",
+        "release",
+        "build-output",
+        "desktop/build",
+        "tmp",
+        ".env*",
+        ".entire",
+      ],
+    })
     source: Directory,
   ): Promise<string> {
     return this.install(source)
@@ -79,7 +96,22 @@ export class Twyne {
   /** TypeScript type checking (tsc --noEmit). */
   @func()
   async typecheck(
-    @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
+    @argument({
+      defaultPath: "/",
+      ignore: [
+        "node_modules",
+        ".git",
+        ".dagger/sdk",
+        "dist",
+        "server",
+        "release",
+        "build-output",
+        "desktop/build",
+        "tmp",
+        ".env*",
+        ".entire",
+      ],
+    })
     source: Directory,
   ): Promise<string> {
     return this.install(source)
@@ -91,7 +123,22 @@ export class Twyne {
   /** The Bun test suite. */
   @func()
   async test(
-    @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
+    @argument({
+      defaultPath: "/",
+      ignore: [
+        "node_modules",
+        ".git",
+        ".dagger/sdk",
+        "dist",
+        "server",
+        "release",
+        "build-output",
+        "desktop/build",
+        "tmp",
+        ".env*",
+        ".entire",
+      ],
+    })
     source: Directory,
   ): Promise<string> {
     return this.install(source)
@@ -106,7 +153,22 @@ export class Twyne {
    */
   @func()
   build(
-    @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
+    @argument({
+      defaultPath: "/",
+      ignore: [
+        "node_modules",
+        ".git",
+        ".dagger/sdk",
+        "dist",
+        "server",
+        "release",
+        "build-output",
+        "desktop/build",
+        "tmp",
+        ".env*",
+        ".entire",
+      ],
+    })
     source: Directory,
   ): Directory {
     const built = this.install(source)
@@ -124,7 +186,22 @@ export class Twyne {
    */
   @func()
   package(
-    @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
+    @argument({
+      defaultPath: "/",
+      ignore: [
+        "node_modules",
+        ".git",
+        ".dagger/sdk",
+        "dist",
+        "server",
+        "release",
+        "build-output",
+        "desktop/build",
+        "tmp",
+        ".env*",
+        ".entire",
+      ],
+    })
     source: Directory,
     version = "dev",
   ): File {
@@ -151,7 +228,22 @@ export class Twyne {
    */
   @func()
   async all(
-    @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
+    @argument({
+      defaultPath: "/",
+      ignore: [
+        "node_modules",
+        ".git",
+        ".dagger/sdk",
+        "dist",
+        "server",
+        "release",
+        "build-output",
+        "desktop/build",
+        "tmp",
+        ".env*",
+        ".entire",
+      ],
+    })
     source: Directory,
   ): Promise<string> {
     await Promise.all([
@@ -173,7 +265,22 @@ export class Twyne {
    */
   @func()
   async agent(
-    @argument({ defaultPath: "/", ignore: SOURCE_IGNORE })
+    @argument({
+      defaultPath: "/",
+      ignore: [
+        "node_modules",
+        ".git",
+        ".dagger/sdk",
+        "dist",
+        "server",
+        "release",
+        "build-output",
+        "desktop/build",
+        "tmp",
+        ".env*",
+        ".entire",
+      ],
+    })
     source: Directory,
     /** Shell command for the agent step to run inside /app. */
     command: string,

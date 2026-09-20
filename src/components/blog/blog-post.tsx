@@ -76,8 +76,7 @@ export const BlogPost = component$<BlogPostProps>(
                 class="mt-2 text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
                 style="font-family: var(--font-typewriter);"
               >
-                It may be a private share, or it may have been
-                unpublished.
+                It may be a private share, or it may have been unpublished.
               </p>
               <p class="mt-4">
                 <Link

@@ -200,8 +200,6 @@ describe("mergeFormProbes", () => {
       "uncertain",
       "clear",
     ]);
-    expect(merged.some((item) => item.id === "provider-particular")).toBe(
-      true,
-    );
+    expect(merged.some((item) => item.id === "provider-particular")).toBe(true);
   });
 });

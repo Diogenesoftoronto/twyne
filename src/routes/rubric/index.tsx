@@ -9,13 +9,21 @@ import type { RubricResult } from "../../types";
 import {
   loadActiveFolioIdFromIdb,
   loadRubricResultFromIdb,
+  loadFolioContentFromIdb,
 } from "../../utils/idb";
+import { htmlToPlainText } from "../../utils/anti-tabula-rasa";
+import { rubricDraftFingerprint } from "../../utils/rubric-judgement-result";
+import {
+  loadCriteriaSpecs,
+  weightedCriteriaScore,
+} from "../../utils/rubric-criteria";
 import { renderMarkdown } from "../../utils/markdown";
 import { GradeStamp } from "../../components/rubric/grade-stamp";
 
 interface RubricPageStore {
   result: RubricResult | null;
   loaded: boolean;
+  isStale: boolean;
 }
 
 const GRADE_COLOR: Record<string, string> = {
@@ -110,13 +118,34 @@ const CURVE_ANCHORS: Array<[number, number, string]> = [
 ];
 
 export default component$(() => {
-  const store = useStore<RubricPageStore>({ result: null, loaded: false });
+  const store = useStore<RubricPageStore>({
+    result: null,
+    loaded: false,
+    isStale: false,
+  });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
     const folioId = await loadActiveFolioIdFromIdb();
     const cached = await loadRubricResultFromIdb(folioId);
-    if (cached) store.result = cached;
+    if (cached && folioId) {
+      const [html, specs] = await Promise.all([
+        loadFolioContentFromIdb(folioId),
+        loadCriteriaSpecs(folioId),
+      ]);
+      cached.writerScore =
+        weightedCriteriaScore(
+          specs,
+          Object.fromEntries(
+            cached.criteria.map((criterion) => [criterion.id, criterion.score]),
+          ),
+        ) ?? undefined;
+      store.result = cached;
+      store.isStale =
+        !cached.draftFingerprint ||
+        cached.draftFingerprint !==
+          (await rubricDraftFingerprint(htmlToPlainText(html)));
+    }
     store.loaded = true;
   });
 
@@ -173,8 +202,8 @@ export default component$(() => {
               The Galley Proof
             </h1>
             <p class="text-sm text-[var(--color-ink-light)] mt-1">
-              The full breakdown — what the judges said, what the rubric
-              counted, what to fix next.
+              Your saved marks, the reading behind them, and possibilities for
+              the next revision.
             </p>
           </div>
           <Link
@@ -203,8 +232,7 @@ export default component$(() => {
             </p>
             <p class="mt-3 text-sm text-[var(--color-ink-light)] max-w-md mx-auto">
               No galley on file yet. Open the proof desk in the right panel and
-              run
-              <em> Send to copyedit</em> to start.
+              choose <em>Run rubric</em> to start.
             </p>
             <Link href="/editor" class="btn-press mt-4 inline-block text-sm">
               ← Back to desk
@@ -214,6 +242,12 @@ export default component$(() => {
 
         {store.result && (
           <div class="space-y-6">
+            {store.isStale && (
+              <p role="status" class="text-sm text-[var(--color-ink-light)]">
+                These saved marks may describe an earlier draft. Run the rubric
+                at the desk for a current reading.
+              </p>
+            )}
             {/* Overall */}
             <section class="card p-6">
               <div class="flex items-stretch gap-6">
@@ -227,7 +261,11 @@ export default component$(() => {
                   animated
                 />
                 <div class="flex-1 min-w-0">
-                  <p class="dept-label">Editor's Mark</p>
+                  <p class="dept-label">
+                    {store.result.scoringMethod === "judgement"
+                      ? "Judgement marks"
+                      : "Editor's Mark"}
+                  </p>
                   <p
                     class="mt-0.5 text-2xl text-[var(--color-ink)]"
                     style={{
@@ -241,6 +279,11 @@ export default component$(() => {
                       / 100
                     </span>
                   </p>
+                  {store.result.writerScore !== undefined && (
+                    <p class="text-sm text-[var(--color-ink-muted)]">
+                      {store.result.writerScore}/100 by your current weights
+                    </p>
+                  )}
                   <p
                     class="mt-2 text-sm leading-6 text-[var(--color-ink-light)]"
                     style={{ fontFamily: "var(--font-serif)" }}
@@ -260,60 +303,76 @@ export default component$(() => {
               </div>
             </section>
 
-            {/* The brutal curve */}
-            <section class="card p-6">
-              <p class="dept-label">The Brutal Curve</p>
-              <h2
-                class="mt-0.5 text-lg text-[var(--color-ink)]"
-                style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
-              >
-                Why a "good" draft is still a C
-              </h2>
-              <p
-                class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
-                style={{ fontFamily: "var(--font-serif)" }}
-              >
-                The raw score is a blend, not a plain average: the judges' mean
-                opinion counts for 45%, but the single harshest judge's score
-                also counts on its own for 35% — so one editor who really isn't
-                convinced can drag the grade down even if the rest of the room
-                liked it. Mechanical polish (structure, pacing, citations) is
-                the remaining 20%, deliberately a minor share, since clean prose
-                around a hollow argument shouldn't read as a good draft. That
-                raw blend is then curved: Twyne compresses the middle of the
-                scale and stretches the top, so a 90+ is reserved for genuinely
-                excellent work.
-              </p>
-              <div class="mt-4">
-                {CURVE_ANCHORS.map(([raw, final, note]) => (
-                  <div key={raw} class="anchor">
-                    <div>
-                      <span
-                        class="font-mono text-sm"
-                        style={{ color: "var(--color-ink-muted)" }}
+            {store.result.scoringMethod === "judgement" ? (
+              <section class="card p-6">
+                <p class="dept-label">How these marks work</p>
+                <p class="mt-2 text-sm leading-6 text-[var(--color-ink-light)]">
+                  The grade averages the enabled criteria equally. Your weighted
+                  score applies the weights you choose at the desk. These model
+                  judgements are starting points for revision; they do not
+                  establish publication readiness.
+                </p>
+                <p class="mt-2 text-xs text-[var(--color-ink-muted)]">
+                  Reading by {store.result.judgementGrade?.model ?? "Jev"}. No
+                  persona opinions are included in this grade. Ask the room at
+                  the desk for a separate reading.
+                </p>
+              </section>
+            ) : (
+              <section class="card p-6">
+                <p class="dept-label">The Brutal Curve</p>
+                <h2
+                  class="mt-0.5 text-lg text-[var(--color-ink)]"
+                  style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+                >
+                  Why a "good" draft is still a C
+                </h2>
+                <p
+                  class="mt-2 text-xs leading-5 text-[var(--color-ink-light)]"
+                  style={{ fontFamily: "var(--font-serif)" }}
+                >
+                  The raw score is a blend, not a plain average: the judges'
+                  mean opinion counts for 45%, but the single harshest judge's
+                  score also counts on its own for 35% — so one editor who
+                  really isn't convinced can drag the grade down even if the
+                  rest of the room liked it. Mechanical polish (structure,
+                  pacing, citations) is the remaining 20%, deliberately a minor
+                  share, since clean prose around a hollow argument shouldn't
+                  read as a good draft. That raw blend is then curved: Twyne
+                  compresses the middle of the scale and stretches the top, so a
+                  90+ is reserved for genuinely excellent work.
+                </p>
+                <div class="mt-4">
+                  {CURVE_ANCHORS.map(([raw, final, note]) => (
+                    <div key={raw} class="anchor">
+                      <div>
+                        <span
+                          class="font-mono text-sm"
+                          style={{ color: "var(--color-ink-muted)" }}
+                        >
+                          raw {raw}
+                        </span>
+                        <span
+                          class="ml-2 text-[0.7rem] text-[var(--color-ink-muted)]"
+                          style={{
+                            fontFamily: "var(--font-typewriter)",
+                            letterSpacing: "0.1em",
+                          }}
+                        >
+                          → final {final}
+                        </span>
+                      </div>
+                      <p
+                        class="text-xs text-[var(--color-ink-light)]"
+                        style={{ fontFamily: "var(--font-serif)" }}
                       >
-                        raw {raw}
-                      </span>
-                      <span
-                        class="ml-2 text-[0.7rem] text-[var(--color-ink-muted)]"
-                        style={{
-                          fontFamily: "var(--font-typewriter)",
-                          letterSpacing: "0.1em",
-                        }}
-                      >
-                        → final {final}
-                      </span>
+                        {note}
+                      </p>
                     </div>
-                    <p
-                      class="text-xs text-[var(--color-ink-light)]"
-                      style={{ fontFamily: "var(--font-serif)" }}
-                    >
-                      {note}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </section>
+                  ))}
+                </div>
+              </section>
+            )}
 
             {/* Full narrative review */}
             {store.result.review && (
@@ -446,6 +505,30 @@ export default component$(() => {
                       >
                         {c.feedback}
                       </p>
+                      {store.result?.judgementGrade?.criteria[c.id] && (
+                        <details class="mt-2 text-xs text-[var(--color-ink-muted)]">
+                          <summary class="cursor-pointer">
+                            Possible ratings
+                          </summary>
+                          <p class="mt-2">
+                            The spread shows which ratings the model considered
+                            plausible. Concentration is not a probability that
+                            the assessment is correct.
+                          </p>
+                          <ul class="mt-2 space-y-1">
+                            {Object.entries(
+                              store.result?.judgementGrade?.criteria[c.id]
+                                ?.probabilities ?? {},
+                            ).map(([level, probability]) => (
+                              <li key={level}>
+                                {store.result!.judgementGrade!.criteria[c.id]
+                                  .legend[level] ?? level}
+                                : {Math.round(probability * 100)}%
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
+                      )}
                       {ratio < 0.6 && (
                         <p
                           class="mt-1.5 text-[11px] leading-5"
@@ -473,6 +556,12 @@ export default component$(() => {
                 >
                   What the rubric counted
                 </h2>
+                {store.result.scoringMethod === "judgement" && (
+                  <p class="mt-2 text-xs text-[var(--color-ink-muted)]">
+                    These local measurements provide context and do not
+                    contribute to the judgement grade.
+                  </p>
+                )}
                 <div class="mt-4 grid grid-cols-2 md:grid-cols-3 gap-3 text-xs">
                   {(
                     [
@@ -555,7 +644,7 @@ export const head: DocumentHead = {
     {
       name: "description",
       content:
-        "The full Twyne rubric: per-criterion scores, judge verdicts, and the brutal curve.",
+        "The full Twyne rubric: criterion marks, model uncertainty, and editorial readings.",
     },
   ],
 };
