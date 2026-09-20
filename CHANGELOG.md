@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.20.2
+
+<sub>2026-09-20</sub>
+
+- Pin the editor test DOM to a version compatible with the project's HTTP
+  dependencies, and install the CLI package's separate locked dependencies in CI.
+- Verify the release checks from a clean install.
+
 ## 0.20.1
 
 <sub>2026-09-20</sub>
