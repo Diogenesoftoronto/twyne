@@ -9,6 +9,8 @@ import { GlobalConnectivityBanner } from "./components/ui/global-connectivity-ba
 import { GlobalApplicationToasts } from "./components/ui/global-application-toasts";
 import { GlobalSpeechPlayer } from "./components/ui/global-speech-player";
 import { UsageSyncController } from "./components/desk/usage-sync-controller";
+import { AppI18nProvider } from "./i18n/provider";
+import type { AppLocale, LanguagePreference } from "./i18n/locale";
 import {
   THEME_BOOTSTRAP_SCRIPT,
   applyTheme,
@@ -25,7 +27,10 @@ if ("serviceWorker" in navigator) {
 }
 `;
 
-export default component$(() => {
+export default component$<{
+  initialLocale?: AppLocale;
+  initialPreference?: LanguagePreference;
+}>((props) => {
   useQwikRouter({ viewTransition: true });
 
   const convexUrl = (import.meta.env.PUBLIC_CONVEX_URL ??
@@ -85,24 +90,29 @@ export default component$(() => {
         />
         <RouterHead />
       </head>
-      <body lang="en">
-        <GlobalConnectivityBanner />
-        <GlobalApplicationToasts />
-        <ConvexProvider url={convexUrl}>
-          <AuthProvider>
-            <PostHogProvider>
-              <UsageSyncController />
-              <RouterOutlet />
-              <GlobalSpeechPlayer />
-              {!isDev && (
-                <script
-                  type="module"
-                  dangerouslySetInnerHTML={SERVICE_WORKER_REGISTER_SCRIPT}
-                />
-              )}
-            </PostHogProvider>
-          </AuthProvider>
-        </ConvexProvider>
+      <body lang={props.initialLocale ?? "en"}>
+        <AppI18nProvider
+          initialLocale={props.initialLocale ?? "en"}
+          initialPreference={props.initialPreference ?? "auto"}
+        >
+          <GlobalConnectivityBanner />
+          <GlobalApplicationToasts />
+          <ConvexProvider url={convexUrl}>
+            <AuthProvider>
+              <PostHogProvider>
+                <UsageSyncController />
+                <RouterOutlet />
+                <GlobalSpeechPlayer />
+                {!isDev && (
+                  <script
+                    type="module"
+                    dangerouslySetInnerHTML={SERVICE_WORKER_REGISTER_SCRIPT}
+                  />
+                )}
+              </PostHogProvider>
+            </AuthProvider>
+          </ConvexProvider>
+        </AppI18nProvider>
       </body>
     </>
   );

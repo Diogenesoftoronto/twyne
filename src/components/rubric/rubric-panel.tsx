@@ -1,3 +1,4 @@
+import { currentModelLocale } from "../../i18n/model-language";
 import {
   component$,
   useStore,
@@ -368,6 +369,7 @@ export const RubricPanel = component$(
           try {
             const personasForServer = defaultPersonas().map(toAgentPersona);
             judges = (await client.action(api.agents.judgeRoom, {
+              responseLocale: currentModelLocale(),
               personas: personasForServer,
               brief: brief ?? null,
               draftText,
@@ -421,6 +423,7 @@ export const RubricPanel = component$(
         try {
           sufficiency = client
             ? ((await client.action(api.agents.judgeSufficiency, {
+                responseLocale: currentModelLocale(),
                 brief: brief ?? null,
                 draftText,
               })) as { score: number; rationale: string })
@@ -493,6 +496,7 @@ export const RubricPanel = component$(
             evidence = clientRes;
           } else if (client) {
             const serverRes = (await client.action(api.agents.judgeEvidence, {
+              responseLocale: currentModelLocale(),
               brief: brief ?? null,
               draftText,
             })) as {
@@ -521,6 +525,7 @@ export const RubricPanel = component$(
             integrity = clientRes;
           } else if (client) {
             const serverRes = (await client.action(api.agents.judgeIntegrity, {
+              responseLocale: currentModelLocale(),
               brief: brief ?? null,
               draftText,
             })) as {
@@ -561,6 +566,7 @@ export const RubricPanel = component$(
             targetFit = clientRes;
           } else if (client) {
             const serverRes = (await client.action(api.agents.judgeTargetFit, {
+              responseLocale: currentModelLocale(),
               brief: brief ?? null,
               draftText,
             })) as {
@@ -617,6 +623,7 @@ export const RubricPanel = component$(
                 res ??
                 (client
                   ? ((await client.action(api.agents.judgeCustomCriterion, {
+                      responseLocale: currentModelLocale(),
                       brief: brief ?? null,
                       draftText,
                       label: spec.label,
@@ -849,6 +856,7 @@ export const RubricPanel = component$(
           await loadRubricDraftHtml(activeFolioId),
         );
         const res = (await client.action(api.agents.suggestRubricCriteria, {
+          responseLocale: currentModelLocale(),
           brief: brief ?? null,
           draftText: draftText.slice(0, 4000),
           existingLabels: store.criteriaSpecs

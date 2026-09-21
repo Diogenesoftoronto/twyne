@@ -354,11 +354,12 @@ export default component$(() => {
       </div>
 
       <p class="mt-10 text-center text-[0.8rem] text-[var(--color-ink-light)]">
-        New subscriptions use Not Organic checkout. Cancel future renewals
-        anytime. Included credit is service credit, not cash; model choice and
-        manuscript length affect usage. Extra AI use requires available wallet
-        credit. Custom model training and hosted voice are not included in this
-        plan. Existing Creem plans keep their terms.
+        New subscriptions use Not Organic checkout with Paddle payment
+        processing. Cancel future renewals anytime. Included credit is service
+        credit, not cash; model choice and manuscript length affect usage. Extra
+        AI use requires available wallet credit. Custom model training and
+        hosted voice are not included in this plan. Existing legacy
+        subscriptions keep their terms.
       </p>
     </main>
   );

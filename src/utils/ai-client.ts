@@ -1,12 +1,15 @@
+import {
+  currentModelLocale,
+  withResponseLanguage,
+} from "../i18n/model-language";
 /**
  * Client-side AI engine for BYOK (Bring Your Own Key).
  *
  * This module runs AI calls from the browser using the Vercel AI SDK and the
  * provider packages bundled with the app. Provider API keys are read from the
- * caller's `AiSettings` object (stored in IndexedDB only). Providers receive
- * them directly except when a provider does not support browser CORS; Tinker
- * calls use Twyne's fixed same-origin relay and the key is never persisted
- * server-side.
+ * caller's `AiSettings` object (stored in IndexedDB only). Remote requests
+ * use Twyne's same-origin provider relay to avoid browser
+ * CORS restrictions. Keys are never persisted server-side; local APIs stay direct.
  *
  * The prompt builders from `convex/agentPrompts.ts` are reused so the voices
  * stay identical whether the call runs client-side or server-side.
@@ -24,6 +27,7 @@ import {
   type ToolSet,
 } from "ai";
 import decodeAudio from "audio-decode";
+import { providerFetch } from "./provider-fetch";
 import { encode as encodeWav } from "wav-encoder";
 import type {
   AiSettings,
@@ -271,6 +275,7 @@ async function createModel(
       const { createOpenAI } = await import("@ai-sdk/openai");
       const tinker = createOpenAI({
         apiKey: config.apiKey,
+        fetch: providerFetch,
         baseURL: tinkerRelayBaseUrl(),
       });
       return openAiLanguageModel(tinker, config, modelId);
@@ -278,18 +283,25 @@ async function createModel(
     switch (config.type) {
       case "openai": {
         const { createOpenAI } = await import("@ai-sdk/openai");
-        const openai = createOpenAI({ apiKey: config.apiKey });
+        const openai = createOpenAI({
+          apiKey: config.apiKey,
+          fetch: providerFetch,
+        });
         return openAiLanguageModel(openai, config, modelId);
       }
       case "anthropic": {
         const { createAnthropic } = await import("@ai-sdk/anthropic");
-        const anthropicProvider = createAnthropic({ apiKey: config.apiKey });
+        const anthropicProvider = createAnthropic({
+          apiKey: config.apiKey,
+          fetch: providerFetch,
+        });
         return anthropicProvider.chat(modelId);
       }
       case "anthropic-compatible": {
         const { createAnthropic } = await import("@ai-sdk/anthropic");
         const anthropicProvider = createAnthropic({
           apiKey: config.apiKey,
+          fetch: providerFetch,
           baseURL: config.baseUrl,
         });
         return anthropicProvider.chat(modelId);
@@ -298,6 +310,7 @@ async function createModel(
         const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
         const googleProvider = createGoogleGenerativeAI({
           apiKey: config.apiKey,
+          fetch: providerFetch,
         });
         return googleProvider(modelId);
       }
@@ -305,6 +318,7 @@ async function createModel(
         const { createOpenAI } = await import("@ai-sdk/openai");
         const openai = createOpenAI({
           apiKey: config.apiKey,
+          fetch: providerFetch,
           baseURL: config.baseUrl,
         });
         return openAiLanguageModel(openai, config, modelId);
@@ -317,6 +331,7 @@ async function createModel(
         const { createOpenAI } = await import("@ai-sdk/openai");
         const openai = createOpenAI({
           apiKey: config.apiKey || "local",
+          fetch: providerFetch,
           baseURL: config.baseUrl,
         });
         return openAiLanguageModel(openai, config, modelId);
@@ -333,6 +348,7 @@ async function createModel(
         const { createOpenAI } = await import("@ai-sdk/openai");
         const openai = createOpenAI({
           apiKey: config.apiKey || "local",
+          fetch: providerFetch,
           baseURL: config.baseUrl,
         });
         return openAiLanguageModel(openai, config, modelId);
@@ -695,7 +711,7 @@ export async function runClientVoiceSpeech(
   let requestSent = false;
   try {
     requestSent = true;
-    const res = await fetch(`${baseURL}/audio/speech`, {
+    const res = await providerFetch(`${baseURL}/audio/speech`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${resolved.provider.apiKey}`,
@@ -977,6 +993,7 @@ async function generateTrackedText({
   /** Reuse a caller-owned trace when a streaming branch needs manual capture. */
   traceId?: string;
 }): Promise<string> {
+  system = withResponseLanguage(system, currentModelLocale());
   const start = performance.now();
   const generationTraceId = traceId ?? createAiTraceId(feature);
   const folioId = await loadActiveFolioIdFromIdb();
@@ -1481,22 +1498,25 @@ async function runFishAudioSpeech(args: {
     : "mp3";
 
   try {
-    const res = await fetch(`${FISH_AUDIO_BASE}/v1/tts/stream/with-timestamp`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${args.provider.apiKey}`,
-        "content-type": "application/json",
-        model: args.model,
+    const res = await providerFetch(
+      `${FISH_AUDIO_BASE}/v1/tts/stream/with-timestamp`,
+      {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${args.provider.apiKey}`,
+          "content-type": "application/json",
+          model: args.model,
+        },
+        signal: args.signal,
+        body: JSON.stringify({
+          text: args.text,
+          format,
+          ...(referenceId ? { reference_id: referenceId } : {}),
+          ...(args.speed ? { prosody: { speed: args.speed } } : {}),
+          latency: "balanced",
+        }),
       },
-      signal: args.signal,
-      body: JSON.stringify({
-        text: args.text,
-        format,
-        ...(referenceId ? { reference_id: referenceId } : {}),
-        ...(args.speed ? { prosody: { speed: args.speed } } : {}),
-        latency: "balanced",
-      }),
-    });
+    );
     if (!res.ok) {
       const detail = await res.text().catch(() => "");
       throw new Error(
@@ -1616,7 +1636,7 @@ async function runFishAudioTranscribe(args: {
     form.append("ignore_timestamps", "true");
 
     requestSent = true;
-    const res = await fetch(`${FISH_AUDIO_BASE}/v1/asr`, {
+    const res = await providerFetch(`${FISH_AUDIO_BASE}/v1/asr`, {
       method: "POST",
       headers: { authorization: `Bearer ${args.provider.apiKey}` },
       signal: args.signal,
@@ -2055,7 +2075,7 @@ export async function runClientVoiceTranscribe(
     }
 
     requestSent = true;
-    const res = await fetch(`${baseURL}/audio/transcriptions`, {
+    const res = await providerFetch(`${baseURL}/audio/transcriptions`, {
       method: "POST",
       headers: { authorization: `Bearer ${resolved.provider.apiKey}` },
       signal: opts?.signal,
@@ -2365,7 +2385,7 @@ export async function testProvider(
   const elapsed = () => Math.round(performance.now() - start);
   try {
     const { url, headers } = providerModelListRequest(config);
-    const res = await fetch(url, { headers });
+    const res = await providerFetch(url, { headers });
     if (res.ok) {
       const models = parseModelListBody(await res.json());
       return {
@@ -2486,7 +2506,7 @@ export async function discoverProviderModels(
 
   try {
     const { url, headers } = providerModelListRequest(config);
-    const res = await fetch(url, { headers });
+    const res = await providerFetch(url, { headers });
     if (!res.ok) {
       throw new Error(`Model discovery failed (${res.status})`);
     }
@@ -3081,10 +3101,10 @@ function withBrowserSupertonicProvider(settings: AiSettings): AiSettings {
 }
 
 /**
- * When running inside the Electrobun desktop shell with the local LiteRT model
- * available, inject a managed `litert` provider so every panel can use it
- * without the writer configuring anything. No-op on the web (the bridge
- * reports unavailable), so the local surface stays hidden there.
+ * When running inside the Electrobun desktop shell with the local LiteRT-LM
+ * MiniCPM5 model available, inject a managed `litert` provider so every panel
+ * can use it without the writer configuring anything. No-op on the web (the
+ * bridge reports unavailable), so the local surface stays hidden there.
  */
 function withDesktopLocalProvider(settings: AiSettings): AiSettings {
   const baseUrl = localAiBaseUrl();
@@ -3092,12 +3112,18 @@ function withDesktopLocalProvider(settings: AiSettings): AiSettings {
 
   const local: AiProviderConfig = {
     id: LOCAL_PROVIDER_ID,
-    name: "Local — Gemma 4 E4B",
+    name: "Local — MiniCPM5-2B",
     type: "litert",
     apiKey: "local",
     baseUrl,
     defaultModel: LOCAL_MODEL_ID,
     availableModels: [LOCAL_MODEL_ID],
+    // OpenBMB's int4 bundle otherwise reasons by default. Direct answers keep
+    // the desktop assistant responsive and leave the 4,096-token context for
+    // the writer's prompt and actual answer.
+    modelReasoning: {
+      [LOCAL_MODEL_ID]: { type: "toggle", value: false },
+    },
   };
   const providers = settings.providers.some((p) => p.id === LOCAL_PROVIDER_ID)
     ? settings.providers.map((p) => (p.id === LOCAL_PROVIDER_ID ? local : p))
@@ -3281,7 +3307,7 @@ export async function runClientInterviewTurn(
       const providerOptions = reasoningProviderOptions(cfg.provider, cfg.model);
       const streamed = streamText({
         model,
-        system,
+        system: withResponseLanguage(system, currentModelLocale()),
         prompt: generationPrompt,
         temperature: cfg.temperature,
         maxOutputTokens: cfg.maxTokens,

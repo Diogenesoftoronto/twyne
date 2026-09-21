@@ -9,6 +9,7 @@ import {
   type Signal,
 } from "@qwik.dev/core";
 import { authClient } from "./auth-client";
+import { createConvexTokenFetcher } from "./convex-token";
 import { analyticsIdFromConvexJwt } from "./auth-analytics";
 import { reportApplicationError } from "./application-diagnostics";
 import { setConvexSyncContext, clearConvexSyncContext } from "./convex-sync";
@@ -68,87 +69,29 @@ export const AuthProvider = component$(() => {
     async ({ cleanup, track }) => {
       track(convexClient);
 
-      // Restore/complete ATProto OAuth, but do not let it short-circuit Better
-      // Auth. The two sessions serve different purposes and can coexist.
-      const { initSession } = await import("./atproto");
-      const atproto = await initSession();
-
-      const sessionAtom = authClient.useSession;
-      if (!sessionAtom || typeof sessionAtom !== "object") {
-        authState.value = atproto
-          ? {
-              user: {
-                id: atproto.did,
-                analyticsId: atproto.did,
-                email: atproto.handle,
-                name: atproto.displayName ?? atproto.handle,
-                image: atproto.avatar,
-              },
-              loading: false,
-              provider: "atproto",
-              atproto,
-            }
-          : { user: null, loading: false };
+      const convex = convexClient.value;
+      let disposed = false;
+      let currentUserId: string | null = null;
+      let authGeneration = 0;
+      let atproto: AuthState["atproto"];
+      let atprotoPending = true;
+      let betterAuthPending = true;
+      const isAtprotoCallback = window.location.pathname === "/auth/callback/";
+      let unsubscribe: (() => void) | undefined;
+      cleanup(() => {
+        disposed = true;
+        authGeneration++;
+        unsubscribe?.();
         clearConvexSyncContext();
-        return;
-      }
+      });
 
-      async function syncFromAtom() {
-        const val = sessionAtom.get?.() ?? sessionAtom;
-        const sessionData = val?.data;
-
-        if (sessionData?.user) {
-          const user: AuthUser = {
-            id: sessionData.user.id,
-            email: sessionData.user.email ?? "",
-            name: sessionData.user.name ?? undefined,
-            image: sessionData.user.image ?? undefined,
-          };
-          let convexAuthenticated = false;
-          if (convexClient.value) {
-            try {
-              const tokenResult = await (authClient as any).convex.token({
-                fetchOptions: { throw: false },
-              });
-              const token = tokenResult?.data?.token as string | undefined;
-              user.analyticsId = analyticsIdFromConvexJwt(token);
-              if (token) {
-                convexClient.value.setAuth(async () => token);
-                setConvexSyncContext(convexClient.value, user.id);
-                convexAuthenticated = true;
-              } else {
-                convexClient.value.setAuth(async () => null);
-                clearConvexSyncContext();
-                reportApplicationError(
-                  "twyne:auth:install-convex-token",
-                  new Error("Authentication failed: Convex token unavailable"),
-                  {
-                    source: "auth",
-                    title: "Cloud sync is paused",
-                    dedupeKey: "convex-auth",
-                    metadata: { operation: "install-convex-token" },
-                  },
-                );
-              }
-            } catch (error) {
-              convexClient.value.setAuth(async () => null);
-              clearConvexSyncContext();
-              reportApplicationError("twyne:auth:install-convex-token", error, {
-                source: "auth",
-                title: "Cloud sync is paused",
-                dedupeKey: "convex-auth",
-                metadata: { operation: "install-convex-token" },
-              });
-            }
-          } else {
-            clearConvexSyncContext();
-          }
+      const publishAtproto = () => {
+        if (disposed) return;
+        if (authState.value.provider === "convex") {
           authState.value = {
-            user,
-            loading: false,
-            provider: "convex",
-            convexAuthenticated,
-            atproto: atproto ?? undefined,
+            ...authState.value,
+            atproto,
+            loading: isAtprotoCallback && atprotoPending,
           };
         } else {
           authState.value = atproto
@@ -160,34 +103,114 @@ export const AuthProvider = component$(() => {
                   name: atproto.displayName ?? atproto.handle,
                   image: atproto.avatar,
                 },
-                loading: val?.isPending ?? false,
+                loading: betterAuthPending,
                 provider: "atproto",
                 atproto,
               }
-            : { user: null, loading: val?.isPending ?? false };
-          try {
-            convexClient.value?.setAuth(async () => null);
-          } catch {
-            // The client may not have installed an auth token yet.
-          }
-          clearConvexSyncContext();
+            : { user: null, loading: atprotoPending || betterAuthPending };
         }
+      };
+      // A Bluesky refresh must not delay the separate Twyne/Convex session.
+      void import("./atproto").then(
+        async ({ initSession, ATPROTO_SESSION_CHANGED }) => {
+          if (disposed) return;
+          const onSessionChange = () => {
+            atproto = undefined;
+            publishAtproto();
+          };
+          window.addEventListener(ATPROTO_SESSION_CHANGED, onSessionChange);
+          cleanup(() =>
+            window.removeEventListener(
+              ATPROTO_SESSION_CHANGED,
+              onSessionChange,
+            ),
+          );
+          atproto = (await initSession()) ?? undefined;
+          atprotoPending = false;
+          publishAtproto();
+        },
+      );
+
+      const sessionAtom = authClient.useSession;
+      if (!sessionAtom || typeof sessionAtom !== "object") {
+        betterAuthPending = false;
+        return;
       }
 
-      void syncFromAtom();
-
+      function syncFromAtom() {
+        if (disposed) return;
+        const val = sessionAtom.get?.() ?? sessionAtom;
+        betterAuthPending = val?.isPending ?? false;
+        const sessionData = val?.data;
+        if (val?.isPending && !sessionData?.user) return;
+        if (sessionData?.user) {
+          if (currentUserId === sessionData.user.id) return;
+          currentUserId = sessionData.user.id;
+          const generation = ++authGeneration;
+          const isCurrent = () => !disposed && generation === authGeneration;
+          const user: AuthUser = {
+            id: sessionData.user.id,
+            email: sessionData.user.email ?? "",
+            name: sessionData.user.name ?? undefined,
+            image: sessionData.user.image ?? undefined,
+          };
+          authState.value = {
+            user,
+            loading: isAtprotoCallback && atprotoPending,
+            provider: "convex",
+            convexAuthenticated: false,
+            atproto,
+          };
+          clearConvexSyncContext();
+          if (!convex) return;
+          const fetchToken = createConvexTokenFetcher(async () => {
+            try {
+              const result = await (authClient as any).convex.token({
+                fetchOptions: { throw: false },
+              });
+              const token = result?.data?.token ?? null;
+              if (isCurrent())
+                user.analyticsId = analyticsIdFromConvexJwt(token);
+              return token;
+            } catch (error) {
+              if (isCurrent())
+                reportApplicationError(
+                  "twyne:auth:install-convex-token",
+                  error,
+                  {
+                    source: "auth",
+                    title: "Cloud sync is paused",
+                    dedupeKey: "convex-auth",
+                    metadata: { operation: "install-convex-token" },
+                  },
+                );
+              return null;
+            }
+          }, isCurrent);
+          convex.setAuth(fetchToken, (authenticated) => {
+            if (!isCurrent()) return;
+            authState.value = {
+              user,
+              loading: isAtprotoCallback && atprotoPending,
+              provider: "convex",
+              convexAuthenticated: authenticated,
+              atproto,
+            };
+            if (authenticated) setConvexSyncContext(convex, user.id);
+            else clearConvexSyncContext();
+          });
+        } else {
+          currentUserId = null;
+          authGeneration++;
+          convex?.setAuth(async () => null);
+          clearConvexSyncContext();
+          authState.value = { user: null, loading: val?.isPending ?? false };
+          publishAtproto();
+        }
+      }
+      syncFromAtom();
       if (typeof sessionAtom.subscribe === "function") {
-        const unsub = sessionAtom.subscribe(() => {
-          void syncFromAtom();
-        });
-        cleanup(() => {
-          unsub();
-          clearConvexSyncContext();
-        });
-      } else {
-        cleanup(() => {
-          clearConvexSyncContext();
-        });
+        unsubscribe = sessionAtom.subscribe(syncFromAtom);
       }
     },
     { strategy: "document-ready" },

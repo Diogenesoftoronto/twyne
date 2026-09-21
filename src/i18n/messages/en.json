@@ -1,0 +1,15 @@
+{
+  "language": {
+    "title": "Language",
+    "description": "Choose the language used in Twyne and AI replies. Automatic follows your browser or device preferences.",
+    "automatic": "Automatic",
+    "partial": "Some parts of Twyne still appear in English."
+  },
+  "settings": {
+    "title": "The Editor’s Desk",
+    "subtitle": "Bring your own key. Choose your models. Own the room.",
+    "back": "← Back to desk",
+    "loading": "Loading preferences…",
+    "appearance": "Appearance"
+  }
+}

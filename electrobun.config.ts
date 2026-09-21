@@ -8,12 +8,11 @@ const localAiEnabled =
 const localAiCopy: Record<string, string> = {};
 
 if (localAiEnabled) {
-  const serverBin =
-    process.env.LITERT_SERVER_BIN ?? "desktop/bin/litert-lm-server";
+  const serverBin = process.env.LITERT_LM_BIN ?? "desktop/bin/litert-lm";
   const modelPath = process.env.LOCAL_MODEL_PATH;
-  localAiCopy[serverBin] = "bin/litert-lm-server";
+  localAiCopy[serverBin] = "bin/litert-lm";
   if (modelPath) {
-    localAiCopy[modelPath] = "models/gemma-4-e4b.litertlm";
+    localAiCopy[modelPath] = "models/MiniCPM5-2B_int4.litertlm";
   }
 }
 

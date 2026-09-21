@@ -2,11 +2,11 @@
  * Desktop-only native LiteRT-LM server manager.
  *
  * When the desktop build is produced with local AI enabled
- * (`TWYNE_DESKTOP_LOCAL_AI=true`), this spawns the bundled LiteRT-LM server
- * binary serving Gemma 4 E4B over an OpenAI-compatible API on loopback. The
- * web app (loaded in the window) discovers the endpoint via URL params and
- * talks to it through the existing `litert` provider — no model code ships in
- * the browser bundle.
+ * (`TWYNE_DESKTOP_LOCAL_AI=true`), this imports the bundled OpenBMB MiniCPM5
+ * LiteRT-LM bundle into the local registry, then starts LiteRT-LM's
+ * OpenAI-compatible server on loopback. The web app (loaded in the window)
+ * discovers the endpoint via URL params and talks to it through the existing
+ * `litert` provider — no model code ships in the browser bundle.
  *
  * Everything here is best-effort: if the flag is off or the binary/model are
  * not bundled, `startLocalAiServer()` returns null and the desktop runs as the
@@ -23,7 +23,9 @@ export interface LocalAiServer {
 }
 
 const STARTUP_TIMEOUT_MS = Number.parseInt(
-  process.env.LITERT_SERVER_STARTUP_TIMEOUT_MS ?? "20000",
+  process.env.LITERT_LM_STARTUP_TIMEOUT_MS ??
+    process.env.LITERT_SERVER_STARTUP_TIMEOUT_MS ??
+    "20000",
   10,
 );
 const STARTUP_POLL_MS = 150;
@@ -33,15 +35,17 @@ function enabled(): boolean {
   return v === "true" || v === "1";
 }
 
-/** Resolve the bundled LiteRT-LM server binary path (overridable via env). */
+/** Resolve the bundled LiteRT-LM CLI path (overridable via env). */
 function serverBinPath(): string {
-  return resolve(process.env.LITERT_SERVER_BIN ?? "./bin/litert-lm-server");
+  return resolve(process.env.LITERT_LM_BIN ?? "./bin/litert-lm");
 }
 
-/** Resolve the Gemma 4 E4B LiteRT model path (overridable via env). */
+const LOCAL_MODEL_ID = "minicpm5-2b";
+
+/** Resolve the bundled MiniCPM5-2B LiteRT model path (overridable via env). */
 function modelPath(): string {
   return resolve(
-    process.env.LOCAL_MODEL_PATH ?? "./models/gemma-4-e4b.litertlm",
+    process.env.LOCAL_MODEL_PATH ?? "./models/MiniCPM5-2B_int4.litertlm",
   );
 }
 
@@ -99,6 +103,50 @@ async function waitForServerReady(
   return "timeout";
 }
 
+/** Check whether LiteRT-LM already has the Twyne model in its registry. */
+async function modelIsRegistered(bin: string): Promise<boolean> {
+  let proc: Subprocess;
+  try {
+    proc = spawn({ cmd: [bin, "list"], stdout: "pipe", stderr: "ignore" });
+  } catch {
+    return false;
+  }
+
+  const output =
+    proc.stdout && typeof proc.stdout !== "number"
+      ? await new Response(proc.stdout).text()
+      : "";
+  const exitCode = await proc.exited;
+  return (
+    exitCode === 0 &&
+    output.split(/\s+/).some((value) => value === LOCAL_MODEL_ID)
+  );
+}
+
+/** Register the bundled model under the id sent by Twyne's OpenAI client. */
+async function importModel(bin: string, model: string): Promise<boolean> {
+  if (await modelIsRegistered(bin)) return true;
+
+  let proc: Subprocess;
+  try {
+    proc = spawn({
+      cmd: [bin, "import", model, LOCAL_MODEL_ID],
+      stdout: "inherit",
+      stderr: "inherit",
+    });
+  } catch (err) {
+    console.error("[twyne:litert] failed to import local model:", err);
+    return false;
+  }
+
+  const exitCode = await proc.exited;
+  if (exitCode !== 0) {
+    console.error(`[twyne:litert] model import exited with status ${exitCode}`);
+    return false;
+  }
+  return true;
+}
+
 /**
  * Start the local model server. Returns the live endpoint info, or null when
  * local AI is disabled or its assets are missing.
@@ -116,21 +164,15 @@ export async function startLocalAiServer(): Promise<LocalAiServer | null> {
   }
 
   const port = await freePort();
+  if (!(await importModel(bin, model))) return null;
+
   let proc: Subprocess;
   try {
-    // Expected CLI contract: `<bin> --model <path> --host 127.0.0.1 --port <n>`
-    // exposing an OpenAI-compatible /v1 API. Adjust flags to match the chosen
-    // LiteRT-LM server build.
+    // LiteRT-LM serves models from its registry. The import above binds the
+    // bundled file to LOCAL_MODEL_ID; `serve` exposes the OpenAI-compatible
+    // /v1 API that the web app already speaks.
     proc = spawn({
-      cmd: [
-        bin,
-        "--model",
-        model,
-        "--host",
-        "127.0.0.1",
-        "--port",
-        String(port),
-      ],
+      cmd: [bin, "serve", "--host", "127.0.0.1", "--port", String(port)],
       stdout: "inherit",
       stderr: "inherit",
     });

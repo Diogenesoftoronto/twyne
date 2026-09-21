@@ -7,6 +7,7 @@ import { passkey } from "@better-auth/passkey";
 import { DataModel } from "./_generated/dataModel";
 import authConfig from "./auth.config.js";
 import { Resend } from "resend";
+import { passkeyOriginOptions } from "../src/utils/passkey-origin";
 
 const siteUrl = normalizeOrigin(
   process.env.SITE_URL ??
@@ -73,6 +74,7 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
     },
     plugins: [
       passkey({
+        ...passkeyOriginOptions(siteUrl),
         // Security: passkey registration is always bound to the authenticated
         // session's user (`requireSession: true`, the plugin default). We
         // deliberately do NOT use `requireSession: false` + `resolveUser`.

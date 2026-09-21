@@ -1,0 +1,15 @@
+{
+  "language": {
+    "title": "Idioma",
+    "description": "Elige el idioma de Twyne y de las respuestas de IA. El modo automático sigue las preferencias de tu navegador o dispositivo.",
+    "automatic": "Automático",
+    "partial": "Algunas partes de Twyne todavía están en inglés."
+  },
+  "settings": {
+    "title": "El escritorio editorial",
+    "subtitle": "Usa tu propia clave API. Elige tus modelos. Toma las riendas.",
+    "back": "← Volver al escritorio",
+    "loading": "Cargando preferencias…",
+    "appearance": "Apariencia"
+  }
+}

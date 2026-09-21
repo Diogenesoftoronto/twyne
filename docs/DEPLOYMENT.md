@@ -71,13 +71,15 @@ one. The Railway build now runs `npx convex deploy` (gated on `CONVEX_DEPLOY_KEY
 as part of the build step, so the backend deploys on every push alongside the
 frontend — no separate manual deploy needed.
 
-Server-side Convex secrets (`CREEM_API_KEY`, `CREEM_WEBHOOK_SECRET`,
-`CREEM_SUCCESS_URL`, `CREEM_PRO_PRODUCT_IDS`, `POSTHOG_PROJECT_API_KEY`,
-`RESEND_API_KEY`, `VOICE_OPENAI_API_KEY`, …) live in the Convex deployment's own environment, not
-Railway. Set them against production from the CLI:
+Server-side Convex secrets (`NOTORGANIC_ASSERTION_PRIVATE_KEY`,
+`NOTORGANIC_ASSERTION_KEY_ID`, `NOTORGANIC_ENABLED`,
+`NOTORGANIC_TWYNE_PRO_V2_ENABLED`, `POSTHOG_PROJECT_API_KEY`,
+`RESEND_API_KEY`, `VOICE_OPENAI_API_KEY`, …) live in the Convex deployment's
+own environment, not Railway. Set them against production from the CLI:
 
 ```bash
-npx convex env set CREEM_API_KEY creem_xxx --prod
+npx convex env set NOTORGANIC_ENABLED true --prod
+npx convex env set NOTORGANIC_TWYNE_PRO_V2_ENABLED true --prod
 npx convex env set POSTHOG_PROJECT_API_KEY phc_xxx --prod
 npx convex env set VOICE_OPENAI_API_KEY sk_xxx --prod
 # list / verify:
@@ -89,10 +91,10 @@ npx convex env list --prod
 Two capabilities ship dark and are switched on through PostHog feature flags
 (runtime, per user/environment):
 
-| Flag             | Effect                                                                                                   |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| `twyne-pricing`  | Enables the `/pricing` page (Creem) + its nav links. Off ⇒ direct visits redirect home after flags load. |
-| `twyne-local-ai` | Surfaces the desktop-only native LiteRT model (Gemma 4 E4B) in the UI.                                   |
+| Flag             | Effect                                                                                                                                                 |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `twyne-pricing`  | Enables the `/pricing` page (Not Organic checkout with Paddle payment processing) + its nav links. Off ⇒ direct visits redirect home after flags load. |
+| `twyne-local-ai` | Surfaces the desktop-only native LiteRT-LM model (OpenBMB MiniCPM5-2B) in the UI.                                                                      |
 
 Set `PUBLIC_POSTHOG_KEY` and optionally `PUBLIC_POSTHOG_HOST`
 (`https://us.i.posthog.com` by default) in the frontend deployment. The legacy
@@ -108,23 +110,25 @@ PostHog evals against `$ai_generation`, then filter/break down by
 `twyne_feature`, `$ai_provider`, `$ai_model`, `twyne_persona_id`, and
 `twyne_expected_format`.
 
-**Creem** (when pricing is on): set `PUBLIC_CREEM_PRODUCT_PRO` (public product
-id) plus the Convex secrets `CREEM_API_KEY`, `CREEM_WEBHOOK_SECRET`, and
-`CREEM_SUCCESS_URL`. Point a Creem webhook at
-`<VITE_CONVEX_SITE_URL>/creem/webhook`. Also set `CREEM_PRO_PRODUCT_IDS` in
-Convex (comma-separated) to the product id(s) that grant Pro — this is the
-server-side allowlist: checkout rejects any product not in it, and a webhook
-event for a non-allowlisted product can never grant Pro.
+**Not Organic and Paddle** (when pricing is on): set
+`NOTORGANIC_ENABLED=true`, configure the server-held assertion key pair
+(`NOTORGANIC_ASSERTION_PRIVATE_KEY` and `NOTORGANIC_ASSERTION_KEY_ID`), and set
+`NOTORGANIC_TWYNE_PRO_V2_ENABLED=true` after the `twyne_pro_v2` plan is mapped
+in Not Organic. Not Organic owns the product checkout and wallet state; Paddle
+handles payment processing. Existing legacy subscription records remain
+supported by the compatibility path while new purchases use Not Organic.
 
 **Hosted voice** (Pro tier): set `VOICE_OPENAI_API_KEY` in Convex, optionally
 `VOICE_OPENAI_MODEL` (defaults to `gpt-4o-mini-tts`) and `VOICE_OPENAI_VOICE`
 (defaults to `alloy`). If `VOICE_OPENAI_API_KEY` is unset, hosted voice uses
 `OPENAI_API_KEY`. BYOK voice does not use server secrets.
 
-**Local model** (desktop only): the web flag just shows the UI; the model runs
-as a native LiteRT-LM server bundled into the Electrobun desktop build. Build
-that variant with `TWYNE_DESKTOP_LOCAL_AI=true` and `LOCAL_MODEL_PATH` pointing
-at the Gemma 4 E4B LiteRT file. The plain web app never loads the model.
+**Local model** (desktop only): the web flag just shows the UI; the bundled
+`litert-lm` CLI imports the OpenBMB MiniCPM5-2B `.litertlm` file into its local
+registry, then serves it through the OpenAI-compatible LiteRT-LM server. Build
+that variant with `TWYNE_DESKTOP_LOCAL_AI=true`, `LITERT_LM_BIN` pointing at
+the LiteRT-LM executable, and `LOCAL_MODEL_PATH` pointing at
+`MiniCPM5-2B_int4.litertlm`. The plain web app never loads the model.
 
 ## Local production smoke test
 

@@ -49,6 +49,7 @@ export interface AgentPersona {
 }
 
 export interface AgentRequest {
+  responseLocale?: import("../src/i18n/locale").AppLocale;
   persona: AgentPersona;
   brief: ProjectBrief | null;
   draftText: string;

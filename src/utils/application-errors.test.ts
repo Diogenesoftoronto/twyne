@@ -227,6 +227,19 @@ describe("auth and HTTP normalization", () => {
   });
 
   test("maps raw Convex and ATProto auth failures to safe recovery", () => {
+    for (const message of [
+      "Stale token set",
+      "Stale tokenset",
+      "invalid_grant",
+      "refresh token expired",
+    ]) {
+      expect(
+        normalizeApplicationError(new Error(message), { source: "auth" }),
+      ).toMatchObject({
+        code: "AUTHENTICATION_REQUIRED",
+        recovery: { action: "sign-in" },
+      });
+    }
     expect(
       normalizeApplicationError(
         new Error(
