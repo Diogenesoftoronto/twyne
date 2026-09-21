@@ -7,7 +7,7 @@
   "engines-annotation": "Mostly required by sharp which needs a Node-API v9 compatible runtime",
   "private": true,
   "type": "module",
-  "version": "0.20.2",
+  "version": "0.21.0",
   "packageManager": "bun@1.3.6",
   "scripts": {
     "i18n:package": "bun run --cwd packages/gt-qwik build",
