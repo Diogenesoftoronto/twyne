@@ -88,10 +88,13 @@ export default component$(() => {
       </h2>
       <p class="doc-p">
         When you use AI features with your own key (BYOK), your key is stored
-        locally in your browser and is used to send requests directly to the AI
-        provider you chose. Those requests, including the text you send for
-        review, are processed by that third-party provider under their privacy
-        policy. We do not need your API key to be stored on our servers.
+        locally in your browser. Remote AI requests, including your key and the
+        text you send, pass through Twyne to the provider you chose. The relay
+        does not store or log request bodies or keys. Local model requests
+        connect directly from your device. Those requests, including the text
+        you send for review, are processed by that third-party provider under
+        their privacy policy. We do not need your API key to be stored on our
+        servers.
       </p>
       <p class="doc-p">
         If you use hosted AI instead of BYOK, the prompt, relevant draft text,
@@ -148,12 +151,13 @@ export default component$(() => {
       </h2>
       <p class="doc-p">
         If paid plans are available and you subscribe, checkout and payment
-        processing are handled by Creem or another payment processor. Twyne
-        sends the information needed to create checkout, such as your account
-        identifier, product id, and, when available, email address. We store
-        subscription status, product identifiers, payment-provider customer and
-        subscription ids, current period information, and related webhook data
-        needed to grant or revoke paid features.
+        processing are handled through Not Organic checkout, with Paddle as the
+        payment processor. Twyne sends the information needed to create
+        checkout, such as your account identifier, product id, and, when
+        available, email address. We store subscription status, product
+        identifiers, payment-provider customer and subscription ids, current
+        period information, and related webhook data needed to grant or revoke
+        paid features.
       </p>
 
       <h2 id="controls" class="doc-h2">
@@ -198,8 +202,9 @@ export default component$(() => {
         when you use the related feature. Examples include Convex and Better
         Auth for backend/auth flows, AI providers such as Anthropic, OpenAI,
         Google, Rivet, or OpenAI-compatible providers, PostHog for analytics and
-        feature flags, ATProto services for Bluesky sign-in or publishing, and
-        Creem for paid checkout.
+        feature flags, ATProto services for Bluesky sign-in or publishing, Not
+        Organic for the product checkout and wallet, and Paddle for payment
+        processing.
       </p>
 
       <h2 id="changes" class="doc-h2">

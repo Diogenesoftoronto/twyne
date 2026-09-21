@@ -1,0 +1,15 @@
+{
+  "language": {
+    "title": "言語",
+    "description": "Twyne の画面と AI の回答に使用する言語を選択します。自動モードでは、ブラウザーや端末の言語設定に従います。",
+    "automatic": "自動",
+    "partial": "Twyne の一部はまだ英語で表示されます。"
+  },
+  "settings": {
+    "title": "編集デスク",
+    "subtitle": "自分の API キーを使い、モデルを選び、創作の場を自分で管理しましょう。",
+    "back": "← デスクに戻る",
+    "loading": "設定を読み込み中…",
+    "appearance": "外観"
+  }
+}

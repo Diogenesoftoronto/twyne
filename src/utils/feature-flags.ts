@@ -15,9 +15,9 @@ export interface FeatureFlags {
   /** Show the pricing page and its navigation links. */
   pricing: boolean;
   /**
-   * Surface the desktop-only native LiteRT local model (Gemma 4 E4B). This
-   * only gates the UI; actual availability also requires the Electrobun shell
-   * to advertise a bundled local server.
+   * Surface the desktop-only native LiteRT-LM local model (OpenBMB MiniCPM5).
+   * This only gates the UI; actual availability also requires the Electrobun
+   * shell to advertise a bundled local server.
    */
   localAi: boolean;
 }

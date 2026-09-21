@@ -751,7 +751,7 @@ function authenticationCodeFromMessage(
 ): "AUTHENTICATION_REQUIRED" | "AUTHENTICATION_FAILED" | undefined {
   if (!message) return undefined;
   if (
-    /not signed in|not authenticated|sign.?in required|session expired/i.test(
+    /not signed in|not authenticated|sign.?in required|session expired|stale token.?set|invalid_grant|refresh token.*(?:expired|revoked|invalid)/i.test(
       message,
     )
   ) {

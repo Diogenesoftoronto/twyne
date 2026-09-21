@@ -21,6 +21,7 @@ import { reportApplicationError } from "./application-diagnostics";
  */
 export const SCOPE = "atproto blob:image/* include:site.standard.authFull";
 export const AUTH_CALLBACK_PATH = "/auth/callback/";
+export const ATPROTO_SESSION_CHANGED = "twyne:atproto-session-changed";
 
 const HANDLE_RESOLVER = "https://bsky.social";
 export const PUBLIC_BSKY_APPVIEW = "https://public.api.bsky.app";
@@ -97,14 +98,19 @@ async function getOAuthClient(): Promise<any> {
       return new BrowserOAuthClient({
         handleResolver: HANDLE_RESOLVER,
         clientMetadata: atprotoLoopbackClientMetadata(clientId),
+        onDelete: handleSessionDeleted,
       });
     }
 
     return BrowserOAuthClient.load({
       clientId: `${origin}/oauth-client-metadata.json`,
       handleResolver: HANDLE_RESOLVER,
+      onDelete: handleSessionDeleted,
     });
-  })();
+  })().catch((error) => {
+    clientPromise = null;
+    throw error;
+  });
 
   return clientPromise;
 }
@@ -112,6 +118,24 @@ async function getOAuthClient(): Promise<any> {
 // Cache the live OAuth session object so getAgent() can reuse it.
 let activeOAuthSession: any = null;
 let initSessionPromise: Promise<AtprotoSession | null> | null = null;
+let activeProfile: AtprotoSession | null = null;
+
+function handleSessionDeleted(sub: string) {
+  if (getActiveDid() !== sub) return;
+  activeOAuthSession = null;
+  activeProfile = null;
+  window.dispatchEvent(new Event(ATPROTO_SESSION_CHANGED));
+  reportApplicationError(
+    "twyne:atproto:session-expired",
+    new Error("Bluesky session expired. Sign in again."),
+    {
+      source: "auth",
+      title: "Reconnect Bluesky",
+      dedupeKey: "atproto-session",
+      metadata: { operation: "refresh-atproto-session" },
+    },
+  );
+}
 
 /**
  * Complete a pending OAuth callback (the `?code&state` on the landing
@@ -124,6 +148,7 @@ export async function initSession(): Promise<AtprotoSession | null> {
   // Do not emit a known, unactionable warning during ordinary local writing;
   // signInWithBluesky performs the one-time move to the IP-literal origin.
   if (needsIpLiteralLoopback()) return null;
+  if (activeOAuthSession && activeProfile) return activeProfile;
 
   // AuthProvider can restart its visible task while the Convex client is
   // booting. Keep OAuth callback exchange/session refresh single-flight so two
@@ -140,13 +165,21 @@ export async function initSession(): Promise<AtprotoSession | null> {
 async function restoreSession(): Promise<AtprotoSession | null> {
   try {
     const client = await getOAuthClient();
-    const result = await client.init();
+    // Only the Bluesky callback route may consume OAuth callback parameters.
+    // Other integrations, including Not Organic, own their own code/state.
+    const result =
+      window.location.pathname === AUTH_CALLBACK_PATH
+        ? await client.init()
+        : await client.initRestore();
     if (!result?.session) {
       activeOAuthSession = null;
       return null;
     }
     activeOAuthSession = result.session;
-    return resolveProfile(result.session);
+    const profile = await resolveProfile(result.session);
+    if (activeOAuthSession !== result.session) return null;
+    activeProfile = profile;
+    return profile;
   } catch (e) {
     // A failed restore should never block the rest of auth from loading.
     reportApplicationError("twyne:atproto:restore-session", e, {
@@ -156,6 +189,7 @@ async function restoreSession(): Promise<AtprotoSession | null> {
       metadata: { operation: "restore-atproto-session" },
     });
     activeOAuthSession = null;
+    activeProfile = null;
     return null;
   }
 }
@@ -182,9 +216,13 @@ export async function signInWithBluesky(handle: string): Promise<void> {
 /** Revoke the active session and clear local state. */
 export async function signOutBluesky(): Promise<void> {
   if (!activeOAuthSession) return;
+  const did = getActiveDid();
+  // Clear first so intentional sign-out does not produce an expired-session toast.
+  activeOAuthSession = null;
+  activeProfile = null;
+  window.dispatchEvent(new Event(ATPROTO_SESSION_CHANGED));
   try {
     const client = await getOAuthClient();
-    const did = activeOAuthSession.did ?? activeOAuthSession.sub;
     if (did) await client.revoke(did);
   } catch (e) {
     console.warn("[atproto] signOut failed", e);

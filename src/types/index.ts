@@ -802,7 +802,7 @@ export type AiProviderType =
   // server, no account — the free/offline voice. Auto-registered by the
   // browser bridge, never configured by hand.
   | "supertonic"
-  // Desktop-only: native LiteRT (Gemma 4 E4B) served on loopback by the
+  // Desktop-only: native LiteRT-LM (OpenBMB MiniCPM5-2B) served on loopback by the
   // Electrobun shell. Auto-registered, never added by hand — see desktop-bridge.
   | "litert";
 
@@ -1170,8 +1170,8 @@ export const PROVIDER_METAS: ProviderMeta[] = [
   },
   {
     type: "litert",
-    label: "Local — Gemma 4 E4B",
-    defaultModels: ["gemma-4-e4b"],
+    label: "Local — MiniCPM5-2B",
+    defaultModels: ["minicpm5-2b"],
     needsBaseUrl: true,
   },
   {

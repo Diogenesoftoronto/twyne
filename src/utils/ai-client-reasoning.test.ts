@@ -16,7 +16,7 @@ import type { ClientUsageAttemptInput } from "./usage-ledger";
 
 /** Replies handed to the mocked provider, one per call. */
 let replies: string[] = [];
-let calls: { prompt: string }[] = [];
+let calls: { prompt: string; system?: string }[] = [];
 let usageAttempts: ClientUsageAttemptInput[] = [];
 
 // These mocks are process-global under Bun's full-suite worker, so re-register
@@ -36,8 +36,14 @@ const realAiEvals = await import(
 // one anyway.
 mock.module("ai", () => ({
   ...realAi,
-  generateText: async ({ prompt }: { prompt: string }) => {
-    calls.push({ prompt });
+  generateText: async ({
+    prompt,
+    system,
+  }: {
+    prompt: string;
+    system?: string;
+  }) => {
+    calls.push({ prompt, system });
     return {
       text: replies[calls.length - 1] ?? "",
       totalUsage: { inputTokens: 10, outputTokens: 10 },
@@ -191,5 +197,36 @@ describe("reasoning models do not cost a second call", () => {
     expect(calls).toHaveLength(2);
     expect(result?.text).toContain("also never closed");
     expect(result?.text).not.toContain("<think>");
+  });
+});
+
+describe("language reaches the model provider", () => {
+  test.each([
+    ["en", "English"],
+    ["fr", "French"],
+    ["es", "Spanish"],
+    ["zh", "Simplified Chinese"],
+    ["hi", "Hindi"],
+    ["ja", "Japanese"],
+  ])("%s survives an empty-response retry", async (locale, name) => {
+    const descriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      "localStorage",
+    );
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: { getItem: () => locale },
+    });
+    try {
+      replies = ["<think>unfinished", "A visible reply."];
+      await runClientAgent("persona-feedback", request(), settings());
+      expect(calls).toHaveLength(2);
+      for (const call of calls)
+        expect(call.system).toContain(`Response language: ${name}.`);
+    } finally {
+      if (descriptor)
+        Object.defineProperty(globalThis, "localStorage", descriptor);
+      else Reflect.deleteProperty(globalThis, "localStorage");
+    }
   });
 });

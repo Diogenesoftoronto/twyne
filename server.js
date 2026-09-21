@@ -4,6 +4,13 @@ import { stat } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+// Railway terminates TLS at its edge. Let Qwik validate browser origins using
+// the edge's protocol rather than the container's internal HTTP connection.
+// Keep explicit deployment overrides and local direct-server behavior intact.
+if (process.env.RAILWAY_ENVIRONMENT_ID && !process.env.PROTOCOL_HEADER) {
+  process.env.PROTOCOL_HEADER = "x-forwarded-proto";
+}
+
 const DIST_ROOT = fileURLToPath(new URL("./dist/", import.meta.url));
 const ROOT_FILE_TYPES = {
   ".ico": "image/x-icon",

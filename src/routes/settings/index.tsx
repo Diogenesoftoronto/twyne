@@ -2,6 +2,9 @@ import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { ApplicationNotice } from "../../components/ui/application-notice";
 import { NotOrganicConnection } from "../../components/settings/notorganic-connection";
+import { LanguageSettings } from "../../components/settings/language-settings";
+import { useGT } from "gt-qwik";
+import { translate } from "gt-qwik/runtime";
 import { SearchableModelSelect } from "../../components/ui/searchable-model-select";
 import { ThemedDialog } from "../../components/ui/themed-dialog";
 import { NumericStepper } from "../../components/ui/numeric-stepper";
@@ -456,6 +459,7 @@ async function probeMcpServer(
 /* ── Component ──────────────────────────────────────────────────── */
 
 export default component$(() => {
+  const language = useGT();
   const featureFlags = useFeatureFlags();
   const convexClientSig = useConvexClient();
   const auth = useAuth();
@@ -1565,10 +1569,10 @@ export default component$(() => {
                 fontSize: "1.75rem",
               }}
             >
-              The Editor's Desk
+              {translate(language, "settings.title")}
             </h1>
             <p class="text-sm text-[var(--color-ink-light)] mt-1">
-              Bring your own key. Choose your models. Own the room.
+              {translate(language, "settings.subtitle")}
             </p>
           </div>
           <div class="flex items-center gap-3">
@@ -1577,7 +1581,7 @@ export default component$(() => {
               class="btn-paper text-sm"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              ← Back to desk
+              {translate(language, "settings.back")}
             </Link>
           </div>
         </div>
@@ -1585,7 +1589,7 @@ export default component$(() => {
         {!store.loaded && (
           <div class="text-center py-20 text-[var(--color-ink-muted)]">
             <p style={{ fontFamily: "var(--font-typewriter)" }}>
-              Loading preferences…
+              {translate(language, "settings.loading")}
             </p>
           </div>
         )}
@@ -1593,13 +1597,14 @@ export default component$(() => {
         {store.loaded && (
           <div class="space-y-8">
             <NotOrganicConnection />
+            <LanguageSettings />
             {/* ── Appearance ── */}
             <section class="folio p-5">
               <h2
                 class="text-base font-semibold"
                 style={{ fontFamily: "var(--font-display)" }}
               >
-                Appearance
+                {translate(language, "settings.appearance")}
               </h2>
               <p class="text-xs text-[var(--color-ink-light)] mt-1 max-w-2xl">
                 The palette the room is printed in. This changes the app only —
@@ -3040,9 +3045,9 @@ export default component$(() => {
                           class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]"
                           style={{ fontFamily: "var(--font-typewriter)" }}
                         >
-                          Stored only in your browser. Tinker keys pass
-                          transiently through Twyne&apos;s fixed same-origin
-                          bridge because Tinker blocks direct browser calls.
+                          Stored only in your browser. Remote AI requests pass
+                          through Twyne to reach your provider; keys are not
+                          stored or logged by the relay.
                         </p>
                       </div>
 
@@ -3122,9 +3127,9 @@ export default component$(() => {
                       >
                         Provider and model metadata comes from models.dev. Your
                         API key remains stored in this browser and is only used
-                        with the provider you configure. Tinker requests use
-                        Twyne&apos;s fixed same-origin bridge because its API
-                        does not support browser CORS.
+                        with the provider you configure. Remote requests pass
+                        through Twyne without storing your key. Local models
+                        connect directly from your device.
                       </p>
 
                       <div class="flex gap-2 pt-1">
@@ -4507,10 +4512,10 @@ export default component$(() => {
                     </strong>
                     <br />
                     Your API keys are stored only in your browser&apos;s
-                    IndexedDB. Most calls go directly to your provider. Tinker
-                    blocks browser CORS, so its key passes transiently through a
-                    fixed Twyne relay for Tinker requests only; it is not stored
-                    or logged by Twyne.
+                    IndexedDB. Remote requests, including your key and the text
+                    you send, pass through Twyne to your chosen provider. The
+                    relay does not store or log them. Local models connect
+                    directly from your device.
                   </p>
                 </div>
               </div>

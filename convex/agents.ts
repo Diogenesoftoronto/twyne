@@ -1,4 +1,5 @@
 "use node";
+import { withResponseLanguage } from "../src/i18n/model-language";
 
 /**
  * Convex actions for the room of editors. Each action is a thin wrapper
@@ -516,7 +517,10 @@ async function runLlm(
   observability?: ServerAiObservabilityContext,
   stream?: NoteStreamTarget,
 ): Promise<AgentResponse> {
-  const system = buildSystemPrompt(req.persona);
+  const system = withResponseLanguage(
+    buildSystemPrompt(req.persona),
+    req.responseLocale,
+  );
   const user = buildUserPrompt(req);
   const fallbackType: FeedbackType = defaultTypeForPersona(req.persona);
   const temperature =
@@ -1007,8 +1011,20 @@ function parseInterviewTurnResult(
   };
 }
 
+const responseLocaleValidator = v.optional(
+  v.union(
+    v.literal("en"),
+    v.literal("fr"),
+    v.literal("es"),
+    v.literal("zh"),
+    v.literal("hi"),
+    v.literal("ja"),
+  ),
+);
+
 export const runInterviewTurn = action({
   args: {
+    responseLocale: responseLocaleValidator,
     messages: v.array(
       v.object({
         author: v.union(v.literal("writer"), v.literal("interviewer")),
@@ -1062,10 +1078,13 @@ export const runInterviewTurn = action({
     try {
       const generation = {
         model: provider.model,
-        system: interviewSystemPrompt(
-          args.mode,
-          (args.currentBrief ?? null) as ProjectBrief | null,
-          args.startingMaterial ?? null,
+        system: withResponseLanguage(
+          interviewSystemPrompt(
+            args.mode,
+            (args.currentBrief ?? null) as ProjectBrief | null,
+            args.startingMaterial ?? null,
+          ),
+          args.responseLocale,
         ),
         prompt: transcript,
         temperature,
@@ -1219,6 +1238,7 @@ export const runInterviewTurn = action({
  */
 export const runDossierCheck = action({
   args: {
+    responseLocale: responseLocaleValidator,
     brief: projectBriefValidator,
     draftText: v.string(),
   },
@@ -1245,7 +1265,10 @@ export const runDossierCheck = action({
       });
     }
 
-    const system = renderNamed("dossier-check-system");
+    const system = withResponseLanguage(
+      renderNamed("dossier-check-system"),
+      args.responseLocale,
+    );
     const user = renderNamed("dossier-check-user", {
       dossier: JSON.stringify(args.brief.answers),
       draft: args.draftText,
@@ -1365,6 +1388,7 @@ export const runDossierCheck = action({
  */
 export const runPersona = action({
   args: {
+    responseLocale: responseLocaleValidator,
     persona: personaValidator,
     brief: briefValidator,
     draftText: v.string(),
@@ -1413,6 +1437,7 @@ export const runPersona = action({
     });
 
     const req: AgentRequest = {
+      responseLocale: args.responseLocale,
       persona: args.persona as AgentPersona,
       brief: (args.brief ?? null) as ProjectBrief | null,
       draftText: args.draftText,
@@ -1476,6 +1501,7 @@ function parseRewriteOutput(
  */
 export const suggestRewrite = action({
   args: {
+    responseLocale: responseLocaleValidator,
     persona: personaValidator,
     brief: briefValidator,
     draftText: v.string(),
@@ -1509,7 +1535,10 @@ export const suggestRewrite = action({
       });
     }
 
-    const system = buildSystemPrompt(persona);
+    const system = withResponseLanguage(
+      buildSystemPrompt(persona),
+      args.responseLocale,
+    );
     const sizeRule =
       args.level === "sentence"
         ? "Keep the replacement to a single sentence."
@@ -1622,6 +1651,7 @@ export const suggestRewrite = action({
  */
 export const conveneRoom = action({
   args: {
+    responseLocale: responseLocaleValidator,
     personas: v.array(personaValidator),
     brief: briefValidator,
     draftText: v.string(),
@@ -1673,6 +1703,7 @@ export const conveneRoom = action({
       const persona = pRaw as AgentPersona;
       const anchor = args.anchors?.[persona.id];
       const req: AgentRequest = {
+        responseLocale: args.responseLocale,
         persona,
         brief,
         draftText: args.draftText,
@@ -1731,6 +1762,7 @@ export const conveneRoom = action({
  */
 export const analyzeRoom = action({
   args: {
+    responseLocale: responseLocaleValidator,
     personas: v.array(personaValidator),
     brief: briefValidator,
     draftText: v.string(),
@@ -1772,6 +1804,7 @@ export const analyzeRoom = action({
       args.personas.map(async (pRaw) => {
         const persona = pRaw as AgentPersona;
         const req: AgentRequest = {
+          responseLocale: args.responseLocale,
           persona,
           brief,
           draftText: args.draftText,
@@ -1825,7 +1858,7 @@ export const analyzeRoom = action({
           folioId: args.observability?.folioId,
         },
         provider,
-        buildSynthesisSystemPrompt(),
+        withResponseLanguage(buildSynthesisSystemPrompt(), args.responseLocale),
         buildSynthesisPrompt(memoInput, brief, args.writerProfile),
         NO_OUTPUT_CEILING,
         "persona-analysis:synthesis",
@@ -1851,6 +1884,7 @@ export const analyzeRoom = action({
  */
 export const reviewRubric = action({
   args: {
+    responseLocale: responseLocaleValidator,
     brief: briefValidator,
     draftText: v.string(),
     combined: v.number(),
@@ -1890,7 +1924,10 @@ export const reviewRubric = action({
           traceId: createAiTraceId("rubric-review"),
         },
         provider,
-        buildRubricReviewSystemPrompt(),
+        withResponseLanguage(
+          buildRubricReviewSystemPrompt(),
+          args.responseLocale,
+        ),
         buildRubricReviewPrompt({
           combined: args.combined,
           grade: args.grade,
@@ -1920,6 +1957,7 @@ export const reviewRubric = action({
  */
 export const judgeDraft = action({
   args: {
+    responseLocale: responseLocaleValidator,
     persona: personaValidator,
     brief: briefValidator,
     draftText: v.string(),
@@ -1938,7 +1976,10 @@ export const judgeDraft = action({
       return localJudge(persona, brief, args.draftText);
     }
 
-    const system = buildSystemPrompt(persona);
+    const system = withResponseLanguage(
+      buildSystemPrompt(persona),
+      args.responseLocale,
+    );
     const rubricSuffix = renderNamed("blocks/persona-rubric-judge-suffix", {
       personaName: persona.name,
     });
@@ -2033,6 +2074,7 @@ function localSufficiency(
  */
 export const judgeEvidence = action({
   args: {
+    responseLocale: responseLocaleValidator,
     brief: briefValidator,
     draftText: v.string(),
   },
@@ -2055,7 +2097,10 @@ export const judgeEvidence = action({
     const goal = brief?.answers.goal || "no goal stated in the brief";
     const audience = brief?.answers.audience || "a general reader";
     const staticNote = describeEvidenceStatic(args.draftText);
-    const system = buildEvidenceJudgeSystemPrompt();
+    const system = withResponseLanguage(
+      buildEvidenceJudgeSystemPrompt(),
+      args.responseLocale,
+    );
     const user = buildEvidenceJudgePrompt({
       goal,
       audience,
@@ -2141,6 +2186,7 @@ export const judgeEvidence = action({
  */
 export const judgeIntegrity = action({
   args: {
+    responseLocale: responseLocaleValidator,
     brief: briefValidator,
     draftText: v.string(),
   },
@@ -2163,7 +2209,10 @@ export const judgeIntegrity = action({
     const goal = brief?.answers.goal || "no goal stated in the brief";
     const audience = brief?.answers.audience || "a general reader";
     const staticNote = describeIntegrityStatic(args.draftText);
-    const system = buildIntegrityJudgeSystemPrompt();
+    const system = withResponseLanguage(
+      buildIntegrityJudgeSystemPrompt(),
+      args.responseLocale,
+    );
     const user = buildIntegrityJudgePrompt({
       goal,
       audience,
@@ -2314,6 +2363,7 @@ function describeIntegrityStatic(draftText: string): string {
  */
 export const judgeSufficiency = action({
   args: {
+    responseLocale: responseLocaleValidator,
     brief: briefValidator,
     draftText: v.string(),
   },
@@ -2335,7 +2385,10 @@ export const judgeSufficiency = action({
 
     const goal = brief?.answers.goal || "no goal stated in the brief";
     const audience = brief?.answers.audience || "a general reader";
-    const system = renderNamed("sufficiency-judge-system");
+    const system = withResponseLanguage(
+      renderNamed("sufficiency-judge-system"),
+      args.responseLocale,
+    );
     const user = renderNamed("sufficiency-judge-user", {
       goal,
       audience,
@@ -2454,6 +2507,7 @@ function localTargetFit(
  */
 export const judgeTargetFit = action({
   args: {
+    responseLocale: responseLocaleValidator,
     brief: briefValidator,
     draftText: v.string(),
   },
@@ -2473,7 +2527,10 @@ export const judgeTargetFit = action({
       return localTargetFit(brief, args.draftText);
     }
 
-    const system = buildTargetFitJudgeSystemPrompt();
+    const system = withResponseLanguage(
+      buildTargetFitJudgeSystemPrompt(),
+      args.responseLocale,
+    );
     const user = buildTargetFitJudgePrompt({
       ...targetFitCommission(brief),
       draftText: args.draftText,
@@ -2560,6 +2617,7 @@ export const judgeTargetFit = action({
  */
 export const judgeCustomCriterion = action({
   args: {
+    responseLocale: responseLocaleValidator,
     brief: briefValidator,
     draftText: v.string(),
     label: v.string(),
@@ -2599,7 +2657,10 @@ export const judgeCustomCriterion = action({
       });
     }
 
-    const system = buildCustomCriterionSystemPrompt();
+    const system = withResponseLanguage(
+      buildCustomCriterionSystemPrompt(),
+      args.responseLocale,
+    );
     const user = buildCustomCriterionPrompt({
       ...targetFitCommission(brief),
       label,
@@ -2658,6 +2719,7 @@ export const judgeCustomCriterion = action({
  */
 export const suggestRubricCriteria = action({
   args: {
+    responseLocale: responseLocaleValidator,
     brief: briefValidator,
     draftText: v.optional(v.string()),
     existingLabels: v.array(v.string()),
@@ -2688,11 +2750,14 @@ export const suggestRubricCriteria = action({
     const tone = brief?.answers.tone?.trim() || "unspecified";
     const constraints = brief?.answers.constraints?.trim() || "none stated";
 
-    const system = `You design editorial rubrics. Given what a piece is trying to be, you propose the few standards that would actually discriminate between a good version of THAT piece and a mediocre one.
+    const system = withResponseLanguage(
+      `You design editorial rubrics. Given what a piece is trying to be, you propose the few standards that would actually discriminate between a good version of THAT piece and a mediocre one.
 
 Good criteria are specific to the form and the commission: a reported feature needs different standards from a technical memo, a eulogy, or a comic monologue. Bad criteria are the generic ones every rubric already has — "clarity", "grammar", "structure", "engaging" — and you never propose those.
 
-Each criterion must be judgeable from the draft alone by reading it once.`;
+Each criterion must be judgeable from the draft alone by reading it once.`,
+      args.responseLocale,
+    );
 
     const user = `THE PIECE
 - Format: ${format}
@@ -2800,6 +2865,7 @@ function parseSuggestedCriteria(
  */
 export const judgeRoom = action({
   args: {
+    responseLocale: responseLocaleValidator,
     personas: v.array(personaValidator),
     brief: briefValidator,
     draftText: v.string(),
@@ -2834,7 +2900,10 @@ export const judgeRoom = action({
           };
         }
         try {
-          const system = buildSystemPrompt(persona);
+          const system = withResponseLanguage(
+            buildSystemPrompt(persona),
+            args.responseLocale,
+          );
           const user =
             buildUserPrompt({
               persona,

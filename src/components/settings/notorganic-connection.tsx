@@ -26,14 +26,51 @@ const completeLink = makeFunctionReference<
 export const NotOrganicConnection = component$(() => {
   const auth = useAuth();
   const client = useConvexClient();
-  const state = useStore({ busy: false, did: "", message: "", handled: false });
+  const state = useStore({
+    busy: false,
+    did: "",
+    message: "",
+    handled: false,
+    userId: "",
+    checking: true,
+    retry: 0,
+  });
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(
-    async ({ track }) => {
+    async ({ track, cleanup }) => {
       const ready = track(() => hasAuthenticatedConvexIdentity(auth.value));
       const userId = track(() => auth.value.user?.id);
       const convex = track(() => client.value);
-      if (!ready || !userId || !convex) return;
+      track(() => state.retry);
+      if (state.userId !== (userId ?? "")) {
+        state.userId = userId ?? "";
+        state.did = "";
+        state.message = "";
+        state.busy = false;
+      }
+      if (!ready || !userId || !convex) {
+        state.checking = true;
+        return;
+      }
+      let disposed = false;
+      const unsubscribe = convex.onUpdate(
+        getIdentity,
+        {},
+        (link) => {
+          if (disposed) return;
+          state.did = link?.did ?? "";
+          state.checking = false;
+        },
+        () => {
+          if (disposed) return;
+          state.checking = false;
+          state.message = "Could not check the connection. Please try again.";
+        },
+      );
+      cleanup(() => {
+        disposed = true;
+        unsubscribe();
+      });
       const url = new URL(location.href);
       if (
         !state.handled &&
@@ -53,20 +90,16 @@ export const NotOrganicConnection = component$(() => {
             url,
           );
           const link = await convex.action(completeLink, args);
+          if (disposed) return;
           state.did = link.did;
           state.message =
             "Connected. Automatic reviews can use your Not Organic credit.";
         } catch {
+          if (disposed) return;
           state.message =
             "The connection could not be verified. Please connect again.";
         } finally {
           state.busy = false;
-        }
-      } else {
-        try {
-          state.did = (await convex.query(getIdentity, {}))?.did ?? "";
-        } catch {
-          state.message = "Could not check the connection. Please try again.";
         }
       }
     },
@@ -101,23 +134,45 @@ export const NotOrganicConnection = component$(() => {
         editorial help. Reviews send writing for analysis as you pause and save.
         You can pause them above the manuscript.
       </p>
-      {state.did ? (
+      {state.did && (
         <p class="panel-meta mt-3 break-all">Connected · {state.did}</p>
-      ) : (
-        <button
-          class="btn-paper mt-3"
-          disabled={state.busy || !hasAuthenticatedConvexIdentity(auth.value)}
-          onClick$={connect}
-        >
-          {state.busy ? "Connecting…" : "Connect Not Organic"}
-        </button>
       )}
+      <button
+        class="btn-paper mt-3"
+        disabled={
+          state.busy ||
+          state.checking ||
+          !hasAuthenticatedConvexIdentity(auth.value)
+        }
+        onClick$={connect}
+      >
+        {state.busy
+          ? "Connecting…"
+          : state.checking && hasAuthenticatedConvexIdentity(auth.value)
+            ? "Checking connection…"
+            : state.did
+              ? "Reconnect Not Organic"
+              : "Connect Not Organic"}
+      </button>
       {!hasAuthenticatedConvexIdentity(auth.value) && (
-        <p class="panel-meta mt-2">Sign in to Twyne to connect your account.</p>
+        <p class="panel-meta mt-2">
+          {auth.value.loading || auth.value.provider === "convex"
+            ? "Waiting for your Twyne connection…"
+            : "Sign in to Twyne to connect your account."}
+        </p>
       )}
       {state.message && (
         <p class="panel-meta mt-2" role="status">
           {state.message}
+          <button
+            class="underline ml-2"
+            onClick$={() => {
+              state.retry++;
+              state.message = "";
+            }}
+          >
+            Check again
+          </button>
         </p>
       )}
     </section>

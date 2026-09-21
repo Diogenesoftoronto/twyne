@@ -1,0 +1,15 @@
+{
+  "language": {
+    "title": "语言",
+    "description": "选择 Twyne 界面和 AI 回复使用的语言。自动模式会遵循浏览器或设备的语言偏好。",
+    "automatic": "自动",
+    "partial": "Twyne 的部分内容仍以英语显示。"
+  },
+  "settings": {
+    "title": "编辑工作台",
+    "subtitle": "使用你自己的 API 密钥。选择你的模型。掌控你的创作空间。",
+    "back": "← 返回工作台",
+    "loading": "正在加载偏好设置…",
+    "appearance": "外观"
+  }
+}

@@ -1,3 +1,4 @@
+import { currentModelLocale } from "../../i18n/model-language";
 import {
   component$,
   useSignal,
@@ -373,6 +374,7 @@ export const CommentsPanel = component$(
           if (!replyText && !hasByok && client) {
             try {
               const res = await client.action(api.agents.runPersona, {
+                responseLocale: currentModelLocale(),
                 persona: toAgentPersona(persona),
                 userMessage,
                 draftText: "",

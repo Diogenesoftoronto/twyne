@@ -1,3 +1,4 @@
+import { currentModelLocale } from "../../i18n/model-language";
 import {
   component$,
   useStore,
@@ -769,6 +770,7 @@ export const PersonasPanel = component$(
             }>;
             try {
               result = (await client.action(api.agents.conveneRoom, {
+                responseLocale: currentModelLocale(),
                 personas: personasForServer,
                 brief: brief ?? null,
                 draftText,
@@ -1031,6 +1033,7 @@ export const PersonasPanel = component$(
           synthesisProvider = `client-${synth.provider}`;
         } else if (client) {
           const result = (await client.action(api.agents.analyzeRoom, {
+            responseLocale: currentModelLocale(),
             personas: store.personas.map(toAgentPersona),
             brief: brief ?? null,
             draftText,
@@ -1365,6 +1368,7 @@ export const PersonasPanel = component$(
             if (!responseText && !hasByok && c) {
               try {
                 const result = (await c.action(api.agents.runPersona, {
+                  responseLocale: currentModelLocale(),
                   persona: toAgentPersona(persona),
                   brief: brief ?? null,
                   draftText,
@@ -1633,6 +1637,7 @@ export const PersonasPanel = component$(
         if (replacement.trim() === anchor.trim() && !hasByok && client) {
           try {
             const r = (await client.action(api.agents.suggestRewrite, {
+              responseLocale: currentModelLocale(),
               persona: toAgentPersona(persona),
               brief: brief ?? null,
               draftText,

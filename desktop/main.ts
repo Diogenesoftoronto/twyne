@@ -7,8 +7,9 @@
  * application code of its own — it is a branded, self-updating shell.
  *
  * If the build was produced with local AI enabled, a native LiteRT-LM server
- * (Gemma 4 E4B) is started on loopback and advertised to the page via URL
- * params, so the web app can route AI through the local model.
+ * (OpenBMB MiniCPM5) is imported into LiteRT-LM and served on loopback, then
+ * advertised to the page via URL params so the web app can route AI through
+ * the local model.
  *
  * Point the window at a local dev server by setting TWYNE_DESKTOP_URL, e.g.
  *   TWYNE_DESKTOP_URL=http://localhost:5173 bun start

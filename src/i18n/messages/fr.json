@@ -1,0 +1,15 @@
+{
+  "language": {
+    "title": "Langue",
+    "description": "Choisissez la langue de Twyne et des réponses de l’IA. Le mode automatique suit les préférences de votre navigateur ou de votre appareil.",
+    "automatic": "Automatique",
+    "partial": "Certaines parties de Twyne sont encore en anglais."
+  },
+  "settings": {
+    "title": "Le bureau de la rédaction",
+    "subtitle": "Apportez votre clé API. Choisissez vos modèles. Gardez les commandes.",
+    "back": "← Retour au bureau",
+    "loading": "Chargement des préférences…",
+    "appearance": "Apparence"
+  }
+}

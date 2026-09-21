@@ -4,8 +4,8 @@
  * The Electrobun desktop app loads the hosted web app in a native window at
  * `https://twyne.love/?platform=desktop&localAi=1&localPort=<port>`. This
  * module reads those URL params once so the rest of the web app can tell it is
- * running inside the desktop shell and discover the local LiteRT endpoint that
- * the desktop's Bun process exposes on loopback.
+ * running inside the desktop shell and discover the local MiniCPM5 LiteRT
+ * endpoint that the desktop's Bun process exposes on loopback.
  *
  * On the plain web (no params) every getter is inert, so importing this is
  * safe and the local-AI surface stays hidden.
@@ -44,7 +44,7 @@ export function isDesktopShell(): boolean {
  * True when the desktop shell explicitly advertised a local model endpoint.
  *
  * The desktop app only includes `localAi=1&localPort=<n>` after it has chosen
- * to launch the bundled LiteRT server. Treat those params as the authoritative
+ * to launch the bundled LiteRT-LM server. Treat those params as the authoritative
  * capability signal so panels that normalize settings during first mount do
  * not miss the managed provider while PostHog flags are still loading.
  */
@@ -61,7 +61,7 @@ export function localAiBaseUrl(): string | null {
 }
 
 /** Default model id for the desktop local provider. */
-export const LOCAL_MODEL_ID = "gemma-4-e4b";
+export const LOCAL_MODEL_ID = "minicpm5-2b";
 
 /** Stable provider id for the auto-registered local provider. */
 export const LOCAL_PROVIDER_ID = "desktop-litert-local";

@@ -13,12 +13,13 @@ plumbing off your desk.
 
 [Start writing](/editor)
 
-## Pro — $12 / month
+## Pro — $29 / month
 
 - Everything in Free
-- Hosted AI — no keys to manage
-- Priority sync and publishing
-- Early access to the desktop local model
+- $10 in Not Organic AI credit each month
+- Hosted editorial AI, metered by the model you choose
+- Unused included credit rolls over for one billing cycle
+- Optional wallet top-ups when you need more
 
-Subscribe to Pro from [/pricing](/pricing). Payments are handled by Creem.
-Cancel anytime.
+Subscribe to Pro from [/pricing](/pricing). Checkout runs through Not Organic,
+with Paddle handling payment processing. Cancel future renewals anytime.

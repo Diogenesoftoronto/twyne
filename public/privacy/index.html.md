@@ -94,12 +94,12 @@ redistribute what they can read.
 ## Payments
 
 If paid plans are available and you subscribe, checkout and payment
-processing are handled by Creem or another payment processor. Twyne sends
-the information needed to create checkout, such as your account identifier,
-product id, and, when available, email address. We store subscription
-status, product identifiers, payment-provider customer and subscription
-ids, current period information, and related webhook data needed to grant
-or revoke paid features.
+processing are handled through Not Organic checkout, with Paddle as the
+payment processor. Twyne sends the information needed to create checkout,
+such as your account identifier, product id, and, when available, email
+address. We store subscription status, product identifiers, payment-provider
+customer and subscription ids, current period information, and related
+webhook data needed to grant or revoke paid features.
 
 ## Your controls
 
@@ -132,8 +132,8 @@ process information under their own terms and privacy policies when you use
 the related feature. Examples include Convex and Better Auth for
 backend/auth flows, AI providers such as Anthropic, OpenAI, Google, Rivet,
 or OpenAI-compatible providers, PostHog for analytics and feature flags,
-ATProto services for Bluesky sign-in or publishing, and Creem for paid
-checkout.
+ATProto services for Bluesky sign-in or publishing, Not Organic for the
+product checkout and wallet, and Paddle for payment processing.
 
 ## Changes
 

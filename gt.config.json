@@ -1,0 +1,9 @@
+{
+  "defaultLocale": "en",
+  "locales": ["en", "fr", "es", "zh", "hi", "ja"],
+  "files": {
+    "json": {
+      "include": ["src/i18n/messages/[locale].json"]
+    }
+  }
+}

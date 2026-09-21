@@ -14,7 +14,7 @@ describe("AI eval event payloads", () => {
     const props = buildAiGenerationProperties({
       feature: "rubric-judge",
       provider: "litert",
-      model: "gemma-4-e4b",
+      model: "minicpm5-2b",
       system: "Judge the draft.",
       prompt: "Draft text",
       output: "Looks plausible.",
@@ -33,7 +33,7 @@ describe("AI eval event payloads", () => {
     expect(props).toMatchObject({
       $ai_trace_id: "trace-1",
       $ai_span_name: "rubric_judge",
-      $ai_model: "gemma-4-e4b",
+      $ai_model: "minicpm5-2b",
       $ai_provider: "litert",
       $ai_latency: 1.25,
       $ai_temperature: 0.2,

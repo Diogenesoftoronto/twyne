@@ -1,3 +1,4 @@
+import { currentModelLocale } from "../../../i18n/model-language";
 import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
 import { useNavigate, Link } from "@qwik.dev/router";
 import type { DocumentHead } from "@qwik.dev/router";
@@ -206,6 +207,7 @@ export default component$(() => {
         runHosted: hostedClient
           ? () =>
               hostedClient.action(api.agents.runDossierCheck, {
+                responseLocale: currentModelLocale(),
                 brief: currentBrief,
                 draftText,
               })

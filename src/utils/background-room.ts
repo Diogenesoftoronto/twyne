@@ -1,3 +1,4 @@
+import { currentModelLocale } from "../i18n/model-language";
 /**
  * The background room — the editors read as you write.
  *
@@ -519,6 +520,7 @@ async function conveneQuietly(input: {
 
   if (!input.client) return [];
   const result = (await input.client.action(api.agents.conveneRoom, {
+    responseLocale: currentModelLocale(),
     personas: input.personas.map(toAgentPersona),
     brief: input.brief ?? null,
     draftText: input.draftText,

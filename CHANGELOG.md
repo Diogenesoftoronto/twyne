@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.21.0
+
+<sub>2026-09-21</sub>
+
+- Choose English, French, Spanish, Simplified Chinese, Hindi or Japanese in
+  Settings. Automatic follows browser preferences; English remains the fallback.
+  Initial translations cover language settings and selected Settings headings.
+- Model replies follow the selected language across hosted, BYOK and local
+  providers, while preserving quotations, manuscript language and structured
+  response fields.
+- Fix passkey registration and sign-in domain configuration for `twyne.love`
+  and `www.twyne.love`. Refresh Convex tokens correctly and restore independent
+  Twyne and Bluesky sessions without blocking one another.
+- Relay remote BYOK requests through Twyne to avoid browser CORS failures;
+  local model endpoints stay direct.
+- Update optional desktop local inference to OpenBMB MiniCPM5-2B on LiteRT-LM.
+  Standard desktop downloads do not bundle model weights.
+- Correct pricing and privacy copy for Paddle payments through Not Organic,
+  and improve provider connection status in Settings.
+- Add the private, local `gt-qwik` adapter and reproducible catalog preparation.
+  The adapter is not published to npm.
+
 ## 0.20.2
 
 <sub>2026-09-20</sub>

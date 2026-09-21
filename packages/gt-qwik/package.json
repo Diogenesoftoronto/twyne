@@ -1,0 +1,54 @@
+{
+  "name": "gt-qwik",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Unofficial General Translation adapter for Qwik",
+  "type": "module",
+  "license": "MIT",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "docs"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.qwik.mjs"
+    },
+    "./runtime": {
+      "types": "./dist/runtime.d.ts",
+      "import": "./dist/runtime.js"
+    },
+    "./qwik": {
+      "types": "./dist/qwik.d.ts",
+      "import": "./dist/qwik.qwik.mjs"
+    }
+  },
+  "scripts": {
+    "build": "vite build --mode lib && tsc -p tsconfig.build.json",
+    "build:bundle": "vite build --mode lib",
+    "check": "tsc --noEmit",
+    "test": "bun run build && bun test --preload ./tests/preload.ts",
+    "prepublishOnly": "bun run check && bun run test && bun run build"
+  },
+  "peerDependencies": {
+    "@qwik.dev/core": "2.0.0-beta.42"
+  },
+  "dependencies": {
+    "@generaltranslation/format": "0.1.9",
+    "gt-i18n": "1.0.28"
+  },
+  "devDependencies": {
+    "@qwik.dev/core": "2.0.0-beta.42",
+    "@types/bun": "1.4.2",
+    "gt": "2.21.3",
+    "typescript": "5.4.5",
+    "vite": "8.2.2"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "qwik": "./dist/index.qwik.mjs"
+}

@@ -1,3 +1,4 @@
+import { currentModelLocale } from "../../i18n/model-language";
 import { component$, $, useStore, type PropFunction } from "@qwik.dev/core";
 import type {
   DossierAttachment,
@@ -338,7 +339,12 @@ export const AntiTabulaRasa = component$(
             try {
               const result = await useHosted.action(
                 api.agents.runInterviewTurn,
-                { messages, mode: "first-run", currentBrief: null },
+                {
+                  responseLocale: currentModelLocale(),
+                  messages,
+                  mode: "first-run",
+                  currentBrief: null,
+                },
               );
               const checked = requireFormProbe(result);
               if (!checked.ok) {
