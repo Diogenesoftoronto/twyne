@@ -1,0 +1,131 @@
+what is needle doing in this app
+
+---
+
+okay got it it was supposed to be for the Needle model from cactus compute that was being loaded here
+
+---
+
+instead of gemma 4 e4b i think that openbmb's minicpm5 is far more desirable gemma is really large to package with t his and pretty slow. we can also consider packaging lfm2.5 2b
+
+---
+
+lets go with openbmb litert. we'll have to change the lite rt assumption in the server as well.
+
+---
+
+noticed that Creem is still mentioned in pricing even though we use paddle via notorganic
+
+---
+
+i think it would be nice to also get an update on if anyone new has signed up for the app in the last two months.
+
+---
+
+well if you look there are no real sub records as for t he new accounts what have  they been upto
+
+---
+
+can you check up on general translation what remains untranslated?
+
+---
+
+look up the  gt or general translation library
+
+---
+
+let's do theh gt i18n
+
+---
+
+continue create a plan for adapting gt for qwik, a separate library and then have crush author it and then import it here. the package will then be published.
+
+---
+
+> Which npm scope should the reusable Qwik adapter be published under? I’m using `gt-qwik` as a provisional package name while Crush implements it.
+
+follow what gt does for the react package
+
+---
+
+> Which languages should Twyne support first? The package will support arbitrary locales; Twyne currently has English source copy.
+
+fr
+
+---
+
+wait fr is the first language we should support but by default the site  should be in  english
+
+---
+
+when the user has fr in their settings for the browser or os
+
+---
+
+i want language choice in settings not some ugly ui element bolted on btw
+
+---
+
+continue
+
+---
+
+you have full access for crush but i also want you to give better guidance on the code and the documents it needs
+
+---
+
+in fact begin the scaffold your self and then hand it off
+
+---
+
+have jev pass judgements where relevant
+
+---
+
+also go write some of the tests it should pass
+
+---
+
+you can run  t hat
+
+---
+
+permission is now full access
+
+---
+
+> General Translation already owns the `gt-qwik` npm placeholder. Should this adapter use an account scope you control, or remain `gt-qwik` for a contribution to their package?
+
+wait but what is at gt-qwik? is anything thhere?
+
+---
+
+okay just have our own local package for now
+
+---
+
+btw are there any localization stuff similar to gt that exist?
+
+---
+
+outside of english and french add spanish too and chinese and hindu
+
+---
+
+japanese as well
+
+---
+
+and make sure that models answer this way as well
+
+---
+
+how much of the world would i reach now hahah
+
+---
+
+what is the next most spoken language
+
+---
+
+ohhhh that is difficult forget that tbh.
