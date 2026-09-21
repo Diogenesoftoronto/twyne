@@ -129,3 +129,19 @@ what is the next most spoken language
 ---
 
 ohhhh that is difficult forget that tbh.
+
+---
+
+okay create the next release.
+
+---
+
+oh passkeys was that issue fixed?
+
+---
+
+adding one and figure out if the other errors are present too you should be  able to look at logs for pass key erors too
+
+---
+
+railway logs
