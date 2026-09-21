@@ -1,0 +1,17 @@
+Review the current code changes (staged, unstaged, and untracked files) and provide prioritized findings.
+
+---
+
+a few things, i want the review to no longer be on request, a lot of things that needed to  be on request before can just be made in a loop with jev as a person is saving etc. all these decisions and things we have integrated need to be implelmented in editor i am just not sure that is what is happening here. the next thing is the styling for this stuff needs to be consistent with our other styles this is also something i am not sure about. Please think back to the typesafe skill and what we have done in keating and the things we have asked for in our other sessions how well does twyne live up to that??
+
+---
+
+we need to display things quickly to the user as well, how can we integrate the quick feedback jev can give you into the editor without even opening the panel as well? how do make fast lightning quick decisions like that?
+
+---
+
+also remember to resolve the other ission thata you found in your review
+
+---
+
+new release  for prod
