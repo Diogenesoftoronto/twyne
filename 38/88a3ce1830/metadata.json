@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "3888a3ce1830",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "bun.lock",
+    "devenv.lock",
+    "server.js",
+    "skills-lock.json",
+    "src/components/settings/notorganic-connection.tsx",
+    "src/routes/api/provider/index.ts",
+    "src/routes/privacy/index.tsx",
+    "src/routes/settings/index.tsx",
+    "src/utils/ai-client.ts",
+    "src/utils/application-errors.test.ts",
+    "src/utils/application-errors.ts",
+    "src/utils/atproto.ts",
+    "src/utils/auth-context.tsx",
+    "src/utils/convex-token.test.ts",
+    "src/utils/convex-token.ts",
+    "src/utils/provider-fetch.test.ts",
+    "src/utils/provider-fetch.ts",
+    "src/utils/provider-relay.server.test.ts",
+    "src/utils/provider-relay.server.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/38/88a3ce1830/0/metadata.json",
+      "transcript": "/38/88a3ce1830/0/full.jsonl",
+      "compact_transcript": "/38/88a3ce1830/0/transcript.jsonl",
+      "content_hash": "/38/88a3ce1830/0/content_hash.txt",
+      "prompt": "/38/88a3ce1830/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 171148,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 7257600,
+    "output_tokens": 29931,
+    "api_call_count": 59
+  }
+}

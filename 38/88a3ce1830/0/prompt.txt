@@ -1,0 +1,17 @@
+hey I am getting cors errors with minimax in production and the othehrr thing is i am getting stale tokenset andn other 400 in bad requestions for bsky.social
+
+---
+
+the connect to not organic also doesn't seem to work in settings from an account that has already been cocnnect as well
+
+---
+
+make sure  that this solution doesn't only work for minimax but is gen purpose
+
+---
+
+deploy
+
+---
+
+is this only working for minimax types of keys or other providers as well?
