@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "5d131aecc9b0",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "devenv.lock",
+    "docs/editorial-drafting-context-brief.md",
+    "prompts/editorial-protocol.md",
+    "prompts/persona-system.md",
+    "skills-lock.json",
+    "src/components/personas/personas-panel.tsx",
+    "src/utils/adaptive-editorial-draft.test.ts",
+    "src/utils/adaptive-editorial-draft.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/background-room.ts",
+    "src/utils/editorial-note-review.ts",
+    "src/utils/editorial-policy.test.ts",
+    "src/utils/editorial-policy.ts",
+    "src/utils/note-gate.ts",
+    "src/utils/prompts-regression.test.ts",
+    "src/utils/prompts.ts",
+    "src/utils/reasoning-effort.test.ts",
+    "src/utils/reasoning-effort.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/5d/131aecc9b0/0/metadata.json",
+      "transcript": "/5d/131aecc9b0/0/full.jsonl",
+      "compact_transcript": "/5d/131aecc9b0/0/transcript.jsonl",
+      "content_hash": "/5d/131aecc9b0/0/content_hash.txt",
+      "prompt": "/5d/131aecc9b0/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 827982,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 29203712,
+    "output_tokens": 127774,
+    "api_call_count": 214
+  }
+}

@@ -1,0 +1,25 @@
+tell me what the system prompt and where  it is
+
+---
+
+no for the application here
+
+---
+
+if you take a look at the project in keating or the recent entire session there you can see how we took the system prompt and the persona for the model, we took jev judgements and we deconstructed the system prompt into a system one set of rules. This is what I want you do here
+
+---
+
+.
+
+---
+
+the model here i s set to gpt 4o for some reason when it should be set to the model given by the key or the model set by notorganic
+
+---
+
+the thing that is interesting is alsos how drafting annd the context works, create a brief on that to explain ths
+
+---
+
+if you take the entire cli session in keating seriously there is a drafting run, this run manages when the model is gettings something wrong and operates a bit like the way reasoning does, what you can do is also manage reasoning levels with this given the result so everything is adaptive as well.

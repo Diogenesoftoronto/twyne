@@ -1,0 +1,111 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "5d131aecc9b0",
+  "session_id": "01a0c6d0-476b-7642-8dae-393ed1e4e8ad",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-23T13:47:31.899298138Z",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "save_step_count": 4,
+  "files_touched": [
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "devenv.lock",
+    "docs/editorial-drafting-context-brief.md",
+    "prompts/editorial-protocol.md",
+    "prompts/persona-system.md",
+    "skills-lock.json",
+    "src/components/personas/personas-panel.tsx",
+    "src/utils/adaptive-editorial-draft.test.ts",
+    "src/utils/adaptive-editorial-draft.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/background-room.ts",
+    "src/utils/editorial-note-review.ts",
+    "src/utils/editorial-policy.test.ts",
+    "src/utils/editorial-policy.ts",
+    "src/utils/note-gate.ts",
+    "src/utils/prompts-regression.test.ts",
+    "src/utils/prompts.ts",
+    "src/utils/reasoning-effort.test.ts",
+    "src/utils/reasoning-effort.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-luna",
+  "turn_id": "3f24c34c6854",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 827982,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 29203712,
+    "output_tokens": 127774,
+    "api_call_count": 214
+  },
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-23T13:47:31.180581524Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 979,
+    "human_removed": 533,
+    "total_committed": 3,
+    "total_lines_changed": 1512,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 18,
+      "user_lines_removed": 12,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "devenv.lock": 12,
+        "skills-lock.json": 6
+      },
+      "user_removed_per_file": {
+        "devenv.lock": 12
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 18,
+      "agent_lines_removed": 12
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 316,
+      "user_lines_removed": 61,
+      "agent_lines_added": 18,
+      "agent_lines_removed": 12,
+      "user_added_per_file": {
+        "convex/agentPrompts.ts": 18,
+        "prompts/editorial-protocol.md": 28,
+        "prompts/persona-system.md": 7,
+        "src/utils/editorial-policy.ts": 262,
+        "src/utils/prompts.ts": 1
+      },
+      "user_removed_per_file": {
+        "convex/agentPrompts.ts": 32,
+        "prompts/persona-system.md": 29
+      }
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 569,
+      "user_lines_removed": 0,
+      "agent_lines_added": 347,
+      "agent_lines_removed": 83,
+      "user_added_per_file": {
+        "docs/editorial-drafting-context-brief.md": 262,
+        "prompts/editorial-protocol.md": 43,
+        "src/utils/editorial-policy.ts": 264
+      }
+    }
+  ]
+}
