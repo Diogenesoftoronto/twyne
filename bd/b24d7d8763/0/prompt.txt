@@ -1,0 +1,53 @@
+there is a massive bug that i want fixed, right now when i refine or open a dossier in a project that i started it does not save that dossier properly and show that in the editor. somehow the dossier is being lost. this also happens regardeless sign or not or if you have a new account. i need this fixed it is critical.
+
+---
+
+<task-notification>
+<task-id>bnq6r0n3h</task-id>
+<tool-use-id>toolu_01Fduog3Ny2reFsmnKatknLr</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/53b878b6-b69e-40ce-a47d-b4ff34226fb0/tasks/bnq6r0n3h.output</output-file>
+<status>completed</status>
+<summary>Background command "sed -i 's/getByRole("button", { name: "Next" })/getByRole("button", { name: "Next", exact: true })/' e2e/dossier-persistence.e2e.ts &amp;&amp; timeout 300 npx playwright test -c /tmp/claude-1000/-home-diogenes-Projects-twyne/53b878b6-b69e-40ce-a47d-b4ff34226fb0/scratchpad/pw.config.ts dossier-persistence 2&gt;&amp;1 | grep -v "^\s*$" | head -30" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>btgntcdp7</task-id>
+<tool-use-id>toolu_01LpeQp42XzWJfmLuN5XGXhF</tool-use-id>
+<output-file>/tmp/claude-1000/-home-diogenes-Projects-twyne/53b878b6-b69e-40ce-a47d-b4ff34226fb0/tasks/btgntcdp7.output</output-file>
+<status>failed</status>
+<summary>Background command "until ! pgrep -f "playwright test -c" &gt;/dev/null; do sleep 3; done; grep -v "^\s*$" /tmp/claude-1000/-home-diogenes-Projects-twyne/53b878b6-b69e-40ce-a47d-b4ff34226fb0/tasks/bnq6r0n3h.output | head -30" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+did you find any other issues? I also want to note that a new folio's title should carry over into the title of the brief
+
+---
+
+i also want to makes sure theh crtl+a select for the editor made sure thata landed and worked properly as well. i also want this fixed. it would be doubly awesome if we got publishing working via the pds that you have with signed up notorganic.
+
+---
+
+with the publishing i mean publishing a standard.site blog post to your pds.
+
+---
+
+Another cool thing that I considered was making the editor typst native but not sure how many pieces that would touch at the moment. create a brief document plan for that. besides, this i did some work with getting static embedding models to work in keating with models like potion, there is an onnx 32m version of this model and a multilingual version as well. both would be wonderful to package with the application on desktop in the browser we should have the convex server have the multilingual model do work on request. I also have the option of a model called kev that is like jev that would be good to publish with desktop. Offline has some degraded performance that I want people to know though. I think offering trained versions of these models would be a great offering people could pay for separately. some sort of waitlist with a survey we send them later would be interesting too.
+
+---
+
+where is publish to pds
+
+---
+
+this should be in docs also find mentions of Creem payments and also find where a lot of the old sign in logic and how that functioned and make sure that this notorganic native. all sign in and data should work natively with notorganic like keating does
+
+---
+
+remove the existing subs, there is zero people actually in existing subs. remove old accounts, just send these people an email that old accounts have been deprecated and that we are moving to notorganic accounts.
+
+---
+
+what else where we working on
