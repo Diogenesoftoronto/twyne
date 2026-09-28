@@ -191,8 +191,10 @@ describe("combineJudgesAndStatic — the relevance gate", () => {
       brief,
       3,
     );
-    expect(result.summary).toContain("Target fit is 3/10");
-    expect(result.summary).toContain("capped");
+    expect(result.summary).toContain("drifts from the brief (3/10 on brief)");
+    expect(result.summary).toContain("held down");
+    // Short enough to sit whole under the grade in the side panel.
+    expect(result.summary.length).toBeLessThanOrEqual(120);
   });
 
   test("says nothing about capping when the draft is on-target", () => {
@@ -202,7 +204,7 @@ describe("combineJudgesAndStatic — the relevance gate", () => {
       brief,
       9,
     );
-    expect(result.summary).not.toContain("Target fit is");
+    expect(result.summary).not.toContain("drifts from the brief");
   });
 
   test("clamps an out-of-range target fit instead of skewing the weights", () => {

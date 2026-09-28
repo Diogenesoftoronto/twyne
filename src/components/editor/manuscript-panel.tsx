@@ -9,6 +9,7 @@ import { formatWordCount, readingTimeLabel } from "../../utils/document";
 import { formatFolioCount } from "../../utils/draft-thresholds";
 import { isFileDrag } from "../../utils/file-drag";
 import type { EditorStore } from "./editor-state";
+import { MarginRails } from "../in-flow/margin-rail";
 import { PageChrome, type PageChromeProps } from "./page-chrome";
 import { PageRuler } from "./page-ruler";
 import { LastSavedLine } from "./sync-indicator";
@@ -32,6 +33,8 @@ interface ManuscriptPanelProps {
   onHeaderCommit$: PropFunction<(value: string) => void>;
   onFooterCommit$: PropFunction<(value: string) => void>;
   onJumpToNote$: PropFunction<(position: number) => void>;
+  /** Commenters get no margin tools; they are not writing this draft. */
+  readOnly?: boolean;
 }
 
 /**
@@ -141,6 +144,8 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
             data-speech-source="plain"
             style={{ position: "relative", zIndex: 1 }}
           />
+
+          <MarginRails zen={store.zenMode} readOnly={props.readOnly} />
 
           {store.notes.length > 0 && (
             <div

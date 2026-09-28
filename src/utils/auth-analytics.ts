@@ -1,4 +1,4 @@
-export type AnalyticsAuthMethod = "passkey" | "email_otp" | "bluesky";
+export type AnalyticsAuthMethod = "notorganic";
 export type AuthFlow = "signin" | "signup";
 
 export interface PendingAuthAttempt {
@@ -15,7 +15,7 @@ export type AuthIdentityTransition =
 
 const PENDING_AUTH_ATTEMPT_KEY = "twyne:analytics:pending-auth-attempt";
 const PENDING_AUTH_ATTEMPT_TTL_MS = 15 * 60 * 1000;
-const AUTH_METHODS = new Set(["passkey", "email_otp", "bluesky"]);
+const AUTH_METHODS = new Set(["notorganic"]);
 const AUTH_FLOWS = new Set(["signin", "signup"]);
 
 type AuthAttemptStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;

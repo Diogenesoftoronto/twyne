@@ -51,6 +51,7 @@ import { buildQuoteTools } from "./agentTools";
 import type {
   DossierCheckResult,
   DossierProbe,
+  Persona,
   ProjectBrief,
   ProjectInterviewAnswers,
 } from "../src/types";
@@ -107,12 +108,18 @@ import {
 } from "./lib/applicationErrors";
 import { createInterviewStreamSnapshot } from "../src/utils/interview-stream";
 import {
+  runAdaptiveEditorialDraft,
+  type EditorialReasoningLevel,
+} from "../src/utils/adaptive-editorial-draft";
+import { reviewEditorialNote } from "../src/utils/editorial-note-review";
+import type { WritingLensCaller } from "../src/utils/writing-lenses";
+import {
   createGenerationStreamAccumulator,
   createPublishGate,
   type GenerationStreamSnapshot,
 } from "../src/utils/generation-stream";
 import { prompt as renderNamed } from "../src/utils/prompts";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 /* ── Provider selection ─────────────────────────────────────────── */
 
@@ -504,6 +511,235 @@ async function trackedStreamNote(
   return result;
 }
 
+function initialEditorialReasoning(
+  instruction: AgentRequest["instruction"],
+): EditorialReasoningLevel {
+  switch (instruction) {
+    case "analyze":
+      return "high";
+    case "elaborate":
+    case "rewrite-suggestion":
+      return "medium";
+    default:
+      return "low";
+  }
+}
+
+/** The hosted equivalent of the BYOK adaptive drafting loop. */
+async function runAdaptiveHostedLlm(
+  ctx: ActionCtx,
+  ownerId: string,
+  provider: ProviderConfig,
+  req: AgentRequest,
+  feature: "persona-feedback" | "persona-reply" | "persona-analysis",
+  maxTokens: number | undefined,
+  observability?: ServerAiObservabilityContext,
+  stream?: NoteStreamTarget,
+): Promise<AgentResponse> {
+  const fallbackType: FeedbackType = defaultTypeForPersona(req.persona);
+  const profile = req.writerProfile ?? {
+    displayName: "",
+    personalFacts: "",
+    feedbackStyle: "balanced" as const,
+    feedbackNotes: "",
+  };
+  const reviewPersona: Persona = {
+    ...req.persona,
+    color: "",
+    icon: "",
+  };
+  const systemOneCaller: WritingLensCaller = async (request) => {
+    try {
+      const result = await ctx.runAction(api.systemOne.ask, {
+        ...request,
+        state: Object.fromEntries(
+          Object.entries(request.state).map(([key, value]) => [
+            key,
+            typeof value === "string" ? value : JSON.stringify(value),
+          ]),
+        ),
+      });
+      return {
+        ok: result.ok,
+        answers: result.answers,
+        error: result.error,
+      };
+    } catch {
+      return { ok: false, error: "judgement-unavailable" };
+    }
+  };
+
+  if (stream) {
+    await stream.ctx.runMutation(internal.personaNoteStreams.write, {
+      userId: stream.userId,
+      streamId: stream.streamId,
+      personaId: stream.personaId,
+      text: "",
+      reasoning: "",
+      phase: "answer",
+      status: "running",
+    });
+  }
+
+  const result = await runAdaptiveEditorialDraft({
+    operation: req.instruction ?? "feedback",
+    initialReasoning: initialEditorialReasoning(req.instruction),
+    maxReasoning: "high",
+    generate: async ({ attempt, reasoning, repair }) => {
+      // Not Organic aliases are the hosted model selector. Legacy providers
+      // keep the model selected by their configured key and simply ignore the
+      // alias step.
+      let generationProvider = provider;
+      if (notOrganicEnabled()) {
+        const alias: NotOrganicModelAlias =
+          reasoning === "high" ? "reasoning" : "balanced";
+        try {
+          generationProvider =
+            (await pickProvider(ctx, feature, alias)) ?? generationProvider;
+        } catch {
+          // The first provider already proved usable; keep it if an adaptive
+          // alias cannot be resolved for this retry.
+        }
+      }
+
+      const system = withResponseLanguage(
+        buildSystemPrompt(req.persona),
+        req.responseLocale,
+      );
+      const prompt = buildUserPrompt({
+        ...req,
+        ...(repair.length ? { repairInstructions: [...repair] } : {}),
+      });
+      const { tools, getAnchor } = buildQuoteTools(req.draftText);
+      const usageTraceId = observability?.traceId
+        ? `${observability.traceId}:draft-${attempt}`
+        : createAiTraceId(`${feature}:draft-${attempt}`);
+      const capture: HostedUsageCapture = {
+        ctx,
+        ownerId,
+        provider: generationProvider,
+        feature,
+        traceId: usageTraceId,
+        editorialActionId: observability?.editorialActionId,
+        folioId: observability?.folioId,
+      };
+      const temperature =
+        req.persona.temperature ??
+        (generationProvider.label === "openai" ? 0.6 : 0.4);
+      const generation = {
+        model: generationProvider.model,
+        system,
+        prompt,
+        temperature,
+        maxOutputTokens: maxTokens,
+        tools,
+        stopWhen: stepCountIs(3),
+        experimental_telemetry: {
+          isEnabled: tracingEnabled,
+          functionId: `${feature}:draft-${attempt}`,
+          metadata: {
+            feature,
+            persona: req.persona.id,
+            provider: generationProvider.label,
+            model: generationProvider.modelId,
+            reasoning: reasoning,
+          },
+        },
+      };
+      const generationStarted = Date.now();
+      const first = await trackedGenerateText(
+        capture,
+        attempt * 2 - 1,
+        generation,
+      );
+      let usage = normalizeAiUsage(first.totalUsage);
+      let visibleText = stripReasoningTags(first.text);
+      if (!visibleText) {
+        const retry = await trackedGenerateText(capture, attempt * 2, {
+          ...generation,
+          prompt: `${prompt}\n\nClose your <think> block, then write the note.`,
+          experimental_telemetry: {
+            ...generation.experimental_telemetry,
+            functionId: `${feature}:draft-${attempt}:visible-retry`,
+          },
+        });
+        usage = normalizeAiUsage(retry.totalUsage) ?? usage;
+        visibleText =
+          stripReasoningTags(retry.text) ||
+          removeReasoningTagMarkers(retry.text);
+      }
+      const cleaned = visibleText.trim();
+      if (!cleaned) throw new Error("empty-editorial-draft");
+
+      const traceId = await captureServerAiGeneration({
+        feature,
+        provider: generationProvider.label,
+        model: generationProvider.modelId,
+        req,
+        output: cleaned,
+        latencyMs: Date.now() - generationStarted,
+        temperature,
+        maxTokens,
+        spanName: `${feature}:draft-${attempt}`,
+        usage,
+        observability: { ...observability, traceId: usageTraceId },
+        evalSignals: {
+          twyne_draft_attempt: attempt,
+          twyne_reasoning_level: reasoning,
+        },
+      });
+      await flushArize();
+      const value: AgentResponse = {
+        text: cleaned,
+        type: classifyType(cleaned, fallbackType),
+        provider: generationProvider.label,
+        traceId,
+        anchor: getAnchor() ?? req.anchor,
+      };
+      return { value, text: cleaned, anchor: value.anchor };
+    },
+    review: (candidate) =>
+      reviewEditorialNote(systemOneCaller, {
+        note: candidate.text,
+        quote: candidate.anchor,
+        draft: req.draftText,
+        persona: reviewPersona,
+        brief: req.brief,
+        profile,
+        operation: req.instruction ?? "feedback",
+        userMessage: req.userMessage,
+      }),
+  });
+
+  if (!result.candidate) {
+    if (stream) {
+      await stream.ctx.runMutation(internal.personaNoteStreams.write, {
+        userId: stream.userId,
+        streamId: stream.streamId,
+        personaId: stream.personaId,
+        text: "",
+        reasoning: "",
+        phase: "answer",
+        status: "error",
+      });
+    }
+    throw new Error(`editorial-draft-${result.receipt.reason ?? "withheld"}`);
+  }
+
+  if (stream) {
+    await stream.ctx.runMutation(internal.personaNoteStreams.write, {
+      userId: stream.userId,
+      streamId: stream.streamId,
+      personaId: stream.personaId,
+      text: result.candidate.text,
+      reasoning: "",
+      phase: "answer",
+      status: "complete",
+    });
+  }
+  return result.candidate.value;
+}
+
 async function runLlm(
   ctx: ActionCtx,
   ownerId: string,
@@ -517,6 +753,22 @@ async function runLlm(
   observability?: ServerAiObservabilityContext,
   stream?: NoteStreamTarget,
 ): Promise<AgentResponse> {
+  if (
+    feature === "persona-feedback" ||
+    feature === "persona-reply" ||
+    feature === "persona-analysis"
+  ) {
+    return runAdaptiveHostedLlm(
+      ctx,
+      ownerId,
+      provider,
+      req,
+      feature,
+      maxTokens,
+      observability,
+      stream,
+    );
+  }
   const system = withResponseLanguage(
     buildSystemPrompt(req.persona),
     req.responseLocale,

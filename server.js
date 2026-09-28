@@ -3,6 +3,7 @@ import { createReadStream } from "node:fs";
 import { stat } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { installLiveVoiceRelay } from "./scripts/live-voice-relay.mjs";
 
 // Railway terminates TLS at its edge. Let Qwik validate browser origins using
 // the edge's protocol rather than the container's internal HTTP connection.
@@ -15,11 +16,14 @@ const DIST_ROOT = fileURLToPath(new URL("./dist/", import.meta.url));
 const ROOT_FILE_TYPES = {
   ".ico": "image/x-icon",
   ".js": "application/javascript; charset=utf-8",
+  ".jpg": "image/jpeg",
   ".json": "application/json; charset=utf-8",
   ".pdf": "application/pdf",
   ".png": "image/png",
+  ".mp4": "video/mp4",
   ".svg": "image/svg+xml; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
+  ".vtt": "text/vtt; charset=utf-8",
 };
 
 async function serveRootStaticFile(req, res, next) {
@@ -32,7 +36,14 @@ async function serveRootStaticFile(req, res, next) {
   } catch {
     return next();
   }
-  if (!filename || filename.includes("/") || filename.includes("\\")) {
+  const launchMedia = /^assets\/launch\/the-room-(en|fr)\.(mp4|jpg|vtt)$/.test(
+    filename,
+  );
+  if (
+    !filename ||
+    (!launchMedia && filename.includes("/")) ||
+    filename.includes("\\")
+  ) {
     return next();
   }
 
@@ -50,6 +61,41 @@ async function serveRootStaticFile(req, res, next) {
         ? "no-cache"
         : "public, max-age=3600",
     );
+    // The router's static middleware sends entire files. Native video seeking
+    // needs byte ranges, so serve the two launch exports here.
+    if (launchMedia && extname(filename) === ".mp4") {
+      res.setHeader("Accept-Ranges", "bytes");
+      if (req.method === "GET" && req.headers.range) {
+        const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);
+        let start = range?.[1] ? Number(range[1]) : 0;
+        let end = range?.[2] ? Number(range[2]) : details.size - 1;
+        if (range && !range[1] && range[2]) {
+          start = Math.max(0, details.size - Number(range[2]));
+          end = details.size - 1;
+        }
+        if (
+          !range ||
+          (!range[1] && !range[2]) ||
+          !Number.isSafeInteger(start) ||
+          !Number.isSafeInteger(end) ||
+          start >= details.size ||
+          end < start
+        ) {
+          res.setHeader("Content-Range", `bytes */${details.size}`);
+          res.setHeader("Content-Length", 0);
+          res.writeHead(416);
+          return res.end();
+        }
+        end = Math.min(end, details.size - 1);
+        res.setHeader("Content-Range", `bytes ${start}-${end}/${details.size}`);
+        res.setHeader("Content-Length", end - start + 1);
+        res.writeHead(206);
+        const stream = createReadStream(filePath, { start, end });
+        stream.on("error", () => res.destroy());
+        res.on("close", () => stream.destroy());
+        return stream.pipe(res);
+      }
+    }
     if (filename === "service-worker.js") {
       res.setHeader("Service-Worker-Allowed", "/");
     }
@@ -96,6 +142,7 @@ async function main() {
       });
     });
 
+    installLiveVoiceRelay(server);
     const port = parseInt(process.env.PORT || "3000", 10);
     server.listen(port, "0.0.0.0", () => {
       console.log(`Twyne server listening on 0.0.0.0:${port}`);

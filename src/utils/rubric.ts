@@ -10,6 +10,8 @@
  */
 
 import { detectCitations } from "./citations";
+import { PERSONAS } from "./personas";
+import { gradeVerdict } from "./rubric-copy";
 
 export interface StaticFeatures {
   wordCount: number;
@@ -430,59 +432,51 @@ function buildFeedback(
   const out: string[] = [];
   if (f.wordCount < 200) {
     out.push(
-      `The draft is short (${f.wordCount} words). Most pieces need at least 400 words before the rubric can be honest.`,
+      `At ${f.wordCount} words the draft is short. Scores settle down past about 400.`,
     );
   }
   if (s.evidence < 4) {
     out.push(
-      `Citations are sparse (${f.citationCount} found, ${f.citationDensity.toFixed(
-        1,
-      )} per 1,000 words). Claims are not yet supported.`,
+      `Few claims are backed up: ${f.citationCount} reference${f.citationCount === 1 ? "" : "s"} found.`,
     );
   }
   if (s.pacing < 4) {
     out.push(
-      `Sentence pacing is uneven. Average sentence is ${f.avgSentenceLength.toFixed(
-        1,
-      )} words; standard deviation ${f.sentenceLengthStdDev.toFixed(
-        1,
-      )}. Aim for 12-22 word sentences with healthy variation.`,
+      `Sentence lengths don't vary much (about ${Math.round(f.avgSentenceLength)} words each). Mix short sentences with long ones.`,
     );
   }
   if (s.structure < 4) {
     out.push(
-      `The draft has ${f.paragraphCount} paragraph${f.paragraphCount === 1 ? "" : "s"}. Build a beginning, a turn, and a landing before another pass.`,
+      `Only ${f.paragraphCount} paragraph${f.paragraphCount === 1 ? "" : "s"}. Give it a beginning, a turn and an ending.`,
     );
   }
   if (f.shortParagraphRatio > 0.5 && f.paragraphCount >= 4) {
     out.push(
-      `Most paragraphs are short. The piece reads as fragments, not as a single argument.`,
+      "Most paragraphs are very short, so it reads in fragments rather than as one argument.",
     );
   }
   if (f.longParagraphRatio > 0.3) {
     out.push(
-      `Some paragraphs are very long. Split where the topic changes, or where the reader needs a breath.`,
+      "Some paragraphs run long. Split them where the subject changes or the reader needs a breath.",
     );
   }
   if (s.vocabulary < 4) {
     out.push(
-      `Vocabulary repetition is high. Find a sharper synonym, or cut the repeated word.`,
+      "The same words come back often. Find the ones you lean on and vary or cut them.",
     );
   }
   if (s.integrity < 6) {
     out.push(
-      `Bullshit check is low: ${f.unsupportedUniversalClaimCount} unsupported universal claim${
+      `Some padding: ${f.unsupportedUniversalClaimCount} sweeping claim${
         f.unsupportedUniversalClaimCount === 1 ? "" : "s"
-      }, ${(f.fillerWordRatio * 100).toFixed(1)}% filler, ${(
-        f.vagueWordRatio * 100
-      ).toFixed(
-        1,
-      )}% vague wording, ${(f.duplicateParagraphRatio * 100).toFixed(0)}% duplicated paragraphs.`,
+      } with nothing behind ${f.unsupportedUniversalClaimCount === 1 ? "it" : "them"}, and ${Math.round(
+        (f.fillerWordRatio + f.vagueWordRatio) * 100,
+      )}% filler or vague words.`,
     );
   }
   if (out.length === 0) {
     out.push(
-      "Static features are within the working range. The judges' verdict will dominate the final grade.",
+      "Nothing stands out in the measured style, so the editors' scores decide the grade.",
     );
   }
   return out;
@@ -611,7 +605,7 @@ export function combineJudgesAndStatic(
     staticTotal,
     combined: Math.round(combinedHundred),
     grade,
-    summary: buildSummary(judges, staticScore, combinedHundred, brief, fit),
+    summary: buildSummary(judges, staticScore, combinedHundred, fit),
     targetFit: fit,
     effectiveStatic: Math.round(effectiveStatic * 100) / 100,
   };
@@ -658,47 +652,25 @@ function buildSummary(
   judges: JudgeResult[],
   staticScore: StaticScore,
   final: number,
-  brief: { answers: { audience: string; goal: string } } | null,
   targetFit: number = UNJUDGED_TARGET_FIT,
 ): string {
+  // Short enough to sit whole under the grade in the side panel: the verdict,
+  // then the one reason that most explains it. Detail lives in the criteria
+  // and the editors' own notes.
+  const parts: string[] = [gradeVerdict(final)];
   const harshest = [...judges].sort((a, b) => a.score - b.score)[0];
-  const kindest = [...judges].sort((a, b) => b.score - a.score)[0];
-  const parts: string[] = [];
-  if (harshest) {
-    parts.push(
-      `Harshest reader: ${harshest.personaId} scored ${harshest.score}/10. "${harshest.rationale}"`,
-    );
-  }
-  if (kindest && kindest !== harshest) {
-    parts.push(`Kindest: ${kindest.personaId} at ${kindest.score}/10.`);
-  }
   if (targetFit < 7) {
     parts.push(
-      `Target fit is ${targetFit}/10 — the draft is only partly doing the job the brief set, so the shape measurements below are capped at ${shapeCeiling(
+      `It drifts from the brief (${targetFit}/10 on brief), so style scores are held down to ${shapeCeiling(
         targetFit,
-      ).toFixed(
-        1,
-      )}/10 and count for less in the grade. Well-formed sentences about the wrong thing are still the wrong thing.`,
+      ).toFixed(1)}.`,
     );
-  }
-  parts.push(
-    `Static features land at ${staticScore.total.toFixed(
-      1,
-    )}/10. ${staticScore.feedback[0] ?? ""}`,
-  );
-  parts.push(
-    `Combined, this draft grades ${Math.round(final)}/100. ${
-      final >= 80
-        ? "Strong work — keep going."
-        : final >= 65
-          ? "Real progress, but the room is still asking for more."
-          : "The room is being honest with you. The next pass is the important one."
-    }`,
-  );
-  if (brief) {
-    parts.push(
-      `Remember the brief: the piece is for ${brief.answers.audience} and the goal is ${brief.answers.goal}.`,
-    );
+  } else if (harshest && harshest.score < 6) {
+    const name =
+      PERSONAS.find((p) => p.id === harshest.personaId)?.name ?? "One editor";
+    parts.push(`${name} is hardest to convince (${harshest.score}/10).`);
+  } else if (staticScore.total < 5) {
+    parts.push("The editors are fairly happy; the measured style lags.");
   }
   return parts.join(" ");
 }

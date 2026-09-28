@@ -10,9 +10,11 @@ describe("editor filed dossier paper", () => {
 
     expect(editor).toContain("brief={store.brief}");
     expect(editor).toContain("loadProjectBriefForFolio");
-    expect(paper).toContain("key={brief.updatedAt}");
+    expect(paper).toContain('selectedEdition?.id ?? "current"');
     expect(paper).toContain("Current filed copy");
-    expect(paper).toContain("formatFiledAt(brief.updatedAt)");
+    expect(paper).toContain(
+      "formatFiledAt(selectedEdition?.savedAt ?? brief.updatedAt)",
+    );
     expect(paper).toContain("filed-dossier-paper");
     expect(paper).not.toContain('class="index-card');
     expect(css).toContain("@keyframes filed-dossier-arrive");

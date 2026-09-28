@@ -243,8 +243,9 @@ export function promptFrontmatter(name: string): PromptFrontmatter {
  * keeping the bundle's parse cost lazy.
  */
 export const promptNames = {
-  // Group A — static system prompts with no placeholders.
+  // Group A — named system prompts.
   personaSystem: "persona-system",
+  editorialProtocol: "editorial-protocol",
   synthesisSystem: "synthesis-system",
   rubricReviewSystem: "rubric-review-system",
   evidenceJudgeSystem: "evidence-judge-system",

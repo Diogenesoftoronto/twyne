@@ -27,14 +27,6 @@ describe("Convex authentication state", () => {
         },
         false,
       ],
-      [
-        {
-          user: productUser,
-          loading: false,
-          provider: "atproto",
-        },
-        false,
-      ],
       [{ user: null, loading: false }, false],
     ];
 

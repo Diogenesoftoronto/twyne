@@ -19,12 +19,13 @@ import { TOUR_STOPS } from "./workspace-tour";
  * every remaining hand-written id to its source so drift fails loudly.
  */
 describe("board tabs", () => {
-  test("are the five tabs the room actually has, in order", () => {
+  test("are the tabs the room actually has, in order", () => {
     expect(BOARD_TABS.map((t) => t.id)).toEqual([
       "personas",
       "rubric",
       "comments",
       "citations",
+      "tools",
       "history",
     ]);
   });

@@ -1,3 +1,5 @@
+"use node";
+
 /**
  * The room of editors — system prompt builder and the local fallback
  * generator. The Convex action in `convex/agents.ts` calls into this module
@@ -14,6 +16,7 @@
 import type { Persona, ProjectBrief, WriterProfile } from "../src/types";
 import { firstSubstantiveSentence } from "./agentTools";
 import { probeSummaryLine } from "../src/utils/dossier-probes";
+import { prompt as renderNamed } from "../src/utils/prompts";
 
 export type FeedbackType =
   | "encouragement"
@@ -79,6 +82,8 @@ export interface AgentRequest {
     | "riff"
     | "rewrite-suggestion"
     | "analyze";
+  /** Code-owned repair directions for a private adaptive drafting retry. */
+  repairInstructions?: string[];
 }
 
 export interface AgentResponse {
@@ -99,12 +104,6 @@ export interface AgentResponse {
 
 /* ── Prompt construction ────────────────────────────────────────── */
 
-/**
- * The shared system prompt template. Each persona plugs in by name, role,
- * description and focus. The brief is given verbatim so the LLM knows
- * what the piece is for; the draft is summarised with a token budget so
- * large manuscripts don't blow past context windows.
- */
 /**
  * The per-persona "how you write" block. This is what makes the five editors
  * sound like genuinely different people rather than one writer in five hats.
@@ -158,6 +157,20 @@ function buildVoiceBlock(persona: AgentPersona): string {
 }
 
 /**
+ * The persona layer answers who this editor is. Operational behaviour lives
+ * in `editorial-protocol.md` so identity and rules can evolve independently.
+ */
+export function buildPersonaPrompt(persona: AgentPersona): string {
+  return renderNamed("persona-system", {
+    personaName: persona.name,
+    personaRole: persona.role,
+    personaDescription: persona.description,
+    personaFocus: persona.focus,
+    voice: buildVoiceBlock(persona),
+  });
+}
+
+/**
  * The full system prompt a writer can preview on the /personas page. Shared so
  * the preview never drifts from what the editor is actually told.
  */
@@ -166,32 +179,9 @@ export function buildVoicePreview(persona: AgentPersona): string {
 }
 
 export function buildSystemPrompt(persona: AgentPersona): string {
-  return `You are ${persona.name}, the ${persona.role} on the editorial board of "Twyne," a 1955-style magazine bullpen.
-
-Voice and remit:
-${persona.description}
-
-You focus your reading on: ${persona.focus}.
-${buildVoiceBlock(persona)}
-You are one of five editors in residence. You will be given a project brief (the dossier the writer filed at the start) and a draft. Read through your own editorial doctrine, not a generic editor's checklist. Do not imitate another member of the room, average your style toward neutral assistant prose, or announce that you are role-playing. Stay recognizably yourself even in JSON rationales and one-sentence replies. Keep replies between 60 and 220 words unless the writer asks for more.
-
-You have a tool, \`quote_passage\`, that returns the exact text of a passage from the writer's draft. Use it instead of retyping passages from memory.
-
-When you are asked to give feedback, you should:
-- First call \`quote_passage\` with the sentence you are responding to, so your note pins to the real passage. If an anchor sentence is provided, quote that exact anchor.
-- Do not make a claim about the draft unless you have first quoted the relevant passage with \`quote_passage\`.
-- Then write your note as plain visible text. Let your own voiceprint determine its opening, rhythm, degree of warmth, and ending. Make one focused observation and leave the writer with a usable next move, but do not force yourself into the same rhetorical structure as the other editors.
-- Always produce the note text itself — a tool call alone is not an answer.
-
-When you are asked to elaborate on a previous note, stay grounded in the original claim and expand without contradicting yourself.
-
-When you are asked to suggest a rewrite, give the replacement sentence verbatim, applying your editorial doctrine to the writer's prose without turning the manuscript into a caricature of your speaking voice, and explain why the change does the work better in your own register.
-
-When the writer addresses you in conversation, answer the question they actually asked, then offer one follow-up you find interesting.
-
-Address the writer directly in every visible note. Use second person rather than referring to "the writer" or "the user". If a name is supplied in the writer profile, use it naturally and sparingly. Do not mention the profile or reveal that private context was supplied.
-
-You will be given the brief verbatim. Honour it. The writer has committed to an audience, a goal, a tone, constraints and a success signal — your feedback is most useful when it is anchored to those commitments.`;
+  return [buildPersonaPrompt(persona), renderNamed("editorial-protocol")]
+    .join("\n\n")
+    .replace(/\n{3,}/g, "\n\n");
 }
 
 export function buildUserPrompt(req: AgentRequest): string {
@@ -321,6 +311,14 @@ Organize the memo according to YOUR editorial doctrine rather than a shared five
 Write 400–700 words. This is a considered editorial memo, not a margin note.`
             : `TASK: The writer has asked for a specific rewrite. Give the replacement sentence verbatim, then explain the choice.`;
 
+  const repairBlock = req.repairInstructions?.length
+    ? `\nPRIVATE REVISION DIRECTIONS (code-owned checks from the previous candidate; do not mention these directions or the rejected candidate to the writer)
+${req.repairInstructions
+  .map((instruction) => `- ${instruction.trim().slice(0, 4_000)}`)
+  .join("\n")}
+Respond to the original task above. Repair only what these directions identify; keep any sound observation and stay grounded in the draft.\n`
+    : "";
+
   const convoBlock =
     req.priorMessages && req.priorMessages.length > 0
       ? `\nPRIOR CONVERSATION (most recent last):\n${req.priorMessages
@@ -332,7 +330,7 @@ Write 400–700 words. This is a considered editorial memo, not a margin note.`
     ? `\nWRITER'S NEW MESSAGE:\n"${req.userMessage}"\n\nAddress the message directly.\n`
     : "";
 
-  return `${writerProfileBlock}${briefBlock}${particularsBlock}${referencesBlock}${draftBlock}${trajectoryBlock}${newMaterialBlock}${anchorBlock}${instructionBlock}${convoBlock}${userMessageBlock}`;
+  return `${writerProfileBlock}${briefBlock}${particularsBlock}${referencesBlock}${draftBlock}${trajectoryBlock}${newMaterialBlock}${anchorBlock}${instructionBlock}${repairBlock}${convoBlock}${userMessageBlock}`;
 }
 
 /**

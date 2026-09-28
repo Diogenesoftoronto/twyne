@@ -1,5 +1,5 @@
 import type { ConvexClient } from "convex/browser";
-import { api } from "../../convex/_generated/api";
+import { askJudgement } from "./judgement-client";
 import type { RubricResult } from "../types";
 import { htmlToPlainText } from "./anti-tabula-rasa";
 import { paragraphTextFromHtml } from "./draft-trajectory";
@@ -215,7 +215,7 @@ export function startLiveReview(
         if (cached) return cached;
         if (transportUnavailable) throw new Error("unavailable");
         if (++calls > 32) throw new Error("budget");
-        const response = (await client.action(api.systemOne.ask, {
+        const response = (await askJudgement(client, {
           state: Object.fromEntries(
             Object.entries(input.state).map(([key, value]) => [
               key,
@@ -392,7 +392,7 @@ export function startLiveReview(
             findings: [],
             coverage: "No source pairs sent.",
             notice:
-              "Update saved claims to match the current draft before checking research drift.",
+              "Update saved claims to match the current draft before checking them against sources.",
           };
         } else {
           const lens =

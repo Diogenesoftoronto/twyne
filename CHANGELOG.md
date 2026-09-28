@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.22.0
+
+<sub>2026-09-28</sub>
+
+- Sign in with a Not Organic account for identity, hosted credits, and plans.
+  Email OTP and Twyne passkeys are retired; ATProto remains a separate publishing
+  connection.
+- Talk with an editor through the live voice desk, with captions, microphone
+  controls, passage lookup, and proposed edits that require approval.
+- Review private editorial drafts against typed policies before displaying them,
+  with clearer reasoning controls and bounded background judgement requests.
+- Bring writing tools into the manuscript flow, save tool results, and improve
+  grammar feedback, dossier history, and revision summaries.
+- Refine rubric feedback and grade stamps, and add Typst-backed PDF export.
+- Refresh the editorial panels, onboarding papers, and workspace styling.
+- Add the launch film to the landing page and manual, with English and French
+  narration, translated title cards, captions, and language-aware selection.
+
 ## 0.21.0
 
 <sub>2026-09-21</sub>

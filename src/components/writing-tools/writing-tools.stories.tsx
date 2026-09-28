@@ -83,7 +83,7 @@ export const ExampleFindings: Story = {
   render: () => (
     <main style="max-width: 70rem; margin: auto; padding: 2rem 1rem;">
       <p class="dept-label">Second look</p>
-      <h1>Read without the ending</h1>
+      <h1>Find missing context</h1>
       <p class="muted">2 of 4 paragraphs in the reviewed draft prefix.</p>
       {exampleFindings.map((finding) => (
         <article

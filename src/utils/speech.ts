@@ -300,11 +300,30 @@ function resolveVoice(
   req: SpeakRequest,
   settings: AiSettings,
 ): string | undefined {
-  return pickVoiceForProvider(
+  const selected = pickVoiceForProvider(
     req.voices,
     req.voice,
     resolveFeatureConfig(settings, "voice-narration")?.provider.type,
   );
+  const provider = resolveFeatureConfig(settings, "voice-narration")?.provider
+    .type;
+  if (provider === "supertonic") {
+    // OpenAI names are not Supertonic embedding ids. Keep the cast distinct.
+    const mapped: Record<string, string> = {
+      onyx: "M1",
+      shimmer: "F1",
+      echo: "M2",
+      ash: "F2",
+      alloy: "M3",
+    };
+    return (
+      mapped[selected ?? ""] ??
+      selected ??
+      settings.perFeature["voice-narration"]?.voice ??
+      "F1"
+    );
+  }
+  return selected ?? settings.perFeature["voice-narration"]?.voice;
 }
 
 function uniqueVoiceOptions(options: SpeechVoiceOption[]): SpeechVoiceOption[] {
@@ -332,16 +351,38 @@ export async function currentSpeechVoiceMenu(): Promise<SpeechVoiceMenu | null> 
   const resolved = resolveFeatureConfig(settings, "voice-narration");
   const providerType = resolved?.provider.type;
   const selected = resolveVoice(spoken, settings) ?? spoken.voice ?? "alloy";
+  let cast: Persona[] = PERSONAS;
+  try {
+    const custom = await loadPersonasFromIdb();
+    if (custom?.length) cast = custom;
+  } catch {
+    /* The built-in cast remains available offline. */
+  }
+  const castOptions = cast.flatMap((persona) => {
+    const id = resolveVoice(
+      {
+        id: persona.id,
+        text: "",
+        voice: persona.speechVoice,
+        voices: persona.speechVoices,
+      },
+      settings,
+    );
+    return id ? [{ id, label: persona.name }] : [];
+  });
 
   if (providerType === "supertonic") {
     return {
       provider: "Browser voice",
       model: resolved?.model ?? "supertonic-tts",
       selected,
-      options: BROWSER_TTS_VOICES.map((voice) => ({
-        id: voice,
-        label: `Voice ${voice}`,
-      })),
+      options: uniqueVoiceOptions([
+        ...castOptions,
+        ...BROWSER_TTS_VOICES.map((voice) => ({
+          id: voice,
+          label: `Voice ${voice}`,
+        })),
+      ]),
       allowsCustom: false,
     };
   }
@@ -380,6 +421,7 @@ export async function currentSpeechVoiceMenu(): Promise<SpeechVoiceMenu | null> 
     model: resolved?.model ?? "hosted",
     selected,
     options: uniqueVoiceOptions([
+      ...castOptions,
       ...standard,
       ...(standard.some((option) => option.id === selected)
         ? []
@@ -411,7 +453,12 @@ async function withPersonaVoice(req: SpeakRequest): Promise<SpeakRequest> {
     // The defaults still carry voices; a failed read is not worth a silence.
   }
 
-  const persona = cast.find((p) => p.name.trim().toLowerCase() === name);
+  const persona = cast.find(
+    (p) =>
+      p.name.trim().toLowerCase() === name ||
+      p.id.toLowerCase() === name ||
+      p.role.toLowerCase() === name,
+  );
   if (!persona) return req;
 
   return {

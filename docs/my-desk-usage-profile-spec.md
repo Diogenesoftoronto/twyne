@@ -50,7 +50,7 @@ billing source of truth.
   writers.
 - Inferring personality, quality, productivity, or writing ability from usage.
 - Treating token count, time on page, or AI spend as a measure of good writing.
-- Building the Creem credit purchase flow in this feature.
+- Building the Not Organic credit purchase flow in this feature.
 - Storing prompts, completions, manuscript excerpts, folio titles, or API keys
   in the usage ledger.
 - Making client-reported BYOK estimates authoritative for billing, credits, or

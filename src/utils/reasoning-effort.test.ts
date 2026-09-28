@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
+  adaptiveReasoningCeiling,
   reasoningProviderOptions,
+  reasoningProviderOptionsForLevel,
   supportsReasoningEffort,
 } from "./reasoning-effort";
 import type { AiProviderConfig } from "../types";
@@ -125,6 +127,35 @@ describe("reasoningProviderOptions", () => {
       modelReasoning: { m: { type: "effort", value: "high" } },
     });
     expect(reasoningProviderOptions(config, "m")).toBeUndefined();
+  });
+
+  test("translates an adaptive level without changing the saved setting", () => {
+    const config = provider({
+      modelReasoning: { m: { type: "effort", value: "low" } },
+    });
+    expect(reasoningProviderOptionsForLevel(config, "m", "high")).toEqual({
+      openai: { reasoningEffort: "high" },
+    });
+    expect(config.modelReasoning?.m).toEqual({ type: "effort", value: "low" });
+  });
+
+  test("uses the configured model setting as the adaptive ceiling", () => {
+    expect(
+      adaptiveReasoningCeiling(
+        provider({
+          modelReasoning: { m: { type: "effort", value: "medium" } },
+        }),
+        "m",
+      ),
+    ).toBe("medium");
+    expect(
+      adaptiveReasoningCeiling(
+        provider({
+          modelReasoning: { m: { type: "toggle", value: false } },
+        }),
+        "m",
+      ),
+    ).toBe("off");
   });
 });
 

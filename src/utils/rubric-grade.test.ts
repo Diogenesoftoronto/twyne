@@ -338,3 +338,32 @@ describe("runRubricPass", () => {
     expect(result.ok).toBe(false);
   });
 });
+
+describe("judge wording", () => {
+  test("spine questions keep their original wording when labels change", async () => {
+    const { buildRubricQuestions } = await import("./rubric-grade");
+    const { defaultCriteriaSpecs } = await import("./rubric-criteria");
+    const questions = buildRubricQuestions(defaultCriteriaSpecs());
+    expect(questions.pacing.instructions).toBe(
+      "Rate the draft on Pacing & Rhythm: Sentence length variation and cadence.",
+    );
+    expect(questions.integrity.instructions).toContain("Bullshit Resistance");
+  });
+
+  test("custom criteria use the writer's own words", async () => {
+    const { buildRubricQuestions } = await import("./rubric-grade");
+    const questions = buildRubricQuestions([
+      {
+        id: "custom-humour",
+        label: "Humour",
+        description: "Lands a laugh without undercutting the point",
+        source: "custom",
+        enabled: true,
+        weight: 1,
+      },
+    ]);
+    expect(questions["custom-humour"].instructions).toBe(
+      "Rate the draft on Humour: Lands a laugh without undercutting the point.",
+    );
+  });
+});

@@ -233,6 +233,12 @@ export const ask = action({
     state: v.record(v.string(), v.string()),
     questions: v.record(v.string(), questionValidator),
     model: v.optional(v.string()),
+    /**
+     * The writer's own TypeSafe key. TypeSafe's API refuses browser requests,
+     * so a bring-your-own-key judgement is relayed from here. The key is used
+     * for this one request and never stored or logged.
+     */
+    apiKey: v.optional(v.string()),
   },
   returns: v.object({
     ok: v.boolean(),
@@ -242,7 +248,12 @@ export const ask = action({
       v.object({ input_tokens: v.number(), output_tokens: v.number() }),
     ),
     transport: v.optional(
-      v.union(v.literal("notorganic"), v.literal("direct"), v.literal("none")),
+      v.union(
+        v.literal("notorganic"),
+        v.literal("direct"),
+        v.literal("none"),
+        v.literal("byok"),
+      ),
     ),
     error: v.optional(v.string()),
   }),
@@ -254,10 +265,13 @@ export const ask = action({
     model?: string;
     answers?: Record<string, unknown>;
     usage?: { input_tokens: number; output_tokens: number };
-    transport?: JudgementTransport;
+    transport?: JudgementTransport | "byok";
     error?: string;
   }> => {
-    const via = transport();
+    const ownKey = args.apiKey?.trim();
+    if (ownKey !== undefined && (ownKey.length < 8 || ownKey.length > 512))
+      return { ok: false, transport: "byok", error: "unauthorized" };
+    const via = ownKey ? "byok" : transport();
     // Not an error: Jev is a tier of a ladder, and every surface above it has
     // a working Tier 0/1 answer already. Degrade silently, never throw.
     if (via === "none") return { ok: false, error: "unconfigured" };
@@ -284,8 +298,12 @@ export const ask = action({
     } catch {
       return { ok: false, error: "malformed" };
     }
-    if (identity) {
-      const isPro = await userIsPro(ctx, identity.tokenIdentifier);
+    // The writer's own key spends the writer's own quota, not Twyne's.
+    if (identity && via !== "byok") {
+      const isPro = await userIsPro(
+        ctx,
+        identity.subject || identity.tokenIdentifier,
+      );
       await consumeRateLimit(ctx, {
         action: "systemOne:ask",
         identifier: identity.tokenIdentifier,
@@ -302,13 +320,15 @@ export const ask = action({
     };
 
     const result =
-      via === "notorganic"
-        ? await askNotOrganic(ctx, {
-            state: args.state,
-            questions,
-            ...(args.model ? { model: args.model } : {}),
-          })
-        : await askDirect(directApiKey()!, payload);
+      via === "byok"
+        ? await askDirect(ownKey!, payload)
+        : via === "notorganic"
+          ? await askNotOrganic(ctx, {
+              state: args.state,
+              questions,
+              ...(args.model ? { model: args.model } : {}),
+            })
+          : await askDirect(directApiKey()!, payload);
 
     if (!result.ok) return { ok: false, transport: via, error: result.error };
     if (!validJudgementResponse(result.body, args.questions))

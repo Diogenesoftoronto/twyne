@@ -71,6 +71,10 @@ one. The Railway build now runs `npx convex deploy` (gated on `CONVEX_DEPLOY_KEY
 as part of the build step, so the backend deploys on every push alongside the
 frontend — no separate manual deploy needed.
 
+Sign-in is through Not Organic. ATProto is a separate publishing connection;
+Twyne’s email-code and passkey routes are retired. Register each public sign-in
+origin with Not Organic, including its `/auth/notorganic/` callback.
+
 Server-side Convex secrets (`NOTORGANIC_ASSERTION_PRIVATE_KEY`,
 `NOTORGANIC_ASSERTION_KEY_ID`, `NOTORGANIC_ENABLED`,
 `NOTORGANIC_TWYNE_PRO_V2_ENABLED`, `POSTHOG_PROJECT_API_KEY`,
@@ -115,8 +119,7 @@ PostHog evals against `$ai_generation`, then filter/break down by
 (`NOTORGANIC_ASSERTION_PRIVATE_KEY` and `NOTORGANIC_ASSERTION_KEY_ID`), and set
 `NOTORGANIC_TWYNE_PRO_V2_ENABLED=true` after the `twyne_pro_v2` plan is mapped
 in Not Organic. Not Organic owns the product checkout and wallet state; Paddle
-handles payment processing. Existing legacy subscription records remain
-supported by the compatibility path while new purchases use Not Organic.
+handles payment processing. Twyne entitlement is read from Not Organic wallet and plan state.
 
 **Hosted voice** (Pro tier): set `VOICE_OPENAI_API_KEY` in Convex, optionally
 `VOICE_OPENAI_MODEL` (defaults to `gpt-4o-mini-tts`) and `VOICE_OPENAI_VOICE`

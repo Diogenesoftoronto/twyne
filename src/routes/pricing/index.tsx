@@ -2,7 +2,6 @@ import { component$, useSignal, useVisibleTask$, $ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
-import { api } from "../../../convex/_generated/api";
 import type { AppError } from "../../types/application-errors";
 import {
   createAppError,
@@ -37,6 +36,7 @@ const PRO_FEATURES = [
   "Everything in Free",
   "$10 in Not Organic AI credit each month",
   "Hosted editorial AI, metered by the model you choose",
+  "Live voice conversations with your editors, using wallet credit",
   "Unused included credit rolls over for one billing cycle",
   "Optional wallet top-ups when you need more",
 ];
@@ -48,7 +48,6 @@ export default component$(() => {
   const error = useSignal<AppError | null>(null);
   const availablePacks = useSignal<string[]>([]);
   const creditError = useSignal<string | null>(null);
-  const subscriptionStatus = useSignal<string | null>(null);
   const providerPlanActive = useSignal(false);
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -56,7 +55,6 @@ export default component$(() => {
     const client = track(clientSig);
     const user = track(auth).user;
     if (!client || !user) {
-      subscriptionStatus.value = null;
       providerPlanActive.value = false;
       availablePacks.value = [];
       return;
@@ -70,19 +68,7 @@ export default component$(() => {
         providerPlanActive.value = false;
         availablePacks.value = [];
       });
-    void client
-      .query(api.payments.getMySubscription, {})
-      .then((subscription) => {
-        subscriptionStatus.value = subscription?.status ?? null;
-      })
-      .catch(() => {
-        subscriptionStatus.value = null;
-      });
   });
-
-  const hasPro = ["active", "trialing", "paid"].includes(
-    subscriptionStatus.value ?? "",
-  );
 
   const subscribe = $(async () => {
     error.value = null;
@@ -287,34 +273,21 @@ export default component$(() => {
           <button
             onClick$={subscribe}
             disabled={
-              busy.value ||
-              hasPro ||
-              providerPlanActive.value ||
-              !CHECKOUT_ENABLED
+              busy.value || providerPlanActive.value || !CHECKOUT_ENABLED
             }
             class="btn-press mt-8 inline-block rounded bg-[var(--color-vermilion)] px-5 py-2 text-sm text-[var(--color-paper)] disabled:opacity-60"
           >
-            {hasPro
-              ? "Existing subscription active"
-              : providerPlanActive.value
-                ? "Pro is active"
-                : !CHECKOUT_ENABLED
-                  ? "New subscriptions available soon"
-                  : busy.value
-                    ? "Starting checkout…"
-                    : "Subscribe to Pro"}
+            {providerPlanActive.value
+              ? "Pro is active"
+              : !CHECKOUT_ENABLED
+                ? "New subscriptions available soon"
+                : busy.value
+                  ? "Starting checkout…"
+                  : "Subscribe to Pro"}
           </button>
-          {hasPro && (
-            <p
-              class="mt-3 text-sm font-semibold text-[var(--color-accent-green)]"
-              role="status"
-            >
-              Your existing subscription and price remain unchanged.
-            </p>
-          )}
           <p class="mt-3 text-sm text-[var(--color-ink-light)]">
             {CHECKOUT_ENABLED
-              ? "Requires a linked Not Organic account. Your wallet confirms payment and credit availability."
+              ? "Uses your Not Organic account. Your wallet confirms payment and credit availability."
               : "We’re finishing hosted billing setup. You can keep writing for free; no payment is taken here."}
           </p>
           {providerPlanActive.value && (
@@ -354,12 +327,12 @@ export default component$(() => {
       </div>
 
       <p class="mt-10 text-center text-[0.8rem] text-[var(--color-ink-light)]">
-        New subscriptions use Not Organic checkout with Paddle payment
-        processing. Cancel future renewals anytime. Included credit is service
-        credit, not cash; model choice and manuscript length affect usage. Extra
-        AI use requires available wallet credit. Custom model training and
-        hosted voice are not included in this plan. Existing legacy
-        subscriptions keep their terms.
+        Subscriptions use Not Organic checkout with Paddle payment processing.
+        Cancel future renewals anytime. Included credit is service credit, not
+        cash; model choice and manuscript length affect usage. Extra AI use
+        requires available wallet credit. Live voice uses that credit, including
+        eligible first-time members’ welcome credit. Custom model training is
+        not included in this plan.
       </p>
     </main>
   );

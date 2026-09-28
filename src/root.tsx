@@ -1,3 +1,4 @@
+import { PopmeltDev } from "./components/dev/popmelt-dev";
 import { component$, isDev, useVisibleTask$ } from "@qwik.dev/core";
 import { RouterOutlet, useQwikRouter } from "@qwik.dev/router";
 import { RouterHead } from "./components/router-head/router-head";
@@ -8,6 +9,7 @@ import { installLixAuthInterceptor } from "./utils/lix-auth";
 import { GlobalConnectivityBanner } from "./components/ui/global-connectivity-banner";
 import { GlobalApplicationToasts } from "./components/ui/global-application-toasts";
 import { GlobalSpeechPlayer } from "./components/ui/global-speech-player";
+import { LiveVoiceDesk } from "./components/ui/live-voice-desk";
 import { UsageSyncController } from "./components/desk/usage-sync-controller";
 import { AppI18nProvider } from "./i18n/provider";
 import type { AppLocale, LanguagePreference } from "./i18n/locale";
@@ -102,7 +104,9 @@ export default component$<{
               <PostHogProvider>
                 <UsageSyncController />
                 <RouterOutlet />
+                {isDev && <PopmeltDev />}
                 <GlobalSpeechPlayer />
+                <LiveVoiceDesk />
                 {!isDev && (
                   <script
                     type="module"

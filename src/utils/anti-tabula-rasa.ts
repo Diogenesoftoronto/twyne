@@ -12,6 +12,7 @@ import {
   loadFolioContentFromIdb,
   saveBriefToIdb,
 } from "./idb";
+import { archiveBriefEdition } from "./brief-history";
 
 export const BRIEF_STORAGE_KEY = "twyne-project-brief";
 export const DRAFT_STORAGE_KEY = "twyne-document";
@@ -34,6 +35,34 @@ export const DEFAULT_INTERVIEW_ANSWERS: ProjectInterviewAnswers = {
   successSignal:
     "A reader should know what this is, who it is for, and why it matters",
 };
+
+/** The name a folio gets when the writer didn't give it one. */
+export const UNTITLED_FOLIO_NAME = "Untitled folio";
+
+/** A folio's name as a brief title, or "" when the folio is unnamed. */
+export function briefTitleFromFolioName(
+  name: string | null | undefined,
+): string {
+  const title = name?.trim() ?? "";
+  return title === UNTITLED_FOLIO_NAME ? "" : title;
+}
+
+/**
+ * Carry a named folio's title into the brief when the writer left the
+ * working title blank or at the form's placeholder.
+ */
+export function withFolioTitle(
+  answers: ProjectInterviewAnswers,
+  folioName: string | null | undefined,
+): ProjectInterviewAnswers {
+  const folioTitle = briefTitleFromFolioName(folioName);
+  const current = answers.workingTitle.trim();
+  if (!folioTitle) return answers;
+  if (current && current !== DEFAULT_INTERVIEW_ANSWERS.workingTitle) {
+    return answers;
+  }
+  return { ...answers, workingTitle: folioTitle };
+}
 
 export function createProjectBrief(
   answers: ProjectInterviewAnswers,
@@ -94,7 +123,17 @@ export async function saveProjectBriefForFolio(
   brief: ProjectBrief,
 ): Promise<void> {
   const normalized = normalizeProjectBrief(brief);
+  const previous = await loadBriefFromIdb(folioId);
+  if (previous && JSON.stringify(previous) !== JSON.stringify(normalized)) {
+    await archiveBriefEdition(folioId, normalizeProjectBrief(previous));
+  }
   await saveBriefToIdb(folioId, normalized);
+  // The IDB helper absorbs storage failures; verify the write so a lost
+  // dossier surfaces as an error instead of a silent "filed" stamp.
+  const saved = await loadBriefFromIdb(folioId);
+  if (saved?.updatedAt !== normalized.updatedAt) {
+    throw new Error("The dossier could not be saved on this device.");
+  }
 
   // Keep the legacy mirrors current during the per-folio migration. They are
   // no longer authoritative, but older routes and existing Lix histories can

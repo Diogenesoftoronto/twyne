@@ -19,7 +19,7 @@ flowchart TD
 
     llm["LLM providers<br/><i>writer's own key, or hosted</i>"]
     pds["ATProto PDS<br/><i>Standard.site records</i>"]
-    creem["Creem<br/><i>subscriptions</i>"]
+    notorganic["Not Organic<br/><i>sign-in, wallet, plan</i>"]
     obs["Arize / PostHog<br/><i>traces, product events</i>"]
     tools["twyne CLI + MCP server<br/><i>token-scoped</i>"]
 
@@ -28,7 +28,7 @@ flowchart TD
     tools -->|"HTTP, personal access token"| twyne
     twyne -->|"generation, streamed"| llm
     twyne -->|"publishes records"| pds
-    twyne -->|"webhooks in, checkout out"| creem
+    twyne -->|"PKCE sign-in, wallet + checkout"| notorganic
     twyne -->|"spans and events"| obs
 ```
 

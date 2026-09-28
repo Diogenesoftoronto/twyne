@@ -123,60 +123,67 @@ export const SPINE_CRITERIA: ReadonlyArray<
 > = [
   {
     id: "targetFit",
-    label: "Target Fit",
+    label: "On brief",
     description:
-      "Whether the draft is about the right thing, for the right reader — independent of how well it is written",
+      "Is the draft about what the brief asks, for the reader it names? Judged apart from how well it's written.",
   },
   {
     id: "thesis",
-    label: "Thesis & Argument",
-    description: "Clarity and strength of the central argument",
+    label: "Argument",
+    description:
+      "Is the main point clear, and does the draft make the case for it?",
   },
   {
     id: "evidence",
-    label: "Evidence & Support",
-    description: "Quality and relevance of supporting evidence",
+    label: "Evidence",
+    description:
+      "Are the claims backed by sources, examples or figures that actually fit them?",
   },
   {
     id: "sufficiency",
-    label: "Sufficiency & Development",
-    description:
-      "Whether the draft develops enough on-topic material to earn its thesis or goal",
+    label: "Development",
+    description: "Is there enough on-topic material to earn the main point?",
   },
   {
     id: "integrity",
-    label: "Bullshit Resistance",
-    description: "Unsupported certainty, filler, vagueness, and repetition",
+    label: "Straight talk",
+    description:
+      "Free of padding, vague words, repetition and claims stated more strongly than shown.",
   },
   {
     id: "structure",
-    label: "Organization & Flow",
-    description: "Logical structure and transitions",
+    label: "Structure",
+    description:
+      "Does each part follow from the last, with clear turns between them?",
   },
   {
     id: "pacing",
-    label: "Pacing & Rhythm",
-    description: "Sentence length variation and cadence",
+    label: "Rhythm",
+    description: "Do sentence lengths vary enough to keep the reader moving?",
   },
   {
     id: "voice",
-    label: "Voice & Tone",
-    description: "Consistency of voice for the named audience",
+    label: "Voice",
+    description:
+      "Does it sound like one writer, pitched at the reader the brief names?",
   },
   {
     id: "vocabulary",
-    label: "Vocabulary & Diction",
-    description: "Type-token ratio and word choice",
+    label: "Word choice",
+    description:
+      "Precise, varied words rather than repeats, abstractions and jargon.",
   },
   {
     id: "paragraph",
-    label: "Paragraph Shape",
-    description: "Balance of short and long paragraphs",
+    label: "Paragraphs",
+    description:
+      "A readable mix of short and long paragraphs, each doing one job.",
   },
   {
     id: "engagement",
-    label: "Reader Engagement",
-    description: "Whether the reader reaches the success signal",
+    label: "Reader pull",
+    description:
+      "Would the reader stay to the end? Follows the overall grade rather than being marked on its own.",
   },
 ] as const;
 
@@ -873,7 +880,8 @@ export type AiFeature =
   | "research-web-search"
   | "research-extract"
   | "interview-turn"
-  | "dossier-check";
+  | "dossier-check"
+  | "in-flow-tool";
 
 export type WriterExperienceLevel =
   | "emerging"
@@ -1061,6 +1069,31 @@ export interface AiSettings {
   defaultProviderId: string | null;
   perFeature: Partial<Record<AiFeature, AiFeatureOverride>>;
   showProviderTags: boolean;
+  /** Which model answers Twyne's typed judgements. Absent = Twyne's hosted Jev. */
+  judgement?: JudgementSettings;
+}
+
+/**
+ * The judgement model — the one that answers typed questions (yes/no, pick
+ * one, rate) for the rubric, quick review, margin tools and passage triage.
+ * It never writes prose; it returns calibrated probabilities.
+ *
+ *   twyne     Jev through Twyne's account (the default)
+ *   typesafe  Jev on the writer's own TypeSafe key, relayed by Twyne's server
+ *             because TypeSafe's API does not accept browser requests
+ *   endpoint  any server speaking the same `/v1/systemone` API — Kev on this
+ *             computer, on Modal or RunPod — called straight from the browser
+ */
+export interface JudgementSettings {
+  source: "twyne" | "typesafe" | "endpoint";
+  typesafeKey?: string;
+  /** Defaults to `jev-latest`. */
+  typesafeModel?: string;
+  /** Base URL without the path, e.g. `http://127.0.0.1:8009`. */
+  endpointUrl?: string;
+  endpointKey?: string;
+  /** Defaults to `kev-latest`. */
+  endpointModel?: string;
 }
 
 export const DEFAULT_AI_SETTINGS: AiSettings = {

@@ -1,6 +1,7 @@
 import type { RubricCriterionSpec, RubricResult } from "../types";
 import type { StaticScore } from "./rubric";
 import { weightedCriteriaScore } from "./rubric-criteria";
+import { gradeVerdict } from "./rubric-copy";
 import { gradeScores, viewRubricGrade, type RubricGrade } from "./rubric-grade";
 
 /** Persist a digest, rather than another copy of the manuscript, with a grade. */
@@ -43,15 +44,21 @@ export function judgementRubricResult(input: {
   const views = viewRubricGrade(grade, specs);
   const criteria = enabled.map((spec) => {
     const mark = views.find((view) => view.id === spec.id)!;
+    // The legend reads "Strong — clearly well executed"; the row already
+    // shows the word, so keep only the explanation after the dash.
+    const legend = mark.legend[String(mark.modal)] || "";
     const feedback = [
-      `Model mark for ${spec.label.toLowerCase()}: ${mark.score.toFixed(1)}/10.`,
-      mark.legend[String(mark.modal)] || "",
+      legend.includes("—")
+        ? `${legend
+            .split("—")[1]
+            .trim()
+            .replace(/^./, (c) => c.toUpperCase())}.`
+        : legend,
       mark.unreliableScalar
-        ? "The possible ratings disagree; ask the room for a second opinion."
+        ? "The model couldn't settle on a score here; ask the editors for a second opinion."
         : mark.escalate
-          ? "The possible ratings are spread out; a second opinion may help."
+          ? "The model was unsure here; a second opinion may help."
           : "",
-      "This is a judgement, not a verified measurement of writing quality.",
     ]
       .filter(Boolean)
       .join(" ");
@@ -95,7 +102,7 @@ export function judgementRubricResult(input: {
     criteria,
     overallScore: overall,
     overallGrade: letter,
-    summary: `Judgement marks across ${criteria.length} enabled criteria, weighted equally. The review follows your saved draft; the room offers an independent reading.`,
+    summary: `${gradeVerdict(overall)} A quick model check of ${criteria.length} criteria; ask the editors for written notes.`,
     timestamp: grade.at,
     judges: [],
     staticScore: input.staticScore,

@@ -1,39 +1,44 @@
 import { describe, expect, test } from "bun:test";
 import {
-  beginProviderConnection,
-  readProviderCallback,
+  beginNotOrganicSignIn,
+  readNotOrganicCallback,
 } from "./notorganic-connect";
 import { redeemProviderLink } from "../../convex/lib/providerLink";
 
-describe("verified provider connections", () => {
-  test("binds the callback to the initiating user, origin, state and expiry", async () => {
-    const { attempt, url } = await beginProviderConnection(
-      "writer",
+describe("Not Organic sign-in", () => {
+  test("binds the callback to the initiating origin, path, state and expiry", async () => {
+    const { attempt, url } = await beginNotOrganicSignIn(
       "https://twyne.love",
+      "//evil.example/",
     );
-    expect(new URL(url).searchParams.get("code_challenge_method")).toBe("S256");
+    const authorize = new URL(url);
+    expect(authorize.searchParams.get("code_challenge_method")).toBe("S256");
+    expect(authorize.searchParams.get("redirect_uri")).toBe(
+      "https://twyne.love/auth/notorganic/",
+    );
+    expect(attempt.returnTo).toBe("/");
     const callback = new URL(
-      `https://twyne.love/settings/?code=one-time&state=${attempt.state}`,
+      `https://twyne.love/auth/notorganic/?code=one-time&state=${attempt.state}`,
     );
-    expect(readProviderCallback(attempt, "writer", callback).verifier).toBe(
+    expect(readNotOrganicCallback(attempt, callback).verifier).toBe(
       attempt.verifier,
     );
-    expect(() => readProviderCallback(attempt, "other", callback)).toThrow();
     expect(() =>
-      readProviderCallback({ ...attempt, expiresAt: 0 }, "writer", callback),
+      readNotOrganicCallback({ ...attempt, expiresAt: 0 }, callback),
     ).toThrow();
     expect(() =>
-      readProviderCallback(
+      readNotOrganicCallback(attempt, new URL(callback.href + "&state=other")),
+    ).toThrow();
+    expect(() =>
+      readNotOrganicCallback(
         attempt,
-        "writer",
-        new URL(callback.href + "&state=other"),
+        new URL(callback.href.replace("twyne.love", "evil.example")),
       ),
     ).toThrow();
     expect(() =>
-      readProviderCallback(
+      readNotOrganicCallback(
         attempt,
-        "writer",
-        new URL(callback.href.replace("twyne.love", "evil.example")),
+        new URL(callback.href.replace("/auth/notorganic/", "/settings/")),
       ),
     ).toThrow();
   });
@@ -56,11 +61,12 @@ describe("verified provider connections", () => {
       "https://twyne.love",
       "https://api.notorganic.info",
       fake,
+      "/auth/notorganic/",
     );
     expect(result).toEqual({ did: "did:plc:writer", sessionVersion: 3 });
     expect(await requests[0].json()).toMatchObject({
       client_id: "https://twyne.love",
-      redirect_uri: "https://twyne.love/settings/",
+      redirect_uri: "https://twyne.love/auth/notorganic/",
       code: "one-time",
     });
     expect(requests[1].headers.get("dpop")).toBeTruthy();

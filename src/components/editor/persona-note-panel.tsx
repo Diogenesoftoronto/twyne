@@ -2,6 +2,7 @@ import { component$, type PropFunction } from "@qwik.dev/core";
 import { renderMarkdown } from "../../utils/markdown";
 import { SpeakButton } from "../ui/speak-button";
 import type { NotePopover } from "./editor-state";
+import { openLiveVoice } from "../../utils/live-voice-workspace";
 
 interface PersonaNotePanelProps {
   note: NotePopover | null;
@@ -63,6 +64,15 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
           )}
         </div>
         <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button
+            type="button"
+            class="tool-btn"
+            aria-label={`Talk with ${note.author} about this note`}
+            title={`Talk with ${note.author}`}
+            onClick$={() => openLiveVoice(note.author, note.note)}
+          >
+            ◉
+          </button>
           <SpeakButton
             compact
             id={`note-popover-${note.id}`}

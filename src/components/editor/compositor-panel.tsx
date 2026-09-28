@@ -21,6 +21,7 @@ import { SpeechTransport } from "../ui/speech-transport";
 import type { EditorPanelState } from "./editor-state";
 import { MANUSCRIPT_READING_ID } from "./manuscript-panel";
 import { SyncDot } from "./sync-indicator";
+import { openLiveVoice } from "../../utils/live-voice-workspace";
 
 interface CompositorPanelProps {
   store: EditorPanelState;
@@ -114,6 +115,15 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
           <span class="compositor-tab-spacer" />
 
           <div class="compositor-quick-actions" aria-label="History">
+            <button
+              type="button"
+              class="tool-btn"
+              title="Open Live voice desk"
+              aria-label="Open Live voice desk"
+              onClick$={() => openLiveVoice()}
+            >
+              ◉ <span class="hidden sm:inline">Talk</span>
+            </button>
             <button
               title="Undo (⌘Z)"
               aria-label="Undo"
@@ -858,6 +868,7 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
               aria-pressed={store.showGrammar}
               onClick$={() => {
                 store.showGrammar = !store.showGrammar;
+                window.dispatchEvent(new CustomEvent("twyne:request-grammar"));
               }}
               class="tool-btn"
             >

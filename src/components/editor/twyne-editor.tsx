@@ -55,6 +55,10 @@ import {
   type TextCase,
 } from "../../utils/typography-options";
 import { speak } from "../../utils/speech";
+import {
+  registerVoiceEditor,
+  invalidateVoiceWorkspace,
+} from "../../utils/live-voice-workspace";
 import { createRevisionSnapshot } from "../../utils/revision-history";
 import { MANUSCRIPT_READING_ID, ManuscriptPanel } from "./manuscript-panel";
 import { SuggestionPanel } from "./suggestion-panel";
@@ -144,6 +148,7 @@ import { type RemoteCursor } from "./extensions/remote-cursors";
 import { Indent } from "./extensions/indent";
 import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 import { QuickReview, startQuickReview } from "./extensions/quick-review";
+import { InFlowAnchor, startInFlowTools } from "./extensions/struggle-tracker";
 import { PageBreakNode } from "./extensions/page-break-node";
 import { Pagination, type PaginationInfo } from "./extensions/pagination";
 import { ParagraphFormat } from "./extensions/paragraph-format";
@@ -247,6 +252,7 @@ const refreshRowResizeHandles = (mount: HTMLElement) => {
 
 export const TwyneEditor = component$(
   ({
+    editorSignal,
     initialContent = "",
     activeFolioId,
     activeFolio,
@@ -762,6 +768,7 @@ export const TwyneEditor = component$(
             RemoteCursors.configure({ cursors: [] }),
             MarkAnchorWidgets,
             QuickReview,
+            InFlowAnchor,
             Indent,
             FindReplace,
             SlashCommand,
@@ -828,6 +835,14 @@ export const TwyneEditor = component$(
               activeFolioId,
               brief ?? null,
             ),
+          );
+          cleanup(
+            startInFlowTools(editor, {
+              getClient: () => clientSig.value,
+              folioId: activeFolioId,
+              brief: brief ?? null,
+              openPanel: (panel) => void onEditorialContext$?.(panel),
+            }),
           );
         }
 
@@ -954,35 +969,47 @@ export const TwyneEditor = component$(
 
         // ── Mod-A is always the document, never the page ──
         // ProseMirror's own keymap selects the document on Mod-A, but only
-        // when the key reaches it unmodified: focus on a widget inside the
-        // manuscript (a math source textarea, an inspector button) lets the
-        // browser fall through to a page-wide selection instead. Capture on
-        // the view root — ahead of ProseMirror's bubble listener — so the
-        // outcome is deterministic wherever the writer is working:
-        //   field (input/textarea/select) → native field selection
-        //   anywhere else in the mount   → the whole manuscript, nothing more
+        // when the key reaches it: once focus sits on a toolbar button, the
+        // page margin, or a widget inside the manuscript, the browser falls
+        // through to a page-wide selection instead. Capture at the document —
+        // ahead of every other listener — so the outcome is deterministic
+        // wherever the writer is working:
+        //   field (input/textarea/select), another editable, or a dialog
+        //                                → native selection there
+        //   anywhere else on the page    → the whole manuscript, focused
         const selectManuscript = (e: KeyboardEvent) => {
           if (e.key.toLowerCase() !== "a" || e.shiftKey || e.altKey) return;
           if (!e.ctrlKey && !e.metaKey) return;
-          const target = e.target as HTMLElement | null;
+          if (editor.isDestroyed) return;
+          const target = e.target instanceof Element ? e.target : null;
           if (
             target &&
-            (target.matches("input, textarea, select") ||
-              (target.isContentEditable && !target.closest(".ProseMirror")))
+            !editor.view.dom.contains(target) &&
+            (target.closest(
+              "input, textarea, select, [role='dialog'], dialog",
+            ) ||
+              (target instanceof HTMLElement && target.isContentEditable))
+          ) {
+            return;
+          }
+          if (
+            target &&
+            editor.view.dom.contains(target) &&
+            target.matches("input, textarea, select")
           ) {
             return;
           }
           e.preventDefault();
           e.stopPropagation();
-          editor.commands.selectAll();
+          editor
+            .chain()
+            .focus(null, { scrollIntoView: false })
+            .selectAll()
+            .run();
         };
-        editor.view.dom.addEventListener("keydown", selectManuscript, true);
+        document.addEventListener("keydown", selectManuscript, true);
         cleanup(() => {
-          editor.view.dom.removeEventListener(
-            "keydown",
-            selectManuscript,
-            true,
-          );
+          document.removeEventListener("keydown", selectManuscript, true);
         });
 
         const refreshActive = () => {
@@ -1564,7 +1591,20 @@ export const TwyneEditor = component$(
         };
         window.addEventListener("keydown", onGlobalKeydown);
 
+        const openGrammar = () => {
+          if (!onEditorialContext$) return;
+          store.showGrammar = false;
+          void onEditorialContext$("tools").then(() => {
+            window.dispatchEvent(new CustomEvent("twyne:open-grammar"));
+          });
+        };
+        window.addEventListener("twyne:request-grammar", openGrammar);
+        cleanup(() =>
+          window.removeEventListener("twyne:request-grammar", openGrammar),
+        );
         store.editor = editor;
+        cleanup(registerVoiceEditor(editor));
+        if (editorSignal) editorSignal.value = noSerialize(editor);
         const tableToolbarController = createTableToolbarController(
           editor,
           (snapshot, cellFormat) => {
@@ -1617,6 +1657,7 @@ export const TwyneEditor = component$(
 
         // ── Listen for folio switches ──
         const onLoadFolio = (e: Event) => {
+          invalidateVoiceWorkspace();
           const content = (e as CustomEvent).detail as string;
           editor.commands.setContent(content, { emitUpdate: false });
           applyDocumentMeta(store.meta, editor.getText());
@@ -1998,6 +2039,7 @@ export const TwyneEditor = component$(
           window.removeEventListener("keydown", onGlobalKeydown);
           editor.off("transaction", refreshSlashMenu);
           tableToolbarController.destroy();
+          if (editorSignal?.value === editor) editorSignal.value = undefined;
           editor.destroy();
           store.editor = null;
         });
@@ -3161,7 +3203,7 @@ export const TwyneEditor = component$(
             </div>
           )}
 
-          {store.showGrammar && (
+          {store.showGrammar && !onEditorialContext$ && (
             <GrammarPanel
               editor={store.editor ? noSerialize(store.editor) : null}
               readOnly={readOnly}
@@ -3327,6 +3369,7 @@ export const TwyneEditor = component$(
         </div>
         <ManuscriptPanel
           store={store}
+          readOnly={readOnly}
           pageWidthRem={pageWidthRem()}
           canvasMinHeight={canvasMinHeight()}
           pageChromeGeometry={pageChromeGeometry()}

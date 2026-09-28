@@ -41,3 +41,6 @@ server
 .agents/
 .entire/
 .zero/
+
+# Standalone video compositions have their own validation pipeline.
+launch-videos/

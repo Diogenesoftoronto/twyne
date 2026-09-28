@@ -18,6 +18,70 @@ export interface GrammarIssue {
 
 type HarperLinter = import("harper.js").Linter;
 
+export interface GrammarChoice {
+  problem: string;
+  kind: string;
+  message: string;
+}
+
+const CHOICES_KEY = "twyne:grammar-dictionary:v1";
+
+export function getGrammarChoices(): GrammarChoice[] {
+  if (typeof window === "undefined") return [];
+  const raw = window.localStorage.getItem(CHOICES_KEY);
+  if (!raw) return [];
+  try {
+    const entries: unknown = JSON.parse(raw);
+    return Array.isArray(entries)
+      ? entries.filter(
+          (entry): entry is GrammarChoice =>
+            entry !== null &&
+            typeof entry === "object" &&
+            typeof entry.problem === "string" &&
+            typeof entry.kind === "string" &&
+            typeof entry.message === "string",
+        )
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+export function matchesGrammarChoice(
+  issue: GrammarChoice,
+  choice: GrammarChoice,
+): boolean {
+  return (
+    issue.problem === choice.problem &&
+    issue.kind === choice.kind &&
+    issue.message === choice.message
+  );
+}
+
+export function rememberGrammarChoice(issue: GrammarChoice): void {
+  const choices = getGrammarChoices();
+  if (!choices.some((choice) => matchesGrammarChoice(issue, choice))) {
+    window.localStorage.setItem(
+      CHOICES_KEY,
+      JSON.stringify([
+        ...choices,
+        { problem: issue.problem, kind: issue.kind, message: issue.message },
+      ]),
+    );
+  }
+}
+
+export function forgetGrammarChoice(choice: GrammarChoice): void {
+  window.localStorage.setItem(
+    CHOICES_KEY,
+    JSON.stringify(
+      getGrammarChoices().filter(
+        (entry) => !matchesGrammarChoice(entry, choice),
+      ),
+    ),
+  );
+}
+
 let linterPromise: Promise<HarperLinter> | null = null;
 
 async function getLinter(): Promise<HarperLinter> {
@@ -57,26 +121,44 @@ export async function checkGrammar(
 ): Promise<GrammarIssue[]> {
   if (!isEnglishLanguage(language) || !text.trim()) return [];
   const linter = await getLinter();
+  const choices = getGrammarChoices();
+  // Only spelling exceptions become words; accepted grammar never disables
+  // a rule for unrelated passages. Refresh words so removing a choice works.
+  const words = choices
+    .filter((choice) => choice.kind === "Spelling")
+    .map((choice) => choice.problem);
+  const imported = await linter.exportWords();
+  if (
+    JSON.stringify([...imported].sort()) !==
+    JSON.stringify([...new Set(words)].sort())
+  ) {
+    await linter.clearWords();
+    if (words.length) await linter.importWords([...new Set(words)]);
+  }
   const lints = await linter.lint(text, {
     language: "plaintext",
     isolateEnglish: true,
     dedup: true,
   });
-  return lints.map((lint, index) => {
-    const span = lint.span();
-    const suggestions = lint
-      .suggestions()
-      .map((suggestion) => suggestion.get_replacement_text());
-    return {
-      id: `${span.start}:${span.end}:${lint.lint_kind()}:${index}`,
-      start: span.start,
-      end: span.end,
-      problem: lint.get_problem_text(),
-      message: lint.message(),
-      kind: lint.lint_kind_pretty(),
-      suggestions: Array.from(new Set(suggestions)),
-    };
-  });
+  return lints
+    .map((lint, index) => {
+      const span = lint.span();
+      const suggestions = lint
+        .suggestions()
+        .map((suggestion) => suggestion.get_replacement_text());
+      return {
+        id: `${span.start}:${span.end}:${lint.lint_kind()}:${index}`,
+        start: span.start,
+        end: span.end,
+        problem: lint.get_problem_text(),
+        message: lint.message(),
+        kind: lint.lint_kind_pretty(),
+        suggestions: Array.from(new Set(suggestions)),
+      };
+    })
+    .filter(
+      (issue) => !choices.some((choice) => matchesGrammarChoice(issue, choice)),
+    );
 }
 
 /** Harper spans count Unicode scalar values; JavaScript strings count UTF-16. */

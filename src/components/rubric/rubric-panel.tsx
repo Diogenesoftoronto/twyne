@@ -1,4 +1,5 @@
 import { currentModelLocale } from "../../i18n/model-language";
+import { askJudgement } from "../../utils/judgement-client";
 import {
   component$,
   useStore,
@@ -8,9 +9,10 @@ import {
   type PropFunction,
 } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
+import { Icon } from "../ui/icon";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
-import type { ProjectBrief } from "../../types";
+import { SPINE_CRITERIA, type ProjectBrief } from "../../types";
 import { htmlToPlainText } from "../../utils/anti-tabula-rasa";
 import {
   scoreStaticFeatures,
@@ -45,6 +47,14 @@ import { ApplicationNotice } from "../ui/application-notice";
 import { EditorialLoader } from "../ui/editorial-loader";
 import { NumericStepper } from "../ui/numeric-stepper";
 import { GradeStamp } from "./grade-stamp";
+import { IN_FLOW_OPEN_EVENT } from "../../utils/in-flow-events";
+import {
+  gradeVerdict,
+  nextMoveFor,
+  scoreWord,
+  shapeFeedback,
+} from "../../utils/rubric-copy";
+import type { ToolKind } from "../../utils/struggle-signals";
 import { LiveReviewPanel } from "../writing-tools/live-review-panel";
 import {
   liveReviewSnapshot,
@@ -248,7 +258,7 @@ export const RubricPanel = component$(
           if (!(await stillFresh())) {
             if (current())
               store.status =
-                "The draft or criteria changed during this reading. Run the rubric again for the current version.";
+                "The draft changed while it was being read. Grade it again to see the latest version.";
             return;
           }
           store.result = result;
@@ -302,7 +312,7 @@ export const RubricPanel = component$(
         // The independent room reading remains available alongside the live review.
         if (!frontierOnly && client) {
           const pass = await runRubricPass(
-            (input) => client.action(api.systemOne.ask, input),
+            (input) => askJudgement(client, input),
             {
               draft: draftText,
               audience: brief?.answers.audience,
@@ -325,7 +335,7 @@ export const RubricPanel = component$(
             return;
           }
           store.status =
-            "Quick judgement is unavailable. Asking the room for this reading.";
+            "The quick check isn't available, so the editors are reading it instead.";
         }
 
         // 2. Run the five personas as judges. Try client AI first (BYOK),
@@ -349,9 +359,7 @@ export const RubricPanel = component$(
               return {
                 personaId: p.id,
                 score: res?.score ?? 5,
-                rationale:
-                  res?.rationale ??
-                  "The draft is partial; the work to come is the interesting part.",
+                rationale: res?.rationale ?? shapeFeedback.unreachableEditor,
                 provider: res ? `client-${res.provider}` : "local",
               } as JudgeResult;
             });
@@ -452,14 +460,12 @@ export const RubricPanel = component$(
                 : density < 1.5
                   ? 5
                   : 4;
-          const audience = brief?.answers.audience || "the intended reader";
           return {
             score,
-            rationale: `${f.citationCount} citation-like reference${
-              f.citationCount === 1 ? "" : "s"
-            } (${density.toFixed(
-              1,
-            )} per 1,000 words). Counts shape, not substance — judge locally only. For ${audience}, evidence has to earn its claim.`,
+            rationale: shapeFeedback.evidence(
+              f.citationCount,
+              f.citationDensity,
+            ),
           };
         };
 
@@ -472,15 +478,12 @@ export const RubricPanel = component$(
             deduction > 0 ? Math.max(1, 10 - Math.round(deduction)) : 7;
           return {
             score,
-            rationale: `${f.unsupportedUniversalClaimCount} unsupported universal claim${
-              f.unsupportedUniversalClaimCount === 1 ? "" : "s"
-            }, ${(f.fillerWordRatio * 100).toFixed(1)}% filler, ${(
-              f.vagueWordRatio * 100
-            ).toFixed(1)}% vague wording, ${(
-              f.duplicateParagraphRatio * 100
-            ).toFixed(
-              0,
-            )}% duplicated paragraphs. Regex misses sophisticated bullshit and false-positives on legitimate emphatic prose.`,
+            rationale: shapeFeedback.integrity(
+              f.unsupportedUniversalClaimCount,
+              f.fillerWordRatio,
+              f.vagueWordRatio,
+              f.duplicateParagraphRatio,
+            ),
           };
         };
 
@@ -552,8 +555,7 @@ export const RubricPanel = component$(
         let targetFit: { score: number; rationale: string; provider?: string } =
           {
             score: UNJUDGED_TARGET_FIT,
-            rationale:
-              "Relevance was not judged this pass, so the shape measurements are uncapped. Connect a provider to have the room check the draft against the brief.",
+            rationale: shapeFeedback.unjudgedFit,
           };
         try {
           const clientRes = settings2
@@ -882,7 +884,7 @@ export const RubricPanel = component$(
 
     const getGradeColor = (grade: string) => {
       if (grade.startsWith("A")) return "var(--color-accent-green)";
-      if (grade.startsWith("B")) return "var(--color-accent-blue)";
+      if (grade.startsWith("B")) return "var(--color-ink-light)";
       if (grade.startsWith("C")) return "var(--color-accent-amber)";
       return "var(--color-accent-red)";
     };
@@ -895,6 +897,15 @@ export const RubricPanel = component$(
 
     return (
       <div class="flex flex-col h-full bg-[var(--color-paper-2)]">
+        <div class="flex justify-end px-4 pt-2">
+          <Link
+            href="/help/review/"
+            class="review-guide-link focus-ring"
+            title="How grades and automatic review work"
+          >
+            <Icon name="page" /> Review guide
+          </Link>
+        </div>
         {store.status && (
           <p
             role="status"
@@ -905,16 +916,13 @@ export const RubricPanel = component$(
         )}
         {!store.result && !store.isAnalyzing && (
           <div class="flex flex-shrink-0 flex-col px-4 py-4">
-            <p
-              class="max-w-xs text-sm text-[var(--color-ink-light)]"
-              style="font-family: var(--font-serif); font-style: italic;"
-            >
-              Review follows your saved draft. Marks appear here as the reading
-              finishes.
-            </p>
-            <div class="mt-4 flex items-center justify-center">
-              <button onClick$={analyze} class="btn-press">
-                Refresh marks
+            <div class="flex items-center justify-between gap-3">
+              <button
+                onClick$={analyze}
+                class="btn-press inline-flex items-center gap-2"
+                title="Read the saved draft and grade it against your criteria"
+              >
+                <Icon name="file-check" /> Grade this draft
               </button>
             </div>
             {store.error && (
@@ -951,7 +959,7 @@ export const RubricPanel = component$(
             {/* The verdict. Stays on screen whichever reading is open. */}
             <div
               class={[
-                "rubric-proof rubric-proof--panel border-b border-[var(--color-paper-3)] px-4 py-3",
+                "rubric-proof rubric-proof--panel border-b-2 border-[var(--color-ink)] px-4 py-3",
                 { "rubric-proof--fresh": store.resultFresh },
               ]}
             >
@@ -963,11 +971,6 @@ export const RubricPanel = component$(
                   animated={store.resultFresh}
                 />
                 <div class="flex-1 min-w-0">
-                  <p class="panel-meta text-[var(--color-ink-muted)]">
-                    {store.result.scoringMethod === "judgement"
-                      ? "Judgement marks"
-                      : "Room reading"}
-                  </p>
                   <p
                     class="text-2xl text-[var(--color-ink)]"
                     style="font-family: var(--font-display); font-weight: 600;"
@@ -978,14 +981,7 @@ export const RubricPanel = component$(
                       / 100
                     </span>
                   </p>
-                  {store.result.writerScore !== undefined && (
-                    <p
-                      class="panel-meta mt-0.5 text-[var(--color-ink-muted)]"
-                      title="The cached marks recalculated using your current criterion weights. Changing weights does not request another reading."
-                    >
-                      {store.result.writerScore} by your weights
-                    </p>
-                  )}
+                  <WeakestLine criteria={store.result.criteria} />
                 </div>
               </div>
               <p
@@ -995,12 +991,7 @@ export const RubricPanel = component$(
               >
                 {truncateGalleySummary(store.result.summary)}
               </p>
-              {store.result.judgementGrade && (
-                <p class="panel-meta mt-1 text-[var(--color-ink-muted)]">
-                  {store.result.judgementGrade.model} · Model estimates; your
-                  editorial judgement comes first.
-                </p>
-              )}
+              <ScoringExplainer result={store.result} brief={brief} />
               {store.error && (
                 <div class="mt-3">
                   <ApplicationNotice
@@ -1018,9 +1009,9 @@ export const RubricPanel = component$(
 
             {/* The trend line — the rubric as a trajectory, not a snapshot. */}
             {comparableHistory.length >= 2 && (
-              <div class="border-b border-dashed border-[var(--color-paper-3)] px-4 py-2">
+              <div class="border-b border-[var(--color-paper-3)] px-4 py-2">
                 <div class="flex items-baseline justify-between">
-                  <p class="dept-label">History</p>
+                  <p class="dept-label">Your recent grades</p>
                   <ScoreDeltaBadge delta={scoreDelta(comparableHistory)} />
                 </div>
                 <Sparkline history={comparableHistory} />
@@ -1033,15 +1024,15 @@ export const RubricPanel = component$(
                 [
                   {
                     id: "marks",
-                    label: "Marks",
+                    label: "Criteria",
                     count: store.result.criteria.length,
                   },
                   {
                     id: "room",
-                    label: "Room",
+                    label: "Editors",
                     count: store.result.judges.length,
                   },
-                  { id: "review", label: "Review" },
+                  { id: "review", label: "Passages" },
                 ] as Array<{ id: RubricSection; label: string; count?: number }>
               ).map((s) => {
                 const active = store.section === s.id;
@@ -1051,11 +1042,11 @@ export const RubricPanel = component$(
                     onClick$={() => {
                       store.section = s.id;
                     }}
-                    class="panel-meta flex-1 px-2 py-2 uppercase focus-ring"
+                    class="panel-meta flex flex-1 items-center justify-center gap-1.5 px-2 py-2 uppercase focus-ring"
                     aria-pressed={active}
                     style={{
                       borderBottom: active
-                        ? "2px solid var(--color-cobalt)"
+                        ? "2px solid var(--color-vermilion-2)"
                         : "2px solid transparent",
                       color: active
                         ? "var(--color-ink)"
@@ -1063,6 +1054,15 @@ export const RubricPanel = component$(
                       background: active ? "var(--color-paper)" : "transparent",
                     }}
                   >
+                    <Icon
+                      name={
+                        s.id === "marks"
+                          ? "checklist"
+                          : s.id === "room"
+                            ? "comment-add"
+                            : "search"
+                      }
+                    />
                     {s.label}
                     {s.count !== undefined && (
                       <span class="ml-1 text-[var(--color-ink-muted)]">
@@ -1094,7 +1094,7 @@ export const RubricPanel = component$(
                     ))}
                   </div>
 
-                  <div class="mt-4 border-t border-dashed border-[var(--color-paper-3)] pt-3">
+                  <div class="mt-4 border-t border-[var(--color-ink-muted)] pt-3">
                     <button
                       onClick$={() => {
                         store.criteriaOpen = !store.criteriaOpen;
@@ -1102,7 +1102,7 @@ export const RubricPanel = component$(
                       class="panel-meta w-full text-left uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] focus-ring"
                       aria-expanded={store.criteriaOpen}
                     >
-                      {store.criteriaOpen ? "▾" : "▸"} Criteria
+                      {store.criteriaOpen ? "▾" : "▸"} Change what's graded
                     </button>
                     {store.criteriaOpen && (
                       <div class="mt-2">
@@ -1137,15 +1137,15 @@ export const RubricPanel = component$(
                   {store.result.judges.length === 0 && (
                     <div class="py-4 text-center">
                       <p class="mb-3 text-sm text-[var(--color-ink-light)]">
-                        These marks came from a quick judgement. Ask the editors
-                        for an independent reading with written feedback.
+                        These scores came from a quick model check. Ask the
+                        editors for their own reading, with written notes.
                       </p>
                       <button
                         onClick$={askRoom}
                         disabled={store.isReviewing}
                         class="btn-paper"
                       >
-                        Ask the room
+                        Ask the editors
                       </button>
                     </div>
                   )}
@@ -1160,9 +1160,9 @@ export const RubricPanel = component$(
               <button
                 onClick$={analyze}
                 disabled={store.isReviewing}
-                class="btn-paper flex-1 text-xs"
+                class="btn-paper flex flex-1 items-center justify-center gap-2 text-xs"
               >
-                ↻ Run again
+                <Icon name="redo" /> Grade again
               </button>
               <Link
                 href="/rubric"
@@ -1221,7 +1221,7 @@ function Sparkline({ history }: { history: RubricHistoryEntry[] }) {
         <path
           d={path}
           fill="none"
-          stroke="var(--color-cobalt)"
+          stroke="var(--color-vermilion-2)"
           stroke-width="1.5"
           vector-effect="non-scaling-stroke"
           stroke-linejoin="round"
@@ -1289,7 +1289,7 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
 
   return (
     <div class="rounded-sm border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3 space-y-3">
-      <p class="criteria-weight-legend">Relative weight</p>
+      <p class="criteria-weight-legend">How much each counts</p>
       <div class="space-y-1">
         {spine.map((s) => (
           <CriterionRow
@@ -1303,7 +1303,7 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
 
       {custom.length > 0 && (
         <div class="space-y-1 border-t border-dashed border-[var(--color-paper-3)] pt-2">
-          <p class="dept-label">Your own</p>
+          <p class="dept-label">Your criteria</p>
           {custom.map((s) => (
             <CriterionRow
               key={s.id}
@@ -1319,12 +1319,12 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
       <div class="border-t border-dashed border-[var(--color-paper-3)] pt-2 space-y-1.5">
         <input
           value={props.newLabel}
-          placeholder="A criterion of your own"
+          placeholder="Add a criterion of your own"
           onInput$={(_, el) => props.onLabelInput$(el.value)}
           onKeyDown$={(e) => {
             if (e.key === "Enter") props.onAdd$();
           }}
-          class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-xs text-[var(--color-ink)] focus:border-[var(--color-cobalt)] focus:outline-none"
+          class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-xs text-[var(--color-ink)] focus:border-[var(--color-vermilion-2)] focus:outline-none"
           style="font-family: var(--font-serif); border-radius: 2px;"
           aria-label="New criterion name"
         />
@@ -1335,7 +1335,7 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
           onKeyDown$={(e) => {
             if (e.key === "Enter") props.onAdd$();
           }}
-          class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-xs text-[var(--color-ink)] focus:border-[var(--color-cobalt)] focus:outline-none"
+          class="w-full border border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-2 py-1 text-xs text-[var(--color-ink)] focus:border-[var(--color-vermilion-2)] focus:outline-none"
           style="font-family: var(--font-serif); border-radius: 2px;"
           aria-label="What a strong version looks like"
         />
@@ -1351,7 +1351,7 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
             onClick$={props.onSuggest$}
             disabled={props.isSuggesting}
             class="btn-paper flex-1 text-xs disabled:opacity-40"
-            title="Ask the room what would actually discriminate for this piece"
+            title="Ask the editors which criteria would matter most for this piece"
           >
             {props.isSuggesting ? "Thinking…" : "✦ Suggest"}
           </button>
@@ -1360,12 +1360,12 @@ const CriteriaEditor = component$<CriteriaEditorProps>((props) => {
 
       {props.suggestions.length > 0 && (
         <div class="border-t border-dashed border-[var(--color-paper-3)] pt-2 space-y-1.5">
-          <p class="dept-label">Proposed for this piece</p>
+          <p class="dept-label">Suggested for this piece</p>
           {props.suggestions.map((s) => (
             <button
               key={s.label}
               onClick$={() => props.onAccept$(s)}
-              class="w-full text-left border border-dashed border-[var(--color-paper-3)] px-2 py-1.5 hover:border-[var(--color-cobalt)] hover:bg-[var(--color-paper-soft)] focus-ring"
+              class="w-full text-left border border-dashed border-[var(--color-paper-3)] px-2 py-1.5 hover:border-[var(--color-vermilion-2)] hover:bg-[var(--color-paper-soft)] focus-ring"
               style="border-radius: 2px;"
               title="Add this to your rubric"
             >
@@ -1406,7 +1406,7 @@ const RelativeWeightControl = component$<{
       density="compact"
       disabled={props.disabled}
       ariaLabel={`weight for ${props.label}`}
-      title="1× is neutral. Higher values count more toward your weighted score."
+      title="1× is normal. 2× counts double toward your own score; 0.5× counts half."
       onValue$={(weight) => {
         if (weight !== null) props.onChange$(weight);
       }}
@@ -1427,7 +1427,7 @@ const CriterionRow = component$<{
         type="checkbox"
         checked={spec.enabled}
         onChange$={() => props.onToggle$(spec.id)}
-        class="h-3.5 w-3.5 flex-shrink-0 accent-[var(--color-cobalt)]"
+        class="h-3.5 w-3.5 flex-shrink-0 accent-[var(--color-vermilion-2)]"
         aria-label={`Grade ${spec.label}`}
       />
       <span
@@ -1511,6 +1511,9 @@ const RubricCriterionRow = component$<{
               fontSize: "0.8125rem",
             }}
           >
+            <span class="mr-1.5 text-[var(--color-ink-muted)]">
+              {scoreWord(criterion.score, criterion.maxScore)}
+            </span>
             {criterion.score}
             <span class="text-[var(--color-ink-muted)]">
               /{criterion.maxScore}
@@ -1533,16 +1536,21 @@ const RubricCriterionRow = component$<{
       </button>
 
       {open && (
-        <div class="ml-[1.375rem] pb-3">
+        <div class="ml-[1.375rem] space-y-2 pb-3">
+          {criterion.description && (
+            <p class="panel-meta text-[var(--color-ink-muted)]">
+              {criterion.description}
+            </p>
+          )}
           <p
-            class="panel-prose text-[var(--color-ink-light)]"
+            class="panel-prose text-[var(--color-ink)]"
             style="font-family: var(--font-serif);"
           >
             {criterion.feedback}
           </p>
           {pct < 60 && (
             <p
-              class="panel-prose mt-2 border-l-2 pl-2.5"
+              class="panel-prose border-l-2 pl-2.5"
               style={{
                 fontFamily: "var(--font-serif)",
                 borderColor: "var(--color-vermilion)",
@@ -1553,7 +1561,7 @@ const RubricCriterionRow = component$<{
                 class="panel-meta block uppercase text-[var(--color-vermilion)]"
                 style="font-family: var(--font-typewriter);"
               >
-                Next move
+                Try this
               </span>
               {nextMoveFor(criterion.id)}
             </p>
@@ -1623,35 +1631,6 @@ function JudgeCard({ judge }: { judge: JudgeResult }) {
   );
 }
 
-/** A concrete, prescriptive next step for a low-scoring criterion. */
-function nextMoveFor(id: string): string {
-  const moves: Record<string, string> = {
-    targetFit:
-      "Re-read the brief's audience and goal, then name the one section that is not serving them and either cut it or point it back at the commission.",
-    thesis:
-      "State the load-bearing claim in one sentence near the top, then make every section earn it.",
-    evidence:
-      "Pick the two weakest claims and attach a source, example, or number to each.",
-    integrity:
-      "Replace universal claims with testable claims; cut filler and add proof where the sentence asks for trust.",
-    structure:
-      "Add a section break or transition where the argument changes gears; cut a paragraph that repeats.",
-    pacing:
-      "Vary sentence length — break one long sentence in three, and merge two short ones.",
-    voice:
-      "Rewrite the opening line in the target tone; let it set the register for the rest.",
-    vocabulary:
-      "Replace three abstractions with concrete nouns; cut one piece of jargon per paragraph.",
-    paragraph: "Split any paragraph over ~6 sentences; give each a single job.",
-    engagement:
-      "Put a stake or a question in the first 100 words so the reader knows why to continue.",
-  };
-  return (
-    moves[id] ??
-    "Make the one change that would most move this score, then re-read."
-  );
-}
-
 /* ── Helpers ───────────────────────────────────────────────────── */
 
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
@@ -1691,134 +1670,225 @@ function buildCriteria(
     return {
       score,
       feedback: capped
-        ? `${baseFeedback} Capped at ${ceiling}/10: this measures shape, not substance, and target fit is only ${targetFit.score}/10. Well-formed sentences about the wrong thing are still the wrong thing.`
+        ? `${baseFeedback} ${shapeFeedback.capped(ceiling, targetFit.score)}`
         : baseFeedback,
     };
   };
 
+  const f = staticScore.features;
   const structure = shaped(
     Math.min(10, staticScore.perFeature.structure),
-    `${staticScore.features.paragraphCount} paragraph${
-      staticScore.features.paragraphCount === 1 ? "" : "s"
-    } across ${staticScore.features.sentenceCount} sentences. ${staticScore.feedback[0] ?? ""}`,
+    shapeFeedback.structure(
+      f.paragraphCount,
+      f.sentenceCount,
+      staticScore.perFeature.structure,
+    ),
   );
   const pacing = shaped(
     Math.min(10, staticScore.perFeature.pacing),
-    `Average sentence is ${staticScore.features.avgSentenceLength.toFixed(
-      1,
-    )} words, with a standard deviation of ${staticScore.features.sentenceLengthStdDev.toFixed(
-      1,
-    )}. A healthy mix lives in 12-22 word sentences with variance of 5-10.`,
+    shapeFeedback.pacing(f.avgSentenceLength, f.sentenceLengthStdDev),
   );
   const vocabulary = shaped(
     Math.min(10, staticScore.perFeature.vocabulary),
-    `Type-token ratio: ${(staticScore.features.uniqueWordsRatio * 100).toFixed(
-      1,
-    )}% (${staticScore.features.avgWordLength.toFixed(
-      1,
-    )} average word length). Healthy range: 35-60%.`,
+    shapeFeedback.vocabulary(f.uniqueWordsRatio),
   );
   const paragraphShape = shaped(
     Math.min(10, staticScore.perFeature.paragraphShape),
-    `${(staticScore.features.shortParagraphRatio * 100).toFixed(
-      0,
-    )}% of paragraphs are short, ${(
-      staticScore.features.longParagraphRatio * 100
-    ).toFixed(
-      0,
-    )}% are long. A balance of 2-3 sentence paragraphs and 5-8 sentence paragraphs reads best.`,
+    shapeFeedback.paragraphs(
+      f.paragraphCount,
+      f.shortParagraphRatio,
+      f.longParagraphRatio,
+    ),
   );
 
+  const spine = (id: string) => {
+    const c = SPINE_CRITERIA.find((entry) => entry.id === id)!;
+    return { id, label: c.label, description: c.description, maxScore: 10 };
+  };
+  const thesisScore = Math.min(10, Math.round(judgeMean * 10) / 10);
   return [
     {
-      id: "targetFit",
-      label: "Target Fit",
-      description:
-        "Whether the draft is about the right thing, for the right reader — independent of how well it is written",
+      ...spine("targetFit"),
       score: Math.min(10, targetFit.score),
-      maxScore: 10,
       feedback: targetFit.rationale,
     },
     {
-      id: "thesis",
-      label: "Thesis & Argument",
-      description: "Clarity and strength of the central argument",
-      score: Math.min(10, Math.round(judgeMean * 10) / 10),
-      maxScore: 10,
-      feedback: `Judges averaged ${judgeMean}/10 on the central claim. The next pass is to make the load-bearing claim visible earlier against the stated goal: ${goal}.`,
+      ...spine("thesis"),
+      score: thesisScore,
+      feedback: `The editors gave the argument ${judgeMean}/10 on average. Make the main point plain early, and tie it to your goal: ${goal}.`,
     },
     {
-      id: "evidence",
-      label: "Evidence & Support",
-      description: "Quality and relevance of supporting evidence",
+      ...spine("evidence"),
       score: Math.min(10, evidence.score),
-      maxScore: 10,
       feedback: evidence.rationale,
     },
     {
-      id: "sufficiency",
-      label: "Sufficiency & Development",
-      description:
-        "Whether the draft develops enough on-topic material to earn its thesis or goal",
+      ...spine("sufficiency"),
       score: sufficiency.score,
-      maxScore: 10,
       feedback: sufficiency.rationale,
     },
     {
-      id: "integrity",
-      label: "Bullshit Resistance",
-      description: "Unsupported certainty, filler, vagueness, and repetition",
+      ...spine("integrity"),
       score: Math.min(10, integrity.score),
-      maxScore: 10,
       feedback: integrity.rationale,
     },
+    { ...spine("structure"), ...structure },
+    { ...spine("pacing"), ...pacing },
     {
-      id: "structure",
-      label: "Organization & Flow",
-      description: "Logical structure and transitions",
-      score: structure.score,
-      maxScore: 10,
-      feedback: structure.feedback,
-    },
-    {
-      id: "pacing",
-      label: "Pacing & Rhythm",
-      description: "Sentence length variation and cadence",
-      score: pacing.score,
-      maxScore: 10,
-      feedback: pacing.feedback,
-    },
-    {
-      id: "voice",
-      label: "Voice & Tone",
-      description: "Consistency of voice for the named audience",
+      ...spine("voice"),
       score: Math.min(10, judgeMean),
-      maxScore: 10,
-      feedback: `Target tone: ${tone}. Read aloud — does the cadence match the reader, ${audience}?`,
+      feedback: `You're aiming for ${tone}, for ${audience}. Read a paragraph aloud and listen for where the voice slips.`,
     },
+    { ...spine("vocabulary"), ...vocabulary },
+    { ...spine("paragraph"), ...paragraphShape },
     {
-      id: "vocabulary",
-      label: "Vocabulary & Diction",
-      description: "Type-token ratio and word choice",
-      score: vocabulary.score,
-      maxScore: 10,
-      feedback: vocabulary.feedback,
-    },
-    {
-      id: "paragraph",
-      label: "Paragraph Shape",
-      description: "Balance of short and long paragraphs",
-      score: paragraphShape.score,
-      maxScore: 10,
-      feedback: paragraphShape.feedback,
-    },
-    {
-      id: "engagement",
-      label: "Reader Engagement",
-      description: "Whether the reader reaches the success signal",
+      ...spine("engagement"),
       score: Math.min(10, Math.max(0, Math.round((final / 100) * 10))),
-      maxScore: 10,
-      feedback: `Combined score ${final}/100. ${final >= 80 ? "Strong work — keep going." : final >= 65 ? "Real progress, but the room is still asking for more." : "The next pass is the important one."}`,
+      feedback: `This follows the overall grade (${final}/100). ${gradeVerdict(final)}`,
     },
   ];
 }
+
+/* ── Header helpers ────────────────────────────────────────────── */
+
+/** Rubric criterion → the margin tool that works on it in the draft. */
+const TOOL_FOR_CRITERION: Record<string, ToolKind> = {
+  pacing: "rhythm-strip",
+  paragraph: "rhythm-strip",
+  paragraphShape: "rhythm-strip",
+  structure: "rhythm-strip",
+  length: "rhythm-strip",
+  evidence: "claim-check",
+  integrity: "claim-check",
+  thesis: "claim-check",
+  voice: "sentence-lab",
+  vocabulary: "sentence-lab",
+  engagement: "reader-questions",
+  targetFit: "reader-questions",
+};
+
+/**
+ * One line under the grade naming where the draft is weakest, with a way to
+ * work on it in the draft itself: the matching margin tool opens beside the
+ * passage live review flagged first, or beside the cursor if none is flagged.
+ */
+const WeakestLine = component$<{ criteria: RubricCriterion[] }>(
+  ({ criteria }) => {
+    if (criteria.length === 0) return null;
+    const weakest = criteria.reduce((low, c) =>
+      c.score / c.maxScore < low.score / low.maxScore ? c : low,
+    );
+    const kind: ToolKind = TOOL_FOR_CRITERION[weakest.id] ?? "reader-questions";
+    return (
+      <p class="panel-meta mt-0.5 flex flex-wrap items-baseline gap-x-2 text-[var(--color-ink-muted)]">
+        <span>
+          Needs most work:{" "}
+          <span class="text-[var(--color-ink)]">{weakest.label}</span>
+        </span>
+        <button
+          type="button"
+          class="focus-ring underline underline-offset-2 text-[var(--color-vermilion-2)] normal-case"
+          title="Open a margin tool for this beside the passage that needs it most"
+          onClick$={() => {
+            const passage = liveReviewSnapshot()
+              .result?.passages.filter((p) => p.kind !== "nothing")
+              .sort((a, b) => b.priority - a.priority)[0]?.passage.text;
+            window.dispatchEvent(
+              new CustomEvent(IN_FLOW_OPEN_EVENT, {
+                detail: { kind, passage },
+              }),
+            );
+          }}
+        >
+          Work on it in the draft
+        </button>
+      </p>
+    );
+  },
+);
+
+/**
+ * What produced the number, in the panel's own words. Collapsed by default:
+ * the grade is what a writer scans; the arithmetic is for when they doubt it.
+ */
+const ScoringExplainer = component$<{
+  result: RubricResult;
+  brief: ProjectBrief | null;
+}>(({ result, brief }) => {
+  const room = result.scoringMethod !== "judgement";
+  const parts = room
+    ? combineJudgesAndStatic(
+        result.judges,
+        result.staticScore,
+        brief,
+        result.targetFit ?? UNJUDGED_TARGET_FIT,
+      )
+    : null;
+  const f = (n: number) => n.toFixed(1);
+  const rawMean =
+    result.judges.reduce((sum, j) => sum + j.score, 0) /
+    Math.max(1, result.judges.length);
+  return (
+    <details class="rubric-explainer mt-2">
+      <summary class="panel-meta cursor-pointer uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] focus-ring">
+        How this was scored
+      </summary>
+      <div class="panel-prose mt-2 space-y-1.5 text-[var(--color-ink-light)]">
+        {parts ? (
+          <>
+            <p>
+              {result.judges.length} editors each scored the draft out of 10.
+              Three things make up the grade:
+            </p>
+            <table class="rubric-explainer__sum">
+              <tbody>
+                <tr>
+                  <td>
+                    The editors' average
+                    {parts.judgeMean < rawMean - 0.05
+                      ? ", less a penalty for each score under 4"
+                      : ""}
+                  </td>
+                  <td>{f(parts.judgeMean)} · 45%</td>
+                </tr>
+                <tr>
+                  <td>The toughest editor's score</td>
+                  <td>{f(parts.minJudge)} · 35%</td>
+                </tr>
+                <tr>
+                  <td>
+                    Measured style (rhythm, words, paragraphs)
+                    {parts.effectiveStatic < parts.staticTotal - 0.05
+                      ? `, held down from ${f(parts.staticTotal)} because the draft is off brief`
+                      : ""}
+                  </td>
+                  <td>{f(parts.effectiveStatic)} · 20%</td>
+                </tr>
+              </tbody>
+            </table>
+            <p>
+              The total is then scaled so most drafts land between 40 and 65. A
+              90 is rare on purpose.
+            </p>
+          </>
+        ) : (
+          <p>
+            A quick model check scored each of the {result.criteria.length}{" "}
+            criteria out of 10, and the grade is their average. Treat it as an
+            estimate: for written notes, ask the editors.
+          </p>
+        )}
+        {result.writerScore !== undefined && (
+          <p>
+            With your own weights, the same scores come to{" "}
+            <strong class="text-[var(--color-ink)]">
+              {result.writerScore}
+            </strong>
+            . Changing a weight recounts the scores; it doesn't reread the
+            draft.
+          </p>
+        )}
+      </div>
+    </details>
+  );
+});

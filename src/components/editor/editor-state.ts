@@ -1,4 +1,4 @@
-import type { NoSerialize, PropFunction } from "@qwik.dev/core";
+import type { NoSerialize, PropFunction, Signal } from "@qwik.dev/core";
 import type { Editor } from "@tiptap/core";
 import type {
   DocumentMeta,
@@ -166,6 +166,7 @@ export type EditorPanelState = Omit<
 >;
 
 export interface TwyneEditorProps {
+  editorSignal?: Signal<NoSerialize<Editor> | undefined>;
   initialContent?: string;
   /** The folio this draft belongs to. Used to scope user comments. */
   activeFolioId?: string;

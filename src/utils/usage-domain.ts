@@ -47,6 +47,7 @@ export const USAGE_AI_FEATURES = [
   "research-extract",
   "interview-turn",
   "dossier-check",
+  "in-flow-tool",
   "other",
 ] as const;
 

@@ -1,7 +1,7 @@
 import type { EditorialBoardTab } from "./editorial-board-overlay";
 
 /**
- * The Editorial Board's five tabs, shared by the live editor
+ * The Editorial Board's tabs, shared by the live editor
  * (`src/routes/editor/index.tsx`) and the landing preview
  * (`src/components/landing/workspace-preview.tsx`).
  *
@@ -21,7 +21,7 @@ export const BOARD_TABS: EditorialBoardTab[] = [
     numeral: "II",
     label: "Rubric",
     kicker: "Dept. of Rigor",
-    accent: "var(--color-cobalt)",
+    accent: "var(--color-ink-light)",
   },
   {
     id: "comments",
@@ -38,8 +38,15 @@ export const BOARD_TABS: EditorialBoardTab[] = [
     accent: "var(--color-periwinkle)",
   },
   {
-    id: "history",
+    id: "tools",
     numeral: "V",
+    label: "Tools",
+    kicker: "Grammar & writing checks",
+    accent: "var(--color-vermilion-2)",
+  },
+  {
+    id: "history",
+    numeral: "VI",
     label: "Versions",
     kicker: "Version history",
     accent: "var(--color-sage)",

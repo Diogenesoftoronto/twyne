@@ -6,18 +6,24 @@ import {
   type NoSerialize,
   type PropFunction,
 } from "@qwik.dev/core";
+import { Icon } from "../ui/icon";
 import type { Editor } from "@tiptap/core";
 import {
   checkGrammar,
+  getGrammarChoices,
+  rememberGrammarChoice,
+  forgetGrammarChoice,
   isEnglishLanguage,
   scalarOffsetToCodeUnit,
   type GrammarIssue,
+  type GrammarChoice,
 } from "../../utils/grammar";
 
 interface GrammarPanelProps {
   editor: NoSerialize<Editor> | null;
   readOnly?: boolean;
-  onClose$: PropFunction<() => void>;
+  embedded?: boolean;
+  onClose$?: PropFunction<() => void>;
 }
 
 interface LocatedGrammarIssue extends GrammarIssue {
@@ -31,6 +37,8 @@ interface GrammarPanelStore {
   error: string;
   scan: number;
   unsupportedLanguage: boolean;
+  choices: GrammarChoice[];
+  notice: string;
 }
 
 interface TextBlock {
@@ -58,6 +66,8 @@ export const GrammarPanel = component$<GrammarPanelProps>((props) => {
     error: "",
     scan: 0,
     unsupportedLanguage: false,
+    choices: [],
+    notice: "",
   });
 
   const scan = $(async () => {
@@ -75,6 +85,7 @@ export const GrammarPanel = component$<GrammarPanelProps>((props) => {
       return;
     }
     try {
+      store.choices = getGrammarChoices();
       const located: LocatedGrammarIssue[] = [];
       for (const block of collectTextBlocks(editor)) {
         // A newer edit or an unmounted panel invalidates this pass. Check on
@@ -106,8 +117,8 @@ export const GrammarPanel = component$<GrammarPanelProps>((props) => {
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ cleanup }) => {
-    const editor = props.editor;
+  useVisibleTask$(({ track, cleanup }) => {
+    const editor = track(() => props.editor);
     if (!editor) return;
     let timer: ReturnType<typeof setTimeout> | null = null;
     const schedule = () => {
@@ -141,18 +152,48 @@ export const GrammarPanel = component$<GrammarPanelProps>((props) => {
       .run();
   });
 
+  const remember = $(async (issue: LocatedGrammarIssue) => {
+    try {
+      rememberGrammarChoice(issue);
+      store.notice = `“${issue.problem}” saved as intentional. Matching suggestions will be ignored in this browser.`;
+      await scan();
+    } catch {
+      store.notice =
+        "Could not save this choice. Browser storage may be unavailable.";
+    }
+  });
+
+  const forget = $(async (choice: GrammarChoice) => {
+    try {
+      forgetGrammarChoice(choice);
+      store.notice = `“${choice.problem}” removed. Suggestions are enabled again.`;
+      await scan();
+    } catch {
+      store.notice =
+        "Could not remove this choice. Browser storage may be unavailable.";
+    }
+  });
+
   return (
     <aside
-      class="fixed bottom-16 right-4 top-20 flex w-[22rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)]"
-      style={{
-        zIndex: "var(--z-dropdown)",
-        borderRadius: "4px",
-        boxShadow:
-          "0 4px 8px color-mix(in srgb, var(--shade) 20%, transparent)",
-      }}
+      class={
+        props.embedded
+          ? "flex h-full min-h-0 flex-col bg-[var(--color-paper-2)]"
+          : "fixed bottom-16 right-4 top-20 flex w-[22rem] max-w-[calc(100vw-2rem)] flex-col overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)]"
+      }
+      style={
+        props.embedded
+          ? undefined
+          : {
+              zIndex: "var(--z-dropdown)",
+              borderRadius: "4px",
+              boxShadow:
+                "0 4px 8px color-mix(in srgb, var(--shade) 20%, transparent)",
+            }
+      }
       aria-label="Grammar suggestions"
     >
-      <div class="flex items-center justify-between gap-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-3 py-2.5">
+      <div class="flex items-center justify-between gap-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-2.5">
         <div>
           <p class="dept-label">Grammar desk</p>
           <p
@@ -171,20 +212,57 @@ export const GrammarPanel = component$<GrammarPanelProps>((props) => {
             aria-label="Check grammar again"
             title="Check grammar again"
           >
-            ↻
+            <Icon name="redo" />
           </button>
-          <button
-            type="button"
-            class="tool-btn"
-            onClick$={props.onClose$}
-            aria-label="Close grammar desk"
-          >
-            ×
-          </button>
+          {!props.embedded && (
+            <button
+              type="button"
+              class="tool-btn"
+              onClick$={props.onClose$}
+              aria-label="Close grammar desk"
+            >
+              ×
+            </button>
+          )}
         </div>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-3">
+      <div class="flex-1 overflow-y-auto p-4">
+        {store.notice && (
+          <p class="mb-3 text-xs text-[var(--color-ink-muted)]" role="status">
+            {store.notice}
+          </p>
+        )}
+        {store.choices.length > 0 && (
+          <details class="mb-4 text-xs text-[var(--color-ink-muted)]">
+            <summary class="cursor-pointer">
+              Your dictionary · {store.choices.length} intentional choices
+            </summary>
+            <p class="my-2">
+              Saved in this browser. Remove a choice to check it again.
+            </p>
+            <ul class="space-y-2">
+              {store.choices.map((choice) => (
+                <li
+                  key={JSON.stringify(choice)}
+                  class="flex items-center justify-between gap-2"
+                >
+                  <span>
+                    “{choice.problem}” · {choice.kind}
+                  </span>
+                  <button
+                    type="button"
+                    class="card-key"
+                    onClick$={() => forget(choice)}
+                    aria-label={`Remove intentional choice for ${choice.problem}`}
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
         {store.status === "loading" && (
           <div class="space-y-2" role="status">
             {[0, 1, 2].map((item) => (
@@ -234,7 +312,7 @@ export const GrammarPanel = component$<GrammarPanelProps>((props) => {
                 No suggestions
               </p>
               <p class="mt-1 text-xs text-[var(--color-ink-muted)]">
-                Harper found no basic grammar, spelling, or usage issues.
+                No issues remain after your intentional choices.
               </p>
             </div>
           )}
@@ -264,7 +342,18 @@ export const GrammarPanel = component$<GrammarPanelProps>((props) => {
                     <p class="desk-card__name desk-card__name--wrap">
                       “{issue.problem}”
                     </p>
-                    <span class="desk-card__stamp">{issue.kind}</span>
+                    <div class="flex shrink-0 items-center gap-2">
+                      <span class="desk-card__stamp">{issue.kind}</span>
+                      <button
+                        type="button"
+                        class="tool-btn"
+                        onClick$={() => remember(issue)}
+                        aria-label={`Keep “${issue.problem}” as intentional and remember this choice`}
+                        title="Intentional — remember and ignore matching suggestions"
+                      >
+                        <span aria-hidden="true">×</span>
+                      </button>
+                    </div>
                   </div>
                   <p class="desk-card__body">{issue.message}</p>
                   {/* The replacements are the point of the card, so they
@@ -296,7 +385,7 @@ export const GrammarPanel = component$<GrammarPanelProps>((props) => {
                         onClick$={() => visit(issue)}
                         title="Select this passage in the draft"
                       >
-                        ⌖ show me
+                        <Icon name="search" /> Show passage
                       </button>
                     </div>
                   </div>

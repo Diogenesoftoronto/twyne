@@ -249,12 +249,9 @@ export const PostHogProvider = component$(() => {
           email: user.email,
           name: user.name,
           auth_provider: auth.value.provider,
-          auth_identity_source:
-            auth.value.provider === "atproto"
-              ? "atproto_did"
-              : user.analyticsId
-                ? "convex_token_identifier"
-                : "better_auth_user_id_fallback",
+          auth_identity_source: user.analyticsId
+            ? "convex_token_identifier"
+            : "better_auth_user_id_fallback",
         });
 
         const attempt = consumeAuthAttempt();

@@ -127,7 +127,10 @@ export const relay = action({
         "Sign in to reach MCP servers that this browser cannot call directly.",
       );
     }
-    const isPro = await userIsPro(ctx, identity.tokenIdentifier);
+    const isPro = await userIsPro(
+      ctx,
+      identity.subject || identity.tokenIdentifier,
+    );
     await consumeRateLimit(ctx, {
       action: "mcp:relay",
       identifier: identity.tokenIdentifier,

@@ -2,12 +2,14 @@
  * This is the base config for vite.
  * When building, the adapter config is used which loads this file and extends it.
  */
+import { popmelt } from "@popmelt.com/core/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig, type UserConfig } from "vite";
 import { qwikVite } from "@qwik.dev/core/optimizer";
 import { qwikRouter } from "@qwik.dev/router/vite";
 import { fileURLToPath } from "node:url";
 import pkg from "./package.json" with { type: "json" };
+import { installLiveVoiceRelay } from "./scripts/live-voice-relay.mjs";
 
 type PkgDep = Record<string, string>;
 const { dependencies = {}, devDependencies = {} } = pkg as any as {
@@ -23,7 +25,14 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
  */
 export default defineConfig((): UserConfig => {
   return {
-    plugins: [tailwindcss(), qwikRouter(), qwikVite()],
+    // The lazily loaded Typst compiler imports its WASM wrapper inside a worker.
+    worker: { format: "es" },
+    plugins: [tailwindcss(), qwikRouter(), qwikVite(), popmelt(), {
+      name: "twyne-live-voice",
+      configureServer(server) {
+        if (server.httpServer) installLiveVoiceRelay(server.httpServer, { origin: "" });
+      },
+    }],
     resolve: {
       tsconfigPaths: true,
       // `@atproto/jwk-jose` imports `jose`, whose exports map exposes a

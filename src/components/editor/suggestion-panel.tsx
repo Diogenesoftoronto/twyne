@@ -1,5 +1,5 @@
 import { component$, type PropFunction } from "@qwik.dev/core";
-import ImgApprovalStamp from "../../media/approval-stamp.svg?jsx";
+import { WorkflowStamp } from "../ui/workflow-stamp";
 import { renderMarkdown } from "../../utils/markdown";
 import { SpeakButton } from "../ui/speak-button";
 import type { SuggestionPopover } from "./editor-state";
@@ -111,8 +111,12 @@ export const SuggestionPanel = component$<SuggestionPanelProps>((props) => {
       )}
 
       {props.stampVisible && (
-        <div class="approval-stamp-overlay" aria-hidden="true">
-          <ImgApprovalStamp aria-hidden="true" width="220" height="220" />
+        <div
+          class="approval-stamp-overlay"
+          role="status"
+          aria-label="Revision applied"
+        >
+          <WorkflowStamp kind="revised" />
         </div>
       )}
     </>

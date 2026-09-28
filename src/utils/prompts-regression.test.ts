@@ -9,6 +9,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   buildSystemPrompt,
+  buildPersonaPrompt,
   buildUserPrompt,
   buildSynthesisPrompt,
   buildEvidenceJudgePrompt,
@@ -60,6 +61,16 @@ describe("agentPrompts (prompt markdown migration)", () => {
     expect(out).toContain("Twenty years in journalism.");
     expect(out).toContain("EDITORIAL DOCTRINE:");
     expect(out).toContain("60 and 220 words");
+    expect(out).toContain("quote_passage");
+    expect(out).toContain("Operational protocol");
+    expect(out).not.toContain("model: gpt-4o");
+  });
+
+  test("keeps persona identity separate from the operational protocol", () => {
+    const identity = buildPersonaPrompt(samplePersona);
+    expect(identity).toContain("Marquise, the Sceptical editor");
+    expect(identity).toContain("PERSONA BIBLE");
+    expect(identity).not.toContain("quote_passage");
   });
 
   test("buildUserPrompt renders brief, draft, and instruction", () => {

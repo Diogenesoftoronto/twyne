@@ -68,45 +68,51 @@ export const WRITING_LENSES: Array<{
 }> = [
   {
     id: "reader",
-    label: "Read without the ending",
+    label: "Find missing context",
     description:
-      "See where a reader may need context they have not reached yet.",
+      "Checks whether each paragraph makes sense using only what the reader has learned so far.",
   },
   {
     id: "revision",
-    label: "What did the edit cost?",
-    description: "Compare clarity, specificity, feeling, caution, and voice.",
+    label: "Compare two revisions",
+    description:
+      "Shows what improved or weakened between two drafts: clarity, detail, emotion, caution, and voice.",
   },
   {
     id: "voice",
-    label: "Protect your voice",
-    description: "Compare an edit with passages you chose to preserve.",
+    label: "Compare writing voice",
+    description:
+      "Checks whether an edit kept the qualities you value in your saved writing examples.",
   },
   {
     id: "promises",
-    label: "Promises to the reader",
-    description: "Connect setups and questions to possible payoffs.",
+    label: "Find unanswered questions",
+    description:
+      "Looks for questions or promised explanations in the draft and passages that answer them.",
   },
   {
     id: "scraps",
-    label: "Give scraps another life",
-    description: "Find a place for writing you explicitly saved.",
+    label: "Reuse saved passages",
+    description:
+      "Checks whether a saved passage could add an example, transition, counterargument, or supporting detail.",
   },
   {
     id: "room",
-    label: "Make disagreement useful",
-    description: "Separate repeated advice from real editorial choices.",
+    label: "Compare editor advice",
+    description:
+      "Shows which editor notes repeat each other, work together, or recommend conflicting changes.",
   },
   {
     id: "circling",
-    label: "Are these edits moving?",
+    label: "Review revision progress",
     description:
-      "Compare recent revisions for progress or equivalent alternatives.",
+      "Compares recent drafts for substantive progress, different approaches, or repeated wording changes.",
   },
   {
     id: "research",
-    label: "Check research drift",
-    description: "Recheck a claim against the source passage you supplied.",
+    label: "Check claims against sources",
+    description:
+      "Checks whether a source excerpt supports your claim as written. It does not verify the source itself.",
   },
 ];
 

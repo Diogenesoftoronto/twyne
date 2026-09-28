@@ -1,3 +1,4 @@
+import { liveReviewSnapshot } from "../../utils/live-review";
 import {
   $,
   component$,
@@ -5,12 +6,14 @@ import {
   useStylesScoped$,
   useVisibleTask$,
 } from "@qwik.dev/core";
+import { askJudgement } from "../../utils/judgement-client";
 import { Link } from "@qwik.dev/router";
+import { Icon } from "../ui/icon";
+import type { TwyneIconName } from "../../utils/icon-system";
 import { SiteSelect } from "../ui/site-select";
 import { paragraphTextFromHtml as manuscriptText } from "../../utils/draft-trajectory";
 import { cachedWritingLens } from "../../utils/writing-lens-cache";
 import { loadMetaFromIdb } from "../../utils/idb";
-import { api } from "../../../convex/_generated/api";
 import { useConvexClient } from "../../utils/convex-context";
 import {
   loadActiveFolioIdFromIdb,
@@ -32,6 +35,17 @@ import {
   type WritingLensInput,
   type WritingLensResult,
 } from "../../utils/writing-lenses";
+
+const LENS_ICONS: Record<WritingLensId, TwyneIconName> = {
+  reader: "search",
+  revision: "history",
+  voice: "quote",
+  promises: "checklist",
+  scraps: "page",
+  room: "comment-add",
+  circling: "redo",
+  research: "link",
+};
 
 interface ToolsState {
   loaded: boolean;
@@ -59,6 +73,8 @@ interface ToolsState {
   refreshId: number;
   attemptedKey: string;
   automatic: boolean;
+  explicitSelection: boolean;
+  saveVersion: number;
 }
 
 function inputs(state: ToolsState): WritingLensInput {
@@ -154,6 +170,8 @@ export const WritingTools = component$<{ embedded?: boolean }>(
       refreshId: 0,
       attemptedKey: "",
       automatic: false,
+      explicitSelection: false,
+      saveVersion: 0,
     });
 
     const refresh = $(async () => {
@@ -188,6 +206,7 @@ export const WritingTools = component$<{ embedded?: boolean }>(
           refreshId !== state.refreshId
         )
           return;
+        state.explicitSelection = false;
         state.notebook = notebook;
         if (!notebook.audience)
           state.notebook.audience = brief?.answers.audience ?? "";
@@ -210,6 +229,13 @@ export const WritingTools = component$<{ embedded?: boolean }>(
       state.folioName =
         folios.find((folio) => folio.id === folioId)?.name ?? "Current folio";
       state.draft = manuscriptText(html);
+      if (!state.explicitSelection) {
+        state.previousId =
+          revisions.find((revision) => revision.html !== html)?.id ??
+          revisions[0]?.id ??
+          "";
+        state.currentId = "current";
+      }
       state.revisions = revisions.map((revision) => ({
         id: revision.id,
         text: manuscriptText(revision.html),
@@ -261,27 +287,29 @@ export const WritingTools = component$<{ embedded?: boolean }>(
     });
 
     const save = $(async () => {
-      if (state.saving) return false;
+      const version = ++state.saveVersion;
       state.saving = true;
       state.saveNotice = "";
       const folioId = state.folioId;
       try {
         await saveWritingToolsNotebook(folioId, state.notebook);
         if (state.folioId !== folioId) return false;
-        state.saveNotice = "Saved on this device.";
+        if (version === state.saveVersion) state.saveNotice = "";
         return true;
       } catch {
         if (state.folioId !== folioId) return false;
-        state.saveNotice =
-          "Could not save on this device. Your entries are still here; try Save again.";
+        if (version === state.saveVersion)
+          state.saveNotice =
+            "Could not save your changes on this device. Edit the field again to retry.";
         return false;
       } finally {
-        state.saving = false;
+        if (version === state.saveVersion) state.saving = false;
       }
     });
 
-    const run = $(async () => {
+    const run = $(async (explicit = false) => {
       if (state.busy) return;
+      if (explicit) state.explicitSelection = true;
       state.busy = true;
       state.error = "";
       state.result = null;
@@ -289,7 +317,7 @@ export const WritingTools = component$<{ embedded?: boolean }>(
       try {
         await refresh();
         state.attemptedKey = inputKey(state);
-        if (!state.automatic) return;
+        if (!state.automatic && !explicit) return;
         if (
           state.lens === "research" &&
           state.notebook.sources.some(
@@ -315,9 +343,13 @@ export const WritingTools = component$<{ embedded?: boolean }>(
           state.lens,
           requestInput,
           async (request) => {
-            if (key !== inputKey(state) || !client.value || !state.automatic)
+            if (
+              key !== inputKey(state) ||
+              !client.value ||
+              (!state.automatic && !explicit)
+            )
               return { ok: false, error: "cancelled" };
-            return client.value.action(api.systemOne.ask, {
+            return askJudgement(client.value, {
               ...request,
               state: Object.fromEntries(
                 Object.entries(request.state).map(([name, value]) => [
@@ -329,7 +361,7 @@ export const WritingTools = component$<{ embedded?: boolean }>(
           },
         );
         await refresh();
-        if (key !== inputKey(state) || !state.automatic) {
+        if (key !== inputKey(state) || (!state.automatic && !explicit)) {
           state.stale = true;
           return;
         }
@@ -351,6 +383,7 @@ export const WritingTools = component$<{ embedded?: boolean }>(
       const automatic = track(() => state.automatic);
       const connected = track(() => client.value);
       if (
+        embedded ||
         !loaded ||
         busy ||
         !automatic ||
@@ -365,42 +398,91 @@ export const WritingTools = component$<{ embedded?: boolean }>(
       cleanup(() => clearTimeout(timer));
     });
 
+    // The board observes workspace-owned checks; only an explicit override starts another reading.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(
+      ({ track, cleanup }) => {
+        track(() => state.folioId);
+        track(() => state.lens);
+        track(() => state.explicitSelection);
+        if (!embedded || state.explicitSelection) return;
+        const update = () => {
+          const snapshot = liveReviewSnapshot();
+          if (
+            snapshot.folioId !== state.folioId ||
+            state.explicitSelection ||
+            state.busy
+          )
+            return;
+          state.result = snapshot.result?.lenses[state.lens] ?? null;
+          state.resultKey = inputKey(state);
+          state.stale = !!state.result && snapshot.status === "waiting";
+          state.error =
+            snapshot.status === "unavailable" && !state.result
+              ? snapshot.message
+              : "";
+        };
+        update();
+        window.addEventListener("twyne:live-review", update);
+        cleanup(() => window.removeEventListener("twyne:live-review", update));
+      },
+      { strategy: "document-ready" },
+    );
+
     useStylesScoped$(`
     .tools { min-height:100vh; background:var(--color-paper); color:var(--color-ink); padding:2rem 1rem 4rem; font-family:var(--font-serif); text-align:left; }
-    .tools.embedded { min-height:0; padding:1rem 0; background:transparent; }
+    .tools.embedded { min-height:0; min-width:0; padding:1rem; background:transparent; }
     .embedded .tools-grid { grid-template-columns:minmax(0,1fr); gap:1.25rem; }
-    .embedded .tools-header { margin-bottom:1rem; }
-    .embedded h1 { font-size:1.25rem; }
-    .embedded .results { order:-1; }
+    .embedded .results { border-top:1px solid var(--color-paper-3); padding-top:1rem; }
     .embedded .controls { border-top:1px solid var(--color-paper-3); padding-top:1rem; }
-    .tools-inner { max-width:70rem; margin:auto; }
+    .tools-inner { width:100%; min-width:0; max-width:70rem; margin:auto; }
     .tools-header { display:flex; align-items:start; justify-content:space-between; gap:1rem; margin-bottom:2rem; }
     h1 { font-family:var(--font-display); font-size:2rem; line-height:1.2; font-weight:700; }
     h2 { font-family:var(--font-display); font-size:1.15rem; font-weight:650; margin-bottom:.6rem; }
     h3 { font-family:var(--font-display); font-size:1rem; font-weight:650; }
     p { line-height:1.6; } .muted { color:var(--color-ink-light); font-size:.9rem; }
     .tools-grid { display:grid; grid-template-columns:minmax(16rem,23rem) minmax(0,1fr); gap:2.5rem; align-items:start; }
-    .controls { display:grid; gap:1.25rem; } label { display:grid; gap:.4rem; font-size:.9rem; font-weight:550; }
+    .controls { display:grid; gap:1.25rem; min-width:0; }
+    .controls > *, .controls label { min-width:0; }
+    .controls :is(input,textarea) { width:100%; min-width:0; }
+    .lens-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,10.5rem),1fr)); gap:.5rem; border:0; padding:0; margin:0; min-width:0; }
+    .lens-grid legend { font-size:.9rem; font-weight:550; margin-bottom:.5rem; padding:0; }
+    .lens-card { display:grid; gap:.25rem; align-content:start; text-align:left; padding:.65rem .75rem; border:1px solid var(--color-paper-3); border-radius:2px; background:var(--color-paper); color:var(--color-ink); cursor:pointer; }
+    .lens-card { transition:background-color 150ms ease, border-color 150ms ease, color 150ms ease; }
+    .lens-card:hover, .lens-card:focus-visible { border-color:var(--color-ink-light); background:var(--color-paper-soft); }
+    .lens-card:active { background:var(--color-paper-3); }
+    .lens-card[aria-pressed="true"]:hover { border-color:var(--color-vermilion-2); background:var(--color-paper-2); }
+    .lens-card[aria-pressed="true"] { border-color:var(--color-vermilion-2);  background:var(--color-paper-soft); }
+    .lens-card__label { display:flex; align-items:center; gap:.5rem; font-family:var(--font-display); font-weight:650; font-size:.9rem; line-height:1.3; }
+    .lens-card__desc { font-size:.78rem; line-height:1.45; color:var(--color-ink-light); }
+    label { display:grid; gap:.4rem; font-size:.9rem; font-weight:550; }
     input,textarea { min-height:2.75rem; }
     textarea { min-height:6rem; resize:vertical; font-weight:400; line-height:1.5; }
     button,a { touch-action:manipulation; } button { min-height:2.75rem; }
     button:disabled { opacity:.55; cursor:wait; }
-    :is(button,a,input,select,textarea,summary):focus-visible { outline:2px solid var(--color-cobalt); outline-offset:3px; }
+    :is(button,a,input,select,textarea,summary):focus-visible { outline:2px solid var(--color-vermilion-2); outline-offset:3px; }
     .saved-list { padding:0; list-style:none; display:grid; gap:.75rem; margin-top:.75rem; }
     .saved-list li { border-bottom:1px solid var(--color-paper-3); padding-bottom:.75rem; }
-    .small-button { margin-top:.4rem; }
+    .small-button { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; margin-top:.4rem; }
     .small-button:hover { background:var(--color-paper-2); } .small-button:active { transform:translateY(1px); }
     .research-fields { display:grid; gap:.75rem; }
-    .results { border-top:3px solid var(--color-ink); padding-top:1rem; min-width:0; }
+    .results { overflow-wrap:anywhere; border-top:3px solid var(--color-ink); padding-top:1rem; min-width:0; }
+    .check-selector { margin-bottom:1rem; }
+    .check-selector .check-purpose { margin-top:.75rem; margin-bottom:0; }
+    .check-purpose { color:var(--color-ink-light); font-size:.875rem; margin-bottom:.75rem; max-width:65ch; }
     .finding { padding:1.25rem 0; border-bottom:1px solid var(--color-paper-3); }
     blockquote { margin:.75rem 0; padding:.25rem 0 .25rem 1rem; border-left:2px solid var(--color-paper-3); font-family:var(--font-serif); white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.65; }
     .review { font-size:.75rem; color:var(--color-ink-light); margin:.5rem 0; }
     .notice { padding:.8rem 0; color:var(--color-ink-light); font-size:.9rem; }
     details { margin-top:.75rem; } summary { cursor:pointer; min-height:2.5rem; font-size:.85rem; padding:.5rem 0; }
     pre { font: .8rem/1.5 var(--font-typewriter,monospace); white-space:pre-wrap; overflow-wrap:anywhere; max-height:20rem; overflow:auto; background:var(--color-paper-2); padding:1rem; }
-    .empty { padding:2rem 0; max-width:42ch; } .run { width:100%; }
+    .empty { padding:2rem 0; max-width:42ch; }
+    .run { display:flex; align-items:center; justify-content:center; gap:.5rem; width:100%; }
+    summary { transition:color 150ms ease; }
+    summary:hover { color:var(--color-vermilion-2); }
+    .lens-card:disabled:hover { background:var(--color-paper); border-color:var(--color-paper-3); }
     @media(max-width:720px) { .tools-grid { grid-template-columns:1fr; gap:2rem; } .tools-header { flex-wrap:wrap; } .tools { padding-top:1.25rem; } }
-    @media(prefers-reduced-motion:reduce) { .small-button:active { transform:none; } }
+    @media(prefers-reduced-motion:reduce) { .small-button:active { transform:none; } .lens-card, summary { transition:none; } }
   `);
 
     const needsRevision = state.lens === "revision" || state.lens === "voice";
@@ -412,18 +494,18 @@ export const WritingTools = component$<{ embedded?: boolean }>(
         aria-label="Writing tools"
       >
         <div class="tools-inner">
-          <header class="tools-header">
-            <div>
-              <p class="dept-label">{state.folioName || "Twyne"}</p>
-              <h1>Writing tools</h1>
-              <p class="muted">A second look at the choices in your draft.</p>
-            </div>
-            {!embedded && (
-              <Link href="/editor/" class="btn-paper">
-                ← Back to desk
-              </Link>
-            )}
-          </header>
+          {!embedded && (
+            <header class="tools-header">
+              <div>
+                <h1>Writing tools</h1>
+              </div>
+              {!embedded && (
+                <Link href="/editor/" class="btn-paper">
+                  ← Back to desk
+                </Link>
+              )}
+            </header>
+          )}
           {!state.loaded ? (
             <p role="status">Loading your folio and saved material…</p>
           ) : !state.folioId ? (
@@ -438,449 +520,477 @@ export const WritingTools = component$<{ embedded?: boolean }>(
               </Link>
             </div>
           ) : (
-            <div class="tools-grid">
-              <section class="controls" aria-label="Choose a writing check">
-                <label>
-                  What would you like to explore?
-                  <SiteSelect
-                    ariaLabel="Writing lens"
-                    value={state.lens}
-                    options={WRITING_LENSES.map((lens) => ({
-                      value: lens.id,
-                      label: lens.label,
-                    }))}
-                    onChange$={(value) => {
-                      state.lens = value as WritingLensId;
-                      state.result = null;
-                      state.stale = false;
-                      state.error = "";
-                    }}
-                  />
-                </label>
-                <p class="muted">{selected.description}</p>
-                {needsRevision && (
-                  <>
-                    <label>
-                      Before
-                      <SiteSelect
-                        ariaLabel="Earlier revision"
-                        value={state.previousId}
-                        options={[
-                          { value: "", label: "Choose a saved revision" },
-                          ...state.revisions.map((revision) => ({
-                            value: revision.id,
-                            label: revision.label,
-                          })),
-                        ]}
-                        onChange$={(value) => {
-                          state.previousId = value;
-                        }}
-                      />
-                    </label>
-                    <label>
-                      After
-                      <SiteSelect
-                        ariaLabel="Later revision"
-                        value={state.currentId}
-                        options={[
-                          { value: "current", label: "Current draft" },
-                          ...state.revisions.map((revision) => ({
-                            value: revision.id,
-                            label: revision.label,
-                          })),
-                        ]}
-                        onChange$={(value) => {
-                          state.currentId = value;
-                        }}
-                      />
-                    </label>
-                    {!state.revisions.length && (
-                      <p class="notice">
-                        Save a checkpoint in the desk’s version history, make an
-                        edit, then return to compare it.
-                      </p>
-                    )}
-                  </>
-                )}
-                <label>
-                  Who is this for?
-                  <textarea
-                    class="field-input"
-                    value={state.notebook.audience}
-                    placeholder="A curious reader with no background in the subject…"
-                    onInput$={(_, element) => {
-                      state.notebook.audience = element.value;
-                      state.saveNotice = "";
-                    }}
-                  />
-                </label>
-                {(state.lens === "scraps" || state.lens === "circling") && (
+            <>
+              <div class="check-selector">
+                <fieldset class="lens-grid">
+                  <legend>Choose what to check</legend>
+                  {WRITING_LENSES.map((lens) => (
+                    <button
+                      key={lens.id}
+                      type="button"
+                      title={lens.description}
+                      class="lens-card"
+                      aria-pressed={state.lens === lens.id}
+                      onClick$={() => {
+                        if (state.lens === lens.id) return;
+                        state.lens = lens.id;
+                        state.explicitSelection = false;
+                        state.result = null;
+                        state.stale = false;
+                        state.error = "";
+                      }}
+                    >
+                      <span class="lens-card__label">
+                        <Icon name={LENS_ICONS[lens.id]} />
+                        {lens.label}
+                      </span>
+                    </button>
+                  ))}
+                </fieldset>
+                <p class="check-purpose">{selected.description}</p>
+              </div>
+              <div class="tools-grid">
+                <section class="controls" aria-label="Choose a writing check">
+                  {needsRevision && (
+                    <>
+                      <label>
+                        Earlier draft
+                        <SiteSelect
+                          ariaLabel="Earlier revision"
+                          value={state.previousId}
+                          options={[
+                            { value: "", label: "Choose a saved revision" },
+                            ...state.revisions.map((revision) => ({
+                              value: revision.id,
+                              label: revision.label,
+                            })),
+                          ]}
+                          onChange$={(value) => {
+                            state.previousId = value;
+                            state.explicitSelection = true;
+                          }}
+                        />
+                      </label>
+                      <label>
+                        Later draft
+                        <SiteSelect
+                          ariaLabel="Later revision"
+                          value={state.currentId}
+                          options={[
+                            { value: "current", label: "Current draft" },
+                            ...state.revisions.map((revision) => ({
+                              value: revision.id,
+                              label: revision.label,
+                            })),
+                          ]}
+                          onChange$={(value) => {
+                            state.currentId = value;
+                            state.explicitSelection = true;
+                          }}
+                        />
+                      </label>
+                      {!state.revisions.length && (
+                        <p class="notice">
+                          Save a checkpoint in the desk’s version history, make
+                          an edit, then return to compare it.
+                        </p>
+                      )}
+                    </>
+                  )}
                   <label>
-                    Passage or question to focus on (optional)
+                    Intended reader
                     <textarea
                       class="field-input"
-                      value={state.focus}
-                      onInput$={(_, element) => {
-                        state.focus = element.value;
+                      value={state.notebook.audience}
+                      placeholder="A curious reader with no background in the subject…"
+                      onInput$={async (_, element) => {
+                        state.notebook.audience = element.value;
+                        await save();
                       }}
                     />
                   </label>
-                )}
-                {(state.lens === "voice" || state.lens === "scraps") && (
-                  <section>
-                    <h2>
-                      {state.lens === "voice"
-                        ? "This feels like me"
-                        : "The scraps drawer"}
-                    </h2>
-                    <p class="muted">
-                      {state.lens === "voice"
-                        ? "Save passages whose character you want an edit to preserve."
-                        : "Save your own cut passages to check where they might belong."}
-                    </p>
+                  {(state.lens === "scraps" || state.lens === "circling") && (
                     <label>
-                      {state.lens === "voice" ? "Voice example" : "Cut passage"}
+                      Passage or question to focus on (optional)
                       <textarea
                         class="field-input"
-                        value={state.newPassage}
+                        value={state.focus}
                         onInput$={(_, element) => {
-                          state.newPassage = element.value;
+                          state.focus = element.value;
+                          state.explicitSelection = true;
                         }}
                       />
                     </label>
-                    <button
-                      class="btn-paper small-button"
-                      disabled={state.saving || !state.newPassage.trim()}
-                      onClick$={async () => {
-                        const key =
-                          state.lens === "voice" ? "voiceSamples" : "scraps";
-                        if (
-                          !state.notebook[key].some(
-                            (passage) =>
-                              passage.text === state.newPassage.trim(),
-                          )
-                        ) {
-                          state.notebook[key].push({
-                            id: crypto.randomUUID(),
-                            text: state.newPassage.trim(),
-                          });
-                        }
-                        if (await save()) state.newPassage = "";
-                      }}
-                    >
-                      Save passage
-                    </button>
-                    <ul class="saved-list">
-                      {state.notebook[passageType].map((passage) => (
-                        <li key={passage.id}>
-                          <blockquote>{passage.text}</blockquote>
-                          <button
-                            class="btn-paper small-button"
-                            disabled={state.saving}
-                            onClick$={async () => {
-                              state.notebook[passageType] = state.notebook[
-                                passageType
-                              ].filter((item) => item.id !== passage.id);
-                              await save();
-                            }}
-                          >
-                            Remove passage
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-                {state.lens === "room" && (
-                  <section>
-                    <h2>Notes from your room</h2>
-                    <p class="muted">
-                      {state.notes.length} saved notes for this folio. Convene
-                      the room at your desk to add feedback.
-                    </p>
-                    <details>
-                      <summary>Read the notes being compared</summary>
-                      {state.notes.map((note) => (
-                        <div key={note.id}>
-                          <h3>{note.author}</h3>
-                          <blockquote>{note.text}</blockquote>
-                        </div>
-                      ))}
-                    </details>
-                  </section>
-                )}
-                {state.lens === "circling" && (
-                  <p class="muted">
-                    Uses {state.revisions.length} saved checkpoints plus your
-                    current draft. Checkpoint order reflects when each revision
-                    was saved.
-                  </p>
-                )}
-                {state.lens === "research" && (
-                  <section class="research-fields">
-                    <h2>Claims & sources</h2>
-                    <p class="muted">
-                      Paste the source excerpt that supports each claim. Only
-                      supplied excerpts are checked; links are not fetched.
-                    </p>
-                    <label>
-                      Earlier wording (optional)
-                      <textarea
-                        class="field-input"
-                        value={state.previousClaim}
-                        onInput$={(_, element) => {
-                          state.previousClaim = element.value;
-                        }}
-                      />
-                    </label>
-                    <label>
-                      Current claim, copied from your draft
-                      <textarea
-                        class="field-input"
-                        value={state.claim}
-                        onInput$={(_, element) => {
-                          state.claim = element.value;
-                        }}
-                      />
-                    </label>
-                    <label>
-                      Supporting source excerpt
-                      <textarea
-                        class="field-input"
-                        value={state.source}
-                        onInput$={(_, element) => {
-                          state.source = element.value;
-                        }}
-                      />
-                    </label>
-                    <button
-                      class="btn-paper small-button"
-                      disabled={
-                        state.saving ||
-                        !state.claim.trim() ||
-                        !state.source.trim()
-                      }
-                      onClick$={async () => {
-                        if (
-                          !state.notebook.sources.some(
-                            (pair) =>
-                              pair.claim === state.claim.trim() &&
-                              pair.source === state.source.trim() &&
-                              (pair.previousClaim ?? "") ===
-                                state.previousClaim.trim(),
-                          )
-                        )
-                          state.notebook.sources.push({
-                            id: crypto.randomUUID(),
-                            claim: state.claim.trim(),
-                            source: state.source.trim(),
-                            ...(state.previousClaim.trim()
-                              ? { previousClaim: state.previousClaim.trim() }
-                              : {}),
-                          });
-                        if (await save()) {
-                          state.claim = "";
-                          state.previousClaim = "";
-                          state.source = "";
-                        }
-                      }}
-                    >
-                      Save claim & source
-                    </button>
-                    <ul class="saved-list">
-                      {state.notebook.sources.map((pair) => (
-                        <li key={pair.id}>
-                          <label>
-                            Current claim
-                            <textarea
-                              class="field-input"
-                              value={pair.claim}
-                              onInput$={(_, element) => {
-                                pair.claim = element.value;
-                                state.saveNotice = "";
-                              }}
-                            />
-                          </label>
-                          {!state.draft.includes(pair.claim) && (
-                            <p class="notice">
-                              This wording is no longer in the draft. Update it
-                              before rechecking.
-                            </p>
-                          )}
-                          <details>
-                            <summary>Earlier wording & source</summary>
-                            {pair.previousClaim && (
-                              <blockquote>{pair.previousClaim}</blockquote>
-                            )}
-                            <blockquote>{pair.source}</blockquote>
-                          </details>
-                          <button
-                            class="btn-paper small-button"
-                            disabled={state.saving}
-                            onClick$={async () => {
-                              state.notebook.sources =
-                                state.notebook.sources.filter(
-                                  (item) => item.id !== pair.id,
-                                );
-                              await save();
-                            }}
-                          >
-                            Remove claim & source
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-                {state.lens === "promises" &&
-                  state.notebook.intentionalPromises.length > 0 && (
-                    <details>
-                      <summary>
-                        {state.notebook.intentionalPromises.length} promises
-                        left intentionally open
-                      </summary>
+                  )}
+                  {(state.lens === "voice" || state.lens === "scraps") && (
+                    <section>
+                      <h2>
+                        {state.lens === "voice"
+                          ? "This feels like me"
+                          : "The scraps drawer"}
+                      </h2>
                       <p class="muted">
-                        These decisions apply to the exact original passage.
+                        {state.lens === "voice"
+                          ? "Save passages whose character you want an edit to preserve."
+                          : "Save your own cut passages to check where they might belong."}
                       </p>
+                      <label>
+                        {state.lens === "voice"
+                          ? "Voice example"
+                          : "Cut passage"}
+                        <textarea
+                          class="field-input"
+                          value={state.newPassage}
+                          onInput$={(_, element) => {
+                            state.newPassage = element.value;
+                          }}
+                        />
+                      </label>
                       <button
                         class="btn-paper small-button"
-                        disabled={state.saving}
+                        disabled={state.saving || !state.newPassage.trim()}
                         onClick$={async () => {
-                          state.notebook.intentionalPromises = [];
-                          await save();
+                          const key =
+                            state.lens === "voice" ? "voiceSamples" : "scraps";
+                          if (
+                            !state.notebook[key].some(
+                              (passage) =>
+                                passage.text === state.newPassage.trim(),
+                            )
+                          ) {
+                            state.notebook[key].push({
+                              id: crypto.randomUUID(),
+                              text: state.newPassage.trim(),
+                            });
+                          }
+                          if (await save()) state.newPassage = "";
                         }}
                       >
-                        Reconsider these promises
+                        <Icon name="add" /> Add passage
                       </button>
-                    </details>
+                      <ul class="saved-list">
+                        {state.notebook[passageType].map((passage) => (
+                          <li key={passage.id}>
+                            <blockquote>{passage.text}</blockquote>
+                            <button
+                              class="btn-paper small-button"
+                              disabled={state.saving}
+                              onClick$={async () => {
+                                state.notebook[passageType] = state.notebook[
+                                  passageType
+                                ].filter((item) => item.id !== passage.id);
+                                await save();
+                              }}
+                            >
+                              <Icon name="trash" /> Remove passage
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
                   )}
-                <div>
-                  <button
-                    class="btn-paper small-button"
-                    disabled={state.saving}
-                    onClick$={save}
-                  >
-                    {state.saving ? "Saving…" : "Save audience & material"}
-                  </button>
-                  <p class="muted" role="status">
-                    {state.saveNotice ||
-                      "Your saved examples and decisions stay on this device, with this folio."}
-                  </p>
-                </div>
-                <details>
-                  <summary>What this check sends</summary>
-                  <p class="muted">
-                    The relevant saved text and selected material below are sent
-                    for automatic analysis after a pause. Pause review above the
-                    manuscript to stop automatic checks. You decide what to
-                    change.
-                  </p>
-                  <pre>{materialPreview(state)}</pre>
-                </details>
-                <button
-                  class="btn-press run"
-                  disabled={
-                    state.busy || !state.draft.trim() || !state.automatic
-                  }
-                  onClick$={run}
-                >
-                  {state.busy ? "Checking…" : "Refresh this reading"}
-                </button>
-              </section>
-              <section
-                class="results"
-                aria-label="Writing check results"
-                aria-busy={state.busy}
-              >
-                <p class="dept-label">Second look</p>
-                <h2>{selected.label}</h2>
-                {state.busy && (
-                  <p role="status" class="notice">
-                    Reading the selected material… You can leave your choices as
-                    they are while this finishes.
-                  </p>
-                )}
-                {state.error && (
-                  <p role="alert" class="notice">
-                    {state.error}
-                  </p>
-                )}
-                {state.stale && (
-                  <p role="status" class="notice">
-                    The draft or selected material changed. This reading will
-                    update after a pause.
-                  </p>
-                )}
-                {!state.busy &&
-                  !state.result &&
-                  !state.error &&
-                  !state.stale && (
-                    <div class="empty">
-                      <p>
-                        Findings appear here as the draft and selected material
-                        are checked. Quoted passages keep each suggestion in
-                        context.
+                  {state.lens === "room" && (
+                    <section>
+                      <h2>Notes from your room</h2>
+                      <p class="muted">
+                        {state.notes.length} saved notes for this folio. Convene
+                        the room at your desk to add feedback.
                       </p>
-                    </div>
+                      <details>
+                        <summary>Read the notes being compared</summary>
+                        {state.notes.map((note) => (
+                          <div key={note.id}>
+                            <h3>{note.author}</h3>
+                            <blockquote>{note.text}</blockquote>
+                          </div>
+                        ))}
+                      </details>
+                    </section>
                   )}
-                {state.result && !state.stale && (
-                  <>
-                    <p class="muted">{state.result.coverage}</p>
-                    {state.result.notice && (
-                      <p class="notice" role="status">
-                        {state.result.notice}
+                  {state.lens === "circling" && (
+                    <p class="muted">
+                      Uses {state.revisions.length} saved checkpoints plus your
+                      current draft. Checkpoint order reflects when each
+                      revision was saved.
+                    </p>
+                  )}
+                  {state.lens === "research" && (
+                    <section class="research-fields">
+                      <h2>Claims & sources</h2>
+                      <p class="muted">
+                        Paste the source excerpt that supports each claim. Only
+                        supplied excerpts are checked; links are not fetched.
                       </p>
-                    )}
-                    {state.result.status === "complete" &&
-                      !state.result.findings.length && (
-                        <p class="notice">
-                          No findings in the material checked. This is a limited
-                          reading, not a guarantee that every issue was found.
+                      <label>
+                        Earlier wording (optional)
+                        <textarea
+                          class="field-input"
+                          value={state.previousClaim}
+                          onInput$={(_, element) => {
+                            state.previousClaim = element.value;
+                          }}
+                        />
+                      </label>
+                      <label>
+                        Current claim, copied from your draft
+                        <textarea
+                          class="field-input"
+                          value={state.claim}
+                          onInput$={(_, element) => {
+                            state.claim = element.value;
+                          }}
+                        />
+                      </label>
+                      <label>
+                        Supporting source excerpt
+                        <textarea
+                          class="field-input"
+                          value={state.source}
+                          onInput$={(_, element) => {
+                            state.source = element.value;
+                          }}
+                        />
+                      </label>
+                      <button
+                        class="btn-paper small-button"
+                        disabled={
+                          state.saving ||
+                          !state.claim.trim() ||
+                          !state.source.trim()
+                        }
+                        onClick$={async () => {
+                          if (
+                            !state.notebook.sources.some(
+                              (pair) =>
+                                pair.claim === state.claim.trim() &&
+                                pair.source === state.source.trim() &&
+                                (pair.previousClaim ?? "") ===
+                                  state.previousClaim.trim(),
+                            )
+                          )
+                            state.notebook.sources.push({
+                              id: crypto.randomUUID(),
+                              claim: state.claim.trim(),
+                              source: state.source.trim(),
+                              ...(state.previousClaim.trim()
+                                ? { previousClaim: state.previousClaim.trim() }
+                                : {}),
+                            });
+                          if (await save()) {
+                            state.claim = "";
+                            state.previousClaim = "";
+                            state.source = "";
+                          }
+                        }}
+                      >
+                        <Icon name="add" /> Add claim & source
+                      </button>
+                      <ul class="saved-list">
+                        {state.notebook.sources.map((pair) => (
+                          <li key={pair.id}>
+                            <label>
+                              Current claim
+                              <textarea
+                                class="field-input"
+                                value={pair.claim}
+                                onInput$={async (_, element) => {
+                                  pair.claim = element.value;
+                                  await save();
+                                }}
+                              />
+                            </label>
+                            {!state.draft.includes(pair.claim) && (
+                              <p class="notice">
+                                This wording is no longer in the draft. Update
+                                it before rechecking.
+                              </p>
+                            )}
+                            <details>
+                              <summary>Earlier wording & source</summary>
+                              {pair.previousClaim && (
+                                <blockquote>{pair.previousClaim}</blockquote>
+                              )}
+                              <blockquote>{pair.source}</blockquote>
+                            </details>
+                            <button
+                              class="btn-paper small-button"
+                              disabled={state.saving}
+                              onClick$={async () => {
+                                state.notebook.sources =
+                                  state.notebook.sources.filter(
+                                    (item) => item.id !== pair.id,
+                                  );
+                                await save();
+                              }}
+                            >
+                              <Icon name="trash" /> Remove claim & source
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  )}
+                  {state.lens === "promises" &&
+                    state.notebook.intentionalPromises.length > 0 && (
+                      <details>
+                        <summary>
+                          {state.notebook.intentionalPromises.length} promises
+                          left intentionally open
+                        </summary>
+                        <p class="muted">
+                          These decisions apply to the exact original passage.
                         </p>
-                      )}
-                    {state.result.findings.map((finding) => (
-                      <article class="finding" key={finding.id}>
-                        <h3>{finding.title}</h3>
-                        {finding.needsReview && (
-                          <p class="review">
-                            Tentative · review this in context
+                        <button
+                          class="btn-paper small-button"
+                          disabled={state.saving}
+                          onClick$={async () => {
+                            state.notebook.intentionalPromises = [];
+                            await save();
+                          }}
+                        >
+                          <Icon name="undo" /> Reconsider these promises
+                        </button>
+                      </details>
+                    )}
+                  {state.saveNotice && (
+                    <p class="notice" role="alert">
+                      {state.saveNotice}
+                    </p>
+                  )}
+                  <details>
+                    <summary>What this check sends</summary>
+                    <p class="muted">
+                      The relevant saved text and selected material below are
+                      sent for automatic analysis after a pause. Switch off
+                      Automatic review in the Tools board to stop automatic
+                      checks. You decide what to change.
+                    </p>
+                    <pre>{materialPreview(state)}</pre>
+                  </details>
+                  {embedded && state.explicitSelection && (
+                    <button
+                      class="btn-paper small-button"
+                      disabled={state.busy}
+                      onClick$={async () => {
+                        state.explicitSelection = false;
+                        state.focus = "";
+                        state.result = null;
+                        await refresh();
+                      }}
+                    >
+                      <Icon name="undo" /> Use automatic reading
+                    </button>
+                  )}
+                  <button
+                    class="btn-press run"
+                    disabled={state.busy || !state.draft.trim()}
+                    onClick$={() => run(true)}
+                  >
+                    <Icon name="redo" />{" "}
+                    {state.busy ? "Checking…" : "Run this check"}
+                  </button>
+                </section>
+                <section
+                  class="results"
+                  aria-label="Writing check results"
+                  aria-busy={state.busy}
+                >
+                  {state.busy && (
+                    <p role="status" class="notice">
+                      Reading the selected material… You can leave your choices
+                      as they are while this finishes.
+                    </p>
+                  )}
+                  {state.error && (
+                    <p role="alert" class="notice">
+                      {state.error}
+                    </p>
+                  )}
+                  {state.stale && (
+                    <p role="status" class="notice">
+                      The draft or selected material changed. This reading will
+                      update after a pause.
+                    </p>
+                  )}
+                  {!state.busy &&
+                    !state.result &&
+                    !state.error &&
+                    !state.stale && (
+                      <div class="empty">
+                        <p class="muted">
+                          {embedded && !state.explicitSelection
+                            ? "Waiting for automatic review."
+                            : "No reading yet."}
+                        </p>
+                      </div>
+                    )}
+                  {state.result && !state.stale && (
+                    <>
+                      <details class="notice">
+                        <summary class="focus-ring">
+                          <Icon name="search" />{" "}
+                          {state.result.status === "unavailable"
+                            ? "Reading unavailable"
+                            : state.result.notice
+                              ? "Limited reading"
+                              : "Review details"}
+                        </summary>
+                        <p>{state.result.coverage}</p>
+                        {state.result.notice && <p>{state.result.notice}</p>}
+                      </details>
+                      {state.result.status === "complete" &&
+                        !state.result.findings.length && (
+                          <p class="notice">
+                            No findings in the material checked. This is a
+                            limited reading, not a guarantee that every issue
+                            was found.
                           </p>
                         )}
-                        <p>{finding.detail}</p>
-                        {finding.passage && (
-                          <blockquote>{finding.passage}</blockquote>
-                        )}
-                        {finding.relatedPassage && (
-                          <>
-                            <p class="muted">Related passage</p>
-                            <blockquote>{finding.relatedPassage}</blockquote>
-                          </>
-                        )}
-                        {state.lens === "promises" && (
-                          <button
-                            class="btn-paper small-button"
-                            disabled={state.saving}
-                            onClick$={async () => {
-                              if (
-                                !state.notebook.intentionalPromises.includes(
-                                  finding.id,
+                      {state.result.findings.map((finding) => (
+                        <article class="finding" key={finding.id}>
+                          <h3>{finding.title}</h3>
+                          {finding.needsReview && (
+                            <p class="review">
+                              Tentative · review this in context
+                            </p>
+                          )}
+                          <p>{finding.detail}</p>
+                          {finding.passage && (
+                            <blockquote>{finding.passage}</blockquote>
+                          )}
+                          {finding.relatedPassage && (
+                            <>
+                              <p class="muted">Related passage</p>
+                              <blockquote>{finding.relatedPassage}</blockquote>
+                            </>
+                          )}
+                          {state.lens === "promises" && (
+                            <button
+                              class="btn-paper small-button"
+                              disabled={state.saving}
+                              onClick$={async () => {
+                                if (
+                                  !state.notebook.intentionalPromises.includes(
+                                    finding.id,
+                                  )
                                 )
-                              )
-                                state.notebook.intentionalPromises.push(
-                                  finding.id,
-                                );
-                              await save();
-                            }}
-                          >
-                            Leave intentionally unresolved
-                          </button>
-                        )}
-                      </article>
-                    ))}
-                  </>
-                )}
-              </section>
-            </div>
+                                  state.notebook.intentionalPromises.push(
+                                    finding.id,
+                                  );
+                                await save();
+                              }}
+                            >
+                              <Icon name="check" /> Leave intentionally
+                              unresolved
+                            </button>
+                          )}
+                        </article>
+                      ))}
+                    </>
+                  )}
+                </section>
+              </div>
+            </>
           )}
         </div>
       </section>

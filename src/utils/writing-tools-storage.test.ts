@@ -1,4 +1,14 @@
-import { afterEach, describe, expect, test } from "bun:test";
+import {
+  afterAll,
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  test,
+} from "bun:test";
+// @ts-expect-error jsdom has no installed declaration package in this workspace.
+import { JSDOM } from "jsdom";
+import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 import {
   __setWritingToolsStorageForTests,
   emptyWritingToolsNotebook,
@@ -6,7 +16,38 @@ import {
   saveWritingToolsNotebook,
 } from "./writing-tools-storage";
 
-afterEach(() => __setWritingToolsStorageForTests(null));
+const releaseGlobals = await lockBrowserGlobalsForTestFile();
+const names = ["window", "CustomEvent"] as const;
+const previous = new Map(
+  names.map((name) => [
+    name,
+    Object.getOwnPropertyDescriptor(globalThis, name),
+  ]),
+);
+let dom: InstanceType<typeof JSDOM>;
+beforeEach(() => {
+  dom = new JSDOM("", { url: "https://twyne.test/" });
+  Object.defineProperty(globalThis, "window", {
+    configurable: true,
+    value: dom.window,
+  });
+  Object.defineProperty(globalThis, "CustomEvent", {
+    configurable: true,
+    value: dom.window.CustomEvent,
+  });
+});
+afterEach(() => {
+  __setWritingToolsStorageForTests(null);
+  dom.window.close();
+});
+afterAll(() => {
+  for (const name of names) {
+    const descriptor = previous.get(name);
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+    else Reflect.deleteProperty(globalThis, name);
+  }
+  releaseGlobals();
+});
 
 describe("writing tools notebook", () => {
   test("isolates saved passages, source pairs and promise decisions by folio", async () => {
@@ -47,6 +88,43 @@ describe("writing tools notebook", () => {
     notebook.audience = "A curious newcomer";
     await expect(saveWritingToolsNotebook("one", notebook)).rejects.toThrow(
       "Local save failed",
+    );
+  });
+
+  test("serializes rapid autosaves so the newest edits win", async () => {
+    const values = new Map<string, unknown>();
+    let release!: () => void;
+    let started!: () => void;
+    const firstStarted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const holdFirst = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let calls = 0;
+    __setWritingToolsStorageForTests({
+      load: async <T>(key: string) => (values.get(key) as T) ?? null,
+      save: async (key, value) => {
+        calls++;
+        if (calls === 1) {
+          started();
+          await holdFirst;
+        }
+        values.set(key, value);
+      },
+    });
+    const notebook = emptyWritingToolsNotebook();
+    notebook.audience = "First edit";
+    const first = saveWritingToolsNotebook("rapid", notebook);
+    await firstStarted;
+    notebook.audience = "Latest edit";
+    const latest = saveWritingToolsNotebook("rapid", notebook);
+    await Promise.resolve();
+    expect(calls).toBe(1);
+    release();
+    await Promise.all([first, latest]);
+    expect((await loadWritingToolsNotebook("rapid")).audience).toBe(
+      "Latest edit",
     );
   });
 

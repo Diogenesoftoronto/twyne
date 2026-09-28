@@ -576,38 +576,6 @@ export default defineSchema({
     .index("by_ownerId", ["ownerId"])
     .index("by_ownerId_commentId", ["ownerId", "commentId"]),
 
-  // ── Creem subscriptions — one row per user, updated by the Creem webhook. ──
-  // `status` mirrors Creem's subscription lifecycle; `active`/`trialing` plus a
-  // product in the Pro allowlist and a current period grant the Pro tier (see
-  // convex/lib/entitlement.ts). Keyed by userId, with a Creem-id index for
-  // webhook upserts. `lastEventId`/`lastEventAt` guard against stale or
-  // replayed webhook events.
-  subscriptions: defineTable({
-    userId: v.string(),
-    email: v.optional(v.string()),
-    productId: v.string(),
-    status: v.string(), // active | trialing | canceled | expired | unpaid | incomplete
-    creemCustomerId: v.optional(v.string()),
-    creemSubscriptionId: v.optional(v.string()),
-    currentPeriodEnd: v.optional(v.number()),
-    // Idempotency / ordering: the Creem event id and timestamp we last
-    // applied. Older or duplicate events are ignored by applyCreemEvent.
-    lastEventId: v.optional(v.string()),
-    lastEventAt: v.optional(v.number()),
-    updatedAt: v.number(),
-  })
-    .index("by_userId", ["userId"])
-    .index("by_creemSubscriptionId", ["creemSubscriptionId"]),
-
-  // ── Webhook event audit log — one row per processed Creem event. ──
-  // Used for idempotency: a replayed event (same id) is a no-op. Also an
-  // audit trail of which event types we've seen.
-  webhookEvents: defineTable({
-    eventId: v.string(),
-    eventType: v.string(),
-    createdAt: v.number(),
-  }).index("by_eventId", ["eventId"]),
-
   // One-to-one identity bridge between a Better Auth product subject and the
   // DID restored by Twyne's ATProto OAuth client. The mutation enforces both
   // indexes as unique inside one Convex transaction.
@@ -626,6 +594,15 @@ export default defineSchema({
     .index("by_productSubject", ["productSubject"])
     .index("by_did", ["did"]),
 
+  /* One row per pre–Not Organic account: when it was told about the move and
+   * when it was retired. Makes the notice send idempotent. */
+  legacyAccountNotices: defineTable({
+    userId: v.string(),
+    email: v.string(),
+    notifiedAt: v.optional(v.number()),
+    retiredAt: v.optional(v.number()),
+  }).index("by_userId", ["userId"]),
+
   accountDeletionJobs: defineTable({
     ownerId: v.string(),
     productSubject: v.string(),
@@ -635,13 +612,6 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_ownerId", ["ownerId"]),
-
-  // Populated only when E2E_OTP_SECRET is configured on a test deployment.
-  e2eOtps: defineTable({
-    email: v.string(),
-    otp: v.string(),
-    createdAt: v.number(),
-  }).index("by_email", ["email"]),
 
   /* ── Multiplayer: shared Lix documents ──
    * When a Pro user shares a folio, its local Lix blob is promoted to a

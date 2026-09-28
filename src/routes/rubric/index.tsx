@@ -1,3 +1,4 @@
+import { nextMoveFor } from "../../utils/rubric-copy";
 import {
   component$,
   useStore,
@@ -51,31 +52,6 @@ function scoreColor(score: number, max: number): string {
 
 function pct(n: number): number {
   return Math.round(n * 100);
-}
-
-/** Concrete, prescriptive next step for a low-scoring criterion. */
-function nextMoveFor(id: string): string {
-  const moves: Record<string, string> = {
-    thesis:
-      "State the load-bearing claim in one sentence near the top, then make every section earn it.",
-    evidence:
-      "Pick the two weakest claims and attach a source, example, or number to each.",
-    structure:
-      "Add a section break or transition where the argument changes gears; cut a paragraph that repeats.",
-    pacing:
-      "Vary sentence length — break one long sentence in three, and merge two short ones.",
-    voice:
-      "Rewrite the opening line in the target tone; let it set the register for the rest.",
-    vocabulary:
-      "Replace three abstractions with concrete nouns; cut one piece of jargon per paragraph.",
-    paragraph: "Split any paragraph over ~6 sentences; give each a single job.",
-    engagement:
-      "Put a stake or a question in the first 100 words so the reader knows why to continue.",
-  };
-  return (
-    moves[id] ??
-    "Make the one change that would most move this score, then re-read."
-  );
 }
 
 /** Static curve anchors for "the brutal curve" explainer. */
@@ -537,7 +513,7 @@ export default component$(() => {
                             color: "var(--color-vermilion)",
                           }}
                         >
-                          Next move → {nextMoveFor(c.id)}
+                          Try this → {nextMoveFor(c.id)}
                         </p>
                       )}
                     </div>

@@ -1,4 +1,4 @@
-import { component$, type PropFunction } from "@qwik.dev/core";
+import { component$, useSignal, type PropFunction } from "@qwik.dev/core";
 import type {
   DossierAttachment,
   DossierCheckResult,
@@ -6,6 +6,7 @@ import type {
   ProjectInterviewAnswers,
 } from "../../types";
 import { isAnswered, probeAnswerText } from "../../utils/dossier-probes";
+import type { BriefEdition } from "../../utils/brief-history";
 
 const FIELD_LABELS: Record<keyof ProjectInterviewAnswers, string> = {
   workingTitle: "Working title",
@@ -47,6 +48,7 @@ interface DossierPreviewProps {
   fieldTone?: Partial<Record<keyof ProjectInterviewAnswers, string>>;
   /** Replaces the working-title masthead — the conversation names its own state. */
   headline?: string;
+  editions?: BriefEdition[];
   onJumpToField$?: PropFunction<(field: keyof ProjectInterviewAnswers) => void>;
   onReadDraft$?: PropFunction<() => void>;
   onApplyObservation$?: PropFunction<(index: number) => void>;
@@ -66,14 +68,20 @@ interface DossierPreviewProps {
  * there is something to report.
  */
 export const DossierPreview = component$((props: DossierPreviewProps) => {
-  const answeredProbes = props.probes.filter(isAnswered);
+  const selectedEditionId = useSignal<string | null>(null);
+  const selectedEdition = props.editions?.find(
+    (edition) => edition.id === selectedEditionId.value,
+  );
+  const answers = selectedEdition?.brief.answers ?? props.answers;
+  const probes = selectedEdition?.brief.probes ?? props.probes;
+  const attachments = selectedEdition?.brief.attachments ?? props.attachments;
+  const answeredProbes = probes.filter(isAnswered);
   const completedFields = Math.max(
     0,
     Math.min(
       FIELD_ORDER.length,
-      props.reviewedFieldCount ??
-        FIELD_ORDER.filter((field) => props.answers[field].trim().length > 0)
-          .length,
+      (selectedEdition ? FIELD_ORDER.length : props.reviewedFieldCount) ??
+        FIELD_ORDER.filter((field) => answers[field].trim().length > 0).length,
     ),
   );
   const hasReview = props.draftReview !== undefined || !!props.onReadDraft$;
@@ -95,8 +103,10 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
               letterSpacing: "-0.015em",
             }}
           >
-            {props.headline ??
-              (props.answers.workingTitle.trim() || "Untitled dossier")}
+            {selectedEdition
+              ? answers.workingTitle.trim() || "Untitled dossier"
+              : (props.headline ??
+                (answers.workingTitle.trim() || "Untitled dossier"))}
           </h1>
         </div>
         <span class="stamp shrink-0 !px-2 !py-[0.15rem] !text-[0.55rem]">
@@ -104,10 +114,56 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
         </span>
       </div>
 
+      {props.editions && props.editions.length > 0 && (
+        <details class="mt-2 border-y border-[var(--color-paper-3)] py-1.5">
+          <summary class="cursor-pointer text-[0.65rem] tracking-[0.12em] text-[var(--color-ink-muted)]">
+            Earlier editions · {props.editions.length}
+          </summary>
+          <p class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]">
+            Saved on this device.
+          </p>
+          <div class="mt-1.5 flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              class={`border px-2 py-1 text-left text-[0.65rem] ${
+                selectedEdition ? "border-[var(--color-paper-3)]" : "field-live"
+              }`}
+              aria-pressed={!selectedEdition}
+              onClick$={() => (selectedEditionId.value = null)}
+            >
+              Current brief
+            </button>
+            {props.editions.map((edition) => (
+              <button
+                key={edition.id}
+                type="button"
+                class={`border px-2 py-1 text-left text-[0.65rem] ${
+                  selectedEdition?.id === edition.id
+                    ? "field-live"
+                    : "border-[var(--color-paper-3)]"
+                }`}
+                aria-pressed={selectedEdition?.id === edition.id}
+                onClick$={() => (selectedEditionId.value = edition.id)}
+                title={new Date(edition.savedAt).toLocaleString()}
+              >
+                {edition.brief.answers.workingTitle.trim() || "Untitled"} ·{" "}
+                {new Date(edition.savedAt).toLocaleDateString()}
+              </button>
+            ))}
+          </div>
+          {selectedEdition && (
+            <p class="mt-1 text-[0.6rem] text-[var(--color-ink-muted)]">
+              Read-only edition saved{" "}
+              {new Date(selectedEdition.savedAt).toLocaleString()}.
+            </p>
+          )}
+        </details>
+      )}
+
       <dl class="mt-3 grid gap-1.5 sm:grid-cols-2">
         {FIELD_ORDER.map((field) => {
-          const active = props.activeField === field;
-          const value = props.answers[field];
+          const active = !selectedEdition && props.activeField === field;
+          const value = answers[field];
           const body = (
             <>
               <dt class="dept-label !text-[0.55rem] !tracking-[0.24em] flex items-center gap-1.5">
@@ -151,7 +207,7 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
               : "border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] hover:border-[var(--color-ink-muted)]"
           }`;
 
-          return props.onJumpToField$ ? (
+          return props.onJumpToField$ && !selectedEdition ? (
             <button
               key={field}
               type="button"
@@ -181,14 +237,13 @@ export const DossierPreview = component$((props: DossierPreviewProps) => {
             class="text-[0.6rem] tracking-[0.14em] uppercase text-[var(--color-ink-muted)]"
             style={{ fontFamily: "var(--font-typewriter)" }}
           >
-            {answeredProbes.length}/{props.probes.length} answered ·{" "}
-            {props.existingMaterialWords ?? 0} words ·{" "}
-            {props.attachments.length} refs
+            {answeredProbes.length}/{probes.length} answered ·{" "}
+            {props.existingMaterialWords ?? 0} words · {attachments.length} refs
           </p>
         </div>
-        {props.probes.length > 0 ? (
+        {probes.length > 0 ? (
           <ol class="mt-1 space-y-0.5">
-            {props.probes.map((probe, index) => (
+            {probes.map((probe, index) => (
               <li
                 key={probe.id}
                 class="flex gap-1.5 text-[0.7rem] leading-[1.4] text-[var(--color-ink-light)]"

@@ -1,4 +1,5 @@
 import { currentModelLocale } from "../../i18n/model-language";
+import { askJudgement } from "../../utils/judgement-client";
 import {
   component$,
   useStore,
@@ -55,6 +56,10 @@ import {
   normalizeAiSettings,
   hasConfiguredAiProvider,
 } from "../../utils/ai-client";
+import {
+  createEditorialNoteReviewer,
+  reviewEditorialNote,
+} from "../../utils/editorial-note-review";
 import type { AiSettings } from "../../types";
 import {
   loadAiSettingsFromIdb,
@@ -678,6 +683,31 @@ export const PersonasPanel = component$(
                   trajectory,
                   instruction: "feedback" as const,
                 };
+                const reviewer = client
+                  ? createEditorialNoteReviewer(
+                      (request) =>
+                        askJudgement(client, {
+                          ...request,
+                          state: Object.fromEntries(
+                            Object.entries(request.state).map(
+                              ([key, value]) => [
+                                key,
+                                typeof value === "string"
+                                  ? value
+                                  : JSON.stringify(value),
+                              ],
+                            ),
+                          ),
+                        }),
+                      {
+                        draft: draftText,
+                        brief: brief ?? null,
+                        persona: p,
+                        profile: store.writerProfile,
+                        operation: "feedback",
+                      },
+                    )
+                  : undefined;
                 const res = await runClientAgent(
                   "persona-feedback",
                   req,
@@ -691,6 +721,11 @@ export const PersonasPanel = component$(
                       [p.id]: snapshot,
                     };
                   },
+                  reviewer
+                    ? {
+                        review: reviewer,
+                      }
+                    : undefined,
                 );
                 // The finished text is deliberately left on screen: the filed
                 // cards are only built once all five editors are in, so
@@ -826,6 +861,48 @@ export const PersonasPanel = component$(
           store.lastProvider = null;
           store.conveneError = malformedProviderResponseError("convene-room");
           return;
+        }
+
+        // The room's visible notes use the same Jev policy gate as quiet and
+        // live review. A missing judgement transport degrades to the already
+        // generated note; a definite protocol/grounding violation is withheld.
+        if (client) {
+          const reviewed = await Promise.all(
+            responses.map(async (response) => {
+              const persona = store.personas.find(
+                (candidate) => candidate.id === response.personaId,
+              );
+              if (!persona) return response;
+              const verdict = await reviewEditorialNote(
+                (request) =>
+                  askJudgement(client, {
+                    ...request,
+                    state: Object.fromEntries(
+                      Object.entries(request.state).map(([key, value]) => [
+                        key,
+                        typeof value === "string"
+                          ? value
+                          : JSON.stringify(value),
+                      ]),
+                    ),
+                  }),
+                {
+                  note: response.text,
+                  quote: response.anchor,
+                  draft: draftText,
+                  brief,
+                  persona,
+                  profile: store.writerProfile,
+                  operation: "feedback",
+                },
+              );
+              return verdict?.vetoed ? null : response;
+            }),
+          );
+          responses = reviewed.filter(
+            (response): response is (typeof responses)[number] =>
+              response !== null,
+          );
         }
 
         // Build PersonaFeedback[] from the responses, persisting each as we go.
@@ -971,6 +1048,29 @@ export const PersonasPanel = component$(
           // own model/temperature; then synthesise the five.
           const clientMemos = await Promise.all(
             store.personas.map(async (p) => {
+              const reviewer = client
+                ? createEditorialNoteReviewer(
+                    (request) =>
+                      askJudgement(client, {
+                        ...request,
+                        state: Object.fromEntries(
+                          Object.entries(request.state).map(([key, value]) => [
+                            key,
+                            typeof value === "string"
+                              ? value
+                              : JSON.stringify(value),
+                          ]),
+                        ),
+                      }),
+                    {
+                      draft: draftText,
+                      brief: brief ?? null,
+                      persona: p,
+                      profile: store.writerProfile,
+                      operation: "analyze",
+                    },
+                  )
+                : undefined;
               const res = await runClientAgent(
                 "persona-analysis",
                 {
@@ -990,6 +1090,11 @@ export const PersonasPanel = component$(
                     [p.id]: snapshot,
                   };
                 },
+                reviewer
+                  ? {
+                      review: reviewer,
+                    }
+                  : undefined,
               );
               if (!res || !res.text.trim() || res.provider === "local") {
                 return null;
@@ -1298,6 +1403,32 @@ export const PersonasPanel = component$(
             const hasByok = hasConfiguredAiProvider(settings2);
             if (hasByok && settings2) {
               try {
+                const reviewer = clientSig.value
+                  ? createEditorialNoteReviewer(
+                      (request) =>
+                        askJudgement(clientSig.value, {
+                          ...request,
+                          state: Object.fromEntries(
+                            Object.entries(request.state).map(
+                              ([key, value]) => [
+                                key,
+                                typeof value === "string"
+                                  ? value
+                                  : JSON.stringify(value),
+                              ],
+                            ),
+                          ),
+                        }),
+                      {
+                        draft: draftText,
+                        brief: brief ?? null,
+                        persona,
+                        profile: store.writerProfile,
+                        operation: "elaborate",
+                        userMessage: userReply.text,
+                      },
+                    )
+                  : undefined;
                 const res = await runClientAgent(
                   "persona-reply",
                   {
@@ -1329,6 +1460,11 @@ export const PersonasPanel = component$(
                       }),
                     );
                   },
+                  reviewer
+                    ? {
+                        review: reviewer,
+                      }
+                    : undefined,
                 );
                 if (res && res.text.trim() && res.provider !== "local") {
                   responseText = res.text;

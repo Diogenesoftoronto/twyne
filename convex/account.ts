@@ -135,11 +135,6 @@ const userQueries = {
       .query("admins")
       .withIndex("by_userId", (q) => q.eq("userId", id))
       .take(DELETE_BATCH_SIZE),
-  subscriptions: (ctx, id) =>
-    ctx.db
-      .query("subscriptions")
-      .withIndex("by_userId", (q) => q.eq("userId", id))
-      .take(DELETE_BATCH_SIZE),
   collaborators: (ctx, id) =>
     ctx.db
       .query("collaborators")
@@ -204,7 +199,6 @@ type Phase =
         | "sharedLix"
         | "handles"
         | "providerIdentity"
-        | "emailOtp"
         | "rateBuckets";
     };
 
@@ -221,7 +215,6 @@ const PHASES: readonly Phase[] = [
   { kind: "sharedLix" },
   { kind: "handles" },
   { kind: "providerIdentity" },
-  { kind: "emailOtp" },
   { kind: "rateBuckets" },
 ];
 
@@ -305,16 +298,6 @@ async function deletePhase(
         .take(DELETE_BATCH_SIZE),
     );
   }
-  if (phase.kind === "emailOtp") {
-    if (!job.email) return 0;
-    return await deleteRows(
-      ctx,
-      await ctx.db
-        .query("e2eOtps")
-        .withIndex("by_email", (q) => q.eq("email", job.email!))
-        .take(DELETE_BATCH_SIZE),
-    );
-  }
   return await deleteRows(
     ctx,
     await ctx.db
@@ -338,31 +321,12 @@ export const deleteAccount = mutation({
     const ownerId = identity.tokenIdentifier;
     const productSubject = identity.subject || identity.tokenIdentifier;
     const email = identity.email?.trim().toLowerCase();
-    const existing = await ctx.db
-      .query("accountDeletionJobs")
-      .withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId))
-      .unique();
-    const now = Date.now();
-    const jobId =
-      existing?._id ??
-      (await ctx.db.insert("accountDeletionJobs", {
-        ownerId,
-        productSubject,
-        email,
-        phase: 0,
-        deletedCount: 0,
-        createdAt: now,
-        updatedAt: now,
-      }));
-    let identityPurged = false;
-    if (email) {
-      try {
-        identityPurged = await purgeBetterAuthIdentity(ctx, email);
-      } catch (error) {
-        console.error("[twyne:account] auth identity purge failed:", error);
-      }
-    }
-    await ctx.scheduler.runAfter(0, continueDeletionReference, { jobId });
+    const identityPurged = await scheduleAccountDeletion(ctx, {
+      ownerId,
+      productSubject,
+      email,
+      userId: identity.subject,
+    });
     return {
       deleted: {},
       identityPurged,
@@ -371,6 +335,48 @@ export const deleteAccount = mutation({
     };
   },
 });
+
+/**
+ * Start (or resume) the resumable deletion job for one account and purge its
+ * Better Auth identity right away so no session survives the request.
+ */
+export async function scheduleAccountDeletion(
+  ctx: MutationCtx,
+  job: {
+    ownerId: string;
+    productSubject: string;
+    email?: string;
+    userId?: string;
+  },
+): Promise<boolean> {
+  const { ownerId, productSubject, email, userId } = job;
+  const existing = await ctx.db
+    .query("accountDeletionJobs")
+    .withIndex("by_ownerId", (q) => q.eq("ownerId", ownerId))
+    .unique();
+  const now = Date.now();
+  const jobId =
+    existing?._id ??
+    (await ctx.db.insert("accountDeletionJobs", {
+      ownerId,
+      productSubject,
+      email,
+      phase: 0,
+      deletedCount: 0,
+      createdAt: now,
+      updatedAt: now,
+    }));
+  let identityPurged = false;
+  if (userId) {
+    try {
+      identityPurged = await purgeBetterAuthIdentity(ctx, userId);
+    } catch (error) {
+      console.error("[twyne:account] auth identity purge failed:", error);
+    }
+  }
+  await ctx.scheduler.runAfter(0, continueDeletionReference, { jobId });
+  return identityPurged;
+}
 
 export const continueDeletion = internalMutation({
   args: { jobId: v.id("accountDeletionJobs") },
@@ -394,7 +400,11 @@ export const continueDeletion = internalMutation({
   },
 });
 
-async function purgeBetterAuthIdentity(ctx: MutationCtx, email: string) {
+/** Remove the Better Auth user row plus its sessions and linked accounts. */
+export async function purgeBetterAuthIdentity(
+  ctx: MutationCtx,
+  userId: string,
+) {
   const adapter = (
     components.betterAuth as unknown as {
       adapter: { findOne: unknown; deleteMany: unknown };
@@ -404,7 +414,7 @@ async function purgeBetterAuthIdentity(ctx: MutationCtx, email: string) {
     adapter.findOne as never,
     {
       model: "user",
-      where: [{ field: "email", operator: "eq", value: email }],
+      where: [{ field: "_id", operator: "eq", value: userId }],
     } as never,
   )) as { _id?: string } | null;
   if (!user?._id) return false;

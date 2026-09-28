@@ -23,19 +23,19 @@ const SOUND_PROFILES: Record<string, RubricSoundProfile> = {
 };
 
 const GRADE_STAMP_ASSETS: Record<string, string> = {
-  "A+": "/assets/rubric-stamps/a-plus.svg",
-  A: "/assets/rubric-stamps/a.svg",
-  "A-": "/assets/rubric-stamps/a-minus.svg",
-  "B+": "/assets/rubric-stamps/b-plus.svg",
-  B: "/assets/rubric-stamps/b.svg",
-  "B-": "/assets/rubric-stamps/b-minus.svg",
-  "C+": "/assets/rubric-stamps/c-plus.svg",
-  C: "/assets/rubric-stamps/c.svg",
-  "C-": "/assets/rubric-stamps/c-minus.svg",
-  "D+": "/assets/rubric-stamps/d-plus.svg",
-  D: "/assets/rubric-stamps/d.svg",
-  "D-": "/assets/rubric-stamps/d-minus.svg",
-  F: "/assets/rubric-stamps/f.svg",
+  "A+": "/assets/rubric-stamps/sunburst-a-plus.png",
+  A: "/assets/rubric-stamps/sunburst-a.png",
+  "A-": "/assets/rubric-stamps/sunburst-a-minus.png",
+  "B+": "/assets/rubric-stamps/sunburst-b-plus.png",
+  B: "/assets/rubric-stamps/sunburst-b.png",
+  "B-": "/assets/rubric-stamps/sunburst-b-minus.png",
+  "C+": "/assets/rubric-stamps/sunburst-c-plus.png",
+  C: "/assets/rubric-stamps/sunburst-c.png",
+  "C-": "/assets/rubric-stamps/sunburst-c-minus.png",
+  "D+": "/assets/rubric-stamps/sunburst-d-plus.png",
+  D: "/assets/rubric-stamps/sunburst-d.png",
+  "D-": "/assets/rubric-stamps/sunburst-d-minus.png",
+  F: "/assets/rubric-stamps/sunburst-f.png",
 };
 
 let rubricAudioContext: AudioContext | null = null;
@@ -54,7 +54,10 @@ export function rubricSoundProfile(grade: string): RubricSoundProfile {
 
 /** Each possible result has its own complete, transparent ink impression. */
 export function rubricGradeStampAsset(grade: string): string {
-  return GRADE_STAMP_ASSETS[grade.trim().toUpperCase()] ?? GRADE_STAMP_ASSETS.F;
+  return (
+    GRADE_STAMP_ASSETS[grade.trim().toUpperCase()] ??
+    "/assets/rubric-stamps/f.svg"
+  );
 }
 
 function audioContextConstructor(): typeof AudioContext | null {

@@ -7,12 +7,11 @@ interface CallbackStore {
 }
 
 /**
- * Signing in no longer decides where the writer goes. It used to read the
- * stored brief and fork between the editor and the dossier interview, which
- * meant an account action silently moved you somewhere you hadn't asked for.
- * Sign-in now returns to the front page and the writer picks from there.
+ * ATProto OAuth return for PDS publishing. This is not a Twyne sign-in (that
+ * is Not Organic, via /auth/notorganic/); it only restores the publishing
+ * session for the writer's repository, then returns them to the editor.
  */
-const DESTINATION = "/";
+const DESTINATION = "/editor/";
 
 export default component$(() => {
   const auth = useAuth();
@@ -22,11 +21,11 @@ export default component$(() => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup, track }) => {
     const loading = track(() => auth.value.loading);
-    const userId = track(() => auth.value.user?.id);
+    const did = track(() => auth.value.atproto?.did);
 
     if (loading) return;
 
-    if (!userId) {
+    if (!did) {
       store.status = "error";
       return;
     }
@@ -40,9 +39,8 @@ export default component$(() => {
     cleanup(() => window.clearTimeout(timeout));
   });
 
-  const user = auth.value.user;
-  const byline = user?.name || user?.email || "your Bluesky account";
-  const providerName = auth.value.provider === "atproto" ? "Bluesky" : "Twyne";
+  const atproto = auth.value.atproto;
+  const byline = atproto?.handle || atproto?.did || "your repository";
 
   return (
     <main
@@ -59,30 +57,29 @@ export default component$(() => {
                 class="mt-3 text-2xl text-[var(--color-ink)]"
                 style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}
               >
-                Confirming your sign-in
+                Connecting your PDS
               </h1>
               <p class="mt-3 text-[0.95rem] leading-6 text-[var(--color-ink-light)]">
-                Twyne is checking the Bluesky callback and restoring your
-                session.
+                Twyne is checking the approval from your PDS.
               </p>
             </>
           )}
 
           {store.status === "success" && (
             <>
-              <p class="stamp mt-4">Signed in</p>
+              <p class="stamp mt-4">Connected</p>
               <h1
                 class="mt-5 text-2xl text-[var(--color-ink)]"
                 style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}
               >
-                {providerName} sign-in is complete.
+                Your PDS is connected for publishing.
               </h1>
               <p class="mt-3 text-[0.95rem] leading-6 text-[var(--color-ink-light)]">
-                You are signed in as{" "}
+                Publishing as{" "}
                 <span class="font-semibold text-[var(--color-ink)]">
                   {byline}
                 </span>
-                . Sending you back to the front page.
+                . Sending you back to the editor.
               </p>
               <Link href={DESTINATION} class="btn-press mt-6 inline-flex">
                 Continue now
@@ -93,20 +90,20 @@ export default component$(() => {
           {store.status === "error" && (
             <>
               <p class="error-slip mt-4" role="alert">
-                Bluesky sign-in did not complete.
+                The PDS connection did not complete.
               </p>
               <h1
                 class="mt-5 text-2xl text-[var(--color-ink)]"
                 style={{ fontFamily: "var(--font-display)", fontWeight: 700 }}
               >
-                Try signing in again.
+                Try connecting again.
               </h1>
               <p class="mt-3 text-[0.95rem] leading-6 text-[var(--color-ink-light)]">
-                The callback returned without an active session. Start from the
-                sign-in panel so Twyne can create a fresh Bluesky request.
+                The callback returned without an active session. Start again
+                from File → Share → Your own repo in the editor.
               </p>
-              <Link href="/signin/" class="btn-press mt-6 inline-flex">
-                Return to sign in
+              <Link href={DESTINATION} class="btn-press mt-6 inline-flex">
+                Return to the editor
               </Link>
             </>
           )}
@@ -117,12 +114,12 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "Completing Sign In · Twyne",
+  title: "Connecting your PDS · Twyne",
   meta: [
     {
       name: "description",
       content:
-        "Completes Bluesky sign-in and returns the writer to the Twyne front page.",
+        "Completes the ATProto connection used to publish to your own PDS.",
     },
   ],
 };

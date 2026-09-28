@@ -38,9 +38,9 @@ describe("dossier preview integration", () => {
     ]) {
       expect(preview).toContain(label);
     }
-    expect(preview).toContain("props.probes.map");
+    expect(preview).toContain("probes.map");
     expect(filed).toContain('BriefRow label="Success signal"');
-    expect(filed).toContain("brief.probes?.map");
+    expect(filed).toContain("displayedBrief.probes?.map");
   });
 
   test("refine awaits folio persistence before leaving the page", async () => {

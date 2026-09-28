@@ -1,4 +1,5 @@
 import { currentModelLocale } from "../i18n/model-language";
+import { askJudgement } from "./judgement-client";
 /**
  * The background room — the editors read as you write.
  *
@@ -51,7 +52,10 @@ import { rubricDraftFingerprint } from "./rubric-judgement-result";
 import { htmlToPlainText } from "./anti-tabula-rasa";
 import { loadFolioContentFromIdb, loadMetaFromIdb } from "./idb";
 import { selectForAttention } from "./passage-triage";
-import { reviewEditorialNote } from "./editorial-note-review";
+import {
+  createEditorialNoteReviewer,
+  reviewEditorialNote,
+} from "./editorial-note-review";
 
 /** Wait for another substantive folio before automatically reading again. */
 export const WORD_DELTA_THRESHOLD = WORDS_PER_FOLIO;
@@ -391,7 +395,7 @@ export async function runPass(): Promise<PersonaFeedback[]> {
       if (client) {
         const verdict = await reviewEditorialNote(
           (request) =>
-            client.action(api.systemOne.ask, {
+            askJudgement(client, {
               ...request,
               state: Object.fromEntries(
                 Object.entries(request.state).map(([key, value]) => [
@@ -491,6 +495,27 @@ async function conveneQuietly(input: {
   if (hasConfiguredAiProvider(settings)) {
     const results = await Promise.all(
       input.personas.map(async (p) => {
+        const reviewer = input.client
+          ? createEditorialNoteReviewer(
+              (request) =>
+                askJudgement(input.client, {
+                  ...request,
+                  state: Object.fromEntries(
+                    Object.entries(request.state).map(([key, value]) => [
+                      key,
+                      typeof value === "string" ? value : JSON.stringify(value),
+                    ]),
+                  ),
+                }),
+              {
+                draft: input.draftText,
+                brief: input.brief,
+                persona: p,
+                profile: writerProfile,
+                operation: "feedback",
+              },
+            )
+          : undefined;
         const res = await runClientAgent(
           "persona-feedback",
           {
@@ -503,6 +528,12 @@ async function conveneQuietly(input: {
             instruction: "feedback" as const,
           },
           settings,
+          undefined,
+          reviewer
+            ? {
+                review: reviewer,
+              }
+            : undefined,
         );
         if (!res || !res.text.trim() || res.provider === "local") return null;
         const note: QuietResponse = {

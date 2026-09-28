@@ -57,6 +57,58 @@ export const SCORE_LEVELS = [
 /* ── Building the request ──────────────────────────────────────── */
 
 /**
+ * The words the model is asked to judge by, frozen per spine criterion.
+ *
+ * The labels a writer reads are free to change; these are not. Rewording the
+ * question moves the marks, and a grade from March has to stay comparable
+ * with one from June. Custom criteria use the writer's own wording.
+ */
+const JUDGE_WORDING: Record<string, { label: string; description: string }> = {
+  targetFit: {
+    label: "Target Fit",
+    description:
+      "Whether the draft is about the right thing, for the right reader — independent of how well it is written",
+  },
+  thesis: {
+    label: "Thesis & Argument",
+    description: "Clarity and strength of the central argument",
+  },
+  evidence: {
+    label: "Evidence & Support",
+    description: "Quality and relevance of supporting evidence",
+  },
+  sufficiency: {
+    label: "Sufficiency & Development",
+    description:
+      "Whether the draft develops enough on-topic material to earn its thesis or goal",
+  },
+  integrity: {
+    label: "Bullshit Resistance",
+    description: "Unsupported certainty, filler, vagueness, and repetition",
+  },
+  structure: {
+    label: "Organization & Flow",
+    description: "Logical structure and transitions",
+  },
+  pacing: {
+    label: "Pacing & Rhythm",
+    description: "Sentence length variation and cadence",
+  },
+  voice: {
+    label: "Voice & Tone",
+    description: "Consistency of voice for the named audience",
+  },
+  vocabulary: {
+    label: "Vocabulary & Diction",
+    description: "Type-token ratio and word choice",
+  },
+  paragraph: {
+    label: "Paragraph Shape",
+    description: "Balance of short and long paragraphs",
+  },
+};
+
+/**
  * One Score question per enabled criterion. `engagement` is excluded for the
  * same reason `weightedCriteriaScore` excludes it: it is derived from the
  * combined grade, so scoring it here would make the grade partly a function of
@@ -68,8 +120,9 @@ export function buildRubricQuestions(
   const questions: Record<string, ScoreQuestion> = {};
   for (const spec of specs) {
     if (!spec.enabled || spec.id === "engagement") continue;
+    const wording = (spec.source === "spine" && JUDGE_WORDING[spec.id]) || spec;
     questions[spec.id] = scoreQuestion(
-      `Rate the draft on ${spec.label}: ${spec.description}.`,
+      `Rate the draft on ${wording.label}: ${wording.description}.`,
       SCORE_LEVELS,
     );
   }

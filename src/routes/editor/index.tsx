@@ -1,7 +1,12 @@
+import { Icon } from "../../components/ui/icon";
+import type { Editor } from "@tiptap/core";
+import { WritingToolsPanel } from "../../components/writing-tools/writing-tools-panel";
+import { IN_FLOW_OPEN_EVENT } from "../../utils/in-flow-events";
 import {
   component$,
   $,
   useSignal,
+  type NoSerialize,
   useStore,
   useVisibleTask$,
 } from "@qwik.dev/core";
@@ -12,12 +17,17 @@ import { AccountMenu } from "../../components/auth/account-menu";
 import { FolioMenu } from "../../components/folio/folio-menu";
 import type { ProjectBrief, Folio, DraftContentDetail } from "../../types";
 import {
+  loadBriefEditions,
+  type BriefEdition,
+} from "../../utils/brief-history";
+import {
   clearCrashMirror,
   loadLegacyDraftHtml,
   loadProjectBrief,
   loadProjectBriefForFolio,
   readCrashMirror,
   saveProjectBriefForFolio,
+  UNTITLED_FOLIO_NAME,
   writeCrashMirror,
 } from "../../utils/anti-tabula-rasa";
 import {
@@ -135,6 +145,7 @@ interface LayoutStore {
   zenActive: boolean;
   hydrated: boolean;
   brief: ProjectBrief | null;
+  briefEditions: BriefEdition[];
   editorSeed: string;
   folios: Folio[];
   activeFolioId: string | null;
@@ -182,6 +193,7 @@ export default component$(() => {
   // Controls the shared AccountMenu (Editor's Office); external triggers such
   // as the ?auth=1 deep link and the local-only nudge flip this open.
   const accountOpen = useSignal(false);
+  const manuscriptEditor = useSignal<NoSerialize<Editor>>();
   const opensVersionHistory =
     location.url.searchParams.get("panel") === "history";
   const store = useStore<LayoutStore>({
@@ -194,6 +206,7 @@ export default component$(() => {
     zenActive: false,
     hydrated: false,
     brief: null,
+    briefEditions: [],
     editorSeed: "",
     folios: [],
     activeFolioId: null,
@@ -285,6 +298,7 @@ export default component$(() => {
           await saveProjectBriefForFolio(store.activeFolioId, legacyBrief);
           store.brief = legacyBrief;
         }
+        store.briefEditions = await loadBriefEditions(store.activeFolioId);
         store.hydrated = true;
 
         const openedFolio = store.folios.find(
@@ -512,6 +526,16 @@ export default component$(() => {
     cleanup(() => window.removeEventListener("twyne:header", headerHandler));
     cleanup(() => window.removeEventListener("twyne:footer", footerHandler));
 
+    // A margin tool opened from the board needs the margin the board covers.
+    const inFlowOpenHandler = () => {
+      store.rightPanelOpen = false;
+      setVisiblePanel(null);
+    };
+    window.addEventListener(IN_FLOW_OPEN_EVENT, inFlowOpenHandler);
+    cleanup(() =>
+      window.removeEventListener(IN_FLOW_OPEN_EVENT, inFlowOpenHandler),
+    );
+
     // Zen mode: collapse both side panels to give the manuscript the full
     // width, and put them back the way they were on exit.
     const zenModeHandler = (e: Event) => {
@@ -564,6 +588,31 @@ export default component$(() => {
       onDraftChangedForRoom(text);
     };
     window.addEventListener("twyne:content", onDraftContent);
+    const onVoicePanel = (event: Event) => {
+      const detail = (
+        event as CustomEvent<{ target: string; handled: boolean }>
+      ).detail;
+      const panel = (
+        {
+          room: "personas",
+          comments: "comments",
+          research: "citations",
+        } as const
+      )[detail.target as "room" | "comments" | "research"];
+      if (panel) {
+        store.rightPanel = panel;
+        store.rightPanelOpen = true;
+        detail.handled = true;
+      }
+      if (detail.target === "dossier") {
+        store.leftSidebarOpen = true;
+        detail.handled = true;
+      }
+    };
+    window.addEventListener("twyne:voice-open-panel", onVoicePanel);
+    cleanup(() =>
+      window.removeEventListener("twyne:voice-open-panel", onVoicePanel),
+    );
 
     // When the writer replies to an editor's note from the inline modal, the
     // Cast panel handles the thread. Reveal it so they see the reply land.
@@ -592,16 +641,18 @@ export default component$(() => {
         : storedActive && folios.some((folio) => folio.id === storedActive)
           ? storedActive
           : (folios[0]?.id ?? null);
-      const [content, brief] = activeFolioId
+      const [content, brief, briefEditions] = activeFolioId
         ? await Promise.all([
             loadFolioContentFromIdb(activeFolioId),
             loadProjectBriefForFolio(activeFolioId),
+            loadBriefEditions(activeFolioId),
           ])
-        : ["", null];
+        : ["", null, []];
       store.folios = folios;
       store.activeFolioId = activeFolioId;
       store.editorSeed = content;
       store.brief = brief;
+      store.briefEditions = briefEditions;
       store.folioKey += 1;
       store.activity = panelActivity();
       window.dispatchEvent(
@@ -748,11 +799,13 @@ export default component$(() => {
     if (store.activeFolioId === folio.id) return;
     stopBackgroundResearch();
     stopBackgroundRoom();
-    const [content, brief] = await Promise.all([
+    const [content, brief, briefEditions] = await Promise.all([
       loadFolioContentFromIdb(folio.id),
       loadProjectBriefForFolio(folio.id),
+      loadBriefEditions(folio.id),
     ]);
     store.brief = brief;
+    store.briefEditions = briefEditions;
     store.editorSeed = content;
     store.sharedLixId = null;
     store.sharedRole = null;
@@ -782,7 +835,7 @@ export default component$(() => {
     const now = Date.now();
     const newFolio: Folio = {
       id: crypto.randomUUID(),
-      name: requestedName.trim() || "Untitled folio",
+      name: requestedName.trim() || UNTITLED_FOLIO_NAME,
       type: "draft",
       createdAt: now,
       updatedAt: now,
@@ -792,6 +845,7 @@ export default component$(() => {
     // Publish a complete blank workspace atomically to reactive consumers.
     store.folios = nextFolios;
     store.brief = null;
+    store.briefEditions = [];
     store.editorSeed = "";
     store.sharedLixId = null;
     store.sharedRole = null;
@@ -815,8 +869,22 @@ export default component$(() => {
   });
 
   // The board's tabs live in board-tabs.ts so the landing preview renders
-  // the same five. Keep the explicit type so a shape change here is loud.
+  // the same contexts. Keep the explicit type so a shape change here is loud.
   const panelTabs: EditorialBoardTab[] = BOARD_TABS;
+  const activeDrawerIndex = store.folios.findIndex(
+    (folio) => folio.id === store.activeFolioId,
+  );
+  const activeDrawerFolio = store.folios[activeDrawerIndex];
+  const drawerTitle =
+    activeDrawerFolio?.name ??
+    (store.sharedLixId ? "Shared manuscript" : "Your folios");
+  const drawerAccess =
+    store.sharedRole === "commenter"
+      ? "Read and comment only"
+      : store.sharedRole === "owner"
+        ? "Owner · Can edit"
+        : "Can edit";
+
   if (!store.hydrated) {
     return (
       <div class="flex h-screen items-center justify-center bg-[var(--color-paper)] text-[var(--color-ink-muted)]">
@@ -895,18 +963,56 @@ export default component$(() => {
         >
           <div class="w-72 h-full flex flex-col">
             <div class="px-5 py-4 border-b border-[var(--color-paper-3)]">
-              <p class="dept-label">Drawer No. III</p>
+              <p class="dept-label flex items-center gap-2">
+                <Icon name="folder" />
+                {activeDrawerIndex >= 0
+                  ? `Drawer No. ${folioNumeral(activeDrawerIndex)}`
+                  : store.sharedLixId
+                    ? "Shared drawer"
+                    : "Folio drawer"}
+              </p>
               <h2
-                class="mt-1 text-2xl text-[var(--color-ink)]"
+                class="mt-1 break-words text-2xl text-[var(--color-ink)]"
                 style="font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em;"
               >
-                Pieces in Progress
+                {drawerTitle}
               </h2>
+              <div
+                class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs leading-5 text-[var(--color-ink-light)]"
+                role="status"
+              >
+                <span
+                  class="inline-flex items-center gap-1.5"
+                  title="Folios in your drawer"
+                >
+                  <Icon name="page" /> {store.folios.length}{" "}
+                  {store.folios.length === 1 ? "folio" : "folios"}
+                </span>
+                <span
+                  class="inline-flex items-center gap-1.5"
+                  title={
+                    store.sharedRole === "commenter"
+                      ? "You can read and add comments, but cannot edit the manuscript."
+                      : store.sharedRole === "owner"
+                        ? "You own this shared manuscript and can edit it."
+                        : "You can edit this manuscript."
+                  }
+                >
+                  <Icon
+                    name={store.sharedRole === "commenter" ? "eye" : "edit"}
+                  />
+                  {store.sharedRole === "commenter" && (
+                    <Icon name="comment-add" />
+                  )}
+                  {drawerAccess}
+                </span>
+              </div>
             </div>
 
             <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               <ProjectBriefCard
                 brief={store.brief}
+                editions={store.briefEditions}
                 onStartInterview$={$(() => {
                   if (!store.activeFolioId) return;
                   void nav(
@@ -1047,18 +1153,15 @@ export default component$(() => {
 
               <button
                 onClick$={() => {
-                  store.rightPanel = "rubric";
+                  store.rightPanel = "tools";
                   store.rightPanelOpen = true;
-                  setVisiblePanel("rubric");
-                  window.dispatchEvent(
-                    new CustomEvent("twyne:open-live-review"),
-                  );
+                  setVisiblePanel("tools");
                 }}
                 class="w-full text-left px-3 py-2.5 text-sm border border-transparent text-[var(--color-ink-light)] hover:bg-[var(--color-paper-soft)] hover:text-[var(--color-ink)] focus-ring block"
                 style="font-family: var(--font-display); border-radius: 2px;"
               >
                 <span class="dept-label block">Writing tools</span>
-                Explore revisions, voice, and evidence
+                Grammar, revisions, voice, and evidence
               </button>
 
               <Link
@@ -1158,7 +1261,7 @@ export default component$(() => {
                   <div class="flex gap-2">
                     <button
                       onClick$={$(async () => {
-                        await createFolio("Untitled folio");
+                        await createFolio(UNTITLED_FOLIO_NAME);
                       })}
                       class="btn-press flex-1 text-xs"
                     >
@@ -1284,12 +1387,14 @@ export default component$(() => {
                     ]);
                     const folioId = activeId ?? folios[0]?.id ?? null;
                     if (!folioId) return;
-                    const [content, brief] = await Promise.all([
+                    const [content, brief, briefEditions] = await Promise.all([
                       loadFolioContentFromIdb(folioId),
                       loadProjectBriefForFolio(folioId),
+                      loadBriefEditions(folioId),
                     ]);
                     store.folios = folios;
                     store.brief = brief;
+                    store.briefEditions = briefEditions;
                     store.editorSeed = content;
                     store.sharedLixId = null;
                     store.sharedRole = null;
@@ -1385,6 +1490,7 @@ export default component$(() => {
             {/* Editor */}
             <div class="h-full min-w-0 flex-1 overflow-auto scroll-pb-12 bg-[var(--color-paper-soft)]">
               <TwyneEditor
+                editorSignal={manuscriptEditor}
                 key={`editor-${store.activeFolioId ?? "none"}-${store.sharedLixId ?? "solo"}-${store.folioKey}`}
                 initialContent={store.editorSeed}
                 activeFolioId={store.activeFolioId ?? undefined}
@@ -1474,6 +1580,13 @@ export default component$(() => {
               }
             />
           </div>
+          <div class={store.rightPanel === "tools" ? "h-full" : "hidden"}>
+            <WritingToolsPanel
+              active={store.rightPanelOpen && store.rightPanel === "tools"}
+              editor={manuscriptEditor.value ?? null}
+              readOnly={store.sharedRole === "commenter"}
+            />
+          </div>
           <div class={store.rightPanel === "history" ? "h-full" : "hidden"}>
             {store.activeFolioId && (
               <VersionHistoryPanel
@@ -1481,7 +1594,7 @@ export default component$(() => {
                 activeFolioId={store.activeFolioId}
                 folioName={
                   store.folios.find((folio) => folio.id === store.activeFolioId)
-                    ?.name ?? "Untitled folio"
+                    ?.name ?? UNTITLED_FOLIO_NAME
                 }
               />
             )}

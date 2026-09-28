@@ -116,9 +116,17 @@ import {
   stripReasoningTags,
 } from "./reasoning-tags";
 import {
+  adaptiveReasoningCeiling,
   reasoningProviderOptions,
+  reasoningProviderOptionsForLevel,
   type ProviderOptions,
 } from "./reasoning-effort";
+import {
+  runAdaptiveEditorialDraft,
+  type EditorialDraftSnapshot,
+  type EditorialReasoningLevel,
+} from "./adaptive-editorial-draft";
+import type { NoteVerdict } from "./note-gate";
 import {
   createFrameCoalescer,
   createGenerationStreamAccumulator,
@@ -972,6 +980,7 @@ async function generateTrackedText({
   tools,
   onText,
   onTrace,
+  reasoningLevel,
 }: {
   feature: AiFeature;
   resolved: {
@@ -992,6 +1001,8 @@ async function generateTrackedText({
   onTrace?: (traceId: string) => void;
   /** Reuse a caller-owned trace when a streaming branch needs manual capture. */
   traceId?: string;
+  /** Per-attempt override used by the adaptive editorial drafting loop. */
+  reasoningLevel?: EditorialReasoningLevel;
 }): Promise<string> {
   system = withResponseLanguage(system, currentModelLocale());
   const start = performance.now();
@@ -1018,10 +1029,13 @@ async function generateTrackedText({
         // Keyed by the model actually being used, so a feature that overrides
         // the provider's default model does not inherit a dial set for a
         // different model — thinking is a per-model capability.
-        providerOptions: reasoningProviderOptions(
-          resolved.provider,
-          resolved.model,
-        ),
+        providerOptions: reasoningLevel
+          ? reasoningProviderOptionsForLevel(
+              resolved.provider,
+              resolved.model,
+              reasoningLevel,
+            )
+          : reasoningProviderOptions(resolved.provider, resolved.model),
         tools,
         stopWhen,
         onText,
@@ -1266,11 +1280,23 @@ PASSAGE:
 
 /* ── Public: run an agent client-side ───────────────────────────── */
 
+export interface AdaptiveClientEditorialOptions {
+  /** Review each private candidate; null means the judgement path is unavailable. */
+  review: (candidate: {
+    text: string;
+    anchor?: string;
+  }) => Promise<NoteVerdict | null>;
+  maxReasoning?: EditorialReasoningLevel;
+  maxAttempts?: number;
+  onProgress?: (snapshot: EditorialDraftSnapshot) => void;
+}
+
 export async function runClientAgent(
   feature: AiFeature,
   req: AgentRequest,
   settings: AiSettings,
   onText?: StreamText,
+  adaptive?: AdaptiveClientEditorialOptions,
 ): Promise<AgentResponse | null> {
   const resolved = resolveFeatureConfigForPersona(
     settings,
@@ -1284,12 +1310,69 @@ export async function runClientAgent(
 
   try {
     const system = buildSystemPrompt(req.persona);
-    const user = buildUserPrompt(req);
     const fallbackType = defaultTypeForPersona(req.persona.id);
-    const { tools: quoteTools, getAnchor } = buildQuoteTools(req.draftText);
     // A persona can consult the writer's own knowledge bases while drafting a
     // note, but only from servers explicitly marked for it in Settings.
-    const tools = { ...quoteTools, ...(await loadMcpTools()) };
+    const mcpTools = await loadMcpTools();
+
+    if (adaptive) {
+      const result = await runAdaptiveEditorialDraft({
+        operation: req.instruction,
+        maxReasoning:
+          adaptive.maxReasoning ??
+          adaptiveReasoningCeiling(resolved.provider, resolved.model),
+        maxAttempts: adaptive.maxAttempts,
+        onProgress: adaptive.onProgress,
+        generate: async ({ attempt, reasoning, repair }) => {
+          const { tools: quoteTools, getAnchor } = buildQuoteTools(
+            req.draftText,
+          );
+          let traceId: string | undefined;
+          const text = await generateTrackedText({
+            feature,
+            resolved,
+            model,
+            system,
+            prompt: buildUserPrompt({
+              ...req,
+              ...(repair.length ? { repairInstructions: [...repair] } : {}),
+            }),
+            spanName: `${feature}:draft-${attempt}`,
+            evalSignals: {
+              twyne_persona_id: req.persona.id,
+              twyne_instruction: req.instruction ?? "feedback",
+              twyne_draft_attempt: attempt,
+              twyne_reasoning_level: reasoning,
+            },
+            tools: { ...quoteTools, ...mcpTools },
+            onTrace: (nextTraceId) => {
+              traceId = nextTraceId;
+            },
+            reasoningLevel: reasoning,
+          });
+          const cleaned = text.trim();
+          if (!cleaned) throw new Error("empty-editorial-draft");
+          const value: AgentResponse = {
+            text: cleaned,
+            type: classifyType(cleaned, fallbackType),
+            provider: resolved.provider.type as AgentResponse["provider"],
+            traceId,
+            anchor: getAnchor(),
+          };
+          return { value, text: cleaned, anchor: value.anchor };
+        },
+        review: adaptive.review,
+      });
+      if (!result.candidate) return null;
+      // Rejected attempts never reach the caller's stream. Only the selected
+      // candidate is published after the review loop is complete.
+      onText?.(textSnapshot(result.candidate.text));
+      return result.candidate.value;
+    }
+
+    const user = buildUserPrompt(req);
+    const { tools: quoteTools, getAnchor } = buildQuoteTools(req.draftText);
+    const tools = { ...quoteTools, ...mcpTools };
     let traceId: string | undefined;
 
     const text = await generateTrackedText({
@@ -3576,6 +3659,48 @@ export async function runClientDossierCheck(
     );
   } catch (err) {
     reportApplicationDiagnostic("twyne:ai-client:dossier-check", err);
+    return null;
+  }
+}
+
+/* ── Public: fill an in-flow tool ───────────────────────────────── */
+
+/**
+ * Stream text for an in-flow tool. The caller owns the prompt (it carries the
+ * tool catalog's JSONL streaming contract) and parses the output; this only
+ * resolves the writer's provider for the feature and tracks the call.
+ */
+export async function runClientInFlowTool(
+  request: {
+    system: string;
+    prompt: string;
+    tool: string;
+    onText?: (text: string) => void;
+  },
+  settings: AiSettings,
+): Promise<string | null> {
+  const cfg = resolveFeatureConfig(settings, "in-flow-tool");
+  if (!cfg) return null;
+  const model = await createModel(cfg.provider, cfg.model);
+  if (!model) return null;
+  try {
+    return await generateTrackedText({
+      feature: "in-flow-tool",
+      resolved: cfg,
+      model,
+      system: request.system,
+      prompt: request.prompt,
+      spanName: "in_flow_tool",
+      evalSignals: {
+        twyne_in_flow_tool: request.tool,
+        twyne_expected_format: "jsonl_patch",
+      },
+      onText: request.onText
+        ? (snapshot) => request.onText!(snapshot.text)
+        : undefined,
+    });
+  } catch (err) {
+    reportApplicationDiagnostic("twyne:ai-client:in-flow-tool", err);
     return null;
   }
 }

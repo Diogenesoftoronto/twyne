@@ -1,6 +1,7 @@
 import { $ } from "@qwik.dev/core";
 import type { Meta, StoryObj } from "storybook-framework-qwik";
 import type { ProjectBrief } from "../../types";
+import type { BriefEdition } from "../../utils/brief-history";
 import { ProjectBriefCard } from "./project-brief-card";
 
 const filedBrief: ProjectBrief = {
@@ -77,6 +78,36 @@ const partialBrief: ProjectBrief = {
   updatedAt: Date.UTC(2026, 7, 31, 14, 45),
 };
 
+const briefEditions: BriefEdition[] = [
+  {
+    id: "edition-2026-08-30",
+    savedAt: Date.UTC(2026, 7, 30, 16, 20),
+    brief: {
+      ...filedBrief,
+      answers: {
+        ...filedBrief.answers,
+        goal: "Explain why libraries belong in public infrastructure budgets.",
+        tone: "Clear, reported, and practical",
+      },
+      updatedAt: Date.UTC(2026, 7, 30, 16, 20),
+    },
+  },
+  {
+    id: "edition-2026-08-28",
+    savedAt: Date.UTC(2026, 7, 28, 11, 5),
+    brief: {
+      ...filedBrief,
+      answers: {
+        ...filedBrief.answers,
+        workingTitle: "The Public Library's Next Chapter",
+        audience: "City budget committees",
+        goal: "Make the case for protecting library budgets.",
+      },
+      updatedAt: Date.UTC(2026, 7, 28, 11, 5),
+    },
+  },
+];
+
 const meta = {
   title: "Brief/ProjectBriefCard",
   component: ProjectBriefCard,
@@ -100,4 +131,8 @@ export const Filed: Story = {
 
 export const IncompleteParticulars: Story = {
   args: { brief: partialBrief },
+};
+
+export const EarlierEditions: Story = {
+  args: { brief: filedBrief, editions: briefEditions },
 };

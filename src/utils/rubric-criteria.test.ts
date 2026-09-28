@@ -111,7 +111,7 @@ describe("reconcileSpecs", () => {
       },
     ];
     const pacing = reconcileSpecs(stored).find((s) => s.id === "pacing")!;
-    expect(pacing.label).toBe("Pacing & Rhythm");
+    expect(pacing.label).toBe("Rhythm");
     expect(pacing.description).not.toBe("stale description");
   });
 

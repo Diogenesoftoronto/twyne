@@ -1,5 +1,6 @@
 import type { JSXOutput } from "@qwik.dev/core";
 import type { DossierFilingState } from "../../utils/dossier-filing";
+import { WorkflowStamp } from "../ui/workflow-stamp";
 
 /**
  * The folio — the one frame both authoring surfaces are filed into.
@@ -40,6 +41,7 @@ interface DossierFolioProps {
   overlays?: JSXOutput;
   /** Persistence state, reflected by the paper outline and filing stamp. */
   filingState?: DossierFilingState;
+  stampKind?: "filed" | "revised";
 }
 
 export const DossierFolio = (props: DossierFolioProps) => {
@@ -80,13 +82,7 @@ export const DossierFolio = (props: DossierFolioProps) => {
               aria-live="polite"
             >
               <div class="dossier-filed-confirmation__paper">
-                <span
-                  class="dossier-filed-confirmation__mark"
-                  aria-hidden="true"
-                >
-                  ✓
-                </span>
-                <strong>Filed</strong>
+                <WorkflowStamp kind={props.stampKind ?? "filed"} />
                 <span>Dossier saved to this folio</span>
               </div>
             </div>

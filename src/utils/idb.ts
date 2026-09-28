@@ -426,6 +426,22 @@ async function tx<T>(
   });
 }
 
+/**
+ * Detach a value from Qwik's reactive store before it reaches IndexedDB.
+ *
+ * Anything read out of a `useStore` — including nested arrays and objects —
+ * is a Proxy, and structured clone rejects Proxies with DataCloneError. The
+ * write helpers here swallow errors, so the write would silently vanish.
+ * Plain values clone as-is; only a clone failure falls back to a JSON copy.
+ */
+export function toStorable<T>(value: T): T {
+  try {
+    return structuredClone(value);
+  } catch {
+    return JSON.parse(JSON.stringify(value)) as T;
+  }
+}
+
 function reqAsPromise<T>(req: IDBRequest<T>): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     req.onsuccess = () => resolve(req.result);
@@ -452,7 +468,7 @@ export async function saveFoliosToIdb(folios: Folio[]): Promise<void> {
   try {
     await tx("folios", "readwrite", async (t) => {
       const store = t.objectStore("folios");
-      for (const f of folios) store.put(f);
+      for (const f of folios) store.put(toStorable(f));
     });
   } catch {
     /* swallow — write failure shouldn't crash the writer */
@@ -572,7 +588,12 @@ export async function saveBriefToIdb(
 ): Promise<void> {
   if (!isBrowser()) return;
   try {
-    const rec: BriefRecord = { folioId, brief, updatedAt: Date.now() };
+    // Briefs arrive from Qwik stores (attachments, probes); see toStorable.
+    const rec: BriefRecord = {
+      folioId,
+      brief: toStorable(brief),
+      updatedAt: Date.now(),
+    };
     await reqAsPromise(
       (await openDb())
         .transaction("brief", "readwrite")
@@ -690,7 +711,7 @@ export async function savePersonasToIdb(personas: Persona[]): Promise<void> {
     await tx("personas", "readwrite", async (t) => {
       const store = t.objectStore("personas");
       store.clear();
-      for (const p of personas) store.put(p);
+      for (const p of personas) store.put(toStorable(p));
     });
   } catch {
     /* ignore */
@@ -736,7 +757,7 @@ export async function saveWriterSettingsToIdb(
   try {
     const rec: MetaRecord = {
       key: WRITER_SETTINGS_META_KEY,
-      value: normalized,
+      value: toStorable(normalized),
       updatedAt: Date.now(),
     };
     await reqAsPromise(
@@ -786,7 +807,7 @@ export async function saveApparatusSettingsToIdb(
   try {
     const rec: MetaRecord = {
       key: APPARATUS_SETTINGS_META_KEY,
-      value: normalized,
+      value: toStorable(normalized),
       updatedAt: Date.now(),
     };
     await reqAsPromise(
@@ -832,7 +853,7 @@ export async function saveRubricResultToIdb(
   try {
     const rec: MetaRecord = {
       key: folioMetaKey("rubric-result", folioId),
-      value: { ...result, ...(folioId ? { folioId } : {}) },
+      value: toStorable({ ...result, ...(folioId ? { folioId } : {}) }),
       updatedAt: Date.now(),
     };
     await reqAsPromise(
@@ -890,7 +911,7 @@ export async function saveRoomAnalysisToIdb(
   try {
     const rec: MetaRecord = {
       key: folioMetaKey("room-analysis", folioId),
-      value: { ...analysis, ...(folioId ? { folioId } : {}) },
+      value: toStorable({ ...analysis, ...(folioId ? { folioId } : {}) }),
       updatedAt: Date.now(),
     };
     await reqAsPromise(
@@ -931,7 +952,11 @@ export async function saveMetaToIdb(
 ): Promise<void> {
   if (!isBrowser()) return;
   try {
-    const rec: MetaRecord = { key, value, updatedAt: Date.now() };
+    const rec: MetaRecord = {
+      key,
+      value: toStorable(value),
+      updatedAt: Date.now(),
+    };
     await reqAsPromise(
       (await openDb())
         .transaction("meta", "readwrite")
@@ -1109,7 +1134,7 @@ export async function putWritingActivityDetailToIdb(
       (await openDb())
         .transaction(IDB_WRITING_ACTIVITY_STORE, "readwrite")
         .objectStore(IDB_WRITING_ACTIVITY_STORE)
-        .put(detail),
+        .put(toStorable(detail)),
     );
   } catch {
     /* writing remains available if activity telemetry storage fails */
@@ -1220,7 +1245,7 @@ export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
   try {
     const rec: MetaRecord = {
       key: "current",
-      value: settings,
+      value: toStorable(settings),
       updatedAt: Date.now(),
     };
     await reqAsPromise(
@@ -1409,7 +1434,7 @@ export async function saveCommentsToIdb(comments: unknown[]): Promise<void> {
     await tx("comments", "readwrite", async (t) => {
       const store = t.objectStore("comments");
       store.clear();
-      for (const c of comments) store.put(c);
+      for (const c of comments) store.put(toStorable(c));
     });
   } catch {
     /* ignore */

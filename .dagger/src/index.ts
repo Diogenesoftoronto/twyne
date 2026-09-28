@@ -40,6 +40,7 @@ export class Twyne {
       defaultPath: "/",
       ignore: [
         "node_modules",
+        "launch-videos",
         ".git",
         ".dagger/sdk",
         "dist",
@@ -76,6 +77,7 @@ export class Twyne {
       defaultPath: "/",
       ignore: [
         "node_modules",
+        "launch-videos",
         ".git",
         ".dagger/sdk",
         "dist",
@@ -103,6 +105,7 @@ export class Twyne {
       defaultPath: "/",
       ignore: [
         "node_modules",
+        "launch-videos",
         ".git",
         ".dagger/sdk",
         "dist",
@@ -130,6 +133,7 @@ export class Twyne {
       defaultPath: "/",
       ignore: [
         "node_modules",
+        "launch-videos",
         ".git",
         ".dagger/sdk",
         "dist",
@@ -160,6 +164,7 @@ export class Twyne {
       defaultPath: "/",
       ignore: [
         "node_modules",
+        "launch-videos",
         ".git",
         ".dagger/sdk",
         "dist",
@@ -193,6 +198,7 @@ export class Twyne {
       defaultPath: "/",
       ignore: [
         "node_modules",
+        "launch-videos",
         ".git",
         ".dagger/sdk",
         "dist",
@@ -235,6 +241,7 @@ export class Twyne {
       defaultPath: "/",
       ignore: [
         "node_modules",
+        "launch-videos",
         ".git",
         ".dagger/sdk",
         "dist",
@@ -272,6 +279,7 @@ export class Twyne {
       defaultPath: "/",
       ignore: [
         "node_modules",
+        "launch-videos",
         ".git",
         ".dagger/sdk",
         "dist",

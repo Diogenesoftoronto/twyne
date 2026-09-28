@@ -81,6 +81,7 @@ export const SpeakButton = component$<SpeakButtonProps>((props) => {
       voices: props.voices,
       instructions: props.instructions,
       author: props.author ?? props.label,
+      label: props.label ?? props.author,
       client: clientSig.value ?? null,
       signedIn: Boolean(auth.value.user),
     });

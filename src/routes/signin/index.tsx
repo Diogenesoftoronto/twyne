@@ -82,10 +82,9 @@ export default component$(() => {
               style={{ fontFamily: "var(--font-serif)" }}
             >
               <p>
-                Two short steps: enter your email, then sign in with a passkey
-                or a one-time code. We send a fresh code the first time and
-                every time a passkey hasn't been set up — once you register one,
-                the passkey becomes the default.
+                One step: continue with your Not Organic account. The same
+                account holds your wallet, your plan and — if you publish there
+                — your PDS repository.
               </p>
               <p>
                 Your BYOK provider keys stay in this browser, not on Twyne's
@@ -161,7 +160,7 @@ export const head: DocumentHead = {
     {
       name: "description",
       content:
-        "Sign in to Twyne with a passkey, one-time email code, or Bluesky and sync your writing across devices.",
+        "Sign in to Twyne with your Not Organic account and sync your writing across devices.",
     },
   ],
 };
