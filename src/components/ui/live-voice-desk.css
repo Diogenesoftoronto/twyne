@@ -1,0 +1,231 @@
+.live-voice-desk {
+  position: fixed;
+  z-index: var(--z-modal, 100);
+  right: 1rem;
+  bottom: 1rem;
+  width: min(430px, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  display: flex;
+  flex-direction: column;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink);
+  border-radius: 12px;
+  overflow: hidden;
+  font-family: var(--font-typewriter);
+  font-size: 0.78rem;
+}
+.live-voice-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--color-paper-3);
+}
+.live-voice-character {
+  font-size: 2rem;
+  color: var(--color-vermilion);
+}
+.live-voice-heading {
+  min-width: 0;
+  flex: 1;
+}
+.live-voice-heading h2 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 0.3rem;
+}
+.live-voice-heading h2 span {
+  font-size: 0.65rem;
+  font-weight: 400;
+  margin-left: 0.3rem;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  padding: 0.1rem 0.3rem;
+}
+.live-voice-heading p {
+  font-size: 0.7rem;
+  margin: 0;
+}
+.live-voice-body {
+  padding: 1rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.live-voice-speaker {
+  display: grid;
+  gap: 0.4rem;
+}
+.live-voice-speaker select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--color-ink-muted);
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  border-radius: 4px;
+  padding: 0.65rem 0.5rem;
+  font: inherit;
+}
+.live-voice-intro {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+.live-voice-context {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  padding: 0.75rem;
+  background: var(--color-paper-soft);
+  border-radius: 4px;
+}
+.live-voice-captions {
+  display: grid;
+  gap: 1rem;
+  max-height: 220px;
+  overflow: auto;
+}
+.live-voice-captions h3,
+.live-voice-edit h3 {
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.live-voice-captions p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.live-voice-notice {
+  padding: 0.65rem;
+  background: var(--color-paper-soft);
+  line-height: 1.5;
+  border-radius: 4px;
+}
+.live-voice-edit {
+  border: 1px solid var(--color-ink-muted);
+  border-radius: 6px;
+  padding: 0.8rem;
+}
+.live-voice-edit del,
+.live-voice-edit ins {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  margin: 0.6rem 0;
+  max-height: 180px;
+  overflow: auto;
+}
+.live-voice-edit ins {
+  text-decoration: none;
+  font-weight: 600;
+}
+.live-voice-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.7rem;
+}
+.live-voice-credit {
+  font-size: 0.7rem;
+  line-height: 1.5;
+  display: grid;
+  gap: 0.65rem;
+}
+.live-voice-credit strong {
+  font-size: 1rem;
+}
+.live-voice-consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.live-voice-consent input {
+  margin-top: 0.25rem;
+  accent-color: var(--color-vermilion);
+}
+.live-voice-detail {
+  font-size: 0.65rem;
+}
+.live-voice-error {
+  color: var(--color-vermilion);
+  line-height: 1.5;
+}
+.live-voice-sources {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+}
+.live-voice-sources p {
+  margin-top: 0.3rem;
+  font-family: var(--font-serif);
+  font-size: 0.9rem;
+}
+.live-voice-desk a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.live-voice-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--color-paper-3);
+  flex-wrap: wrap;
+}
+.live-voice-footer > a {
+  margin-right: auto;
+  font-size: 0.65rem;
+}
+.live-voice-footer .btn-press,
+.live-voice-footer .btn-paper {
+  padding: 0.6rem 0.7rem;
+  font-size: 0.7rem;
+  min-height: 40px;
+}
+.live-voice-desk button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.live-voice-desk :focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 3px;
+}
+.live-voice-meter {
+  display: flex;
+  gap: 3px;
+  height: 24px;
+  align-items: center;
+}
+.live-voice-meter span {
+  width: 3px;
+  height: 24px;
+  background: var(--color-vermilion);
+  transition: transform 100ms linear;
+}
+.live-voice-time {
+  margin-right: auto;
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 480px) {
+  .live-voice-desk {
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+  .live-voice-body {
+    padding: 0.85rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-voice-meter span {
+    transition: none;
+  }
+}

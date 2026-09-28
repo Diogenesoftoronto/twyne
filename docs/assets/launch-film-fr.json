@@ -1,0 +1,619 @@
+{
+  "narrationProvider": "OpenAI",
+  "model": "gpt-4o-mini-tts",
+  "voice": "onyx",
+  "sourceFilm": "The Room",
+  "translations": {
+    "Start from": "Commencez par",
+    "a blank page": "une page blanche",
+    "a brief.": "un dossier.",
+    "Working title": "Titre provisoire",
+    "The Case for Slow Letters": "Pour les lettres manuscrites",
+    "Reader": "Lecteur",
+    "Editors who still answer their mail": "Les éditeurs qui répondent au courrier",
+    "Argument": "Argument",
+    "A handwritten reply earns trust email can't": "Une réponse manuscrite inspire confiance",
+    "Length": "Longueur",
+    "1,800 words": "1 800 mots",
+    "From a ten-minute interview": "Dix minutes de questions",
+    "The Editorial Room": "L’atelier éditorial",
+    "The Devil's Advocate": "L’avocate du diable",
+    "The Patron of Strengths": "L’alliée de vos points forts",
+    "The Scholar": "Le savant",
+    "The Copy Chief": "Le réviseur",
+    "The Target Reader": "Votre lecteur",
+    "Galley Proof": "Épreuve éditoriale",
+    "Thesis": "Thèse",
+    "Structure": "Structure",
+    "Style": "Style",
+    "Evidence": "Sources",
+    "Fluency": "Aisance",
+    "Not graded": "Non noté",
+    "Synced": "Synchronisé",
+    "Published": "Publié",
+    "Draft with a room full of editors.": "Écrivez avec tout un atelier d’éditeurs.",
+    "Brief": "Dossier",
+    "Graded on": "Évalué selon",
+    "the target.": "votre objectif.",
+    "Rubric": "Grille",
+    "Draft 3": "Version 3",
+    "On brief": "Dossier",
+    "Rhythm": "Rythme",
+    "Voice": "Voix",
+    "Sounds fluent": "Aisance"
+  },
+  "lines": [
+    {
+      "id": 1,
+      "at": 0.7,
+      "slot": 3.22,
+      "text": "Tout écrivain connaît cette page.",
+      "rate": 1,
+      "words": [
+        {
+          "text": "Tout",
+          "start": 0,
+          "end": 0.23999999463558197
+        },
+        {
+          "text": "écrivain",
+          "start": 0.23999999463558197,
+          "end": 0.7400000095367432
+        },
+        {
+          "text": "connaît",
+          "start": 0.7400000095367432,
+          "end": 1.2999999523162842
+        },
+        {
+          "text": "cette",
+          "start": 1.2999999523162842,
+          "end": 1.5399999618530273
+        },
+        {
+          "text": "page",
+          "start": 1.5399999618530273,
+          "end": 1.840000033378601
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "at": 4,
+      "slot": 3.8,
+      "text": "La page blanche. Celle qui attend.",
+      "rate": 1,
+      "words": [
+        {
+          "text": "La",
+          "start": 0,
+          "end": 0.25999999046325684
+        },
+        {
+          "text": "page",
+          "start": 0.25999999046325684,
+          "end": 0.5799999833106995
+        },
+        {
+          "text": "blanche",
+          "start": 0.5799999833106995,
+          "end": 1.1799999475479126
+        },
+        {
+          "text": "Celle",
+          "start": 1.7400000095367432,
+          "end": 1.840000033378601
+        },
+        {
+          "text": "qui",
+          "start": 1.840000033378601,
+          "end": 2.0199999809265137
+        },
+        {
+          "text": "attend",
+          "start": 2.0199999809265137,
+          "end": 2.3399999141693115
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "at": 8.1,
+      "slot": 7.5,
+      "text": "Twyne commence par un dossier : dix minutes de questions pour guider chaque outil de votre atelier.",
+      "rate": 1,
+      "words": [
+        {
+          "text": "Twyne",
+          "start": 0,
+          "end": 0.5799999833106995
+        },
+        {
+          "text": "commence",
+          "start": 0.5799999833106995,
+          "end": 1.159999966621399
+        },
+        {
+          "text": "par",
+          "start": 1.159999966621399,
+          "end": 1.3799999952316284
+        },
+        {
+          "text": "un",
+          "start": 1.3799999952316284,
+          "end": 1.5800000429153442
+        },
+        {
+          "text": "dossier",
+          "start": 1.5800000429153442,
+          "end": 1.9800000190734863
+        },
+        {
+          "text": "dix",
+          "start": 2.4800000190734863,
+          "end": 2.559999942779541
+        },
+        {
+          "text": "minutes",
+          "start": 2.559999942779541,
+          "end": 2.819999933242798
+        },
+        {
+          "text": "de",
+          "start": 2.819999933242798,
+          "end": 3
+        },
+        {
+          "text": "questions",
+          "start": 3,
+          "end": 3.440000057220459
+        },
+        {
+          "text": "pour",
+          "start": 3.440000057220459,
+          "end": 3.819999933242798
+        },
+        {
+          "text": "guider",
+          "start": 3.819999933242798,
+          "end": 4.079999923706055
+        },
+        {
+          "text": "chaque",
+          "start": 4.079999923706055,
+          "end": 4.5
+        },
+        {
+          "text": "outil",
+          "start": 4.5,
+          "end": 4.78000020980835
+        },
+        {
+          "text": "de",
+          "start": 4.78000020980835,
+          "end": 5.079999923706055
+        },
+        {
+          "text": "votre",
+          "start": 5.079999923706055,
+          "end": 5.21999979019165
+        },
+        {
+          "text": "atelier",
+          "start": 5.21999979019165,
+          "end": 5.559999942779541
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "at": 16,
+      "slot": 2.62,
+      "text": "Et l’atelier est au complet.",
+      "rate": 1,
+      "words": [
+        {
+          "text": "et",
+          "start": 0,
+          "end": 0.11999999731779099
+        },
+        {
+          "text": "l’atelier",
+          "start": 0.11999999731779099,
+          "end": 0.7400000095367432
+        },
+        {
+          "text": "est",
+          "start": 0.7400000095367432,
+          "end": 1.059999942779541
+        },
+        {
+          "text": "au",
+          "start": 1.059999942779541,
+          "end": 1.2000000476837158
+        },
+        {
+          "text": "complet",
+          "start": 1.2000000476837158,
+          "end": 1.5800000429153442
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "at": 19.3,
+      "slot": 15.54,
+      "text": "Cinq éditeurs relisent votre texte à la lumière du dossier. Une sceptique pour vos arguments. Une alliée pour vos points forts. Un savant pour vos sources. Un réviseur pour chaque phrase. Et le lecteur à qui vous vous adressez.",
+      "rate": 1,
+      "words": [
+        {
+          "text": "Cinq",
+          "start": 0,
+          "end": 0.5
+        },
+        {
+          "text": "éditeurs",
+          "start": 0.5,
+          "end": 1.2200000286102295
+        },
+        {
+          "text": "relisent",
+          "start": 1.2200000286102295,
+          "end": 1.9600000381469727
+        },
+        {
+          "text": "votre",
+          "start": 1.9600000381469727,
+          "end": 2.359999895095825
+        },
+        {
+          "text": "texte",
+          "start": 2.359999895095825,
+          "end": 3.0199999809265137
+        },
+        {
+          "text": "à",
+          "start": 3.0199999809265137,
+          "end": 3.140000104904175
+        },
+        {
+          "text": "la",
+          "start": 3.140000104904175,
+          "end": 3.4000000953674316
+        },
+        {
+          "text": "lumière",
+          "start": 3.4000000953674316,
+          "end": 3.680000066757202
+        },
+        {
+          "text": "du",
+          "start": 3.680000066757202,
+          "end": 3.940000057220459
+        },
+        {
+          "text": "dossier",
+          "start": 3.940000057220459,
+          "end": 4.340000152587891
+        },
+        {
+          "text": "Une",
+          "start": 4.679999828338623,
+          "end": 4.78000020980835
+        },
+        {
+          "text": "sceptique",
+          "start": 4.78000020980835,
+          "end": 5.340000152587891
+        },
+        {
+          "text": "pour",
+          "start": 5.340000152587891,
+          "end": 5.699999809265137
+        },
+        {
+          "text": "vos",
+          "start": 5.699999809265137,
+          "end": 5.920000076293945
+        },
+        {
+          "text": "arguments",
+          "start": 5.920000076293945,
+          "end": 6.320000171661377
+        },
+        {
+          "text": "Une",
+          "start": 6.820000171661377,
+          "end": 6.820000171661377
+        },
+        {
+          "text": "alliée",
+          "start": 6.820000171661377,
+          "end": 7.260000228881836
+        },
+        {
+          "text": "pour",
+          "start": 7.260000228881836,
+          "end": 7.639999866485596
+        },
+        {
+          "text": "vos",
+          "start": 7.639999866485596,
+          "end": 7.820000171661377
+        },
+        {
+          "text": "points",
+          "start": 7.820000171661377,
+          "end": 8.140000343322754
+        },
+        {
+          "text": "forts",
+          "start": 8.140000343322754,
+          "end": 8.4399995803833
+        },
+        {
+          "text": "Un",
+          "start": 8.720000267028809,
+          "end": 8.880000114440918
+        },
+        {
+          "text": "savant",
+          "start": 8.880000114440918,
+          "end": 9.180000305175781
+        },
+        {
+          "text": "pour",
+          "start": 9.180000305175781,
+          "end": 9.619999885559082
+        },
+        {
+          "text": "vos",
+          "start": 9.619999885559082,
+          "end": 9.84000015258789
+        },
+        {
+          "text": "sources",
+          "start": 9.84000015258789,
+          "end": 10.199999809265137
+        },
+        {
+          "text": "Un",
+          "start": 10.5600004196167,
+          "end": 10.65999984741211
+        },
+        {
+          "text": "réviseur",
+          "start": 10.65999984741211,
+          "end": 11.260000228881836
+        },
+        {
+          "text": "pour",
+          "start": 11.260000228881836,
+          "end": 11.5600004196167
+        },
+        {
+          "text": "chaque",
+          "start": 11.5600004196167,
+          "end": 11.800000190734863
+        },
+        {
+          "text": "phrase",
+          "start": 11.800000190734863,
+          "end": 12.199999809265137
+        },
+        {
+          "text": "Et",
+          "start": 12.5,
+          "end": 12.600000381469727
+        },
+        {
+          "text": "le",
+          "start": 12.600000381469727,
+          "end": 12.779999732971191
+        },
+        {
+          "text": "lecteur",
+          "start": 12.779999732971191,
+          "end": 13.300000190734863
+        },
+        {
+          "text": "à",
+          "start": 13.300000190734863,
+          "end": 13.65999984741211
+        },
+        {
+          "text": "qui",
+          "start": 13.65999984741211,
+          "end": 13.739999771118164
+        },
+        {
+          "text": "vous",
+          "start": 13.739999771118164,
+          "end": 13.880000114440918
+        },
+        {
+          "text": "vous",
+          "start": 13.880000114440918,
+          "end": 14.180000305175781
+        },
+        {
+          "text": "adressez",
+          "start": 14.180000305175781,
+          "end": 14.579999923706055
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "at": 35.6,
+      "slot": 5.38,
+      "text": "La grille évalue votre objectif, pas seulement l’aisance de votre style.",
+      "rate": 1,
+      "words": [
+        {
+          "text": "La",
+          "start": 0,
+          "end": 0.20000000298023224
+        },
+        {
+          "text": "grille",
+          "start": 0.20000000298023224,
+          "end": 0.47999998927116394
+        },
+        {
+          "text": "évalue",
+          "start": 0.47999998927116394,
+          "end": 1.0199999809265137
+        },
+        {
+          "text": "votre",
+          "start": 1.0199999809265137,
+          "end": 1.2999999523162842
+        },
+        {
+          "text": "objectif",
+          "start": 1.2999999523162842,
+          "end": 1.9600000381469727
+        },
+        {
+          "text": "pas",
+          "start": 2.140000104904175,
+          "end": 2.3399999141693115
+        },
+        {
+          "text": "seulement",
+          "start": 2.3399999141693115,
+          "end": 2.6600000858306885
+        },
+        {
+          "text": "l’aisance",
+          "start": 2.6600000858306885,
+          "end": 3.0999999046325684
+        },
+        {
+          "text": "de",
+          "start": 3.0999999046325684,
+          "end": 3.240000009536743
+        },
+        {
+          "text": "votre",
+          "start": 3.240000009536743,
+          "end": 3.440000057220459
+        },
+        {
+          "text": "style",
+          "start": 3.440000057220459,
+          "end": 3.819999933242798
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "at": 43.2,
+      "slot": 5.14,
+      "text": "Votre texte reste sur votre bureau. Vous seul décidez de le partager.",
+      "rate": 1,
+      "words": [
+        {
+          "text": "Votre",
+          "start": 0,
+          "end": 0.3400000035762787
+        },
+        {
+          "text": "texte",
+          "start": 0.3400000035762787,
+          "end": 0.8600000143051147
+        },
+        {
+          "text": "reste",
+          "start": 0.8600000143051147,
+          "end": 1.159999966621399
+        },
+        {
+          "text": "sur",
+          "start": 1.159999966621399,
+          "end": 1.440000057220459
+        },
+        {
+          "text": "votre",
+          "start": 1.440000057220459,
+          "end": 1.7000000476837158
+        },
+        {
+          "text": "bureau",
+          "start": 1.7000000476837158,
+          "end": 2.0399999618530273
+        },
+        {
+          "text": "Vous",
+          "start": 2.4200000762939453,
+          "end": 2.559999942779541
+        },
+        {
+          "text": "seul",
+          "start": 2.559999942779541,
+          "end": 2.799999952316284
+        },
+        {
+          "text": "décidez",
+          "start": 2.799999952316284,
+          "end": 3.259999990463257
+        },
+        {
+          "text": "de",
+          "start": 3.259999990463257,
+          "end": 3.4600000381469727
+        },
+        {
+          "text": "le",
+          "start": 3.4600000381469727,
+          "end": 3.640000104904175
+        },
+        {
+          "text": "partager",
+          "start": 3.640000104904175,
+          "end": 4
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "at": 49.3,
+      "slot": 4.3,
+      "text": "Twyne. Écrivez avec tout un atelier d’éditeurs.",
+      "rate": 1,
+      "words": [
+        {
+          "text": "Écrivez",
+          "start": 0.699999988079071,
+          "end": 1.340000033378601
+        },
+        {
+          "text": "avec",
+          "start": 1.340000033378601,
+          "end": 1.8600000143051147
+        },
+        {
+          "text": "tout",
+          "start": 1.8600000143051147,
+          "end": 2.180000066757202
+        },
+        {
+          "text": "un",
+          "start": 2.180000066757202,
+          "end": 2.380000114440918
+        },
+        {
+          "text": "atelier",
+          "start": 2.380000114440918,
+          "end": 2.640000104904175
+        },
+        {
+          "text": "d’éditeurs",
+          "start": 2.640000104904175,
+          "end": 3.3399999141693115
+        }
+      ]
+    }
+  ]
+}

@@ -61,10 +61,14 @@ describe("auth analytics identity", () => {
 describe("pending auth attempt", () => {
   test("survives a redirect and is consumed exactly once", () => {
     const storage = memoryStorage();
-    rememberAuthAttempt({ method: "bluesky", flow: "signup" }, storage, 1_000);
+    rememberAuthAttempt(
+      { method: "notorganic", flow: "signup" },
+      storage,
+      1_000,
+    );
 
     expect(consumeAuthAttempt(storage, 2_000)).toEqual({
-      method: "bluesky",
+      method: "notorganic",
       flow: "signup",
       startedAt: 1_000,
     });
@@ -74,7 +78,7 @@ describe("pending auth attempt", () => {
   test("drops expired, future, invalid, and explicitly cleared attempts", () => {
     const storage = memoryStorage();
     rememberAuthAttempt(
-      { method: "email_otp", flow: "signin" },
+      { method: "notorganic", flow: "signin" },
       storage,
       1_000,
     );
@@ -82,7 +86,11 @@ describe("pending auth attempt", () => {
       consumeAuthAttempt(storage, 1_000 + 15 * 60 * 1000 + 1),
     ).toBeUndefined();
 
-    rememberAuthAttempt({ method: "passkey", flow: "signin" }, storage, 2_000);
+    rememberAuthAttempt(
+      { method: "notorganic", flow: "signin" },
+      storage,
+      2_000,
+    );
     expect(consumeAuthAttempt(storage, 1_999)).toBeUndefined();
 
     storage.setItem(
@@ -91,7 +99,11 @@ describe("pending auth attempt", () => {
     );
     expect(consumeAuthAttempt(storage, 2)).toBeUndefined();
 
-    rememberAuthAttempt({ method: "passkey", flow: "signin" }, storage, 3_000);
+    rememberAuthAttempt(
+      { method: "notorganic", flow: "signin" },
+      storage,
+      3_000,
+    );
     clearAuthAttempt(storage);
     expect(consumeAuthAttempt(storage, 3_001)).toBeUndefined();
   });

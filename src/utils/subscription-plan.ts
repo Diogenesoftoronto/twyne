@@ -1,4 +1,4 @@
-/** New purchases only. Legacy Creem subscriptions keep their existing terms. */
+/** The Twyne Pro plan, sold and verified through the Not Organic wallet. */
 export const TWYNE_PRO_PLAN = {
   id: "twyne_pro_v2",
   monthlyUsd: 29,

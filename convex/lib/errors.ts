@@ -15,7 +15,7 @@
  *   try {
  *     await ctx.runMutation(...);
  *   } catch (err) {
- *     reportError("creem.webhook", err, { ...context });
+ *     reportError("notorganic.signIn", err, { ...context });
  *     return new Response("internal error", { status: 500 });
  *   }
  *
@@ -23,7 +23,7 @@
  */
 
 interface ReportArgs {
-  /** Stable label like "creem.webhook" or "lixRelay.handleLspRequest". */
+  /** Stable label like "notorganic.signIn" or "lixRelay.handleLspRequest". */
   feature: string;
   /** The error itself; non-Error values are stringified. */
   error: unknown;

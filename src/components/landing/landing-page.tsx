@@ -6,6 +6,7 @@ import {
 } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
 import { WorkspaceTour } from "./workspace-tour";
+import { LaunchFilm } from "./launch-film";
 import {
   BriefPlatePreview,
   DraftPlatePreview,
@@ -387,6 +388,13 @@ export const LandingPage = component$<LandingPageProps>(
                 )}
               </div>
             </div>
+          </section>
+
+          <section
+            class="mx-auto mt-12 max-w-4xl sm:mt-16"
+            aria-label="Twyne launch film"
+          >
+            <LaunchFilm />
           </section>
 
           {/* ── The room, working ── */}

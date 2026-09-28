@@ -335,7 +335,7 @@ export const searchSources = action({
     // the bucket is consumed first so a noisy client can't bypass via a
     // provider that happens to be configured.
     const isPro = identity
-      ? await userIsPro(ctx, identity.tokenIdentifier)
+      ? await userIsPro(ctx, identity.subject || identity.tokenIdentifier)
       : false;
     if (identity) {
       await consumeRateLimit(ctx, {
@@ -361,7 +361,7 @@ export const fetchSource = action({
   handler: async (ctx, args): Promise<FetchedSource & { provider: string }> => {
     const identity = await ctx.auth.getUserIdentity();
     const isPro = identity
-      ? await userIsPro(ctx, identity.tokenIdentifier)
+      ? await userIsPro(ctx, identity.subject || identity.tokenIdentifier)
       : false;
     if (identity) {
       await consumeRateLimit(ctx, {

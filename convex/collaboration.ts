@@ -139,7 +139,10 @@ export const shareFolio = action({
     const userId = identity.tokenIdentifier;
 
     // Pro gate — only subscribers can promote a local doc to shared.
-    const isPro = await userIsPro(ctx, userId);
+    const isPro = await userIsPro(
+      ctx,
+      identity.subject || identity.tokenIdentifier,
+    );
     if (!isPro) {
       throw new Error("Sharing documents is a Pro feature.");
     }

@@ -87,13 +87,13 @@ describe("product analytics contract", () => {
   test("allows only stable error codes, never raw error messages", () => {
     expect(
       buildProductEventPayload("sign_in_failed", {
-        method: "passkey",
+        method: "notorganic",
         flow: "signin",
         error_code: "AUTHENTICATION_FAILED",
       }),
     ).toEqual({
       analytics_version: 2,
-      method: "passkey",
+      method: "notorganic",
       flow: "signin",
       error_code: "AUTHENTICATION_FAILED",
     });
@@ -112,14 +112,14 @@ describe("product analytics contract", () => {
     expect(
       buildProductEventPayload("sign_in_completed", {
         provider: "convex",
-        method: "email_otp",
+        method: "notorganic",
         flow: "signup",
         email: "private@example.test",
       } as never),
     ).toEqual({
       analytics_version: 2,
       provider: "convex",
-      method: "email_otp",
+      method: "notorganic",
       flow: "signup",
     });
   });

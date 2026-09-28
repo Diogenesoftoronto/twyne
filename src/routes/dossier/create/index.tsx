@@ -23,8 +23,11 @@ import {
   buildStarterDocument,
   clearStartingMaterial,
   createProjectBrief,
+  briefTitleFromFolioName,
   loadStartingMaterial,
   saveProjectBriefForFolio,
+  UNTITLED_FOLIO_NAME,
+  withFolioTitle,
 } from "../../../utils/anti-tabula-rasa";
 import {
   loadActiveFolioIdFromIdb,
@@ -95,6 +98,9 @@ export default component$(() => {
       null;
     store.folioId = folio?.id ?? null;
     store.folioName = folio?.name ?? "";
+    // A folio named in the editor already has a title; start the brief there.
+    const folioTitle = briefTitleFromFolioName(store.folioName);
+    if (folioTitle) store.formAnswers = { workingTitle: folioTitle };
     // Pull the manuscript text the refine page stashed when the writer hit
     // "Start over", then clear it so a subsequent ordinary /dossier/create
     // visit doesn't see a stale carry-over.
@@ -113,13 +119,14 @@ export default component$(() => {
     ) => {
       filingState.value = "filing";
       try {
+        answers = withFolioTitle(answers, store.folioName);
         const brief = createProjectBrief(answers, null, attachments, probes);
         let folioId = store.folioId;
         let folioName = store.folioName;
         if (!folioId) {
           const folio: Folio = {
             id: crypto.randomUUID(),
-            name: answers.workingTitle || "Untitled folio",
+            name: answers.workingTitle || UNTITLED_FOLIO_NAME,
             type: "draft",
             createdAt: Date.now(),
             updatedAt: Date.now(),
@@ -151,7 +158,7 @@ export default component$(() => {
         }
 
         await saveActiveFolioIdToIdb(folioId);
-        if (folioName && folioName === "Untitled folio") {
+        if (folioName && folioName === UNTITLED_FOLIO_NAME) {
           const folios = await loadFoliosFromIdb();
           await saveFoliosToIdb(
             folios.map((folio) =>

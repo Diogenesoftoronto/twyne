@@ -92,3 +92,6 @@ stryker.log
 # devenv (nix dev shell) — local build cache
 .devenv/
 .pre-commit-config.yaml
+
+# Local Popmelt annotations, screenshots, threads, and project memory
+.popmelt/

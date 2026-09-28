@@ -110,6 +110,41 @@ afterAll(() => {
 });
 
 describe("speechState", () => {
+  test("a character comment starts with its own voice selected and named in the menu", async () => {
+    const calls: Array<{ voice?: string }> = [];
+    const client = {
+      action: async (_ref: unknown, args: { voice?: string }) => {
+        calls.push(args);
+        return { audioBase64: "", mimeType: "audio/mpeg" };
+      },
+    } as never;
+    await speakModule.speak({
+      id: "lecteur-note",
+      text: "I lost the thread here.",
+      author: "Le Lecteur",
+      client,
+      signedIn: true,
+    });
+    const menu = await speakModule.currentSpeechVoiceMenu();
+    expect(calls[0].voice).toBe("alloy");
+    expect(menu?.selected).toBe("alloy");
+    expect(menu?.options.find((option) => option.id === "alloy")?.label).toBe(
+      "Le Lecteur",
+    );
+    expect(speakModule.speechState().label).toBe("Le Lecteur");
+    await speakModule.restartSpeechWithVoice("onyx");
+    expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe("onyx");
+    await speakModule.speak({
+      id: "lecteur-next",
+      text: "And here too.",
+      author: "Le Lecteur",
+      client,
+      signedIn: true,
+    });
+    expect((await speakModule.currentSpeechVoiceMenu())?.selected).toBe(
+      "alloy",
+    );
+  });
   test("starts idle with nothing selected", () => {
     const s = speakModule.speechState();
     expect(s.status).toBe("idle");

@@ -18,6 +18,8 @@ export interface WritingToolsNotebook {
   intentionalPromises: string[];
 }
 
+const writes = new Map<string, Promise<void>>();
+
 let storage = { load: loadMetaFromIdb, save: saveMetaToIdb };
 export function __setWritingToolsStorageForTests(
   adapter: typeof storage | null,
@@ -79,14 +81,25 @@ export async function saveWritingToolsNotebook(
 ): Promise<void> {
   if (!folioId) throw new Error("No folio selected");
   const snapshot = JSON.parse(JSON.stringify(notebook)) as WritingToolsNotebook;
-  await storage.save(`writing-tools:${folioId}`, snapshot);
-  const saved = await loadWritingToolsNotebook(folioId);
-  if (JSON.stringify(saved) !== JSON.stringify(snapshot))
-    throw new Error("Local save failed");
-  if (typeof window !== "undefined")
-    window.dispatchEvent(
-      new CustomEvent("twyne:writing-material-changed", {
-        detail: { folioId },
-      }),
-    );
+  const key = `writing-tools:${folioId}`;
+  const write = (writes.get(key) ?? Promise.resolve())
+    .catch(() => {})
+    .then(async () => {
+      await storage.save(key, snapshot);
+      const saved = await loadWritingToolsNotebook(folioId);
+      if (JSON.stringify(saved) !== JSON.stringify(snapshot))
+        throw new Error("Local save failed");
+      if (typeof window !== "undefined")
+        window.dispatchEvent(
+          new CustomEvent("twyne:writing-material-changed", {
+            detail: { folioId },
+          }),
+        );
+    });
+  writes.set(key, write);
+  try {
+    await write;
+  } finally {
+    if (writes.get(key) === write) writes.delete(key);
+  }
 }

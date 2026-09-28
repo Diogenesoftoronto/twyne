@@ -4,7 +4,6 @@ import {
   liveReviewSnapshot,
   type LiveReviewSnapshot,
 } from "../../utils/live-review";
-import { WritingTools } from "./writing-tools";
 
 export const LiveReviewPanel = component$<{ folioId: string }>(
   ({ folioId }) => {
@@ -31,11 +30,6 @@ export const LiveReviewPanel = component$<{ folioId: string }>(
           {snapshot.folioId === folioId
             ? snapshot.message
             : "Review follows your saved draft."}
-        </p>
-        <p class="live-review-panel__disclosure">
-          Saved writing is sent for automatic analysis. Pause above the
-          manuscript at any time. Findings are suggestions; your words stay
-          yours.
         </p>
         {result && (
           <>
@@ -113,7 +107,6 @@ export const LiveReviewPanel = component$<{ folioId: string }>(
             )}
           </>
         )}
-        <WritingTools embedded />
       </div>
     );
   },

@@ -29,18 +29,18 @@ export interface AuthState {
   loading: boolean;
   /** True only after a Better Auth token has been installed in Convex. */
   convexAuthenticated?: boolean;
-  /** Restored ATProto identity, present alongside a Better Auth session. */
+  /**
+   * Restored ATProto OAuth session, used only to write records to a PDS.
+   * It is never a Twyne identity; sign-in is Not Organic only.
+   */
   atproto?: {
     did: string;
     handle: string;
     displayName?: string;
     avatar?: string;
   };
-  /**
-   * Which identity backs Convex. ATProto can coexist in `atproto`; it only
-   * becomes the primary display identity when Better Auth is absent.
-   */
-  provider?: "convex" | "atproto";
+  /** Set once a Not Organic–backed Better Auth session is present. */
+  provider?: "convex";
 }
 
 export const AuthContext =
@@ -94,23 +94,14 @@ export const AuthProvider = component$(() => {
             loading: isAtprotoCallback && atprotoPending,
           };
         } else {
-          authState.value = atproto
-            ? {
-                user: {
-                  id: atproto.did,
-                  analyticsId: atproto.did,
-                  email: atproto.handle,
-                  name: atproto.displayName ?? atproto.handle,
-                  image: atproto.avatar,
-                },
-                loading: betterAuthPending,
-                provider: "atproto",
-                atproto,
-              }
-            : { user: null, loading: atprotoPending || betterAuthPending };
+          authState.value = {
+            user: null,
+            loading: betterAuthPending,
+            atproto,
+          };
         }
       };
-      // A Bluesky refresh must not delay the separate Twyne/Convex session.
+      // A PDS publishing session must not delay the Twyne/Convex session.
       void import("./atproto").then(
         async ({ initSession, ATPROTO_SESSION_CHANGED }) => {
           if (disposed) return;
@@ -150,7 +141,10 @@ export const AuthProvider = component$(() => {
           const isCurrent = () => !disposed && generation === authGeneration;
           const user: AuthUser = {
             id: sessionData.user.id,
-            email: sessionData.user.email ?? "",
+            // Not Organic users carry an undeliverable placeholder address.
+            email: sessionData.user.email?.endsWith("@notorganic.invalid")
+              ? ""
+              : (sessionData.user.email ?? ""),
             name: sessionData.user.name ?? undefined,
             image: sessionData.user.image ?? undefined,
           };

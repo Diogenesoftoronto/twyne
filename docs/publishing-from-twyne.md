@@ -14,8 +14,7 @@ Use this for the quickest public link hosted by Twyne.
 
 Anyone with that link can read the piece but cannot edit it. Press
 **Unpublish** in the same panel to take the Twyne-hosted page down. This option
-requires a Twyne email or passkey account; it is not available in a Bluesky
-session. A regular writer publishes a shareable post under their claimed
+requires signing in to Twyne with Not Organic. A regular writer publishes a shareable post under their claimed
 writer handle. A Twyne blog administrator publishes to the main `/blog` feed;
 non-administrators cannot publish to that feed.
 
@@ -23,10 +22,11 @@ non-administrators cannot publish to that feed.
 
 Use this when your own ATProto repository should be the source of truth.
 
-1. Sign in to Twyne with Bluesky or another ATProto provider that supports
-   OAuth.
-2. Open the folio, then **File** > **Share**.
-3. In **Your own repo**, press **Publish to your PDS**.
+1. Open the folio, then **File** > **Share**.
+2. In **Your own repo**, enter your handle and press **Connect PDS**. Approve
+   on your PDS's own page; Twyne never sees the password. This is a
+   publishing connection only; your Twyne sign-in stays Not Organic.
+3. Back in **Your own repo**, press **Publish to your PDS**.
 4. Copy the record URI, open its reading view, or inspect the ATProto record.
 
 Twyne creates or reuses a `site.standard.publication` record and files the
@@ -34,6 +34,28 @@ folio as a `site.standard.document` with its Markdown content. **Re-publish
 (update)** updates the same PDS document record; **Unpublish from PDS** deletes
 that document from your PDS. Twyne keeps the record key locally only so it can
 update or remove the correct record later.
+
+The **Your own repo** section is at the bottom of the Share dialog. Until a PDS
+is connected it shows only the handle field and **Connect PDS**.
+
+### Using a Not Organic PDS account
+
+Not Organic accounts live on `https://pds.notorganic.info`, with handles such
+as `yourname.pds.notorganic.info`. Enter that handle in step 2 above;
+the same account you sign in to Twyne with is then the repository you publish
+into.
+
+Known limitation: Twyne requests the `include:site.standard.authFull`
+permission set. As of 2026-09-23, `pds.notorganic.info` (PDS 0.4.219) lists
+only `atproto` and the `transition:*` scopes. If approval fails with a scope
+error, the fix is for Twyne to fall back to `atproto transition:generic` on
+servers that don't list permission sets.
+
+To check a publish independently, list the document records in your repo:
+
+```sh
+curl "https://pds.notorganic.info/xrpc/com.atproto.repo.listRecords?repo=<your-handle>&collection=site.standard.document"
+```
 
 ## 3. Publish to an existing Micropub site
 

@@ -21,7 +21,7 @@ export type LandingCtaDestination =
   | "sign_in"
   | "downloads";
 export type SignInMethod = AnalyticsAuthMethod;
-export type SignInProvider = "convex" | "atproto";
+export type SignInProvider = "convex";
 export type FolioAnalyticsSource =
   | "landing"
   | "editor"

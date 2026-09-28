@@ -36,6 +36,7 @@
  */
 
 import type { ProjectBrief, WriterProfile } from "../types";
+import type { EditorialPolicyAssessment } from "./editorial-policy";
 import {
   noul,
   score as scoreQuestion,
@@ -301,6 +302,8 @@ export interface NoteVerdict {
    * voice, facts, and preferences are separable repairs.
    */
   rewriteKind: RewriteKind | null;
+  /** Optional code-authored protocol assessment from the separate policy pass. */
+  policy?: EditorialPolicyAssessment | null;
 }
 
 export type RewriteKind =
@@ -540,6 +543,55 @@ export function readNoteVerdict(
       present.every((d) => d.score >= thresholds.minDimension),
     reasons,
     rewriteKind,
+  };
+}
+
+/**
+ * Compose the independent protocol judgement with the existing note rubric.
+ * Policy failures never improve a note's quality score. Critical failures
+ * veto delivery; major failures route a repair while leaving the caller's
+ * existing uncertainty policy intact.
+ */
+export function applyEditorialPolicy(
+  verdict: NoteVerdict,
+  policy: EditorialPolicyAssessment | null,
+): NoteVerdict {
+  if (!policy || policy.failed.length === 0) {
+    return { ...verdict, policy };
+  }
+
+  const criticalFailure = policy.failed.some(
+    (check) => check.severity === "critical",
+  );
+  const hasAccuracyRepair = policy.failed.some((check) =>
+    [
+      "identity_invented",
+      "instruction_override",
+      "draft_claim_unanchored",
+    ].includes(check.id),
+  );
+  const hasFactsRepair = policy.failed.some(
+    (check) => check.id === "private_context_exposed",
+  );
+  const hasSubstanceRepair = !hasAccuracyRepair && !hasFactsRepair;
+  const repairKinds = [
+    hasAccuracyRepair ? "accuracy" : null,
+    hasFactsRepair ? "facts" : null,
+    hasSubstanceRepair ? "substance" : null,
+  ].filter((kind): kind is RewriteKind => kind !== null);
+  const policyRewriteKind: RewriteKind | null =
+    repairKinds.length > 1 ? "both" : (repairKinds[0] ?? null);
+
+  return {
+    ...verdict,
+    policy,
+    vetoed: verdict.vetoed || criticalFailure,
+    pass: false,
+    reasons: [
+      ...verdict.reasons,
+      ...policy.failed.map((check) => `policy: ${check.repair}`),
+    ],
+    rewriteKind: verdict.rewriteKind ?? policyRewriteKind,
   };
 }
 

@@ -23,8 +23,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command:
-      "bun --env-file=.env.creem.test.local run dev.frontend -- --host localhost",
+    command: "bun run dev.frontend -- --host localhost",
     url: "http://localhost:5173",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

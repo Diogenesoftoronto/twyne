@@ -148,10 +148,6 @@ export async function consumeInline(
 /* ── Sensible defaults per protected action ──────────────────────── */
 
 export const RATE_LIMITS = {
-  /** OTP verification email: 5 per minute per email. */
-  otpSend: { limit: 5, windowMs: 60_000 },
-  /** Creem checkout creation: 10 per minute per user. */
-  checkoutCreate: { limit: 10, windowMs: 60_000 },
   /** Hosted voice synthesis: 20 per minute per user. */
   voiceSynthesize: { limit: 20, windowMs: 60_000 },
   /**

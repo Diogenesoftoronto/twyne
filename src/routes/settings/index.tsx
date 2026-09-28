@@ -1,8 +1,8 @@
 import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { ApplicationNotice } from "../../components/ui/application-notice";
-import { NotOrganicConnection } from "../../components/settings/notorganic-connection";
 import { LanguageSettings } from "../../components/settings/language-settings";
+import { JudgementModelSettings } from "../../components/settings/judgement-model-settings";
 import { useGT } from "gt-qwik";
 import { translate } from "gt-qwik/runtime";
 import { SearchableModelSelect } from "../../components/ui/searchable-model-select";
@@ -16,6 +16,7 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type {
   AiSettings,
+  JudgementSettings,
   AiProviderConfig,
   AiFeature,
   AiFeatureOverride,
@@ -261,6 +262,7 @@ const FEATURE_LABELS: Record<AiFeature, string> = {
   "research-extract": "Auto-Research (claim finding)",
   "interview-turn": "Conversational Interview",
   "dossier-check": "Read My Draft",
+  "in-flow-tool": "In-flow Tools",
 };
 
 const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
@@ -291,6 +293,8 @@ const FEATURE_DESCRIPTIONS: Record<AiFeature, string> = {
     "The room interviews you, one question at a time, and synthesises a dossier from your answers.",
   "dossier-check":
     "Cross-references the dossier against the current draft and surfaces where the draft has outgrown the brief.",
+  "in-flow-tool":
+    "Fills the small tools that appear in the margin while you write: sentence variants and reader questions.",
 };
 
 function providerMetaFor(type: AiProviderConfig["type"]) {
@@ -945,6 +949,16 @@ export default component$(() => {
     if (!catalogProvider) await refreshProviderModels(config.id);
   });
 
+  // Typing a key or address saves after a short pause, not per keystroke.
+  const setJudgement = $((next: JudgementSettings) => {
+    store.settings = { ...store.settings, judgement: next };
+    clearTimeout(
+      (window as { __twyneJudgementSave?: number }).__twyneJudgementSave,
+    );
+    (window as { __twyneJudgementSave?: number }).__twyneJudgementSave =
+      window.setTimeout(() => void persist(), 500);
+  });
+
   const removeProvider = $((id: string) => {
     store.removingProviderId = null;
     const next = store.settings.providers.filter((p) => p.id !== id);
@@ -1596,7 +1610,6 @@ export default component$(() => {
 
         {store.loaded && (
           <div class="space-y-8">
-            <NotOrganicConnection />
             <LanguageSettings />
             {/* ── Appearance ── */}
             <section class="folio p-5">
@@ -3795,6 +3808,12 @@ export default component$(() => {
                   </div>
                 </section>
               )}
+
+            {/* ── Judgement model ── */}
+            <JudgementModelSettings
+              value={store.settings.judgement}
+              onChange$={setJudgement}
+            />
 
             {/* ── Apparatus ── */}
             <section class="folio p-5">

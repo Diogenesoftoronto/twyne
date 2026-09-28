@@ -1,5 +1,6 @@
 import { component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
 import { useSpeechPlayer } from "../../utils/use-speech-player";
+import { openLiveVoice } from "../../utils/live-voice-workspace";
 import {
   currentSpeechSourceOffset,
   currentSpeechText,
@@ -543,6 +544,20 @@ export const GlobalSpeechPlayer = component$(() => {
         </div>
 
         <div class="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            class="tool-btn"
+            title="Talk with this editor"
+            aria-label="Talk with this editor"
+            onClick$={() =>
+              openLiveVoice(
+                player.state.label ?? undefined,
+                currentSpeechText() ?? undefined,
+              )
+            }
+          >
+            ◉ <span class="hidden sm:inline">Talk</span>
+          </button>
           <button
             type="button"
             class="tool-btn"

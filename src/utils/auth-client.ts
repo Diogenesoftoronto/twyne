@@ -3,8 +3,6 @@ import {
   convexClient,
   crossDomainClient,
 } from "@convex-dev/better-auth/client/plugins";
-import { passkeyClient } from "@better-auth/passkey/client";
-import { emailOTPClient } from "better-auth/client/plugins";
 import { isDev } from "@qwik.dev/core/build";
 
 const convexSiteUrl = import.meta.env.VITE_CONVEX_SITE_URL as
@@ -19,13 +17,7 @@ const mockClient = {
     get: () => ({ data: null, isPending: false }),
     subscribe: () => () => {},
   },
-  signIn: { email: async () => ({ error: null }) },
-  signUp: { email: async () => ({ error: null }) },
   signOut: async () => {},
-  emailOtp: {
-    sendVerificationOtp: async () => ({ error: null }),
-    verifyEmail: async () => ({ error: null }),
-  },
 } as any;
 
 export const authClient =
@@ -34,8 +26,6 @@ export const authClient =
     : createAuthClient({
         baseURL: convexSiteUrl,
         plugins: [
-          passkeyClient(),
-          emailOTPClient(),
           // `crossDomainClient()` ships a `getActions` signature that
           // drifts from the `BetterAuthClientPlugin` constraint in this
           // better-auth version. The runtime contract is fine; suppress
@@ -45,11 +35,4 @@ export const authClient =
         ],
       });
 
-export const {
-  signIn,
-  signUp,
-  signOut,
-  useSession,
-  passkey: passkeyApi,
-  emailOtp,
-} = authClient;
+export const { signOut, useSession } = authClient;

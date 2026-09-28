@@ -6,7 +6,8 @@ export async function redeemProviderLink(
   siteUrl: string,
   issuer: string,
   fetchImpl: typeof fetch = fetch,
-): Promise<{ did: string; sessionVersion: number }> {
+  redirectPath = "/settings/",
+): Promise<{ did: string; sessionVersion: number; handle?: string }> {
   if (
     !input.code ||
     input.code.length > 2048 ||
@@ -26,7 +27,7 @@ export async function redeemProviderLink(
       code: input.code,
       code_verifier: input.verifier,
       client_id: origin,
-      redirect_uri: `${origin}/settings/`,
+      redirect_uri: `${origin}${redirectPath}`,
       dpop_jwk: dpop.publicJwk,
     }),
   });
@@ -44,7 +45,7 @@ export async function redeemProviderLink(
   if (!accountResponse.ok)
     throw new Error("Not Organic could not verify account ownership.");
   const account = (await accountResponse.json()) as {
-    account?: { did?: string };
+    account?: { did?: string; handle?: string | null };
   };
   // This token has now been authenticated by the issuer with its DPoP proof.
   const encoded = body.access_token.split(".")[1];
@@ -63,5 +64,10 @@ export async function redeemProviderLink(
       "The verified account does not match this Twyne connection.",
     );
   }
-  return { did: account.account.did, sessionVersion: claims.session_version! };
+  const handle = account.account.handle;
+  return {
+    did: account.account.did,
+    sessionVersion: claims.session_version!,
+    ...(typeof handle === "string" && handle ? { handle } : {}),
+  };
 }

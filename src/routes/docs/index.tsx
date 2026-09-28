@@ -3,6 +3,8 @@ import { Link, type DocumentHead } from "@qwik.dev/router";
 import { KeybindingList } from "../../components/editor/keybinding-list";
 import { keybindingList } from "../../utils/keybindings";
 
+import { LaunchFilm } from "../../components/landing/launch-film";
+
 const MANUAL_SHORTCUTS = keybindingList("mac");
 
 export default component$(() => {
@@ -148,6 +150,12 @@ export default component$(() => {
             Contents
           </p>
           <div class="grid sm:grid-cols-2 gap-x-6">
+            <a href="#launch-film" class="toc-link">
+              Watch the launch film
+            </a>
+            <a href="#account-and-live" class="toc-link">
+              Sign-in &amp; live voice
+            </a>
             <a href="#dossier" class="toc-link">
               I. The Dossier
             </a>
@@ -181,6 +189,37 @@ export default component$(() => {
           </div>
         </nav>
 
+        <section id="launch-film" class="doc-section">
+          <LaunchFilm />
+          <p class="doc-p mt-5">
+            The film follows your language choice in Preferences. French readers
+            see the French edition, including narration and on-screen text;
+            English and other languages use the English edition. With Automatic
+            selected, Twyne follows your browser’s language preferences.
+          </p>
+        </section>
+        <section id="account-and-live" class="doc-section">
+          <h2 class="doc-h2">Sign-in &amp; Live Voice</h2>
+          <p class="doc-p">
+            Sign in with Not Organic to use your account, hosted credits and
+            plan across devices. Twyne no longer offers email codes or its own
+            passkeys. You can keep writing locally without signing in.
+          </p>
+          <p class="doc-p">
+            Open Talk from the compositor, an editor’s comment or the narration
+            player to speak with an editor. Live shows captions, lets you mute
+            the microphone, and can find passages or propose edits. Approve a
+            proposed edit before it changes your manuscript. Switching folios
+            ends the conversation; captions and microphone recordings are not
+            saved.
+          </p>
+          <p class="doc-p">
+            Live requires a Pro plan or available Twyne welcome credit. A
+            conversation reserves up to $0.50; delegated language requests have
+            a separate $0.05 maximum each. The voice desk shows these limits
+            before you start.
+          </p>
+        </section>
         {/* ── I. The Dossier ── */}
         <section id="dossier" class="doc-section">
           <p
@@ -504,9 +543,10 @@ export default component$(() => {
             Your manuscript is yours. We intend to keep it that way.
           </p>
           <p class="doc-p">
-            <strong>API keys:</strong> Stored only in your browser's IndexedDB.
-            Never sent to Twyne's servers. Never logged. We can't see them, and
-            we don't want to.
+            <strong>API keys:</strong> Saved in your browser’s IndexedDB. Remote
+            BYOK requests pass through Twyne’s server relay, which forwards your
+            key and request to the selected provider. Local model endpoints stay
+            direct.
           </p>
           <p class="doc-p">
             <strong>Drafts and folios:</strong> Saved locally in your browser
@@ -515,11 +555,10 @@ export default component$(() => {
             models.
           </p>
           <p class="doc-p">
-            <strong>AI calls:</strong> When you BYOK, your draft text goes
-            directly from your browser to the provider you chose (OpenAI,
-            Anthropic, etc.). Twyne's servers never see the prompt or the
-            response. When you use the default server path, the call goes
-            through our Convex backend, but drafts are not retained.
+            <strong>AI calls:</strong> When you BYOK, your draft text goes to
+            the provider you chose, through the relay for remote endpoints.
+            Hosted calls go through Convex and Not Organic. Provider processing
+            and content-logging consent are managed in Not Organic.
           </p>
           <p class="doc-p">
             <strong>Published pieces:</strong> Only what you explicitly publish
@@ -547,19 +586,27 @@ export default component$(() => {
           </p>
           <p class="doc-p">
             <strong>Export</strong> your folio as Markdown, standalone HTML,
-            plain text, or a full Twyne backup (JSON with brief, folios, and
-            content). Use the File menu in the masthead.
+            plain text, PDF, Word, Typst source, or a full Twyne backup (JSON
+            with brief, folios, and content). Use the File menu in the masthead.
           </p>
           <p class="doc-p">
             <strong>Share</strong> a public reading view of any folio. Anyone
             with the link can read it; no one can edit it. Unpublish instantly.
           </p>
           <p class="doc-p">
-            <strong>Publish to your PDS</strong> after signing in with Bluesky
-            or another ATProto provider. Twyne files a Standard.site publication
-            and document in your own repository, serves a verifiable public
-            reading page, and updates the same record when you re-publish.
-            Unpublishing removes the document from your PDS.
+            <strong>Publish to your PDS</strong> by connecting Bluesky or
+            another ATProto provider in the Share dialog. This publishing
+            connection is separate from your Not Organic sign-in. Twyne files a
+            Standard.site publication and document in your own repository,
+            serves a verifiable public reading page, and updates the same record
+            when you re-publish. Unpublishing removes the document from your
+            PDS.
+          </p>
+          <p class="doc-p">
+            <strong>PDF (Typst)</strong> compiles your manuscript on this device
+            with bundled fonts. You can cancel an export or download the .typ
+            source. Equations, diagrams and unsupported content need the regular
+            PDF export; Typst reports these limits before downloading.
           </p>
         </section>
 

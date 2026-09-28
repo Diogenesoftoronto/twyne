@@ -64,10 +64,10 @@ export default component$(() => {
         3. Your account
       </h2>
       <p class="doc-p">
-        You may use Twyne without an account. If you create one, including via
-        Bluesky / ATProto, you are responsible for activity under it and for
-        keeping your credentials secure. You may delete your account and
-        associated synced data at any time.
+        You may use Twyne without an account. If you create one (through Not
+        Organic), you are responsible for activity under it and for keeping your
+        credentials secure. You may delete your account and associated synced
+        data at any time.
       </p>
       <p class="doc-p">
         You agree to provide accurate information where required, not to

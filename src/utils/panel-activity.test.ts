@@ -61,6 +61,7 @@ describe("counts", () => {
       comments: 0,
       citations: 0,
       history: 0,
+      tools: 0,
     });
   });
 

@@ -45,8 +45,7 @@ interface SharedFolio {
  *
  * Signed out, it's a single user icon that opens the sign-in panel. Signed in,
  * it shows the writer's name (and avatar, if their session carries one) with a
- * dropdown to Preferences, the Manual, and the AuthPanel (which holds sign-out
- * and the passkey offer).
+ * dropdown to Preferences, the Manual, and the AuthPanel (which holds sign-out).
  *
  * This is the exact control the editor toolbar uses; the landing header mounts
  * the same component so a signed-in writer sees a consistent account menu
@@ -130,12 +129,10 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
   });
 
   const accountDisplay = auth.value.user
-    ? auth.value.provider === "atproto"
-      ? auth.value.user.email
-      : profileDisplay.value ||
-        auth.value.user.email ||
-        auth.value.user.name ||
-        "Signed in"
+    ? profileDisplay.value ||
+      auth.value.user.name ||
+      auth.value.user.email ||
+      "Signed in"
     : null;
   const accountTitle = accountDisplay
     ? `Signed in as ${accountDisplay}`

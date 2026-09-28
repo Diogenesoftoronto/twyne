@@ -3,11 +3,8 @@ import {
   action,
   internalQuery,
   internalMutation,
-  mutation,
   query,
 } from "./_generated/server";
-import { makeFunctionReference } from "convex/server";
-import { redeemProviderLink } from "./lib/providerLink";
 import {
   assertUniqueDidLink,
   issueNotOrganicAccessToken,
@@ -54,16 +51,6 @@ export const getMyProviderIdentity = query({
   },
 });
 
-/** Legacy clients must reverify ownership through the provider authorization flow. */
-export const linkDidFromLegacyBrowserSession = mutation({
-  args: { did: didValidator },
-  handler: async () => {
-    throw new Error(
-      "Connect Not Organic from Settings to verify account ownership.",
-    );
-  },
-});
-
 export const saveVerifiedLink = internalMutation({
   args: { did: didValidator, subject: v.string(), sessionVersion: v.number() },
   handler: async (ctx, { did, subject, sessionVersion }) => {
@@ -107,32 +94,6 @@ export const saveVerifiedLink = internalMutation({
   },
 });
 
-export const completeProviderLink = action({
-  args: { code: v.string(), verifier: v.string() },
-  returns: v.object({ did: v.string() }),
-  handler: async (ctx, args): Promise<{ did: string }> => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity)
-      throw new Error("Sign in to Twyne before connecting Not Organic.");
-    const link = await redeemProviderLink(
-      args,
-      process.env.SITE_URL ?? "https://twyne.love",
-      notOrganicIssuer(),
-    );
-    await ctx.runMutation(
-      makeFunctionReference<
-        "mutation",
-        { did: string; subject: string; sessionVersion: number }
-      >("providerIdentity:saveVerifiedLink"),
-      {
-        ...link,
-        subject: productSubject(identity),
-      },
-    );
-    return { did: link.did };
-  },
-});
-
 async function linkedDidForAction(ctx: any) {
   const identity = await ctx.auth.getUserIdentity();
   if (!identity) throw new Error("Not signed in");
@@ -142,7 +103,7 @@ async function linkedDidForAction(ctx: any) {
     { productSubject: productSubject(identity) },
   );
   if (!row) {
-    throw new Error("Link an ATProto identity before using Not Organic");
+    throw new Error("Sign in with Not Organic to use your wallet.");
   }
   return row as { did: string; sessionVersion: number };
 }

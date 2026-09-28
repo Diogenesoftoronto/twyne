@@ -120,6 +120,18 @@ export const TOUR_STOPS: TourStop[] = [
     placement: "below",
   },
   {
+    id: "tools",
+    tag: "Writing Tools",
+    note: "Grammar suggestions and writing checks share one board. Check spelling locally, then take a second look at voice, revisions, and the reader’s experience.",
+    accent: "var(--color-vermilion-2)",
+    tab: "tools",
+    folioId: "folio-1",
+    drawer: true,
+    panel: true,
+    hotspot: { x: 86, y: 34 },
+    placement: "above",
+  },
+  {
     id: "versions",
     tag: "The Versions",
     note: "Every revision kept with its word count and its reason — the draft's memory, filed like everything else.",
@@ -140,6 +152,7 @@ const STOP_FOR_TAB: Record<PanelId, string> = {
   comments: "marginalia",
   citations: "apparatus",
   history: "versions",
+  tools: "tools",
 };
 
 const ADVANCE_MS = 6000;

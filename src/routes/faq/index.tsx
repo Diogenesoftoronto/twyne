@@ -34,7 +34,7 @@ const FAQS: QA[] = [
   },
   {
     q: "How do I sign in?",
-    a: "Two short steps: enter your email, then sign in with a passkey or a one-time code. A fresh code is sent on first sign-up and every time a passkey hasn't been set up — once you register one, the passkey becomes the default. Bluesky / ATProto is also available as a third option. Twyne does not use password login.",
+    a: "Continue with Not Organic. One Not Organic account is your Twyne sign-in, your wallet and plan, and — if you publish there — your PDS repository. Twyne does not use password login.",
   },
   {
     q: "Is Twyne free?",

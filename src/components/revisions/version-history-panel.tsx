@@ -1,3 +1,6 @@
+import { SiteSelect } from "../ui/site-select";
+import { Icon } from "../ui/icon";
+import { RevisionSummary } from "./revision-summary";
 import { $, component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
 import { readActiveFolioHtml } from "../../utils/folio-export";
 import {
@@ -152,7 +155,7 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
     ).length;
 
     return (
-      <section class="h-full overflow-y-auto bg-[var(--color-paper)] p-4 text-[var(--color-ink)] sm:p-5">
+      <section class="h-full overflow-y-auto bg-[var(--color-paper)] p-4 text-[var(--color-ink)]">
         <header class="border-b border-[var(--color-paper-3)] pb-4">
           <p class="dept-label">Version history</p>
           <div class="mt-1 flex flex-wrap items-start justify-between gap-3">
@@ -167,10 +170,10 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
             </div>
             <button
               type="button"
-              class="btn-press shrink-0"
+              class="btn-press inline-flex shrink-0 items-center gap-2"
               onClick$={saveCheckpoint}
             >
-              Save checkpoint
+              <Icon name="add" /> Save checkpoint
             </button>
           </div>
         </header>
@@ -195,65 +198,54 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
           </div>
         ) : (
           <>
-            <div class="mt-5 grid gap-3 sm:grid-cols-2">
-              <label class="text-xs font-semibold text-[var(--color-ink-light)]">
-                Earlier checkpoint
-                <select
-                  class="mt-1 block w-full border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-3 py-2 text-sm text-[var(--color-ink)] focus-ring"
+            <div
+              class="mt-5 grid gap-3"
+              style={{
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(min(100%, 15rem), 1fr))",
+              }}
+            >
+              <div class="min-w-0 text-xs font-semibold text-[var(--color-ink-light)]">
+                <p>Earlier checkpoint</p>
+                <SiteSelect
+                  class="mt-1"
+                  ariaLabel="Earlier checkpoint"
                   value={store.selectedId ?? ""}
-                  onChange$={(_, element) => {
-                    store.selectedId = element.value || null;
-                    if (store.compareId === store.selectedId) {
+                  options={store.revisions.map((revision) => ({
+                    value: revision.id,
+                    label: checkpointLabel(revision),
+                  }))}
+                  onChange$={(value) => {
+                    store.selectedId = value || null;
+                    if (store.compareId === store.selectedId)
                       store.compareId = "current";
-                    }
                     store.confirmRestore = false;
                   }}
-                >
-                  {store.revisions.map((revision) => (
-                    <option key={revision.id} value={revision.id}>
-                      {checkpointLabel(revision)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label class="text-xs font-semibold text-[var(--color-ink-light)]">
-                Compare with
-                <select
-                  class="mt-1 block w-full border border-[var(--color-paper-3)] bg-[var(--color-paper)] px-3 py-2 text-sm text-[var(--color-ink)] focus-ring"
+                />
+              </div>
+              <div class="min-w-0 text-xs font-semibold text-[var(--color-ink-light)]">
+                <p>Compare with</p>
+                <SiteSelect
+                  class="mt-1"
+                  ariaLabel="Compare with"
                   value={store.compareId}
-                  onChange$={(_, element) => {
-                    store.compareId = element.value;
+                  options={[
+                    { value: "current", label: "Current manuscript" },
+                    ...store.revisions
+                      .filter((revision) => revision.id !== store.selectedId)
+                      .map((revision) => ({
+                        value: revision.id,
+                        label: checkpointLabel(revision),
+                      })),
+                  ]}
+                  onChange$={(value) => {
+                    store.compareId = value;
                   }}
-                >
-                  <option value="current">Current manuscript</option>
-                  {store.revisions
-                    .filter((revision) => revision.id !== store.selectedId)
-                    .map((revision) => (
-                      <option key={revision.id} value={revision.id}>
-                        {checkpointLabel(revision)}
-                      </option>
-                    ))}
-                </select>
-              </label>
+                />
+              </div>
             </div>
 
-            {comparison && (
-              <div class="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-y border-[var(--color-paper-3)] py-3 text-xs text-[var(--color-ink-light)]">
-                <span>
-                  <strong class="text-[var(--color-ink)]">
-                    {comparison.wordsChanged}
-                  </strong>{" "}
-                  words changed
-                </span>
-                <span>
-                  {comparison.wordsBefore} → {comparison.wordsAfter} words
-                </span>
-                <span>
-                  {comparison.paragraphsBefore} → {comparison.paragraphsAfter}{" "}
-                  passages
-                </span>
-              </div>
-            )}
+            {comparison && <RevisionSummary comparison={comparison} />}
 
             <section class="mt-5" aria-labelledby="changed-passages-heading">
               <div class="flex flex-wrap items-center justify-between gap-3">

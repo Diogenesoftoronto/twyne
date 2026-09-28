@@ -13,7 +13,11 @@
  * from `"off"`, which asks the model *not* to think — on a reasoning model
  * those are different requests, and only the writer knows which they meant.
  */
-import type { AiProviderConfig, AiModelReasoningSetting } from "../types";
+import type {
+  AiModelReasoningSetting,
+  AiProviderConfig,
+  AiReasoningEffort,
+} from "../types";
 
 /** JSON-ish value accepted by the AI SDK's `providerOptions`. */
 type ProviderOptionValue =
@@ -96,6 +100,118 @@ export function reasoningProviderOptions(
   if (!family) return undefined;
 
   return translateReasoningSetting(family, setting);
+}
+
+/**
+ * Translate the adaptive drafting loop's provider-neutral level without
+ * changing the writer's saved Settings value. Unknown models remain untouched:
+ * a reasoning option is only sent when the model catalog or an existing model
+ * setting proves that the selected provider understands one.
+ */
+export function reasoningProviderOptionsForLevel(
+  config: Pick<
+    AiProviderConfig,
+    "type" | "modelReasoning" | "modelReasoningOptions"
+  >,
+  modelId: string | undefined,
+  level: "off" | "low" | "medium" | "high",
+): ProviderOptions | undefined {
+  if (!modelId) return undefined;
+  const family = optionFamily(config.type);
+  if (!family) return undefined;
+  const setting = config.modelReasoning?.[modelId];
+  const options = config.modelReasoningOptions?.[modelId] ?? [];
+  const option = options[0];
+
+  if (!setting && !option) return undefined;
+
+  if (level === "off") {
+    switch (family) {
+      case "openai":
+        return { openai: { reasoningEffort: "none" } };
+      case "anthropic":
+        return { anthropic: { thinking: { type: "disabled" } } };
+      case "google":
+        return { google: { thinkingConfig: { thinkingBudget: 0 } } };
+    }
+  }
+
+  if (setting?.type === "toggle" || option?.type === "toggle") {
+    return family === "anthropic"
+      ? { anthropic: { thinking: { type: "adaptive" } } }
+      : family === "google"
+        ? { google: { thinkingConfig: { thinkingBudget: -1 } } }
+        : { openai: { reasoningEffort: "high" } };
+  }
+
+  if (setting?.type === "budget_tokens" || option?.type === "budget_tokens") {
+    const range = option?.type === "budget_tokens" ? option : undefined;
+    const fallback = setting?.type === "budget_tokens" ? setting.value : 0;
+    const min = range?.min ?? Math.max(1, Math.floor(fallback / 4));
+    const max = range?.max ?? Math.max(min, fallback);
+    const ratio = level === "low" ? 0.35 : level === "medium" ? 0.65 : 1;
+    const value = Math.min(
+      max,
+      Math.max(min, Math.round(min + (max - min) * ratio)),
+    );
+    return family === "anthropic"
+      ? { anthropic: { thinking: { type: "enabled", budgetTokens: value } } }
+      : family === "google"
+        ? { google: { thinkingConfig: { thinkingBudget: value } } }
+        : { openai: { reasoningEffort: level } };
+  }
+
+  const supported =
+    option?.type === "effort"
+      ? option.values.filter(
+          (value): value is AiReasoningEffort => value !== null,
+        )
+      : [];
+  const desired: AiReasoningEffort =
+    level === "low" ? "low" : level === "medium" ? "medium" : "high";
+  const selected =
+    supported.length > 0
+      ? supported[
+          Math.min(
+            supported.length - 1,
+            ["low", "medium", "high", "xhigh", "max"].indexOf(desired),
+          )
+        ]!
+      : desired;
+
+  if (family === "anthropic") {
+    return { anthropic: { thinking: { type: "adaptive" }, effort: selected } };
+  }
+  if (family === "google") {
+    return { google: { thinkingConfig: { thinkingLevel: selected } } };
+  }
+  return { openai: { reasoningEffort: selected } };
+}
+
+/** Read the writer's configured level as the adaptive loop's ceiling. */
+export function adaptiveReasoningCeiling(
+  config: Pick<AiProviderConfig, "modelReasoning" | "modelReasoningOptions">,
+  modelId: string | undefined,
+): "off" | "low" | "medium" | "high" {
+  if (!modelId) return "high";
+  const setting = config.modelReasoning?.[modelId];
+  if (!setting) return "high";
+  if (setting.type === "toggle") return setting.value ? "high" : "off";
+  if (setting.type === "effort") {
+    return setting.value === "low"
+      ? "low"
+      : setting.value === "medium"
+        ? "medium"
+        : "high";
+  }
+  const range = config.modelReasoningOptions?.[modelId]?.find(
+    (option) => option.type === "budget_tokens",
+  );
+  if (!range || range.type !== "budget_tokens" || range.max <= range.min) {
+    return setting.value > 0 ? "high" : "off";
+  }
+  const ratio = (setting.value - range.min) / (range.max - range.min);
+  return ratio < 0.45 ? "low" : ratio < 0.8 ? "medium" : "high";
 }
 
 function translateReasoningSetting(

@@ -2,9 +2,8 @@
 
 import { action } from "./_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
-import { isProSubscription } from "./lib/entitlement";
+import { userIsPro } from "./lib/entitlement";
 
 const OPENAI_AUDIO_BASE = "https://api.openai.com/v1";
 const MAX_SPEECH_CHARS = 4096;
@@ -40,13 +39,7 @@ export const synthesizeSpeech = action({
       ...RATE_LIMITS.voiceSynthesize,
     });
 
-    const subscription = await ctx.runQuery(
-      internal.payments.getSubscriptionByUserId,
-      {
-        userId: identity.tokenIdentifier,
-      },
-    );
-    if (!isProSubscription(subscription)) {
+    if (!(await userIsPro(ctx, identity.subject || identity.tokenIdentifier))) {
       throw new Error("Voice narration is a Pro feature.");
     }
 
@@ -122,13 +115,7 @@ export const transcribeSpeech = action({
       ...RATE_LIMITS.voiceTranscribe,
     });
 
-    const subscription = await ctx.runQuery(
-      internal.payments.getSubscriptionByUserId,
-      {
-        userId: identity.tokenIdentifier,
-      },
-    );
-    if (!isProSubscription(subscription)) {
+    if (!(await userIsPro(ctx, identity.subject || identity.tokenIdentifier))) {
       throw new Error("Hosted transcription is a Pro feature.");
     }
 

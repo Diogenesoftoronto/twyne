@@ -70,17 +70,18 @@ export default component$(() => {
         Authentication
       </h2>
       <p class="doc-p">
-        We support passkeys, one-time email codes, and Bluesky / ATProto
-        sign-in. We store the minimum identifiers needed to authenticate you and
-        maintain your session. For Bluesky sign-in, authentication is handled
-        through ATProto OAuth with your chosen provider.
+        You sign in to Twyne with a Not Organic account. Not Organic verifies
+        your identity and tells Twyne your account DID; we store the minimum
+        identifiers needed to authenticate you and maintain your session. If you
+        connect a PDS for publishing, that connection uses ATProto OAuth with
+        your chosen provider.
       </p>
       <p class="doc-p">
-        Depending on how you sign in, authentication records may include your
-        email address, display name, account id, passkey credential metadata,
-        session tokens, verification-code state, ATProto handle, and OAuth
-        tokens or token identifiers. These records are used for login, account
-        security, sync, publishing, and support.
+        Authentication records may include your Not Organic DID and handle,
+        display name, account id, session tokens, and — when you connect a PDS
+        for publishing — your ATProto handle and OAuth tokens or token
+        identifiers. These records are used for login, account security, sync,
+        publishing, and support.
       </p>
 
       <h2 id="ai-providers" class="doc-h2">
@@ -182,8 +183,8 @@ export default component$(() => {
         data Twyne stores, including provider-managed infrastructure, access
         controls, and webhook signature verification for payment events. No
         system can be guaranteed perfectly secure. You are responsible for
-        securing your own device, browser profile, account credentials,
-        passkeys, and third-party API keys.
+        securing your own device, browser profile, account credentials, and
+        third-party API keys.
       </p>
       <p class="doc-p">
         We keep account, sync, subscription, and operational records for as long
@@ -202,8 +203,8 @@ export default component$(() => {
         when you use the related feature. Examples include Convex and Better
         Auth for backend/auth flows, AI providers such as Anthropic, OpenAI,
         Google, Rivet, or OpenAI-compatible providers, PostHog for analytics and
-        feature flags, ATProto services for Bluesky sign-in or publishing, Not
-        Organic for the product checkout and wallet, and Paddle for payment
+        feature flags, ATProto services for PDS publishing, Not Organic for
+        sign-in, the product checkout and wallet, and Paddle for payment
         processing.
       </p>
 

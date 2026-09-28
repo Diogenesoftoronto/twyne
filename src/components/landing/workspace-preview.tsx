@@ -1,3 +1,5 @@
+import { Icon } from "../ui/icon";
+import { WRITING_LENSES } from "../../utils/writing-lenses";
 import { $, component$, useSignal, type PropFunction } from "@qwik.dev/core";
 import { BOARD_TABS } from "../editorial-board/board-tabs";
 import { PERSONAS } from "../../utils/personas";
@@ -461,13 +463,29 @@ export const WorkspacePreview = component$<WorkspacePreviewProps>(
           {drawerNow && (
             <aside class="flex flex-shrink-0 w-64 md:w-72 border-r-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper-2)] flex-col max-md:hidden">
               <div class="px-4 py-3 border-b border-[var(--color-paper-3)]">
-                <p class="dept-label">Drawer No. III</p>
+                <p class="dept-label flex items-center gap-2">
+                  <Icon name="folder" /> Drawer No.{" "}
+                  {folioNumeral(
+                    demoFolios.findIndex((item) => item.id === folio.id),
+                  )}
+                </p>
                 <h2
                   class="mt-1 text-xl text-[var(--color-ink)]"
                   style="font-family: var(--font-display); font-weight: 600; letter-spacing: -0.01em;"
                 >
-                  Pieces in Progress
+                  {folio.name}
                 </h2>
+                <div class="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[var(--color-ink-light)]">
+                  <span class="inline-flex items-center gap-1.5">
+                    <Icon name="page" /> {demoFolios.length} folios
+                  </span>
+                  <span
+                    class="inline-flex items-center gap-1.5"
+                    title="You can edit this manuscript."
+                  >
+                    <Icon name="edit" /> Can edit
+                  </span>
+                </div>
               </div>
 
               <div class="flex-1 overflow-y-auto px-3 py-3 space-y-3">
@@ -831,6 +849,27 @@ export const WorkspacePreview = component$<WorkspacePreviewProps>(
                           >
                             {source.ok ? "✓" : "✕"} {source.status}
                           </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {currentTab === "tools" && (
+                  <div class="space-y-3 text-[var(--color-ink-light)]">
+                    <h3 class="flex items-center gap-2 text-sm font-semibold">
+                      <Icon name="file-check" /> Grammar
+                    </h3>
+                    <p class="text-xs">
+                      Spelling and usage suggestions, checked on your device.
+                    </p>
+                    <h3 class="flex items-center gap-2 border-t border-[var(--color-paper-3)] pt-3 text-sm font-semibold">
+                      <Icon name="checklist" /> Writing checks
+                    </h3>
+                    <ul class="space-y-2 text-xs">
+                      {WRITING_LENSES.map((lens) => (
+                        <li key={lens.id} title={lens.description}>
+                          {lens.label}
                         </li>
                       ))}
                     </ul>

@@ -34,6 +34,10 @@ import {
   saveProjectBriefForFolio,
   saveStartingMaterial,
 } from "../../../utils/anti-tabula-rasa";
+import {
+  loadBriefEditions,
+  type BriefEdition,
+} from "../../../utils/brief-history";
 import { captureProductEvent } from "../../../utils/product-analytics";
 import { dossierRouteClass } from "../../../utils/conversation-layout";
 import { normalizeApplicationError } from "../../../utils/application-errors";
@@ -48,6 +52,7 @@ import {
 
 interface RefiningStore {
   brief: ProjectBrief | null;
+  briefEditions: BriefEdition[];
   draftText: string;
   hydrated: boolean;
   style: InterviewStyle;
@@ -76,6 +81,7 @@ export default component$(() => {
   const clientSig = useConvexClient();
   const store = useStore<RefiningStore>({
     brief: null,
+    briefEditions: [],
     draftText: "",
     hydrated: false,
     style: "form",
@@ -98,6 +104,7 @@ export default component$(() => {
     );
     store.folioId = requestedFolioId ?? activeFolioId;
     store.brief = await loadProjectBriefForFolio(store.folioId);
+    store.briefEditions = await loadBriefEditions(store.folioId);
     store.draftText = store.folioId
       ? await loadFolioContentFromIdb(store.folioId)
       : await loadDraftHtml();
@@ -125,6 +132,7 @@ export default component$(() => {
         );
         await saveProjectBriefForFolio(store.folioId, next);
         store.brief = next;
+        store.briefEditions = await loadBriefEditions(store.folioId);
         void captureProductEvent("dossier_completed", { mode: "refine" });
         store.filingState = "filed";
         await waitForDossierFiledFeedback();
@@ -157,6 +165,7 @@ export default component$(() => {
         );
         await saveProjectBriefForFolio(store.folioId, next);
         store.brief = next;
+        store.briefEditions = await loadBriefEditions(store.folioId);
         void captureProductEvent("dossier_completed", { mode: "refine" });
         store.filingState = "filed";
         await waitForDossierFiledFeedback();
@@ -245,6 +254,7 @@ export default component$(() => {
       };
       await saveProjectBriefForFolio(store.folioId, next);
       store.brief = next;
+      store.briefEditions = await loadBriefEditions(store.folioId);
       store.formAnswers = answers;
       if (store.dossierCheck) {
         store.dossierCheck = {
@@ -376,6 +386,7 @@ export default component$(() => {
               : store.brief.attachments
           }
           initialProbes={store.brief.probes}
+          briefEditions={store.briefEditions}
           draftReview={store.dossierCheck}
           draftReviewLoading={store.dossierCheckLoading}
           draftReviewError={store.dossierCheckError}
@@ -395,6 +406,7 @@ export default component$(() => {
           onStartOver$={openStartOver}
           initialBrief={store.brief}
           initialAttachments={store.brief.attachments}
+          briefEditions={store.briefEditions}
           onComplete$={onConversationComplete}
           onUseForm$={({ answers, attachments }) => {
             store.formAnswers = answers;

@@ -33,6 +33,7 @@ import { DossierFolio } from "./dossier-folio";
 import { DossierTopBar } from "./dossier-top-bar";
 import type { DossierFilingState } from "../../utils/dossier-filing";
 import { DossierPreview } from "../brief/dossier-preview";
+import type { BriefEdition } from "../../utils/brief-history";
 import { ApplicationNotice } from "../ui/application-notice";
 import type { AppError } from "../../types/application-errors";
 import {
@@ -88,6 +89,7 @@ interface ConversationalInterviewProps {
   mode: "first-run" | "refine";
   initialBrief?: ProjectBrief;
   initialAttachments?: DossierAttachment[];
+  briefEditions?: BriefEdition[];
   /**
    * Manuscript text carried over from the dossier refinery's "Start over"
    * flow. When present, the opening turn reads it as starting context so the
@@ -589,6 +591,7 @@ export const ConversationalInterview = component$(
     return (
       <DossierFolio
         surface="conversational"
+        stampKind={props.mode === "refine" ? "revised" : "filed"}
         filingState={
           props.filingState === "filed"
             ? "filed"
@@ -621,6 +624,7 @@ export const ConversationalInterview = component$(
               }
               probes={store.answeredProbes}
               attachments={store.attachments}
+              editions={props.briefEditions}
               mode={props.mode === "refine" ? "refine" : "first-run"}
               reviewedFieldCount={countFilledFields(
                 store.synthesis ?? store.liveDraft,

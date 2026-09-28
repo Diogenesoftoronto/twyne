@@ -30,6 +30,11 @@ import Redo from "reicon/icons/Redo";
 import RowHorizontal from "reicon/icons/RowHorizontal";
 import RowVertical from "reicon/icons/RowVertical";
 import Checklist from "reicon/icons/Checklist";
+import Edit from "reicon/icons/Edit";
+import Eye from "reicon/icons/Eye";
+import FolderFiles from "reicon/icons/FolderFiles";
+import Save from "reicon/icons/Save";
+import Check from "reicon/icons/Check";
 import Search from "reicon/icons/Search";
 import TextalignCenter from "reicon/icons/TextalignCenter";
 import TextalignJustifyleft from "reicon/icons/TextalignJustifyleft";
@@ -74,6 +79,11 @@ const TWYNE_ICONS = {
   "row-vertical": RowVertical,
   checklist: Checklist,
   search: Search,
+  edit: Edit,
+  eye: Eye,
+  folder: FolderFiles,
+  save: Save,
+  check: Check,
   "text-align-center": TextalignCenter,
   "text-align-justify": TextalignJustifyleft,
   "text-align-left": TextalignLeft,

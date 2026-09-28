@@ -16,7 +16,8 @@ export type PanelId =
   | "rubric"
   | "comments"
   | "citations"
-  | "history";
+  | "history"
+  | "tools";
 
 export type ActivityCounts = Record<PanelId, number>;
 
@@ -26,6 +27,7 @@ const EMPTY: ActivityCounts = {
   comments: 0,
   citations: 0,
   history: 0,
+  tools: 0,
 };
 
 const counts: ActivityCounts = { ...EMPTY };

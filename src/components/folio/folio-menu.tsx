@@ -4,6 +4,8 @@ import {
   $,
   useSignal,
   useVisibleTask$,
+  noSerialize,
+  type NoSerialize,
 } from "@qwik.dev/core";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
@@ -29,7 +31,7 @@ import {
   readActiveFolioHtml,
 } from "../../utils/folio-export";
 import { useAuth } from "../../utils/auth-context";
-import { getAgent } from "../../utils/atproto";
+import { getAgent, signInWithBluesky } from "../../utils/atproto";
 import {
   ensurePublication,
   loadPublishedDocument,
@@ -107,6 +109,10 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   const includePersonaComments = useSignal(false);
   const dialog = useSignal<"import" | "share" | null>(null);
   const fileError = useSignal<AppError | null>(null);
+  const typstBusy = useSignal(false);
+  const typstStatus = useSignal("");
+  const typstFailed = useSignal(false);
+  const typstAbort = useSignal<NoSerialize<AbortController>>();
   const importBusy = useSignal(false);
   const shareBusy = useSignal(false);
   const shareError = useSignal<AppError | null>(null);
@@ -120,6 +126,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   const pdsError = useSignal<AppError | null>(null);
   const pdsResult = useSignal<PublishResult | null>(null);
   const pdsCopyState = useSignal<"idle" | "copied">("idle");
+  const pdsHandle = useSignal("");
   const micropubEndpoint = useSignal("");
   const micropubToken = useSignal("");
   const micropubBusy = useSignal(false);
@@ -128,6 +135,13 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
 
   const store = useStore({ menuOpen: false });
   void store; // reserved for future menu state
+
+  // A detached folio must not keep compiling or downloading in the background.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    track(() => props.activeFolioId);
+    cleanup(() => typstAbort.value?.abort());
+  });
 
   // Close the menu on outside click.
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -189,10 +203,9 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   // remembers the record key needed for update/delete controls.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ track }) => {
-    track(() => auth.value.provider);
     track(() => props.activeFolioId);
     const did = track(() => auth.value.atproto?.did);
-    if (auth.value.provider !== "atproto" || !props.activeFolioId || !did) {
+    if (!props.activeFolioId || !did) {
       pdsResult.value = null;
       return;
     }
@@ -231,6 +244,48 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         source: "application",
         metadata: { operation: "export" },
       });
+    }
+  });
+
+  const doExportTypst = $(async (format: "pdf" | "source") => {
+    if (typstBusy.value) return;
+    const controller = new AbortController();
+    typstAbort.value = noSerialize(controller);
+    typstBusy.value = true;
+    typstFailed.value = false;
+    typstStatus.value = "Preparing your manuscript…";
+    fileError.value = null;
+    menuOpen.value = false;
+    try {
+      const payload = await buildExportPayload();
+      controller.signal.throwIfAborted();
+      const { exportTypst } = await import("../../utils/typst/export");
+      const blob = await exportTypst(payload, format, {
+        signal: controller.signal,
+        onProgress: (message) => {
+          typstStatus.value = message;
+        },
+      });
+      controller.signal.throwIfAborted();
+      downloadBlob(
+        blob,
+        safeFilename(payload.title, format === "pdf" ? "pdf" : "typ"),
+      );
+      typstStatus.value =
+        format === "pdf" ? "Typst PDF downloaded." : "Typst source downloaded.";
+    } catch (error) {
+      if (controller.signal.aborted) {
+        typstStatus.value = "Export cancelled.";
+      } else {
+        typstFailed.value = true;
+        typstStatus.value =
+          error instanceof Error
+            ? error.message
+            : "Typst export failed. Please try again.";
+      }
+    } finally {
+      typstBusy.value = false;
+      typstAbort.value = undefined;
     }
   });
 
@@ -509,6 +564,22 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
     }
   });
 
+  const doConnectPds = $(async () => {
+    pdsBusy.value = true;
+    pdsError.value = null;
+    try {
+      // Redirects to the PDS's own approval page; /auth/callback/ restores
+      // the publishing session on return.
+      await signInWithBluesky(pdsHandle.value);
+    } catch (err) {
+      pdsError.value = normalizeApplicationError(err, {
+        source: "provider",
+        metadata: { operation: "connect-pds", provider: "atproto" },
+      });
+      pdsBusy.value = false;
+    }
+  });
+
   const doUnpublishPds = $(async () => {
     if (!props.activeFolioId) return;
     pdsBusy.value = true;
@@ -630,6 +701,22 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           </label>
           <MenuItem label="PDF…" onClick$={doExportPdf} />
           <MenuItem
+            label={typstBusy.value ? "Preparing Typst export…" : "PDF (Typst)…"}
+            disabled={typstBusy.value}
+            onClick$={() => doExportTypst("pdf")}
+          />
+          <MenuItem
+            label="Typst source (.typ)"
+            disabled={typstBusy.value}
+            onClick$={() => doExportTypst("source")}
+          />
+          {typstBusy.value && (
+            <MenuItem
+              label="Cancel Typst export"
+              onClick$={() => typstAbort.value?.abort()}
+            />
+          )}
+          <MenuItem
             label="Markdown (.md)"
             onClick$={() => doExport("markdown")}
           />
@@ -673,6 +760,26 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               />
             </div>
           )}
+        </div>
+      )}
+
+      {typstStatus.value && !menuOpen.value && (
+        <div class="absolute right-0 top-full mt-1 w-72 max-w-[90vw] folio z-50 p-3 text-xs">
+          <p
+            role={typstFailed.value ? "alert" : "status"}
+            class="leading-5 text-[var(--color-ink)]"
+          >
+            {typstStatus.value}
+          </p>
+          <button
+            class="btn-paper text-xs mt-2"
+            onClick$={() => {
+              if (typstBusy.value) typstAbort.value?.abort();
+              else typstStatus.value = "";
+            }}
+          >
+            {typstBusy.value ? "Cancel export" : "Dismiss"}
+          </button>
         </div>
       )}
 
@@ -784,15 +891,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               takes the page down immediately.
             </p>
 
-            {auth.value.provider === "atproto" ? (
-              <p
-                class="mt-4 text-[12px] text-[var(--color-ink-muted)]"
-                style="font-family: var(--font-typewriter);"
-              >
-                The internal reading view needs an email or passkey account.
-                Under a Bluesky session, publish to your own PDS below instead.
-              </p>
-            ) : !auth.value.user ? (
+            {!auth.value.user ? (
               <p
                 class="mt-4 text-[12px] text-[var(--color-vermilion)]"
                 style="font-family: var(--font-typewriter);"
@@ -915,7 +1014,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               >
                 Publish to your PDS (Bluesky)
               </h4>
-              {auth.value.provider === "atproto" ? (
+              {auth.value.atproto ? (
                 <div class="mt-2 space-y-3">
                   <p
                     class="text-[13px] leading-5 text-[var(--color-ink-light)]"
@@ -1007,13 +1106,34 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
                   )}
                 </div>
               ) : (
-                <p
-                  class="mt-2 text-[12px] text-[var(--color-ink-muted)]"
-                  style="font-family: var(--font-typewriter);"
+                <form
+                  class="mt-2 space-y-2"
+                  preventdefault:submit
+                  onSubmit$={doConnectPds}
                 >
-                  Connect Bluesky (the editor's office, top right) to publish to
-                  your own repository.
-                </p>
+                  <p
+                    class="text-[12px] text-[var(--color-ink-muted)]"
+                    style="font-family: var(--font-typewriter);"
+                  >
+                    Connect the repository to publish into — your Not Organic
+                    handle (yourname.pds.notorganic.info) or any Bluesky handle.
+                  </p>
+                  <input
+                    class="w-full border border-[var(--color-paper-3)] bg-transparent px-2 py-1 text-[13px]"
+                    type="text"
+                    autoComplete="username"
+                    placeholder="yourname.pds.notorganic.info"
+                    aria-label="PDS handle"
+                    bind:value={pdsHandle}
+                  />
+                  <button
+                    class="btn-paper text-xs w-full"
+                    type="submit"
+                    disabled={pdsBusy.value}
+                  >
+                    {pdsBusy.value ? "Opening your PDS…" : "Connect PDS"}
+                  </button>
+                </form>
               )}
             </div>
 
@@ -1123,6 +1243,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
 
 interface MenuItemProps {
   label: string;
+  disabled?: boolean;
   onClick$: import("@qwik.dev/core").PropFunction<() => void>;
 }
 
@@ -1132,6 +1253,7 @@ const MenuItem = component$<MenuItemProps>((props) => {
       class="w-full text-left px-3 py-1.5 text-[13px] text-[var(--color-ink)] hover:bg-[var(--color-paper-soft)] focus-ring"
       style="font-family: var(--font-serif); border-radius: 0;"
       onClick$={props.onClick$}
+      disabled={props.disabled}
       role="menuitem"
     >
       {props.label}

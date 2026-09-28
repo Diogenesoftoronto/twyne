@@ -35,6 +35,7 @@ import { DossierFolio } from "./dossier-folio";
 import { DossierTopBar } from "./dossier-top-bar";
 import { WritingFormatInput } from "./writing-format-input";
 import type { DossierFilingState } from "../../utils/dossier-filing";
+import type { BriefEdition } from "../../utils/brief-history";
 
 type InterviewMode = "first-run" | "refine";
 
@@ -184,6 +185,7 @@ interface AntiTabulaRasaProps {
   initialAnswers?: ProjectInterviewAnswers | null;
   initialAttachments?: DossierAttachment[];
   initialProbes?: DossierProbe[];
+  briefEditions?: BriefEdition[];
   /**
    * Existing manuscript text to seed the "starting material" field with. Set
    * by `Start over` so a writer who wipes the dossier does not lose what
@@ -222,6 +224,7 @@ export const AntiTabulaRasa = component$(
     initialAnswers,
     initialAttachments,
     initialProbes,
+    briefEditions,
     initialMaterial,
     mode = "first-run",
     draftReview,
@@ -529,14 +532,10 @@ export const AntiTabulaRasa = component$(
       await onDismissDraftObservation$?.(index);
     });
 
-    // The masthead only earns its space on a first run. Someone refining an
-    // existing dossier already knows what a dossier is — they get the live
-    // sheet from the first step instead of a pitch.
-    const showMasthead = mode === "first-run" && store.step === 0;
-
     return (
       <DossierFolio
         surface="form"
+        stampKind={mode === "refine" ? "revised" : "filed"}
         filingState={
           filingState === "filed"
             ? "filed"
@@ -588,79 +587,29 @@ export const AntiTabulaRasa = component$(
         }
         dossier={
           <div class="flex min-h-full flex-col">
-            {showMasthead ? (
-              <div class="flex min-h-full flex-col justify-center">
-                <div class="flex items-center gap-3">
-                  <span class="stamp">Anti-Tabula Rasa</span>
-                </div>
-
-                <h1
-                  id="atr-title"
-                  class="mt-5 leading-[1.05] text-[var(--color-ink)]"
-                  style="font-family: var(--font-display); font-weight: 700; font-size: 2.4rem; letter-spacing: -0.015em;"
-                >
-                  Begin with a{" "}
-                  <em style="color: var(--color-vermilion); font-style: italic;">
-                    dossier,
-                  </em>
-                  <br />
-                  not a blank page.
-                </h1>
-
-                <p
-                  class="mt-4 max-w-xl text-[0.95rem] leading-7 text-[var(--color-ink-light)]"
-                  style="font-family: var(--font-serif);"
-                >
-                  Tell the room what you are making. Each answer becomes a field
-                  in the dossier, follows this folio into the editor, and gives
-                  every review the same point of reference.
-                </p>
-
-                <div
-                  class="ornament-divider mt-6"
-                  style="font-family: var(--font-display);"
-                >
-                  ❦
-                </div>
-
-                <div class="mt-5 grid gap-3 sm:grid-cols-3">
-                  <BriefStat
-                    label="Section"
-                    value={`${store.step + 1} / ${STEPS.length}`}
-                  />
-                  <BriefStat
-                    label="Edition"
-                    value={mode === "first-run" ? "First press" : "Revising"}
-                  />
-                  <BriefStat label="Outcome" value="Filed brief" />
-                </div>
-              </div>
-            ) : (
-              <DossierPreview
-                answers={store.answers}
-                probes={store.probes}
-                attachments={store.attachments}
-                activeField={STEPS[store.step]?.field}
-                existingMaterialWords={countWords(store.existingMaterial)}
-                mode={mode}
-                reviewedFieldCount={
-                  mode === "refine" ? 7 : Math.min(store.step, 7)
-                }
-                draftReview={draftReview}
-                draftReviewLoading={draftReviewLoading}
-                draftReviewError={draftReviewError}
-                onJumpToField$={jumpToField}
-                onReadDraft$={onReadDraft$ ? readDraft : undefined}
-                onApplyObservation$={
-                  onApplyDraftObservation$ ? applyDraftObservation : undefined
-                }
-                onDismissObservation$={
-                  onDismissDraftObservation$
-                    ? dismissDraftObservation
-                    : undefined
-                }
-              />
-            )}
+            <DossierPreview
+              answers={store.answers}
+              probes={store.probes}
+              attachments={store.attachments}
+              editions={briefEditions}
+              activeField={STEPS[store.step]?.field}
+              existingMaterialWords={countWords(store.existingMaterial)}
+              mode={mode}
+              reviewedFieldCount={
+                mode === "refine" ? 7 : Math.min(store.step, 7)
+              }
+              draftReview={draftReview}
+              draftReviewLoading={draftReviewLoading}
+              draftReviewError={draftReviewError}
+              onJumpToField$={jumpToField}
+              onReadDraft$={onReadDraft$ ? readDraft : undefined}
+              onApplyObservation$={
+                onApplyDraftObservation$ ? applyDraftObservation : undefined
+              }
+              onDismissObservation$={
+                onDismissDraftObservation$ ? dismissDraftObservation : undefined
+              }
+            />
           </div>
         }
         leaf={
@@ -766,16 +715,14 @@ export const AntiTabulaRasa = component$(
                       step.field !== "format" && (
                         <input
                           key={step.field}
-                          value={store.answers[step.field]}
+                          value={store.answers[step.field!]}
                           aria-labelledby="atr-question"
                           aria-describedby="atr-hint"
                           autoFocus
                           onInput$={(e) => {
-                            const field = step.field!;
-                            store.answers = {
-                              ...store.answers,
-                              [field]: (e.target as HTMLInputElement).value,
-                            };
+                            store.answers[step.field!] = (
+                              e.target as HTMLInputElement
+                            ).value;
                           }}
                           onKeyDown$={(e) => {
                             if (e.key === "Enter") goNext();
@@ -788,21 +735,19 @@ export const AntiTabulaRasa = component$(
                     {step.kind === "textarea" && step.field && (
                       <textarea
                         key={step.field}
-                        value={store.answers[step.field]}
+                        value={store.answers[step.field!]}
                         aria-labelledby="atr-question"
                         aria-describedby="atr-hint"
                         autoFocus
+                        onInput$={(e) => {
+                          store.answers[step.field!] = (
+                            e.target as HTMLTextAreaElement
+                          ).value;
+                        }}
                         onKeyDown$={(e) => {
                           if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
                             goNext();
                           }
-                        }}
-                        onInput$={(e) => {
-                          const field = step.field!;
-                          store.answers = {
-                            ...store.answers,
-                            [field]: (e.target as HTMLTextAreaElement).value,
-                          };
                         }}
                         placeholder={step.placeholder}
                         rows={step.rows || 4}
@@ -1076,22 +1021,5 @@ function GhostSheet({
         </span>
       )}
     </button>
-  );
-}
-
-function BriefStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div
-      class="border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3"
-      style="border-radius: 2px;"
-    >
-      <p class="dept-label">{label}</p>
-      <p
-        class="mt-1 text-sm text-[var(--color-ink)]"
-        style="font-family: var(--font-display); font-weight: 600;"
-      >
-        {value}
-      </p>
-    </div>
   );
 }
