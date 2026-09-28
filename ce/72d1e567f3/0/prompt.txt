@@ -1,0 +1,61 @@
+so i still think there is some design issues with the rubric panel. its hard to article, part of the problem is that the components don't seem like they fit with the colour scheme used by the rest of the application and editor the blue accent colour looks out of place here. the other major thing [Image #1] you can see redundant message here in this text. [Image #2] some messaging i am not sure that it makes sense to include at all this should not be here whatsoever the user should find additional information like this in documentataion. a single link to a page with more detail on this is how this should be handled not trying to cram everything into this one area. [Image #3] this as well i think this is what the walkthrough helps you understand during onboarding this is just clutter here. stuff like this would appear in a tool tip. speaking of this there is little to no symbols here which let us communicate things quickly. reicon icons let people figure out what buttons and information do more easily without explaining everything.
+
+---
+
+writing tools maybe belongs in its own board or panel somewhere, along with the grammar tools to make using those more easy
+
+---
+
+the alignment of the margins are all off fofr writing checks
+
+---
+
+i still don't understand 'read without an ending' and what that is supposed to mean, most of the writing tools don't rerally communicate well what they are for and what they do
+
+---
+
+also no on hover effects where those would be helpful.
+
+---
+
+[Image #1] alignment here is all fucked and turning off and on the tools should be something like a switch same with  the pause review. these should be in the tools tab of the board ratherr than where they are located now
+
+---
+
+Let's install @popmelt.com/core in this project, then tell me how to use it
+
+---
+
+[Image #1] is there another way we could quickly visualize this information
+
+---
+
+[Image #1] these guys arent using the dropdown components i feel like a lot on this is n ot standard
+
+---
+
+because the text here changes with the buttons pressed below naturally the buttons ought to be first here for the tools and the text below changes. only the description makes sense to keep here as well.
+
+---
+
+[Image #1]
+
+---
+
+use icones not just text here for buttons like this [Image #1] and this text here can just be remove [Image #2]
+
+---
+
+I think it should just be saved by default and to remove the button in the first place, I also think that this is the sort of thing that should already be tools that jev is using or executing on its own without human in the loop and this tool is only use in cases you might want some more explicit control.
+
+---
+
+the text here holds no information when it should. there should be different drawer numbers i think. the text here should indicate a difference if you only have view perms as well.
+
+---
+
+yes i do mean that
+
+---
+
+use icons to communicate this quickly
