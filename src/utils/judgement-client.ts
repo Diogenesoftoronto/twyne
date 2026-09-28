@@ -47,7 +47,10 @@ export const DEFAULT_TYPESAFE_MODEL = "jev-latest";
 export const LOCAL_KEV_URL = "http://127.0.0.1:8009";
 
 let cached: JudgementSettings | null | undefined;
-if (typeof window !== "undefined") {
+if (
+  typeof window !== "undefined" &&
+  typeof window.addEventListener === "function"
+) {
   window.addEventListener("twyne:ai-settings-saved", () => {
     cached = undefined;
   });
