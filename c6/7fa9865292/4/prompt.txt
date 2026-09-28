@@ -1,0 +1,9 @@
+i want a better animations for the differnt grades. use gpt image 2.5 sunburst to create this. it should be a stamp with each grade. there should also be one for 'filed' and 'revised' that plays where appropriate. I want really cool shaders when someone gets a b and an a and more impressive with thhe highest.
+
+---
+
+make sure that this stuff ends up in storybook
+
+---
+
+,
