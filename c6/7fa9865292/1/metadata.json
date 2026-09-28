@@ -1,9 +1,11 @@
 {
   "cli_version": "0.10.6",
   "checkpoint_id": "c67fa9865292",
+  "session_id": "01a0dc56-01ea-7e51-a7aa-600909e6091b",
   "strategy": "manual-commit",
+  "created_at": "2026-09-28T23:46:23.362891821Z",
   "branch": "main",
-  "checkpoints_count": 6,
+  "checkpoints_count": 2,
   "files_touched": [
     ".env.example",
     "bun.lock",
@@ -28,14 +30,12 @@
     "convex/testing.ts",
     "convex/voice.ts",
     "docs/architecture/data-and-sync.md",
-    "docs/editorial-drafting-context-brief.md",
     "docs/my-desk-usage-profile-spec.md",
     "docs/publishing-from-twyne.md",
     "e2e/collaboration.e2e.ts",
     "e2e/journey.e2e.ts",
     "package.json",
     "playwright.config.ts",
-    "prompts/editorial-protocol.md",
     "prompts/persona-system.md",
     "scripts/creem-smoke.ts",
     "scripts/setup-creem-e2e.ts",
@@ -62,8 +62,6 @@
     "src/routes/signin/index.tsx",
     "src/routes/terms/index.tsx",
     "src/types/index.ts",
-    "src/utils/adaptive-editorial-draft.test.ts",
-    "src/utils/adaptive-editorial-draft.ts",
     "src/utils/ai-client.ts",
     "src/utils/anti-tabula-rasa.ts",
     "src/utils/auth-analytics.test.ts",
@@ -75,8 +73,6 @@
     "src/utils/auth-preference.ts",
     "src/utils/background-room.ts",
     "src/utils/editorial-note-review.ts",
-    "src/utils/editorial-policy.test.ts",
-    "src/utils/editorial-policy.ts",
     "src/utils/idb.ts",
     "src/utils/live-review.ts",
     "src/utils/note-gate.ts",
@@ -103,20 +99,25 @@
     "tests/creem.test.ts",
     "tests/entitlement.test.ts"
   ],
-  "sessions": [
-    {
-      "metadata": "/c6/7fa9865292/0/metadata.json",
-      "transcript": "/c6/7fa9865292/0/full.jsonl",
-      "compact_transcript": "/c6/7fa9865292/0/transcript.jsonl",
-      "content_hash": "/c6/7fa9865292/0/content_hash.txt",
-      "prompt": "/c6/7fa9865292/0/prompt.txt"
-    },
-    {
-      "metadata": "/c6/7fa9865292/1/metadata.json",
-      "transcript": "/c6/7fa9865292/1/full.jsonl",
-      "compact_transcript": "/c6/7fa9865292/1/transcript.jsonl",
-      "content_hash": "/c6/7fa9865292/1/content_hash.txt",
-      "prompt": "/c6/7fa9865292/1/prompt.txt"
-    }
-  ]
+  "agent": "Codex",
+  "model": "gpt-6-sol",
+  "turn_id": "0391937328ee",
+  "checkpoint_transcript_start": 654,
+  "transcript_lines_at_start": 654,
+  "compact_transcript_start": 76,
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-28T23:46:23.151261513Z",
+    "agent_lines": 3638,
+    "agent_removed": 4634,
+    "human_added": 13333,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 16971,
+    "total_lines_changed": 21951,
+    "agent_percentage": 37.683932394879506,
+    "metric_version": 2
+  }
 }
