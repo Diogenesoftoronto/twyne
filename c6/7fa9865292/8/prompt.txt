@@ -1,0 +1,13 @@
+i want to create a new release and publish this so that it can deploy
+
+---
+
+here is the thing i think adding the launch video to documentation, updating the docs as well would be helpful. just one video should be added to the landing page. and it should be  in both english and french depending on the language of the speaker if the person has chosen en or fr like other language choices
+
+---
+
+.
+
+---
+
+.
