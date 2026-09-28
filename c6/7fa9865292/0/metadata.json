@@ -1,0 +1,50 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "c67fa9865292",
+  "session_id": "01a0c6d0-476b-7642-8dae-393ed1e4e8ad",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-28T23:46:20.796137448Z",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "docs/editorial-drafting-context-brief.md",
+    "prompts/editorial-protocol.md",
+    "prompts/persona-system.md",
+    "src/components/personas/personas-panel.tsx",
+    "src/utils/adaptive-editorial-draft.test.ts",
+    "src/utils/adaptive-editorial-draft.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/background-room.ts",
+    "src/utils/editorial-note-review.ts",
+    "src/utils/editorial-policy.test.ts",
+    "src/utils/editorial-policy.ts",
+    "src/utils/note-gate.ts",
+    "src/utils/prompts-regression.test.ts",
+    "src/utils/prompts.ts",
+    "src/utils/reasoning-effort.test.ts",
+    "src/utils/reasoning-effort.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.6-luna",
+  "turn_id": "3f24c34c6854",
+  "checkpoint_transcript_start": 1802,
+  "transcript_lines_at_start": 1802,
+  "compact_transcript_start": 222,
+  "session_metrics": {
+    "turn_count": 4
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-28T23:46:19.715221922Z",
+    "agent_lines": 2104,
+    "agent_removed": 83,
+    "human_added": 14854,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 16958,
+    "total_lines_changed": 21920,
+    "agent_percentage": 9.977189781021897,
+    "metric_version": 2
+  }
+}

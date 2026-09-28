@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "c67fa9865292",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "convex/agentPrompts.ts",
+    "convex/agents.ts",
+    "docs/editorial-drafting-context-brief.md",
+    "prompts/editorial-protocol.md",
+    "prompts/persona-system.md",
+    "src/components/personas/personas-panel.tsx",
+    "src/utils/adaptive-editorial-draft.test.ts",
+    "src/utils/adaptive-editorial-draft.ts",
+    "src/utils/ai-client.ts",
+    "src/utils/background-room.ts",
+    "src/utils/editorial-note-review.ts",
+    "src/utils/editorial-policy.test.ts",
+    "src/utils/editorial-policy.ts",
+    "src/utils/note-gate.ts",
+    "src/utils/prompts-regression.test.ts",
+    "src/utils/prompts.ts",
+    "src/utils/reasoning-effort.test.ts",
+    "src/utils/reasoning-effort.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/c6/7fa9865292/0/metadata.json",
+      "transcript": "/c6/7fa9865292/0/full.jsonl",
+      "compact_transcript": "/c6/7fa9865292/0/transcript.jsonl",
+      "content_hash": "/c6/7fa9865292/0/content_hash.txt",
+      "prompt": "/c6/7fa9865292/0/prompt.txt"
+    }
+  ]
+}
