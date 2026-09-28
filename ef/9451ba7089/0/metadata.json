@@ -1,0 +1,44 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "ef9451ba7089",
+  "session_id": "01a0dd61-d08c-7f71-9e6c-24cf8966c3df",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-28T23:46:44.424191372Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Codex",
+  "model": "gpt-6-astra",
+  "turn_id": "e30749271194",
+  "checkpoint_transcript_start": 513,
+  "transcript_lines_at_start": 513,
+  "compact_transcript_start": 63,
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-codex-compact-2026-09-28T23:40:49.290322098Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "compact"
+      },
+      "source": {
+        "agent": "codex",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "cf2e9ea3cb69",
+      "timestamp": "2026-09-28T23:40:49.290322098Z",
+      "native": {
+        "command": "/compact"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/compact",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 4
+  }
+}

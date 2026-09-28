@@ -1,0 +1,25 @@
+one thing that i wanted to get setup is native typst editor i believe i requested this at some point check entire for t his plan shhould be in claude sessioon
+
+---
+
+start this
+
+---
+
+focus on implementation
+
+---
+
+focus on implementation not test
+
+---
+
+tests
+
+---
+
+/compact i want you to see if the typst editor has been fully implemented
+
+---
+
+finish the rest
