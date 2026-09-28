@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.22.1
+
+<sub>2026-09-28</sub>
+
+- Fix production deployment with deploy-only Convex keys by using the corrected
+  Convex CLI for index-removal review.
+- Isolate voice-recording browser mocks so CI test order cannot leak read-only
+  storage or unset timers into editor tests.
+
 ## 0.22.0
 
 <sub>2026-09-28</sub>
