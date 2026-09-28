@@ -1,0 +1,21 @@
+I am trying to understand how the rubric operates in the first place, the way that the rubric panel works right now is not at all intuitive for several reasons, there is just way to much text, no clear indicators of separation. There is not a clean way to expand if you want more detailed information and the other thing is the what you would like to explore part is even more confusing. As an aside a cool feature idea that i was thinking of was having generated interactive elements that suited what you were writing depending on the type of thing you were writing. We could think up a maybe four different type of elements that help writers improve their writing space and also are extremely intuitive to interact with. Openui seems cool for things like this streaming wise. Lastly for local stuff, potion has static embeddings and there are tools like kev 9b we could use for jev tasks we can load in a runpod skate instance.
+
+---
+
+The ideal that I have a vision for is that things that are important to the writer show up in the flow as they are writing we dynamically determine the sort of things they are struggling  with trying to tweak, trying to improve and we put tools in the hands while they are writing, these tools can be saved as needed and reused. spans sensitive content. and all thata seem great too. use your best judgement for how to arrive there.
+
+---
+
+jsonrender can also work for generative approaches
+
+---
+
+also make use of the side parts of the screen much like google docs does.
+
+---
+
+focus on pure implementation first and tests later, just type check to make sure that makes sense once do you can then add your tests.
+
+---
+
+i still think that the copy for the rubric panel could be improved to be far more readable
