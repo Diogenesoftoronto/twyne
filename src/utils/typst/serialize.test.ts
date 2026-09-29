@@ -22,6 +22,7 @@ let compiler: TypstCompiler;
 beforeAll(async () => {
   Object.defineProperty(globalThis, "DOMParser", {
     configurable: true,
+    writable: true,
     value: dom.window.DOMParser,
   });
   compiler = createTypstCompiler();
@@ -229,6 +230,7 @@ describe("Typst serializer with the real bundled compiler", () => {
     );
     Object.defineProperty(globalThis, "window", {
       configurable: true,
+      writable: true,
       value: dom.window,
     });
     try {
@@ -282,6 +284,7 @@ describe("Typst serializer with the real bundled compiler", () => {
     );
     Object.defineProperty(globalThis, "window", {
       configurable: true,
+      writable: true,
       value: dom.window,
     });
     try {

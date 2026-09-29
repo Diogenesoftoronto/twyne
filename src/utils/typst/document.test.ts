@@ -18,6 +18,7 @@ beforeAll(() => {
   const dom = new JSDOM();
   Object.defineProperty(globalThis, "DOMParser", {
     configurable: true,
+    writable: true,
     value: dom.window.DOMParser,
   });
 });

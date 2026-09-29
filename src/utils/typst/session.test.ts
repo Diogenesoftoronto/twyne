@@ -18,6 +18,7 @@ beforeAll(() => {
     previous.set(key, Object.getOwnPropertyDescriptor(globalThis, key));
     Object.defineProperty(globalThis, key, {
       configurable: true,
+      writable: true,
       value: dom.window[key],
     });
   }
