@@ -71,10 +71,14 @@ export async function withEditor(
     `<!DOCTYPE html><html><body><div id="editor-mount"></div></body></html>`,
   );
 
-  const previousGlobals: Record<string, unknown> = {};
+  const previousGlobals: Record<string, PropertyDescriptor | undefined> = {};
   const install = (key: string, value: unknown) => {
-    previousGlobals[key] = (globalThis as Record<string, unknown>)[key];
-    (globalThis as Record<string, unknown>)[key] = value;
+    previousGlobals[key] = Object.getOwnPropertyDescriptor(globalThis, key);
+    Object.defineProperty(globalThis, key, {
+      configurable: true,
+      writable: true,
+      value,
+    });
   };
 
   install("document", dom.window.document);
@@ -117,7 +121,9 @@ export async function withEditor(
     editor.destroy();
     dom.window.close();
     for (const key of Object.keys(previousGlobals)) {
-      (globalThis as Record<string, unknown>)[key] = previousGlobals[key];
+      const descriptor = previousGlobals[key];
+      if (descriptor) Object.defineProperty(globalThis, key, descriptor);
+      else Reflect.deleteProperty(globalThis, key);
     }
   }
 }

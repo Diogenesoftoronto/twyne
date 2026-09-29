@@ -14,4 +14,3 @@ export function typstString(value: string): string {
     '"'
   );
 }
-
