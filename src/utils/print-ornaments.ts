@@ -147,8 +147,7 @@ export function printedPageFrame(layout: LayoutSettings): string {
   const border = resolvePageBorder(layout);
   if (border === "none") return "";
   const artwork = pageBorderArtwork(layout);
-  const source =
-    artwork && printableAssetUrl(artwork.replace(/\.webp$/, ".png"));
+  const source = artwork && printableAssetUrl(artwork);
   // Paths are fixed application assets; escaping also covers an unusual origin.
   const escaped = source?.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
   const tileCounts = pageBorderTileCounts(layout);

@@ -1,0 +1,13 @@
+{
+  "title": "The impression",
+  "prompt": "Use case: ads-marketing. Asset: a high-end editorial website hero photograph for Twyne, a writer's room with a room full of editors. Option 5, 'The impression'. Landscape 1536x1024. Create a cinematic still-life of the physical craft of writing and publishing: a magnificent old letterpress platen and a freshly pulled cream manuscript proof with a restrained vermilion printer's mark at lower right, dark cast iron and scattered movable metal type at far left, a walnut-handled rubber stamp tucked along lower edge. View at an intimate low oblique angle, beautiful raking light, tactile ink on cotton rag paper, meticulous realistic material detail, visually strong enough for a literary publication cover. The central 50 percent of composition must be mostly quiet deep ink-black shadow with subtle texture and no busy objects, allowing large cream website headline text to overlay. Objects form an asymmetrical composition around the edges, not a contrived frame. Palette ink black, warm paper cream, aged walnut, precise small vermilion accents, no orange sepia wash. No text overlays, no logo, no watermark, no laptop or computer interface, no people. Distinctive restrained editorial photography, not stock office photography. Any tiny print on the proof remains out of focus and incidental.",
+  "source": "/home/diogenes/.codex/generated_images/01a0eb70-5e56-7400-88f6-69c619eb553f/exec-81970ca6-9c96-44eb-9d87-b51462bfb1be.png",
+  "generator": "built-in imagegen",
+  "encoding": {
+    "format": "AVIF",
+    "quality": 70,
+    "effort": 6,
+    "chromaSubsampling": "4:4:4",
+    "files": ["option-05-1536.avif", "option-05-768.avif"]
+  }
+}

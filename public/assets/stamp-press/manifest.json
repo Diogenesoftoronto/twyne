@@ -1,0 +1,20 @@
+{
+  "generatedWith": "built-in image_gen",
+  "encoding": {
+    "quality": 70,
+    "effort": 6,
+    "chromaSubsampling": "4:4:4",
+    "nativeDimensions": true
+  },
+  "assets": [
+    {
+      "file": "walnut-stamp.avif",
+      "bytes": 79288,
+      "width": 768,
+      "height": 768,
+      "alpha": true,
+      "sha256": "3b3ef275d67c85eeb7bf15a9a2cda5987e90a58f640b500d1f0fb8bac60ff93f"
+    }
+  ],
+  "originalsArchive": "tmp/artwork-originals/public/assets/stamp-press"
+}

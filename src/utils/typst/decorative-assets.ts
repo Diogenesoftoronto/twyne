@@ -44,7 +44,10 @@ export function typstDecorations(
       ? illuminatedInitialArtwork(opening.glyph, settings.collection)
       : null;
     if (opening && url) {
-      const path = `/twyne-decoration/initial-${url.split("/").at(-1)}`;
+      const path = `/twyne-decoration/initial-${url
+        .split("/")
+        .at(-1)
+        ?.replace(/\.avif$/, ".png")}`;
       initial = { glyph: opening.glyph.toUpperCase(), path };
       assets.push({ path, url });
     }
@@ -54,13 +57,13 @@ export function typstDecorations(
       ? null
       : {
           path: `/twyne-decoration/frame-${border}.png`,
-          url: `/assets/page-borders/${border}.png`,
+          url: `/assets/page-borders/${border}.avif`,
           slices: Object.fromEntries(
             ["nw", "n", "ne", "w", "e", "sw", "s", "se"].map((part) => [
               part,
               {
                 path: `/twyne-decoration/frame-${border}-${part}.png`,
-                url: `/assets/page-borders/slices/${border}-${part}.png`,
+                url: `/assets/page-borders/slices/${border}-${part}.avif`,
               },
             ]),
           ) as Record<string, TypstDecorationAsset>,

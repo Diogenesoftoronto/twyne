@@ -1,0 +1,28 @@
+{
+  "id": "option-03",
+  "title": "The illuminated manuscript",
+  "generatedWith": "built-in image_gen",
+  "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-6a21a6b3-cf28-4794-a26e-37e2203667ef.png",
+  "sourceSha256": "94c82591060afa969e2e46a793b2adcfc0249bb370ce1b2d954849b186d51d3f",
+  "prompt": "Use case: stylized-concept. Asset type: premium website landscape hero illustration for Twyne, an editorial writer's room. Landscape 1536x1024. Bespoke antique copperplate and woodcut illustration: an open manuscript at the lower edges transforms into finely engraved botanical illuminated marginalia, curling acanthus, slender branches and elegant fragments of manuscript paper at the outer margins. Exquisite cream engraved strokes, crosshatching and restrained tiny vermilion ink details on rich ink-black background. Sophisticated literary craftsmanship, tactile and precise, quiet contemporary art direction. Composition essential: central 50 percent of the image must remain an uninterrupted quiet dark ink-black negative space for cream headline copy, with no objects or strong lines crossing that central text zone. Ornament and open manuscript detail concentrated along bottom corners and outer margins, natural asymmetric balance, subtle falloff into black. No generated titles, no legible text, no logos, no fake app interface, no watermark, no fantasy creatures, no clutter. A striking coherent editorial image with generous breathing room, premium fine art quality.",
+  "encoding": {
+    "format": "avif",
+    "quality": 70,
+    "effort": 6,
+    "chromaSubsampling": "4:4:4"
+  },
+  "outputs": [
+    {
+      "file": "option-03-1536.avif",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 254439
+    },
+    {
+      "file": "option-03-768.avif",
+      "width": 768,
+      "height": 512,
+      "bytes": 64010
+    }
+  ]
+}

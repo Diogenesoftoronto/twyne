@@ -24,7 +24,7 @@ export const StampPress = component$<{ animated?: boolean }>((props) => {
           <span class="ink-stamp__contact-shadow" />
           <img
             class="ink-stamp__tool"
-            src="/assets/stamp-press/walnut-stamp.webp"
+            src="/assets/stamp-press/walnut-stamp.avif"
             width={768}
             height={768}
             alt=""

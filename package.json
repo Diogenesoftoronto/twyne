@@ -88,6 +88,7 @@
     "prettier": "3.6.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "sharp": "0.34.5",
     "storybook": "^10",
     "storybook-framework-qwik": "^0.6.1",
     "tailwindcss": "^4.2.4",

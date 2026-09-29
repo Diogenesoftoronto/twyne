@@ -234,7 +234,7 @@ describe("print ornaments and columns", () => {
       ).not.toBeNull();
       const image = article.querySelector("img")!;
       expect(image.getAttribute("src")).toBe(
-        "https://twyne.app/assets/illuminated-initials/a.webp",
+        "https://twyne.app/assets/illuminated-initials/a.avif",
       );
       expect(image.getAttribute("alt")).toBe("");
       expect(image.getAttribute("aria-hidden")).toBe("true");
@@ -279,7 +279,7 @@ describe("print ornaments and columns", () => {
         },
       });
       expect(decoratePrintedOpening("<p>At home.</p>", alternate)).toContain(
-        "a-alt.webp",
+        "a-alt.avif",
       );
       const accented = decoratePrintedOpening(
         "<p>E<strong>\u0301</strong>lan.</p>",
@@ -313,7 +313,7 @@ describe("print ornaments and columns", () => {
     expect(html).toContain("padding: 0.833in 0.833in 0.833in 0.833in");
     // Twelve short tiles per horizontal edge, seven per vertical edge, four corners.
     expect(html.match(/data-twyne-print-ornament="border"/g)).toHaveLength(42);
-    expect(html).toContain("botanical.png");
+    expect(html).toContain("botanical.avif");
     expect(html).toContain("position: fixed;");
     expect(html).toContain("inset: 18pt;");
     expect(html).toContain("box-decoration-break: clone;");

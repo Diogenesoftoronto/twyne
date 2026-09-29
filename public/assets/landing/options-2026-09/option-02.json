@@ -1,0 +1,28 @@
+{
+  "id": "option-02",
+  "title": "The red pen",
+  "generatedWith": "built-in image_gen",
+  "source": "/home/diogenes/.codex/generated_images/01a0ebc2-961b-77f2-a039-1783de370933/exec-f4984196-42df-4b0a-a107-cd9571318080.png",
+  "prompt": "Use case: ads-marketing. Asset: sophisticated macro photographic landscape website hero for Twyne, an editorial writing and revision studio. Output 1536x1024 landscape.\nStriking extreme-close photographic still life: a slender vermilion red editorial pen with exposed fine metal nib resting diagonally across the OUTER RIGHT edge of an ivory manuscript sheet, with convincing red proofreading strokes, deletion mark, caret and underline beside small black typeset prose. Paper and pen occupy rightmost quarter and lower-right edge only. A second softly lit layered cream page corner enters at far upper-left. The central 50 percent and left-middle is open rich almost-black matte ink-colored desktop with subtle tactile grain, absolutely clear for cream hero text to be added later. Dimensional layered paper shadows and warm raking light make the cream edges luminous against darkness. Art-directed asymmetric literary luxury, quiet and tactile, real fine fiber paper and restrained red ink, very high-quality macro photography, shallow depth of field at extreme margins but central area softly uniform. Clearly writing and revision, not a stationery catalogue. No readable headlines, no logos, no UI, no watermark, no hands, no flowers, no decorative border. Do not put text or an object in the central copy-safe area.",
+  "sourceSha256": "44c7928c98d1f8d76b697823a6f8147bea4bab4a9109b2c72c8827aabf4c2685",
+  "outputs": [
+    {
+      "filename": "option-02-1536.avif",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 118916,
+      "quality": 70,
+      "effort": 6,
+      "chromaSubsampling": "4:4:4"
+    },
+    {
+      "filename": "option-02-768.avif",
+      "width": 768,
+      "height": 512,
+      "bytes": 32005,
+      "quality": 70,
+      "effort": 6,
+      "chromaSubsampling": "4:4:4"
+    }
+  ]
+}

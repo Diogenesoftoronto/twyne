@@ -81,9 +81,9 @@ describe("Typst export lifecycle", () => {
       )
     ).text();
     expect(requests).toEqual([
-      "/assets/illuminated-initials/c.webp",
+      "/assets/illuminated-initials/c.avif",
       ...["nw", "n", "ne", "w", "e", "sw", "s", "se"].map(
-        (part) => `/assets/page-borders/slices/botanical-${part}.png`,
+        (part) => `/assets/page-borders/slices/botanical-${part}.avif`,
       ),
     ]);
     expect(source).not.toContain('image("/twyne-decoration/');

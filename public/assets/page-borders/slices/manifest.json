@@ -11,5 +11,199 @@
     "s": [320, 1216, 384, 320],
     "se": [704, 1216, 320, 320]
   },
-  "description": "Lossless transparent crops of the regenerated revision-2 image-generated borders. Native output 1024×1536; no upscaling. Repeat edge tiles proportionally and preserve square corners; center remains empty."
+  "description": "AVIF crops at native dimensions; quality70, effort6, 4:4:4, transparent. Original lossless PNG crops archived outside deployed public assets. Typst decodes these to PNG in memory. Repeat edges proportionally and preserve square corners; center remains empty.",
+  "assets": [
+    {
+      "file": "botanical-e.avif",
+      "bytes": 72983,
+      "width": 320,
+      "height": 896,
+      "alpha": true,
+      "sha256": "c2491cb01021426080441d3ad045b2dd2ad1c316ec1a0cff0373e61929136ec8"
+    },
+    {
+      "file": "botanical-n.avif",
+      "bytes": 28193,
+      "width": 384,
+      "height": 320,
+      "alpha": true,
+      "sha256": "e960d173d75d0492c8a2a57c416dd281fba4f1e2dca9b7015683bfe5c1710c98"
+    },
+    {
+      "file": "botanical-ne.avif",
+      "bytes": 38527,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "7a8dc4c0b1a91093345871b0934d2902784c0e6d447252cdf3c1593b85820331"
+    },
+    {
+      "file": "botanical-nw.avif",
+      "bytes": 38321,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "95c99e22b9c4f07ffc2b4c085491f2555ab8c47ee6f3ac88a696090688bc90b3"
+    },
+    {
+      "file": "botanical-s.avif",
+      "bytes": 28455,
+      "width": 384,
+      "height": 320,
+      "alpha": true,
+      "sha256": "7b5139d81a78fac5f35c66e8818280c2c44535b50308beb939228e5a96735164"
+    },
+    {
+      "file": "botanical-se.avif",
+      "bytes": 38224,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "ab403cc2439a44151866ce850bc2f8b34b147b04f821ca28997e89a610248871"
+    },
+    {
+      "file": "botanical-sw.avif",
+      "bytes": 38311,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "2144b2913f206211ae5c67aab47f52643aea61d04674511185d116165933aa55"
+    },
+    {
+      "file": "engraved-n.avif",
+      "bytes": 21366,
+      "width": 384,
+      "height": 320,
+      "alpha": true,
+      "sha256": "c99153c76cf2b415517c9a5d712b617a66ceb9ed4dd8c5f98bab77a33b1ac545"
+    },
+    {
+      "file": "engraved-ne.avif",
+      "bytes": 31401,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "5c3491ab3f5b4e84ded1cb4789417f04535961faa771dac6fe47a17795c0c308"
+    },
+    {
+      "file": "botanical-w.avif",
+      "bytes": 73221,
+      "width": 320,
+      "height": 896,
+      "alpha": true,
+      "sha256": "7474f7ece7325b550db457a89f21f686c95ea1fe79371cbeb116dc3a8333a34e"
+    },
+    {
+      "file": "engraved-e.avif",
+      "bytes": 57274,
+      "width": 320,
+      "height": 896,
+      "alpha": true,
+      "sha256": "03dcb4df4d18c27381411c145d523aba5623a10706f8ae064d8136e80a44125b"
+    },
+    {
+      "file": "engraved-s.avif",
+      "bytes": 20630,
+      "width": 384,
+      "height": 320,
+      "alpha": true,
+      "sha256": "877dfbabc58f6e70b8cb0ad82b217be946f11e5ca5fec2125cd559f6e59e0e62"
+    },
+    {
+      "file": "engraved-nw.avif",
+      "bytes": 31427,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "82556e3c9e48402dea8068294e52a45bfcc60836cb2eebaf5fdd1f83d049bd5e"
+    },
+    {
+      "file": "engraved-se.avif",
+      "bytes": 31734,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "2ba96e21759651a30114a43e3f967fbe891fe089a8ce4d5d1d3fbe209e10e983"
+    },
+    {
+      "file": "illuminated-n.avif",
+      "bytes": 14662,
+      "width": 384,
+      "height": 320,
+      "alpha": true,
+      "sha256": "66303fa04e9a3b10eaa5a181dfa7831a2150344d58a3c152b2820ba20127ea24"
+    },
+    {
+      "file": "engraved-sw.avif",
+      "bytes": 31613,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "abf759f03896853e52d6aecde1128328f3e224f5a7861c179df881464b963212"
+    },
+    {
+      "file": "illuminated-e.avif",
+      "bytes": 41436,
+      "width": 320,
+      "height": 896,
+      "alpha": true,
+      "sha256": "14cee0731a5730c433a0a54677ffbc359c03118a7c3316a9f9e3c60b7ddfbdd2"
+    },
+    {
+      "file": "illuminated-ne.avif",
+      "bytes": 33176,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "dcba853c4fbc4d10c0490203936130cb53619029740af130c43ab80519012d3c"
+    },
+    {
+      "file": "illuminated-s.avif",
+      "bytes": 13921,
+      "width": 384,
+      "height": 320,
+      "alpha": true,
+      "sha256": "85733d7e51cc16d81946b2e2df1d23b0f181cf39d059cb69382843861e6056a5"
+    },
+    {
+      "file": "illuminated-nw.avif",
+      "bytes": 33095,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "727ba9beba5ca0304b3e0e6773b065156bf65778e7d81fdd88b7a2c451f13c5d"
+    },
+    {
+      "file": "engraved-w.avif",
+      "bytes": 57867,
+      "width": 320,
+      "height": 896,
+      "alpha": true,
+      "sha256": "a3e100265103f152f956a3a07d0d22e0ff4c4d72e673172164d313adb99517db"
+    },
+    {
+      "file": "illuminated-se.avif",
+      "bytes": 31378,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "843b2540d64f6e580eba67b4b510e24c5cba58262a27aa43b170ae396ff051fe"
+    },
+    {
+      "file": "illuminated-sw.avif",
+      "bytes": 31328,
+      "width": 320,
+      "height": 320,
+      "alpha": true,
+      "sha256": "abcf41ffc4646b0d240f469be061f10752d16527a8c5e06c2424faa0ccdc4738"
+    },
+    {
+      "file": "illuminated-w.avif",
+      "bytes": 41257,
+      "width": 320,
+      "height": 896,
+      "alpha": true,
+      "sha256": "84d1ac6bcd62599bd2c173ca1a3637449c9459dd69bbc43f965bb2f368f2b5fc"
+    }
+  ]
 }
