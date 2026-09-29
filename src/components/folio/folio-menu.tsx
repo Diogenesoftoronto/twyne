@@ -1,3 +1,4 @@
+import { htmlToTypst } from "../../utils/typst/document";
 import {
   component$,
   useStore,
@@ -22,7 +23,7 @@ import {
 } from "../../utils/exchange";
 import {
   loadFoliosFromIdb,
-  saveFolioContentToIdb,
+  saveFolioTypstToIdb,
   saveFoliosToIdb,
   saveActiveFolioIdToIdb,
 } from "../../utils/idb";
@@ -331,7 +332,11 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       // Persist to the active folio.
       const activeId = props.activeFolioId;
       if (activeId) {
-        await saveFolioContentToIdb(activeId, result.html);
+        await saveFolioTypstToIdb(
+          activeId,
+          result.typstSource ?? htmlToTypst(result.html),
+          result.html,
+        );
       } else {
         // No active folio — create one.
         const folio: Folio = {
@@ -343,7 +348,11 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         };
         const folios = await loadFoliosFromIdb();
         await saveFoliosToIdb([...folios, folio]);
-        await saveFolioContentToIdb(folio.id, result.html);
+        await saveFolioTypstToIdb(
+          folio.id,
+          result.typstSource ?? htmlToTypst(result.html),
+          result.html,
+        );
         await saveActiveFolioIdToIdb(folio.id);
         void captureProductEvent("folio_created", {
           source: "import",
@@ -820,7 +829,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             >
               <input
                 type="file"
-                accept=".docx,.md,.markdown,.html,.htm,.txt,.json,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/markdown,text/html,text/plain,application/json"
+                accept=".typ,.docx,.md,.markdown,.html,.htm,.txt,.json,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/markdown,text/html,text/plain,application/json"
                 class="sr-only"
                 onChange$={async (e) => {
                   const file = (e.target as HTMLInputElement).files?.[0];

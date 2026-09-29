@@ -10,6 +10,10 @@ import { loadFonts } from "@myriaddreamin/typst.ts/options.init";
 import { serializeTypst, typstString } from "./serialize";
 import { DEFAULT_LAYOUT } from "../../types";
 import { exportTypst } from "./export";
+import { prepareTypstAssets } from "./render-assets";
+import { createTypstRenderer } from "@myriaddreamin/typst.ts/renderer";
+import { splitProofPages } from "./client";
+import { htmlToTypst } from "./document";
 
 const dom = new JSDOM("", { url: "https://twyne.test/" });
 const previous = Object.getOwnPropertyDescriptor(globalThis, "DOMParser");
@@ -145,7 +149,7 @@ describe("Typst serializer with the real bundled compiler", () => {
       expect(rendered).toContain(value);
   });
 
-  test("private annotations do not leak and unsupported content fails explicitly", () => {
+  test("private annotations do not leak and equation sources are retained", () => {
     const { source } = serializeTypst({
       title: "Draft",
       html: '<p><span data-comment="PRIVATE" data-replacement="SECRET">Original prose</span></p>',
@@ -153,13 +157,111 @@ describe("Typst serializer with the real bundled compiler", () => {
     expect(source).toContain("Original prose");
     expect(source).not.toContain("PRIVATE");
     expect(source).not.toContain("SECRET");
-    for (const kind of ["inline-math", "block-math", "mermaid-diagram"])
-      expect(() =>
-        serializeTypst({
-          title: "Draft",
-          html: `<div data-type="${kind}">content</div>`,
-        }),
-      ).toThrow("does not yet support");
+    expect(
+      serializeTypst({
+        title: "Math",
+        html: '<span data-type="inline-math" data-latex="x^2"></span>',
+      }).source,
+    ).toContain('#twyne-math("x^2", block: false)');
+  });
+
+  test("LaTeX fractions render locally into SVG accepted by the real compiler", async () => {
+    const doc = serializeTypst({
+      title: "Equation",
+      html: '<p>Inline <span data-type="inline-math" data-latex="\\frac{a}{b}"></span></p><div data-type="block-math" data-latex="x^2 + y^2 = z^2"></div>',
+    });
+    const source = await prepareTypstAssets(doc.source);
+    expect(source).not.toContain("#twyne-math(");
+    expect(source).toContain('format: "svg"');
+    await compile(source);
+  });
+
+  test("canonical rich source compiles to separately paginated SVG proofs", async () => {
+    const source = htmlToTypst(
+      '<h1>Proof</h1><p>A <strong>bold</strong> sentence.</p><ol><li><p>First</p></li><li><p>Second</p></li></ol><table><tbody><tr><th>A</th><th>B</th></tr><tr><td>One</td><td>Two</td></tr></tbody></table><div data-type="page-break"></div><p>Page two.</p>',
+    );
+    await compile(source);
+    const vector = await compiler.runWithWorld(
+      { mainFilePath: "/main.typ", inputs: {} },
+      (world) => world.vector({ diagnostics: "full" }),
+    );
+    expect(vector.result).toBeDefined();
+    const renderer = createTypstRenderer();
+    await renderer.init({
+      getModule: () =>
+        readFile(
+          new URL(
+            "../../../node_modules/@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm",
+            import.meta.url,
+          ),
+        ),
+    });
+    await renderer.runWithSession(
+      { format: "vector", artifactContent: vector.result! },
+      async (session) => {
+        const sizes = session.retrievePagesInfo();
+        const pages = splitProofPages(
+          await session.renderSvg({
+            data_selection: { body: true, defs: true, css: true, js: false },
+          }),
+          sizes,
+        );
+        expect(pages).toHaveLength(2);
+        for (const page of pages) {
+          const document = new dom.window.DOMParser().parseFromString(
+            page,
+            "image/svg+xml",
+          );
+          expect(document.querySelectorAll(".typst-page")).toHaveLength(1);
+          expect(
+            document.querySelector(".typst-page")?.hasAttribute("transform"),
+          ).toBe(false);
+          expect(document.querySelector("parsererror")).toBeNull();
+        }
+      },
+    );
+  });
+
+  test("canonical tables retain column widths and image figures apply their crop ratio", async () => {
+    const previousWindow = Object.getOwnPropertyDescriptor(
+      globalThis,
+      "window",
+    );
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      value: dom.window,
+    });
+    try {
+      const image =
+        "data:image/svg+xml," +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><rect width="40" height="20" fill="red"/></svg>',
+        );
+      const source = htmlToTypst(
+        `<table><tr><td colwidth="120">Narrow</td><td colwidth="240">Wide</td></tr></table><figure data-image-width="25" data-image-aspect-ratio="1"><img src="${image}" alt="Cropped"><figcaption>Caption</figcaption></figure>`,
+      );
+      expect(source).toContain("120,240");
+      await compile(await prepareTypstAssets(source));
+    } finally {
+      if (previousWindow)
+        Object.defineProperty(globalThis, "window", previousWindow);
+      else Reflect.deleteProperty(globalThis, "window");
+    }
+  });
+
+  test("canonical endnotes render after body while footnotes and task state remain distinct", async () => {
+    const source = htmlToTypst(
+      '<p>Body <sup data-type="endnote" data-endnote-text="Endnote one"></sup> more <sup data-type="endnote" data-endnote-text="Endnote two"></sup> and <sup data-type="footnote" data-endnote-text="Footnote text"></sup>.</p><ul data-type="taskList"><li data-type="taskItem" data-checked="true"><p>Completed</p></li><li data-type="taskItem" data-checked="false"><p>Pending</p></li></ul>',
+    );
+    const text = (await compile(source)).join("");
+    expect(text).toContain("Endnote one");
+    expect(text).toContain("Endnote two");
+    expect(text.indexOf("Endnote one")).toBeGreaterThan(
+      text.indexOf("Pending"),
+    );
+    expect(text).toContain("Footnote text");
+    expect(text).toContain("[x]");
+    expect(text).toContain("[ ]");
   });
 
   test("repeated images share an asset and retain captions and alternative text", () => {

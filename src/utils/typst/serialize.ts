@@ -64,6 +64,10 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
 
   function inlineStyle(el: HTMLElement, body: string): string {
     const args: string[] = [];
+    if (el.style.fontFamily)
+      args.push(
+        `font: ${typstString(el.style.fontFamily.includes("monospace") ? "DejaVu Sans Mono" : el.style.fontFamily.split(",")[0].replace(/['"]/g, "").trim())}`,
+      );
     const fill = color(el.style.color);
     if (fill) args.push(`fill: ${fill}`);
     const size = /^(\d+(?:\.\d+)?)(px|pt|rem|em)$/.exec(el.style.fontSize);
@@ -177,11 +181,10 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
     const kind = el.getAttribute("data-type");
     if (kind === "page-break" || el.hasAttribute("data-page-break"))
       return "#pagebreak()\n";
-    if (["inline-math", "block-math", "mermaid-diagram"].includes(kind ?? "")) {
-      throw new Error(
-        "Typst export does not yet support equations or diagrams. Use PDF… for this folio.",
-      );
-    }
+    if (kind === "inline-math" || kind === "block-math")
+      return `#twyne-math(${typstString(el.getAttribute("data-latex") ?? el.textContent ?? "")}, block: ${kind === "block-math"})`;
+    if (kind === "mermaid-diagram")
+      return `#twyne-mermaid(${typstString(el.getAttribute("data-mermaid-source") ?? el.textContent ?? "")})`;
     if (kind === "footnote")
       return `#footnote[${text(el.getAttribute("data-endnote-text") ?? "")}]`;
     if (kind === "endnote") {
@@ -313,8 +316,9 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
     source: [
       "// Exported from Twyne. Editing this file does not change your saved folio.",
       `#set document(title: ${typstString(payload.title)})`,
-      '#set text(font: "Libertinus Serif", size: 12pt)',
+      '#set text(font: ("Lora", "Libertinus Serif"), size: 13.5pt)',
       '#show raw: set text(font: "DejaVu Sans Mono")',
+      '#show math.equation: set text(font: "Libertinus Math")',
       "#set par(leading: 0.65em, spacing: 0.8em)",
       "#set heading(numbering: none)",
       `#set page(width: ${page.widthIn}in, height: ${page.heightIn}in, margin: (${margin}), header: [${text(header)}], footer: [${footer}])`,

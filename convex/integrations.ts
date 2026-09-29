@@ -243,6 +243,7 @@ export const putFolio = internalMutation({
     userId: v.string(),
     folio: folioInput,
     html: v.optional(v.string()),
+    typstSource: v.optional(v.string()),
     brief: v.optional(v.any()),
     expectedUpdatedAt: v.optional(v.number()),
   },
@@ -299,12 +300,26 @@ export const putFolio = internalMutation({
           q.eq("userId", args.userId).eq("folioId", id),
         )
         .first();
-      if (row) await ctx.db.patch(row._id, { html: args.html, updatedAt: now });
+      if (row?.typstSource !== undefined && args.typstSource === undefined)
+        throw new Error(
+          "This document uses Typst. Edit its source in Twyne to preserve native content.",
+        );
+      if (row)
+        await ctx.db.patch(row._id, {
+          html: args.html,
+          ...(args.typstSource !== undefined
+            ? { format: "typst" as const, typstSource: args.typstSource }
+            : {}),
+          updatedAt: now,
+        });
       else {
         await ctx.db.insert("folioContent", {
           userId: args.userId,
           folioId: id,
           html: args.html,
+          ...(args.typstSource !== undefined
+            ? { format: "typst" as const, typstSource: args.typstSource }
+            : {}),
           updatedAt: now,
         });
       }

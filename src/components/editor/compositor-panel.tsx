@@ -1012,12 +1012,12 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
                 </fieldset>
 
                 <fieldset class="layout-section">
-                  <legend>Flow</legend>
+                  <legend>Writing width</legend>
                   <div class="flex items-center gap-1 mb-3">
                     {(
                       [
-                        ["paginated", "Pages"],
-                        ["continuous", "Scroll"],
+                        ["paginated", "Match paper"],
+                        ["continuous", "Custom column"],
                       ] as const
                     ).map(([value, label]) => (
                       <button

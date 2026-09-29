@@ -36,7 +36,7 @@ import {
 } from "../../types";
 import { computePageGeometry } from "./pagination-geometry";
 import { pxToRem, rootFontSize } from "../../utils/css-units";
-import { exportPdf } from "../../utils/exchange";
+import { downloadBlob } from "../../utils/exchange";
 import { isFileDrag } from "../../utils/file-drag";
 import { buildFolioExportPayload } from "../../utils/folio-export";
 import {
@@ -150,7 +150,8 @@ import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 import { QuickReview, startQuickReview } from "./extensions/quick-review";
 import { InFlowAnchor, startInFlowTools } from "./extensions/struggle-tracker";
 import { PageBreakNode } from "./extensions/page-break-node";
-import { Pagination, type PaginationInfo } from "./extensions/pagination";
+import { RawTypst, RawTypstInline } from "./extensions/raw-typst";
+import { TypstWorkspace } from "./typst-workspace";
 import { ParagraphFormat } from "./extensions/paragraph-format";
 import {
   DRAFT_SNAPSHOT_REQUEST,
@@ -463,11 +464,6 @@ export const TwyneEditor = component$(
         root.style.removeProperty("--page-gap");
         root.style.removeProperty("--page-content-h");
       }
-
-      // Push the new settings into the engine. A layout change invalidates
-      // every measured height, so this is what makes the pages resettle after
-      // a paper change or a margin drag.
-      store.editor?.commands.setPaginationLayout(layout);
     });
 
     // Dismiss the editor popovers on outside click.
@@ -641,8 +637,36 @@ export const TwyneEditor = component$(
             void syncDraftToLix(store.activeFolioId, html);
           }, 1200);
         };
+        const mirrorSourceCommit = (event: Event) => {
+          const detail = (
+            event as CustomEvent<{
+              folioId: string;
+              source: string;
+              html: string;
+            }>
+          ).detail;
+          if (!sharedLixId || detail.folioId !== store.activeFolioId) return;
+          if (mirrorTimer) clearTimeout(mirrorTimer);
+          mirrorTimer = null;
+          void syncDraftToLix(detail.folioId, detail.html, detail.source).catch(
+            (error) =>
+              reportApplicationDiagnostic(
+                "twyne:editor:source-collaboration",
+                error,
+                { operation: "sync" },
+              ),
+          );
+        };
+        window.addEventListener(
+          "twyne:typst-source-committed",
+          mirrorSourceCommit,
+        );
         cleanup(() => {
           if (mirrorTimer) clearTimeout(mirrorTimer);
+          window.removeEventListener(
+            "twyne:typst-source-committed",
+            mirrorSourceCommit,
+          );
         });
 
         // Reconciliation of writer comments against the current document.
@@ -776,18 +800,8 @@ export const TwyneEditor = component$(
             SectionReorder,
             ParagraphFormat,
             PageBreakNode,
-            Pagination.configure({
-              layout: store.layout,
-              // The notes block sits after the editor but inside the page
-              // canvas, so it has to be counted or it spills past the last
-              // sheet with nothing under it.
-              getTailElement: () =>
-                document.querySelector<HTMLElement>(".manuscript-notes"),
-              onPaginate: (info: PaginationInfo) => {
-                store.pageCount = info.pageCount;
-                store.paginationActive = info.active;
-              },
-            }),
+            RawTypst,
+            RawTypstInline,
           ],
           content: initialContent,
           editorProps: {
@@ -1561,7 +1575,12 @@ export const TwyneEditor = component$(
               (target.isContentEditable && !target.closest(".ProseMirror")));
           const key = e.key.toLowerCase();
 
-          if (!editingField) {
+          if (
+            !editingField &&
+            !e.defaultPrevented &&
+            !store.typstSourcePending &&
+            (!store.typstView || store.typstView === "write")
+          ) {
             const matched = EDITOR_KEYBINDINGS.find((binding) =>
               chordMatches(
                 {
@@ -1576,7 +1595,11 @@ export const TwyneEditor = component$(
             );
             if (matched) {
               e.preventDefault();
-              void runRegistryCommand(matched.commandId);
+              window.dispatchEvent(
+                new CustomEvent("twyne:editor-shortcut", {
+                  detail: matched.commandId,
+                }),
+              );
               return;
             }
           }
@@ -2693,7 +2716,11 @@ export const TwyneEditor = component$(
           footer: store.footerText,
           includePersonaComments: store.includePersonaCommentsInExport,
         });
-        await exportPdf(payload);
+        const { exportTypst } = await import("../../utils/typst/export");
+        downloadBlob(
+          await exportTypst(payload, "pdf"),
+          `${payload.title || "Untitled"}.pdf`,
+        );
       } catch (err) {
         reportApplicationDiagnostic("twyne:editor:export-pdf", err, {
           operation: "export",
@@ -3084,6 +3111,19 @@ export const TwyneEditor = component$(
       }
     });
 
+    // Register after the QRL exists; the editor's key listener must not capture
+    // a forward declaration when Qwik extracts the initialization task.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ cleanup }) => {
+      const runShortcut = (event: Event) => {
+        void runRegistryCommand((event as CustomEvent<EditorCommandId>).detail);
+      };
+      window.addEventListener("twyne:editor-shortcut", runShortcut);
+      cleanup(() =>
+        window.removeEventListener("twyne:editor-shortcut", runShortcut),
+      );
+    });
+
     const selectSlashCommand = $(async (commandId: EditorCommandId) => {
       const editor = store.editor;
       if (!editor) return;
@@ -3171,7 +3211,15 @@ export const TwyneEditor = component$(
             active (image, note, comment, mermaid). All live in one sticky
             wrapper so the active bar always sits flush under the toolbar
             rather than scrolling out of view as the manuscript scrolls. */}
-        <div class="sticky top-0" style={{ zIndex: "var(--z-sticky)" }}>
+        <div
+          class="sticky top-0"
+          hidden={store.typstView === "source" || store.typstView === "proof"}
+          inert={store.typstSourcePending}
+          style={{
+            zIndex: "var(--z-sticky)",
+            opacity: store.typstSourcePending ? "0.5" : undefined,
+          }}
+        >
           <CompositorPanel
             store={store}
             onCommand$={runCommand}
@@ -3367,20 +3415,28 @@ export const TwyneEditor = component$(
             </div>
           )}
         </div>
-        <ManuscriptPanel
+        <TypstWorkspace
           store={store}
+          editor={store.editor ? noSerialize(store.editor) : undefined}
           readOnly={readOnly}
-          pageWidthRem={pageWidthRem()}
-          canvasMinHeight={canvasMinHeight()}
-          pageChromeGeometry={pageChromeGeometry()}
-          onDragOver$={handleDragOver}
-          onDragLeave$={handleDragLeave}
-          onDrop$={handleDrop}
-          onLayoutChange$={emitLayout}
-          onHeaderCommit$={(value) => updateChromeText("header", value)}
-          onFooterCommit$={(value) => updateChromeText("footer", value)}
-          onJumpToNote$={jumpToNote}
-        />
+          folioName={activeFolio?.name ?? "Untitled"}
+          brief={brief}
+        >
+          <ManuscriptPanel
+            store={store}
+            readOnly={readOnly}
+            pageWidthRem={pageWidthRem()}
+            canvasMinHeight={canvasMinHeight()}
+            pageChromeGeometry={pageChromeGeometry()}
+            onDragOver$={handleDragOver}
+            onDragLeave$={handleDragLeave}
+            onDrop$={handleDrop}
+            onLayoutChange$={emitLayout}
+            onHeaderCommit$={(value) => updateChromeText("header", value)}
+            onFooterCommit$={(value) => updateChromeText("footer", value)}
+            onJumpToNote$={jumpToNote}
+          />
+        </TypstWorkspace>
 
         <SelectionActions
           selection={

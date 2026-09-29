@@ -1,3 +1,4 @@
+import { htmlToTypst, typstToHtml } from "./typst/document";
 /**
  * Export and import for the manuscript. Each format is intentionally
  * a small pure function — no I/O, no UI. The UI layer calls these to
@@ -519,6 +520,8 @@ function htmlDecode(s: string): string {
 export interface ExportPayload {
   title: string;
   html: string;
+  /** Canonical manuscript source; HTML is its projection for legacy consumers. */
+  typstSource?: string;
   brief?: ProjectBrief | null;
   folios?: Folio[];
   /** Layout of the active folio, drives export/print margins + width. */
@@ -649,12 +652,16 @@ export function exportPlainText(p: ExportPayload): string {
 export function exportTwyneBackup(p: ExportPayload): string {
   return JSON.stringify(
     {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       title: p.title,
       brief: p.brief ?? null,
       folios: p.folios ?? [],
-      content: { html: p.html, format: "tiptap-html" },
+      content: {
+        html: p.html,
+        format: "typst",
+        typstSource: p.typstSource ?? htmlToTypst(p.html),
+      },
     },
     null,
     2,
@@ -954,12 +961,16 @@ export function safeFilename(title: string, ext: string): string {
 export interface ImportResult {
   title: string;
   html: string;
+  typstSource?: string;
   brief?: ProjectBrief | null;
   folios?: Folio[];
 }
 
-export function detectFormatFromFilename(filename: string): ExportFormat {
+export function detectFormatFromFilename(
+  filename: string,
+): ExportFormat | "typst" {
   const lower = filename.toLowerCase();
+  if (lower.endsWith(".typ")) return "typst";
   if (lower.endsWith(".md") || lower.endsWith(".markdown")) return "markdown";
   if (lower.endsWith(".html") || lower.endsWith(".htm")) return "html";
   if (lower.endsWith(".txt")) return "txt";
@@ -1112,6 +1123,12 @@ export async function importAs(file: File): Promise<ImportResult> {
   }
 
   const text = await file.text();
+  if (format === "typst")
+    return {
+      title: file.name.replace(/\.typ$/i, "") || "Imported piece",
+      html: typstToHtml(text),
+      typstSource: text,
+    };
 
   if (format === "twyne-backup") {
     let parsed: any;
@@ -1122,14 +1139,26 @@ export async function importAs(file: File): Promise<ImportResult> {
         `That file doesn't look like a Twyne backup (JSON parse failed: ${(err as Error).message}).`,
       );
     }
-    if (!parsed || typeof parsed !== "object" || !parsed.content?.html) {
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      (typeof parsed.content?.html !== "string" &&
+        typeof parsed.content?.typstSource !== "string")
+    ) {
       throw new Error(
         "That JSON file isn't a Twyne backup. Expected { content: { html }, title, brief }.",
       );
     }
     return {
       title: parsed.title ?? "Imported piece",
-      html: parsed.content.html,
+      html:
+        typeof parsed.content.typstSource === "string"
+          ? typstToHtml(parsed.content.typstSource)
+          : parsed.content.html,
+      typstSource:
+        typeof parsed.content.typstSource === "string"
+          ? parsed.content.typstSource
+          : undefined,
       brief: parsed.brief ?? null,
       folios: parsed.folios ?? undefined,
     };

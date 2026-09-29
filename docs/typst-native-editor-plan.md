@@ -1,67 +1,49 @@
-# Typst-native editor — brief plan
+# Typst-native editor
 
-Status: first outbound export bridge implemented on 2026-09-26. Source editing,
-round-trip conversion, the proof pane, and storage migration remain planned.
+Status: source editor, bidirectional bridge, Typst proof, and canonical source
+persistence implemented on 2026-09-28. See
+[execution and verification](typst-native-editor-execution.md).
 
-## Implemented first
+## Implemented
 
-- **File → PDF (Typst)…** compiles the current folio to a downloadable PDF in a
-  dedicated worker. It uses the existing export payload, including unsaved editor
-  text, page setup, bibliography, and explicitly opted-in persona comments.
-- **File → Typst source (.typ)** downloads the same generated source. Images are
-  embedded in the source so the file does not depend on temporary browser URLs.
-- `src/utils/typst/serialize.ts` converts the saved editor HTML into safely quoted
-  Typst content. It handles paragraphs, headings, inline marks, links, lists and
-  task lists, quotations, code, manual page breaks, images/captions, tables with
-  merged cells, paragraph spacing/alignment/indentation, running headers/footers,
-  page numbers, native footnotes, endnotes, and bibliography entries.
-- `src/utils/typst/compiler.worker.ts` loads the packaged typst.ts compiler and
-  bundled Libertinus Serif / DejaVu Sans Mono fonts. No manuscript is sent to a
-  typesetting service and no fonts are requested from a third-party CDN.
-- `src/utils/typst/export.ts` loads manuscript images, caps their size, handles
-  compilation progress, and terminates the worker on completion, failure,
-  cancellation, or timeout. Leaving the folio cancels its export.
+- The writing workspace offers **Write**, **Source**, and **Proof** views, plus
+  an optional side-by-side proof on larger screens. Write remains the default.
+- CodeMirror provides source highlighting, line numbers, search, undo, and
+  Ctrl/Cmd-Enter to apply. Incomplete source is saved separately on this device
+  and recovered after reload. Applying requires successful compilation and an
+  unchanged saved base. A conflicting source draft can be downloaded before
+  loading the newer manuscript.
+- A bounded, non-evaluating two-way bridge preserves rich schema attributes and
+  stores unsupported Typst syntax as opaque block/inline nodes. Source bodies
+  are authoritative; HTML is a projection for editing, publishing, and AI.
+- IndexedDB lazily migrates existing HTML folios without changing their revision
+  timestamps. Canonical source travels through cloud sync, Lix collaboration,
+  conflict copies, revisions, native imports, and backups. Legacy cloud writes
+  cannot silently replace a native source document with HTML.
+- Typst produces actual SVG proof pages and PDFs in a cancellable local WASM
+  worker. The proof and page-layout PDF action share the same compiler and page
+  setup. The writing surface uses a continuous column; its old measurement
+  paginator is no longer registered. Paper size and margins control proof pages.
+- Equations and Mermaid diagrams are rendered locally into SVG assets. Fonts
+  used by the manuscript controls are bundled with their licenses. Image size
+  limits and compiler diagnostics remain explicit.
+- `.typ` import retains exact source; native backups include canonical source;
+  source export embeds fetched image bytes for a standalone file.
 
-This is an **outbound HTML → Typst bridge**, not the proposed bidirectional
-ProseMirror serializer. The `.typ` download cannot yet be imported back into
-Twyne. No source-of-truth or collaboration changes have been made.
+## Boundaries
 
-### Current limits
+- The interactive writing column is not direct manipulation of the rendered
+  Typst pages. Proof is the authoritative pagination view.
+- Custom packages and missing fonts/images can produce compilation diagnostics;
+  unknown syntax remains preserved even when it cannot compile locally.
+- Cloud schema/functions require normal deployment before a hosted environment
+  can sync the new fields. This implementation does not deploy them.
+- The current Electrobun desktop application is a hosted web shell. Compiler,
+  renderer, and fonts ship in the web build and use its existing asset cache;
+  they are not yet bundled as a standalone offline desktop frontend. No native
+  WebView/runtime or installer validation is claimed.
 
-- Equations and Mermaid diagrams stop Typst export with an explanation. The
-  existing browser PDF export remains available for those documents.
-- Typography uses the bundled font families. Font-family overrides, drop caps,
-  custom table border styles/column widths, and image cropping are not yet
-  reproduced. Typst page breaks can differ from the live editor.
-- Fonts have limited script coverage. Missing-glyph diagnostics stop PDF export.
-  External `.typ` compilation requires the named fonts to be installed.
-- Images must be fetchable by the browser (including CORS for remote images).
-  The limits are 8 MB per image and 24 MB total unique image data.
-- Web export needs its local compiler/font assets to be available. They ship in
-  the build; this does not add a browser offline cache or verify desktop runtime.
-
-### Verification (2026-09-26)
-
-- 14 focused tests pass: real WASM compilation, literal text escaping, rich
-  prose, merged tables, notes, embedded images in standalone source, image size
-  limits, cancellation, worker cleanup, and explicit unsupported-content errors.
-- 28 existing export/folio tests pass.
-- Client production build passes, including the separate worker and font assets.
-- Full TypeScript check passes after the normal i18n preparation step.
-- A Chromium integration test produces a PDF through the real Vite worker with
-  an embedded image and no external compiler/font requests. This is exporter
-  integration coverage, not a visual check of the File menu or desktop runtime.
-- Testing found and fixed the transferable-buffer TypeScript error in the worker.
-
-Commands: `bun test --conditions=production --preload ./tests/qwik-test-preload.ts
-src/utils/typst`, `bun run build.client`, and
-`bunx playwright test e2e/typst-export.e2e.ts` with a Vite development server.
-The browser run used an isolated localhost port because port 5173 already had
-another service running.
-
-Next: expand schema fidelity, then build the two-way conversion needed for an
-editable source view and a proof pane. Keep HTML authoritative until that work
-preserves collaborative edits and unsupported source constructs.
+## Original plan and rationale
 
 ## What "Typst-native" should mean
 
