@@ -17,7 +17,6 @@ The distribution copy of the notices is `public/licenses/typst-fonts.txt`.
 The native `.typ` export names these families; an external Typst installation
 needs those fonts installed. PDF export embeds the required font data.
 
-
 The native proof compiler also bundles the manuscript font families from the
 Google Fonts source repository (`google/fonts`): Lora, Libre Baskerville,
 DM Sans, Fraunces (OFL, corresponding `*-OFL.txt`) and Special Elite
