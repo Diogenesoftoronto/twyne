@@ -16,3 +16,13 @@ offline service worker.
 The distribution copy of the notices is `public/licenses/typst-fonts.txt`.
 The native `.typ` export names these families; an external Typst installation
 needs those fonts installed. PDF export embeds the required font data.
+
+
+The native proof compiler also bundles the manuscript font families from the
+Google Fonts source repository (`google/fonts`): Lora, Libre Baskerville,
+DM Sans, Fraunces (OFL, corresponding `*-OFL.txt`) and Special Elite
+(Apache 2.0, `specialelite-LICENSE.txt`). The variable TTFs include the full
+upstream glyph sets, and regular/italic variants are loaded locally. No font
+request is sent to Google while compiling a manuscript.
+
+Libertinus Math (7.051) is bundled from alerque/libertinus release v7.051, under the same OFL license as the Libertinus text faces, for native Typst equations.

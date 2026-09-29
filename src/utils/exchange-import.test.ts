@@ -1,7 +1,7 @@
 import { afterAll, describe, expect, test } from "bun:test";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
-import { exportHtml, importAs } from "./exchange";
+import { exportHtml, exportTwyneBackup, importAs } from "./exchange";
 
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 const originalDOMParser = globalThis.DOMParser;
@@ -97,5 +97,29 @@ describe("HTML import", () => {
     expect(imported.html).not.toContain("alsoLeaked");
     expect(imported.html).not.toContain("print.css");
     expect(imported.html).not.toContain("not manuscript copy");
+  });
+});
+
+describe("native Typst import", () => {
+  test("imports exact source including unknown Typst into protected visual blocks", async () => {
+    const source =
+      "#let my_function(x) = x * 2\n\n= A native document\n\nHello";
+    const imported = await importAs(new File([source], "native.typ"));
+    expect(imported.typstSource).toBe(source);
+    expect(imported.title).toBe("native");
+    expect(imported.html).toContain("A native document");
+    expect(imported.html).toContain("raw-typst");
+  });
+  test("backup restores canonical source rather than a stale HTML cache", async () => {
+    const source = "= Canonical title\n\nCanonical content";
+    const backup = exportTwyneBackup({
+      title: "Native",
+      html: "<p>Stale cache</p>",
+      typstSource: source,
+    });
+    const imported = await importAs(new File([backup], "native.twyne.json"));
+    expect(imported.typstSource).toBe(source);
+    expect(imported.html).toContain("Canonical content");
+    expect(imported.html).not.toContain("Stale cache");
   });
 });

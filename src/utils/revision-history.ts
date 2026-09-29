@@ -1,9 +1,14 @@
-import { loadMetaFromIdb, saveMetaToIdb } from "./idb";
+import {
+  loadMetaFromIdb,
+  saveMetaToIdb,
+  loadFolioContentSnapshotFromIdb,
+} from "./idb";
 
 export interface RevisionSnapshot {
   id: string;
   folioId: string;
   html: string;
+  typstSource?: string;
   createdAt: number;
   label: string;
   source: "automatic" | "manual" | "feedback" | "rubric";
@@ -147,6 +152,7 @@ export async function loadRevisionHistory(
 export async function createRevisionSnapshot(args: {
   folioId: string;
   html: string;
+  typstSource?: string;
   label?: string;
   source?: RevisionSnapshot["source"];
   now?: number;
@@ -157,7 +163,19 @@ export async function createRevisionSnapshot(args: {
   const source = args.source ?? "manual";
   const history = await loadRevisionHistory(args.folioId);
   const latest = history[0];
-  if (latest?.html === args.html && !args.force) return null;
+  const current =
+    args.typstSource === undefined
+      ? await loadFolioContentSnapshotFromIdb(args.folioId)
+      : null;
+  const typstSource =
+    args.typstSource ??
+    (current?.html === args.html ? current.typstSource : undefined);
+  if (
+    latest?.html === args.html &&
+    latest?.typstSource === typstSource &&
+    !args.force
+  )
+    return null;
   if (
     source === "automatic" &&
     !args.force &&
@@ -170,6 +188,7 @@ export async function createRevisionSnapshot(args: {
     id: crypto.randomUUID(),
     folioId: args.folioId,
     html: args.html,
+    typstSource,
     createdAt: now,
     label:
       args.label?.trim() ||

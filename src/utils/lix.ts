@@ -1,3 +1,5 @@
+import { loadFolioContentSnapshotFromIdb } from "./idb";
+import { reconcileTypstSource } from "./typst/document";
 /**
  * Lix-backed document store. The bibliography, the draft blocks, and the
  * change proposals all live inside one in-memory Lix blob that gets
@@ -91,6 +93,7 @@ export async function replaceLix(next: LixInstance): Promise<void> {
   _lixPromise = Promise.resolve(next);
   _dirty = false;
   mirroredBlocks.clear();
+  mirroredSources.clear();
   mirroredOrder.clear();
   startAutosave();
 
@@ -231,6 +234,14 @@ export function splitBlocks(html: string): DraftBlock[] {
  */
 const mirroredBlocks = new Map<string, Map<string, string>>();
 const mirroredOrder = new Map<string, string>();
+const mirroredSources = new Map<string, string>();
+const sourceKey = (folioId: string) => `tw:draft:${folioId}:typst`;
+
+export async function getDraftTypstSource(
+  folioId: string,
+): Promise<string | null> {
+  return kvGet(sourceKey(folioId));
+}
 
 /**
  * Mirror the live manuscript into Lix key_value entries on the current
@@ -249,8 +260,19 @@ const mirroredOrder = new Map<string, string>();
 export async function syncDraftToLix(
   folioId: string,
   html: string,
+  typstSource?: string,
 ): Promise<void> {
   if (!folioId) return;
+  const saved = await loadFolioContentSnapshotFromIdb(folioId);
+  const source =
+    typstSource ??
+    (saved?.typstSource !== undefined
+      ? saved.html === html
+        ? saved.typstSource
+        : reconcileTypstSource(saved.typstSource, html)
+      : undefined);
+  const sourceChanged =
+    source !== undefined && mirroredSources.get(folioId) !== source;
   const blocks = splitBlocks(html);
   const next = new Map(blocks.map((b) => [b.id, b.html]));
   const previous = mirroredBlocks.get(folioId);
@@ -264,24 +286,28 @@ export async function syncDraftToLix(
     : [];
   const orderChanged = mirroredOrder.get(folioId) !== order;
 
-  if (!changed.length && !removed.length && !orderChanged) return;
+  if (!changed.length && !removed.length && !orderChanged && !sourceChanged)
+    return;
 
   const lix = await getLix();
   const staleKeys = [
     ...changed.map((b) => blockKey(folioId, b.id)),
     ...removed.map((id) => blockKey(folioId, id)),
     ...(orderChanged ? [orderKey(folioId)] : []),
+    ...(sourceChanged ? [sourceKey(folioId)] : []),
   ];
   await lix.db.deleteFrom("key_value").where("key", "in", staleKeys).execute();
 
   const rows = [
     ...changed.map((b) => ({ key: blockKey(folioId, b.id), value: b.html })),
     ...(orderChanged ? [{ key: orderKey(folioId), value: order }] : []),
+    ...(sourceChanged ? [{ key: sourceKey(folioId), value: source! }] : []),
   ];
   if (rows.length) {
     await lix.db.insertInto("key_value").values(rows).execute();
   }
 
+  if (source !== undefined) mirroredSources.set(folioId, source);
   mirroredBlocks.set(folioId, next);
   mirroredOrder.set(folioId, order);
   markDirty();

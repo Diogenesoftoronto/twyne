@@ -77,6 +77,40 @@ describe("Typst export lifecycle", () => {
     expect(source).not.toContain('image("/images/');
   });
 
+  test("canonical Typst source remains authoritative over the HTML projection", async () => {
+    const source = await (
+      await exportTypst(
+        {
+          ...payload,
+          html: "<p>STALE HTML</p>",
+          typstSource: "= Authoritative\nNative source.",
+        },
+        "source",
+      )
+    ).text();
+    expect(source).toContain("= Authoritative\nNative source.");
+    expect(source).not.toContain("STALE HTML");
+    expect(FakeWorker.instances).toHaveLength(0);
+  });
+
+  test("canonical image helpers embed fetched images into standalone source", async () => {
+    replaceGlobal("fetch", async () => new Response(new Uint8Array([1, 2, 3])));
+    const source = await (
+      await exportTypst(
+        {
+          ...payload,
+          typstSource:
+            '#twyne-image("https://twyne.test/photo.png", width: 50%, alt: "Photo")',
+        },
+        "source",
+      )
+    ).text();
+    expect(source).toContain(
+      '#image(bytes((1,2,3,)), width: 50%, alt: "Photo")',
+    );
+    expect(source).not.toContain("https://twyne.test/photo.png");
+  });
+
   test("returns a PDF and terminates the worker after completion", async () => {
     const progress: string[] = [];
     FakeWorker.onPost = (worker) => {

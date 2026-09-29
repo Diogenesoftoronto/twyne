@@ -1,8 +1,12 @@
+import { htmlToTypst } from "../../utils/typst/document";
 import { SiteSelect } from "../ui/site-select";
 import { Icon } from "../ui/icon";
 import { RevisionSummary } from "./revision-summary";
 import { $, component$, useStore, useVisibleTask$ } from "@qwik.dev/core";
-import { readActiveFolioHtml } from "../../utils/folio-export";
+import {
+  readActiveFolioHtml,
+  readActiveFolioTypstSource,
+} from "../../utils/folio-export";
 import {
   compareRevisionPassages,
   compareRevisions,
@@ -13,7 +17,7 @@ import {
   type RevisionSnapshot,
   type RevisionTask,
 } from "../../utils/revision-history";
-import { saveFolioContentToIdb } from "../../utils/idb";
+import { saveFolioTypstToIdb } from "../../utils/idb";
 import { markDirty } from "../../utils/convex-sync";
 
 interface VersionHistoryPanelProps {
@@ -83,7 +87,18 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
 
     const saveCheckpoint = $(async () => {
       const html = await readActiveFolioHtml(activeFolioId);
+      let typstSource: string | undefined;
+      try {
+        typstSource = await readActiveFolioTypstSource(activeFolioId, html);
+      } catch (error) {
+        store.message =
+          error instanceof Error
+            ? error.message
+            : "Could not read the current source.";
+        return;
+      }
       const snapshot = await createRevisionSnapshot({
+        typstSource,
         folioId: activeFolioId,
         html,
         label: "Manual checkpoint",
@@ -104,15 +119,54 @@ export const VersionHistoryPanel = component$<VersionHistoryPanelProps>(
       );
       if (!selected) return;
       const currentHtml = await readActiveFolioHtml(activeFolioId);
+      let typstSource: string | undefined;
+      try {
+        typstSource = await readActiveFolioTypstSource(
+          activeFolioId,
+          currentHtml,
+        );
+      } catch (error) {
+        store.message =
+          error instanceof Error
+            ? error.message
+            : "Could not read the current source.";
+        return;
+      }
       await createRevisionSnapshot({
+        typstSource,
         folioId: activeFolioId,
         html: currentHtml,
         label: "Before restoring an earlier version",
         source: "manual",
         force: true,
       });
-      await saveFolioContentToIdb(activeFolioId, selected.html);
-      markDirty(["folioContent"]);
+      const restoredSource = selected.typstSource ?? htmlToTypst(selected.html);
+      window.dispatchEvent(
+        new CustomEvent("twyne:typst-applying", {
+          detail: { folioId: activeFolioId },
+        }),
+      );
+      await saveFolioTypstToIdb(activeFolioId, restoredSource, selected.html);
+      window.dispatchEvent(
+        new CustomEvent("twyne:typst-remote-change", {
+          detail: {
+            intentionalReplacement: true,
+            folioId: activeFolioId,
+            source: restoredSource,
+            html: selected.html,
+          },
+        }),
+      );
+      window.dispatchEvent(
+        new CustomEvent("twyne:typst-source-committed", {
+          detail: {
+            folioId: activeFolioId,
+            source: restoredSource,
+            html: selected.html,
+          },
+        }),
+      );
+      markDirty(["folioContent"], activeFolioId);
       window.dispatchEvent(
         new CustomEvent("twyne:load-folio", { detail: selected.html }),
       );

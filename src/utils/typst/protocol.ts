@@ -5,5 +5,10 @@ export interface TypstCompileRequest {
 
 export type TypstCompileResponse =
   | { type: "progress"; message: string }
-  | { type: "pdf"; bytes: Uint8Array }
+  | {
+      type: "pdf";
+      bytes: Uint8Array;
+      svg?: string;
+      pageSizes?: { width: number; height: number }[];
+    }
   | { type: "error"; message: string };
