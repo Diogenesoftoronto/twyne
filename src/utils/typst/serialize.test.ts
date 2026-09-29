@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 // @ts-expect-error jsdom is intentionally untyped in this project's test harness.
 import { JSDOM } from "jsdom";
+import sharp from "sharp";
 import { readFile } from "node:fs/promises";
 import {
   createTypstCompiler,
@@ -58,20 +59,31 @@ beforeAll(async () => {
   });
   for (const url of ILLUMINATED_INITIAL_ARTWORK) {
     compiler.mapShadow(
-      `/twyne-decoration/initial-${url.split("/").at(-1)}`,
-      await readFile(new URL(`../../../public${url}`, import.meta.url)),
+      `/twyne-decoration/initial-${url
+        .split("/")
+        .at(-1)
+        ?.replace(/\.avif$/, ".png")}`,
+      await sharp(
+        await readFile(new URL(`../../../public${url}`, import.meta.url)),
+      )
+        .png()
+        .toBuffer(),
     );
   }
   for (const style of ["botanical", "engraved", "illuminated"]) {
     for (const part of ["nw", "n", "ne", "w", "e", "sw", "s", "se"])
       compiler.mapShadow(
         `/twyne-decoration/frame-${style}-${part}.png`,
-        await readFile(
-          new URL(
-            `../../../public/assets/page-borders/slices/${style}-${part}.png`,
-            import.meta.url,
+        await sharp(
+          await readFile(
+            new URL(
+              `../../../public/assets/page-borders/slices/${style}-${part}.avif`,
+              import.meta.url,
+            ),
           ),
-        ),
+        )
+          .png()
+          .toBuffer(),
       );
   }
 }, 30000);
@@ -131,9 +143,9 @@ describe("Typst serializer with the real bundled compiler", () => {
       };
       const decoration = typstDecorations(payload);
       expect(decoration.assets.map((asset) => asset.url)).toEqual([
-        "/assets/illuminated-initials/a-alt.webp",
+        "/assets/illuminated-initials/a-alt.avif",
         ...["nw", "n", "ne", "w", "e", "sw", "s", "se"].map(
-          (part) => `/assets/page-borders/slices/${pageBorder}-${part}.png`,
+          (part) => `/assets/page-borders/slices/${pageBorder}-${part}.avif`,
         ),
       ]);
       const source = applyTypstPageSetup(payload.typstSource, payload);

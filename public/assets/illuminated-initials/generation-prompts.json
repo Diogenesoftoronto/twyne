@@ -6,367 +6,368 @@
   "assets": [
     {
       "id": "a",
-      "output": "a.webp",
+      "output": "a.avif",
       "sourceFilename": "exec-230e8047-5f92-4d07-a239-f9b43522cd7a.png",
       "sourceSha256": "aa7c4005256fc27d8949c3010d11d75b50d130fd6cd2345cbdf36fc025fe478f",
       "prompt": "Use case: illustration-story\nAsset type: a single exquisite illuminated manuscript initial for Twyne's literary writing editor, final reusable transparent artwork.\nText (verbatim): \"A\"\nPrimary request: one highly legible capital A, centered, in an elegant Renaissance Roman serif, vermilion red enamel-like flat ink body with a narrow warm ivory inner highlight and hairline dark sepia outline. Surround and lightly interweave it with beautifully controlled engraved acanthus leaves and fine curling vines, small antique gold botanical accents, dark ink stems. Refined early printed-book wood engraving meets medieval illumination; authentic skilled book artist, exceptional drawing and crisp contours, intricate but readable at 90px tall.\nComposition: square 1024 x 1024 canvas; entire design within a centered 850 x 850 square, generous clean transparent margin on every edge. The A is dominant and occupies 75% of the design height, recognizable instantly, no other lettering. Balanced compact ornament around the glyph, open transparent negative space in the counter and around foliage; consistent medium-weight lines that survive reduction.\nPalette: Twyne vermilion #c1272d, near-black warm ink #30261c, antique gold #b48a3e, muted ivory #f3e5c6. Flat pigment, subtle engraved hatch details, no gradient or photorealism.\nConstraints: genuinely transparent background, no parchment sheet, no square frame, no shadow, no glow, no mockup, no caption, no watermark, no additional letters. Preserve clear silhouette and immaculate typesetting. This is the master design for a coherent A-Z alphabet family."
     },
     {
       "id": "b",
-      "output": "b.webp",
+      "output": "b.avif",
       "sourceFilename": "exec-7271987e-fdc9-4cfe-a535-119bdd20dec3.png",
       "sourceSha256": "8fe07835202d9aa64215a40074b843b789528959c59574b27a337bd422de5dbc",
       "prompt": "Use case: illustration-story\nAsset type: a single exquisite illuminated manuscript initial for Twyne's literary writing editor, final reusable transparent artwork.\nText (verbatim): \"B\"\nPrimary request: one highly legible capital B, centered, in an elegant Renaissance Roman serif, vermilion red enamel-like flat ink body with a narrow warm ivory inner highlight and hairline dark sepia outline. Surround and lightly interweave it with beautifully controlled engraved acanthus leaves and fine curling vines, small antique gold botanical accents, dark ink stems. Refined early printed-book wood engraving meets medieval illumination; authentic skilled book artist, exceptional drawing and crisp contours, intricate but readable at 90px tall.\nComposition: square 1024 x 1024 canvas; entire design within a centered 850 x 850 square, generous clean transparent margin on every edge. The B is dominant and occupies 75% of the design height, recognizable instantly, no other lettering. Balanced compact ornament around the glyph, open transparent negative space in the counter and around foliage; consistent medium-weight lines that survive reduction.\nPalette: Twyne vermilion #c1272d, near-black warm ink #30261c, antique gold #b48a3e, muted ivory #f3e5c6. Flat pigment, subtle engraved hatch details, no gradient or photorealism.\nConstraints: genuinely transparent background, no parchment sheet, no square frame, no shadow, no glow, no mockup, no caption, no watermark, no additional letters. Preserve clear silhouette and immaculate typesetting. This is the master design for a coherent A-Z alphabet family.\nReference image role: style reference only, its letter A MUST be replaced by capital B. Create only B. Match the master's engraving, pigment colors, ornament density, proportions and transparent background as a coherent alphabet. Adapt botanical curves organically to the new letter."
     },
     {
       "id": "c",
-      "output": "c.webp",
+      "output": "c.avif",
       "sourceFilename": "exec-b285cf32-7d3f-4c55-a9e2-58cd908e6c97.png",
       "sourceSha256": "d937ad1e95332663349459f95a558cb62cc9813f138b4566ede9ab61ad037436",
       "prompt": "Use case: illustration-story\nAsset type: a single exquisite illuminated manuscript initial for Twyne's literary writing editor, final reusable transparent artwork.\nText (verbatim): \"C\"\nPrimary request: one highly legible capital C, centered, in an elegant Renaissance Roman serif, vermilion red enamel-like flat ink body with a narrow warm ivory inner highlight and hairline dark sepia outline. Surround and lightly interweave it with beautifully controlled engraved acanthus leaves and fine curling vines, small antique gold botanical accents, dark ink stems. Refined early printed-book wood engraving meets medieval illumination; authentic skilled book artist, exceptional drawing and crisp contours, intricate but readable at 90px tall.\nComposition: square 1024 x 1024 canvas; entire design within a centered 850 x 850 square, generous clean transparent margin on every edge. The C is dominant and occupies 75% of the design height, recognizable instantly, no other lettering. Balanced compact ornament around the glyph, open transparent negative space in the counter and around foliage; consistent medium-weight lines that survive reduction.\nPalette: Twyne vermilion #c1272d, near-black warm ink #30261c, antique gold #b48a3e, muted ivory #f3e5c6. Flat pigment, subtle engraved hatch details, no gradient or photorealism.\nConstraints: genuinely transparent background, no parchment sheet, no square frame, no shadow, no glow, no mockup, no caption, no watermark, no additional letters. Preserve clear silhouette and immaculate typesetting. This is the master design for a coherent A-Z alphabet family.\nReference image role: style reference only, its letter A MUST be replaced by capital C. Create only C. Match the master's engraving, pigment colors, ornament density, proportions and transparent background as a coherent alphabet. Adapt botanical curves organically to the new letter."
     },
     {
       "id": "d",
-      "output": "d.webp",
+      "output": "d.avif",
       "sourceFilename": "exec-7b705266-8883-40a7-a93e-9287ac08bfff.png",
       "sourceSha256": "6e4252587cc167b3814b2f69ff67de36456558cce3d0e717ac0ee4e9ccc23468",
       "prompt": "Use case: illustration-story\nAsset type: a single exquisite illuminated manuscript initial for Twyne's literary writing editor, final reusable transparent artwork.\nText (verbatim): \"D\"\nPrimary request: one highly legible capital D, centered, in an elegant Renaissance Roman serif, vermilion red enamel-like flat ink body with a narrow warm ivory inner highlight and hairline dark sepia outline. Surround and lightly interweave it with beautifully controlled engraved acanthus leaves and fine curling vines, small antique gold botanical accents, dark ink stems. Refined early printed-book wood engraving meets medieval illumination; authentic skilled book artist, exceptional drawing and crisp contours, intricate but readable at 90px tall.\nComposition: square 1024 x 1024 canvas; entire design within a centered 850 x 850 square, generous clean transparent margin on every edge. The D is dominant and occupies 75% of the design height, recognizable instantly, no other lettering. Balanced compact ornament around the glyph, open transparent negative space in the counter and around foliage; consistent medium-weight lines that survive reduction.\nPalette: Twyne vermilion #c1272d, near-black warm ink #30261c, antique gold #b48a3e, muted ivory #f3e5c6. Flat pigment, subtle engraved hatch details, no gradient or photorealism.\nConstraints: genuinely transparent background, no parchment sheet, no square frame, no shadow, no glow, no mockup, no caption, no watermark, no additional letters. Preserve clear silhouette and immaculate typesetting. This is the master design for a coherent A-Z alphabet family.\nReference image role: style reference only, its letter A MUST be replaced by capital D. Create only D. Match the master's engraving, pigment colors, ornament density, proportions and transparent background as a coherent alphabet. Adapt botanical curves organically to the new letter."
     },
     {
       "id": "e",
-      "output": "e.webp",
+      "output": "e.avif",
       "sourceFilename": "exec-6527dab7-0f92-4872-a503-4beba9ffec12.png",
       "sourceSha256": "a14cd134907bb18fd930443187ca91028a80f3381bf5dee3044cff9cdfd2cf73",
       "prompt": "Use case: illustration-story\nAsset type: a single exquisite illuminated manuscript initial for Twyne's literary writing editor, final reusable transparent artwork.\nText (verbatim): \"E\"\nPrimary request: one highly legible capital E, centered, in an elegant Renaissance Roman serif, vermilion red enamel-like flat ink body with a narrow warm ivory inner highlight and hairline dark sepia outline. Surround and lightly interweave it with beautifully controlled engraved acanthus leaves and fine curling vines, small antique gold botanical accents, dark ink stems. Refined early printed-book wood engraving meets medieval illumination; authentic skilled book artist, exceptional drawing and crisp contours, intricate but readable at 90px tall.\nComposition: square 1024 x 1024 canvas; entire design within a centered 850 x 850 square, generous clean transparent margin on every edge. The E is dominant and occupies 75% of the design height, recognizable instantly, no other lettering. Balanced compact ornament around the glyph, open transparent negative space in the counter and around foliage; consistent medium-weight lines that survive reduction.\nPalette: Twyne vermilion #c1272d, near-black warm ink #30261c, antique gold #b48a3e, muted ivory #f3e5c6. Flat pigment, subtle engraved hatch details, no gradient or photorealism.\nConstraints: genuinely transparent background, no parchment sheet, no square frame, no shadow, no glow, no mockup, no caption, no watermark, no additional letters. Preserve clear silhouette and immaculate typesetting. This is the master design for a coherent A-Z alphabet family.\nReference image role: style reference only, its letter A MUST be replaced by capital E. Create only E. Match the master's engraving, pigment colors, ornament density, proportions and transparent background as a coherent alphabet. Adapt botanical curves organically to the new letter."
     },
     {
       "id": "f",
-      "output": "f.webp",
+      "output": "f.avif",
       "sourceFilename": "exec-c625ad3d-9c52-4714-9213-85605399bb19.png",
       "sourceSha256": "2aa08901d0e1040c6537ab0e5795f694817e65c9c4dcc880ebba561f52179395",
       "prompt": "Use case: illustration-story\nAsset type: a single exquisite illuminated manuscript initial for Twyne's literary writing editor, final reusable transparent artwork.\nText (verbatim): \"F\"\nPrimary request: one highly legible capital F, centered, in an elegant Renaissance Roman serif, vermilion red enamel-like flat ink body with a narrow warm ivory inner highlight and hairline dark sepia outline. Surround and lightly interweave it with beautifully controlled engraved acanthus leaves and fine curling vines, small antique gold botanical accents, dark ink stems. Refined early printed-book wood engraving meets medieval illumination; authentic skilled book artist, exceptional drawing and crisp contours, intricate but readable at 90px tall.\nComposition: square 1024 x 1024 canvas; entire design within a centered 850 x 850 square, generous clean transparent margin on every edge. The F is dominant and occupies 75% of the design height, recognizable instantly, no other lettering. Balanced compact ornament around the glyph, open transparent negative space in the counter and around foliage; consistent medium-weight lines that survive reduction.\nPalette: Twyne vermilion #c1272d, near-black warm ink #30261c, antique gold #b48a3e, muted ivory #f3e5c6. Flat pigment, subtle engraved hatch details, no gradient or photorealism.\nConstraints: genuinely transparent background, no parchment sheet, no square frame, no shadow, no glow, no mockup, no caption, no watermark, no additional letters. Preserve clear silhouette and immaculate typesetting. This is the master design for a coherent A-Z alphabet family.\nReference image role: style reference only, its letter A MUST be replaced by capital F. Create only F. Match the master's engraving, pigment colors, ornament density, proportions and transparent background as a coherent alphabet. Adapt botanical curves organically to the new letter."
     },
     {
       "id": "g",
-      "output": "g.webp",
+      "output": "g.avif",
       "sourceFilename": "exec-0baf34cc-d481-46c7-8419-f7d608f5c873.png",
       "sourceSha256": "e3c4c4717f15ce5b269476be9f4cc53cdd526b2b5bcb8e662b678fade33308e7",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"G\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of G, not obscure it. Genuine transparent alpha background."
     },
     {
       "id": "h",
-      "output": "h.webp",
+      "output": "h.avif",
       "sourceFilename": "exec-a56cf108-fc3b-4309-8a47-9c4d366fb9c5.png",
       "sourceSha256": "e355daa1e88ac0cb666424ffdf55a06379eb54eba0ac5c412c4b3db8d9572fbb",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"H\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of H, not obscure it. Genuine transparent alpha background."
     },
     {
       "id": "i",
-      "output": "i.webp",
+      "output": "i.avif",
       "sourceFilename": "exec-851a5bf1-077c-40a3-aaec-e834a48f3504.png",
       "sourceSha256": "01af8071a3399e4e2ecf376d72240180367b61f4e80d59c10a765a544aa19fc8",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"I\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of I, not obscure it. Genuine transparent alpha background."
     },
     {
       "id": "j",
-      "output": "j.webp",
+      "output": "j.avif",
       "sourceFilename": "exec-3c075b57-30c2-4b35-9716-3f136d1c6f5f.png",
       "sourceSha256": "ca625020c7cb9f282f1d6ef72195056da6dfe7d2aa95fce3ef64d5c9ed29ec67",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"J\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of J, not obscure it. Genuine transparent alpha background."
     },
     {
       "id": "k",
-      "output": "k.webp",
+      "output": "k.avif",
       "sourceFilename": "exec-4f4806db-51f3-4bc9-8f40-cff897f2bd7f.png",
       "sourceSha256": "82eeef86624ca293326b1fdb4603499447fa2cd4cb6ec73118ab5fdebc769cbc",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"K\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of K, not obscure it. Genuine transparent alpha background."
     },
     {
       "id": "l",
-      "output": "l.webp",
+      "output": "l.avif",
       "sourceFilename": "exec-a5b41b76-7c4d-4ac9-8b56-d089e85ac279.png",
       "sourceSha256": "5fadce8df2adab9a17e3376da838353adac9e6f6599bed946a81c65dd53a4cc6",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"L\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of L, not obscure it. Genuine transparent alpha background."
     },
     {
       "id": "m",
-      "output": "m.webp",
+      "output": "m.avif",
       "sourceFilename": "exec-2fa6a913-0026-4539-8c97-476985739bc5.png",
       "sourceSha256": "4cb9ea4341cc34fdb4be3f8e57ef458fc7220e3907a1701ac444da9415052d02",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"M\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of M, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "n",
-      "output": "n.webp",
+      "output": "n.avif",
       "sourceFilename": "exec-805b86df-5faa-4f32-9d82-e67699838bee.png",
       "sourceSha256": "c5a8ba8d605a6f34af04bf50f0120022f5a30277511a27740231f15dc037ab61",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"N\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of N, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "o",
-      "output": "o.webp",
+      "output": "o.avif",
       "sourceFilename": "exec-b7ee3c7b-9a16-40c2-a341-e4c9f6185b52.png",
       "sourceSha256": "b77a2ed98e83fe3a438ec3ee5e73d38dcd5a2ebd8ab39ea98e58c1cb95a12080",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"O\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of O, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "p",
-      "output": "p.webp",
+      "output": "p.avif",
       "sourceFilename": "exec-eb0d7d3e-da8c-48c5-a4f2-2427800ad77d.png",
       "sourceSha256": "91bc633e648eca06e98b212b13f51cb25699e98786e2a56e937025ec09b43eee",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"P\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of P, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "q",
-      "output": "q.webp",
+      "output": "q.avif",
       "sourceFilename": "exec-a49b3c79-bb6e-4be9-adc6-6db2ee9d5b76.png",
       "sourceSha256": "453e76679d67c12025e9317be84b72217144dda72a53c86e877d1bccd23e4e27",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"Q\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of Q, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "r",
-      "output": "r.webp",
+      "output": "r.avif",
       "sourceFilename": "exec-8d7354a8-5952-4fb8-a1e0-d50f6448be65.png",
       "sourceSha256": "37904b95c22db8fbd4a28a9f5971e2ab3c37e4e089ba2ef9c63f225f2eace9f6",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"R\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of R, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "s",
-      "output": "s.webp",
+      "output": "s.avif",
       "sourceFilename": "exec-341f19fb-90cb-494d-9400-ba935f737a55.png",
       "sourceSha256": "34454f958dd2122ec729c0ae0ff7f607955817f4fdc207c449fc0954e84438dc",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"S\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of S, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "t",
-      "output": "t.webp",
+      "output": "t.avif",
       "sourceFilename": "exec-c41ac35d-4bdf-4820-8767-10b639f9adad.png",
       "sourceSha256": "7c50c0f2333200794959fad0e4165a2076a686795893bec13eeb66179df76431",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"T\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of T, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "u",
-      "output": "u.webp",
+      "output": "u.avif",
       "sourceFilename": "exec-24cfae88-25a7-41b5-b539-803d2d6963e4.png",
       "sourceSha256": "ba375b5e395aa6e9744be104f32c1f9d9d23b6361a324dd8705415d2268cb7f3",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"U\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of U, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "v",
-      "output": "v.webp",
+      "output": "v.avif",
       "sourceFilename": "exec-efeb9364-1a8c-4721-ab30-98d0bf41985b.png",
       "sourceSha256": "e001c18d4cfb65af7dadfac0bfeb5b03850e71df0ea67bacba8f56aab06fdb70",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"V\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of V, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "w",
-      "output": "w.webp",
+      "output": "w.avif",
       "sourceFilename": "exec-a7315406-7bd9-4dd7-bc8f-bd4bc4e26192.png",
       "sourceSha256": "fce71d61948198ddbd47338cfd7eafb17d62a80cf5100e8f2877b872fa84ba36",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"W\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of W, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "x",
-      "output": "x.webp",
+      "output": "x.avif",
       "sourceFilename": "exec-a104f245-c9dd-4c14-9bef-9facb46e1d7a.png",
       "sourceSha256": "246e76a845057068d574ff9e2ecd2325a396cc4c934de15a06e982bfb0e7260b",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"X\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of X, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "y",
-      "output": "y.webp",
+      "output": "y.avif",
       "sourceFilename": "exec-4e029a61-a4a7-4656-b8b2-ca208333905d.png",
       "sourceSha256": "30272949c01dd5bf454dcf7b474582866da24463fbb83532bcb775750c59d97e",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"Y\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of Y, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "z",
-      "output": "z.webp",
+      "output": "z.avif",
       "sourceFilename": "exec-fe5c892a-6e38-4c74-93d5-492fce2aec16.png",
       "sourceSha256": "92c8a0051c0530d6adb1d6601db464d955331ec04ac369821621e049f757dbe6",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"Z\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of Z, not obscure it.  Genuine transparent alpha background."
     },
     {
       "id": "a-alt",
-      "output": "a-alt.webp",
+      "output": "a-alt.avif",
       "sourceFilename": "exec-6a39d428-911e-4fb3-a45a-51eed5d3bc92.png",
       "sourceSha256": "423478ccaa1d8f53a1da86b536d114073a4b1727cdb6232202edbe99cafdb9fd",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"A\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of A, not obscure it. This is an alternative ornament arrangement: retain the identical letterform family while varying the botanical composition with graceful asymmetric acanthus and a small gold flower at upper left. Genuine transparent alpha background."
     },
     {
       "id": "b-alt",
-      "output": "b-alt.webp",
+      "output": "b-alt.avif",
       "sourceFilename": "exec-d2e89d2e-344c-42a8-b67c-8f120767622a.png",
       "sourceSha256": "3ed29b6515c64627799d1a08f9286f713fbeded680b31bb6c86815adf32add1f",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital B.\nText (verbatim): \"B\"\nPrimary request: exactly one dominant uppercase Roman serif B, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: An elegant ivory acanthus fan near upper left, curling gold seed stems around the lower bowl, and one small antique-gold flower near lower right.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "c-alt",
-      "output": "c-alt.webp",
+      "output": "c-alt.avif",
       "sourceFilename": "exec-8a78a651-3eba-4873-8e6d-47a78e930fef.png",
       "sourceSha256": "f454cdd35b5ead2f170f4fd00701f15d8317ba3ac68b2c910b8fc074a103fc68",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital C.\nText (verbatim): \"C\"\nPrimary request: exactly one dominant uppercase Roman serif C, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: Sweep ivory acanthus around the outer left curve, with slender curling gold stems and a small antique-gold flower toward upper right; keep the open counter completely readable.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "d-alt",
-      "output": "d-alt.webp",
+      "output": "d-alt.avif",
       "sourceFilename": "exec-b55905a2-91ec-480c-bd62-ec6b0b335683.png",
       "sourceSha256": "3c27f7e04175b216a326ee4a75bdec2a9e7f7411e2deb20d23cf73a3610423e8",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital D.\nText (verbatim): \"D\"\nPrimary request: exactly one dominant uppercase Roman serif D, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: An asymmetric ivory acanthus spray behind the straight stem, a fine gold vine following the broad right curve, and one delicate gold flower near lower left.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "e-alt",
-      "output": "e-alt.webp",
+      "output": "e-alt.avif",
       "sourceFilename": "exec-e30531a3-ba2a-4c3a-9aca-608f44e37a01.png",
       "sourceSha256": "77aca19c7b0c330f1f6750cde5c64032be93a7aa2672e51b894836fc6a9bf06d",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital E.\nText (verbatim): \"E\"\nPrimary request: exactly one dominant uppercase Roman serif E, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: Graceful ivory acanthus above and below the left upright, with a small antique-gold blossom beside the upper right and fine gold tendrils between the arms without hiding the glyph.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "f-alt",
-      "output": "f-alt.webp",
+      "output": "f-alt.avif",
       "sourceFilename": "exec-29de7da5-ead0-41f2-ad79-2bb972f09603.png",
       "sourceSha256": "bc6c62f3bfdcae782efd6b63327f8eb86689d87a8e53acecc245a6b6209ca45a",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital F.\nText (verbatim): \"F\"\nPrimary request: exactly one dominant uppercase Roman serif F, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: A tall elegant ivory acanthus frond near the stem, small gold botanical buds near upper right, and a compact gold flower and curling ivory leaf beneath the lower arm.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "g-alt",
-      "output": "g-alt.webp",
+      "output": "g-alt.avif",
       "sourceFilename": "exec-00b41f00-67a2-48df-b916-d584625e5b0c.png",
       "sourceSha256": "95e8f13e143463390118d7ae79eadf58a57e5fb5e324389650cda27a64c7a5a3",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital G.\nText (verbatim): \"G\"\nPrimary request: exactly one dominant uppercase Roman serif G, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: A curling ivory acanthus sweep around the left curve and a golden botanical sprig at upper right, with a small gold flower beneath the horizontal inner bar; make the G unambiguous.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "h-alt",
-      "output": "h-alt.webp",
+      "output": "h-alt.avif",
       "sourceFilename": "exec-1996c7e7-ccce-48e5-a675-6c2c45054e0d.png",
       "sourceSha256": "7573334dc74d7fddc265ba682c42b028ebb25a4c196702c009b4dde6ca126230",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital H.\nText (verbatim): \"H\"\nPrimary request: exactly one dominant uppercase Roman serif H, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: An asymmetric arrangement of ivory acanthus beside the left upright and gold flowering vines beside the right upright; a restrained vine crosses behind the bar without obscuring it.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "i-alt",
-      "output": "i-alt.webp",
+      "output": "i-alt.avif",
       "sourceFilename": "exec-301df78a-306a-41a5-af09-f2b45e3050c8.png",
       "sourceSha256": "5c45ae09818c785d0308669d93220fb61428517b7a4465e494ba2dcd2933af6a",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"I\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of I, not obscure it. This is an alternative ornament arrangement: retain the identical letterform family while varying the botanical composition with graceful asymmetric acanthus and a small gold flower at upper left. Genuine transparent alpha background."
     },
     {
       "id": "j-alt",
-      "output": "j-alt.webp",
+      "output": "j-alt.avif",
       "sourceFilename": "exec-71727a95-76c6-4166-b9ea-fbe122081489.png",
       "sourceSha256": "1aeddc764fa199ba7b2f27768c24829b2df26ec014dca45aacde5fee2742b377",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital J.\nText (verbatim): \"J\"\nPrimary request: exactly one dominant uppercase Roman serif J, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: An elegant ivory acanthus spray at upper left with gold seed stems near upper right, and a small antique-gold flower following the hooked lower curve.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "k-alt",
-      "output": "k-alt.webp",
+      "output": "k-alt.avif",
       "sourceFilename": "exec-c0c38c18-111d-4a9c-b9e5-c47868b38007.png",
       "sourceSha256": "bbd438e6396e9cd67f123af10578a66c0b1a91a79e7cdc0ed9f714d6377b422a",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital K.\nText (verbatim): \"K\"\nPrimary request: exactly one dominant uppercase Roman serif K, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: Ivory acanthus curls along the stem with slender golden flowering tendrils behind the two diagonal arms, and a small antique-gold bloom near lower right.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "l-alt",
-      "output": "l-alt.webp",
+      "output": "l-alt.avif",
       "sourceFilename": "exec-e994f83c-ce1e-43a8-862e-00ed694437dc.png",
       "sourceSha256": "c7a37309034593c3dae9b06538b34389d1de2942f09625c3de9878f144ae751f",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital L.\nText (verbatim): \"L\"\nPrimary request: exactly one dominant uppercase Roman serif L, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: A graceful ivory acanthus fan along the left upright with curling antique-gold vines near the foot and one small golden blossom at upper right.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "m-alt",
-      "output": "m-alt.webp",
+      "output": "m-alt.avif",
       "sourceFilename": "exec-d9c9d739-25fb-4e2e-8151-5ee84fbe0f8d.png",
       "sourceSha256": "97b2a831086a003a86809b8d771ebd29a39196569dc21a7674ac7014517cf441",
       "prompt": "Use case: style-transfer.\nAsset type: a single premium illuminated initial for Twyne's alternate alphabet collection, reusable transparent artwork.\nInput image role: approved STYLE reference only. It depicts A; replace that glyph with the requested capital M.\nText (verbatim): \"M\"\nPrimary request: exactly one dominant uppercase Roman serif M, instantly legible at 90px, matching the reference letter family's vermilion red #c1272d flat pigment, narrow warm-ivory inset highlights and fine dark-sepia engraved outlines. Exceptionally crisp Renaissance book engraving, careful hand-cut hatching, refined ivory acanthus and antique-gold botanical accents.\nAlternate ornament arrangement: Ivory acanthus flourishes beside both outer uprights in a deliberately asymmetric arrangement, antique-gold buds at upper left, and a compact gold flower near lower right; keep both inner diagonals clear.\nComposition: centered complete illustration on a square 1280px canvas, generous genuinely transparent margin on every side, no clipped serifs or foliage. The letter remains the focal point; ornament supports its silhouette. This is a distinct alternate engraving, not a copy of the primary letter.\nConstraints: match the approved reference's palette, drawing quality and ornament density. Use true alpha transparency throughout the background and counters. No parchment, no opaque square, no checkerboard pattern, no frame, no shadow, no glow, no additional letters, no caption, no watermark."
     },
     {
       "id": "n-alt",
-      "output": "n-alt.webp",
+      "output": "n-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0eb77-bf29-79b3-bb0a-57c2254e8b89/exec-89219291-bc1a-4dc1-8bd4-b5df32e493b9.png",
       "sourceSha256": "338a635581e7db94c524c936b87e08473f9742942602f8beaa4897a61363d6e6",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter N; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"N\". A single unmistakable large classical Roman serif N in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: slender climbing honeysuckle curling along the two vertical stems, an ivory acanthus spray rising behind the upper right, small muted-gold trumpet blossoms at the lower left. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "o-alt",
-      "output": "o-alt.webp",
+      "output": "o-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0eb77-bf29-79b3-bb0a-57c2254e8b89/exec-4a278148-46be-4f96-b34c-d5b247acfb5c.png",
       "sourceSha256": "e7185f2c26c94b1fc2ebe70b8ba9593df884d50640c7c932f87cee725aee971c",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter O; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"O\". A single unmistakable large classical Roman serif O in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: an airy wreath of oak leaves and small gold acorns outside the circular letter, ivory leaves at lower left and upper right, counter completely open. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "p-alt",
-      "output": "p-alt.webp",
+      "output": "p-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0eb77-bf29-79b3-bb0a-57c2254e8b89/exec-edc75af1-bffd-4101-87c2-e38e9b2d069f.png",
       "sourceSha256": "09afe221ff058217e31feb9222ae0ee4738d9ce8fff5509a633ded9b4a78a2d4",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter P; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"P\". A single unmistakable large classical Roman serif P in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: delicate engraved peony blossom in muted gold at lower right, an ivory acanthus spiral below the bowl, narrow gold branches following the upright. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "q-alt",
-      "output": "q-alt.webp",
+      "output": "q-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0eb77-bf29-79b3-bb0a-57c2254e8b89/exec-f038c28f-e811-48db-a037-c932bd7a3f63.png",
       "sourceSha256": "f922e8c5b7a9791dceb877098c0d9b61e027c45f4d612250818ed0817739b9e3",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter Q; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"Q\". A single unmistakable large classical Roman serif Q in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: ivy leaves and curling gold tendrils loosely encircling the letter, an ivory leaf flourish following but never hiding the Q's clear diagonal tail. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "r-alt",
-      "output": "r-alt.webp",
+      "output": "r-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-474fc101-ec46-46e8-993a-839a36f0cb2c.png",
       "sourceSha256": "48194088a826ce971369abc1d2510b6cc7fa30936a3209519bb01bf028926224",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter R; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"R\". A single unmistakable large classical Roman serif R in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: slender wild rose sprigs and tiny gold buds climbing the upright, flowing ivory acanthus near the lower right diagonal leg, clear open upper counter. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "s-alt",
-      "output": "s-alt.webp",
+      "output": "s-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-abf5c38f-9a9b-4bd5-9c58-43607c4f9d95.png",
       "sourceSha256": "bf38880679a4a421c1f362e29e87f5216f7b6019056024531e65fc833d1a37b8",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter S; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"S\". A single unmistakable large classical Roman serif S in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: sinuous engraved passionflower vines tracing around the S silhouette, ivory leaves and small gold blossoms at upper right and lower left, both curves strongly legible. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "t-alt",
-      "output": "t-alt.webp",
+      "output": "t-alt.avif",
       "sourceFilename": "exec-913623c5-1cb5-4c84-84c2-85c4e738985a.png",
       "sourceSha256": "71b1cc85b48dc2ec1d195eedf003f96f5150667012c039148d4c694bdc22106b",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"T\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of T, not obscure it. This is an alternative ornament arrangement: retain the identical letterform family while varying the botanical composition with graceful asymmetric acanthus and a small gold flower at upper left. Genuine transparent alpha background."
     },
     {
       "id": "u-alt",
-      "output": "u-alt.webp",
+      "output": "u-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-ecc86cef-09e7-4895-980a-8c1411cc9514.png",
       "sourceSha256": "ad428d7dac97b5ce0410e1c014d4a882038afe03cff7a0e32aa349e4aa4832d9",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter U; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"U\". A single unmistakable large classical Roman serif U in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: arched laurel branches with ivory leaves rising at both outer sides, sparse round gold berries, rounded U bottom unobscured. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "v-alt",
-      "output": "v-alt.webp",
+      "output": "v-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-c2eca567-2db8-4ac5-a5bf-eaf509931ec5.png",
       "sourceSha256": "ed658f7985e17d7acab5a6f43c6824002c6610295eb243fae525052e62bcffa0",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter V; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"V\". A single unmistakable large classical Roman serif V in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: a graceful grapevine and gold tendrils rising outside the diagonal strokes, a small bunch of gold grapes to the upper left and ivory acanthus at the lower right. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "w-alt",
-      "output": "w-alt.webp",
+      "output": "w-alt.avif",
       "sourceFilename": "exec-0b904541-87c0-4ef2-8e41-99bd84a342e7.png",
       "sourceSha256": "13aaa19eadb1d8d2a00a75c866e53d59a81e5bc1f75c5e2df09dc51bcb2c41a8",
       "prompt": "Use case: style-transfer. Asset type: illuminated initial for the Twyne editor. Input image is the approved STYLE reference, not the output glyph. Create a single high-quality illuminated uppercase Roman serif letter \"W\", precisely that glyph, replacing the reference A. Match the reference family exactly: dominant vermilion #c1272d Roman serif letter, ivory inset highlights, fine dark sepia engraving, elegant ivory acanthus with antique-gold botanical flourishes. Renaissance book engraving, intricate crisp hand-cut details. The glyph must stay instantly readable at 90px. Compose a complete square 1280px transparent cutout with ample margins, nothing cropped, no frame, no shadow, no paper/background, no extra text or letters. Ornament must support the distinct shape of W, not obscure it. This is an alternative ornament arrangement: retain the identical letterform family while varying the botanical composition with graceful asymmetric acanthus and a small gold flower at upper left. Genuine transparent alpha background."
     },
     {
       "id": "x-alt",
-      "output": "x-alt.webp",
+      "output": "x-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-e6493d9b-2b54-4860-8e76-1672210f4138.png",
       "sourceSha256": "04242ad4373fb3f7128b85c5ca46c2c48f2fe198674f46497f961bec36ab3fb5",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter X; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"X\". A single unmistakable large classical Roman serif X in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: delicate interwoven olive branches on the outside quadrants, ivory leaf fans upper left and lower right, tiny gold fruit, central crossing clean and clearly red. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "y-alt",
-      "output": "y-alt.webp",
+      "output": "y-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-19f1f9dd-bd29-4ed5-be63-4dec01ef5df1.png",
       "sourceSha256": "8baf4f53bd61000f6baf7256be8f48ca0247b01af43047e4aa74256942262114",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter Y; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"Y\". A single unmistakable large classical Roman serif Y in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: airy climbing jasmine sprigs with small gold star-shaped blossoms near the fork, an ivory acanthus curl around the foot without covering the stem. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     },
     {
       "id": "z-alt",
-      "output": "z-alt.webp",
+      "output": "z-alt.avif",
       "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-af4115c0-9d0b-4591-8852-29d0a03e0513.png",
       "sourceSha256": "050317eb24d3322d2e7d1dff7881c03b102abcfbe08b753fdc94e76c6e81825b",
       "prompt": "Use case: historical-scene. Asset type: premium illuminated drop-cap initial for a literary writing app and printed book. Generate ONE NEW uppercase letter Z; the supplied A image is a STYLE REFERENCE ONLY, do NOT reproduce the A. Text (verbatim): \"Z\". A single unmistakable large classical Roman serif Z in saturated vermilion red with fine ivory bevel-line highlights, deep brown ink outline, and exquisitely engraved antique muted-gold and ivory botanical ornaments. Match the reference's Renaissance engraving craft and color family. Distinct alternate composition: a winding clematis vine with fine gold flowers at top right and bottom left, ivory engraved leaf curls outside the horizontal terminals, clear unmistakable diagonal stroke. The letter is dominant, solid and immediately legible at 90px; keep its defining strokes and counters clear, foliage curls around rather than obscuring it. Precisely cut engraved lines and minute hand-hatched shading at full resolution; elegant balanced asymmetry. Square 1024x1024 pixels, centered entire letter and foliage, uncropped with 6-8% clear safety margin. Genuinely transparent alpha background, including counters and every gap between tendrils. NO rectangular background, no paper, no cast shadow, no border frame, no extra letters, no signature, no watermark. Deliver production quality detailed illustration."
     }
-  ]
+  ],
+  "deliveryFormat": "AVIF quality70 effort6 4:4:4; original delivery metadata archived under tmp/artwork-originals"
 }

@@ -4,15 +4,15 @@ Fifty-two original image-generated illustrations: two complete A–Z alphabets. 
 
 ## Files
 
-- [Contact sheet](../public/assets/illuminated-initials/contact-sheet.webp): all 52 illustrations, paired for comparison on the editorial paper color.
-- [Alternate alphabet](../public/assets/illuminated-initials/alternates-contact-sheet.webp): the complete alternate A–Z collection.
+- [Contact sheet](../public/assets/illuminated-initials/contact-sheet.avif): all 52 illustrations, paired for comparison on the editorial paper color.
+- [Alternate alphabet](../public/assets/illuminated-initials/alternates-contact-sheet.avif): the complete alternate A–Z collection.
 - [Asset manifest](../public/assets/illuminated-initials/manifest.json): filenames, dimensions, alpha verification, byte sizes, and SHA-256 checksums.
 - [Exact generation prompts](../public/assets/illuminated-initials/generation-prompts.json): all 52 complete prompts and original source checksums.
-- Runtime URL convention: `/assets/illuminated-initials/{a-z}.webp`; alternatives use `/assets/illuminated-initials/{a-z}-alt.webp`.
+- Runtime URL convention: `/assets/illuminated-initials/{a-z}.avif`; alternatives use `/assets/illuminated-initials/{a-z}-alt.avif`.
 
-Each final WebP is 1024 × 1024 with genuine alpha transparency preserved from the generated source. There is no baked-in paper or checkerboard. The original collection uses quality 92 and the expanded alternates use quality 94; the glyph artwork has not been traced or redrawn. Originals remain in Codex's generated-images storage, but all project-referenced deliverables are self-contained in this repository.
+Each final AVIF is 1024 × 1024 with genuine alpha transparency preserved, encoded at quality 70 with 4:4:4 chroma. The glyph artwork has not been traced or redrawn. Original generated masters remain in Codex's generated-images storage; previous PNG/WebP and raster-backed SVG copies are archived locally under ignored `tmp/artwork-originals/` rather than shipped in the website.
 
-Every illustration also has an SVG companion. These SVGs embed the optimized WebP in a 1024-square viewBox and provide a title. They behave as self-contained SVG image assets, but the illustration is raster artwork rather than vector paths. Use the WebP directly in the editor to avoid base64 overhead.
+AVIF is the sole deployed raster format for this artwork. The browser decodes selected assets to PNG in memory for the bundled Typst compiler, which cannot read AVIF directly. PDF and standalone Typst exports embed those compatible bytes without needing duplicate server assets.
 
 ## Art direction
 
@@ -34,10 +34,10 @@ Filed, Revised, and new rubric grades use the physical walnut-stamp press animat
 
 ## Validation
 
-All 52 source images and WebPs have an alpha channel. Final alpha ranges include both 0 and 255. Each final asset is square at 1024 pixels; the SVGs embed their corresponding WebPs without external references. The contact sheets were visually inspected for correct glyphs, consistent style, and unclipped artwork.
+All 52 final AVIF images have an alpha channel. Final alpha ranges include both 0 and 255. Each final asset is square at 1024 pixels. The contact sheets were visually inspected for correct glyphs, consistent style, and unclipped artwork.
 
 ## Ornate borders
 
-The three border styles were regenerated with larger corner ornaments and richer engraved bands. Their native 1024 × 1536 PNG masters retain alpha transparency; runtime WebPs use quality 97. There is no artificial upscaling. [Preview the three styles](../public/assets/page-borders/paper-preview.webp); exact prompts are in the [border manifest](../public/assets/page-borders/manifest.json).
+The three border styles were regenerated with larger corner ornaments and richer engraved bands. Their native 1024 × 1536 artwork retains alpha transparency in AVIF at quality 70. There is no artificial upscaling. [Preview the three styles](../public/assets/page-borders/paper-preview.avif); exact prompts are in the [border manifest](../public/assets/page-borders/manifest.json).
 
-Editor, browser print, and native PDF repeat edge motifs at their natural proportions instead of stretching one motif across a whole page. The native PDF uses lossless corner and edge crops; browser print uses real images so borders survive disabled background graphics.
+Editor, browser print, and native PDF repeat edge motifs at their natural proportions instead of stretching one motif across a whole page. The native PDF uses the same separately encoded corner and edge crops; browser print uses real images so borders survive disabled background graphics.

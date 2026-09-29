@@ -9,7 +9,7 @@ export const ILLUMINATED_INITIALS = Object.freeze(
       .split("")
       .map((letter) => [
         letter.toUpperCase(),
-        `${INITIAL_ASSET_ROOT}/${letter}.webp`,
+        `${INITIAL_ASSET_ROOT}/${letter}.avif`,
       ]),
   ) as Readonly<Record<string, string>>,
 );
@@ -19,7 +19,7 @@ export const ILLUMINATED_INITIAL_ARTWORK = Object.freeze([
   ...Object.values(ILLUMINATED_INITIALS),
   ..."abcdefghijklmnopqrstuvwxyz"
     .split("")
-    .map((letter) => `${INITIAL_ASSET_ROOT}/${letter}-alt.webp`),
+    .map((letter) => `${INITIAL_ASSET_ROOT}/${letter}-alt.avif`),
 ]);
 
 export function illuminatedInitialArtwork(
@@ -29,7 +29,7 @@ export function illuminatedInitialArtwork(
   if (!/^[a-z]$/i.test(glyph)) return null;
   const letter = glyph.toLowerCase();
   if (collection === "alternate")
-    return `${INITIAL_ASSET_ROOT}/${letter}-alt.webp`;
+    return `${INITIAL_ASSET_ROOT}/${letter}-alt.avif`;
   return ILLUMINATED_INITIALS[glyph.toUpperCase()] ?? null;
 }
 

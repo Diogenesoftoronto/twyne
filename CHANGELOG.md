@@ -11,6 +11,8 @@
 - Add botanical, engraved, or illuminated page borders and one, two, or three
   columns, with matching choices in the editor and PDF exports.
 - Give Typst titles, subtitles, and all heading levels more breathing room.
+- Deliver manuscript artwork as AVIF, reducing shipped artwork storage by 81%
+  while converting locally for compatible PDF and standalone Typst exports.
 - Press a walnut stamp into the page when filing work or receiving grades, with
   textured ink and reduced-motion support.
 

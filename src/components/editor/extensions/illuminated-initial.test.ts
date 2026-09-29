@@ -52,7 +52,7 @@ describe("automatic illuminated initials", () => {
       );
     expect(changed).toEqual("ABCDEFGHIJKLMNOPQRSTUVWXYZ".split(""));
     expect(illuminatedInitialArtwork("a", "alternate")).toEndWith(
-      "/a-alt.webp",
+      "/a-alt.avif",
     );
     expect(illuminatedInitialArtwork("É", "alternate")).toBeNull();
   });
@@ -89,7 +89,7 @@ describe("automatic illuminated initials", () => {
         });
         expect(
           illuminatedInitialPluginKey.getState(editor.state)?.initial?.artwork,
-        ).toEndWith("/a-alt.webp");
+        ).toEndWith("/a-alt.avif");
         expect(editor.view.dom.dataset.openingInitialSize).toBe("large");
         editor.commands.setOpeningInitial({
           ...DEFAULT_OPENING_INITIAL,
@@ -126,7 +126,7 @@ describe("automatic illuminated initials", () => {
       from: 3,
       to: 4,
       glyph: "A",
-      artwork: "/assets/illuminated-initials/a.webp",
+      artwork: "/assets/illuminated-initials/a.avif",
     });
     for (const text of ["Élan", "E\u0301lan", "İstanbul", "中文", "123"]) {
       expect(openingInitial(text)?.artwork).toBeNull();
@@ -195,7 +195,7 @@ describe("automatic illuminated initials", () => {
         expect(cap(editor)?.textContent).toBe("B");
         expect(
           illuminatedInitialPluginKey.getState(editor.state)?.initial?.artwork,
-        ).toEndWith("/b.webp");
+        ).toEndWith("/b.avif");
         expect(editor.state.selection.from).toBe(2);
         expect(editor.commands.undo()).toBe(true);
         expect(cap(editor)?.textContent).toBe("A");

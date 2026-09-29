@@ -8,7 +8,7 @@ export function pageBorderArtwork(layout: LayoutSettings): string | null {
   const border = resolvePageBorder(layout);
   return border === "none" || border === "plain"
     ? null
-    : `/assets/page-borders/${border}.webp`;
+    : `/assets/page-borders/${border}.avif`;
 }
 
 export function hasOrnateBorder(layout: LayoutSettings): boolean {

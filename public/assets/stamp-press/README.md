@@ -1,8 +1,9 @@
 # Physical stamp
 
-`walnut-stamp-source.png` is the full-resolution, transparent image generated
-with the built-in image generation tool on 2026-09-29. `walnut-stamp.webp` is
-its 768px delivery version (quality 90, alpha quality 100). The shared
+`walnut-stamp.avif` is the 768px transparent delivery asset (AVIF quality70,
+effort6, 4:4:4). The full-resolution generated PNG and prior WebP are preserved
+under `tmp/artwork-originals/public/assets/stamp-press/`, outside the deployed
+public directory. The shared
 `StampPress` component animates this object; the existing rubric artwork remains
 the final, theme-colored impression.
 

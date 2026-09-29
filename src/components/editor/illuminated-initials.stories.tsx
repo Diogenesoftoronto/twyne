@@ -51,7 +51,7 @@ const InitialCollection = component$(() => (
   <div class="paper-sheet" style="padding: 2rem; max-width: 70rem;">
     <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
       {ILLUMINATED_INITIAL_ARTWORK.map((url) => {
-        const name = url.split("/").pop()!.replace(".webp", "");
+        const name = url.split("/").pop()!.replace(".avif", "");
         const label = name.endsWith("-alt")
           ? `${name[0].toUpperCase()} alternate`
           : name.toUpperCase();

@@ -1,0 +1,28 @@
+{
+  "id": "option-01",
+  "title": "The editorial table",
+  "generatedWith": "built-in image_gen",
+  "source": "/home/diogenes/.codex/generated_images/01a0ebc2-961b-77f2-a039-1783de370933/exec-d330d86b-6672-45cd-8687-6fc812efd944.png",
+  "prompt": "Use case: ads-marketing. Asset: exceptionally art-directed photographic landscape website hero for Twyne, a literary writing and revision studio. Output 1536x1024 landscape.\nOverhead intimate shared editorial table in a warm quiet writer's room at dusk. Deep dark walnut tabletop and broad matte near-black ink-colored desk blotter form the ENTIRE central 50 percent of frame as quiet uncluttered negative space for cream website typography to be added later. Beautiful cream manuscript sheets with subtle typeset prose and authentic small vermilion editorial correction marks occupy only the far left, lower right and upper corners. Several different fine pens at the outer margins suggest a room of editors working together. One tactile walnut-handled brass rubber stamp near the lower left margin. Elegant restrained lived-in composition, not generic stock flatlay, no coffee or flowers. Soft warm directional window light across fibrous paper edges, rich ink blacks, natural walnut, ivory and restrained vermilion. Real material detail, cinematic editorial photography, subtle film grain. Empty center is dark and genuinely spacious, objects never cross central copy-safe area. No people, no hands, no logos, no headlines, no website mockup, no UI, no watermark.",
+  "sourceSha256": "0590e74343a7b5af3af9184efcb47ecf4d232b87d00e5768715cc3d3fc1a0bbb",
+  "outputs": [
+    {
+      "filename": "option-01-1536.avif",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 138626,
+      "quality": 70,
+      "effort": 6,
+      "chromaSubsampling": "4:4:4"
+    },
+    {
+      "filename": "option-01-768.avif",
+      "width": 768,
+      "height": 512,
+      "bytes": 28343,
+      "quality": 70,
+      "effort": 6,
+      "chromaSubsampling": "4:4:4"
+    }
+  ]
+}

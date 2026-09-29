@@ -3,6 +3,43 @@ import type { TypstCompileRequest } from "./protocol";
 const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
 const MAX_TOTAL_IMAGE_BYTES = 24 * 1024 * 1024;
 
+/** AVIF stays compact on the network; Typst's decoder needs PNG bytes. */
+async function decodeAvif(bytes: Uint8Array, signal: AbortSignal) {
+  const header = new TextDecoder().decode(bytes.subarray(0, 64));
+  if (!header.includes("ftyp") || !/avif|avis/.test(header)) return bytes;
+  signal.throwIfAborted();
+  const bitmap = await createImageBitmap(
+    new Blob([bytes], { type: "image/avif" }),
+  );
+  try {
+    signal.throwIfAborted();
+    if (bitmap.width * bitmap.height > 16_777_216)
+      throw new Error("An image is too large to decode for Typst export.");
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const context = canvas.getContext("2d");
+    if (!context)
+      throw new Error("This browser cannot prepare images for PDF export.");
+    context.drawImage(bitmap, 0, 0);
+    const png = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (blob) =>
+          blob
+            ? resolve(blob)
+            : reject(
+                new Error("An image could not be prepared for PDF export."),
+              ),
+        "image/png",
+      ),
+    );
+    signal.throwIfAborted();
+    return new Uint8Array(await png.arrayBuffer());
+  } finally {
+    bitmap.close();
+  }
+}
+
 export async function loadAssets(
   document: TypstDocument,
   signal: AbortSignal,
@@ -61,8 +98,16 @@ export async function loadAssets(
         bytes.set(chunk, offset);
         offset += chunk.byteLength;
       }
+      bytes = await decodeAvif(bytes, signal);
+      if (
+        bytes.byteLength > MAX_IMAGE_BYTES ||
+        total + bytes.byteLength > MAX_TOTAL_IMAGE_BYTES
+      )
+        throw new Error(
+          "Decoded images exceed the Typst export size limit. Use smaller images.",
+        );
       cache.set(url.href, bytes);
-      total += length;
+      total += bytes.byteLength;
     }
     assets.push({ path: asset.path, bytes });
   }
