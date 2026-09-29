@@ -3,8 +3,10 @@ import { convexTest } from "convex-test";
 import { describe, expect, test } from "vitest";
 import { api } from "./_generated/api";
 import schema from "./schema";
-const modules = import.meta.glob("./**/*.ts");
-describe("Typst sync", () => {
+const supportsViteModules = typeof import.meta.glob === "function";
+const modules = supportsViteModules ? import.meta.glob("./**/*.ts") : {};
+const describeConvex = supportsViteModules ? describe : describe.skip;
+describeConvex("Typst sync", () => {
   test("round-trips canonical source and rejects destructive legacy writes", async () => {
     const t = convexTest(schema, modules).withIdentity({
       tokenIdentifier: "issuer|writer",

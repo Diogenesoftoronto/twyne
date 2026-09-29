@@ -28,7 +28,7 @@ describe("compositor toolbar wiring", () => {
   });
 
   test("groups page setup controls and exposes their selected state", () => {
-    for (const legend of ["Paper", "Flow", "Margins", "Running heads"]) {
+    for (const legend of ["Paper", "Writing width", "Margins", "Running heads"]) {
       expect(compositorSource).toContain(`<legend>${legend}</legend>`);
     }
     expect(compositorSource.match(/class="layout-choice"/g)?.length).toBe(4);
