@@ -121,7 +121,7 @@ export const TYPST_DOCUMENT_PREAMBLE = `${START}
   if color != none { result = text(fill: color, result) }
   let background = twyne-color(styles.at("background-color", default: ""))
   if background != none { result = highlight(fill: background, result) }
-  let font = styles.at("font-family", default: "").split(",").first().trim().replace("\\\"", "").replace("'", "")
+  let font = styles.at("font-family", default: "").split(",").first().trim().replace("\\"", "").replace("'", "")
   if font != "" { result = text(font: if font == "monospace" or font == "ui-monospace" { "DejaVu Sans Mono" } else if font == "serif" { "Libertinus Serif" } else if font == "sans-serif" { "DM Sans" } else { font }, result) }
   let font-size = twyne-length(styles.at("font-size", default: ""), fallback: none)
   if font-size != none { result = text(size: font-size, result) }

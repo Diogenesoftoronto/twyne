@@ -1,5 +1,5 @@
 import type { ExportPayload } from "../exchange";
-import { serializeTypst, typstString, type TypstDocument } from "./serialize";
+import { serializeTypst, typstString } from "./serialize";
 import { compileRequest, loadAssets, applyTypstPageSetup } from "./client";
 import { prepareTypstAssets } from "./render-assets";
 
