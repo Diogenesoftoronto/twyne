@@ -19,3 +19,7 @@ tests
 ---
 
 /compact i want you to see if the typst editor has been fully implemented
+
+---
+
+finish the rest
