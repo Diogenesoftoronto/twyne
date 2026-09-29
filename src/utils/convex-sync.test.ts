@@ -65,6 +65,7 @@ let activeFolioIdForTest: string | null = "f1";
 const SAMPLE_HTML = "<p>hello from the folio</p>";
 /** The draft as it currently stands locally. Tests move it to model typing. */
 let folioHtml = SAMPLE_HTML;
+let folioTypstSource: string | undefined;
 const SAMPLE_BIBLIOGRAPHY: BibEntry[] = [
   {
     id: "bib-1",
@@ -165,6 +166,8 @@ function normalizeApparatusSettings(value: unknown): ApparatusSettings {
 
 // Stub the local storage layers buildLocalSnapshot() reads from.
 mock.module("./idb", () => ({
+  FOLIO_CONTENT_SAVED: "twyne:folio-content-saved",
+  saveFolioTypstToIdb: async () => {},
   // Read paths used by buildLocalSnapshot()
   loadFoliosFromIdb: async () => foliosStore,
   loadAllBriefsFromIdb: async () => [],
@@ -173,6 +176,9 @@ mock.module("./idb", () => ({
   loadFolioContentSnapshotFromIdb: async () => ({
     folioId: "f1",
     html: folioHtml,
+    ...(folioTypstSource !== undefined
+      ? { format: "typst", typstSource: folioTypstSource }
+      : {}),
     updatedAt: 2,
   }),
   loadPersonasFromIdb: async () => [],
@@ -187,8 +193,8 @@ mock.module("./idb", () => ({
   },
   saveBriefToIdb: async () => {},
   deleteBriefFromIdb: async () => {},
-  saveFolioContentToIdb: async (_folioId: string, html: string) => {
-    folioHtml = html;
+  saveFolioContentSnapshotToIdb: async (snapshot: { html: string }) => {
+    folioHtml = snapshot.html;
   },
   deleteFolioContentFromIdb: async () => {
     folioHtml = "";
@@ -352,6 +358,7 @@ afterEach(() => {
   localStorageShim.clear();
   lixBlobFromIdb = null;
   folioHtml = SAMPLE_HTML;
+  folioTypstSource = undefined;
   foliosStore = [...SAMPLE_FOLIOS];
   activeFolioIdForTest = "f1";
 });
@@ -378,6 +385,21 @@ afterAll(() => {
 });
 
 describe("folio sync (convex-sync)", () => {
+  test("sends canonical native source alongside its HTML projection", async () => {
+    folioTypstSource = "#let native = 42\nHello";
+    const client = makeClient();
+    setConvexSyncContext(client as never, "typst-writer");
+    await tick();
+    expect(client.mutationCalls[0].folioContent).toEqual([
+      {
+        folioId: "f1",
+        html: SAMPLE_HTML,
+        format: "typst",
+        typstSource: folioTypstSource,
+      },
+    ]);
+  });
+
   test("sends folios and their content through to the backend", async () => {
     const client = makeClient();
     setConvexSyncContext(client as never, "user-1");

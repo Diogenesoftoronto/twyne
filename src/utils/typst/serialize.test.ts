@@ -10,6 +10,12 @@ import { loadFonts } from "@myriaddreamin/typst.ts/options.init";
 import { serializeTypst, typstString } from "./serialize";
 import { DEFAULT_LAYOUT } from "../../types";
 import { exportTypst } from "./export";
+import { prepareTypstAssets } from "./render-assets";
+import { createTypstRenderer } from "@myriaddreamin/typst.ts/renderer";
+import { applyTypstPageSetup, splitProofPages } from "./client";
+import { htmlToTypst } from "./document";
+import { ILLUMINATED_INITIAL_ARTWORK } from "../illuminated-initials";
+import { typstDecorations } from "./decorative-assets";
 
 const dom = new JSDOM("", { url: "https://twyne.test/" });
 const previous = Object.getOwnPropertyDescriptor(globalThis, "DOMParser");
@@ -18,6 +24,7 @@ let compiler: TypstCompiler;
 beforeAll(async () => {
   Object.defineProperty(globalThis, "DOMParser", {
     configurable: true,
+    writable: true,
     value: dom.window.DOMParser,
   });
   compiler = createTypstCompiler();
@@ -28,6 +35,13 @@ beforeAll(async () => {
       "LibertinusSerif-Italic.otf",
       "LibertinusSerif-BoldItalic.otf",
       "DejaVuSansMono.ttf",
+      "LibertinusMath-Regular.otf",
+      "specialelite-SpecialElite-Regular.ttf",
+      ...["Regular", "Italic", "Bold", "BoldItalic"].flatMap((face) => [
+        `lora-Lora-${face}.ttf`,
+        `librebaskerville-LibreBaskerville-${face}.ttf`,
+        `dmsans-DMSans-${face}.ttf`,
+      ]),
     ].map((name) =>
       readFile(new URL(`../../assets/typst/${name}`, import.meta.url)),
     ),
@@ -42,6 +56,24 @@ beforeAll(async () => {
       ),
     beforeBuild: [loadFonts(fonts, { assets: false })],
   });
+  for (const url of ILLUMINATED_INITIAL_ARTWORK) {
+    compiler.mapShadow(
+      `/twyne-decoration/initial-${url.split("/").at(-1)}`,
+      await readFile(new URL(`../../../public${url}`, import.meta.url)),
+    );
+  }
+  for (const style of ["botanical", "engraved", "illuminated"]) {
+    for (const part of ["nw", "n", "ne", "w", "e", "sw", "s", "se"])
+      compiler.mapShadow(
+        `/twyne-decoration/frame-${style}-${part}.png`,
+        await readFile(
+          new URL(
+            `../../../public/assets/page-borders/slices/${style}-${part}.png`,
+            import.meta.url,
+          ),
+        ),
+      );
+  }
 }, 30000);
 
 afterAll(() => {
@@ -53,7 +85,8 @@ afterAll(() => {
 async function compile(source: string) {
   compiler.addSource(
     "/main.typ",
-    "#show text: it => { metadata(it.text); it }\n" + source,
+    "#show text: it => { metadata(it.text); it }\n#show image: it => { if it.alt != none { metadata(it.alt) }; it }\n" +
+      source,
   );
   return compiler.runWithWorld(
     { mainFilePath: "/main.typ", inputs: {} },
@@ -72,6 +105,84 @@ async function compile(source: string) {
 }
 
 describe("Typst serializer with the real bundled compiler", () => {
+  test("decorative PDF settings use authoritative marked prose, nine-slice borders, and columns", async () => {
+    const html =
+      '<h1>Ornament</h1><p>“<strong><em>At last</em></strong>, <span style="color:#224466">the page</span> came alive.</p><p>Later prose.</p>';
+    for (const pageBorder of [
+      "botanical",
+      "engraved",
+      "illuminated",
+    ] as const) {
+      const payload = {
+        title: "Ornament",
+        html: "<p>STALE HTML</p>",
+        typstSource: htmlToTypst(html),
+        layout: {
+          ...DEFAULT_LAYOUT,
+          pageBorder,
+          columns: 2 as const,
+          columnGap: 2,
+          openingInitial: {
+            mode: "illuminated" as const,
+            collection: "alternate" as const,
+            size: "large" as const,
+          },
+        },
+      };
+      const decoration = typstDecorations(payload);
+      expect(decoration.assets.map((asset) => asset.url)).toEqual([
+        "/assets/illuminated-initials/a-alt.webp",
+        ...["nw", "n", "ne", "w", "e", "sw", "s", "se"].map(
+          (part) => `/assets/page-borders/slices/${pageBorder}-${part}.png`,
+        ),
+      ]);
+      const source = applyTypstPageSetup(payload.typstSource, payload);
+      expect(source).toContain("columns: 2");
+      expect(source).toContain("#set columns(gutter: 24pt)");
+      expect(source).toContain("left: 60pt");
+      expect(source).toContain("twyne-initial-size = 74.25pt");
+      expect((await compile(source)).join("")).toContain(
+        "“At last, the page came alive.",
+      );
+    }
+  });
+
+  test("off/plain initials, unsupported graphemes, and native source retain their text", async () => {
+    for (const mode of ["off", "plain", "illuminated"] as const) {
+      const payload = {
+        title: "Plain",
+        html: "<p>Élan remains intact.</p>",
+        layout: {
+          ...DEFAULT_LAYOUT,
+          pageBorder: "none" as const,
+          openingInitial: {
+            mode,
+            collection: "botanical" as const,
+            size: "small" as const,
+          },
+        },
+      };
+      const document = serializeTypst(payload);
+      expect(document.assets).toHaveLength(0);
+      expect((await compile(document.source)).join("")).toContain(
+        "Élan remains intact.",
+      );
+      expect(document.source).toContain("background: none");
+    }
+    const payload = {
+      title: "Native",
+      html: "<p>STALE</p>",
+      typstSource: '= Heading\n\n"At last, native prose.\n\nSecond paragraph.',
+      layout: DEFAULT_LAYOUT,
+    };
+    expect(typstDecorations(payload).initial?.glyph).toBe("A");
+    const nativeRendered = await compile(
+      applyTypstPageSetup(payload.typstSource, payload),
+    );
+    expect(nativeRendered.join("")).toContain("At last, native prose.");
+    expect(nativeRendered).toContain("A");
+  });
+
   test("keeps markup-like manuscript text literal instead of executing it", async () => {
     const malicious =
       '#panic("manuscript executed") [brackets] \\ slash $math$ @reference';
@@ -145,7 +256,7 @@ describe("Typst serializer with the real bundled compiler", () => {
       expect(rendered).toContain(value);
   });
 
-  test("private annotations do not leak and unsupported content fails explicitly", () => {
+  test("private annotations do not leak and equation sources are retained", () => {
     const { source } = serializeTypst({
       title: "Draft",
       html: '<p><span data-comment="PRIVATE" data-replacement="SECRET">Original prose</span></p>',
@@ -153,13 +264,128 @@ describe("Typst serializer with the real bundled compiler", () => {
     expect(source).toContain("Original prose");
     expect(source).not.toContain("PRIVATE");
     expect(source).not.toContain("SECRET");
-    for (const kind of ["inline-math", "block-math", "mermaid-diagram"])
-      expect(() =>
-        serializeTypst({
-          title: "Draft",
-          html: `<div data-type="${kind}">content</div>`,
-        }),
-      ).toThrow("does not yet support");
+    expect(
+      serializeTypst({
+        title: "Math",
+        html: '<span data-type="inline-math" data-latex="x^2"></span>',
+      }).source,
+    ).toContain('#twyne-math("x^2", block: false)');
+  });
+
+  test("LaTeX fractions render locally into SVG accepted by the real compiler", async () => {
+    const doc = serializeTypst({
+      title: "Equation",
+      html: '<p>Inline <span data-type="inline-math" data-latex="\\frac{a}{b}"></span></p><div data-type="block-math" data-latex="x^2 + y^2 = z^2"></div>',
+    });
+    const source = await prepareTypstAssets(doc.source);
+    expect(source).not.toContain("#twyne-math(");
+    expect(source).toContain('format: "svg"');
+    await compile(source);
+  });
+
+  test("canonical rich source compiles to separately paginated SVG proofs", async () => {
+    const html =
+      '<h1>Proof</h1><p>A <strong>bold</strong> sentence.</p><ol><li><p>First</p></li><li><p>Second</p></li></ol><table><tbody><tr><th><p>A</p></th><th><p>B</p></th></tr><tr><td><p>One</p></td><td><p>Two</p></td></tr><tr><td><p>Three</p></td><td><p>Four</p></td></tr></tbody></table><div data-type="page-break"></div><p>Page two.</p>';
+    const source = applyTypstPageSetup(htmlToTypst(html), {
+      title: "Proof",
+      html,
+      header: "A running header",
+      footer: "A working proof",
+    });
+    const rendered = (
+      await compile(
+        '#show grid: it => { metadata("grid-cells:" + str(it.children.len())); it }\n' +
+          source,
+      )
+    ).join("");
+    expect(rendered).toContain("A bold sentence.");
+    expect(rendered).toContain("A running header");
+    expect(rendered).toContain("A working proof");
+    // Each cell must occupy the grid independently; nested row sequences
+    // previously collapsed a whole row into one cell.
+    expect(rendered).toContain("grid-cells:6");
+    const vector = await compiler.runWithWorld(
+      { mainFilePath: "/main.typ", inputs: {} },
+      (world) => world.vector({ diagnostics: "full" }),
+    );
+    expect(vector.result).toBeDefined();
+    const renderer = createTypstRenderer();
+    await renderer.init({
+      getModule: () =>
+        readFile(
+          new URL(
+            "../../../node_modules/@myriaddreamin/typst-ts-renderer/pkg/typst_ts_renderer_bg.wasm",
+            import.meta.url,
+          ),
+        ),
+    });
+    await renderer.runWithSession(
+      { format: "vector", artifactContent: vector.result! },
+      async (session) => {
+        const sizes = session.retrievePagesInfo();
+        const pages = splitProofPages(
+          await session.renderSvg({
+            data_selection: { body: true, defs: true, css: true, js: false },
+          }),
+          sizes,
+        );
+        expect(pages).toHaveLength(2);
+        for (const page of pages) {
+          const document = new dom.window.DOMParser().parseFromString(
+            page,
+            "image/svg+xml",
+          );
+          expect(document.querySelectorAll(".typst-page")).toHaveLength(1);
+          expect(
+            document.querySelector(".typst-page")?.hasAttribute("transform"),
+          ).toBe(false);
+          expect(document.querySelector("parsererror")).toBeNull();
+        }
+      },
+    );
+  });
+
+  test("canonical tables retain column widths and image figures apply their crop ratio", async () => {
+    const previousWindow = Object.getOwnPropertyDescriptor(
+      globalThis,
+      "window",
+    );
+    Object.defineProperty(globalThis, "window", {
+      configurable: true,
+      writable: true,
+      value: dom.window,
+    });
+    try {
+      const image =
+        "data:image/svg+xml," +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="20"><rect width="40" height="20" fill="red"/></svg>',
+        );
+      const source = htmlToTypst(
+        `<table><tr><td colwidth="120">Narrow</td><td colwidth="240">Wide</td></tr></table><figure data-image-width="25" data-image-aspect-ratio="1"><img src="${image}" alt="Cropped"><figcaption>Caption</figcaption></figure>`,
+      );
+      expect(source).toContain("120,240");
+      await compile(await prepareTypstAssets(source));
+    } finally {
+      if (previousWindow)
+        Object.defineProperty(globalThis, "window", previousWindow);
+      else Reflect.deleteProperty(globalThis, "window");
+    }
+  });
+
+  test("canonical endnotes render after body while footnotes and task state remain distinct", async () => {
+    const source = htmlToTypst(
+      '<p>Body <sup data-type="endnote" data-endnote-text="Endnote one"></sup> more <sup data-type="endnote" data-endnote-text="Endnote two"></sup> and <sup data-type="footnote" data-endnote-text="Footnote text"></sup>.</p><ul data-type="taskList"><li data-type="taskItem" data-checked="true"><p>Completed</p></li><li data-type="taskItem" data-checked="false"><p>Pending</p></li></ul>',
+    );
+    const text = (await compile(source)).join("");
+    expect(text).toContain("Endnote one");
+    expect(text).toContain("Endnote two");
+    expect(text.indexOf("Endnote one")).toBeGreaterThan(
+      text.indexOf("Pending"),
+    );
+    expect(text).toContain("Footnote text");
+    expect(text).toContain("[x]");
+    expect(text).toContain("[ ]");
   });
 
   test("repeated images share an asset and retain captions and alternative text", () => {
@@ -180,6 +406,7 @@ describe("Typst serializer with the real bundled compiler", () => {
     );
     Object.defineProperty(globalThis, "window", {
       configurable: true,
+      writable: true,
       value: dom.window,
     });
     try {

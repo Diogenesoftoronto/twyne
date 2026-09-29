@@ -25,6 +25,24 @@ beforeEach(() => {
 afterAll(() => __setRevisionStorageForTests(null));
 
 describe("revision history", () => {
+  test("preserves source-only changes in native revisions", async () => {
+    await createRevisionSnapshot({
+      folioId: "native",
+      html: "<p>Hello</p>",
+      typstSource: "#let x = 1\nHello",
+      now: 1,
+    });
+    await createRevisionSnapshot({
+      folioId: "native",
+      html: "<p>Hello</p>",
+      typstSource: "#let x = 2\nHello",
+      now: 2,
+    });
+    const history = await loadRevisionHistory("native");
+    expect(history).toHaveLength(2);
+    expect(history[0].typstSource).toBe("#let x = 2\nHello");
+  });
+
   test("creates folio-scoped checkpoints newest first", async () => {
     await createRevisionSnapshot({
       folioId: "f1",

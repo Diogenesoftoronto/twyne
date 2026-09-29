@@ -156,6 +156,9 @@ export interface EditorStore {
   currentKeepWithNext: boolean;
   pageCount: number;
   paginationActive: boolean;
+  /** A recoverable source draft temporarily owns manuscript editing. */
+  typstSourcePending?: boolean;
+  typstView?: "write" | "source" | "proof";
   toolbarTab: CompositorTab;
 }
 

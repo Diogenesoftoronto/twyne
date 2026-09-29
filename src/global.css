@@ -750,6 +750,54 @@ body {
   display: block;
 }
 
+/* Page ornaments stay outside contentEditable. Nine-slice frames retain their
+ * corners when a continuous manuscript grows or the sheet changes orientation. */
+.page-canvas {
+  container: manuscript-page / inline-size;
+}
+.page-canvas.has-ornate-border {
+  --ornament-clearance: 5rem;
+}
+.manuscript-border {
+  position: absolute;
+  inset: 0.625rem;
+  z-index: 0;
+  border: 1px solid var(--color-paper-3);
+  pointer-events: none;
+  user-select: none;
+}
+.manuscript-border--ornate {
+  inset: 1.5rem;
+  border: 3rem solid transparent;
+  border-image-slice: 320;
+  border-image-repeat: round;
+}
+.page-canvas .ProseMirror {
+  column-count: var(--manuscript-columns, 1);
+  column-gap: var(--manuscript-column-gap, 1.5rem);
+  column-fill: balance;
+  orphans: 2;
+  widows: 2;
+}
+.page-canvas .ProseMirror > h1 {
+  column-span: all;
+}
+@container manuscript-page (width < 32rem) {
+  .page-canvas .ProseMirror {
+    column-count: 1;
+  }
+  .manuscript-border--ornate {
+    inset: 0.625rem;
+    border-width: 2rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .page-canvas.has-ornate-border {
+    --ornament-clearance: 2.75rem;
+  }
+}
+
 /* ── Tiptap manuscript page ──────────────────────────────── */
 .twyne-editor .ProseMirror {
   outline: none;
@@ -771,26 +819,85 @@ body {
   -webkit-hyphens: auto;
 }
 
-/* Drop cap on the very first paragraph — the magazine touch.
- *
- * `::first-letter` beats the inline `font-family` / `font-size` that the
- * type controls write onto the surrounding span, so anything hard-coded
- * here is a rule the writer cannot override. Setting a manuscript in
- * Special Elite used to leave its most prominent glyph in the display face.
- *
- * `font-family: inherit` puts the letter back under the writer's control.
- * The size stays proportional — a drop cap that ignored the type scale
- * would be worse — but it is bounded: 4.2em of 36pt is ~200px, which
- * overflows the sheet. The cap sits just above 4.2em of the default 18px
- * body, so the house look is unchanged until the writer goes large. */
-.twyne-editor .ProseMirror > p:first-of-type::first-letter {
+/* The opening glyph remains manuscript text. Its transparent engraving is a
+ * view-only background; slow/missing artwork keeps the ordinary drop cap. */
+.twyne-editor .ProseMirror[data-opening-initial-size="small"] {
+  --twyne-initial-size: 3em;
+  --twyne-initial-bound: 3.5rem;
+}
+
+.twyne-editor .ProseMirror[data-opening-initial-size="medium"] {
+  --twyne-initial-size: 4.2em;
+  --twyne-initial-bound: 5rem;
+}
+
+.twyne-editor .ProseMirror[data-opening-initial-size="large"] {
+  --twyne-initial-size: 5.5em;
+  --twyne-initial-bound: 6.5rem;
+}
+
+.twyne-editor
+  .ProseMirror[data-opening-initial-mode]:not([data-opening-initial-mode="off"])
+  > p:first-of-type:not(.twyne-illuminated-paragraph)::first-letter,
+.twyne-editor .ProseMirror .twyne-illuminated-initial {
   font-family: inherit;
   font-weight: 700;
-  font-size: min(4.2em, 5rem);
+  font-size: min(
+    var(--twyne-initial-size, 4.2em),
+    var(--twyne-initial-bound, 5rem)
+  );
   float: left;
   line-height: 0.85;
   margin: 0.08em 0.12em -0.05em 0;
   color: var(--color-vermilion);
+}
+
+.twyne-editor .ProseMirror .twyne-illuminated-initial {
+  text-indent: 0;
+  text-decoration: none;
+  caret-color: var(--color-vermilion);
+}
+
+.twyne-editor .ProseMirror .twyne-illuminated-prefix {
+  float: left;
+  font-size: 1.4em;
+  line-height: 1;
+  margin: 0.16em 0.08em 0 0;
+  text-indent: 0;
+}
+
+.twyne-editor .ProseMirror .twyne-illuminated-initial.is-illuminated {
+  width: 1.16em;
+  height: 1.16em;
+  margin: 0.035em 0.14em 0.02em 0;
+  background-image: var(--twyne-initial-artwork);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+
+.twyne-editor .ProseMirror .twyne-illuminated-initial::selection {
+  background-color: var(--color-vermilion-light, #c1272d30);
+}
+
+@media (forced-colors: active) {
+  .twyne-editor .ProseMirror .twyne-illuminated-initial.is-illuminated {
+    background-image: none;
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
+  }
+}
+
+@media print {
+  /* Printing may omit backgrounds: the actual opening letter must survive. */
+  .twyne-editor .ProseMirror .twyne-illuminated-initial.is-illuminated {
+    background-image: none;
+    color: var(--color-ink);
+    -webkit-text-fill-color: var(--color-ink);
+  }
 }
 
 .twyne-editor .ProseMirror h1 {
@@ -1575,6 +1682,55 @@ body {
   transform-origin: top center;
 }
 
+/* The same physical die prints workflow acknowledgements and verdicts.
+   Only the brief press moves; the final ink stays put and remains readable. */
+.ink-stamp {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  isolation: isolate;
+  pointer-events: none;
+}
+.ink-stamp__imprint {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: 0.88;
+}
+.ink-stamp__tool {
+  position: absolute;
+  z-index: 3;
+  top: -70%;
+  left: -32.5%;
+  display: block;
+  width: 165%;
+  max-width: none;
+  height: auto;
+  opacity: 0;
+  object-fit: contain;
+  transform-origin: 50% 82%;
+  user-select: none;
+}
+.ink-stamp__contact-shadow {
+  position: absolute;
+  z-index: 2;
+  inset: 26% 16% 18%;
+  border-radius: 50%;
+  background: #20150c;
+  filter: blur(5px);
+  opacity: 0;
+}
+.ink-stamp--pressing .ink-stamp__tool {
+  animation: stamp-die-press 500ms linear both;
+}
+.ink-stamp--pressing .ink-stamp__imprint {
+  animation: stamp-ink-settle 500ms linear both;
+}
+.ink-stamp--pressing .ink-stamp__contact-shadow {
+  animation: stamp-contact-shadow 500ms linear both;
+}
+
 .rubric-grade-stamp {
   --stamp-rotation: -4deg;
   position: relative;
@@ -1586,16 +1742,12 @@ body {
   transform-origin: center;
   isolation: isolate;
 }
-.rubric-grade-stamp::before {
+.rubric-grade-stamp__mark {
   position: absolute;
   inset: 0;
   background: currentColor;
-  content: "";
-  opacity: 0.82;
   -webkit-mask: var(--rubric-stamp-image) center / contain no-repeat;
   mask: var(--rubric-stamp-image) center / contain no-repeat;
-  mix-blend-mode: multiply;
-  z-index: 1;
 }
 .rubric-grade-stamp--compact {
   width: 5.5rem;
@@ -1617,17 +1769,41 @@ body {
 .rubric-grade-stamp--revise {
   --stamp-rotation: 4deg;
 }
-.rubric-grade-stamp--animated.rubric-grade-stamp--a {
-  animation: rubric-stamp-a 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+.rubric-grade-stamp--animated {
+  z-index: 2;
 }
-.rubric-grade-stamp--animated.rubric-grade-stamp--b {
-  animation: rubric-stamp-b 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+/* Give the handle room above the compact mark, without affecting layout. */
+.rubric-proof:has(.rubric-grade-stamp--animated) {
+  overflow: visible;
 }
-.rubric-grade-stamp--animated.rubric-grade-stamp--c {
-  animation: rubric-stamp-c 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+.workflow-stamp {
+  position: relative;
+  display: block;
+  width: min(15rem, 65vw);
+  aspect-ratio: 1;
+  color: var(--color-vermilion);
+  transform: rotate(-4deg);
+  flex: 0 0 auto;
+  pointer-events: none;
 }
-.rubric-grade-stamp--animated.rubric-grade-stamp--revise {
-  animation: rubric-stamp-revise 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+.workflow-stamp__mark {
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  -webkit-mask: var(--workflow-stamp-image) center / contain no-repeat;
+  mask: var(--workflow-stamp-image) center / contain no-repeat;
+}
+.dossier-filed-confirmation__paper:has(.workflow-stamp) {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  text-transform: none;
+  animation: none;
+}
+.dossier-filed-confirmation__paper .workflow-stamp {
+  margin-block: -2rem;
 }
 
 @keyframes rubric-proof-settle {
@@ -1641,186 +1817,86 @@ body {
   }
 }
 
-@keyframes rubric-stamp-a {
-  from {
-    filter: blur(1.2px);
-    opacity: 0.3;
-    transform: translateY(-12px) rotate(-9deg) scale(1.14);
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-    transform: translateY(0) rotate(-5deg) scale(1);
-  }
-}
-
-@keyframes rubric-stamp-b {
-  from {
-    filter: blur(1px);
-    opacity: 0.32;
-    transform: translateY(-10px) rotate(7deg) scale(1.12);
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-    transform: translateY(0) rotate(3deg) scale(1);
-  }
-}
-
-@keyframes rubric-stamp-c {
-  from {
-    filter: blur(0.9px);
-    opacity: 0.34;
-    transform: translateY(-9px) rotate(-5deg) scale(1.1);
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-    transform: translateY(0) rotate(-2deg) scale(1);
-  }
-}
-
-@keyframes rubric-stamp-revise {
-  from {
-    filter: blur(0.75px);
-    opacity: 0.36;
-    transform: translateY(-7px) rotate(8deg) scale(1.08);
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-    transform: translateY(0) rotate(4deg) scale(1);
-  }
-}
-
-/* Solar verdict: effects stop after the impression lands. */
-.stamp-solar-shader {
-  position: absolute;
-  width: 260%;
-  height: 260%;
-  max-width: none;
-  pointer-events: none;
-  z-index: 0;
-}
-.rubric-grade-stamp--highest .stamp-solar-shader {
-  width: 330%;
-  height: 330%;
-}
-.rubric-grade-stamp--animated::before {
-  animation: verdict-ink-impact 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.rubric-grade-stamp--animated::after {
-  content: "";
-  position: absolute;
-  inset: 8%;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  animation: verdict-impact-ring 750ms ease-out 100ms;
-}
-.rubric-grade-stamp--animated.rubric-grade-stamp--a::before {
-  animation:
-    verdict-ink-impact 650ms cubic-bezier(0.16, 1, 0.3, 1) both,
-    verdict-gold-bloom 1700ms ease-out;
-}
-.rubric-grade-stamp--animated.rubric-grade-stamp--highest::before {
-  animation:
-    verdict-ink-impact 650ms cubic-bezier(0.16, 1, 0.3, 1) both,
-    verdict-gold-bloom 2200ms ease-out;
-}
-@keyframes verdict-ink-impact {
+/* Approach, contact at 160ms, a brief compression, then a clean lift. */
+@keyframes stamp-die-press {
   0% {
-    transform: scale(1.6);
     opacity: 0;
-    filter: blur(3px);
+    transform: translate(14%, -48%) rotate(-10deg) scale(1.12);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.55);
   }
-  25% {
-    transform: scale(1);
+  14% {
     opacity: 1;
-    filter: blur(0);
+    transform: translate(8%, -27%) rotate(-5deg) scale(1.07);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.55);
+  }
+  32% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0) scale(1);
+  }
+  41% {
+    transform: translate(0, 1%) rotate(0) scale(1.015, 0.975);
+  }
+  52% {
+    transform: translate(0, 0) rotate(0) scale(1);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  76% {
+    opacity: 1;
+    transform: translate(4%, -19%) rotate(3deg) scale(1.025);
   }
   100% {
-    transform: scale(1);
-    opacity: 0.82;
-  }
-}
-@keyframes verdict-impact-ring {
-  0% {
-    transform: scale(0.75);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(2);
     opacity: 0;
+    transform: translate(14%, -48%) rotate(8deg) scale(1.07);
   }
 }
-@keyframes verdict-gold-bloom {
+@keyframes stamp-ink-settle {
   0%,
-  100% {
-    filter: drop-shadow(0 0 0 transparent);
-  }
-  25% {
-    filter: drop-shadow(0 0 12px #e8af49aa);
-  }
-}
-.workflow-stamp {
-  display: block;
-  width: min(15rem, 65vw);
-  height: auto;
-  object-fit: contain;
-  animation: workflow-ink-impact 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.approval-stamp-overlay .workflow-stamp {
-  animation: workflow-revised-impact 1300ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  filter: none;
-}
-.dossier-filed-confirmation__paper:has(.workflow-stamp) {
-  border: 0;
-  box-shadow: none;
-  background: transparent;
-  padding: 0;
-  text-transform: none;
-  animation: none;
-}
-.dossier-filed-confirmation__paper .workflow-stamp {
-  margin-block: -2rem;
-}
-@keyframes workflow-ink-impact {
-  from {
+  31% {
     opacity: 0;
-    transform: scale(1.65) rotate(-12deg);
+    transform: scale(0.988);
   }
-  to {
+  32% {
     opacity: 1;
-    transform: scale(1) rotate(-4deg);
+    transform: scale(0.988);
+    filter: blur(0.35px);
+  }
+  54% {
+    opacity: 0.98;
+    transform: scale(1.004);
+    filter: blur(0.15px);
+  }
+  100% {
+    opacity: 0.88;
+    transform: scale(1);
+    filter: blur(0);
   }
 }
-@keyframes workflow-revised-impact {
+@keyframes stamp-contact-shadow {
   0% {
     opacity: 0;
-    transform: scale(1.65) rotate(-12deg);
+    transform: translate(8%, 4%) scale(1.3);
   }
-  22%,
-  75% {
-    opacity: 1;
-    transform: scale(1) rotate(-4deg);
+  20% {
+    opacity: 0.12;
+    transform: translate(3%, 2%) scale(1.12);
+  }
+  32%,
+  52% {
+    opacity: 0.24;
+    transform: translate(0, 0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: scale(1) rotate(-4deg);
+    transform: translate(8%, 4%) scale(1.3);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stamp-solar-shader,
-  .rubric-grade-stamp--animated::after {
+  .ink-stamp__tool,
+  .ink-stamp__contact-shadow {
     display: none;
   }
-  .rubric-grade-stamp--animated::before,
-  .rubric-grade-stamp--animated.rubric-grade-stamp--a::before,
-  .rubric-grade-stamp--animated.rubric-grade-stamp--highest::before,
-  .workflow-stamp,
-  .approval-stamp-overlay .workflow-stamp {
+  .ink-stamp--pressing .ink-stamp__imprint,
+  .rubric-proof--fresh {
     animation: none;
   }
 }
@@ -2628,35 +2704,13 @@ body {
   pointer-events: none;
   z-index: var(--z-modal, 1000);
 }
-.approval-stamp-overlay img {
-  animation: stamp-thunk 1.2s cubic-bezier(0.18, 1.4, 0.4, 1) forwards;
-  transform-origin: center;
-  filter: drop-shadow(
-    0 8px 18px color-mix(in srgb, var(--color-vermilion-2) 35%, transparent)
-  );
+/* Retain the finished revision mark until the existing acknowledgement ends. */
+.approval-stamp-overlay .workflow-stamp {
+  animation: stamp-acknowledgement-fade 180ms ease-out 1180ms forwards;
 }
-@keyframes stamp-thunk {
-  0% {
+@keyframes stamp-acknowledgement-fade {
+  to {
     opacity: 0;
-    transform: scale(1.8) rotate(-14deg);
-  }
-  18% {
-    opacity: 1;
-    transform: scale(0.92) rotate(-7deg);
-  }
-  32% {
-    transform: scale(1.04) rotate(-9deg);
-  }
-  46% {
-    transform: scale(1) rotate(-8deg);
-  }
-  80% {
-    opacity: 1;
-    transform: scale(1) rotate(-8deg);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.02) rotate(-8deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2664,24 +2718,9 @@ body {
     animation: none;
     background: color-mix(in srgb, var(--suggestion-color) 28%, transparent);
   }
-  .suggestion-card {
+  .suggestion-card,
+  .approval-stamp-overlay .workflow-stamp {
     animation: none;
-  }
-  .approval-stamp-overlay img {
-    animation: stamp-fade 1s ease-out forwards;
-  }
-  @keyframes stamp-fade {
-    0% {
-      opacity: 0;
-    }
-    20%,
-    80% {
-      opacity: 1;
-      transform: rotate(-8deg);
-    }
-    100% {
-      opacity: 0;
-    }
   }
 }
 

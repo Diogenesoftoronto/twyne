@@ -1,6 +1,14 @@
 import { component$, type PropFunction } from "@qwik.dev/core";
 import type { LayoutSettings } from "../../types";
-import { MARGIN_RANGE, resolveMargins, resolvePageSetup } from "../../types";
+import {
+  MARGIN_RANGE,
+  resolveColumnGap,
+  resolveColumns,
+  resolveMargins,
+  resolveOpeningInitial,
+  resolvePageBorder,
+  resolvePageSetup,
+} from "../../types";
 import {
   COMPOSITOR_TABS,
   moveCompositorTab,
@@ -25,6 +33,7 @@ import { openLiveVoice } from "../../utils/live-voice-workspace";
 
 interface CompositorPanelProps {
   store: EditorPanelState;
+  readOnly?: boolean;
   onCommand$: PropFunction<(command: string) => void>;
   onHighlight$: PropFunction<(hex: string | null) => void>;
   onTextColor$: PropFunction<(hex: string | null) => void>;
@@ -956,10 +965,13 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
               >
                 <header class="layout-panel-header">
                   <h2>Page layout</h2>
-                  <p>Paper, flow, margins, and running heads.</p>
+                  <p>Paper, columns, ornaments, and running heads.</p>
                 </header>
 
-                <fieldset class="layout-section">
+                <fieldset
+                  class="layout-section disabled:opacity-60"
+                  disabled={props.readOnly}
+                >
                   <legend>Paper</legend>
                   <div class="flex items-center gap-1 mb-2">
                     {(
@@ -1011,13 +1023,16 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
                   </div>
                 </fieldset>
 
-                <fieldset class="layout-section">
-                  <legend>Flow</legend>
+                <fieldset
+                  class="layout-section disabled:opacity-60"
+                  disabled={props.readOnly}
+                >
+                  <legend>Writing width</legend>
                   <div class="flex items-center gap-1 mb-3">
                     {(
                       [
-                        ["paginated", "Pages"],
-                        ["continuous", "Scroll"],
+                        ["paginated", "Match paper"],
+                        ["continuous", "Custom column"],
                       ] as const
                     ).map(([value, label]) => (
                       <button
@@ -1062,7 +1077,210 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
                   )}
                 </fieldset>
 
-                <fieldset class="layout-section">
+                <fieldset
+                  class="layout-section disabled:opacity-60"
+                  disabled={props.readOnly}
+                >
+                  <legend>Columns</legend>
+                  <div class="flex items-center gap-1 mb-3">
+                    {([1, 2, 3] as const).map((columns) => (
+                      <button
+                        key={columns}
+                        type="button"
+                        class="layout-choice"
+                        aria-label={`${columns} ${columns === 1 ? "column" : "columns"}`}
+                        aria-pressed={resolveColumns(store.layout) === columns}
+                        onClick$={() =>
+                          emitLayout({ ...store.layout, columns })
+                        }
+                      >
+                        {columns === 1
+                          ? "One"
+                          : columns === 2
+                            ? "Two"
+                            : "Three"}
+                      </button>
+                    ))}
+                  </div>
+                  {resolveColumns(store.layout) > 1 && (
+                    <>
+                      <label class="block text-[0.7rem] text-[var(--color-ink-light)]">
+                        <span class="flex items-baseline justify-between mb-1 gap-2">
+                          <span>Column gap</span>
+                          <span class="tabular-nums text-[0.65rem]">
+                            {resolveColumnGap(store.layout).toFixed(2)} rem
+                          </span>
+                        </span>
+                        <input
+                          type="range"
+                          class="margin-slider"
+                          aria-label="Column gap, rem"
+                          min={0.75}
+                          max={3}
+                          step={0.25}
+                          value={resolveColumnGap(store.layout)}
+                          onInput$={(_, element) =>
+                            emitLayout({
+                              ...store.layout,
+                              columnGap: Number(element.value),
+                            })
+                          }
+                        />
+                      </label>
+                      <p class="mt-2 text-[0.63rem] leading-4 text-[var(--color-ink-light)]">
+                        Narrow screens show one writing column. Proof and PDF
+                        keep your layout.
+                      </p>
+                    </>
+                  )}
+                </fieldset>
+
+                <fieldset
+                  class="layout-section disabled:opacity-60"
+                  disabled={props.readOnly}
+                >
+                  <legend>Opening initial</legend>
+                  <div class="flex items-center gap-1 mb-3">
+                    {(
+                      [
+                        ["off", "Off"],
+                        ["plain", "Plain"],
+                        ["illuminated", "Illustrated"],
+                      ] as const
+                    ).map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        class="layout-choice"
+                        aria-pressed={
+                          resolveOpeningInitial(store.layout).mode === mode
+                        }
+                        onClick$={() =>
+                          emitLayout({
+                            ...store.layout,
+                            openingInitial: {
+                              ...resolveOpeningInitial(store.layout),
+                              mode,
+                            },
+                          })
+                        }
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  {resolveOpeningInitial(store.layout).mode ===
+                    "illuminated" && (
+                    <>
+                      <p class="mb-2 text-[0.7rem] text-[var(--color-ink-light)]">
+                        Botanical collection
+                      </p>
+                      <div class="flex items-center gap-1 mb-2">
+                        {(
+                          [
+                            ["botanical", "Original"],
+                            ["alternate", "Alternate"],
+                          ] as const
+                        ).map(([collection, label]) => (
+                          <button
+                            key={collection}
+                            type="button"
+                            class="layout-choice"
+                            aria-label={`${label} botanical initials`}
+                            aria-pressed={
+                              resolveOpeningInitial(store.layout).collection ===
+                              collection
+                            }
+                            onClick$={() =>
+                              emitLayout({
+                                ...store.layout,
+                                openingInitial: {
+                                  ...resolveOpeningInitial(store.layout),
+                                  collection,
+                                },
+                              })
+                            }
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                      {resolveOpeningInitial(store.layout).collection ===
+                        "alternate" && (
+                        <p class="mb-3 text-[0.63rem] leading-4 text-[var(--color-ink-light)]">
+                          A complete alternate A–Z collection, with a different
+                          botanical illustration for every letter.
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {resolveOpeningInitial(store.layout).mode !== "off" && (
+                    <div
+                      class="flex items-center gap-1"
+                      role="group"
+                      aria-label="Opening initial size"
+                    >
+                      {(["small", "medium", "large"] as const).map((size) => (
+                        <button
+                          key={size}
+                          type="button"
+                          class="layout-choice capitalize"
+                          aria-pressed={
+                            resolveOpeningInitial(store.layout).size === size
+                          }
+                          onClick$={() =>
+                            emitLayout({
+                              ...store.layout,
+                              openingInitial: {
+                                ...resolveOpeningInitial(store.layout),
+                                size,
+                              },
+                            })
+                          }
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </fieldset>
+
+                <fieldset
+                  class="layout-section disabled:opacity-60"
+                  disabled={props.readOnly}
+                >
+                  <legend>Page border</legend>
+                  <div class="flex flex-wrap items-center gap-1">
+                    {(
+                      [
+                        ["none", "None"],
+                        ["plain", "Plain"],
+                        ["botanical", "Botanical"],
+                        ["engraved", "Engraved"],
+                        ["illuminated", "Illuminated"],
+                      ] as const
+                    ).map(([pageBorder, label]) => (
+                      <button
+                        key={pageBorder}
+                        type="button"
+                        class="layout-choice"
+                        aria-pressed={
+                          resolvePageBorder(store.layout) === pageBorder
+                        }
+                        onClick$={() =>
+                          emitLayout({ ...store.layout, pageBorder })
+                        }
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </fieldset>
+
+                <fieldset
+                  class="layout-section disabled:opacity-60"
+                  disabled={props.readOnly}
+                >
                   <legend>Margins</legend>
                   {/* Two columns, paired the way the page reads: the opposing
                     edges sit beside each other, so setting a symmetric margin
@@ -1137,7 +1355,10 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
                 {/* Header, footer and page numbers are one subject — the
                     running heads — and used to be interleaved with the margin
                     guides and each other. */}
-                <fieldset class="layout-section">
+                <fieldset
+                  class="layout-section disabled:opacity-60"
+                  disabled={props.readOnly}
+                >
                   <legend>Running heads</legend>
                   <label class="compositor-check-row mb-2">
                     <span>Show running header</span>

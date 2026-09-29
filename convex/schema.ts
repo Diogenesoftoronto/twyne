@@ -168,6 +168,8 @@ export default defineSchema({
     userId: v.string(),
     folioId: v.string(),
     html: v.string(),
+    format: v.optional(v.union(v.literal("html"), v.literal("typst"))),
+    typstSource: v.optional(v.string()),
     updatedAt: v.number(),
   })
     .index("by_userId", ["userId"])

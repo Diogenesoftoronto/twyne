@@ -14,14 +14,17 @@ import type { LayoutSettings, ProjectBrief } from "../types";
 import {
   loadFoliosFromIdb,
   loadFolioContentFromIdb,
+  loadFolioContentSnapshotFromIdb,
   loadApparatusSettingsFromIdb,
 } from "./idb";
+import { reconcileTypstSource } from "./typst/document";
 import { loadBibliographyForFolio } from "./bibliography";
 import { loadPersonaNotesLocally } from "./convex-sync";
 
 export interface FolioExportRequest {
   folioId: string | null | undefined;
   folioName: string;
+  typstSource?: string;
   brief?: ProjectBrief | null;
   layout?: LayoutSettings;
   header?: string;
@@ -61,6 +64,36 @@ export async function readActiveFolioHtml(
   return "";
 }
 
+/** Read native source from the mounted editor before falling back to disk. */
+export async function readActiveFolioTypstSource(
+  folioId: string | null | undefined,
+  html?: string,
+): Promise<string | undefined> {
+  const detail: {
+    folioId: string | null | undefined;
+    source?: string;
+    pending?: boolean;
+  } = { folioId };
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent("twyne:request-typst-source", { detail }),
+    );
+    if (detail.pending)
+      throw new Error(
+        "Apply or discard the pending Typst source changes before exporting or restoring a revision.",
+      );
+    if (detail.source !== undefined) return detail.source;
+  }
+  const snapshot = folioId
+    ? await loadFolioContentSnapshotFromIdb(folioId)
+    : null;
+  return snapshot?.typstSource === undefined
+    ? undefined
+    : html !== undefined && html !== snapshot.html
+      ? reconcileTypstSource(snapshot.typstSource, html)
+      : snapshot.typstSource;
+}
+
 export async function buildFolioExportPayload(
   req: FolioExportRequest,
 ): Promise<ExportPayload> {
@@ -75,7 +108,10 @@ export async function buildFolioExportPayload(
         : Promise.resolve([]),
     ]);
 
+  const typstSource =
+    req.typstSource ?? (await readActiveFolioTypstSource(req.folioId, html));
   return {
+    typstSource,
     title: req.folioName || "Untitled",
     html,
     brief: req.brief ?? undefined,

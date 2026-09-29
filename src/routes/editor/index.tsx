@@ -397,6 +397,28 @@ export default component$(() => {
       flushLocalPersist(leaving);
     };
 
+    const cancelStaleVisualSave = (event: Event) => {
+      const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
+      if (pendingDraftFolioId !== folioId) return;
+      if (localPersistTimer !== null) window.clearTimeout(localPersistTimer);
+      localPersistTimer = null;
+      pendingDraftHtml = null;
+      pendingDraftFolioId = null;
+    };
+    const sourceCommitted = (event: Event) => {
+      const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
+      markDirty(["folioContent"], folioId);
+    };
+    window.addEventListener("twyne:typst-applying", cancelStaleVisualSave);
+    window.addEventListener("twyne:typst-source-committed", sourceCommitted);
+    cleanup(() => {
+      window.removeEventListener("twyne:typst-applying", cancelStaleVisualSave);
+      window.removeEventListener(
+        "twyne:typst-source-committed",
+        sourceCommitted,
+      );
+    });
+
     const onLocalPersistPageHide = () => {
       // The editor flushes its own derive on the same event, which re-enters
       // `contentHandler` synchronously; that handler flushes directly when the
@@ -476,6 +498,7 @@ export default component$(() => {
 
     // ── Persist layout (width, margin, running header, page numbers) ──
     const layoutHandler = (e: Event) => {
+      if (store.sharedRole === "commenter") return;
       const next = (e as CustomEvent).detail;
       if (!next || !store.activeFolioId) return;
       const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
@@ -494,6 +517,7 @@ export default component$(() => {
 
     // ── Persist editable running header / footer text ──
     const headerHandler = (e: Event) => {
+      if (store.sharedRole === "commenter") return;
       const text = (e as CustomEvent).detail as string;
       if (!store.activeFolioId) return;
       const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
@@ -508,6 +532,7 @@ export default component$(() => {
       markDirty(["folios"]);
     };
     const footerHandler = (e: Event) => {
+      if (store.sharedRole === "commenter") return;
       const text = (e as CustomEvent).detail as string;
       if (!store.activeFolioId) return;
       const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
