@@ -1,4 +1,4 @@
-import { typstString } from "./serialize";
+import { typstString } from "./string";
 
 /** A bounded, non-evaluating bridge. Unknown syntax is an editable opaque atom. */
 const MAX_SOURCE = 5_000_000;
