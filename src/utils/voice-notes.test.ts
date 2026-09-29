@@ -9,8 +9,19 @@ import {
 } from "bun:test";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
-const originalWindow = globalThis.window;
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
+const browserGlobalNames = [
+  "window",
+  "localStorage",
+  "MediaRecorder",
+  "navigator",
+] as const;
+const originalGlobals = new Map(
+  browserGlobalNames.map((name) => [
+    name,
+    Object.getOwnPropertyDescriptor(globalThis, name),
+  ]),
+);
 
 let voiceNotes: typeof import("./voice-notes");
 
@@ -61,14 +72,23 @@ function installBrowserGlobals(overrides: Record<string, unknown> = {}) {
     key: () => null,
     length: 0,
   };
-  (globalThis as Record<string, unknown>).localStorage = storage;
-  (globalThis as Record<string, unknown>).MediaRecorder = FakeMediaRecorder;
-  (globalThis as Record<string, unknown>).navigator = {
-    mediaDevices: { getUserMedia: async () => ({ getTracks: () => [] }) },
+  const values = {
+    localStorage: storage,
+    MediaRecorder: FakeMediaRecorder,
+    navigator: {
+      mediaDevices: { getUserMedia: async () => ({ getTracks: () => [] }) },
+    },
   };
+  for (const [name, value] of Object.entries(values))
+    Object.defineProperty(globalThis, name, {
+      configurable: true,
+      writable: true,
+      value,
+    });
   Object.assign(globalThis as Record<string, unknown>, overrides);
   Object.defineProperty(globalThis, "window", {
     configurable: true,
+    writable: true,
     value: {
       addEventListener: () => {},
       removeEventListener: () => {},
@@ -90,14 +110,12 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  if (originalWindow === undefined) {
-    Reflect.deleteProperty(globalThis, "window");
-  } else {
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: originalWindow,
-    });
+  for (const name of browserGlobalNames) {
+    const descriptor = originalGlobals.get(name);
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+    else Reflect.deleteProperty(globalThis, name);
   }
+  setSystemTime();
   releaseBrowserGlobalsLock();
 });
 

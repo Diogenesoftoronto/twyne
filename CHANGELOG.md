@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.23.0
+
+<sub>2026-09-29</sub>
+
+- Write and revise native Typst source with live paginated proofs, source tools,
+  local recovery, revision history, and PDF or standalone source export.
+- Choose from two complete illuminated alphabets, plain drop caps, or no opening
+  initial, with size and collection controls in the compositor.
+- Add botanical, engraved, or illuminated page borders and one, two, or three
+  columns, with matching choices in the editor and PDF exports.
+- Give Typst titles, subtitles, and all heading levels more breathing room.
+- Press a walnut stamp into the page when filing work or receiving grades, with
+  textured ink and reduced-motion support.
+
+## 0.22.1
+
+<sub>2026-09-28</sub>
+
+- Fix production deployment with deploy-only Convex keys by using the corrected
+  Convex CLI for index-removal review.
+- Isolate voice-recording browser mocks so CI test order cannot leak read-only
+  storage or unset timers into editor tests.
+
 ## 0.22.0
 
 <sub>2026-09-28</sub>
