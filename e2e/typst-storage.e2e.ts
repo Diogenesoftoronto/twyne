@@ -22,13 +22,11 @@ test("native source commits atomically, survives no-op visual saves, and protect
       request.onsuccess = () => {
         const db = request.result;
         const transaction = db.transaction("folio-content", "readwrite");
-        transaction
-          .objectStore("folio-content")
-          .put({
-            folioId: "legacy",
-            html: "<p>Legacy text</p>",
-            updatedAt: 99,
-          });
+        transaction.objectStore("folio-content").put({
+          folioId: "legacy",
+          html: "<p>Legacy text</p>",
+          updatedAt: 99,
+        });
         transaction.oncomplete = () => {
           db.close();
           resolve();
