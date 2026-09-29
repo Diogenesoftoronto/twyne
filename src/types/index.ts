@@ -257,6 +257,29 @@ export interface RoomAnalysis {
 
 export type DocWidth = "narrow" | "normal" | "wide";
 export type DocMargin = "tight" | "normal" | "roomy";
+export type OpeningInitialMode = "off" | "plain" | "illuminated";
+export type OpeningInitialCollection = "botanical" | "alternate";
+export type OpeningInitialSize = "small" | "medium" | "large";
+export type PageBorderStyle =
+  | "none"
+  | "plain"
+  | "botanical"
+  | "engraved"
+  | "illuminated";
+
+export interface OpeningInitialSettings {
+  mode: OpeningInitialMode;
+  collection: OpeningInitialCollection;
+  size: OpeningInitialSize;
+}
+
+export const DEFAULT_OPENING_INITIAL: Readonly<OpeningInitialSettings> =
+  Object.freeze({
+    mode: "illuminated",
+    collection: "botanical",
+    size: "medium",
+  });
+export const DEFAULT_PAGE_BORDER: PageBorderStyle = "plain";
 
 export interface LayoutSettings {
   width: DocWidth;
@@ -304,6 +327,60 @@ export interface LayoutSettings {
    * regardless — this changes how they are shown, never how they are saved.
    */
   marginUnit?: MarginUnit;
+  /** Opening ornament is presentation only; the manuscript retains its text. */
+  openingInitial?: OpeningInitialSettings;
+  /** Decorative frame around the manuscript page. */
+  pageBorder?: PageBorderStyle;
+  /** Number of manuscript columns. */
+  columns?: 1 | 2 | 3;
+  /** Gap between columns, in rem. */
+  columnGap?: number;
+}
+
+export function resolveColumns(
+  layout: Pick<LayoutSettings, "columns">,
+): 1 | 2 | 3 {
+  return layout.columns === 2 || layout.columns === 3 ? layout.columns : 1;
+}
+
+export function resolveColumnGap(
+  layout: Pick<LayoutSettings, "columnGap">,
+): number {
+  return typeof layout.columnGap === "number" &&
+    Number.isFinite(layout.columnGap)
+    ? Math.min(3, Math.max(0.75, layout.columnGap))
+    : 1.5;
+}
+
+/** Older folios and incomplete imported settings keep the house defaults. */
+export function resolveOpeningInitial(
+  layout: Pick<LayoutSettings, "openingInitial">,
+): OpeningInitialSettings {
+  const settings = layout.openingInitial;
+  return {
+    mode:
+      settings?.mode === "off" || settings?.mode === "plain"
+        ? settings.mode
+        : "illuminated",
+    collection:
+      settings?.collection === "alternate" ? "alternate" : "botanical",
+    size:
+      settings?.size === "small" || settings?.size === "large"
+        ? settings.size
+        : "medium",
+  };
+}
+
+export function resolvePageBorder(
+  layout: Pick<LayoutSettings, "pageBorder">,
+): PageBorderStyle {
+  const border = layout.pageBorder;
+  return border === "none" ||
+    border === "botanical" ||
+    border === "engraved" ||
+    border === "illuminated"
+    ? border
+    : DEFAULT_PAGE_BORDER;
 }
 
 export type PaperSize = "letter" | "a4" | "legal";
@@ -432,6 +509,10 @@ export const DEFAULT_LAYOUT: LayoutSettings = {
   runningHeader: false,
   pageNumbers: true,
   showMarginGuides: false,
+  openingInitial: { ...DEFAULT_OPENING_INITIAL },
+  pageBorder: DEFAULT_PAGE_BORDER,
+  columns: 1,
+  columnGap: 1.5,
   paper: "letter",
   orientation: "portrait",
   // Deliberately unset, not "continuous". Leaving it absent is what lets the

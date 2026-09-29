@@ -35,3 +35,6 @@ export const Revised: Story = {
 export const AcceptedRevision: Story = {
   render: () => <WorkflowPreview kind="revised" overlay />,
 };
+export const FiledImprint: Story = {
+  args: { kind: "filed", animated: false },
+};

@@ -234,7 +234,6 @@ export default component$(() => {
                     GRADE_COLOR[store.result.overallGrade] ?? "var(--color-ink)"
                   }
                   size="report"
-                  animated
                 />
                 <div class="flex-1 min-w-0">
                   <p class="dept-label">

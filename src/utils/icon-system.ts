@@ -43,9 +43,31 @@ import TextalignRight from "reicon/icons/TextalignRight";
 import Trash from "reicon/icons/Trash";
 import Undo from "reicon/icons/Undo";
 import UnorderedList from "reicon/icons/UnorderedList";
+import PenNib from "reicon/icons/PenNib";
+import CodeFile from "reicon/icons/CodeFile";
+import BookOpen from "reicon/icons/BookOpen";
+import SidebarRight from "reicon/icons/SidebarRight";
+import FileDownload from "reicon/icons/FileDownload";
+import AlertTriangle from "reicon/icons/AlertTriangle";
+import TextBold from "reicon/icons/TextBold";
+import TextItalic from "reicon/icons/TextItalic";
+import Math from "reicon/icons/Math";
+import Hashtag from "reicon/icons/Hashtag";
+import TextBlock from "reicon/icons/TextBlock";
 import type { IconFunction, IconWeight } from "reicon/createIcon";
 
 const TWYNE_ICONS = {
+  "pen-nib": PenNib,
+  "code-file": CodeFile,
+  "book-open": BookOpen,
+  "sidebar-right": SidebarRight,
+  "file-download": FileDownload,
+  "alert-triangle": AlertTriangle,
+  "text-bold": TextBold,
+  "text-italic": TextItalic,
+  math: Math,
+  heading: Hashtag,
+  "text-wrap": TextBlock,
   add: Add,
   "align-horizontal-spacing": AlignHSpacing,
   "arrow-down": ArrowDown,

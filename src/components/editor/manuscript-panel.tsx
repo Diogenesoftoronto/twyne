@@ -5,6 +5,8 @@ import {
   type PropFunction,
 } from "@qwik.dev/core";
 import type { LayoutSettings } from "../../types";
+import { resolveColumns, resolveColumnGap } from "../../types";
+import { hasOrnateBorder } from "../../utils/page-ornaments";
 import { formatWordCount, readingTimeLabel } from "../../utils/document";
 import { formatFolioCount } from "../../utils/draft-thresholds";
 import { isFileDrag } from "../../utils/file-drag";
@@ -13,6 +15,7 @@ import { MarginRails } from "../in-flow/margin-rail";
 import { PageChrome, type PageChromeProps } from "./page-chrome";
 import { PageRuler } from "./page-ruler";
 import { LastSavedLine } from "./sync-indicator";
+import { PageBorder } from "./page-border";
 
 export const MANUSCRIPT_READING_ID = "manuscript";
 
@@ -109,9 +112,12 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
               "show-margin-guides": store.layout.showMarginGuides,
               "zen-mode": store.zenMode,
               "is-paginated": store.paginationActive,
+              "has-ornate-border": hasOrnateBorder(store.layout),
             },
           ]}
           style={{
+            "--manuscript-columns": resolveColumns(store.layout),
+            "--manuscript-column-gap": `${resolveColumnGap(store.layout)}rem`,
             ...(store.paginationActive
               ? {
                   width: "var(--page-w)",
@@ -119,12 +125,17 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
                   "min-height": `${props.canvasMinHeight}px`,
                 }
               : { "max-width": "var(--doc-width, 48rem)" }),
-            "padding-left": "var(--doc-pad-left, 3rem)",
-            "padding-right": "var(--doc-pad-right, 3rem)",
-            "padding-top": "var(--doc-pad-y, 2.5rem)",
-            "padding-bottom": "var(--doc-pad-bottom, 4rem)",
+            "padding-left":
+              "max(var(--ornament-clearance, 0px), var(--doc-pad-left, 3rem))",
+            "padding-right":
+              "max(var(--ornament-clearance, 0px), var(--doc-pad-right, 3rem))",
+            "padding-top":
+              "max(var(--ornament-clearance, 0px), var(--doc-pad-y, 2.5rem))",
+            "padding-bottom":
+              "max(var(--ornament-clearance, 0px), var(--doc-pad-bottom, 4rem))",
           }}
         >
+          {!store.paginationActive && <PageBorder layout={store.layout} />}
           <PageChrome
             pageCount={store.pageCount}
             active={store.paginationActive}

@@ -1,0 +1,58 @@
+{
+  "sourceSize": [
+    1024,
+    1536
+  ],
+  "slice": 320,
+  "regions": {
+    "nw": [
+      0,
+      0,
+      320,
+      320
+    ],
+    "n": [
+      320,
+      0,
+      384,
+      320
+    ],
+    "ne": [
+      704,
+      0,
+      320,
+      320
+    ],
+    "w": [
+      0,
+      320,
+      320,
+      896
+    ],
+    "e": [
+      704,
+      320,
+      320,
+      896
+    ],
+    "sw": [
+      0,
+      1216,
+      320,
+      320
+    ],
+    "s": [
+      320,
+      1216,
+      384,
+      320
+    ],
+    "se": [
+      704,
+      1216,
+      320,
+      320
+    ]
+  },
+  "description": "Lossless transparent crops of the regenerated revision-2 image-generated borders. Native output 1024×1536; no upscaling. Repeat edge tiles proportionally and preserve square corners; center remains empty."
+}
