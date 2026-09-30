@@ -15,6 +15,11 @@
  * from the chip in the text — and the editor's conversation card unfolds in
  * this card's slot while the card steps aside; the cards below make room.
  * See `utils/margin-surface.ts` for the handshake.
+ *
+ * The desk, at the head of the room, keeps two things that outlast the
+ * cards. While the page is quiet, the pneumatic post: a capsule tab counting
+ * what the conductor is holding back, delivered when the writer pauses or
+ * taps it. When a run of focus ends, the galley slip: what the run set.
  */
 import {
   $,
@@ -35,7 +40,13 @@ import {
   SIDE_FOR,
   stackCards,
   type FlowItem,
+  type FlowItemKind,
 } from "../../utils/flow-items";
+import {
+  FLOW_SESSION_EVENT,
+  type FlowSession,
+  type FlowSessionEnd,
+} from "../../utils/flow-session";
 import type { FlowMode } from "../../utils/flow-state";
 import {
   MARGIN_SLOT_EVENT,
@@ -45,6 +56,7 @@ import {
   type MarginSlotDetail,
   type OpenMarginThreadDetail,
 } from "../../utils/margin-surface";
+import { Icon } from "../ui/icon";
 
 const ROOM_WIDTH = 268;
 const ARCHIVE_WIDTH = 212;
@@ -99,20 +111,63 @@ interface SurfaceState {
   brackets: Bracket[];
   width: number;
   height: number;
+  dockBottom: number;
   drafts: Record<string, string>;
   busy: Record<string, boolean>;
   notices: Record<string, string>;
+  /** The conductor turned focus on (the page is in zen by its hand). */
+  autoFocus: boolean;
+  heldKinds: Partial<Record<FlowItemKind, number>>;
+  /** A capsule just dropped into the post. */
+  arriving: boolean;
+  /** The last run's galley slip, until it is filed. */
+  slip: FlowSession | null;
+  slipExpanded: boolean;
 }
 
-const accent = (item: FlowItem) =>
-  item.color ||
-  (item.kind === "echo" || item.kind === "shelf"
+const kindAccent = (kind: FlowItemKind) =>
+  kind === "echo" || kind === "shelf"
     ? "var(--color-cobalt)"
-    : item.kind === "charter" || item.kind === "amendment"
+    : kind === "charter" || kind === "amendment"
       ? "var(--color-vermilion)"
-      : item.kind === "work"
+      : kind === "work"
         ? "var(--color-mustard)"
-        : "var(--color-sage)");
+        : kind === "way-in"
+          ? "var(--color-periwinkle)"
+          : "var(--color-sage)";
+
+const accent = (item: FlowItem) => item.color || kindAccent(item.kind);
+
+/** What the post says it is holding, one kind at a time. */
+const POST_NAMES: Record<FlowItemKind, { one: string; many: string }> = {
+  comment: { one: "margin note", many: "margin notes" },
+  "persona-note": { one: "note from the room", many: "notes from the room" },
+  source: { one: "source", many: "sources" },
+  work: { one: "work on the shelf", many: "works on the shelf" },
+  shelf: { one: "dossier reference", many: "dossier references" },
+  echo: { one: "echo of your writing", many: "echoes of your writing" },
+  charter: { one: "charter reminder", many: "charter reminders" },
+  amendment: { one: "proposed amendment", many: "proposed amendments" },
+  "way-in": { one: "way in", many: "ways in" },
+};
+
+const SLIP_ENDINGS: Record<FlowSessionEnd, string> = {
+  pause: "Set down at a pause.",
+  reached: "You reached for the margin.",
+  manual: "Focus lifted by hand.",
+  away: "You stepped away.",
+  closed: "The folio closed mid-run.",
+};
+
+const runLength = (ms: number) => {
+  const minutes = Math.round(ms / 60_000);
+  if (minutes < 1) return "under a minute";
+  if (minutes < 60) return `${minutes} min`;
+  const rest = minutes % 60;
+  return rest
+    ? `${Math.floor(minutes / 60)} h ${rest} min`
+    : `${minutes / 60} h`;
+};
 
 const clip = (text: string, n: number) =>
   text.length > n ? `${text.slice(0, n - 1).trimEnd()}…` : text;
@@ -138,9 +193,15 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       brackets: [],
       width: 0,
       height: 0,
+      dockBottom: 80,
       drafts: {},
       busy: {},
       notices: {},
+      autoFocus: false,
+      heldKinds: {},
+      arriving: false,
+      slip: null,
+      slipExpanded: false,
     });
 
     // eslint-disable-next-line qwik/no-use-visible-task
@@ -155,6 +216,8 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       let observedThread: Element | null = null;
       const observedCards = new Set<Element>();
       let waiters: Array<(slot: MarginSlot | null) => void> = [];
+      let arrivingTimer: ReturnType<typeof setTimeout> | undefined;
+      let seenSessionId: string | null = null;
 
       const itemsToShow = (): FlowItem[] => {
         const controller = flowController();
@@ -182,7 +245,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           const controller = flowController();
           const cards = new Set(
             canvas.querySelectorAll(
-              ".flow-card, .in-flow-rail, .in-flow-shelf__inner",
+              ".flow-card, .in-flow-rail, .in-flow-shelf__inner, .flow-slip",
             ),
           );
           for (const node of observedCards) {
@@ -201,6 +264,10 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           const scrollerRect = scroller.getBoundingClientRect();
           state.width = canvasRect.width;
           state.height = canvasRect.height;
+          state.dockBottom = Math.max(
+            16,
+            window.innerHeight - scrollerRect.bottom + 12,
+          );
           const rightRoom = scrollerRect.right - canvasRect.right;
           const leftRoom = canvasRect.left - scrollerRect.left;
           state.room = rightRoom >= ROOM_WIDTH + GUTTER + 8 ? "rail" : "dock";
@@ -242,6 +309,9 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           };
           const tool = rel(canvas.querySelector(".in-flow-rail"));
           const shelf = rel(canvas.querySelector(".in-flow-shelf__inner"));
+          // The galley slip rests at the foot of the room; cards give way.
+          const galley =
+            state.room === "rail" ? rel(el.querySelector(".flow-slip")) : null;
           let cardless =
             state.openId &&
             state.openTop != null &&
@@ -275,7 +345,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           }
           const roomTops = stackCards(
             want.filter((w) => w.side === "room"),
-            [tool, cardless].filter(
+            [tool, cardless, galley].filter(
               (o): o is { top: number; height: number } => !!o,
             ),
           );
@@ -450,17 +520,48 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
 
       const onSnapshot = (event: Event) => {
         const next = (event as CustomEvent<FlowSnapshot>).detail;
+        const savedSession = flowController()?.lastSession();
+        // Restore once, so filing a slip does not bring it back on the next tick.
+        if (next.enabled && savedSession && savedSession.id !== seenSessionId) {
+          seenSessionId = savedSession.id;
+          state.slip =
+            savedSession.ended === "closed" ? null : { ...savedSession };
+          state.slipExpanded = false;
+        }
         if (
           next.mode !== latest.mode &&
           next.mode !== "working" &&
           next.mode !== "stuck"
         )
           state.expanded = false;
+        const quiet = next.mode === "flow" || next.mode === "settling";
+        // A capsule drops into the post: the count darkens for a moment,
+        // nothing moves. Only while the page is quiet; otherwise the cards
+        // themselves arrive.
+        if (quiet && next.held > state.held) {
+          state.arriving = true;
+          clearTimeout(arrivingTimer);
+          arrivingTimer = setTimeout(() => {
+            state.arriving = false;
+          }, 1_400);
+        }
+        // Writing again files the last run's slip.
+        if (quiet && state.slip) state.slip = null;
         latest = next;
         state.mode = next.mode;
         state.enabled = next.enabled;
         state.held = next.held;
+        state.heldKinds = { ...(next.heldKinds ?? {}) };
+        state.autoFocus = next.autoFocus;
         layout();
+      };
+
+      const onSession = (event: Event) => {
+        const session = (event as CustomEvent<FlowSession>).detail;
+        if (!session || session.ended === "closed") return;
+        seenSessionId = session.id;
+        state.slip = { ...session };
+        state.slipExpanded = false;
       };
 
       // Hovering a marked passage in the text peeks its card, even one that
@@ -486,7 +587,10 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       const observer = new ResizeObserver(layout);
       const unregister = registerMarginSurface({
         active: () =>
-          state.enabled && state.room === "rail" && !root.value?.hidden,
+          state.enabled &&
+          state.room === "rail" &&
+          !root.value?.hidden &&
+          !root.value?.hasAttribute("data-quiet"),
         reveal(itemId, anchorTop) {
           // Asking for a conversation brings back a card the writer set aside.
           const controller = flowController();
@@ -510,6 +614,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       });
 
       window.addEventListener(FLOW_EVENT, onSnapshot);
+      window.addEventListener(FLOW_SESSION_EVENT, onSession);
       window.addEventListener("resize", layout);
       window.addEventListener("twyne:content", layout);
       window.addEventListener(FLOW_LAYOUT_EVENT, layout);
@@ -517,12 +622,15 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       canvas.addEventListener("pointerover", onOver);
       canvas.addEventListener("focusin", onOver);
       observer.observe(canvas);
+      observer.observe(scroller);
       onSnapshot(new CustomEvent(FLOW_EVENT, { detail: flowSnapshot() }));
       cleanup(() => {
         unregister();
         for (const resolve of waiters) resolve(null);
         cancelAnimationFrame(frame);
+        clearTimeout(arrivingTimer);
         window.removeEventListener(FLOW_EVENT, onSnapshot);
+        window.removeEventListener(FLOW_SESSION_EVENT, onSession);
         window.removeEventListener("resize", layout);
         window.removeEventListener("twyne:content", layout);
         window.removeEventListener(FLOW_LAYOUT_EVENT, layout);
@@ -578,12 +686,21 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       state.notices = { ...state.notices, [id]: error ?? "" };
     });
 
-    if (props.zen || props.readOnly) return <div ref={root} hidden />;
+    // Focus the writer chose is only the text. Focus the conductor chose
+    // keeps the desk: the post that holds the margin until a pause.
+    if (props.readOnly || (props.zen && !state.autoFocus))
+      return <div ref={root} hidden />;
+    const quiet = props.zen;
 
     const card = (placed: Placed) => {
       const { item } = placed;
       const color = accent(item);
       const reply = item.data?.reply;
+      // A way in may point at an earlier passage worth picking up.
+      const thread =
+        item.kind === "way-in"
+          ? state.items.find((other) => other.id === item.links?.[0])
+          : undefined;
       return (
         <article
           key={item.id}
@@ -623,7 +740,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
               aria-label="Set this aside"
               title="Set aside — it won't come back"
             >
-              ✕
+              <Icon name="close-circle" size={14} />
             </button>
           </header>
 
@@ -706,6 +823,27 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             </p>
           )}
 
+          {item.kind === "way-in" && (
+            <div class="flow-way-in">
+              {thread && (
+                <button
+                  type="button"
+                  class="flow-link"
+                  onClick$={() => {
+                    flowController()?.engage(item.id);
+                    flowController()?.focusAnchor(thread);
+                  }}
+                  title={clip(thread.body, 140)}
+                >
+                  Pick up the thread
+                </button>
+              )}
+              <span class="flow-way-in__hint">
+                Set it aside and the margin stays quiet here.
+              </span>
+            </div>
+          )}
+
           {item.kind === "amendment" && (
             <div class="flow-amend">
               <textarea
@@ -768,6 +906,187 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       );
     };
 
+    /** The pneumatic post: what is being held while the page is quiet. */
+    const post = () => {
+      const kinds = (Object.keys(state.heldKinds) as FlowItemKind[]).filter(
+        (kind) => (state.heldKinds[kind] ?? 0) > 0,
+      );
+      const told = kinds
+        .map((kind) => {
+          const n = state.heldKinds[kind] ?? 0;
+          return `${n} ${n === 1 ? POST_NAMES[kind].one : POST_NAMES[kind].many}`;
+        })
+        .join(", ");
+      const pips = kinds
+        .flatMap((kind) =>
+          Array.from({ length: state.heldKinds[kind] ?? 0 }, (_, i) => ({
+            key: `${kind}-${i}`,
+            color: kindAccent(kind),
+          })),
+        )
+        .slice(0, 6);
+      const summary = `Held while you write${told ? `: ${told}` : ""}. They come in when you pause.`;
+      return (
+        <button
+          type="button"
+          class={["flow-post", { "is-arriving": state.arriving }]}
+          onClick$={() => flowController()?.release()}
+          title={`${summary} Open them now.`}
+          aria-label={`${state.held} waiting. ${summary} Open them now.`}
+        >
+          <svg
+            class="flow-post__capsule"
+            viewBox="0 0 30 14"
+            width="30"
+            height="14"
+            aria-hidden="true"
+          >
+            <rect x="1" y="1.5" width="28" height="11" rx="5.5" />
+            <line x1="8.5" y1="1.5" x2="8.5" y2="12.5" />
+            <line x1="21.5" y1="1.5" x2="21.5" y2="12.5" />
+          </svg>
+          <span class="flow-post__count">{state.held}</span>
+          <span class="flow-post__label">waiting</span>
+          {pips.length > 0 && (
+            <span class="flow-post__pips" aria-hidden="true">
+              {pips.map((pip) => (
+                <i key={pip.key} style={{ background: pip.color }} />
+              ))}
+            </span>
+          )}
+        </button>
+      );
+    };
+
+    /** The galley slip: what the last run of focus set. */
+    const slip = (run: FlowSession) => (
+      <aside class="flow-slip" aria-label="Galley slip for your last run">
+        <header class="flow-slip__head">
+          {state.room === "dock" ? (
+            <button
+              type="button"
+              class="flow-slip__toggle"
+              aria-label={
+                state.slipExpanded
+                  ? "Hide galley slip details"
+                  : "Show galley slip details"
+              }
+              aria-expanded={state.slipExpanded}
+              aria-controls="flow-slip-details"
+              onClick$={() => {
+                state.slipExpanded = !state.slipExpanded;
+              }}
+            >
+              <span class="flow-slip__title">Galley</span>
+              <span class="flow-slip__summary">
+                {runLength(run.flowMs)} · {run.words.toLocaleString()} words
+              </span>
+              <Icon
+                name={state.slipExpanded ? "arrow-down" : "arrow-up"}
+                size={14}
+              />
+            </button>
+          ) : (
+            <>
+              <span class="flow-slip__title">Galley</span>
+              <time dateTime={new Date(run.endedAt).toISOString()}>
+                {new Date(run.endedAt).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </time>
+            </>
+          )}
+          <button
+            type="button"
+            class="flow-slip__close"
+            onClick$={() => {
+              state.slip = null;
+              state.slipExpanded = false;
+            }}
+            aria-label="File this slip"
+            title="File it"
+          >
+            <Icon name="close-circle" size={14} />
+          </button>
+        </header>
+        <div
+          id="flow-slip-details"
+          class="flow-slip__body"
+          hidden={state.room === "dock" && !state.slipExpanded}
+        >
+          <dl class="flow-slip__rows">
+            <div>
+              <dt>In flow</dt>
+              <dd>{runLength(run.flowMs)}</dd>
+            </div>
+            <div>
+              <dt>Words set</dt>
+              <dd>{run.words.toLocaleString()}</dd>
+            </div>
+            {run.wpm > 0 && (
+              <div>
+                <dt>Pace</dt>
+                <dd>{run.wpm} a minute</dd>
+              </div>
+            )}
+            {run.waited > 0 && (
+              <div>
+                <dt>Held for you</dt>
+                <dd>{run.waited}</dd>
+              </div>
+            )}
+            {run.amendments > 0 && (
+              <div>
+                <dt>Amendments</dt>
+                <dd>{run.amendments} proposed</dd>
+              </div>
+            )}
+          </dl>
+          <footer class="flow-slip__foot">
+            <em>{SLIP_ENDINGS[run.ended]}</em>
+            <span class="flow-slip__stamp" aria-hidden="true">
+              Composé
+            </span>
+            <a class="flow-link" href="/house/?tab=engine">
+              Earlier runs
+            </a>
+          </footer>
+        </div>
+      </aside>
+    );
+
+    // Outside flow the cards themselves arrive, and "N more in the margin"
+    // counts the rest; the post only holds while the page is quiet.
+    const posting =
+      state.enabled && state.held > 0 && (state.mode === "flow" || quiet);
+    const desk = () =>
+      posting || state.slip ? (
+        <div
+          class={["flow-desk", `flow-desk--${state.room}`]}
+          style={
+            state.room === "rail" ? { width: `${ROOM_WIDTH}px` } : undefined
+          }
+        >
+          <div class="flow-desk__top">{posting && post()}</div>
+          <div class="flow-desk__bottom">{state.slip && slip(state.slip)}</div>
+        </div>
+      ) : null;
+
+    if (quiet)
+      return (
+        <div
+          ref={root}
+          class="flow-surface"
+          style={{ "--flow-dock-bottom": `${state.dockBottom}px` }}
+          data-mode={state.mode}
+          data-quiet
+          aria-label="Held margin notes"
+        >
+          {desk()}
+        </div>
+      );
+
     const room = state.placed.filter((p) => p.side === "room");
     const archive = state.placed.filter((p) => p.side === "archive");
     const waiting = state.held > 0 && state.enabled && state.mode !== "flow";
@@ -776,6 +1095,7 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
       <div
         ref={root}
         class="flow-surface"
+        style={{ "--flow-dock-bottom": `${state.dockBottom}px` }}
         data-mode={state.mode}
         aria-label="Margin notes and connections"
       >
@@ -861,6 +1181,8 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
             </div>
           )
         )}
+
+        {desk()}
       </div>
     );
   },

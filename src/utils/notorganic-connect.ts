@@ -24,9 +24,18 @@ const encode = (bytes: Uint8Array) =>
     .replace(/=+$/, "");
 
 function safeReturnTo(value: string | undefined): string {
-  return value && value.startsWith("/") && !value.startsWith("//")
-    ? value
-    : "/";
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\") ||
+    [...value].some((character) => {
+      const code = character.charCodeAt(0);
+      return code < 32 || code === 127;
+    })
+  )
+    return "/";
+  return value;
 }
 
 export async function beginNotOrganicSignIn(
@@ -68,6 +77,11 @@ export function readNotOrganicCallback(
   url: URL,
 ): { code: string; verifier: string } {
   if (
+    !attempt ||
+    typeof attempt.state !== "string" ||
+    !attempt.state ||
+    typeof attempt.verifier !== "string" ||
+    !/^[A-Za-z0-9._~-]{43,128}$/.test(attempt.verifier) ||
     !Number.isFinite(attempt.expiresAt) ||
     Date.now() >= attempt.expiresAt ||
     url.origin !== attempt.origin ||
@@ -97,21 +111,71 @@ export async function startNotOrganicSignIn(returnTo?: string): Promise<void> {
 }
 
 /** Finish the redirect on the callback page; returns where to go next. */
-export async function completeNotOrganicSignIn(url: URL): Promise<string> {
-  const saved = sessionStorage.getItem(NOTORGANIC_SIGN_IN_ATTEMPT);
-  sessionStorage.removeItem(NOTORGANIC_SIGN_IN_ATTEMPT);
+export async function completeNotOrganicSignIn(
+  url: URL,
+  dependencies: {
+    storage?: Pick<Storage, "getItem" | "removeItem">;
+    client?: {
+      $fetch: (
+        path: string,
+        options: {
+          method: "POST";
+          body: { code: string; verifier: string; origin: string };
+        },
+      ) => Promise<{ data?: unknown; error?: unknown }>;
+      getSession: (options: {
+        query: { disableCookieCache: true };
+      }) => Promise<{ data?: unknown; error?: unknown }>;
+    };
+  } = {},
+): Promise<string> {
+  const storage = dependencies.storage ?? sessionStorage;
+  const saved = storage.getItem(NOTORGANIC_SIGN_IN_ATTEMPT);
+  storage.removeItem(NOTORGANIC_SIGN_IN_ATTEMPT);
   if (!saved) throw new Error("Start signing in again from Twyne.");
-  const attempt = JSON.parse(saved) as NotOrganicSignInAttempt;
+  let attempt: NotOrganicSignInAttempt;
+  try {
+    attempt = JSON.parse(saved) as NotOrganicSignInAttempt;
+  } catch {
+    throw new Error("Start signing in again from Twyne.");
+  }
   const args = readNotOrganicCallback(attempt, url);
-  const { authClient } = await import("./auth-client");
-  const result = await authClient.$fetch("/sign-in/notorganic", {
+  const client =
+    dependencies.client ?? (await import("./auth-client")).authClient;
+  const result = await client.$fetch("/sign-in/notorganic", {
     method: "POST",
     body: { ...args, origin: attempt.origin },
   });
-  if ((result as { error?: unknown })?.error) {
+  if (result?.error) {
     throw new Error("Not Organic could not verify this sign-in.");
   }
   // The crossDomain client stores the new session cookie; refresh the atom.
-  await authClient.getSession({ query: { disableCookieCache: true } });
+  const refreshed = await client.getSession({
+    query: { disableCookieCache: true },
+  });
+  const issuedUser = record(record(result?.data)?.user);
+  const sessionData = record(refreshed?.data);
+  const session = record(sessionData?.session);
+  const user = record(sessionData?.user);
+  if (
+    refreshed?.error ||
+    typeof issuedUser?.id !== "string" ||
+    !issuedUser.id ||
+    !session ||
+    typeof session.id !== "string" ||
+    !session.id ||
+    session.userId !== issuedUser.id ||
+    user?.id !== issuedUser.id
+  ) {
+    throw new Error(
+      "Twyne could not confirm your session. Please sign in again.",
+    );
+  }
   return safeReturnTo(attempt.returnTo);
+}
+
+function record(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
 }

@@ -2,28 +2,31 @@
 
 Twyne is a writer-first editing room. It opens with an anti-tabula-rasa interview so a draft starts from context instead of a blank page, then keeps that brief in front of every editor, judge, and margin note for the rest of the piece.
 
-## Features
+[Writer’s manual](https://www.twyne.love/docs/) · [Documentation index](docs/README.md) · [Run locally](#development) · [Deployment](docs/DEPLOYMENT.md)
 
-- Rich-text drafting with Tiptap, Qwik City, Vite, and Tailwind CSS.
-- Anti-tabula-rasa project interview for title, format, audience, goal, tone, constraints, and success signal — with **typed follow-ups** (multiple choice, fill-in-the-blanks, scales) generated from what you've already said.
-- A room of five editorial **personas** that read from your brief and draft and leave grounded feedback — and that **read along as you write**, not only when you ask.
-- **Rubric** scoring gated on relevance: a Target Fit judge decides whether the draft is about the right thing, and caps the shape metrics when it isn't.
-- **Voice**: hear each editor in their own voice, record spoken margin notes, and answer the interview out loud.
-- **Citation detection** for URLs, DOIs, ISBNs, author-year citations, and footnote markers.
-- **Comments** panel for review notes and threaded replies.
-- **Apparatus** research panel (pluggable providers) for searching and pulling sources while writing.
-- **Convex** backend for sync, with **Better Auth** (passkeys) sign-in and
-  writer-owned **ATProto / Standard.site** publishing, including canonical
-  Twyne readers and publication/document verification links.
-- BYOK AI: bring your own key in Settings, stored in your browser and never sent to a server.
-- Installable PWA with brand favicons and per-article OpenGraph share cards.
+## The writing desk
+
+| Work                       | What Twyne provides                                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Define the piece           | A dossier for title, format, audience, purpose, tone, constraints and success.                       |
+| Keep context across pieces | House defaults, collections and a charter of reusable standards.                                     |
+| Draft and revise           | Rich text, native Typst source, paginated proof and recoverable source drafts.                       |
+| Read with other eyes       | Five editorial personas, rubric scoring and threaded margin conversations.                           |
+| Support the prose          | Source discovery, bibliography, citations and spoken notes.                                          |
+| Keep or publish the work   | Local storage, signed-in sync, portable exports and writer-owned ATProto / Standard.site publishing. |
+
+Built with Qwik City, Tiptap, Vite, Tailwind CSS and Convex. Account sign-in,
+hosted credits and plans use **Not Organic**. Writing locally does not require
+an account. See [the House and fluid desk guide](docs/flow-and-context.md) for
+context inheritance, margin behavior and sync boundaries.
 
 ## The editorial room
 
-Four panels sit beside the manuscript: **Cast** (the five editors), **Rubric**
-(the galley proof), **Marginalia** (your notes), and **Apparatus** (sources).
-Each tab carries an unread count, so work that arrives while you're looking
-elsewhere isn't silent.
+The manuscript’s margins hold comments, editor notes, sources and connections.
+Click a passage marker to unfold its conversation beside the draft. The **Cast**,
+**Rubric**, **Marginalia** and **Apparatus** panels remain available for browsing;
+their tabs show unread work. Automatic focus quiets the surrounding room during
+sustained writing, with a manual override in the review controls.
 
 ### The room reads as you write
 
@@ -43,11 +46,15 @@ knows the trajectory rather than re-reading a cold snapshot.
 
 ### The rubric grades against _this_ piece
 
-The static feature scorer measures shape — sentence-length variance,
+The default signed-in check first attempts one typed judgement over the enabled
+criteria, including custom criteria. **Ask the editors** runs the separate room
+reading; Twyne also tries that path when the quick check is unavailable.
+
+In the room reading, the static feature scorer measures shape — sentence-length variance,
 type-token ratio, paragraph balance. It never reads the brief, so fluent prose
 about the wrong subject used to score 10/10 on three categories.
 
-A **Target Fit** judge now scores relevance independently of craft, and caps
+That path’s **Target Fit** judge scores relevance independently of craft, and caps
 every shape-derived criterion by it. Lowering target fit can only ever lower
 the grade, never raise it.
 
@@ -76,8 +83,10 @@ before it saves. Audio stays local and does not sync.
 
 ## BYOK providers
 
-Keys live in your browser (IndexedDB) and are never sent to a Twyne server.
-Settings → AI lets you set a default and override any individual feature.
+Keys are saved in your browser’s IndexedDB. Remote BYOK calls pass through
+Twyne’s server relay, which forwards the key and request to your selected
+provider. Local endpoints stay direct. Settings → AI lets you set a default and
+override individual features.
 
 - **Language**: OpenAI, Anthropic, Google, DeepSeek, OpenRouter, Ollama, Z.ai /
   GLM, MiniMax, and any OpenAI- or Anthropic-compatible endpoint. The desktop
@@ -127,6 +136,26 @@ in `devenv.local.nix` under `env` to change the workspace ports; the readiness
 checks use those same values. Run `devenv down` to stop the workspace. Use
 `devenv tasks list` to discover the namespaced check, test, build, codegen, and
 Storybook build tasks.
+
+Playwright uses `TWYNE_DEV_PORT` for both its server and browser URLs, so
+`bun run test:e2e` follows the same port inside the Devenv shell.
+
+For authenticated local development, the **development Convex deployment**
+must trust the browser origin too. Set its `TRUSTED_ORIGINS` to the exact
+origin you use, such as `http://127.0.0.1:5180`; equivalent loopback hosts
+on that scheme and port are then accepted. Putting this value only in the
+frontend's `.env.local` does not change the backend's CORS policy.
+Not Organic also needs an explicitly approved local client in its
+`PUBLIC_CLIENT_PRODUCT_CATALOG`, mapped to `twyne`. Each scheme, host and
+port is a separate client approval. Production supports both
+`https://twyne.love` and `https://www.twyne.love`.
+
+When diagnosing sign-in, inspect the failing request URL. The callback
+redeems its code at the configured Convex site's
+`/api/auth/sign-in/notorganic`, then confirms `/api/auth/get-session`
+before returning to the manuscript. A blocked PostHog request is an
+analytics failure; `moz-extension://` errors come from a browser extension.
+Neither by itself identifies a failed account exchange.
 
 ## Build
 

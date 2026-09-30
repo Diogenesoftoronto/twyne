@@ -202,10 +202,12 @@ export default component$(() => {
     track(() => auth.value);
     if (!hasAuthenticatedConvexIdentity(auth.value)) return;
     cleanup(
-      startHouseSync(() =>
-        hasAuthenticatedConvexIdentity(auth.value)
-          ? (clientSig.value ?? null)
-          : null,
+      startHouseSync(
+        () =>
+          hasAuthenticatedConvexIdentity(auth.value)
+            ? (clientSig.value ?? null)
+            : null,
+        auth.value.user!.id,
       ),
     );
   });

@@ -13,6 +13,10 @@ test("native source commits atomically, survives no-op visual saves, and protect
   const result = await page.evaluate(async () => {
     const path = "/src/utils/idb.ts";
     const idb = await import(/* @vite-ignore */ path);
+    const origins: string[] = [];
+    window.addEventListener(idb.FOLIO_CONTENT_SAVED, (event) => {
+      origins.push((event as CustomEvent).detail.origin);
+    });
     const source = "#let custom = 42\n\nHello";
     await idb.saveFolioTypstToIdb("native", source, undefined, null);
     const first = await idb.loadFolioContentSnapshotFromIdb("native");
@@ -55,6 +59,15 @@ test("native source commits atomically, survives no-op visual saves, and protect
       format: "typst",
       updatedAt: 123,
     });
+    // The Lix collaboration mirror uses the source-save path rather than
+    // a Convex snapshot, but must still identify its save as remote.
+    await idb.saveFolioTypstToIdb(
+      "collaborator",
+      "A shared revision",
+      undefined,
+      undefined,
+      "remote",
+    );
     const latest = await idb.loadFolioContentSnapshotFromIdb("native");
     const draftsPath = "/src/utils/typst/source-drafts.ts";
     const drafts = await import(/* @vite-ignore */ draftsPath);
@@ -69,6 +82,7 @@ test("native source commits atomically, survives no-op visual saves, and protect
       await idb.loadFolioContentSnapshotFromIdb("native");
     await drafts.clearTypstSourceDraft("native");
     return {
+      origins,
       migrated,
       first,
       noOp,
@@ -80,6 +94,13 @@ test("native source commits atomically, survives no-op visual saves, and protect
       cleared: await drafts.loadTypstSourceDraft("native"),
     };
   });
+  expect(result.origins).toEqual([
+    "local",
+    "local",
+    "local",
+    "remote",
+    "remote",
+  ]);
   expect(result.migrated).toMatchObject({
     format: "typst",
     html: "<p>Legacy text</p>",

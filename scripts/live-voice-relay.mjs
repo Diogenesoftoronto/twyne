@@ -2,6 +2,36 @@ import { WebSocket, WebSocketServer } from "ws";
 
 const FRAME = 131_072;
 const BUFFER = 1_048_576;
+const PRODUCTION_ORIGINS = new Set([
+  "https://twyne.love",
+  "https://www.twyne.love",
+]);
+
+export function liveOriginAllowed(value, configured, host) {
+  try {
+    const origin = new URL(value);
+    // Browsers serialize Origin as scheme + host + port, without URL extras.
+    if (
+      !["http:", "https:"].includes(origin.protocol) ||
+      origin.origin !== value
+    )
+      return false;
+    if (configured) {
+      const expected = new URL(configured).origin;
+      return (
+        origin.origin === expected ||
+        (PRODUCTION_ORIGINS.has(expected) &&
+          PRODUCTION_ORIGINS.has(origin.origin))
+      );
+    }
+    return (
+      ["localhost", "127.0.0.1"].includes(origin.hostname) &&
+      origin.host === host
+    );
+  } catch {
+    return false;
+  }
+}
 
 export function liveHandshake(value, issuer) {
   const url = new URL("/v1/live/sessions", issuer);
@@ -53,17 +83,11 @@ export function installLiveVoiceRelay(server, options = {}) {
     "https://api.notorganic.info";
   const upgrade = (req, socket, head) => {
     if (req.url !== "/api/live") return;
-    let allowed = false;
-    try {
-      const origin = new URL(req.headers.origin);
-      const configured = options.origin ?? process.env.SITE_URL;
-      allowed = configured
-        ? origin.origin === new URL(configured).origin
-        : ["localhost", "127.0.0.1"].includes(origin.hostname) &&
-          origin.host === req.headers.host;
-    } catch {
-      /* Missing or invalid origins fail closed. */
-    }
+    const allowed = liveOriginAllowed(
+      req.headers.origin,
+      options.origin ?? process.env.SITE_URL,
+      req.headers.host,
+    );
     if (!allowed) {
       socket.end("HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n");
       return;

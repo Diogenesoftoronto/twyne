@@ -24,7 +24,8 @@ export type FlowItemKind =
   | "shelf"
   | "echo"
   | "charter"
-  | "amendment";
+  | "amendment"
+  | "way-in";
 
 /** Which margin an item belongs to: the room's voices, or the writer's own. */
 export type FlowSide = "room" | "archive";
@@ -36,6 +37,7 @@ export const SIDE_FOR: Record<FlowItemKind, FlowSide> = {
   work: "room",
   charter: "room",
   amendment: "room",
+  "way-in": "room",
   shelf: "archive",
   echo: "archive",
 };
@@ -49,6 +51,7 @@ export const KIND_LABELS: Record<FlowItemKind, string> = {
   echo: "You wrote",
   charter: "The charter",
   amendment: "Amendment",
+  "way-in": "A way in",
 };
 
 /** How much a kind matters before the writer's own habits weigh in. */
@@ -57,6 +60,8 @@ const BASE_PRIORITY: Record<FlowItemKind, number> = {
   "persona-note": 0.75,
   charter: 0.7,
   amendment: 0.65,
+  // Only offered while stuck, when it should lead.
+  "way-in": 0.95,
   source: 0.55,
   echo: 0.55,
   work: 0.5,
@@ -175,6 +180,20 @@ export function decideSurface(
     return true;
   });
   const ranked = live
+    .filter((item) => {
+      if (item.kind === "way-in" && context.mode !== "stuck") {
+        reasons[item.id] = "held: a way in is only offered while stuck";
+        return false;
+      }
+      if (
+        item.kind === "way-in" &&
+        anchorOverlap(item, context.cursorText) <= 0.3
+      ) {
+        reasons[item.id] = "held: a way in belongs to another passage";
+        return false;
+      }
+      return true;
+    })
     .map((item) => ({ item, score: scoreItem(item, context) }))
     .sort((a, b) => b.score - a.score);
 
@@ -198,6 +217,7 @@ export function decideSurface(
       break;
     case "stuck": {
       const best =
+        ranked.find((r) => r.item.kind === "way-in") ??
         ranked.find((r) => anchorOverlap(r.item, context.cursorText) > 0.3) ??
         ranked[0];
       const linked = new Set(best?.item.links ?? []);

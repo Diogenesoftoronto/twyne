@@ -271,13 +271,12 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
       <div ref={root} class="in-flow-rails" aria-live="polite">
         {state.shelf && (
           <aside class="in-flow-shelf" aria-label="Your tools">
-            <div class="in-flow-shelf__inner">
-              <p class="in-flow-label">Your tools</p>
-              {state.saved.length === 0 ? (
-                <p class="in-flow-quiet">
-                  Tools you keep from the margin appear here.
-                </p>
-              ) : (
+            {/* The shelf appears once there is something on it; an empty
+                placeholder would only push the writer's echoes down the
+                margin. A tool card's "Keep this tool" introduces it. */}
+            {state.saved.length > 0 && (
+              <div class="in-flow-shelf__inner">
+                <p class="in-flow-label">Your tools</p>
                 <ul class="in-flow-shelf__list">
                   {state.saved.map((saved) => (
                     <li key={saved.id}>
@@ -301,8 +300,8 @@ export const MarginRails = component$<{ zen: boolean; readOnly?: boolean }>(
                     </li>
                   ))}
                 </ul>
-              )}
-            </div>
+              </div>
+            )}
             {state.ticks.map((top) => (
               <span
                 key={`tick-${top}`}

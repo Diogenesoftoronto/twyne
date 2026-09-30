@@ -39,9 +39,13 @@ async function serveRootStaticFile(req, res, next) {
   const launchMedia = /^assets\/launch\/the-room-(en|fr)\.(mp4|jpg|vtt)$/.test(
     filename,
   );
+  const manualMedia =
+    /^assets\/manual\/(roll-call|edited|newsreel|the-strike|sting|house-context|source-workspace)\.(mp4|jpg|vtt)$/.test(
+      filename,
+    );
   if (
     !filename ||
-    (!launchMedia && filename.includes("/")) ||
+    (!launchMedia && !manualMedia && filename.includes("/")) ||
     filename.includes("\\")
   ) {
     return next();
@@ -62,8 +66,8 @@ async function serveRootStaticFile(req, res, next) {
         : "public, max-age=3600",
     );
     // The router's static middleware sends entire files. Native video seeking
-    // needs byte ranges, so serve the two launch exports here.
-    if (launchMedia && extname(filename) === ".mp4") {
+    // needs byte ranges for the launch film and contextual manual videos.
+    if ((launchMedia || manualMedia) && extname(filename) === ".mp4") {
       res.setHeader("Accept-Ranges", "bytes");
       if (req.method === "GET" && req.headers.range) {
         const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range);

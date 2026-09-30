@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "capturedAt": "2026-09-30T06:56:14.882Z",
+  "kind": "Actual application screenshots with browser-only sample fixtures",
+  "viewport": {
+    "width": 1100,
+    "height": 900
+  },
+  "format": "JPEG, quality 86 (account Settings crop 88), maximum width 1100",
+  "replay": "artifacts/qa-recordings/2026-09-30/manual-visual/work/replay.mjs",
+  "recording": "artifacts/qa-recordings/2026-09-30/manual-visual/work/walkthrough.webm",
+  "recordingScope": "Current local Twyne application; reused Not Organic Settings still is not in the new video.",
+  "fixtures": [
+    "Three sample folios stored in an isolated browser IndexedDB",
+    "Synthetic Morgan Vale identity and read-only profile; no token and cloud sync remains off",
+    "Idle voice access reports zero credit; microphone not requested",
+    "Illustrative provider catalog and model IDs; API keys are empty"
+  ],
+  "boundaries": [
+    "No real sign-in or production authentication",
+    "No funded AI, narration, Live session, or microphone capture",
+    "No publication, collaborator invitation, profile mutation, or restore submitted",
+    "Private email never displayed",
+    "Developer overlays omitted; screenshots are crops of rendered application components"
+  ],
+  "captures": [
+    {
+      "file": "editor-overview.jpg",
+      "width": 1100,
+      "height": 900,
+      "route": "/editor/"
+    },
+    {
+      "file": "account-menu.jpg",
+      "width": 308,
+      "height": 348,
+      "route": "/editor/",
+      "staging": "Synthetic profile; no authenticated exchange or cloud sync."
+    },
+    {
+      "file": "voice-idle.jpg",
+      "width": 430,
+      "height": 544,
+      "route": "/editor/",
+      "staging": "Idle desk; read-only zero-credit access fixture; no microphone or session."
+    },
+    {
+      "file": "narration-entry.jpg",
+      "width": 1098,
+      "height": 96,
+      "route": "/editor/",
+      "staging": "Idle narration entry; read was not invoked; no speech provider or audio request."
+    },
+    {
+      "file": "library.jpg",
+      "width": 1100,
+      "height": 470,
+      "route": "/library/"
+    },
+    {
+      "file": "local-save.jpg",
+      "width": 1098,
+      "height": 35,
+      "route": "/editor/"
+    },
+    {
+      "file": "source-draft.jpg",
+      "width": 1098,
+      "height": 747,
+      "route": "/editor/"
+    },
+    {
+      "file": "source-find.jpg",
+      "width": 1098,
+      "height": 747,
+      "route": "/editor/"
+    },
+    {
+      "file": "typeset-proof.jpg",
+      "width": 1098,
+      "height": 747,
+      "route": "/editor/"
+    },
+    {
+      "file": "file-export.jpg",
+      "width": 244,
+      "height": 514,
+      "route": "/editor/"
+    },
+    {
+      "file": "publication-review.jpg",
+      "width": 480,
+      "height": 810,
+      "route": "/editor/",
+      "staging": "Publication setup only; Publish now was not invoked."
+    },
+    {
+      "file": "revision-restore.jpg",
+      "width": 463,
+      "height": 737,
+      "route": "/editor/",
+      "staging": "Checkpoint comparison and restore confirmation only; no restore submitted."
+    },
+    {
+      "file": "byok-switch.jpg",
+      "width": 848,
+      "height": 87,
+      "route": "/settings/"
+    },
+    {
+      "file": "provider-form.jpg",
+      "width": 848,
+      "height": 662,
+      "route": "/settings/",
+      "staging": "Empty API key field; no provider added or tested."
+    },
+    {
+      "file": "default-model.jpg",
+      "width": 848,
+      "height": 404,
+      "route": "/settings/",
+      "staging": "Illustrative saved model names; API key empty; no provider request."
+    },
+    {
+      "file": "feature-models.jpg",
+      "width": 848,
+      "height": 680,
+      "route": "/settings/",
+      "staging": "Illustrative saved provider and model names; API key empty; no request executed."
+    },
+    {
+      "file": "public-profile.jpg",
+      "width": 806,
+      "height": 510,
+      "route": "/settings/",
+      "staging": "Read-only synthetic profile data; profile changes not submitted."
+    },
+    {
+      "file": "public-statistics.jpg",
+      "width": 806,
+      "height": 329,
+      "route": "/settings/",
+      "staging": "Read-only synthetic profile; all optional sharing controls off."
+    },
+    {
+      "file": "privacy-ledger.jpg",
+      "width": 1100,
+      "height": 900,
+      "route": "/privacy-ledger/"
+    },
+    {
+      "file": "backup-import.jpg",
+      "width": 448,
+      "height": 262,
+      "route": "/editor/"
+    },
+    {
+      "file": "account-settings-private.jpg",
+      "width": 602,
+      "height": 476,
+      "route": "Not Organic account Settings",
+      "source": "artifacts/qa-recordings/2026-09-30/portal-account-privacy/default-settings-private.png",
+      "staging": "Existing synthetic account Settings capture; Private email disclosure remains closed; no live authentication."
+    }
+  ]
+}

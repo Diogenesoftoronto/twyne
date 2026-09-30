@@ -8,7 +8,12 @@ import {
   type TypstSessionDependencies,
 } from "./session";
 import { htmlToTypst } from "./document";
-import { FOLIO_CONTENT_SAVED, type FolioContentSnapshot } from "../idb";
+import {
+  FOLIO_CONTENT_SAVED,
+  type FolioContentSnapshot,
+  type FolioContentSavedDetail,
+} from "../idb";
+import type { TypstSourceDraft } from "./source-drafts";
 import type { ExportPayload } from "../exchange";
 
 const previous = new Map<string, PropertyDescriptor | undefined>();
@@ -30,13 +35,21 @@ afterAll(() => {
   }
 });
 
-async function setup(overrides: Partial<TypstSessionDependencies> = {}) {
-  let html = "<p>Initial</p>";
+async function setup(
+  overrides: Partial<TypstSessionDependencies> = {},
+  initialSnapshot?: FolioContentSnapshot,
+) {
+  let html = initialSnapshot?.html ?? "<p>Initial</p>";
   let editable = true;
   const listeners = new Set<() => void>();
   const states: TypstSessionState[] = [];
   const saved: string[] = [];
-  let snap: FolioContentSnapshot = {
+  const drafts: TypstSourceDraft[] = [];
+  const saveAttempts: Array<{
+    source: string;
+    expectedSource: string | null | undefined;
+  }> = [];
+  let snap: FolioContentSnapshot = initialSnapshot ?? {
     folioId: "folio",
     html,
     typstSource: htmlToTypst(html),
@@ -74,13 +87,16 @@ async function setup(overrides: Partial<TypstSessionDependencies> = {}) {
     {
       loadSnapshot: async () => snap,
       saveSource: async (_id, source, body, expected) => {
+        saveAttempts.push({ source, expectedSource: expected });
         if ((snap.typstSource ?? null) !== expected)
           throw new Error("The manuscript changed");
         saved.push(source);
         snap = { ...snap, typstSource: source, html: body! };
       },
       loadDraft: async () => null,
-      saveDraft: async () => {},
+      saveDraft: async (draft) => {
+        drafts.push({ ...draft });
+      },
       clearDraft: async () => {},
       saveRevision: async () => null,
       compile: async () => ({
@@ -95,6 +111,8 @@ async function setup(overrides: Partial<TypstSessionDependencies> = {}) {
     session,
     states,
     saved,
+    drafts,
+    saveAttempts,
     get html() {
       return html;
     },
@@ -143,10 +161,11 @@ describe("Typst source session", () => {
     const t = await setup();
     try {
       t.edit("<p>First edit</p>");
-      const first = {
+      const first: FolioContentSavedDetail = {
         ...t.snapshot,
         html: t.html,
         typstSource: htmlToTypst(t.html),
+        origin: "local",
       };
       t.edit("<p>Second edit</p>");
       window.dispatchEvent(
@@ -158,6 +177,161 @@ describe("Typst source session", () => {
       t.session.destroy();
     }
   });
+  for (const restoredVersion of ["historical", "current"] as const) {
+    for (const eventOrder of ["saved first", "remote change first"] as const) {
+      test(`remote restoration of ${restoredVersion} visual HTML preserves a dirty source base (${eventOrder})`, async () => {
+        const t = await setup();
+        try {
+          const initial = { ...t.snapshot };
+          t.edit("<p>Saved visual version</p>");
+          const local: FolioContentSavedDetail = {
+            ...initial,
+            html: t.html,
+            typstSource: t.states.at(-1)!.source,
+            updatedAt: 2,
+            origin: "local",
+          };
+          t.setSnapshot(local);
+          window.dispatchEvent(
+            new CustomEvent(FOLIO_CONTENT_SAVED, { detail: local }),
+          );
+          t.edit("<p>Latest unsaved visual version</p>");
+          const visualHtml = t.html;
+          const remote: FolioContentSavedDetail = {
+            ...initial,
+            html: restoredVersion === "historical" ? initial.html : visualHtml,
+            typstSource:
+              restoredVersion === "historical"
+                ? initial.typstSource
+                : t.states.at(-1)!.source,
+            updatedAt: 3,
+            origin: "remote",
+          };
+          const source = "= My unapplied source";
+          t.session.changeSource(source);
+          expect(t.drafts.at(-1)?.baseSource).toBe(local.typstSource);
+          expect(remote.typstSource).not.toBe(local.typstSource);
+          t.setSnapshot(remote);
+          const saved = new CustomEvent(FOLIO_CONTENT_SAVED, {
+            detail: remote,
+          });
+          const changed = new CustomEvent("twyne:typst-remote-change", {
+            detail: {
+              folioId: remote.folioId,
+              source: remote.typstSource,
+              html: remote.html,
+            },
+          });
+          for (const event of eventOrder === "saved first"
+            ? [saved, changed]
+            : [changed, saved])
+            window.dispatchEvent(event);
+
+          await t.session.apply();
+          expect(t.saveAttempts).toHaveLength(0);
+          expect(t.saved).toHaveLength(0);
+          expect(t.snapshot).toEqual(remote);
+          expect(t.html).toBe(visualHtml);
+          expect(t.editable).toBe(false);
+          expect(t.states.at(-1)).toMatchObject({
+            source,
+            dirty: true,
+            conflict: true,
+            applying: false,
+            error:
+              "Resolve the newer manuscript conflict before applying this draft.",
+          });
+          // Leaving the folio must persist the original comparison base too.
+          t.session.destroy();
+          const recovery = t.drafts.at(-1)!;
+          const reopened = await setup(
+            { loadDraft: async () => recovery },
+            remote,
+          );
+          try {
+            await reopened.session.apply();
+            expect(reopened.saveAttempts).toHaveLength(0);
+            expect(reopened.saved).toHaveLength(0);
+            expect(reopened.snapshot).toEqual(remote);
+            expect(reopened.html).toBe(remote.html);
+            expect(reopened.states.at(-1)).toMatchObject({
+              source,
+              dirty: true,
+              conflict: true,
+              error:
+                "Resolve the newer manuscript conflict before applying this draft.",
+            });
+          } finally {
+            reopened.session.destroy();
+          }
+          expect(recovery).toMatchObject({
+            folioId: "folio",
+            source,
+            baseSource: local.typstSource,
+          });
+          expect(
+            t.drafts.every((draft) => draft.baseSource === local.typstSource),
+          ).toBe(true);
+        } finally {
+          t.session.destroy();
+        }
+      });
+    }
+  }
+  for (const savedVersion of ["historical", "current"] as const) {
+    test(`a queued local save of ${savedVersion} visual HTML advances the dirty source base without replacing it`, async () => {
+      const t = await setup();
+      try {
+        t.edit("<p>Queued visual version</p>");
+        const queued: FolioContentSavedDetail = {
+          ...t.snapshot,
+          html: t.html,
+          typstSource: t.states.at(-1)!.source,
+          updatedAt: 2,
+          origin: "local",
+        };
+        if (savedVersion === "historical") t.edit("<p>Later visual typing</p>");
+        const visualHtml = t.html;
+        const source = "= My local source edit";
+        t.session.changeSource(source);
+        expect(t.drafts.at(-1)?.baseSource).toBe(t.snapshot.typstSource);
+        expect(t.snapshot.typstSource).not.toBe(queued.typstSource);
+
+        t.setSnapshot(queued);
+        window.dispatchEvent(
+          new CustomEvent(FOLIO_CONTENT_SAVED, { detail: queued }),
+        );
+        expect(t.html).toBe(visualHtml);
+        expect(t.states.at(-1)).toMatchObject({
+          source,
+          dirty: true,
+          conflict: false,
+          error: "",
+        });
+        expect(t.drafts.at(-1)).toMatchObject({
+          source,
+          baseSource: queued.typstSource,
+        });
+
+        await t.session.apply();
+        expect(t.saveAttempts).toEqual([
+          { source, expectedSource: queued.typstSource },
+        ]);
+        expect(t.saved).toEqual([source]);
+        expect(t.html).toBe("<h1>My local source edit</h1>");
+        expect(t.snapshot.typstSource).toBe(source);
+        expect(t.states.at(-1)).toMatchObject({
+          source,
+          dirty: false,
+          conflict: false,
+          error: "",
+        });
+        expect(t.editable).toBe(true);
+      } finally {
+        t.session.destroy();
+      }
+    });
+  }
   test("remote source conflicts preserve an unapplied draft", async () => {
     const t = await setup();
     try {
@@ -219,7 +393,7 @@ describe("Typst source session", () => {
       };
       window.dispatchEvent(
         new CustomEvent(FOLIO_CONTENT_SAVED, {
-          detail: { ...remote, typstSource: remote.source },
+          detail: { ...remote, typstSource: remote.source, origin: "remote" },
         }),
       );
       window.dispatchEvent(

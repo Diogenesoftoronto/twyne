@@ -11,6 +11,7 @@ import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint } from "better-auth/api";
 import { setSessionCookie } from "better-auth/cookies";
 import { z } from "zod";
+import { redeemProviderLink } from "./providerLink";
 
 export const NOTORGANIC_PROVIDER_ID = "notorganic";
 export const NOTORGANIC_SIGN_IN_PATH = "/auth/notorganic/";
@@ -19,6 +20,69 @@ export interface VerifiedNotOrganicAccount {
   did: string;
   sessionVersion: number;
   handle?: string;
+  displayName?: string;
+  /** Undefined leaves the stored avatar alone; null removes it. */
+  avatarUrl?: string | null;
+}
+
+/** Preserve profile fields from the same DPoP-authenticated account proof. */
+export async function redeemNotOrganicSignIn(
+  input: { code: string; verifier: string },
+  origin: string,
+  issuer: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<VerifiedNotOrganicAccount> {
+  let account: Record<string, unknown> | null = null;
+  const verified = await redeemProviderLink(
+    input,
+    origin,
+    issuer,
+    (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const response = await fetchImpl(input, init);
+      const url = input instanceof Request ? input.url : String(input);
+      if (url === `${issuer}/v1/account` && response.ok) {
+        const body: unknown = await response.clone().json();
+        if (body !== null && typeof body === "object" && "account" in body) {
+          const value = body.account;
+          if (
+            value !== null &&
+            typeof value === "object" &&
+            !Array.isArray(value)
+          ) {
+            account = value as Record<string, unknown>;
+          }
+        }
+      }
+      return response;
+    }) as typeof fetch,
+    NOTORGANIC_SIGN_IN_PATH,
+  );
+  // redeemProviderLink already checked the account DID, token product and
+  // session version. Optional profile data never establishes identity.
+  const profile = account as Record<string, unknown> | null;
+  const displayName =
+    typeof profile?.displayName === "string"
+      ? profile.displayName.trim().slice(0, 256)
+      : undefined;
+  const avatarUrl = safeAvatarUrl(profile?.avatarUrl);
+  return {
+    ...verified,
+    ...(displayName ? { displayName } : {}),
+    ...(avatarUrl !== undefined ? { avatarUrl } : {}),
+  };
+}
+
+function safeAvatarUrl(value: unknown): string | null | undefined {
+  if (value === null || value === "") return null;
+  if (typeof value !== "string" || value.length > 2048) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && !url.username && !url.password
+      ? url.href
+      : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
@@ -58,10 +122,27 @@ export function notOrganicSignIn(options: {
           body: z.object({
             code: z.string().min(1).max(2048),
             verifier: z.string().regex(/^[A-Za-z0-9._~-]{43,128}$/),
-            origin: z.string().url().max(256),
+            origin: z
+              .string()
+              .url()
+              .max(256)
+              .refine((value) => {
+                try {
+                  return new URL(value).origin === value;
+                } catch {
+                  return false;
+                }
+              }, "The sign-in origin must be an exact origin."),
           }),
         },
         async (ctx) => {
+          const requestOrigin =
+            ctx.request?.headers.get("origin") ?? ctx.headers?.get("origin");
+          if (requestOrigin && requestOrigin !== ctx.body.origin) {
+            throw new APIError("FORBIDDEN", {
+              message: "This sign-in belongs to a different origin.",
+            });
+          }
           let verified: VerifiedNotOrganicAccount;
           try {
             verified = await options.redeem({
@@ -77,17 +158,24 @@ export function notOrganicSignIn(options: {
             });
           }
           const adapter = ctx.context.internalAdapter;
-          const name = verified.handle ?? verified.did;
+          const name =
+            verified.displayName?.trim() ||
+            verified.handle?.trim() ||
+            verified.did;
+          const image = safeAvatarUrl(verified.avatarUrl);
           const account = await adapter.findAccountByProviderId(
             verified.did,
             NOTORGANIC_PROVIDER_ID,
           );
-          let user = account ? await adapter.findUserById(account.userId) : null;
+          let user = account
+            ? await adapter.findUserById(account.userId)
+            : null;
           if (!user) {
             user = await adapter.createUser({
               email: await placeholderEmailForDid(verified.did),
               name,
               emailVerified: false,
+              ...(image !== undefined ? { image } : {}),
             });
             if (account) {
               await adapter.updateAccount(account.id, { userId: user.id });
@@ -98,14 +186,30 @@ export function notOrganicSignIn(options: {
                 userId: user.id,
               });
             }
-          } else if (verified.handle && user.name !== verified.handle) {
-            user = await adapter.updateUser(user.id, { name: verified.handle });
+          } else {
+            const update: { name?: string; image?: string | null } = {};
+            if (
+              (verified.displayName || verified.handle) &&
+              user.name !== name
+            ) {
+              update.name = name;
+            }
+            if (image !== undefined && user.image !== image)
+              update.image = image;
+            if (Object.keys(update).length) {
+              user = await adapter.updateUser(user.id, update);
+            }
           }
           await options.onSignedIn({ ...verified, userId: user.id });
           const session = await adapter.createSession(user.id);
           await setSessionCookie(ctx, { session, user });
           return ctx.json({
-            user: { id: user.id, name: user.name, did: verified.did },
+            user: {
+              id: user.id,
+              name: user.name,
+              image: user.image,
+              did: verified.did,
+            },
           });
         },
       ),

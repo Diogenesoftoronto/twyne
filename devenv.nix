@@ -107,13 +107,18 @@
   # `devenv processes` and visible in `devenv tasks list`.
   process.manager.implementation = "native";
 
+  # Avoid the default Vite/Storybook ports used by standalone dev commands
+  # and other workspaces. Keep the probes on the same configurable ports.
+  env.TWYNE_DEV_PORT = lib.mkDefault "5180";
+  env.TWYNE_STORYBOOK_PORT = lib.mkDefault "6010";
+
   processes."server".exec = "bun run dev.backend";
 
   processes."app" = {
     exec = "bun run dev.frontend";
     after = [ "devenv:processes:server@started" ];
     ready = {
-      exec = "${pkgs.curl}/bin/curl --fail --silent http://127.0.0.1:5173/ >/dev/null";
+      exec = ''${pkgs.curl}/bin/curl --fail --silent "http://127.0.0.1:$TWYNE_DEV_PORT/" >/dev/null'';
       initial_delay = 1;
       period = 1;
       timeout = 60;
@@ -123,7 +128,7 @@
   processes."storybook" = {
     exec = "bun run storybook";
     ready = {
-      http.get.port = 6006;
+      exec = ''${pkgs.curl}/bin/curl --fail --silent "http://127.0.0.1:$TWYNE_STORYBOOK_PORT/" >/dev/null'';
       initial_delay = 1;
       period = 1;
       timeout = 60;

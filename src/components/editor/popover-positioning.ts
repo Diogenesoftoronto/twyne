@@ -55,11 +55,68 @@ export interface MarginCardView extends PopoverView {
   page: { left: number; right: number };
 }
 
+export interface FallbackCardView extends MarginCardView {
+  /** Pinned cards and unsent drafts survive scrolling away. */
+  keepOpen: boolean;
+  /** The manuscript scroller's visible vertical interval, clipped to the window. */
+  viewport?: { top: number; bottom: number };
+}
+
+/** Follow a fallback passage, closing idle cards or keeping protected ones on screen. */
+export function computeFallbackCardGeometry(
+  view: FallbackCardView,
+): PopoverGeometry | null {
+  const margin = POPOVER_CARD_MARGIN;
+  const viewportTop = Math.max(0, view.viewport?.top ?? 0);
+  const viewportBottom = Math.min(view.vh, view.viewport?.bottom ?? view.vh);
+  const outside =
+    view.rect.bottom <= viewportTop || view.rect.top >= viewportBottom;
+  if (outside && !view.keepOpen) return null;
+  const clamp = (value: number, low: number, high: number) =>
+    Math.max(low, Math.min(value, Math.max(low, high)));
+  const edge =
+    view.rect.bottom <= viewportTop
+      ? viewportTop + margin
+      : viewportBottom - margin;
+  const geometry = computeMarginCardGeometry({
+    ...view,
+    rect: outside
+      ? { left: view.rect.left, top: edge, bottom: edge }
+      : view.rect,
+  });
+  const maxH = Math.min(
+    geometry.maxH,
+    Math.max(0, viewportBottom - viewportTop - margin * 2),
+  );
+  return {
+    ...geometry,
+    maxH,
+    top:
+      geometry.top === null
+        ? null
+        : clamp(
+            geometry.top,
+            viewportTop + margin,
+            viewportBottom - maxH - margin,
+          ),
+    bottom:
+      geometry.bottom === null
+        ? null
+        : clamp(
+            geometry.bottom,
+            view.vh - viewportBottom + margin,
+            view.vh - viewportTop - maxH - margin,
+          ),
+  };
+}
+
 /**
  * Place an editorial conversation beside the manuscript, Google-Docs style.
  * The right margin is the stable default; the left margin is used when it is
- * the only side with room. Narrow viewports fall back to a clamped edge card,
- * with CSS turning that card into a bottom sheet on phones.
+ * the only side with room. When neither margin can hold it, the card has to
+ * sit over the page, so it tucks under (or over) the passage rather than on
+ * it: the words being discussed stay readable. CSS turns that card into a
+ * bottom sheet on phones.
  */
 export function computeMarginCardGeometry(
   view: MarginCardView,
@@ -80,6 +137,7 @@ export function computeMarginCardGeometry(
     const roomLeft = view.page.left;
     x = roomRight >= roomLeft ? rightX : leftX;
     x = Math.max(margin, Math.min(x, view.vw - cardWidth - margin));
+    return { ...computePopoverGeometry({ ...view, idealH }), x };
   }
 
   const maxH = Math.max(0, Math.min(idealH, view.vh - margin * 2));

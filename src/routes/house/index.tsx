@@ -76,6 +76,13 @@ import {
   loadFlowDiagnostics,
   type DiagnosticEntry,
 } from "../../utils/flow-diagnostics";
+import {
+  appendSession,
+  FLOW_SESSION_EVENT,
+  loadFlowSessions,
+  type FlowSession,
+  type FlowSessionEnd,
+} from "../../utils/flow-session";
 
 type Tab = "cabinet" | "register" | "engine";
 type Selection =
@@ -100,6 +107,7 @@ interface HouseStore {
   activeFolioId: string | null;
   profile: FlowProfile | null;
   log: DiagnosticEntry[];
+  sessions: FlowSession[];
   status: string;
   error: boolean;
   newArticle: string;
@@ -148,6 +156,14 @@ function seconds(ms: number): string {
     ? `${Math.round(ms / 6_000) / 10} min`
     : `${Math.round(ms / 1000)} s`;
 }
+
+const SESSION_END_LABELS: Record<FlowSessionEnd, string> = {
+  pause: "A long pause",
+  reached: "Reached for the room",
+  manual: "Focus turned off",
+  away: "Stepped away",
+  closed: "Folio closed",
+};
 
 function hourLabel(hour: number): string {
   return new Date(2000, 0, 1, hour % 24).toLocaleTimeString(undefined, {
@@ -249,10 +265,12 @@ export default component$(() => {
     track(() => auth.value);
     if (!hasAuthenticatedConvexIdentity(auth.value)) return;
     cleanup(
-      startHouseSync(() =>
-        hasAuthenticatedConvexIdentity(auth.value)
-          ? (clientSig.value ?? null)
-          : null,
+      startHouseSync(
+        () =>
+          hasAuthenticatedConvexIdentity(auth.value)
+            ? (clientSig.value ?? null)
+            : null,
+        auth.value.user!.id,
       ),
     );
   });
@@ -267,6 +285,7 @@ export default component$(() => {
     activeFolioId: null,
     profile: null,
     log: [],
+    sessions: [],
     status: "",
     error: false,
     newArticle: "",
@@ -278,20 +297,23 @@ export default component$(() => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ cleanup }) => {
     const params = location.url.searchParams;
-    const [house, folios, briefs, active, profile, log] = await Promise.all([
-      loadHouseState(),
-      loadFoliosFromIdb(),
-      loadAllBriefsFromIdb(),
-      loadActiveFolioIdFromIdb(),
-      loadMetaFromIdb<FlowProfile>("flow-profile"),
-      loadFlowDiagnostics(),
-    ]);
+    const [house, folios, briefs, active, profile, log, sessions] =
+      await Promise.all([
+        loadHouseState(),
+        loadFoliosFromIdb(),
+        loadAllBriefsFromIdb(),
+        loadActiveFolioIdFromIdb(),
+        loadMetaFromIdb<FlowProfile>("flow-profile"),
+        loadFlowDiagnostics(),
+        loadFlowSessions(),
+      ]);
     state.house = house;
     state.folios = [...folios].sort((a, b) => b.updatedAt - a.updatedAt);
     state.briefs = Object.fromEntries(briefs.map((b) => [b.folioId, b.brief]));
     state.activeFolioId = active;
     state.profile = normalizeProfile(profile);
     state.log = [...log].reverse();
+    state.sessions = [...sessions].reverse();
     const editions = await Promise.all(
       folios.map((f) => loadBriefEditions(f.id)),
     );
@@ -317,11 +339,19 @@ export default component$(() => {
         ...state.log,
       ].slice(0, 300);
     };
+    const onSession = (event: Event) => {
+      state.sessions = appendSession(
+        state.sessions,
+        (event as CustomEvent<FlowSession>).detail,
+      ).reverse();
+    };
     window.addEventListener(HOUSE_CHANGED_EVENT, onHouse);
     window.addEventListener(FLOW_DIAGNOSTICS_EVENT, onLog);
+    window.addEventListener(FLOW_SESSION_EVENT, onSession);
     cleanup(() => {
       window.removeEventListener(HOUSE_CHANGED_EVENT, onHouse);
       window.removeEventListener(FLOW_DIAGNOSTICS_EVENT, onLog);
+      window.removeEventListener(FLOW_SESSION_EVENT, onSession);
     });
   });
 
@@ -369,6 +399,7 @@ export default component$(() => {
             exportedAt: new Date().toISOString(),
             profile: state.profile,
             log: state.log,
+            sessions: state.sessions,
             house: state.house,
           },
           null,
@@ -1265,6 +1296,49 @@ export default component$(() => {
           </div>
         </section>
       )}
+
+      <section class="house-sheet" style={{ animation: "none" }}>
+        <header class="house-section__head">
+          <h3 class="house-section__title">Galley slips</h3>
+          <span class="house-section__note">
+            The last 30 runs, saved on this device
+          </span>
+        </header>
+        {state.sessions.length === 0 ? (
+          <p class="house-empty">
+            A minute in flow, or forty words, leaves a slip here.
+          </p>
+        ) : (
+          <div class="house-register house-log">
+            {state.sessions.map((session) => (
+              <div key={session.id} class="house-register__row">
+                <time
+                  class="house-register__when"
+                  dateTime={new Date(session.startedAt).toISOString()}
+                >
+                  {stamp(session.startedAt)}
+                </time>
+                <div class="house-register__what">
+                  <strong>
+                    {state.folios.find((folio) => folio.id === session.folioId)
+                      ?.name || "A folio"}
+                  </strong>
+                </div>
+                <div class="house-register__diff">
+                  <div>
+                    {Math.round(session.flowMs / 6_000) / 10} min in flow ·{" "}
+                    {session.words} words · {session.wpm} wpm
+                  </div>
+                  <div class="house-register__why">
+                    {session.waited} items waited · {session.amendments}{" "}
+                    amendments · {SESSION_END_LABELS[session.ended]}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <section>
         <header class="house-section__head">

@@ -16,6 +16,11 @@ import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { AuthPanel } from "./auth-panel";
 import { Icon } from "../ui/icon";
+import {
+  accountAvatarUrl,
+  accountDisplayName,
+  accountInitials,
+} from "../../utils/account-display";
 
 interface AccountMenuProps {
   /**
@@ -57,8 +62,7 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
   const nav = useNavigate();
   const convexClient = useConvexClient();
   const internalOpen = useSignal(false);
-  const profileAvatarUrl = useSignal<string | null>(null);
-  const profileDisplay = useSignal<string | null>(null);
+  const failedAvatar = useSignal<string | null>(null);
   const invitations = useStore<PendingInvitation[]>([]);
   const sharedFolios = useStore<SharedFolio[]>([]);
   const invitationError = useSignal<string | null>(null);
@@ -70,14 +74,15 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async ({ track, cleanup }) => {
-    const authState = track(auth);
+    track(() => auth.value.user?.id);
+    const authenticated = track(() =>
+      hasAuthenticatedConvexIdentity(auth.value),
+    );
     const client = track(() => convexClient.value);
 
-    profileAvatarUrl.value = null;
-    profileDisplay.value = null;
     invitations.splice(0, invitations.length);
     sharedFolios.splice(0, sharedFolios.length);
-    if (!client || !hasAuthenticatedConvexIdentity(authState)) return;
+    if (!client || !authenticated) return;
 
     const replaceInvitations = (pending: PendingInvitation[]) => {
       invitations.splice(0, invitations.length, ...pending);
@@ -99,17 +104,6 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
     );
     cleanup(unsubscribeInvitations);
     cleanup(unsubscribeShared);
-
-    const unsubscribeProfile = client.onUpdate(
-      api.profiles.getMyHandle,
-      {},
-      (row) => {
-        profileAvatarUrl.value = row?.avatarUrl ?? null;
-        profileDisplay.value = row?.displayName || row?.handle || null;
-      },
-      () => undefined,
-    );
-    cleanup(unsubscribeProfile);
   });
 
   const rejectInvitation = $(async (lixId: string) => {
@@ -129,15 +123,13 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
   });
 
   const accountDisplay = auth.value.user
-    ? profileDisplay.value ||
-      auth.value.user.name ||
-      auth.value.user.email ||
-      "Signed in"
+    ? accountDisplayName(auth.value.user)
     : null;
   const accountTitle = accountDisplay
     ? `Signed in as ${accountDisplay}`
     : "Editor's office";
-  const avatar = profileAvatarUrl.value || auth.value.user?.image;
+  const avatar = accountAvatarUrl(auth.value.user?.image);
+  const showAvatar = avatar && failedAvatar.value !== avatar;
 
   // Close on outside click / Escape, matching dropdown conventions elsewhere.
   useOnDocument(
@@ -163,6 +155,7 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
   return (
     <div class="relative" ref={rootRef}>
       <button
+        type="button"
         onClick$={() => {
           menuOpen.value = !menuOpen.value;
         }}
@@ -180,7 +173,7 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
         aria-expanded={menuOpen.value}
       >
         {accountDisplay &&
-          (avatar ? (
+          (showAvatar ? (
             <img
               src={avatar}
               alt=""
@@ -188,14 +181,20 @@ export const AccountMenu = component$<AccountMenuProps>(({ open }) => {
               height="20"
               class="h-5 w-5 flex-shrink-0 rounded-full object-cover"
               aria-hidden="true"
+              referrerPolicy="no-referrer"
+              onError$={() => {
+                failedAvatar.value = avatar ?? null;
+              }}
             />
           ) : (
             <span
-              class="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[var(--color-sage)]"
+              class="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-[var(--color-paper-3)] text-[9px] font-semibold"
               aria-hidden="true"
-            />
+            >
+              {accountInitials(accountDisplay)}
+            </span>
           ))}
-        {!avatar && <Icon name="user" size={18} />}
+        {!accountDisplay && <Icon name="user" size={18} />}
         {accountDisplay && (
           <span
             class="hidden max-w-[8.5rem] truncate text-[11px] font-semibold lg:inline"

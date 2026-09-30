@@ -1,667 +1,919 @@
-import { component$, useStylesScoped$ } from "@qwik.dev/core";
+import {
+  component$,
+  useComputed$,
+  useSignal,
+  useVisibleTask$,
+} from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { KeybindingList } from "../../components/editor/keybinding-list";
-import { keybindingList } from "../../utils/keybindings";
+import { keybindingList, type ShortcutPlatform } from "../../utils/keybindings";
+import "./manual.css";
 
 import { LaunchFilm } from "../../components/landing/launch-film";
+import { ManualWalkthrough } from "./manual-walkthrough";
+import { ManualVideo } from "./manual-video";
+import { MANUAL_FILMS } from "./manual-films";
+import { ManualEditors } from "./manual-editors";
+import { AT_THE_DESK_GUIDES } from "./guide-at-the-desk";
+import { EDITORIAL_GUIDES } from "./guide-editorial-room";
+import { YOUR_WORK_GUIDES } from "./guide-your-work";
+import { MANUSCRIPT_CRAFT_GUIDES } from "./guide-manuscript-craft";
+import type { ManualGuides } from "./manual-guide-types";
 
-const MANUAL_SHORTCUTS = keybindingList("mac");
+const GUIDES: ManualGuides = {
+  ...AT_THE_DESK_GUIDES,
+  ...EDITORIAL_GUIDES,
+  ...YOUR_WORK_GUIDES,
+  ...MANUSCRIPT_CRAFT_GUIDES,
+};
+
+const ChapterIllustrations = component$<{ chapter: string }>(({ chapter }) => (
+  <>
+    {MANUAL_FILMS[chapter] && <ManualVideo film={MANUAL_FILMS[chapter]} />}
+    {GUIDES[chapter] && (
+      <ManualWalkthrough id={chapter} guide={GUIDES[chapter]} />
+    )}
+  </>
+));
+
+const CHAPTERS = [
+  {
+    label: "At the desk",
+    links: [
+      ["getting-started", "01", "Begin a piece"],
+      ["dossier", "02", "The dossier"],
+      ["house", "03", "The House & collections"],
+      ["flow", "04", "Writing in flow"],
+    ],
+  },
+  {
+    label: "The editorial room",
+    links: [
+      ["room", "05", "Your editors"],
+      ["rubric", "06", "The galley proof"],
+      ["marginalia", "07", "Margin conversations"],
+      ["apparatus", "08", "Research & citations"],
+      ["account-and-live", "09", "Your account & Live"],
+    ],
+  },
+  {
+    label: "Your work",
+    links: [
+      ["manuscript-tools", "10", "Manuscript & source tools"],
+      ["folios", "11", "Folios, export & publishing"],
+      ["byok", "12", "Bring your own key"],
+      ["privacy", "13", "Privacy & your data"],
+      ["shortcuts", "14", "Keyboard shortcuts"],
+      ["launch-film", "—", "Watch the film"],
+    ],
+  },
+] as const;
+
+const MANUSCRIPT_TOPICS = [
+  ["outline-and-find", "Outline & search"],
+  ["tables-and-images", "Tables & images"],
+  ["source-and-proof", "Source & proof"],
+  ["page-layout", "Page layout"],
+  ["notes-and-equations", "Notes & equations"],
+] as const;
+
+const CHAPTER_LINKS = CHAPTERS.flatMap<readonly [string, string, string]>(
+  (group) => group.links,
+);
+
+const ReadingPosition = component$<{
+  chapter: string;
+  title: string;
+  progress: number;
+}>((props) => (
+  <div class="manual-reading-position">
+    <p class="manual-reading-label">
+      {props.chapter === "—"
+        ? "Closing film"
+        : `Reading · ${Number(props.chapter)} of 14`}
+    </p>
+    <p class="manual-reading-title">{props.title}</p>
+    <div
+      class="manual-reading-track"
+      role="progressbar"
+      aria-label="Reading position in the manual"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={props.progress}
+      aria-valuetext={`${props.progress}% through the guide`}
+    >
+      <span style={{ width: `${props.progress}%` }} />
+    </div>
+    <p class="manual-reading-percent">{props.progress}% through the guide</p>
+  </div>
+));
+
+const ContentsLinks = component$<{ active: string; topic: string }>((props) => (
+  <div class="manual-contents-groups">
+    {CHAPTERS.map((group) => (
+      <div class="manual-contents-group" key={group.label}>
+        <p class="manual-contents-label">{group.label}</p>
+        <ol>
+          {group.links.map(([id, number, label]) => (
+            <li key={id}>
+              <a
+                href={`#${id}`}
+                class={{ "toc-link": true, "is-current": props.active === id }}
+                aria-current={props.active === id ? "location" : undefined}
+              >
+                <span aria-hidden="true">{number}</span>
+                {label}
+              </a>
+              {id === "manuscript-tools" && (
+                <ul class="manual-contents-topics">
+                  {MANUSCRIPT_TOPICS.map(([topic, title]) => (
+                    <li key={topic}>
+                      <a
+                        href={`#${topic}`}
+                        class={{ "is-current": props.topic === topic }}
+                      >
+                        {title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ol>
+      </div>
+    ))}
+  </div>
+));
 
 export default component$(() => {
-  useStylesScoped$(`
-    .doc-section {
-      border-bottom: 1px dashed var(--color-paper-3);
-      padding-bottom: 2.5rem;
-      margin-bottom: 2.5rem;
-    }
-    .doc-section:last-child {
-      border-bottom: none;
-      padding-bottom: 0;
-      margin-bottom: 0;
-    }
-    .doc-h2 {
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 1.5rem;
-      color: var(--color-ink);
-      margin: 0 0 0.6rem;
-    }
-    .doc-h3 {
-      font-family: var(--font-display);
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: var(--color-vermilion);
-      margin: 1.5rem 0 0.4rem;
-    }
-    .doc-lead {
-      font-family: var(--font-serif);
-      font-style: italic;
-      font-size: 1.05rem;
-      line-height: 1.7;
-      color: var(--color-ink-light);
-      margin-bottom: 1rem;
-    }
-    .doc-p {
-      font-family: var(--font-serif);
-      font-size: 0.95rem;
-      line-height: 1.7;
-      color: var(--color-ink);
-      margin-bottom: 0.85rem;
-    }
-    .doc-ul {
-      margin: 0.5rem 0 1rem 1.25rem;
-      list-style: none;
-    }
-    .doc-ul li {
-      position: relative;
-      padding-left: 1rem;
-      font-family: var(--font-serif);
-      font-size: 0.9rem;
-      line-height: 1.6;
-      color: var(--color-ink);
-      margin-bottom: 0.4rem;
-    }
-    .doc-ul li::before {
-      content: "❦";
-      position: absolute;
-      left: -0.25rem;
-      color: var(--color-vermilion);
-      font-size: 0.7rem;
-    }
-    .doc-callout {
-      background: var(--color-paper-soft);
-      border-left: 3px solid var(--color-vermilion);
-      padding: 1rem 1.25rem;
-      margin: 1rem 0;
-    }
-    .doc-callout p {
-      margin: 0;
-      font-family: var(--font-serif);
-      font-size: 0.9rem;
-      line-height: 1.6;
-      color: var(--color-ink-light);
-    }
-    .doc-kbd {
-      font-family: var(--font-mono);
-      font-size: 0.8rem;
-      background: var(--color-paper-2);
-      padding: 0.1rem 0.35rem;
-      border-radius: 2px;
-      border: 1px solid var(--color-paper-3);
-    }
-    .toc-link {
-      display: block;
-      font-family: var(--font-typewriter);
-      font-size: 0.78rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--color-ink-light);
-      padding: 0.35rem 0;
-      transition: color 0.15s ease;
-    }
-    .toc-link:hover {
-      color: var(--color-vermilion);
-    }
-  `);
+  const platform = useSignal<ShortcutPlatform>("mac");
+  const shortcuts = useComputed$(() => keybindingList(platform.value));
+  const activeSection = useSignal("getting-started");
+  const activeTopic = useSignal("");
+  const readingProgress = useSignal(0);
+  const currentChapter = useComputed$(
+    () =>
+      CHAPTER_LINKS.find(([id]) => id === activeSection.value) ??
+      CHAPTER_LINKS[0],
+  );
+
+  // Native videos do not bubble play. A single capture listener covers both
+  // the contextual films and the locale-aware introduction.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    const manual = document.querySelector(".twyne-manual");
+    if (!manual) return;
+    const content = manual.querySelector<HTMLElement>(".manual-content");
+    const sections = Array.from(
+      manual.querySelectorAll<HTMLElement>(".manual-content > section[id]"),
+    );
+    const topics = MANUSCRIPT_TOPICS.map(([id]) =>
+      document.getElementById(id),
+    ).filter((element): element is HTMLElement => element !== null);
+    let frame = 0;
+    const updateReadingPosition = () => {
+      frame = 0;
+      const line = Math.min(160, window.innerHeight * 0.18);
+      let current = sections[0]?.id ?? "getting-started";
+      for (const section of sections) {
+        if (section.getBoundingClientRect().top > line) break;
+        current = section.id;
+      }
+      if (
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 2
+      ) {
+        current = sections[sections.length - 1]?.id ?? current;
+      }
+      let topic = "";
+      if (current === "manuscript-tools") {
+        for (const element of topics) {
+          if (element.getBoundingClientRect().top > line) break;
+          topic = element.id;
+        }
+      }
+      if (activeSection.value !== current) activeSection.value = current;
+      if (activeTopic.value !== topic) activeTopic.value = topic;
+      if (content) {
+        const bounds = content.getBoundingClientRect();
+        const start = bounds.top + window.scrollY;
+        const distance = Math.max(1, bounds.height - window.innerHeight);
+        const progress = Math.round(
+          Math.max(0, Math.min(1, (window.scrollY - start) / distance)) * 100,
+        );
+        if (readingProgress.value !== progress)
+          readingProgress.value = progress;
+      }
+    };
+    const scheduleReadingPosition = () => {
+      if (!frame) frame = window.requestAnimationFrame(updateReadingPosition);
+    };
+    const pauseAll = (except?: EventTarget | null) => {
+      manual.querySelectorAll("video").forEach((video) => {
+        if (video !== except && !video.paused) video.pause();
+      });
+    };
+    const onPlay = (event: Event) => pauseAll(event.target);
+    const onVisibility = () => {
+      if (document.hidden) pauseAll();
+    };
+    const onNavigate = () => pauseAll();
+    const onLinkNavigate = (event: Event) => {
+      if (event.target instanceof Element && event.target.closest("a[href]")) {
+        pauseAll();
+      }
+    };
+    manual.addEventListener("play", onPlay, true);
+    manual.addEventListener("click", onLinkNavigate, true);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("hashchange", onNavigate);
+    window.addEventListener("popstate", onNavigate);
+    window.addEventListener("scroll", scheduleReadingPosition, {
+      passive: true,
+    });
+    window.addEventListener("resize", scheduleReadingPosition);
+    const resizeObserver = new ResizeObserver(scheduleReadingPosition);
+    if (content) resizeObserver.observe(content);
+    scheduleReadingPosition();
+    cleanup(() => {
+      pauseAll();
+      manual.removeEventListener("play", onPlay, true);
+      manual.removeEventListener("click", onLinkNavigate, true);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("hashchange", onNavigate);
+      window.removeEventListener("popstate", onNavigate);
+      window.removeEventListener("scroll", scheduleReadingPosition);
+      window.removeEventListener("resize", scheduleReadingPosition);
+      resizeObserver.disconnect();
+      if (frame) window.cancelAnimationFrame(frame);
+    });
+  });
 
   return (
-    <div
-      class="min-h-screen bg-[var(--color-paper-soft)] text-[var(--color-ink)]"
-      style={{ fontFamily: "var(--font-serif)" }}
-    >
-      <div class="max-w-4xl mx-auto px-6 py-8">
-        {/* Header */}
-        <div class="flex items-center justify-between mb-8">
+    <div class="twyne-manual" id="manual-top" role="main">
+      <a class="manual-skip" href="#manual-content">
+        Skip to the guide
+      </a>
+      <div class="manual-shell">
+        <header class="manual-masthead">
           <div>
-            <p
-              class="dept-label mb-1"
-              style={{ fontFamily: "var(--font-typewriter)" }}
-            >
-              Twyne
-            </p>
-            <h1
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 700,
-                fontSize: "1.75rem",
-              }}
-            >
-              The Manual
-            </h1>
-            <p class="doc-lead mt-2 !mb-0">
-              A writer's guide to the editorial room.
+            <p class="manual-eyebrow">Twyne · A writer’s reference</p>
+            <h1>The Manual</h1>
+            <p class="manual-deck">
+              From the first idea to the final proof. A guide to your writing
+              desk, the House, and the voices in the margin. See the controls,
+              follow a walkthrough, then try it in your own draft.
             </p>
           </div>
-          <Link
-            href="/editor/"
-            class="btn-paper text-sm"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            ← Back to desk
+          <Link href="/editor/" class="btn-paper manual-desk-link">
+            ← Back to the desk
           </Link>
+        </header>
+        <div class="manual-layout">
+          <nav class="manual-contents" aria-label="Manual contents">
+            <div class="manual-desktop-contents">
+              <h2 class="manual-contents-title">In this guide</h2>
+              <ReadingPosition
+                chapter={currentChapter.value[1]}
+                title={currentChapter.value[2]}
+                progress={readingProgress.value}
+              />
+              <ContentsLinks
+                active={activeSection.value}
+                topic={activeTopic.value}
+              />
+            </div>
+            <details class="manual-mobile-contents">
+              <summary>In this guide</summary>
+              <ReadingPosition
+                chapter={currentChapter.value[1]}
+                title={currentChapter.value[2]}
+                progress={readingProgress.value}
+              />
+              <ContentsLinks
+                active={activeSection.value}
+                topic={activeTopic.value}
+              />
+            </details>
+            <Link href="/house/" class="manual-house-link">
+              Open your House →
+            </Link>
+          </nav>
+          <article
+            class="manual-content"
+            id="manual-content"
+            aria-label="The Twyne manual"
+          >
+            <section id="getting-started" class="manual-section">
+              <p class="manual-chapter">01 · At the desk</p>
+              <h2 class="manual-h2">Begin a piece</h2>
+              <p class="manual-lead">
+                Give the room a direction. Then make the page your own.
+              </p>
+              <ChapterIllustrations chapter="getting-started" />
+              <ol class="manual-start">
+                <li>
+                  <strong>Set the brief.</strong> The{" "}
+                  <a href="#dossier">dossier</a> holds your audience, purpose
+                  and the shape of the piece.
+                </li>
+                <li>
+                  <strong>Write at the desk.</strong> Your draft saves on this
+                  device.
+                  <a href="#flow"> The margin</a> makes room for feedback
+                  without taking you away.
+                </li>
+                <li>
+                  <strong>Make a revision.</strong> Follow a comment to its
+                  passage, ask an editor, or inspect the{" "}
+                  <a href="#rubric">galley proof</a>. You choose what changes.
+                </li>
+              </ol>
+              <p class="manual-route">
+                <Link href="/editor/">Go to the writing desk →</Link>
+              </p>
+            </section>
+            <section id="dossier" class="manual-section">
+              <p class="manual-chapter">02 · At the desk</p>
+              <h2 class="manual-h2">The dossier</h2>
+              <p class="manual-lead">
+                Every piece worth writing needs a brief. The dossier is Twyne's
+                way of keeping the writer honest about what they're trying to
+                do.
+              </p>
+              <ChapterIllustrations chapter="dossier" />
+              <p class="manual-p">
+                Before the room opens, we ask seven questions. They are not
+                optional flourishes — they are the spine of the editorial
+                conversation. When you know your audience, your goal, your tone,
+                your constraints, and what success looks like, the editors have
+                something to grip. Without it, even the cleverest feedback is
+                fishing in the dark.
+              </p>
+              <p class="manual-p">The seven fields:</p>
+              <ul class="manual-ul">
+                <li>
+                  <strong>Working Title</strong> — A name the room can hold
+                  onto.
+                </li>
+                <li>
+                  <strong>Format</strong> — Essay, memo, chapter, dispatch,
+                  proposal…
+                </li>
+                <li>
+                  <strong>Audience</strong> — Name the actual reader, not a
+                  demographic.
+                </li>
+                <li>
+                  <strong>Goal</strong> — What should the piece accomplish?
+                </li>
+                <li>
+                  <strong>Tone</strong> — How should it feel, not just sound?
+                </li>
+                <li>
+                  <strong>Constraints</strong> — Sources to keep, jargon to
+                  avoid, anecdotes to protect.
+                </li>
+                <li>
+                  <strong>Success Signal</strong> — How will you know the draft
+                  has landed?
+                </li>
+              </ul>
+              <div class="manual-callout">
+                <p>
+                  <strong>Pro tip:</strong> You can refine the dossier at any
+                  time by clicking "Refine the dossier" in the masthead. The
+                  room picks up the new brief on the next pass.
+                </p>
+              </div>
+            </section>
+            <section id="house" class="manual-section">
+              <p class="manual-chapter">03 · At the desk</p>
+              <h2 class="manual-h2">The House &amp; collections</h2>
+              <p class="manual-lead">
+                A standard you set once can follow the next piece.
+              </p>
+              <ChapterIllustrations chapter="house" />
+              <ol class="manual-inheritance" aria-label="Context inheritance">
+                <li>
+                  <strong>House</strong>
+                  <span>Your reusable audience, purpose and standards.</span>
+                </li>
+                <li>
+                  <strong>Collection</strong>
+                  <span>Shared context for a series of related pieces.</span>
+                </li>
+                <li>
+                  <strong>Folio</strong>
+                  <span>One manuscript, with its own dossier.</span>
+                </li>
+              </ol>
+              <p class="manual-p">
+                A filled-in folio field takes precedence over its collection,
+                then the House. Leave a field blank to inherit it. Working
+                titles belong to each folio; charter articles accumulate across
+                the three levels.
+              </p>
+              <dl class="manual-terms">
+                <div>
+                  <dt>Dossier</dt>
+                  <dd>The brief that tells the room what a piece is for.</dd>
+                </div>
+                <div>
+                  <dt>Charter</dt>
+                  <dd>
+                    Required or preferred standards for your House, collection
+                    or folio.
+                  </dd>
+                </div>
+                <div>
+                  <dt>Edition</dt>
+                  <dd>
+                    A saved version of the dossier, with its source and reason.
+                  </dd>
+                </div>
+                <div>
+                  <dt>Amendment</dt>
+                  <dd>
+                    A proposed change to the dossier. It takes effect when you
+                    file it.
+                  </dd>
+                </div>
+              </dl>
+              <p class="manual-p">
+                Open <Link href="/house/">the House</Link> to arrange
+                collections, inspect inherited context and read the register of
+                changes. “What the models read” shows the assembled dossier and
+                charter; individual tools add their own instructions and
+                excerpts. The Engine room holds developer diagnostics.
+              </p>
+              <div class="manual-callout">
+                <p>
+                  <strong>When the piece changes direction:</strong> Refine the
+                  dossier yourself, or review an amendment offered in the
+                  margin. The room uses the updated brief on its next pass.
+                </p>
+              </div>
+            </section>
+            <section id="flow" class="manual-section">
+              <p class="manual-chapter">04 · At the desk</p>
+              <h2 class="manual-h2">Writing in flow</h2>
+              <p class="manual-lead">
+                The page stays central. Help can wait in the margin.
+              </p>
+              <ChapterIllustrations chapter="flow" />
+              <p class="manual-p">
+                While you work, Twyne can bring comments, sources, books,
+                records and connections to earlier writing beside the relevant
+                passage. Hover or focus a marker to see its connections; click
+                it to open the conversation in the same margin.
+              </p>
+              <h3 class="manual-h3">A quieter page</h3>
+              <p class="manual-p">
+                Automatic focus uses your typing cadence to quiet the room
+                during a sustained run. New ambient cards wait. When you pause
+                or reach for the room, its controls return. You can enter focus
+                yourself or leave it with <kbd class="manual-kbd">Esc</kbd>.
+              </p>
+              <h3 class="manual-h3">Help when you need it</h3>
+              <p class="manual-p">
+                When a passage stalls, the margin can offer one relevant
+                connection or a short way into the next sentence. These are
+                suggestions you can set aside. A change of purpose may prompt an
+                amendment; it never silently rewrites your dossier.
+              </p>
+              <div class="manual-callout">
+                <p>
+                  <strong>Your controls:</strong> Automatic review, margin
+                  tools, automatic focus and cover lookups have separate
+                  switches in the review controls. Timing and item preferences
+                  are learned on this device. Cover lookups send book or record
+                  titles to external catalogues.
+                </p>
+              </div>
+            </section>
+            <section id="room" class="manual-section">
+              <p class="manual-chapter">05 · The editorial room</p>
+              <h2 class="manual-h2">Your editors</h2>
+              <p class="manual-lead">
+                Five resident voices. Each reads with a different lens. Together
+                they cover the ground a single editor can't.
+              </p>
+              <ManualVideo film={MANUAL_FILMS.room} />
+              <ManualEditors />
+              <h3 class="manual-h3">Arrange your room</h3>
+              <ManualWalkthrough id="room" guide={GUIDES.room} />
+
+              <div class="manual-callout">
+                <p>
+                  <strong>Custom editors:</strong> Visit{" "}
+                  <Link
+                    href="/personas"
+                    class="underline hover:text-[var(--color-vermilion)]"
+                  >
+                    the Room of Editors
+                  </Link>{" "}
+                  to add, edit, or rearrange your cast. Each editor needs a
+                  name, a role, and a description of their voice. The AI uses
+                  these to stay in character.
+                </p>
+              </div>
+
+              <h3 class="manual-h3">Changing the Model</h3>
+              <p class="manual-p">
+                Each editor's voice is shaped by the model that reads for them.
+                A careful, precise model makes Mlle. Sceptique sharper. A warmer
+                model makes Sœur Encourageante more generous. Go to{" "}
+                <Link
+                  href="/settings"
+                  class="underline hover:text-[var(--color-vermilion)]"
+                >
+                  Preferences
+                </Link>{" "}
+                to assign different models to different tasks — the room adapts.
+              </p>
+            </section>
+            <section id="rubric" class="manual-section">
+              <p class="manual-chapter">06 · The editorial room</p>
+              <h2 class="manual-h2">The galley proof</h2>
+              <p class="manual-lead">
+                Check the shape of the draft, then choose an editorial reading.
+              </p>
+              <ChapterIllustrations chapter="rubric" />
+              <p class="manual-p">
+                The <strong>static features</strong> are deterministic —
+                sentence length distribution, type-token ratio, citation
+                density, paragraph shape. These never call an API and never cost
+                a token. They give you a cold, honest picture of the draft's
+                mechanical health.
+              </p>
+              <h3 class="manual-h3">Quick check</h3>
+              <p class="manual-p">
+                When the signed-in service is available, the default check uses
+                one typed judgement request to assess your enabled criteria,
+                including custom ones. This produces a grade without separate
+                verdicts from the five editors. If the quick check is
+                unavailable, Twyne tries the room reading instead.
+              </p>
+              <h3 class="manual-h3">Ask the editors</h3>
+              <p class="manual-p">
+                Choose “Ask the editors” for the independent room reading. Each
+                persona gives a score and rationale. That path combines
+                editorial verdicts with static features; its Target Fit check
+                caps shape scores when the piece misses its audience or purpose.
+              </p>
+              <p class="manual-p">Grading scale:</p>
+              <ul class="manual-ul">
+                <li>
+                  <strong>A range</strong> — Publishable or nearly so. Minor
+                  polish.
+                </li>
+                <li>
+                  <strong>B range</strong> — Solid draft with clear, fixable
+                  issues.
+                </li>
+                <li>
+                  <strong>C range</strong> — Doing the work but needs a real
+                  pass.
+                </li>
+                <li>
+                  <strong>D–F range</strong> — The important next pass is still
+                  ahead.
+                </li>
+              </ul>
+              <div class="manual-callout">
+                <p>
+                  <strong>Use the rationale:</strong> Read the explanation
+                  beside a grade and compare it with your purpose. The rubric
+                  gives you another reading of the draft; you decide what
+                  deserves a revision.
+                </p>
+              </div>
+            </section>
+            <section id="marginalia" class="manual-section">
+              <p class="manual-chapter">07 · The editorial room</p>
+              <h2 class="manual-h2">Margin conversations</h2>
+              <p class="manual-lead">
+                Threaded comments alongside the draft. Your own notes, plus the
+                editors' voices when you ask them in.
+              </p>
+              <ChapterIllustrations chapter="marginalia" />
+              <p class="manual-p">
+                Select any passage in the manuscript and click "Add margin" to
+                pencil a margin note. Comments are folio-scoped — they travel
+                with the draft, not the global state. Each comment can have
+                replies, and you can ask any editor to weigh in by clicking "Ask
+                an editor."
+              </p>
+              <p class="manual-p">
+                Click a passage marker to unfold its thread beside the
+                manuscript. Reply, ask an editor or resolve the comment there.
+                One conversation stays in the foreground at a time; on a narrow
+                screen, its card stays anchored to the passage. Press Esc to
+                close it. Unsent replies survive switching threads during this
+                visit, but not a reload.
+              </p>
+            </section>
+            <section id="apparatus" class="manual-section">
+              <p class="manual-chapter">08 · The editorial room</p>
+              <h2 class="manual-h2">Research &amp; citations</h2>
+              <p class="manual-lead">
+                Research, bibliography, and citation — the machinery behind the
+                prose.
+              </p>
+              <ChapterIllustrations chapter="apparatus" />
+              <p class="manual-p">
+                The Apparatus has three jobs: find sources, save them, and cite
+                them. As you write, it detects DOIs, URLs, ISBNs, and
+                author-year references automatically. You can also search for
+                sources by query — the panel fetches a shortlist with title,
+                author, publisher, and a snippet. Save what matters to your
+                bibliography.
+              </p>
+              <p class="manual-p">
+                Bibliographies are formatted in your chosen style — MLA, APA, or
+                Chicago. Switch at any time; the saved entries reformat
+                instantly. Copy the whole bibliography to your clipboard with
+                one click.
+              </p>
+              <div class="manual-callout">
+                <p>
+                  The full Apparatus is available at{" "}
+                  <Link
+                    href="/apparatus"
+                    class="underline hover:text-[var(--color-vermilion)]"
+                  >
+                    /apparatus
+                  </Link>
+                  . The right-panel citation tab shows a quick view of detected
+                  references.
+                </p>
+              </div>
+            </section>
+            <section id="account-and-live" class="manual-section">
+              <p class="manual-chapter">09 · The editorial room</p>
+              <h2 class="manual-h2">Your account &amp; Live</h2>
+              <p class="manual-lead">
+                A name in the room. A conversation when you need one.
+              </p>
+              <ChapterIllustrations chapter="account-and-live" />
+              <p class="manual-p">
+                Sign in with Not Organic to use your account, hosted credits and
+                plan across devices. Your account name and picture identify you
+                in the room; your email belongs in private account settings. You
+                can keep writing locally without signing in.
+              </p>
+              <p class="manual-p">
+                Open Talk from the compositor, an editor’s comment or the
+                narration player to speak with an editor. Live shows captions,
+                lets you mute the microphone, and can find passages or propose
+                edits. Approve a proposed edit before it changes your
+                manuscript. Switching folios ends the conversation; captions and
+                microphone recordings are not saved.
+              </p>
+              <p class="manual-p">
+                Live requires a Pro plan or available Twyne welcome credit. A
+                conversation reserves up to $0.50; delegated language requests
+                have a separate $0.05 maximum each. The voice desk shows these
+                limits before you start.
+              </p>
+            </section>
+            <section id="manuscript-tools" class="manual-section">
+              <p class="manual-chapter">10 · Your work</p>
+              <h2 class="manual-h2">Manuscript &amp; source tools</h2>
+              <p class="manual-lead">
+                Structure the page, work in the source, and check the printed
+                proof.
+              </p>
+              <ManualVideo film={MANUAL_FILMS["manuscript-tools"]} />
+              <h3 class="manual-h3" id="outline-and-find">
+                Move through the manuscript
+              </h3>
+              <ChapterIllustrations chapter="outline-and-find" />
+              <p class="manual-p">
+                Type <strong>/</strong> at the start of a block to open the
+                command menu. Use the outline to jump among headings, or drag a
+                heading's section handle to move that section and all of its
+                subsections in one undoable edit. Find and Replace supports
+                whole words, case sensitivity, and regular expressions.
+              </p>
+              <h3 class="manual-h3" id="tables-and-images">
+                Tables and images
+              </h3>
+              <ChapterIllustrations chapter="tables-and-images" />
+              <p class="manual-p">
+                Tables support a dimension picker, captions, row and column
+                tools, cell shading, alignment, borders, and reusable visual
+                presets. Images can be dropped, pasted, or selected from disk;
+                selecting an image reveals its alt text, caption, alignment,
+                width, and upload status. Online images are stored with the
+                folio, while deliberately offline work keeps an inline copy.
+              </p>
+              <h3 class="manual-h3" id="source-and-proof">
+                Source and proof
+              </h3>
+              <ManualWalkthrough
+                id="manuscript-tools"
+                guide={GUIDES["manuscript-tools"]}
+              />
+              <p class="manual-p">
+                The Typst workspace lets you edit the source and inspect a
+                paginated proof. Source drafts recover locally after a reload.
+                Apply a valid draft to update the folio; if another device has
+                changed its base, resolve that conflict before applying. An
+                invalid draft stays available to fix.
+              </p>
+              <h3 class="manual-h3" id="page-layout">
+                Shape the page
+              </h3>
+              <ChapterIllustrations chapter="page-layout" />
+              <h3 class="manual-h3" id="notes-and-equations">
+                Notes and equations
+              </h3>
+              <ChapterIllustrations chapter="notes-and-equations" />
+              <p class="manual-p">
+                Inline and display equations accept LaTeX and render locally.
+                Footnotes and endnotes can be edited beside their references,
+                and View → Layout holds the running header and footer controls.
+                Inspect their placement in the proof. Notes and equations remain
+                portable in HTML and Markdown exports.
+              </p>
+            </section>
+            <section id="folios" class="manual-section">
+              <p class="manual-chapter">11 · Your work</p>
+              <h2 class="manual-h2">Folios, export &amp; publishing</h2>
+              <p class="manual-lead">
+                One piece per folio. Related pieces can share a collection.
+              </p>
+              <ChapterIllustrations chapter="folios" />
+              <p class="manual-p">
+                Folios are separate documents. You might keep a main draft,
+                scratch notes and an outline together in a collection. Switch
+                between them from the left drawer. Each folio keeps its own word
+                count, update time, and (optionally) its own layout settings.
+              </p>
+              <p class="manual-p">
+                <strong>Export</strong> your folio as Markdown, standalone HTML,
+                plain text, PDF, Word, Typst source, or a full Twyne backup
+                (JSON with brief, folios, and content). Use the File menu in the
+                masthead.
+              </p>
+              <p class="manual-p">
+                <strong>Share</strong> a public reading view of any folio.
+                Anyone with the link can read it; no one can edit it. Unpublish
+                instantly.
+              </p>
+              <p class="manual-p">
+                <strong>Publish to your PDS</strong> by connecting Bluesky or
+                another ATProto provider in the Share dialog. This publishing
+                connection is separate from your Not Organic sign-in. Twyne
+                files a Standard.site publication and document in your own
+                repository, serves a verifiable public reading page, and updates
+                the same record when you re-publish. Unpublishing removes the
+                document from your PDS.
+              </p>
+              <p class="manual-p">
+                <strong>PDF (Typst)</strong> compiles your manuscript on this
+                device with bundled fonts. The proof supports equations and
+                diagrams, and reports source or asset problems before export.
+                You can also download the .typ source. Private editorial
+                annotations are removed from that exported copy; your saved
+                source stays intact.
+              </p>
+            </section>
+            <section id="byok" class="manual-section">
+              <p class="manual-chapter">12 · Your work</p>
+              <h2 class="manual-h2">Bring your own key</h2>
+              <p class="manual-lead">
+                Choose a hosted model or connect a provider you already use.
+              </p>
+              <ChapterIllustrations chapter="byok" />
+              <p class="manual-p">
+                <strong>Step 1: Add a provider.</strong> Go to{" "}
+                <Link
+                  href="/settings"
+                  class="underline hover:text-[var(--color-vermilion)]"
+                >
+                  Preferences
+                </Link>{" "}
+                and turn on "Bring Your Own Key." Add your OpenAI, Anthropic, or
+                Google key. For other providers (Groq, Together, Rivet), use the
+                "OpenAI-compatible" option with your base URL.
+              </p>
+              <p class="manual-p">
+                <strong>Step 2: Pick models per feature.</strong> The
+                per-feature grid lets you choose different models for the room,
+                rubric and other tools. Use the models available from your
+                connected provider.
+              </p>
+              <p class="manual-p">
+                <strong>Step 3: Test the key.</strong> Choose "Test key" on the
+                provider card to check access to its model list. A successful
+                check lets you refresh the available models and choose one for
+                the feature you want to use.
+              </p>
+              <p class="manual-p">Supported providers:</p>
+              <ul class="manual-ul">
+                <li>OpenAI</li>
+                <li>Anthropic</li>
+                <li>Google</li>
+                <li>
+                  OpenAI-compatible (Groq, Together, Rivet, local servers, …)
+                </li>
+              </ul>
+              <div class="manual-callout">
+                <p>
+                  <strong>If a connection fails:</strong> Check the provider and
+                  key in Preferences, then test the connection again. You can
+                  keep drafting while the provider is unavailable.
+                </p>
+              </div>
+            </section>
+            <section id="privacy" class="manual-section">
+              <p class="manual-chapter">13 · Your work</p>
+              <h2 class="manual-h2">Privacy &amp; your data</h2>
+              <p class="manual-lead">
+                Your manuscript is yours. We intend to keep it that way.
+              </p>
+              <ChapterIllustrations chapter="privacy" />
+              <p class="manual-p">
+                <strong>API keys:</strong> Saved in your browser’s IndexedDB.
+                Remote BYOK requests pass through Twyne’s server relay, which
+                forwards your key and request to the selected provider. Local
+                model endpoints stay direct.
+              </p>
+              <p class="manual-p">
+                <strong>Drafts and folios:</strong> Saved locally in your
+                browser profile via IndexedDB. Signing out does not erase that
+                local copy. Signing into an account with no cloud snapshot can
+                sync the existing local work into that account. Signed-in sync
+                provides cross-device access.
+              </p>
+              <p class="manual-p">
+                <strong>AI calls:</strong> When you BYOK, your draft text goes
+                to the provider you chose, through the relay for remote
+                endpoints. Hosted calls go through Convex and Not Organic.
+                Provider processing and content-logging consent are managed in
+                Not Organic.
+              </p>
+              <p class="manual-p">
+                <strong>Published pieces:</strong> Only what you explicitly
+                publish becomes a public reading page. Local work remains in the
+                browser profile; sharing and collaboration grant the access you
+                choose through their own controls.
+              </p>
+            </section>
+            <section id="shortcuts" class="manual-section">
+              <p class="manual-chapter">14 · Your work</p>
+              <h2 class="manual-h2">Keyboard shortcuts</h2>
+              <p class="manual-p">
+                Choose the labels for your keyboard. The same shortcut registry
+                powers this guide and the desk.
+              </p>
+              <fieldset class="manual-platform">
+                <legend>Shortcut labels</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="shortcut-platform"
+                    value="mac"
+                    checked={platform.value === "mac"}
+                    onChange$={() => (platform.value = "mac")}
+                  />
+                  macOS
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="shortcut-platform"
+                    value="windows"
+                    checked={platform.value === "windows"}
+                    onChange$={() => (platform.value = "windows")}
+                  />
+                  Windows / Linux
+                </label>
+              </fieldset>
+              <div class="manual-shortcuts">
+                <KeybindingList entries={shortcuts.value} />
+              </div>
+            </section>
+            <section id="launch-film" class="manual-section">
+              <LaunchFilm />
+              <p class="manual-p mt-5">
+                The film follows your language choice in Preferences. French
+                readers see the French edition, including narration and
+                on-screen text; English and other languages use the English
+                edition. With Automatic selected, Twyne follows your browser’s
+                language preferences.
+              </p>
+            </section>
+            <footer class="manual-colophon">
+              <span>Twyne · The editorial room</span>
+              <a href="#manual-top">Back to the beginning ↑</a>
+            </footer>
+          </article>
         </div>
-
-        {/* TOC */}
-        <nav class="folio p-5 mb-8">
-          <p
-            class="text-[0.6rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-3"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Contents
-          </p>
-          <div class="grid sm:grid-cols-2 gap-x-6">
-            <a href="#launch-film" class="toc-link">
-              Watch the launch film
-            </a>
-            <a href="#account-and-live" class="toc-link">
-              Sign-in &amp; live voice
-            </a>
-            <a href="#dossier" class="toc-link">
-              I. The Dossier
-            </a>
-            <a href="#room" class="toc-link">
-              II. The Room of Editors
-            </a>
-            <a href="#rubric" class="toc-link">
-              III. The Galley Proof
-            </a>
-            <a href="#marginalia" class="toc-link">
-              IV. The Marginalia
-            </a>
-            <a href="#apparatus" class="toc-link">
-              V. The Apparatus
-            </a>
-            <a href="#byok" class="toc-link">
-              VI. Bring Your Own Key
-            </a>
-            <a href="#privacy" class="toc-link">
-              VII. Privacy &amp; Your Data
-            </a>
-            <a href="#folios" class="toc-link">
-              VIII. Folios, Export &amp; Share
-            </a>
-            <a href="#manuscript-tools" class="toc-link">
-              IX. Manuscript Tools
-            </a>
-            <a href="#shortcuts" class="toc-link">
-              X. Keyboard Shortcuts
-            </a>
-          </div>
-        </nav>
-
-        <section id="launch-film" class="doc-section">
-          <LaunchFilm />
-          <p class="doc-p mt-5">
-            The film follows your language choice in Preferences. French readers
-            see the French edition, including narration and on-screen text;
-            English and other languages use the English edition. With Automatic
-            selected, Twyne follows your browser’s language preferences.
-          </p>
-        </section>
-        <section id="account-and-live" class="doc-section">
-          <h2 class="doc-h2">Sign-in &amp; Live Voice</h2>
-          <p class="doc-p">
-            Sign in with Not Organic to use your account, hosted credits and
-            plan across devices. Twyne no longer offers email codes or its own
-            passkeys. You can keep writing locally without signing in.
-          </p>
-          <p class="doc-p">
-            Open Talk from the compositor, an editor’s comment or the narration
-            player to speak with an editor. Live shows captions, lets you mute
-            the microphone, and can find passages or propose edits. Approve a
-            proposed edit before it changes your manuscript. Switching folios
-            ends the conversation; captions and microphone recordings are not
-            saved.
-          </p>
-          <p class="doc-p">
-            Live requires a Pro plan or available Twyne welcome credit. A
-            conversation reserves up to $0.50; delegated language requests have
-            a separate $0.05 maximum each. The voice desk shows these limits
-            before you start.
-          </p>
-        </section>
-        {/* ── I. The Dossier ── */}
-        <section id="dossier" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section I
-          </p>
-          <h2 class="doc-h2">The Dossier</h2>
-          <p class="doc-lead">
-            Every piece worth writing needs a brief. The dossier is Twyne's way
-            of keeping the writer honest about what they're trying to do.
-          </p>
-          <p class="doc-p">
-            Before the room opens, we ask seven questions. They are not optional
-            flourishes — they are the spine of the editorial conversation. When
-            you know your audience, your goal, your tone, your constraints, and
-            what success looks like, the editors have something to grip. Without
-            it, even the cleverest feedback is fishing in the dark.
-          </p>
-          <p class="doc-p">The seven fields:</p>
-          <ul class="doc-ul">
-            <li>
-              <strong>Working Title</strong> — A name the room can hold onto.
-            </li>
-            <li>
-              <strong>Format</strong> — Essay, memo, chapter, dispatch,
-              proposal…
-            </li>
-            <li>
-              <strong>Audience</strong> — Name the actual reader, not a
-              demographic.
-            </li>
-            <li>
-              <strong>Goal</strong> — What should the piece accomplish?
-            </li>
-            <li>
-              <strong>Tone</strong> — How should it feel, not just sound?
-            </li>
-            <li>
-              <strong>Constraints</strong> — Sources to keep, jargon to avoid,
-              anecdotes to protect.
-            </li>
-            <li>
-              <strong>Success Signal</strong> — How will you know the draft has
-              landed?
-            </li>
-          </ul>
-          <div class="doc-callout">
-            <p>
-              <strong>Pro tip:</strong> You can refine the dossier at any time
-              by clicking "Refine the dossier" in the masthead. The room picks
-              up the new brief on the next pass.
-            </p>
-          </div>
-        </section>
-
-        {/* ── II. The Room of Editors ── */}
-        <section id="room" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section II
-          </p>
-          <h2 class="doc-h2">The Room of Editors</h2>
-          <p class="doc-lead">
-            Five resident voices. Each reads with a different lens. Together
-            they cover the ground a single editor can't.
-          </p>
-
-          <h3 class="doc-h3">Mlle. Sceptique — The Devil's Advocate</h3>
-          <p class="doc-p">
-            Hunts the unstated assumption, the soft claim, the argument that
-            quietly evades its strongest objection. When she speaks, listen —
-            she is testing whether your draft would survive a hostile reader.
-          </p>
-
-          <h3 class="doc-h3">Sœur Encourageante — The Patron of Strengths</h3>
-          <p class="doc-p">
-            Reads for the alive paragraph — the one with a real sentence in it —
-            and tells you to protect it. Not empty praise; specific, earned
-            defence of what's working.
-          </p>
-
-          <h3 class="doc-h3">Professeur Athenæum — The Scholar</h3>
-          <p class="doc-p">
-            Points to where citation is owed, where evidence wants weight, where
-            definition would clean a sentence. Think of him as the footnotes you
-            haven't written yet.
-          </p>
-
-          <h3 class="doc-h3">M. Le Stylo — The Copy Chief</h3>
-          <p class="doc-p">
-            Carries the blue pencil. Catches diction, rhythm, repetition, and
-            any sentence that does not earn its place. He is the one who will
-            tell you to cut your favourite line.
-          </p>
-
-          <h3 class="doc-h3">Le Lecteur — The Target Reader</h3>
-          <p class="doc-p">
-            Reads as your stated audience would — confused here, engaged there,
-            won over (or not) by the close. If Le Lecteur is lost, your audience
-            is lost.
-          </p>
-
-          <div class="doc-callout">
-            <p>
-              <strong>Custom editors:</strong> Visit{" "}
-              <Link
-                href="/personas"
-                class="underline hover:text-[var(--color-vermilion)]"
-              >
-                the Room of Editors
-              </Link>{" "}
-              to add, edit, or rearrange your cast. Each editor needs a name, a
-              role, and a description of their voice. The AI uses these to stay
-              in character.
-            </p>
-          </div>
-
-          <h3 class="doc-h3">Changing the Model</h3>
-          <p class="doc-p">
-            Each editor's voice is shaped by the model that reads for them. A
-            careful, precise model makes Mme. Sceptique sharper. A warmer model
-            makes Sœur Encourageante more generous. Go to{" "}
-            <Link
-              href="/settings"
-              class="underline hover:text-[var(--color-vermilion)]"
-            >
-              Preferences
-            </Link>{" "}
-            to assign different models to different tasks — the room adapts.
-          </p>
-        </section>
-
-        {/* ── III. The Galley Proof ── */}
-        <section id="rubric" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section III
-          </p>
-          <h2 class="doc-h2">The Galley Proof</h2>
-          <p class="doc-lead">
-            The rubric reads your draft in two ways: numbers the eye can see,
-            and judges who read like people.
-          </p>
-          <p class="doc-p">
-            The <strong>static features</strong> are deterministic — sentence
-            length distribution, type-token ratio, citation density, paragraph
-            shape. These never call an API and never cost a token. They give you
-            a cold, honest picture of the draft's mechanical health.
-          </p>
-          <p class="doc-p">
-            The <strong>five judges</strong> are the same personas from the
-            room, but now they give a single integer score from 1 to 10 and a
-            one-line rationale. The rubric combines their scores with the static
-            features into an overall grade (A+ through F) and a short editorial
-            note.
-          </p>
-          <p class="doc-p">Grading scale:</p>
-          <ul class="doc-ul">
-            <li>
-              <strong class="text-[var(--color-accent-green)]">A range</strong>{" "}
-              — Publishable or nearly so. Minor polish.
-            </li>
-            <li>
-              <strong class="text-[var(--color-accent-blue)]">B range</strong> —
-              Solid draft with clear, fixable issues.
-            </li>
-            <li>
-              <strong class="text-[var(--color-accent-amber)]">C range</strong>{" "}
-              — Doing the work but needs a real pass.
-            </li>
-            <li>
-              <strong class="text-[var(--color-accent-red)]">D–F range</strong>{" "}
-              — The important next pass is still ahead.
-            </li>
-          </ul>
-          <div class="doc-callout">
-            <p>
-              <strong>Interpreting the grade:</strong> Most first drafts land in
-              the C range. That is not failure; that is the honest place where
-              writing starts. The rubric's job is to tell you where to push.
-            </p>
-          </div>
-        </section>
-
-        {/* ── IV. The Marginalia ── */}
-        <section id="marginalia" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section IV
-          </p>
-          <h2 class="doc-h2">The Marginalia</h2>
-          <p class="doc-lead">
-            Threaded comments alongside the draft. Your own notes, plus the
-            editors' voices when you ask them in.
-          </p>
-          <p class="doc-p">
-            Select any passage in the manuscript and click "Add comment" to
-            pencil a margin note. Comments are folio-scoped — they travel with
-            the draft, not the global state. Each comment can have replies, and
-            you can ask any editor to weigh in by clicking "Ask an editor."
-          </p>
-          <p class="doc-p">
-            When an editor replies, their colour and voice are preserved so you
-            know who is speaking. Strike a comment when you've addressed it; it
-            softens into the background but stays in the archive.
-          </p>
-        </section>
-
-        {/* ── V. The Apparatus ── */}
-        <section id="apparatus" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section V
-          </p>
-          <h2 class="doc-h2">The Apparatus</h2>
-          <p class="doc-lead">
-            Research, bibliography, and citation — the machinery behind the
-            prose.
-          </p>
-          <p class="doc-p">
-            The Apparatus has three jobs: find sources, save them, and cite
-            them. As you write, it detects DOIs, URLs, ISBNs, and author-year
-            references automatically. You can also search for sources by query —
-            the panel fetches a shortlist with title, author, publisher, and a
-            snippet. Save what matters to your bibliography.
-          </p>
-          <p class="doc-p">
-            Bibliographies are formatted in your chosen style — MLA, APA, or
-            Chicago. Switch at any time; the saved entries reformat instantly.
-            Copy the whole bibliography to your clipboard with one click.
-          </p>
-          <div class="doc-callout">
-            <p>
-              The full Apparatus is available at{" "}
-              <Link
-                href="/apparatus"
-                class="underline hover:text-[var(--color-vermilion)]"
-              >
-                /apparatus
-              </Link>
-              . The right-panel citation tab shows a quick view of detected
-              references.
-            </p>
-          </div>
-        </section>
-
-        {/* ── VI. Bring Your Own Key ── */}
-        <section id="byok" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section VI
-          </p>
-          <h2 class="doc-h2">Bring Your Own Key</h2>
-          <p class="doc-lead">
-            Twyne works out of the box. But if you want to use your own AI
-            models, your own keys, and your own cost envelope — you can.
-          </p>
-          <p class="doc-p">
-            <strong>Step 1: Add a provider.</strong> Go to{" "}
-            <Link
-              href="/settings"
-              class="underline hover:text-[var(--color-vermilion)]"
-            >
-              Preferences
-            </Link>{" "}
-            and turn on "Bring Your Own Key." Add your OpenAI, Anthropic, or
-            Google key. For other providers (Groq, Together, Rivet), use the
-            "OpenAI-compatible" option with your base URL.
-          </p>
-          <p class="doc-p">
-            <strong>Step 2: Pick models per feature.</strong> Not all tasks need
-            the most expensive model. You might want Claude Sonnet for the full
-            room convene (needs deep comprehension) and GPT-4o-mini for rubric
-            judges (simple scoring). The per-feature grid lets you assign
-            exactly that.
-          </p>
-          <p class="doc-p">
-            <strong>Step 3: Test the connection.</strong> Each provider card has
-            a "Test connection" button. It sends a cheap ping and shows latency.
-            Green means go.
-          </p>
-          <p class="doc-p">Supported providers:</p>
-          <ul class="doc-ul">
-            <li>OpenAI (GPT-4o, GPT-4o-mini, o3-mini, …)</li>
-            <li>Anthropic (Claude Sonnet, Claude Haiku, …)</li>
-            <li>Google (Gemini 2.5 Flash, Gemini 2.5 Pro, …)</li>
-            <li>OpenAI-compatible (Groq, Together, Rivet, local servers, …)</li>
-          </ul>
-          <div class="doc-callout">
-            <p>
-              <strong>Important:</strong> Twyne does not fall back silently. If
-              your key is invalid or the provider is down, you'll see an error
-              and the app falls back to the server-side path (or local templates
-              if the server is also unavailable). The draft is never blocked.
-            </p>
-          </div>
-        </section>
-
-        {/* ── VII. Privacy ── */}
-        <section id="privacy" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section VII
-          </p>
-          <h2 class="doc-h2">Privacy &amp; Your Data</h2>
-          <p class="doc-lead">
-            Your manuscript is yours. We intend to keep it that way.
-          </p>
-          <p class="doc-p">
-            <strong>API keys:</strong> Saved in your browser’s IndexedDB. Remote
-            BYOK requests pass through Twyne’s server relay, which forwards your
-            key and request to the selected provider. Local model endpoints stay
-            direct.
-          </p>
-          <p class="doc-p">
-            <strong>Drafts and folios:</strong> Saved locally in your browser
-            via IndexedDB. If you sign in, they sync to your own Convex account
-            for cross-device access. They are not shared, sold, or used to train
-            models.
-          </p>
-          <p class="doc-p">
-            <strong>AI calls:</strong> When you BYOK, your draft text goes to
-            the provider you chose, through the relay for remote endpoints.
-            Hosted calls go through Convex and Not Organic. Provider processing
-            and content-logging consent are managed in Not Organic.
-          </p>
-          <p class="doc-p">
-            <strong>Published pieces:</strong> Only what you explicitly publish
-            becomes public. Everything else stays private to your account.
-          </p>
-        </section>
-
-        {/* ── VIII. Folios, Export & Share ── */}
-        <section id="folios" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section VIII
-          </p>
-          <h2 class="doc-h2">Folios, Export &amp; Share</h2>
-          <p class="doc-lead">
-            One project. Many drafts. Each lives in its own folio.
-          </p>
-          <p class="doc-p">
-            Folios are separate documents within the same project. You might
-            have a main draft, a scratch notes folio, and an outline. Switch
-            between them from the left drawer. Each folio keeps its own word
-            count, update time, and (optionally) its own layout settings.
-          </p>
-          <p class="doc-p">
-            <strong>Export</strong> your folio as Markdown, standalone HTML,
-            plain text, PDF, Word, Typst source, or a full Twyne backup (JSON
-            with brief, folios, and content). Use the File menu in the masthead.
-          </p>
-          <p class="doc-p">
-            <strong>Share</strong> a public reading view of any folio. Anyone
-            with the link can read it; no one can edit it. Unpublish instantly.
-          </p>
-          <p class="doc-p">
-            <strong>Publish to your PDS</strong> by connecting Bluesky or
-            another ATProto provider in the Share dialog. This publishing
-            connection is separate from your Not Organic sign-in. Twyne files a
-            Standard.site publication and document in your own repository,
-            serves a verifiable public reading page, and updates the same record
-            when you re-publish. Unpublishing removes the document from your
-            PDS.
-          </p>
-          <p class="doc-p">
-            <strong>PDF (Typst)</strong> compiles your manuscript on this device
-            with bundled fonts. You can cancel an export or download the .typ
-            source. Equations, diagrams and unsupported content need the regular
-            PDF export; Typst reports these limits before downloading.
-          </p>
-        </section>
-
-        {/* ── IX. Manuscript tools ── */}
-        <section id="manuscript-tools" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section IX
-          </p>
-          <h2 class="doc-h2">Manuscript Tools</h2>
-          <p class="doc-lead">
-            The manuscript surface now carries the structural tools of a full
-            word processor without hiding the draft behind panels.
-          </p>
-          <p class="doc-p">
-            Type <strong>/</strong> at the start of a block to open the command
-            menu. Use the outline to jump among headings, or drag a heading's
-            section handle to move that section and all of its subsections in
-            one undoable edit. Find and Replace supports whole words, case
-            sensitivity, and regular expressions.
-          </p>
-          <p class="doc-p">
-            Tables support a dimension picker, captions, row and column tools,
-            cell shading, alignment, borders, and reusable visual presets.
-            Images can be dropped, pasted, or selected from disk; selecting an
-            image reveals its alt text, caption, alignment, width, and upload
-            status. Online images are stored with the folio, while deliberately
-            offline work keeps an inline copy.
-          </p>
-          <p class="doc-p">
-            Inline and display equations accept LaTeX and render locally.
-            Footnotes and endnotes can be edited beside their references, and
-            the visible page header and footer can be edited directly in the
-            page bands. These structures remain portable in HTML and Markdown
-            exports.
-          </p>
-        </section>
-
-        {/* ── X. Shortcuts ── */}
-        <section id="shortcuts" class="doc-section">
-          <p
-            class="text-[0.65rem] tracking-[0.2em] uppercase text-[var(--color-ink-muted)] mb-2"
-            style={{ fontFamily: "var(--font-typewriter)" }}
-          >
-            Section X
-          </p>
-          <h2 class="doc-h2">Keyboard Shortcuts</h2>
-          <p class="doc-p">
-            These are the macOS labels. Windows and Linux use Ctrl wherever the
-            list shows ⌘.
-          </p>
-          <KeybindingList entries={MANUAL_SHORTCUTS} />
-        </section>
       </div>
     </div>
   );
@@ -673,7 +925,7 @@ export const head: DocumentHead = {
     {
       name: "description",
       content:
-        "The writer's guide to Twyne — the editorial room, the dossier, the galley proof, and bringing your own key.",
+        "The writer’s guide to Twyne: your desk, reusable House context, margin conversations, source and proof, privacy, and keyboard shortcuts.",
     },
   ],
 };

@@ -1,0 +1,221 @@
+{
+  "version": 1,
+  "capturedAt": "2026-09-30T06:59:36.519Z",
+  "surface": "Current local development app, Chromium, isolated browser context",
+  "method": "Playwright captures of real rendered application controls; no reconstructed UI. WebP quality 86. Focus crops exclude browser chrome, accounts and diagnostic overlays.",
+  "manuscript": "Salt Roads, an invented non-personal draft",
+  "viewport": {
+    "desktop": {
+      "width": 1280,
+      "height": 950
+    },
+    "compactReport": {
+      "width": 520,
+      "height": 600
+    },
+    "reducedMotion": true
+  },
+  "chapters": {
+    "room": ["room-assistance", "room-new-editor", "room-model-routing"],
+    "rubric": [
+      "rubric-criteria",
+      "rubric-configure",
+      "rubric-readings",
+      "rubric-static-features"
+    ],
+    "marginalia": [
+      "marginalia-anchor",
+      "marginalia-reply",
+      "marginalia-ask-editor",
+      "marginalia-resolve"
+    ],
+    "apparatus": ["apparatus-manuscript", "apparatus-apa", "apparatus-chicago"]
+  },
+  "images": [
+    {
+      "file": "room-assistance.webp",
+      "chapter": "room",
+      "route": "/personas/",
+      "width": 872,
+      "height": 748,
+      "bytes": 54536,
+      "sha256": "ab2c8e377ddd81ad9bbb9ffdf4a380ab0ab33b71130448f8df84f3c0579171b0",
+      "description": "Actual cast assistance overrides, proposal scope and Edit controls.",
+      "staged": "Sample custom editor and unconnected sample model provider. No model request or connection test."
+    },
+    {
+      "file": "room-new-editor.webp",
+      "chapter": "room",
+      "route": "/personas/",
+      "width": 848,
+      "height": 840,
+      "bytes": 29766,
+      "sha256": "628f5078a73ec49d487875671c3d3515e11cdda9cedef8a1e2ad689f800bca71",
+      "description": "Actual sample custom-editor form, before Create.",
+      "staged": "Sample custom editor and unconnected sample model provider. No model request or connection test."
+    },
+    {
+      "file": "room-model-routing.webp",
+      "chapter": "room",
+      "route": "/settings/",
+      "width": 872,
+      "height": 840,
+      "bytes": 40588,
+      "sha256": "ba0bad450c7cbd3661180aace395e62adf185edcbd9524e459c49e55f922fe85",
+      "description": "Actual model routing controls with an unconnected sample provider. No keys or model request.",
+      "staged": "Sample custom editor and unconnected sample model provider. No model request or connection test."
+    },
+    {
+      "file": "rubric-criteria.webp",
+      "chapter": "rubric",
+      "route": "/editor/",
+      "width": 464,
+      "height": 788,
+      "bytes": 32426,
+      "sha256": "476ed9846cad85c3323f564cadd4c93b9d60dcec62614e6388500eaad12d5cf7",
+      "description": "Saved staged grade and expanded Evidence explanation.",
+      "staged": "Saved grade, criterion marks, rationales and feedback are staged. Static measurements use the app scorer on the sample draft."
+    },
+    {
+      "file": "rubric-configure.webp",
+      "chapter": "rubric",
+      "route": "/editor/",
+      "width": 464,
+      "height": 788,
+      "bytes": 26784,
+      "sha256": "cf4f8a478936f073269835c0e529abaab28ba13488a53304a64aece91f23f0e2",
+      "description": "Actual criterion checkboxes, weights and unsaved custom criterion fields.",
+      "staged": "Saved grade, criterion marks, rationales and feedback are staged. Static measurements use the app scorer on the sample draft."
+    },
+    {
+      "file": "rubric-readings.webp",
+      "chapter": "rubric",
+      "route": "/editor/",
+      "width": 464,
+      "height": 788,
+      "bytes": 23262,
+      "sha256": "ea4ee77198987dcafc4f054d3d5b092763e61a69bf8c45deab727aee2278464e",
+      "description": "Editors tab showing staged editor rationales, alongside Criteria and Passages.",
+      "staged": "Saved grade, criterion marks, rationales and feedback are staged. Static measurements use the app scorer on the sample draft."
+    },
+    {
+      "file": "rubric-static-features.webp",
+      "chapter": "rubric",
+      "route": "/rubric/",
+      "width": 472,
+      "height": 448,
+      "bytes": 16616,
+      "sha256": "15630e858ecb0effcbc3ee86c9a1fd18ef3a737a1840b0d897671f40e7ea93f6",
+      "description": "Real local measurements of the sample manuscript using the app text conversion.",
+      "staged": "Saved grade, criterion marks, rationales and feedback are staged. Static measurements use the app scorer on the sample draft."
+    },
+    {
+      "file": "marginalia-anchor.webp",
+      "chapter": "marginalia",
+      "route": "/editor/",
+      "width": 760,
+      "height": 550,
+      "bytes": 46200,
+      "sha256": "16059cc8fb7bd85ba91b9741b55598e4df4b925bf4e723e9f9490b50efecd86c",
+      "description": "Real highlighted anchor and writer thread with an unsent reply draft.",
+      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor."
+    },
+    {
+      "file": "marginalia-reply.webp",
+      "chapter": "marginalia",
+      "route": "/editor/",
+      "width": 760,
+      "height": 550,
+      "bytes": 48148,
+      "sha256": "5a8791185d218c9b099f7afa2ae77590682996d105a7c1972befbff506756987",
+      "description": "Writer reply saved by the actual Reply action.",
+      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor."
+    },
+    {
+      "file": "marginalia-ask-editor.webp",
+      "chapter": "marginalia",
+      "route": "/editor/",
+      "width": 760,
+      "height": 550,
+      "bytes": 26982,
+      "sha256": "e40ff9c4b63ef59a248d17b3d66ea0c95c6a6e4ce323f9c68cf91b563223d64b",
+      "description": "Actual editor picker with the scholar selected. No request sent.",
+      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor."
+    },
+    {
+      "file": "marginalia-resolve.webp",
+      "chapter": "marginalia",
+      "route": "/editor/",
+      "width": 760,
+      "height": 550,
+      "bytes": 47978,
+      "sha256": "c250ded214f59cc1b77c169f3998e6da8f64190c571045ed41b86a701c0e91aa",
+      "description": "Actual resolved thread with Reopen recovery.",
+      "staged": "Initial anchored note is staged. Writer reply, Resolve, Reopen and editor selection were operated in the real UI. No request sent to the editor."
+    },
+    {
+      "file": "apparatus-manuscript.webp",
+      "chapter": "apparatus",
+      "route": "/apparatus/",
+      "width": 576,
+      "height": 490,
+      "bytes": 19216,
+      "sha256": "a2fec7cdf7a2a59b61f1d130463c8a1ce16d8aa90173bdfcfb2bd13a29044ab4",
+      "description": "Actual URL and author-year detection and staged saved bibliography in MLA.",
+      "staged": "Saved source metadata is staged. URL/author-year detection and MLA/APA/Chicago formatting use the actual local app functions. No live source search."
+    },
+    {
+      "file": "apparatus-apa.webp",
+      "chapter": "apparatus",
+      "route": "/apparatus/",
+      "width": 576,
+      "height": 490,
+      "bytes": 19664,
+      "sha256": "92fcd6cd6c72b34b56513aa77891a315c6287d4c21cd87ca32e131002b3238b3",
+      "description": "Actual local APA formatting of saved sample references.",
+      "staged": "Saved source metadata is staged. URL/author-year detection and MLA/APA/Chicago formatting use the actual local app functions. No live source search."
+    },
+    {
+      "file": "apparatus-chicago.webp",
+      "chapter": "apparatus",
+      "route": "/apparatus/",
+      "width": 576,
+      "height": 490,
+      "bytes": 20490,
+      "sha256": "28b5d91dc89e38ac43a402bc1cf8715edff952090ed0d74e5723bbe906c55f50",
+      "description": "Actual local Chicago formatting and Copy all control.",
+      "staged": "Saved source metadata is staged. URL/author-year detection and MLA/APA/Chicago formatting use the actual local app functions. No live source search."
+    }
+  ],
+  "replay": {
+    "script": "artifacts/qa-recordings/2026-09-30/manual-visual/editorial/replay.mjs",
+    "fixtureAndCaptureHelpers": "artifacts/qa-recordings/2026-09-30/manual-visual/editorial/capture-session.mjs",
+    "result": "artifacts/qa-recordings/2026-09-30/manual-visual/editorial/capture-result.json",
+    "video": "artifacts/qa-recordings/2026-09-30/manual-visual/editorial/editorial-walkthrough.webm",
+    "videoDurationSeconds": 47.4,
+    "videoBytes": 3859125,
+    "publicReplayExecution": false
+  },
+  "verification": {
+    "capturedImages": 14,
+    "browserPageErrors": 0,
+    "dataTypecheck": "Focused TypeScript check passed for guide-editorial-room.ts and manual-guide-types.ts",
+    "inspected": "Every guide image was visually inspected; no loading/error screen is used.",
+    "interactions": [
+      "custom editor creation",
+      "criterion expansion and configuration fields",
+      "rubric reading tabs",
+      "writer reply",
+      "Resolve and Reopen",
+      "editor picker selection",
+      "APA and Chicago style switching"
+    ]
+  },
+  "limitations": [
+    "Rubric grades and editorial feedback are staged examples, not a funded inference result.",
+    "No production sign-in, cross-device sync or authenticated model exchange was verified.",
+    "Model routing shows an unconnected sample provider with an empty key.",
+    "No live research search or remote source verification was performed.",
+    "The source manuscript and all local data belong to an isolated disposable browser context."
+  ]
+}

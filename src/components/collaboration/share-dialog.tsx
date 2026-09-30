@@ -7,6 +7,7 @@ import {
   type PropFunction,
 } from "@qwik.dev/core";
 import { useConvexClient } from "../../utils/convex-context";
+import { accountDisplayName } from "../../utils/account-display";
 import {
   hasAuthenticatedConvexIdentity,
   useAuth,
@@ -163,7 +164,7 @@ export const ShareDialog = component$(
         store.lixId = lixId;
         store.shared = true;
         props.onShared$?.(lixId, draftHtml);
-        startPresence(client, lixId, auth.value.user?.email);
+        startPresence(client, lixId, accountDisplayName(auth.value.user));
       } catch (error) {
         reportApplicationDiagnostic("twyne:collaboration:share", error, {
           operation: "share-folio",
@@ -336,14 +337,16 @@ export const ShareDialog = component$(
             {presenceSig.value.slice(0, 4).map((p) => (
               <span
                 key={p.userId}
-                title={p.displayName}
+                title={accountDisplayName({ name: p.displayName })}
                 class="inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-semibold text-white"
                 style={{
                   backgroundColor: p.color,
                   fontFamily: "var(--font-typewriter)",
                 }}
               >
-                {p.displayName.charAt(0).toUpperCase()}
+                {accountDisplayName({ name: p.displayName })
+                  .charAt(0)
+                  .toUpperCase()}
               </span>
             ))}
             {presenceSig.value.length > 4 && (

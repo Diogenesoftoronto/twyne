@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "caption": "Illustrated AI editorial voices",
+  "fictionalIllustrations": true,
+  "generator": {
+    "tool": "imagegen.imagegen",
+    "mode": "built-in"
+  },
+  "promptSummary": "Five distinct fictional 1955 editorial voices, based on the approved diverse cast: an East Asian sceptic, Black patron of strengths, older North African scholar, white copy chief, and South Asian reader. Rich black pen-and-ink crosshatching on warm cream, restrained red and blue props, recognizable faces, expressive role-specific poses, full heads and hands, no lettering, borders, or watermarks.",
+  "portraitSize": {
+    "width": 480,
+    "height": 600
+  },
+  "portraits": [
+    {
+      "personaId": "devil",
+      "file": "devil.webp",
+      "selectedGeneration": "devil-v2",
+      "bytes": 76168
+    },
+    {
+      "personaId": "angel",
+      "file": "angel.webp",
+      "selectedGeneration": "angel-v1",
+      "bytes": 89498
+    },
+    {
+      "personaId": "scholar",
+      "file": "scholar.webp",
+      "selectedGeneration": "scholar-v1",
+      "bytes": 92884
+    },
+    {
+      "personaId": "editor",
+      "file": "editor.webp",
+      "selectedGeneration": "editor-v1",
+      "bytes": 65120
+    },
+    {
+      "personaId": "reader",
+      "file": "reader.webp",
+      "selectedGeneration": "reader-v2",
+      "bytes": 78508
+    }
+  ]
+}
