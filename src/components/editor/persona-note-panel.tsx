@@ -28,7 +28,11 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
 
   return (
     <div
-      class="persona-note-card manuscript-comment-card"
+      class={[
+        "persona-note-card manuscript-comment-card",
+        { "is-in-margin": !!note.margin },
+      ]}
+      data-margin-item={note.margin ?? undefined}
       role="dialog"
       aria-label={`Note from ${note.author}`}
       style={{
@@ -36,6 +40,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
         top: note.top != null ? `${note.top}px` : "auto",
         bottom: note.bottom != null ? `${note.bottom}px` : "auto",
         "max-height": `${note.maxH}px`,
+        width: note.width ? `${note.width}px` : undefined,
         "--comment-color": note.color,
       }}
       onClick$={(event) => {
@@ -174,6 +179,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
               }
             }}
             placeholder={`Reply to ${note.author}…`}
+            aria-label={`Reply to ${note.author}`}
             class="manuscript-comment-card__textarea"
             rows={3}
           />

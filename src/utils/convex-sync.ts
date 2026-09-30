@@ -23,7 +23,8 @@ import {
   deleteFolioFromIdb,
   saveBriefToIdb,
   deleteBriefFromIdb,
-  saveFolioContentToIdb,
+  saveFolioContentSnapshotToIdb,
+  type FolioContentSnapshot,
   deleteFolioContentFromIdb,
   savePersonasToIdb,
   saveDraftHtmlToIdb,
@@ -72,7 +73,7 @@ interface SyncedSnapshot {
   legacyBriefUpdatedAt: number;
   folios: Folio[];
   foliosUpdatedAt: number;
-  folioContent: Array<{ folioId: string; html: string; updatedAt: number }>;
+  folioContent: FolioContentSnapshot[];
   customPersonas: Persona[] | null;
   customPersonasUpdatedAt: number;
   personaNotes: Array<{
@@ -149,7 +150,7 @@ interface SyncState {
 interface LocalSnapshot {
   briefs: Array<{ folioId: string; brief: ProjectBrief }>;
   folios: Folio[];
-  folioContent: Array<{ folioId: string; html: string; updatedAt: number }>;
+  folioContent: FolioContentSnapshot[];
   customPersonas: Persona[] | null;
   personaNotes: PersonaFeedback[];
   personaReplies: PersonaReply[];
@@ -487,6 +488,8 @@ async function loadSnapshotSection(
         rows.push({
           folioId: id,
           html: content?.html ?? "",
+          format: content?.format,
+          typstSource: content?.typstSource,
           updatedAt: content?.updatedAt ?? 0,
         });
       }
@@ -622,10 +625,14 @@ function buildPushPayload(snap: LocalSnapshot) {
   return {
     briefs: snap.briefs,
     folios: snap.folios,
-    folioContent: snap.folioContent.map(({ folioId, html }) => ({
-      folioId,
-      html,
-    })),
+    folioContent: snap.folioContent.map(
+      ({ folioId, html, format, typstSource }) => ({
+        folioId,
+        html,
+        ...(format !== undefined ? { format } : {}),
+        ...(typstSource !== undefined ? { typstSource } : {}),
+      }),
+    ),
     customPersonas: snap.customPersonas,
     personaNotes: snap.personaNotes.map((n) => ({
       folioId: n.folioId ?? "",
@@ -1035,7 +1042,7 @@ async function replaceFromRemote(
     }
   }
   for (const entry of remote.folioContent) {
-    await saveFolioContentToIdb(entry.folioId, entry.html);
+    await saveFolioContentSnapshotToIdb(entry);
   }
 
   await savePersonasToIdb(remote.customPersonas ?? []);
@@ -1219,7 +1226,7 @@ async function mergeFromRemote(
   for (const fc of remote.folioContent) {
     const localEntry = local.folioContent.find((l) => l.folioId === fc.folioId);
     if (!localEntry || fc.updatedAt > localEntry.updatedAt) {
-      await saveFolioContentToIdb(fc.folioId, fc.html);
+      await saveFolioContentSnapshotToIdb(fc);
     }
   }
 

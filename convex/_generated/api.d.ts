@@ -19,6 +19,7 @@ import type * as auth from "../auth.js";
 import type * as collaboration from "../collaboration.js";
 import type * as collectionBackfill from "../collectionBackfill.js";
 import type * as crons from "../crons.js";
+import type * as house from "../house.js";
 import type * as http from "../http.js";
 import type * as images from "../images.js";
 import type * as integrations from "../integrations.js";
@@ -74,6 +75,7 @@ declare const fullApi: ApiFromModules<{
   collaboration: typeof collaboration;
   collectionBackfill: typeof collectionBackfill;
   crons: typeof crons;
+  house: typeof house;
   http: typeof http;
   images: typeof images;
   integrations: typeof integrations;

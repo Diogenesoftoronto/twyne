@@ -1,0 +1,142 @@
+.landing-page .landing-hero--garden::before {
+  background:
+    radial-gradient(circle at 25% 35%, var(--grain-1) 0, transparent 1px),
+    radial-gradient(circle at 75% 65%, var(--grain-2) 0, transparent 1px),
+    radial-gradient(circle at 45% 85%, var(--grain-3) 0, transparent 1px),
+    linear-gradient(
+      180deg,
+      var(--color-paper) 0%,
+      color-mix(in srgb, var(--color-paper) 52%, transparent) 7%,
+      transparent 17%,
+      transparent 85%,
+      color-mix(in srgb, var(--color-paper) 52%, transparent) 95%,
+      var(--color-paper) 100%
+    ),
+    radial-gradient(ellipse at center, #0c0a0866, transparent 75%);
+  background-size:
+    5px 5px,
+    7px 7px,
+    9px 9px,
+    auto,
+    auto;
+}
+
+.landing-page .landing-hero--garden .landing-hero__photo {
+  object-position: center bottom;
+  animation: none;
+}
+
+.landing-page .landing-room-intro {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  gap: 2rem;
+  margin-bottom: clamp(32px, 5vw, 64px);
+  padding: clamp(28px, 6vw, 80px);
+  background: #17130f;
+  color: #f7f0dd;
+  text-align: left;
+}
+
+.landing-page .landing-room-intro > img {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.landing-page .landing-room-intro::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, #0c0a08cc, #0c0a0833);
+}
+
+.landing-page .landing-room-intro .launch-film {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  column-gap: clamp(24px, 4vw, 64px);
+  align-items: center;
+  width: 100%;
+}
+
+.landing-page .landing-room-intro .launch-film__caption {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  margin: 0;
+}
+
+.landing-page .landing-room-intro .launch-film__title {
+  color: #f7f0dd;
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  line-height: 1.2;
+}
+
+.landing-page .landing-room-intro .launch-film__description {
+  color: #f7f0dd;
+  margin-top: 1.25rem;
+  font-size: 1.0625rem;
+  line-height: 1.65;
+}
+
+.landing-page .landing-room-intro .launch-film__duration,
+.landing-page .landing-room-intro .launch-film__footnote {
+  color: #e3d6bd;
+}
+
+.landing-page .landing-room-intro .launch-film__footnote {
+  grid-column: 2;
+}
+
+.landing-page .landing-room-intro__desk-link {
+  justify-self: end;
+  padding-block: 0.5rem;
+  color: #f7f0dd;
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.landing-page .landing-room-intro a:focus-visible,
+.landing-page .landing-room-intro .launch-film__player:focus-visible {
+  outline: 2px solid #f7f0dd;
+  outline-offset: 5px;
+}
+
+@media (max-width: 800px) {
+  .landing-page .landing-room-intro .launch-film {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .landing-page .landing-room-intro .launch-film__caption {
+    margin-bottom: 1.5rem;
+  }
+
+  .landing-page .landing-room-intro .launch-film__footnote {
+    grid-column: 1;
+  }
+}
+
+.landing-page .landing-closing-artwork::after {
+  opacity: 0.18;
+}
+
+.landing-page .landing-closing-artwork .landing-closing-photo {
+  opacity: 0.38;
+  mask-image: radial-gradient(ellipse at center, #000 55%, transparent 100%);
+}
+
+@media (max-width: 600px) {
+  .landing-page .landing-hero--garden .landing-hero__photo {
+    object-fit: contain;
+  }
+
+  .landing-page .landing-room-intro > img {
+    object-position: 48% center;
+  }
+}

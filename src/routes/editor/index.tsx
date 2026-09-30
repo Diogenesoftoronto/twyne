@@ -1,3 +1,5 @@
+import { loadModelBriefForFolio } from "../../utils/model-context";
+import { HOUSE_CHANGED_EVENT } from "../../utils/house-store";
 import { Icon } from "../../components/ui/icon";
 import type { Editor } from "@tiptap/core";
 import { WritingToolsPanel } from "../../components/writing-tools/writing-tools-panel";
@@ -58,6 +60,7 @@ import {
 } from "../../components/editorial-board/editorial-board-overlay";
 import { BOARD_TABS } from "../../components/editorial-board/board-tabs";
 import { editorialDateline, folioNumeral } from "../../utils/editorial-format";
+import { startHouseSync } from "../../utils/house-sync";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { markDirty, loadRoomSettingsLocally } from "../../utils/convex-sync";
@@ -145,6 +148,8 @@ interface LayoutStore {
   zenActive: boolean;
   hydrated: boolean;
   brief: ProjectBrief | null;
+  modelBrief: ProjectBrief | null;
+  modelBriefFolioId: string | null;
   briefEditions: BriefEdition[];
   editorSeed: string;
   folios: Folio[];
@@ -190,6 +195,20 @@ export default component$(() => {
   const location = useLocation();
   const clientSig = useConvexClient();
   const auth = useAuth();
+  // House sync uses browser storage and the authenticated client lifecycle.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    track(() => clientSig.value);
+    track(() => auth.value);
+    if (!hasAuthenticatedConvexIdentity(auth.value)) return;
+    cleanup(
+      startHouseSync(() =>
+        hasAuthenticatedConvexIdentity(auth.value)
+          ? (clientSig.value ?? null)
+          : null,
+      ),
+    );
+  });
   // Controls the shared AccountMenu (Editor's Office); external triggers such
   // as the ?auth=1 deep link and the local-only nudge flip this open.
   const accountOpen = useSignal(false);
@@ -206,6 +225,8 @@ export default component$(() => {
     zenActive: false,
     hydrated: false,
     brief: null,
+    modelBrief: null,
+    modelBriefFolioId: null,
     briefEditions: [],
     editorSeed: "",
     folios: [],
@@ -397,6 +418,28 @@ export default component$(() => {
       flushLocalPersist(leaving);
     };
 
+    const cancelStaleVisualSave = (event: Event) => {
+      const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
+      if (pendingDraftFolioId !== folioId) return;
+      if (localPersistTimer !== null) window.clearTimeout(localPersistTimer);
+      localPersistTimer = null;
+      pendingDraftHtml = null;
+      pendingDraftFolioId = null;
+    };
+    const sourceCommitted = (event: Event) => {
+      const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
+      markDirty(["folioContent"], folioId);
+    };
+    window.addEventListener("twyne:typst-applying", cancelStaleVisualSave);
+    window.addEventListener("twyne:typst-source-committed", sourceCommitted);
+    cleanup(() => {
+      window.removeEventListener("twyne:typst-applying", cancelStaleVisualSave);
+      window.removeEventListener(
+        "twyne:typst-source-committed",
+        sourceCommitted,
+      );
+    });
+
     const onLocalPersistPageHide = () => {
       // The editor flushes its own derive on the same event, which re-enters
       // `contentHandler` synchronously; that handler flushes directly when the
@@ -476,6 +519,7 @@ export default component$(() => {
 
     // ── Persist layout (width, margin, running header, page numbers) ──
     const layoutHandler = (e: Event) => {
+      if (store.sharedRole === "commenter") return;
       const next = (e as CustomEvent).detail;
       if (!next || !store.activeFolioId) return;
       const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
@@ -494,6 +538,7 @@ export default component$(() => {
 
     // ── Persist editable running header / footer text ──
     const headerHandler = (e: Event) => {
+      if (store.sharedRole === "commenter") return;
       const text = (e as CustomEvent).detail as string;
       if (!store.activeFolioId) return;
       const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
@@ -508,6 +553,7 @@ export default component$(() => {
       markDirty(["folios"]);
     };
     const footerHandler = (e: Event) => {
+      if (store.sharedRole === "commenter") return;
       const text = (e as CustomEvent).detail as string;
       if (!store.activeFolioId) return;
       const idx = store.folios.findIndex((f) => f.id === store.activeFolioId);
@@ -539,7 +585,18 @@ export default component$(() => {
     // Zen mode: collapse both side panels to give the manuscript the full
     // width, and put them back the way they were on exit.
     const zenModeHandler = (e: Event) => {
-      const on = !!(e as CustomEvent).detail?.on;
+      const detail = (e as CustomEvent<{ on?: boolean; source?: string }>)
+        .detail;
+      const on = !!detail?.on;
+      // Automatic focus moves nothing: collapsing the masthead or closing a
+      // docked panel re-centres and re-wraps the page under the writer's
+      // caret, which is the interruption focus exists to prevent. The flow
+      // chrome fade (`[data-flow]` in global.css) quiets them instead. Only
+      // a zen the writer asked for rearranges the room.
+      if (detail?.source === "flow") {
+        if (!store.panelsBeforeZen) return;
+        if (on) return;
+      }
       store.zenActive = on;
       if (on) {
         if (store.panelsBeforeZen) return;
@@ -729,6 +786,39 @@ export default component$(() => {
     }
   });
 
+  // Keep the saved dossier editable while model consumers receive inheritance.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const folioId = track(() => store.activeFolioId);
+    track(() => store.brief);
+    let disposed = false;
+    let generation = 0;
+    const refresh = async () => {
+      const token = ++generation;
+      const value = await loadModelBriefForFolio(folioId, store.brief);
+      if (
+        !disposed &&
+        token === generation &&
+        store.activeFolioId === folioId
+      ) {
+        store.modelBrief = value;
+        store.modelBriefFolioId = folioId;
+      }
+    };
+    const amended = async () => {
+      const raw = await loadProjectBriefForFolio(folioId);
+      if (!disposed && store.activeFolioId === folioId) store.brief = raw;
+    };
+    void refresh();
+    window.addEventListener(HOUSE_CHANGED_EVENT, refresh);
+    window.addEventListener("twyne:dossier-amended", amended);
+    cleanup(() => {
+      disposed = true;
+      window.removeEventListener(HOUSE_CHANGED_EVENT, refresh);
+      window.removeEventListener("twyne:dossier-amended", amended);
+    });
+  });
+
   // Review is owned by the workspace, so closing the board cannot stop it.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(
@@ -751,8 +841,9 @@ export default component$(() => {
   useVisibleTask$(async ({ track, cleanup }) => {
     const hydrated = track(() => store.hydrated);
     const folioId = track(() => store.activeFolioId);
-    const brief = track(() => store.brief);
-    if (!hydrated || !folioId) return;
+    const brief = track(() => store.modelBrief);
+    const contextFolioId = track(() => store.modelBriefFolioId);
+    if (!hydrated || !folioId || contextFolioId !== folioId) return;
 
     let cancelled = false;
     cleanup(() => {
@@ -1348,10 +1439,11 @@ export default component$(() => {
                         : `/dossier/create/?folio=${encodeURIComponent(store.activeFolioId)}`,
                     );
                   })}
-                  class="btn-paper hidden sm:inline-flex"
-                  title="Refine the dossier"
+                  class={`btn-paper hidden sm:inline-flex items-center gap-1.5${store.hydrated && store.activeFolioId && !store.brief ? " dossier-action-pending" : ""}`}
+                  title={store.brief ? "Refine dossier" : "Create dossier"}
                 >
-                  {store.brief ? "Refine the dossier" : "File a dossier"}
+                  <Icon name={store.brief ? "edit" : "folder"} size={16} />
+                  {store.brief ? "Refine dossier" : "Create dossier"}
                 </button>
                 <FolioMenu
                   brief={store.brief}
@@ -1549,7 +1641,11 @@ export default component$(() => {
             {store.activeFolioId && (
               <PersonasPanel
                 key={`personas-${store.activeFolioId}`}
-                brief={store.brief}
+                brief={
+                  store.modelBriefFolioId === store.activeFolioId
+                    ? store.modelBrief
+                    : null
+                }
                 activeFolioId={store.activeFolioId}
               />
             )}
@@ -1558,7 +1654,11 @@ export default component$(() => {
             {store.activeFolioId && (
               <RubricPanel
                 key={`rubric-${store.activeFolioId}`}
-                brief={store.brief}
+                brief={
+                  store.modelBriefFolioId === store.activeFolioId
+                    ? store.modelBrief
+                    : null
+                }
                 activeFolioId={store.activeFolioId}
               />
             )}
@@ -1566,7 +1666,11 @@ export default component$(() => {
           <div class={store.rightPanel === "comments" ? "h-full" : "hidden"}>
             <CommentsPanel
               key={`comments-${store.activeFolioId ?? "none"}`}
-              brief={store.brief}
+              brief={
+                store.modelBriefFolioId === store.activeFolioId
+                  ? store.modelBrief
+                  : null
+              }
               activeFolioId={store.activeFolioId}
             />
           </div>

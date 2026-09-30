@@ -12,7 +12,11 @@ interface SuggestionPanelProps {
   onAccept$: PropFunction<() => void>;
 }
 
-/** The accept-or-strike decision surface for a persona's proposed rewrite. */
+/**
+ * The accept-or-strike decision for a persona's proposed rewrite. It sits in
+ * the margin beside its passage, like every other note, so the writer can
+ * read the change against the text around it.
+ */
 export const SuggestionPanel = component$<SuggestionPanelProps>((props) => {
   const suggestion = props.suggestion;
 
@@ -20,76 +24,67 @@ export const SuggestionPanel = component$<SuggestionPanelProps>((props) => {
     <>
       {suggestion && (
         <div
-          class="fixed inset-0 z-50 flex items-center justify-center p-6"
-          style="background: rgba(20, 16, 10, 0.55);"
+          class={[
+            "manuscript-comment-card suggestion-card",
+            { "is-in-margin": !!suggestion.margin },
+          ]}
+          data-margin-item={suggestion.margin ?? undefined}
           role="dialog"
           aria-label={`Proposed edit from ${suggestion.author}`}
-          onClick$={props.onClose$}
+          style={{
+            left: `${suggestion.x}px`,
+            top: suggestion.top != null ? `${suggestion.top}px` : "auto",
+            bottom: suggestion.bottom != null ? `${suggestion.bottom}px` : "auto",
+            "max-height": `${suggestion.maxH}px`,
+            width: suggestion.width ? `${suggestion.width}px` : undefined,
+            "--comment-color": suggestion.color,
+          }}
+          onClick$={(event) => event.stopPropagation()}
         >
-          <div
-            class="bg-[var(--color-paper)] border-2 w-full max-w-xl flex flex-col"
-            style={{
-              "border-color": suggestion.color,
-              "border-radius": "4px",
-              "box-shadow": "0 20px 50px rgba(0,0,0,0.35)",
-            }}
-            onClick$={(event) => event.stopPropagation()}
-          >
-            <div
-              class="px-5 py-3 border-b flex items-baseline justify-between gap-3"
-              style={{
-                "border-color": "var(--color-paper-3)",
-                background: "var(--color-paper-soft)",
-              }}
-            >
+          <div class="manuscript-comment-card__head">
+            <div class="min-w-0">
+              <p class="manuscript-comment-card__author">{suggestion.author}</p>
               <p
-                class="text-[0.7rem] tracking-[0.14em] uppercase"
-                style={{
-                  fontFamily: "var(--font-typewriter)",
-                  color: suggestion.color,
-                }}
+                class="manuscript-comment-card__label"
+                style={{ color: suggestion.color }}
               >
-                {suggestion.author} proposes
+                proposes
               </p>
-              <div class="flex items-center gap-1.5 flex-shrink-0">
-                <SpeakButton
-                  compact
-                  id={`suggestion-${suggestion.id}`}
-                  text={suggestion.replacement}
-                  author={suggestion.author}
-                  label={suggestion.author}
-                />
-                <button
-                  onClick$={props.onClose$}
-                  class="text-[var(--color-ink-muted)] hover:text-[var(--color-ink)] text-base"
-                  aria-label="Close"
-                >
-                  ✕
-                </button>
-              </div>
             </div>
-            <div class="px-5 py-4 space-y-3">
-              <p
-                class="text-[0.85rem] leading-6 line-through text-[var(--color-ink-muted)]"
-                style={{ fontFamily: "var(--font-serif)" }}
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <SpeakButton
+                compact
+                id={`suggestion-${suggestion.id}`}
+                text={suggestion.replacement}
+                author={suggestion.author}
+                label={suggestion.author}
+              />
+              <button
+                onClick$={props.onClose$}
+                class="manuscript-comment-card__close"
+                aria-label="Close proposed edit"
               >
-                {suggestion.original}
-              </p>
-              <p
-                data-speech-id={`suggestion-${suggestion.id}`}
-                class="text-[0.95rem] leading-6 text-[var(--color-ink)]"
-                style={{ fontFamily: "var(--font-serif)" }}
-              >
-                {suggestion.replacement}
-              </p>
-              {suggestion.rationale && (
-                <div
-                  class="comment-markdown text-[0.78rem] italic leading-5 text-[var(--color-ink-light)]"
-                  style={{ fontFamily: "var(--font-serif)" }}
-                  dangerouslySetInnerHTML={renderMarkdown(suggestion.rationale)}
-                />
-              )}
-              <div class="pt-2 flex gap-2 justify-end">
+                ✕
+              </button>
+            </div>
+          </div>
+          <div class="manuscript-comment-card__body">
+            <p class="suggestion-card__struck">{suggestion.original}</p>
+            <p
+              data-speech-id={`suggestion-${suggestion.id}`}
+              class="suggestion-card__replacement"
+            >
+              {suggestion.replacement}
+            </p>
+            {suggestion.rationale && (
+              <div
+                class="comment-markdown suggestion-card__why"
+                dangerouslySetInnerHTML={renderMarkdown(suggestion.rationale)}
+              />
+            )}
+            <div class="manuscript-comment-card__actions">
+              <span>Strike or keep</span>
+              <div class="flex gap-2">
                 <button
                   onClick$={props.onStrike$}
                   disabled={suggestion.busy}

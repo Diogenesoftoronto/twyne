@@ -745,8 +745,15 @@ export const RubricPanel = component$(
             ? (event as CustomEvent<LiveReviewSnapshot>).detail
             : liveReviewSnapshot();
           if (snapshot.folioId !== activeFolioId) return;
-          store.resultFresh = snapshot.status === "current";
           if (snapshot.result?.rubric && !store.isAnalyzing) {
+            const isNewVerdict =
+              store.result?.timestamp !== snapshot.result.rubric.timestamp;
+            // Opening the panel or receiving another status update is not a
+            // new impression. Keep the animation tied to a completed verdict.
+            if (isNewVerdict) {
+              store.resultFresh =
+                Boolean(event) && snapshot.status === "current";
+            }
             store.result = snapshot.result.rubric;
             store.judges = snapshot.result.rubric.judges;
             store.static = snapshot.result.rubric.staticScore;
@@ -969,6 +976,7 @@ export const RubricPanel = component$(
                   score={store.result.overallScore}
                   color={getGradeColor(store.result.overallGrade)}
                   animated={store.resultFresh}
+                  impressionKey={store.result.timestamp}
                 />
                 <div class="flex-1 min-w-0">
                   <p

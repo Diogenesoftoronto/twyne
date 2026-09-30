@@ -1,7 +1,15 @@
 import { describe, expect, test } from "bun:test";
-import { exportHtml, exportPlainText, stripHtml } from "./exchange";
+import { exportHtml, exportPlainText, importAs, stripHtml } from "./exchange";
 import { DEFAULT_LAYOUT, type LayoutSettings } from "../types";
 import type { ExportPayload } from "./exchange";
+import {
+  withEditor,
+  type EditorHarness,
+} from "../components/editor/test-harness";
+import {
+  decoratePrintedOpening,
+  preparePrintedImages,
+} from "./print-ornaments";
 
 /**
  * The print stylesheet is the only place where the writer's page settings
@@ -29,6 +37,25 @@ const layout = (over: Partial<LayoutSettings> = {}): LayoutSettings => ({
   ...DEFAULT_LAYOUT,
   ...over,
 });
+
+async function withPrintDom(
+  run: (harness: EditorHarness) => void | Promise<void>,
+) {
+  await withEditor({}, async (harness) => {
+    const previous = Object.getOwnPropertyDescriptor(globalThis, "DOMParser");
+    Object.defineProperty(globalThis, "DOMParser", {
+      value: harness.dom.window.DOMParser,
+      configurable: true,
+      writable: true,
+    });
+    try {
+      await run(harness);
+    } finally {
+      if (previous) Object.defineProperty(globalThis, "DOMParser", previous);
+      else Reflect.deleteProperty(globalThis, "DOMParser");
+    }
+  });
+}
 
 describe("print stylesheet", () => {
   test("loads every font family the formatting menu can write", () => {
@@ -108,6 +135,7 @@ describe("print stylesheet", () => {
           marginRight: 3,
           marginTop: 3,
           marginBottom: 3,
+          pageBorder: "none",
         }),
       }),
     );
@@ -180,5 +208,168 @@ describe("plain text", () => {
     expect(text).toContain("\f");
     expect(text).toContain("One");
     expect(text).toContain("Two");
+  });
+});
+
+describe("print ornaments and columns", () => {
+  test("keeps the quoted original text and formatting alongside decorative artwork", async () => {
+    await withPrintDom(async ({ dom }) => {
+      dom.reconfigure({ url: "https://twyne.app/editor/" });
+      const source =
+        '<p>“<strong><a href="https://example.com">At</a></strong> home.”</p>';
+      const html = exportHtml(payload({ html: source }));
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      const article = doc.querySelector("article")!;
+      expect(article.textContent?.trim()).toBe("“At home.”");
+      expect(article.querySelector(".export-initial-prefix")?.textContent).toBe(
+        "“",
+      );
+      expect(article.querySelector(".export-initial-glyph")?.textContent).toBe(
+        "A",
+      );
+      expect(
+        article
+          .querySelector(".export-initial-glyph")
+          ?.closest("a strong, strong a"),
+      ).not.toBeNull();
+      const image = article.querySelector("img")!;
+      expect(image.getAttribute("src")).toBe(
+        "https://twyne.app/assets/illuminated-initials/a.avif",
+      );
+      expect(image.getAttribute("alt")).toBe("");
+      expect(image.getAttribute("aria-hidden")).toBe("true");
+      expect(source).not.toContain("export-initial");
+      const imported = await importAs(
+        new File([html], "ornaments.html", { type: "text/html" }),
+      );
+      expect(imported.html).toBe(source);
+    });
+  });
+
+  test("off, plain, alternate and Unicode preserve the exact manuscript letters", async () => {
+    await withPrintDom(() => {
+      const off = layout({
+        openingInitial: {
+          mode: "off",
+          collection: "botanical",
+          size: "medium",
+        },
+      });
+      expect(decoratePrintedOpening("<p>At home.</p>", off)).toBe(
+        "<p>At home.</p>",
+      );
+      const plain = layout({
+        openingInitial: {
+          mode: "plain",
+          collection: "alternate",
+          size: "small",
+        },
+      });
+      expect(decoratePrintedOpening("<p>At home.</p>", plain)).toContain(
+        'class="export-initial">A',
+      );
+      expect(decoratePrintedOpening("<p>At home.</p>", plain)).not.toContain(
+        "<img",
+      );
+      const alternate = layout({
+        openingInitial: {
+          mode: "illuminated",
+          collection: "alternate",
+          size: "large",
+        },
+      });
+      expect(decoratePrintedOpening("<p>At home.</p>", alternate)).toContain(
+        "a-alt.avif",
+      );
+      const accented = decoratePrintedOpening(
+        "<p>E<strong>\u0301</strong>lan.</p>",
+        alternate,
+      );
+      const doc = new DOMParser().parseFromString(accented, "text/html");
+      expect(doc.body.textContent).toBe("E\u0301lan.");
+      expect(doc.querySelector("img")).toBeNull();
+    });
+  });
+
+  test("empty or atom-first paragraphs cannot crash or illuminate later prose", async () => {
+    await withPrintDom(() => {
+      for (const source of [
+        '<p><img src="/photo.png"></p>',
+        "<p><br>At home.</p>",
+        '<p>“<img src="/photo.png">At home.</p>',
+        "<p></p><p>At home.</p>",
+      ])
+        expect(decoratePrintedOpening(source, layout())).toBe(source);
+    });
+  });
+
+  test("exports selected columns and a repeated nine-slice frame with safe physical margins", () => {
+    const html = exportHtml(
+      payload({
+        layout: layout({ columns: 3, columnGap: 2, pageBorder: "botanical" }),
+      }),
+    );
+    expect(html).toContain("column-count: 3; column-gap: 2rem");
+    expect(html).toContain("padding: 0.833in 0.833in 0.833in 0.833in");
+    // Twelve short tiles per horizontal edge, seven per vertical edge, four corners.
+    expect(html.match(/data-twyne-print-ornament="border"/g)).toHaveLength(42);
+    expect(html).toContain("botanical.avif");
+    expect(html).toContain("position: fixed;");
+    expect(html).toContain("inset: 18pt;");
+    expect(html).toContain("box-decoration-break: clone;");
+    const unframed = exportHtml(
+      payload({
+        layout: layout({
+          pageBorder: "none",
+          marginTop: 0,
+          marginLeft: 0,
+          marginBottom: 0,
+          marginRight: 0,
+        }),
+      }),
+    );
+    expect(unframed).not.toContain('<div class="export-page-frame');
+    expect(unframed).toContain("margin: 0.000in 0.000in 0.000in 0.000in");
+  });
+
+  test("embeds repeated artwork once and waits for decode before revealing the initial", async () => {
+    await withPrintDom(async ({ dom }) => {
+      dom.reconfigure({ url: "https://twyne.app/editor/" });
+      const doc = new DOMParser().parseFromString(
+        exportHtml(payload({ layout: layout({ pageBorder: "botanical" }) })),
+        "text/html",
+      );
+      const before = doc.querySelector("article")!.textContent;
+      const images = Array.from(doc.images);
+      const decoded: string[] = [];
+      for (const image of images) {
+        Object.defineProperty(image, "naturalWidth", { value: 1024 });
+        image.decode = async () => {
+          decoded.push(image.src);
+        };
+      }
+      const originalFetch = globalThis.fetch;
+      const fetched: string[] = [];
+      globalThis.fetch = (async (url: string) => {
+        fetched.push(String(url));
+        return new Response(new Uint8Array([1, 2, 3]), {
+          headers: { "content-type": "image/png" },
+        });
+      }) as typeof fetch;
+      try {
+        await preparePrintedImages(doc);
+        expect(fetched).toHaveLength(2);
+        expect(decoded).toHaveLength(43);
+        expect(
+          images.every((image) => image.src === "data:image/png;base64,AQID"),
+        ).toBe(true);
+        expect(
+          doc.querySelector(".export-initial.is-illuminated"),
+        ).not.toBeNull();
+        expect(doc.querySelector("article")!.textContent).toBe(before);
+      } finally {
+        globalThis.fetch = originalFetch;
+      }
+    });
   });
 });

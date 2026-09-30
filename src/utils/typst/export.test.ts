@@ -3,8 +3,21 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { JSDOM } from "jsdom";
 import { exportTypst } from "./export";
 import type { TypstCompileResponse } from "./protocol";
+import { DEFAULT_LAYOUT } from "../../types";
+import { htmlToTypst } from "./document";
 
-const payload = { title: "Draft", html: "<p>Current manuscript.</p>" };
+const payload = {
+  title: "Draft",
+  html: "<p>Current manuscript.</p>",
+  layout: {
+    ...DEFAULT_LAYOUT,
+    openingInitial: {
+      mode: "off" as const,
+      collection: "botanical" as const,
+      size: "medium" as const,
+    },
+  },
+};
 const dom = new JSDOM("", { url: "https://twyne.test/editor/" });
 const originals = new Map<string, PropertyDescriptor | undefined>();
 
@@ -56,6 +69,29 @@ afterEach(() => {
 });
 
 describe("Typst export lifecycle", () => {
+  test("standalone source embeds only the selected initial and border", async () => {
+    const requests: string[] = [];
+    replaceGlobal("fetch", async (url: URL) => {
+      requests.push(url.pathname);
+      return new Response(new Uint8Array([1, 2, 3]));
+    });
+    const source = await (
+      await exportTypst(
+        { ...payload, layout: { ...DEFAULT_LAYOUT, pageBorder: "botanical" } },
+        "source",
+      )
+    ).text();
+    expect(requests).toEqual([
+      "/assets/illuminated-initials/c.avif",
+      ...["nw", "n", "ne", "w", "e", "sw", "s", "se"].map(
+        (part) => `/assets/page-borders/slices/botanical-${part}.avif`,
+      ),
+    ]);
+    expect(source).not.toContain('image("/twyne-decoration/');
+    expect(source).toContain("image(twyne-image-1,");
+    expect(source).toContain("image(twyne-image-2,");
+    expect(FakeWorker.instances).toHaveLength(0);
+  });
   test("source export does not start a compiler and embeds a repeated image once", async () => {
     let requests = 0;
     replaceGlobal("fetch", async () => {
@@ -75,6 +111,66 @@ describe("Typst export lifecycle", () => {
     expect(source.match(/#let twyne-image-1/g)).toHaveLength(1);
     expect(source.match(/#image\(twyne-image-1,/g)).toHaveLength(2);
     expect(source).not.toContain('image("/images/');
+  });
+
+  test("canonical Typst source remains authoritative over the HTML projection", async () => {
+    const source = await (
+      await exportTypst(
+        {
+          ...payload,
+          html: "<p>STALE HTML</p>",
+          typstSource: "= Authoritative\nNative source.",
+        },
+        "source",
+      )
+    ).text();
+    expect(source).toContain("= Authoritative\nNative source.");
+    expect(source).not.toContain("STALE HTML");
+    expect(FakeWorker.instances).toHaveLength(0);
+  });
+
+  test("native source exports strip private annotations without changing saved source or authored code", async () => {
+    const typstSource =
+      htmlToTypst(
+        '<p data-indent="2">A <span class="twyne-persona-note" data-persona-note-author="PRIVATE_AUTHOR" data-persona-note-note="PRIVATE_FEEDBACK" data-persona-note-brief="PRIVATE_BRIEF">public passage</span> and <span data-suggestion-versionId="PRIVATE_BRANCH" data-suggestion-replacement="PRIVATE_REWRITE" data-suggestion-rationale="PRIVATE_REASON">original prose</span><span data-comment-id="PRIVATE_ID" data-comment-author="PRIVATE_WRITER"> remain.</span></p>',
+      ) +
+      "\n// Authored code stays in place\n#let my-heading = [A heading]\n#my-heading";
+    const nativePayload = {
+      ...payload,
+      typstSource,
+      includePersonaComments: false,
+    };
+    const source = await (await exportTypst(nativePayload, "source")).text();
+    expect(source).not.toContain("PRIVATE_");
+    expect(source).not.toContain("data-persona-note-");
+    expect(source).not.toContain("data-suggestion-");
+    expect(source).not.toContain("data-comment-");
+    expect(source).toContain("data-indent");
+    expect(source).toContain('#text("public passage")');
+    expect(source).toContain('#text("original prose")');
+    expect(source).toContain(
+      "// Authored code stays in place\n#let my-heading = [A heading]\n#my-heading",
+    );
+    expect(nativePayload.typstSource).toBe(typstSource);
+    expect(nativePayload.typstSource).toContain("PRIVATE_FEEDBACK");
+  });
+
+  test("canonical image helpers embed fetched images into standalone source", async () => {
+    replaceGlobal("fetch", async () => new Response(new Uint8Array([1, 2, 3])));
+    const source = await (
+      await exportTypst(
+        {
+          ...payload,
+          typstSource:
+            '#twyne-image("https://twyne.test/photo.png", width: 50%, alt: "Photo")',
+        },
+        "source",
+      )
+    ).text();
+    expect(source).toContain(
+      '#image(bytes((1,2,3,)), width: 50%, alt: "Photo")',
+    );
+    expect(source).not.toContain("https://twyne.test/photo.png");
   });
 
   test("returns a PDF and terminates the worker after completion", async () => {

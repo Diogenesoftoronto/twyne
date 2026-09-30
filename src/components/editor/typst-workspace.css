@@ -1,0 +1,348 @@
+.typst-workspace {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  font-family: var(--font-sans);
+}
+
+.typst-bar {
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  border-bottom: 1px solid var(--color-paper-3);
+  background: var(--color-paper);
+}
+
+.typst-views,
+.typst-bar-actions,
+.typst-draft-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+}
+
+.typst-views {
+  align-items: stretch;
+}
+.typst-view {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2.5rem;
+}
+.typst-view[aria-pressed="true"] {
+  color: var(--color-vermilion);
+  background: var(--color-paper-soft);
+  border-bottom-color: var(--color-vermilion);
+}
+
+.typst-workspace .typst-tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  min-height: 1.875rem;
+  white-space: nowrap;
+}
+.typst-workspace .typst-tool-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+  transform: none;
+}
+.typst-workspace .typst-tool-btn:disabled:hover {
+  color: var(--color-ink-light);
+  background: transparent;
+}
+.typst-ribbon {
+  background: var(--color-paper-soft);
+  border-bottom: 1px solid var(--color-paper-3);
+}
+.typst-ribbon .compositor-group {
+  display: flex;
+}
+.typst-ribbon .compositor-group::after {
+  color: var(--color-ink-light);
+}
+.typst-ribbon .tool-btn {
+  min-width: 1.875rem;
+}
+
+.typst-draft-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  padding: 0.375rem 0.75rem;
+  border-bottom: 1px solid var(--color-paper-3);
+  background: var(--color-paper-soft);
+  color: var(--color-ink-light);
+  font-size: 0.75rem;
+}
+.typst-draft-message {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.typst-workspace .typst-apply {
+  color: var(--color-paper-soft);
+  background: var(--color-vermilion);
+  padding-inline: 0.65rem;
+}
+.typst-workspace .typst-apply:hover {
+  color: var(--color-paper-soft);
+  background: var(--color-vermilion-2);
+}
+.typst-workspace .typst-apply:disabled {
+  color: var(--color-paper-soft);
+  background: var(--color-vermilion);
+}
+.typst-workspace .typst-apply:focus-visible {
+  outline-offset: 2px;
+}
+
+.typst-panes {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.typst-writing,
+.typst-source {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.typst-source {
+  background: var(--color-editor-bg);
+}
+.typst-source-editor {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.typst-source-heading,
+.typst-split-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.6875rem;
+  color: var(--color-ink-light);
+}
+.typst-source-heading {
+  justify-content: space-between;
+  border-bottom: 1px solid var(--color-paper-3);
+}
+.typst-source-filename {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.typst-source-heading > :last-child {
+  flex-shrink: 0;
+}
+.typst-proof {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  background: var(--color-paper-2);
+  padding: 1.5rem;
+}
+.typst-proof.typst-split {
+  border-left: 1px solid var(--color-paper-3);
+  padding: 0 1rem 1rem;
+}
+.typst-split-heading {
+  padding-inline: 0;
+  padding-block: 0.5rem 0.875rem;
+}
+.typst-proof-pages {
+  margin-inline: auto;
+  max-width: 54rem;
+}
+.typst-proof figure {
+  margin: 0 auto 1rem;
+}
+.typst-proof img {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #fbf6e7;
+  box-shadow: 0 1px 6px #0002;
+}
+.typst-proof figcaption {
+  text-align: center;
+  font-size: 0.6875rem;
+  color: var(--color-ink-light);
+  padding: 0.625rem;
+}
+.typst-proof-empty {
+  display: flex;
+  min-height: 12rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  color: var(--color-ink-light);
+  font-size: 0.8125rem;
+}
+.typst-proof-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.375rem 0.75rem;
+  background: var(--color-paper-soft);
+  border-bottom: 1px solid var(--color-paper-3);
+}
+.typst-pane-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  font-size: 0.75rem;
+  color: var(--color-ink-light);
+}
+.typst-zoom-value {
+  min-width: 3rem;
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+}
+
+.typst-error {
+  display: flex;
+  flex-shrink: 0;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  max-height: 10rem;
+  overflow: auto;
+  background: var(--color-paper-soft);
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-paper-3);
+}
+.typst-error > span {
+  color: var(--color-vermilion);
+}
+.typst-error p {
+  margin: 0.25rem 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.typst-error strong {
+  font-weight: 600;
+}
+.typst-statusbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.75rem;
+  border-top: 1px solid var(--color-paper-3);
+  background: var(--color-paper);
+  color: var(--color-ink-light);
+  font-size: 0.6875rem;
+}
+.typst-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.typst-cursor {
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+}
+.typst-workspace [hidden] {
+  display: none !important;
+}
+.twyne-raw-typst {
+  padding: 1rem;
+  border: 1px dashed var(--color-ink-light);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.twyne-raw-typst::before {
+  content: "Typst source block";
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  color: var(--color-ink-light);
+  margin-bottom: 0.5rem;
+}
+.twyne-raw-typst-inline {
+  font-family: var(--font-mono);
+  background: var(--color-paper-soft);
+}
+
+@media (max-width: 850px) {
+  .typst-proof.typst-split,
+  .typst-split-toggle {
+    display: none !important;
+  }
+  .typst-action-label {
+    display: none;
+  }
+}
+@media (max-width: 639px) {
+  .typst-bar {
+    padding-inline: 0.25rem;
+    gap: 0.125rem;
+  }
+  .typst-view {
+    padding-inline: 0.5rem;
+    gap: 0.3rem;
+    min-height: 2.75rem;
+  }
+  .typst-ribbon {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-inline: 0.25rem;
+  }
+  .typst-ribbon .compositor-group {
+    padding-inline: 0.125rem;
+    flex-shrink: 0;
+  }
+  .typst-ribbon .tool-btn {
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+  }
+  .typst-draft-detail {
+    display: none;
+  }
+  .typst-draft-bar {
+    padding-inline: 0.5rem;
+    gap: 0.25rem;
+  }
+  .typst-draft-actions .tool-btn {
+    min-height: 2.25rem;
+  }
+  .typst-proof {
+    padding: 0.75rem;
+  }
+  .typst-statusbar {
+    gap: 0.5rem;
+    padding-inline: 0.5rem;
+  }
+  .typst-pane-title {
+    font-size: 0.6875rem;
+  }
+}

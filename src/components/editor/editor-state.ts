@@ -37,6 +37,10 @@ export interface NotePopover {
   replying: boolean;
   streamingReply: string;
   error: string | null;
+  /** Flow item whose margin slot this card has unfolded into, if any. */
+  margin?: string | null;
+  /** Width of that slot; the card's own width otherwise. */
+  width?: number;
 }
 
 /** A persona's proposed rewrite, presented for an explicit accept/strike decision. */
@@ -49,8 +53,14 @@ export interface SuggestionPopover {
   replacement: string;
   rationale: string;
   x: number;
-  y: number;
+  top: number | null;
+  bottom: number | null;
+  maxH: number;
   busy: boolean;
+  /** Flow item whose margin slot this card has unfolded into, if any. */
+  margin?: string | null;
+  /** Width of that slot; the card's own width otherwise. */
+  width?: number;
 }
 
 /** A note collected live from the document, in reading order and numbered per kind. */
@@ -79,6 +89,10 @@ export interface UserCommentPopover {
   resolved: boolean;
   replies: UserCommentReply[];
   draft: string;
+  /** Flow item whose margin slot this card has unfolded into, if any. */
+  margin?: string | null;
+  /** Width of that slot; the card's own width otherwise. */
+  width?: number;
 }
 
 /** The exact Tiptap selection owned by the manuscript action card. */
@@ -156,6 +170,9 @@ export interface EditorStore {
   currentKeepWithNext: boolean;
   pageCount: number;
   paginationActive: boolean;
+  /** A recoverable source draft temporarily owns manuscript editing. */
+  typstSourcePending?: boolean;
+  typstView?: "write" | "source" | "proof";
   toolbarTab: CompositorTab;
 }
 

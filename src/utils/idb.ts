@@ -43,6 +43,12 @@ import {
 import { SEARCH_BACKEND_IDS } from "./research-backends";
 import type { UsageEvent, WritingActivityDetail } from "./usage-domain";
 
+import {
+  htmlToTypst,
+  typstToHtml,
+  reconcileTypstSource,
+} from "./typst/document";
+
 const DB_NAME = "twyne";
 /**
  * Bumped to 2 to add the `voice-notes` store; bumped to 3 to add the
@@ -65,6 +71,8 @@ const APPARATUS_SETTINGS_META_KEY = "apparatus-settings";
 export interface FolioContentSnapshot {
   folioId: string;
   html: string;
+  format?: "html" | "typst";
+  typstSource?: string;
   updatedAt: number;
 }
 
@@ -501,40 +509,111 @@ export async function loadFolioContentSnapshotFromIdb(
 ): Promise<FolioContentSnapshot | null> {
   if (!isBrowser()) return null;
   try {
-    const db = await openDb();
-    const rec =
-      (await reqAsPromise<FolioContentSnapshot | undefined>(
-        db
-          .transaction("folio-content")
-          .objectStore("folio-content")
-          .get(folioId),
-      )) ?? null;
-    return rec;
+    return await tx("folio-content", "readwrite", async (t) => {
+      const store = t.objectStore("folio-content");
+      const rec = await reqAsPromise<FolioContentSnapshot | undefined>(
+        store.get(folioId),
+      );
+      if (!rec) return null;
+      if (rec.typstSource === undefined) {
+        rec.typstSource = htmlToTypst(rec.html);
+        rec.format = "typst";
+        await reqAsPromise(store.put(rec));
+      }
+      return rec;
+    });
   } catch {
     return null;
   }
+}
+
+export const FOLIO_CONTENT_SAVED = "twyne:folio-content-saved";
+
+async function updateFolioContent(
+  folioId: string,
+  update: (previous: FolioContentSnapshot | undefined) => FolioContentSnapshot,
+): Promise<FolioContentSnapshot | undefined> {
+  if (!isBrowser()) return;
+  const rec = await tx("folio-content", "readwrite", async (t) => {
+    const store = t.objectStore("folio-content");
+    const previous = await reqAsPromise<FolioContentSnapshot | undefined>(
+      store.get(folioId),
+    );
+    const next = update(previous);
+    await reqAsPromise(store.put(next));
+    return next;
+  });
+  window.dispatchEvent(new CustomEvent(FOLIO_CONTENT_SAVED, { detail: rec }));
+  return rec;
 }
 
 export async function saveFolioContentToIdb(
   folioId: string,
   html: string,
 ): Promise<void> {
-  if (!isBrowser()) return;
-  try {
-    const rec: FolioContentSnapshot = {
+  await updateFolioContent(folioId, (previous) => ({
+    folioId,
+    html,
+    format: "typst",
+    typstSource:
+      previous?.typstSource !== undefined
+        ? previous.html === html
+          ? previous.typstSource
+          : reconcileTypstSource(previous.typstSource, html)
+        : htmlToTypst(html),
+    updatedAt: previous?.html === html ? previous.updatedAt : Date.now(),
+  }));
+}
+
+/** Save source and its visual projection as one recoverable document. */
+export async function saveFolioTypstToIdb(
+  folioId: string,
+  source: string,
+  html?: string,
+  expectedSource?: string | null,
+): Promise<void> {
+  await updateFolioContent(folioId, (previous) => {
+    if (
+      expectedSource !== undefined &&
+      (previous?.typstSource ?? null) !== expectedSource
+    )
+      throw new Error(
+        "The manuscript changed while this source was being edited. Review the latest source before applying.",
+      );
+    return {
       folioId,
-      html,
-      updatedAt: Date.now(),
+      html: html ?? typstToHtml(source),
+      format: "typst",
+      typstSource: source,
+      updatedAt:
+        previous?.typstSource === source ? previous.updatedAt : Date.now(),
     };
-    await reqAsPromise(
-      (await openDb())
-        .transaction("folio-content", "readwrite")
-        .objectStore("folio-content")
-        .put(rec),
+  });
+}
+
+/** Sync installs the remote revision stamp instead of inventing a local edit. */
+export async function saveFolioContentSnapshotToIdb(
+  snapshot: FolioContentSnapshot,
+): Promise<void> {
+  const saved = await updateFolioContent(snapshot.folioId, (previous) => ({
+    ...snapshot,
+    format: "typst",
+    typstSource:
+      snapshot.typstSource ??
+      (previous?.typstSource !== undefined
+        ? reconcileTypstSource(previous.typstSource, snapshot.html)
+        : htmlToTypst(snapshot.html)),
+  }));
+  if (saved)
+    window.dispatchEvent(
+      new CustomEvent("twyne:typst-remote-change", {
+        detail: {
+          folioId: saved.folioId,
+          source: saved.typstSource,
+          html: saved.html,
+        },
+      }),
     );
-  } catch {
-    /* ignore */
-  }
 }
 
 export async function deleteFolioContentFromIdb(

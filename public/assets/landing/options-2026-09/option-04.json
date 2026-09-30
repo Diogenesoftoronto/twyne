@@ -1,0 +1,28 @@
+{
+  "id": "option-04",
+  "title": "The paper passage",
+  "generatedWith": "built-in image_gen",
+  "sourceFilename": "/home/diogenes/.codex/generated_images/01a0ebc2-d7e7-7392-91c3-181cfb67df08/exec-8ea80252-b33d-4f88-a434-643254982667.png",
+  "sourceSha256": "13cb4f0abac1dd56c5e9dad8b92f19eea6a2aa7f80936c3c1b76db0a62228031",
+  "prompt": "Use case: product-mockup. Asset type: premium conceptual website hero for Twyne, a literary writing app. Landscape 1536x1024. Museum-quality photographic paper sculpture made from layers of revised manuscript paper, forming a graceful curved passage and open doorway at the edges of the frame. Warm ivory paper cut edges, delicate real fibers, exquisite folded sheets and subtle ghost traces of editing marks without any readable text. The layers bend inward as a poetic image of writing as transformation. One precise vermilion editorial thread travels through the lower margin. Sculptural directional studio lighting produces rich warm paper shadows against ink-black. Composition essential: the central 50 percent is a quiet deeply dark ink-black opening, uninterrupted negative space for cream headline copy. Paper architecture concentrated at outer left and right edges with a restrained curved lower threshold; no white sheet crosses the central text zone. Sophisticated contemporary literary art direction, tactile real materials, elegant asymmetry, cinematic depth, visually distinct from a normal desk or book photograph. No generated titles, no readable words, no logos, no fake app UI, no watermark, no people, no clutter.",
+  "encoding": {
+    "format": "avif",
+    "quality": 70,
+    "effort": 6,
+    "chromaSubsampling": "4:4:4"
+  },
+  "outputs": [
+    {
+      "file": "option-04-1536.avif",
+      "width": 1536,
+      "height": 1024,
+      "bytes": 92212
+    },
+    {
+      "file": "option-04-768.avif",
+      "width": 768,
+      "height": 512,
+      "bytes": 30216
+    }
+  ]
+}

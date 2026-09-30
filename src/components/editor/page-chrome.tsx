@@ -1,6 +1,7 @@
 import { component$, type PropFunction } from "@qwik.dev/core";
 import type { LayoutSettings } from "../../types";
 import { PageFurnitureEditor } from "./page-furniture-editor";
+import { PageBorder } from "./page-border";
 
 export interface PageChromeProps {
   /** Number of sheets the engine says the manuscript occupies. */
@@ -86,6 +87,7 @@ export const PageChrome = component$<PageChromeProps>((props) => {
             height: `${props.pageH}px`,
           }}
         >
+          <PageBorder layout={props.layout} />
           {showHeader && (
             <div
               class="twyne-page-running-header"

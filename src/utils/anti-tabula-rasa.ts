@@ -1,3 +1,4 @@
+import type { LedgerSource } from "./house-model";
 import type {
   DossierAttachment,
   DossierProbe,
@@ -121,11 +122,17 @@ export function saveProjectBrief(brief: ProjectBrief): void {
 export async function saveProjectBriefForFolio(
   folioId: string,
   brief: ProjectBrief,
+  provenance?: { source: LedgerSource; reason?: string },
 ): Promise<void> {
   const normalized = normalizeProjectBrief(brief);
   const previous = await loadBriefFromIdb(folioId);
   if (previous && JSON.stringify(previous) !== JSON.stringify(normalized)) {
-    await archiveBriefEdition(folioId, normalizeProjectBrief(previous));
+    await archiveBriefEdition(
+      folioId,
+      normalizeProjectBrief(previous),
+      provenance,
+      normalized,
+    );
   }
   await saveBriefToIdb(folioId, normalized);
   // The IDB helper absorbs storage failures; verify the write so a lost

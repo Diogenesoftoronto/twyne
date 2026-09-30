@@ -7,6 +7,7 @@ import {
 import { Link } from "@qwik.dev/router";
 import { WorkspaceTour } from "./workspace-tour";
 import { LaunchFilm } from "./launch-film";
+import "./landing-artwork.css";
 import {
   BriefPlatePreview,
   DraftPlatePreview,
@@ -290,12 +291,6 @@ export const LandingPage = component$<LandingPageProps>(
           {/* ── Masthead ── */}
           <header class="grid items-center gap-x-4 gap-y-3 border-b border-[rgba(31,27,22,0.16)] py-5 max-sm:justify-items-center sm:grid-cols-[1fr_auto_1fr]">
             <nav class="hidden items-center gap-6 sm:flex">
-              <a class="landing-nav-link" href="#editorial-room">
-                The room
-              </a>
-              <a class="landing-nav-link" href="#how-it-works">
-                How it works
-              </a>
               <Link class="landing-nav-link" href={DESKTOP_DOWNLOAD_URL}>
                 Desktop app
               </Link>
@@ -329,11 +324,11 @@ export const LandingPage = component$<LandingPageProps>(
           </header>
 
           {/* ── Hero — the type is set on the desk itself ── */}
-          <section class="landing-hero">
+          <section class="landing-hero landing-hero--garden paper-foxed">
             <img
               class="landing-hero__photo"
-              src="/assets/landing/product-hero-v2-lg.webp"
-              srcset="/assets/landing/product-hero-v2-sm.webp 768w, /assets/landing/product-hero-v2-lg.webp 1536w"
+              src="/assets/landing/options-2026-09/option-03-1536.avif"
+              srcset="/assets/landing/options-2026-09/option-03-768.avif 768w, /assets/landing/options-2026-09/option-03-1536.avif 1536w"
               sizes="100vw"
               width={1536}
               height={1024}
@@ -390,19 +385,34 @@ export const LandingPage = component$<LandingPageProps>(
             </div>
           </section>
 
-          <section
-            class="mx-auto mt-12 max-w-4xl sm:mt-16"
-            aria-label="Twyne launch film"
-          >
-            <LaunchFilm />
-          </section>
-
           {/* ── The room, working ── */}
           <section
             id="editorial-room"
             class="landing-rise-3 mt-16 scroll-mt-8 md:mt-24"
           >
-            <WorkspaceTour />
+            <div class="landing-room-intro">
+              <img
+                src="/assets/landing/options-2026-09/option-01-1536.avif"
+                srcset="/assets/landing/options-2026-09/option-01-768.avif 768w, /assets/landing/options-2026-09/option-01-1536.avif 1536w"
+                sizes="(min-width: 1280px) 1200px, 100vw"
+                width={1536}
+                height={1024}
+                alt=""
+                aria-hidden="true"
+                loading="lazy"
+                decoding="async"
+              />
+              <LaunchFilm />
+              <a
+                class="landing-room-intro__desk-link"
+                href="#workspace-preview"
+              >
+                Explore the writing desk ↓
+              </a>
+            </div>
+            <div id="workspace-preview" class="scroll-mt-8">
+              <WorkspaceTour />
+            </div>
           </section>
 
           <div
@@ -471,13 +481,13 @@ export const LandingPage = component$<LandingPageProps>(
 
           {/* ── Closing CTA ── */}
           <section class="mt-20 md:mt-28">
-            <div class="paper-sheet paper-foxed relative overflow-hidden px-8 py-14 text-center md:px-14 md:py-20">
-              {/* Photographic bleed, washed back so the copy stays legible. */}
+            <div class="landing-closing-artwork paper-sheet paper-foxed relative overflow-hidden px-8 py-14 text-center md:px-14 md:py-20">
+              {/* Letterpress impression washed into the original aged-paper surface. */}
               <img
-                src="/assets/landing/product-finished-v2-lg.webp"
-                srcset="/assets/landing/product-finished-v2-sm.webp 512w, /assets/landing/product-finished-v2-lg.webp 1024w"
+                src="/assets/landing/options-2026-09/option-05-1536.avif"
+                srcset="/assets/landing/options-2026-09/option-05-768.avif 768w, /assets/landing/options-2026-09/option-05-1536.avif 1536w"
                 sizes="(min-width: 768px) 64rem, 100vw"
-                width={1024}
+                width={1536}
                 height={1024}
                 alt=""
                 aria-hidden="true"

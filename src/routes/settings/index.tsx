@@ -1535,6 +1535,27 @@ export default component$(() => {
     }
   });
 
+  const handleDefaultAvatar = $(async (name: string) => {
+    if (store.profileAvatarBusy) return;
+    store.profileAvatarBusy = true;
+    store.handleError = null;
+    try {
+      const response = await fetch(
+        `/assets/avatars/engraved-2026-09/${name}.avif`,
+      );
+      if (!response.ok)
+        throw new Error("Could not load that portrait. Try again.");
+      const blob = await response.blob();
+      await handleAvatarSelected(
+        new File([blob], `${name}.avif`, { type: "image/avif" }),
+      );
+    } catch {
+      store.handleError = "Could not load that portrait. Try again.";
+    } finally {
+      store.profileAvatarBusy = false;
+    }
+  });
+
   const handleAvatarClear = $(async () => {
     const client = convexClientSig.value;
     if (!client) return;
@@ -4761,10 +4782,36 @@ export default component$(() => {
                         >
                           {store.profileAvatarBusy
                             ? "Working…"
-                            : "PNG or JPG, up to 5 MB. Shown on your public profile."}
+                            : "Upload an image up to 5 MB. Shown in My Desk and on your public profile."}
                         </p>
                       </div>
                     </div>
+                    <fieldset class="mb-5" disabled={store.profileAvatarBusy}>
+                      <legend class="mb-2 text-sm text-[var(--color-ink-light)]">
+                        Or choose a portrait
+                      </legend>
+                      <div class="flex flex-wrap gap-3">
+                        {["owl", "fox", "hare", "raven"].map((name) => (
+                          <button
+                            key={name}
+                            type="button"
+                            aria-label={`Use the ${name} as your profile picture`}
+                            onClick$={() => handleDefaultAvatar(name)}
+                            class="flex flex-col items-center gap-1 rounded-sm p-1 text-xs text-[var(--color-ink)] hover:bg-[var(--color-paper-2)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-vermilion)] disabled:opacity-50"
+                          >
+                            <img
+                              src={`/assets/avatars/engraved-2026-09/${name}.avif`}
+                              alt=""
+                              width={56}
+                              height={56}
+                              class="h-14 w-14 rounded-full object-cover"
+                              loading="lazy"
+                            />
+                            <span class="capitalize">{name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </fieldset>
                     <label
                       class="block text-[0.65rem] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] mb-1"
                       style={{ fontFamily: "var(--font-typewriter)" }}

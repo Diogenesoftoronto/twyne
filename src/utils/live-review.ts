@@ -1,3 +1,4 @@
+import { loadModelBriefForFolio } from "./model-context";
 import type { ConvexClient } from "convex/browser";
 import { askJudgement } from "./judgement-client";
 import type { RubricResult } from "../types";
@@ -6,7 +7,6 @@ import { paragraphTextFromHtml } from "./draft-trajectory";
 import { requestActiveDraftSnapshot } from "./collaboration";
 import {
   loadActiveFolioIdFromIdb,
-  loadBriefFromIdb,
   loadFolioContentFromIdb,
   loadMetaFromIdb,
   saveMetaToIdb,
@@ -172,7 +172,7 @@ export function startLiveReview(
       const [html, brief, specs, notebook, revisions, notes] =
         await Promise.all([
           loadFolioContentFromIdb(folioId),
-          loadBriefFromIdb(folioId),
+          loadModelBriefForFolio(folioId),
           loadCriteriaSpecs(folioId),
           loadWritingToolsNotebook(folioId),
           loadRevisionHistory(folioId),
@@ -507,6 +507,8 @@ export function startLiveReview(
   const events = [
     "twyne:draft-saved",
     "twyne:criteria-changed",
+    "twyne:house-changed",
+    "twyne:dossier-amended",
     "twyne:writing-material-changed",
     "twyne:background-room-notes",
     "twyne:live-review-setting",

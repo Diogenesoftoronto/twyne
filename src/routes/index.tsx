@@ -83,12 +83,12 @@ export const head: DocumentHead = {
     },
     {
       property: "og:title",
-      content: "Twyne — The Writer's Room",
+      content: "Twyne — Draft with a room full of editors",
     },
     {
       property: "og:description",
       content:
-        "Write with a room full of editors. Twyne starts with an interview, a seeded brief, citation detection, and structured feedback.",
+        "Start with a brief. Shape your draft with five editorial personas, rubric review, and a citation desk.",
     },
   ],
   scripts: [

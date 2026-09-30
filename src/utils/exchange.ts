@@ -1,3 +1,4 @@
+import { htmlToTypst, typstToHtml } from "./typst/document";
 /**
  * Export and import for the manuscript. Each format is intentionally
  * a small pure function — no I/O, no UI. The UI layer calls these to
@@ -23,6 +24,9 @@ import {
   DEFAULT_LAYOUT,
   resolveMargins,
   resolvePageSetup,
+  resolvePageBorder,
+  resolveColumns,
+  resolveColumnGap,
 } from "../types";
 import { remToPx } from "./css-units";
 import { htmlToMarkdown } from "./html-to-markdown";
@@ -31,6 +35,16 @@ import {
   type BibEntry,
   type CitationStyle,
 } from "./bibliography";
+import {
+  decoratePrintedOpening,
+  printedInitialStyles,
+  printedPageFrame,
+  printedFrameStyles,
+  preparePrintedImages,
+  PRINT_ORNAMENT_LOAD_SCRIPT,
+  removePrintedOrnaments,
+} from "./print-ornaments";
+import { hasOrnateBorder } from "./page-ornaments";
 
 export type ExportFormat =
   | "markdown"
@@ -94,6 +108,19 @@ function wrapStandaloneHtml(
     wide: "62rem",
   };
   const m = resolveMargins(layout);
+  const ornate = hasOrnateBorder(layout);
+  const border = resolvePageBorder(layout);
+  // A frame lives in the physical margin. Its minimum clearance prevents
+  // ornament from covering prose when the writer chose very small margins.
+  const frameClearance = ornate ? 5 : border === "plain" ? 2 : 0;
+  const printMargins = {
+    top: Math.max(m.top, frameClearance),
+    right: Math.max(m.right, frameClearance),
+    bottom: Math.max(m.bottom, frameClearance),
+    left: Math.max(m.left, frameClearance),
+  };
+  const columns = resolveColumns(layout);
+  const columnGap = resolveColumnGap(layout);
   const setup = resolvePageSetup(layout);
   // Print is paginated unless the document explicitly asked for a continuous
   // sheet. This deliberately does *not* use `setup.pagination`, whose default
@@ -109,7 +136,7 @@ function wrapStandaloneHtml(
   // so this conversion is exact rather than dependent on whatever the
   // browser's default text size happens to be.
   const inches = (rem: number) => (remToPx(rem) / CSS_PX_PER_IN).toFixed(3);
-  const docPageMargin = `${inches(m.top)}in ${inches(m.right)}in ${inches(m.bottom)}in ${inches(m.left)}in`;
+  const docPageMargin = `${inches(printMargins.top)}in ${inches(printMargins.right)}in ${inches(printMargins.bottom)}in ${inches(printMargins.left)}in`;
   const pageSize = paginated
     ? `${setup.paper === "a4" ? "A4" : setup.paper} ${setup.orientation}`
     : "auto";
@@ -143,10 +170,10 @@ function wrapStandaloneHtml(
 <style>
   :root { color-scheme: light; }
   *, *::before, *::after { box-sizing: border-box; }
-  /* The sheet owns the margins. There is deliberately no margin or padding on
-     <body>: setting both stacks them, which silently doubled every printed
-     margin for as long as this exporter has existed. */
-  @page { size: ${pageSize}; margin: ${docPageMargin}; }
+  /* Unframed pages put margins on the sheet. Framed pages reserve the same
+     space through cloned document padding: Chrome clips fixed ornaments that
+     extend into @page margins. Body never adds a second layer of margins. */
+  @page { size: ${pageSize}; margin: ${border === "none" ? docPageMargin : "0"}; }
   /* Pin the root size so the rem-denominated margins above convert to inches
      exactly. On screen the editor leaves this alone, so a reader's text
      scaling still works; a printed sheet is a physical object and does not
@@ -172,6 +199,15 @@ function wrapStandaloneHtml(
     box-shadow: 0 0.5rem 1.5rem rgb(37 29 19 / 0.16);
   }
   article { max-width: 70ch; }
+  article { column-count: ${columns}; column-gap: ${columnGap}rem; }
+  article > h1, article > h2 { column-span: all; }
+  ${printedInitialStyles(layout)}
+  ${printedFrameStyles()}
+  ${ornate ? ".export-document { padding: max(5rem, 6vw); }" : ""}
+  @media screen and (max-width: 640px) {
+    article { column-count: 1; }
+    ${ornate ? ".export-document { padding: 3.25rem; }" : ""}
+  }
   .export-titleblock {
     max-width: 70ch;
     margin: 0 0 clamp(2rem, 5vw, 3.5rem);
@@ -229,8 +265,9 @@ function wrapStandaloneHtml(
        and Chrome implements neither the box nor the counter outside it. */
     html, body { min-height: 0; background: #fff; }
     .export-document {
-      width: auto; margin: 0; padding: 0; background: transparent;
+      width: auto; margin: 0; padding: ${border === "none" ? "0" : docPageMargin}; background: transparent;
       box-shadow: none;
+      -webkit-box-decoration-break: clone; box-decoration-break: clone;
     }
     article, .export-titleblock { max-width: none; }
     .twyne-chrome:not(.f) { position: fixed; top: 0; left: 0; right: 0; }
@@ -327,13 +364,15 @@ function wrapStandaloneHtml(
 </head>
 <body>
 <main class="export-document">
+${printedPageFrame(layout)}
 ${running ? `<div class="twyne-chrome"><span>${escapeHtml(running)}</span></div>` : ""}
 ${titleBlock}
 <article>
-${body}
+${decoratePrintedOpening(body, layout)}
 </article>
 ${footer ? `<div class="twyne-chrome f"><span>${escapeHtml(footer)}</span></div>` : ""}
 </main>
+<script>${PRINT_ORNAMENT_LOAD_SCRIPT}</script>
 </body>
 </html>`;
 }
@@ -519,6 +558,8 @@ function htmlDecode(s: string): string {
 export interface ExportPayload {
   title: string;
   html: string;
+  /** Canonical manuscript source; HTML is its projection for legacy consumers. */
+  typstSource?: string;
   brief?: ProjectBrief | null;
   folios?: Folio[];
   /** Layout of the active folio, drives export/print margins + width. */
@@ -649,12 +690,16 @@ export function exportPlainText(p: ExportPayload): string {
 export function exportTwyneBackup(p: ExportPayload): string {
   return JSON.stringify(
     {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       title: p.title,
       brief: p.brief ?? null,
       folios: p.folios ?? [],
-      content: { html: p.html, format: "tiptap-html" },
+      content: {
+        html: p.html,
+        format: "typst",
+        typstSource: p.typstSource ?? htmlToTypst(p.html),
+      },
     },
     null,
     2,
@@ -725,6 +770,8 @@ export async function exportPdf(payload: ExportPayload): Promise<void> {
     } catch {
       // Font loading is best-effort; print anyway.
     }
+    if (frame.contentDocument)
+      await preparePrintedImages(frame.contentDocument);
     win.focus();
     win.print();
   } finally {
@@ -954,12 +1001,16 @@ export function safeFilename(title: string, ext: string): string {
 export interface ImportResult {
   title: string;
   html: string;
+  typstSource?: string;
   brief?: ProjectBrief | null;
   folios?: Folio[];
 }
 
-export function detectFormatFromFilename(filename: string): ExportFormat {
+export function detectFormatFromFilename(
+  filename: string,
+): ExportFormat | "typst" {
   const lower = filename.toLowerCase();
+  if (lower.endsWith(".typ")) return "typst";
   if (lower.endsWith(".md") || lower.endsWith(".markdown")) return "markdown";
   if (lower.endsWith(".html") || lower.endsWith(".htm")) return "html";
   if (lower.endsWith(".txt")) return "txt";
@@ -1089,6 +1140,7 @@ function parseHtmlImport(text: string, filename: string): ImportResult {
 
   const content = source.cloneNode(true) as Element;
   removeHtmlImportNonContent(content);
+  if (twyneArticle) removePrintedOrnaments(content);
   return { title, html: serializeChildren(content).trim() };
 }
 
@@ -1112,6 +1164,12 @@ export async function importAs(file: File): Promise<ImportResult> {
   }
 
   const text = await file.text();
+  if (format === "typst")
+    return {
+      title: file.name.replace(/\.typ$/i, "") || "Imported piece",
+      html: typstToHtml(text),
+      typstSource: text,
+    };
 
   if (format === "twyne-backup") {
     let parsed: any;
@@ -1122,14 +1180,26 @@ export async function importAs(file: File): Promise<ImportResult> {
         `That file doesn't look like a Twyne backup (JSON parse failed: ${(err as Error).message}).`,
       );
     }
-    if (!parsed || typeof parsed !== "object" || !parsed.content?.html) {
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      (typeof parsed.content?.html !== "string" &&
+        typeof parsed.content?.typstSource !== "string")
+    ) {
       throw new Error(
         "That JSON file isn't a Twyne backup. Expected { content: { html }, title, brief }.",
       );
     }
     return {
       title: parsed.title ?? "Imported piece",
-      html: parsed.content.html,
+      html:
+        typeof parsed.content.typstSource === "string"
+          ? typstToHtml(parsed.content.typstSource)
+          : parsed.content.html,
+      typstSource:
+        typeof parsed.content.typstSource === "string"
+          ? parsed.content.typstSource
+          : undefined,
       brief: parsed.brief ?? null,
       folios: parsed.folios ?? undefined,
     };

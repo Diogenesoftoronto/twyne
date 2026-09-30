@@ -120,8 +120,11 @@ devenv tasks run twyne:install
 devenv up   # Convex dev + Vite SSR + Storybook
 ```
 
-The app runs at `http://127.0.0.1:5173/` and Storybook at
-`http://127.0.0.1:6006/`. Run `devenv down` to stop the workspace. Use
+With `devenv up`, the app runs at `http://127.0.0.1:5180/` and Storybook at
+`http://127.0.0.1:6010/`, separate from the standalone commands' defaults
+of 5173 and 6006. Configure `TWYNE_DEV_PORT` and `TWYNE_STORYBOOK_PORT`
+in `devenv.local.nix` under `env` to change the workspace ports; the readiness
+checks use those same values. Run `devenv down` to stop the workspace. Use
 `devenv tasks list` to discover the namespaced check, test, build, codegen, and
 Storybook build tasks.
 

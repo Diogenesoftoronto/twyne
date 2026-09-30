@@ -750,6 +750,54 @@ body {
   display: block;
 }
 
+/* Page ornaments stay outside contentEditable. Nine-slice frames retain their
+ * corners when a continuous manuscript grows or the sheet changes orientation. */
+.page-canvas {
+  container: manuscript-page / inline-size;
+}
+.page-canvas.has-ornate-border {
+  --ornament-clearance: 5rem;
+}
+.manuscript-border {
+  position: absolute;
+  inset: 0.625rem;
+  z-index: 0;
+  border: 1px solid var(--color-paper-3);
+  pointer-events: none;
+  user-select: none;
+}
+.manuscript-border--ornate {
+  inset: 1.5rem;
+  border: 3rem solid transparent;
+  border-image-slice: 320;
+  border-image-repeat: round;
+}
+.page-canvas .ProseMirror {
+  column-count: var(--manuscript-columns, 1);
+  column-gap: var(--manuscript-column-gap, 1.5rem);
+  column-fill: balance;
+  orphans: 2;
+  widows: 2;
+}
+.page-canvas .ProseMirror > h1 {
+  column-span: all;
+}
+@container manuscript-page (width < 32rem) {
+  .page-canvas .ProseMirror {
+    column-count: 1;
+  }
+  .manuscript-border--ornate {
+    inset: 0.625rem;
+    border-width: 2rem;
+  }
+}
+
+@media (max-width: 639px) {
+  .page-canvas.has-ornate-border {
+    --ornament-clearance: 2.75rem;
+  }
+}
+
 /* ── Tiptap manuscript page ──────────────────────────────── */
 .twyne-editor .ProseMirror {
   outline: none;
@@ -771,26 +819,85 @@ body {
   -webkit-hyphens: auto;
 }
 
-/* Drop cap on the very first paragraph — the magazine touch.
- *
- * `::first-letter` beats the inline `font-family` / `font-size` that the
- * type controls write onto the surrounding span, so anything hard-coded
- * here is a rule the writer cannot override. Setting a manuscript in
- * Special Elite used to leave its most prominent glyph in the display face.
- *
- * `font-family: inherit` puts the letter back under the writer's control.
- * The size stays proportional — a drop cap that ignored the type scale
- * would be worse — but it is bounded: 4.2em of 36pt is ~200px, which
- * overflows the sheet. The cap sits just above 4.2em of the default 18px
- * body, so the house look is unchanged until the writer goes large. */
-.twyne-editor .ProseMirror > p:first-of-type::first-letter {
+/* The opening glyph remains manuscript text. Its transparent engraving is a
+ * view-only background; slow/missing artwork keeps the ordinary drop cap. */
+.twyne-editor .ProseMirror[data-opening-initial-size="small"] {
+  --twyne-initial-size: 3em;
+  --twyne-initial-bound: 3.5rem;
+}
+
+.twyne-editor .ProseMirror[data-opening-initial-size="medium"] {
+  --twyne-initial-size: 4.2em;
+  --twyne-initial-bound: 5rem;
+}
+
+.twyne-editor .ProseMirror[data-opening-initial-size="large"] {
+  --twyne-initial-size: 5.5em;
+  --twyne-initial-bound: 6.5rem;
+}
+
+.twyne-editor
+  .ProseMirror[data-opening-initial-mode]:not([data-opening-initial-mode="off"])
+  > p:first-of-type:not(.twyne-illuminated-paragraph)::first-letter,
+.twyne-editor .ProseMirror .twyne-illuminated-initial {
   font-family: inherit;
   font-weight: 700;
-  font-size: min(4.2em, 5rem);
+  font-size: min(
+    var(--twyne-initial-size, 4.2em),
+    var(--twyne-initial-bound, 5rem)
+  );
   float: left;
   line-height: 0.85;
   margin: 0.08em 0.12em -0.05em 0;
   color: var(--color-vermilion);
+}
+
+.twyne-editor .ProseMirror .twyne-illuminated-initial {
+  text-indent: 0;
+  text-decoration: none;
+  caret-color: var(--color-vermilion);
+}
+
+.twyne-editor .ProseMirror .twyne-illuminated-prefix {
+  float: left;
+  font-size: 1.4em;
+  line-height: 1;
+  margin: 0.16em 0.08em 0 0;
+  text-indent: 0;
+}
+
+.twyne-editor .ProseMirror .twyne-illuminated-initial.is-illuminated {
+  width: 1.16em;
+  height: 1.16em;
+  margin: 0.035em 0.14em 0.02em 0;
+  background-image: var(--twyne-initial-artwork);
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  text-shadow: none;
+}
+
+.twyne-editor .ProseMirror .twyne-illuminated-initial::selection {
+  background-color: var(--color-vermilion-light, #c1272d30);
+}
+
+@media (forced-colors: active) {
+  .twyne-editor .ProseMirror .twyne-illuminated-initial.is-illuminated {
+    background-image: none;
+    color: CanvasText;
+    -webkit-text-fill-color: CanvasText;
+  }
+}
+
+@media print {
+  /* Printing may omit backgrounds: the actual opening letter must survive. */
+  .twyne-editor .ProseMirror .twyne-illuminated-initial.is-illuminated {
+    background-image: none;
+    color: var(--color-ink);
+    -webkit-text-fill-color: var(--color-ink);
+  }
 }
 
 .twyne-editor .ProseMirror h1 {
@@ -1575,6 +1682,55 @@ body {
   transform-origin: top center;
 }
 
+/* The same physical die prints workflow acknowledgements and verdicts.
+   Only the brief press moves; the final ink stays put and remains readable. */
+.ink-stamp {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  isolation: isolate;
+  pointer-events: none;
+}
+.ink-stamp__imprint {
+  position: absolute;
+  inset: 0;
+  display: block;
+  opacity: 0.88;
+}
+.ink-stamp__tool {
+  position: absolute;
+  z-index: 3;
+  top: -70%;
+  left: -32.5%;
+  display: block;
+  width: 165%;
+  max-width: none;
+  height: auto;
+  opacity: 0;
+  object-fit: contain;
+  transform-origin: 50% 82%;
+  user-select: none;
+}
+.ink-stamp__contact-shadow {
+  position: absolute;
+  z-index: 2;
+  inset: 26% 16% 18%;
+  border-radius: 50%;
+  background: #20150c;
+  filter: blur(5px);
+  opacity: 0;
+}
+.ink-stamp--pressing .ink-stamp__tool {
+  animation: stamp-die-press 500ms linear both;
+}
+.ink-stamp--pressing .ink-stamp__imprint {
+  animation: stamp-ink-settle 500ms linear both;
+}
+.ink-stamp--pressing .ink-stamp__contact-shadow {
+  animation: stamp-contact-shadow 500ms linear both;
+}
+
 .rubric-grade-stamp {
   --stamp-rotation: -4deg;
   position: relative;
@@ -1586,16 +1742,12 @@ body {
   transform-origin: center;
   isolation: isolate;
 }
-.rubric-grade-stamp::before {
+.rubric-grade-stamp__mark {
   position: absolute;
   inset: 0;
   background: currentColor;
-  content: "";
-  opacity: 0.82;
   -webkit-mask: var(--rubric-stamp-image) center / contain no-repeat;
   mask: var(--rubric-stamp-image) center / contain no-repeat;
-  mix-blend-mode: multiply;
-  z-index: 1;
 }
 .rubric-grade-stamp--compact {
   width: 5.5rem;
@@ -1617,17 +1769,41 @@ body {
 .rubric-grade-stamp--revise {
   --stamp-rotation: 4deg;
 }
-.rubric-grade-stamp--animated.rubric-grade-stamp--a {
-  animation: rubric-stamp-a 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+.rubric-grade-stamp--animated {
+  z-index: 2;
 }
-.rubric-grade-stamp--animated.rubric-grade-stamp--b {
-  animation: rubric-stamp-b 340ms cubic-bezier(0.16, 1, 0.3, 1) both;
+/* Give the handle room above the compact mark, without affecting layout. */
+.rubric-proof:has(.rubric-grade-stamp--animated) {
+  overflow: visible;
 }
-.rubric-grade-stamp--animated.rubric-grade-stamp--c {
-  animation: rubric-stamp-c 350ms cubic-bezier(0.16, 1, 0.3, 1) both;
+
+.workflow-stamp {
+  position: relative;
+  display: block;
+  width: min(15rem, 65vw);
+  aspect-ratio: 1;
+  color: var(--color-vermilion);
+  transform: rotate(-4deg);
+  flex: 0 0 auto;
+  pointer-events: none;
 }
-.rubric-grade-stamp--animated.rubric-grade-stamp--revise {
-  animation: rubric-stamp-revise 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+.workflow-stamp__mark {
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  -webkit-mask: var(--workflow-stamp-image) center / contain no-repeat;
+  mask: var(--workflow-stamp-image) center / contain no-repeat;
+}
+.dossier-filed-confirmation__paper:has(.workflow-stamp) {
+  border: 0;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  text-transform: none;
+  animation: none;
+}
+.dossier-filed-confirmation__paper .workflow-stamp {
+  margin-block: -2rem;
 }
 
 @keyframes rubric-proof-settle {
@@ -1641,186 +1817,86 @@ body {
   }
 }
 
-@keyframes rubric-stamp-a {
-  from {
-    filter: blur(1.2px);
-    opacity: 0.3;
-    transform: translateY(-12px) rotate(-9deg) scale(1.14);
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-    transform: translateY(0) rotate(-5deg) scale(1);
-  }
-}
-
-@keyframes rubric-stamp-b {
-  from {
-    filter: blur(1px);
-    opacity: 0.32;
-    transform: translateY(-10px) rotate(7deg) scale(1.12);
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-    transform: translateY(0) rotate(3deg) scale(1);
-  }
-}
-
-@keyframes rubric-stamp-c {
-  from {
-    filter: blur(0.9px);
-    opacity: 0.34;
-    transform: translateY(-9px) rotate(-5deg) scale(1.1);
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-    transform: translateY(0) rotate(-2deg) scale(1);
-  }
-}
-
-@keyframes rubric-stamp-revise {
-  from {
-    filter: blur(0.75px);
-    opacity: 0.36;
-    transform: translateY(-7px) rotate(8deg) scale(1.08);
-  }
-  to {
-    filter: blur(0);
-    opacity: 1;
-    transform: translateY(0) rotate(4deg) scale(1);
-  }
-}
-
-/* Solar verdict: effects stop after the impression lands. */
-.stamp-solar-shader {
-  position: absolute;
-  width: 260%;
-  height: 260%;
-  max-width: none;
-  pointer-events: none;
-  z-index: 0;
-}
-.rubric-grade-stamp--highest .stamp-solar-shader {
-  width: 330%;
-  height: 330%;
-}
-.rubric-grade-stamp--animated::before {
-  animation: verdict-ink-impact 650ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.rubric-grade-stamp--animated::after {
-  content: "";
-  position: absolute;
-  inset: 8%;
-  border: 1px solid currentColor;
-  border-radius: 50%;
-  pointer-events: none;
-  opacity: 0;
-  animation: verdict-impact-ring 750ms ease-out 100ms;
-}
-.rubric-grade-stamp--animated.rubric-grade-stamp--a::before {
-  animation:
-    verdict-ink-impact 650ms cubic-bezier(0.16, 1, 0.3, 1) both,
-    verdict-gold-bloom 1700ms ease-out;
-}
-.rubric-grade-stamp--animated.rubric-grade-stamp--highest::before {
-  animation:
-    verdict-ink-impact 650ms cubic-bezier(0.16, 1, 0.3, 1) both,
-    verdict-gold-bloom 2200ms ease-out;
-}
-@keyframes verdict-ink-impact {
+/* Approach, contact at 160ms, a brief compression, then a clean lift. */
+@keyframes stamp-die-press {
   0% {
-    transform: scale(1.6);
     opacity: 0;
-    filter: blur(3px);
+    transform: translate(14%, -48%) rotate(-10deg) scale(1.12);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.55);
   }
-  25% {
-    transform: scale(1);
+  14% {
     opacity: 1;
-    filter: blur(0);
+    transform: translate(8%, -27%) rotate(-5deg) scale(1.07);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.85, 0.55);
+  }
+  32% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0) scale(1);
+  }
+  41% {
+    transform: translate(0, 1%) rotate(0) scale(1.015, 0.975);
+  }
+  52% {
+    transform: translate(0, 0) rotate(0) scale(1);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  76% {
+    opacity: 1;
+    transform: translate(4%, -19%) rotate(3deg) scale(1.025);
   }
   100% {
-    transform: scale(1);
-    opacity: 0.82;
-  }
-}
-@keyframes verdict-impact-ring {
-  0% {
-    transform: scale(0.75);
-    opacity: 0.5;
-  }
-  100% {
-    transform: scale(2);
     opacity: 0;
+    transform: translate(14%, -48%) rotate(8deg) scale(1.07);
   }
 }
-@keyframes verdict-gold-bloom {
+@keyframes stamp-ink-settle {
   0%,
-  100% {
-    filter: drop-shadow(0 0 0 transparent);
-  }
-  25% {
-    filter: drop-shadow(0 0 12px #e8af49aa);
-  }
-}
-.workflow-stamp {
-  display: block;
-  width: min(15rem, 65vw);
-  height: auto;
-  object-fit: contain;
-  animation: workflow-ink-impact 600ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.approval-stamp-overlay .workflow-stamp {
-  animation: workflow-revised-impact 1300ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  filter: none;
-}
-.dossier-filed-confirmation__paper:has(.workflow-stamp) {
-  border: 0;
-  box-shadow: none;
-  background: transparent;
-  padding: 0;
-  text-transform: none;
-  animation: none;
-}
-.dossier-filed-confirmation__paper .workflow-stamp {
-  margin-block: -2rem;
-}
-@keyframes workflow-ink-impact {
-  from {
+  31% {
     opacity: 0;
-    transform: scale(1.65) rotate(-12deg);
+    transform: scale(0.988);
   }
-  to {
+  32% {
     opacity: 1;
-    transform: scale(1) rotate(-4deg);
+    transform: scale(0.988);
+    filter: blur(0.35px);
+  }
+  54% {
+    opacity: 0.98;
+    transform: scale(1.004);
+    filter: blur(0.15px);
+  }
+  100% {
+    opacity: 0.88;
+    transform: scale(1);
+    filter: blur(0);
   }
 }
-@keyframes workflow-revised-impact {
+@keyframes stamp-contact-shadow {
   0% {
     opacity: 0;
-    transform: scale(1.65) rotate(-12deg);
+    transform: translate(8%, 4%) scale(1.3);
   }
-  22%,
-  75% {
-    opacity: 1;
-    transform: scale(1) rotate(-4deg);
+  20% {
+    opacity: 0.12;
+    transform: translate(3%, 2%) scale(1.12);
+  }
+  32%,
+  52% {
+    opacity: 0.24;
+    transform: translate(0, 0) scale(1);
   }
   100% {
     opacity: 0;
-    transform: scale(1) rotate(-4deg);
+    transform: translate(8%, 4%) scale(1.3);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .stamp-solar-shader,
-  .rubric-grade-stamp--animated::after {
+  .ink-stamp__tool,
+  .ink-stamp__contact-shadow {
     display: none;
   }
-  .rubric-grade-stamp--animated::before,
-  .rubric-grade-stamp--animated.rubric-grade-stamp--a::before,
-  .rubric-grade-stamp--animated.rubric-grade-stamp--highest::before,
-  .workflow-stamp,
-  .approval-stamp-overlay .workflow-stamp {
+  .ink-stamp--pressing .ink-stamp__imprint,
+  .rubric-proof--fresh {
     animation: none;
   }
 }
@@ -1913,6 +1989,35 @@ body {
   box-shadow: none;
 }
 
+.dossier-action-pending {
+  position: relative;
+  border-color: var(--color-vermilion);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dossier-action-pending::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border: 1px solid var(--color-vermilion);
+    border-radius: 4px;
+    pointer-events: none;
+    animation: dossier-action-pulse 2.8s ease-in-out infinite;
+  }
+}
+
+@keyframes dossier-action-pulse {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  45% {
+    opacity: 0.5;
+    transform: scale(1.035, 1.12);
+  }
+}
+
 .btn-press:focus-visible,
 .btn-paper:focus-visible,
 .landing-button:focus-visible {
@@ -1981,8 +2086,8 @@ body {
  *
  * Familiar document-editor tabs replace the old unbroken control strip.
  * Each tab exposes only the groups needed for its task, while history and
- * sync remain visible. Groups wrap as units so the manuscript never gains
- * a horizontal scrollbar.
+ * sync remain visible. Groups wrap as units on desktop; phones scroll the
+ * ribbon in one row so the controls leave room for the manuscript.
  * ───────────────────────────────────────────────────────────── */
 .compositor-tabs {
   display: flex;
@@ -2199,6 +2304,7 @@ body {
 
 @media (max-width: 639px) {
   .compositor-tabs {
+    padding-inline: 0.25rem;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scrollbar-width: thin;
@@ -2207,8 +2313,10 @@ body {
     display: none;
   }
   .compositor-tab {
-    min-height: 2.5rem;
-    padding-inline: 0.65rem;
+    flex-shrink: 0;
+    min-height: 2.75rem;
+    padding-inline: 0.5rem;
+    white-space: nowrap;
   }
   .compositor-tab-spacer {
     min-width: 0.25rem;
@@ -2220,23 +2328,58 @@ body {
     padding-right: 0.25rem;
     background: var(--color-paper);
   }
+  .compositor-quick-actions .tool-btn {
+    display: inline-flex;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem;
+  }
   .compositor-ribbon {
     min-height: 0;
-    gap: 0.125rem 0;
+    flex-wrap: nowrap;
+    align-items: center;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    gap: 0;
     padding: 0.25rem;
   }
   .compositor-group {
     min-height: 0;
-    flex-wrap: wrap;
-    padding: 0.125rem 0.25rem;
+    flex-wrap: nowrap;
+    align-items: center;
+    padding: 0 0.125rem;
   }
   .compositor-group::after {
     display: none;
   }
   .compositor-group .tool-btn {
-    min-width: 2.125rem;
-    min-height: 2.125rem;
-    padding: 0.4rem 0.5rem;
+    flex-shrink: 0;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    padding: 0.25rem;
+  }
+  .compositor-ribbon .compositor-tool-label {
+    display: none;
+  }
+  .compositor-font-select,
+  .compositor-size-select {
+    height: 2.75rem;
+    font-size: 1rem;
+  }
+  .compositor-font-select {
+    width: 8rem;
+  }
+  /* Fixed panels escape the scrolling ribbon and stay reachable on phones. */
+  .twyne-toolbar [data-color-picker],
+  .twyne-toolbar [data-type-popover] {
+    position: fixed;
+    inset: auto 0.75rem max(0.75rem, env(safe-area-inset-bottom));
+    width: auto !important;
+    max-height: 70dvh;
+    overflow-y: auto;
   }
   .compositor-layout-panel {
     position: fixed;
@@ -2583,7 +2726,10 @@ body {
    (the .zen-mode rule earlier already quiets them) but the chip is a
    UI affordance we suppress. */
 .twyne-editor.zen-mode .twyne-mark-anchor {
-  display: none;
+  /* Hidden, not removed: the chip holds its width so lines never re-wrap
+     under the caret when focus comes on by itself. */
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /* ── Suggestions — an editor's proposed rewrite, as a red-pencil mark ── */
@@ -2628,35 +2774,13 @@ body {
   pointer-events: none;
   z-index: var(--z-modal, 1000);
 }
-.approval-stamp-overlay img {
-  animation: stamp-thunk 1.2s cubic-bezier(0.18, 1.4, 0.4, 1) forwards;
-  transform-origin: center;
-  filter: drop-shadow(
-    0 8px 18px color-mix(in srgb, var(--color-vermilion-2) 35%, transparent)
-  );
+/* Retain the finished revision mark until the existing acknowledgement ends. */
+.approval-stamp-overlay .workflow-stamp {
+  animation: stamp-acknowledgement-fade 180ms ease-out 1180ms forwards;
 }
-@keyframes stamp-thunk {
-  0% {
+@keyframes stamp-acknowledgement-fade {
+  to {
     opacity: 0;
-    transform: scale(1.8) rotate(-14deg);
-  }
-  18% {
-    opacity: 1;
-    transform: scale(0.92) rotate(-7deg);
-  }
-  32% {
-    transform: scale(1.04) rotate(-9deg);
-  }
-  46% {
-    transform: scale(1) rotate(-8deg);
-  }
-  80% {
-    opacity: 1;
-    transform: scale(1) rotate(-8deg);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.02) rotate(-8deg);
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -2664,24 +2788,9 @@ body {
     animation: none;
     background: color-mix(in srgb, var(--suggestion-color) 28%, transparent);
   }
-  .suggestion-card {
+  .suggestion-card,
+  .approval-stamp-overlay .workflow-stamp {
     animation: none;
-  }
-  .approval-stamp-overlay img {
-    animation: stamp-fade 1s ease-out forwards;
-  }
-  @keyframes stamp-fade {
-    0% {
-      opacity: 0;
-    }
-    20%,
-    80% {
-      opacity: 1;
-      transform: rotate(-8deg);
-    }
-    100% {
-      opacity: 0;
-    }
   }
 }
 
@@ -6725,4 +6834,495 @@ a {
 .launch-film__footnote a {
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* ── Flow: the margins the conductor fills ─────────────────────────
+   Room on the right (notes, replies, sources, works, the charter),
+   the writer's own archive on the left. Cards are index slips pinned
+   level with their passage; hover draws a proofreader's bracket and a
+   pencil line from slip to text. */
+.flow-surface {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+.flow-surface > * {
+  pointer-events: auto;
+}
+.flow-overlay {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none !important;
+}
+.flow-overlay__line,
+.flow-overlay__bracket {
+  fill: none;
+  stroke-width: 1.25;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+.flow-overlay__line {
+  stroke-dasharray: 600;
+  stroke-dashoffset: 600;
+  animation: flow-draw 420ms ease-out forwards;
+}
+.flow-overlay__line.is-dashed {
+  stroke-dasharray: 3 4;
+  stroke-dashoffset: 0;
+  animation: none;
+  opacity: 0.55;
+}
+.flow-overlay__mark {
+  opacity: 0.45;
+}
+@keyframes flow-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.flow-column {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+.flow-column--room {
+  left: calc(100% + 28px);
+}
+.flow-column--archive {
+  right: calc(100% + 28px);
+}
+.flow-card {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.65rem 0.75rem 0.6rem;
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-3);
+  border-top: 3px solid var(--flow-accent, var(--color-sage));
+  border-radius: 1px;
+  color: var(--color-ink);
+  font: 0.84rem/1.5 var(--font-serif);
+  box-shadow:
+    0 1px 0 var(--color-paper-3),
+    0 10px 22px -18px rgb(0 0 0 / 0.45);
+  transition:
+    top 220ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    transform 160ms ease,
+    box-shadow 160ms ease;
+  animation: flow-slip-in 280ms ease-out;
+}
+.flow-column--archive .flow-card {
+  border-top-width: 1px;
+  border-left: 3px solid var(--flow-accent, var(--color-cobalt));
+  background: color-mix(in srgb, var(--color-paper) 88%, var(--color-cobalt) 4%);
+}
+.flow-card.is-hovered {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 var(--color-paper-3),
+    0 14px 28px -16px rgb(0 0 0 / 0.5);
+  z-index: 3;
+}
+@keyframes flow-slip-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+}
+.flow-column--archive .flow-card {
+  animation-name: flow-slip-in-left;
+}
+@keyframes flow-slip-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+}
+.flow-card__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.flow-card__kicker {
+  font: 0.62rem/1.2 var(--font-typewriter);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--flow-accent, var(--color-ink-muted));
+}
+.flow-card__close {
+  border: 0;
+  background: none;
+  color: var(--color-ink-muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.flow-card:hover .flow-card__close,
+.flow-card:focus-within .flow-card__close {
+  opacity: 1;
+}
+.flow-card__close:hover {
+  color: var(--color-vermilion);
+}
+.flow-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.flow-card__title {
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.flow-card__text {
+  color: var(--color-ink-light);
+}
+/* An echo reads as a carbon copy of the writer's own page. */
+.flow-card__carbon {
+  font-family: var(--font-typewriter);
+  font-size: 0.72rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--color-cobalt) 70%, var(--color-ink));
+  opacity: 0.9;
+}
+.flow-card__reply {
+  margin: 0;
+  padding: 0.45rem 0 0 0.6rem;
+  border-left: 1px solid var(--flow-accent, var(--color-paper-3));
+  color: var(--color-ink);
+  font-style: italic;
+}
+.flow-card__reply-by {
+  display: block;
+  font: normal 0.6rem/1.3 var(--font-typewriter);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.flow-card__reply.is-streaming::after {
+  content: "▍";
+  margin-left: 1px;
+  color: var(--flow-accent, var(--color-ink));
+  animation: flow-caret 1s steps(2) infinite;
+}
+@keyframes flow-caret {
+  50% {
+    opacity: 0;
+  }
+}
+.flow-card__foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font: 0.62rem/1.3 var(--font-typewriter);
+  color: var(--color-ink-muted);
+}
+.flow-card__notice {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--color-ink-muted);
+}
+.flow-link {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--color-cobalt);
+  font: 0.7rem var(--font-typewriter);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.flow-link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.flow-mini {
+  padding: 0.15rem 0.6rem;
+  font-size: 0.72rem;
+}
+/* A rubber stamp, slightly askew, for the charter and amendments. */
+.flow-stamp {
+  position: absolute;
+  top: 0.55rem;
+  right: 1.6rem;
+  padding: 0.05rem 0.35rem;
+  border: 1.5px solid var(--color-vermilion);
+  border-radius: 2px;
+  color: var(--color-vermilion);
+  font: 0.58rem/1.3 var(--font-typewriter);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  transform: rotate(-4deg);
+  opacity: 0.75;
+  mix-blend-mode: multiply;
+}
+.flow-amend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.flow-amend__input {
+  width: 100%;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--color-paper-3);
+  background: var(--color-editor-bg);
+  color: var(--color-ink);
+  font: 0.8rem/1.45 var(--font-typewriter);
+  resize: vertical;
+}
+.flow-amend__input:focus {
+  outline: 1px solid var(--color-vermilion);
+}
+.flow-amend__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+/* Works: a book stands upright; a record sits in its sleeve with the
+   disc peeking out. */
+.flow-work {
+  display: flex;
+  gap: 0.7rem;
+  color: inherit;
+  text-decoration: none;
+}
+.flow-work__sleeve {
+  position: relative;
+  flex-shrink: 0;
+}
+.flow-work__sleeve img,
+.flow-work__blank {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 72px;
+  object-fit: cover;
+  background: var(--color-paper-2);
+  box-shadow:
+    1px 1px 0 var(--color-paper-3),
+    3px 5px 10px -6px rgb(0 0 0 / 0.5);
+}
+.flow-work--book .flow-work__sleeve img,
+.flow-work--book .flow-work__blank {
+  height: 108px;
+  border-radius: 1px 3px 3px 1px;
+}
+.flow-work--album .flow-work__sleeve img,
+.flow-work--song .flow-work__sleeve img,
+.flow-work--album .flow-work__blank,
+.flow-work--song .flow-work__blank {
+  height: 72px;
+}
+.flow-work__blank {
+  display: grid;
+  place-items: center;
+  font: 700 1.6rem var(--font-display);
+  color: var(--color-ink-muted);
+}
+.flow-work__disc {
+  position: absolute;
+  top: 4px;
+  left: 18px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, var(--color-mustard) 0 14%, #111 15% 17%, transparent 18%),
+    repeating-radial-gradient(circle, #1a1a1a 0 1px, #262626 1px 3px);
+  transition: transform 240ms ease;
+}
+.flow-work:hover .flow-work__disc {
+  transform: translateX(14px) rotate(40deg);
+}
+.flow-work__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.flow-work__medium {
+  font: 0.6rem var(--font-typewriter);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+.flow-work__text strong {
+  font-family: var(--font-display);
+  line-height: 1.25;
+}
+.flow-work__text span:last-child {
+  font-size: 0.76rem;
+  color: var(--color-ink-light);
+}
+.flow-waiting {
+  position: absolute;
+  left: 0;
+  padding: 0.2rem 0.55rem;
+  border: 1px dashed var(--color-paper-3);
+  border-radius: 999px;
+  background: var(--color-paper);
+  color: var(--color-ink-muted);
+  font: 0.64rem var(--font-typewriter);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: top 220ms ease;
+}
+.flow-waiting:hover {
+  color: var(--color-ink);
+  border-style: solid;
+}
+.flow-dock {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: var(--z-dropdown);
+  width: min(300px, calc(100vw - 32px));
+  pointer-events: auto;
+}
+.flow-dock .flow-card {
+  position: relative;
+}
+.flow-dock__more {
+  margin: 0.3rem 0 0;
+  font: 0.62rem var(--font-typewriter);
+  color: var(--color-ink-muted);
+  text-align: right;
+}
+
+/* The chrome eases out as a run builds and stays out in flow. The page
+   itself never moves. */
+[data-flow="settling"] .editor-workspace-main > header,
+[data-flow="settling"] .twyne-toolbar,
+[data-flow="settling"] .in-flow-rails,
+[data-flow="settling"] .flow-surface {
+  opacity: 0.4;
+  transition: opacity 1.2s ease;
+}
+[data-flow="flow"] .flow-surface,
+[data-flow="flow"] .in-flow-rails {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+/* In flow the masthead, the review line and the docked panels recede but
+   keep their size, so the page does not move. Reaching for them (hover,
+   keyboard focus) brings them straight back. */
+[data-flow="flow"] .editor-workspace-main > header,
+[data-flow="flow"] .twyne-toolbar,
+[data-flow="flow"] .live-review-status,
+[data-flow="flow"] .editor-workspace-shell > aside {
+  opacity: 0.12;
+  transition: opacity 1.2s ease;
+}
+[data-flow="settling"] .editor-workspace-main > header:hover,
+[data-flow="settling"] .twyne-toolbar:hover,
+[data-flow="flow"] .editor-workspace-main > header:hover,
+[data-flow="flow"] .editor-workspace-main > header:focus-within,
+[data-flow="flow"] .twyne-toolbar:hover,
+[data-flow="flow"] .twyne-toolbar:focus-within,
+[data-flow="flow"] .live-review-status:hover,
+[data-flow="flow"] .editor-workspace-shell > aside:hover,
+[data-flow="flow"] .editor-workspace-shell > aside:focus-within {
+  opacity: 1;
+  transition-duration: 0.2s;
+}
+[data-flow="stuck"] .flow-card {
+  animation: flow-slip-in 360ms ease-out;
+}
+/* A proposed rewrite: the struck original above, the new wording below. */
+.suggestion-card__struck {
+  color: var(--color-ink-muted);
+  font: 0.85rem/1.5 var(--font-serif);
+  text-decoration: line-through;
+  text-decoration-color: var(--comment-color);
+}
+.suggestion-card__replacement {
+  color: var(--color-ink);
+  font: 0.95rem/1.5 var(--font-serif);
+}
+.suggestion-card__why {
+  color: var(--color-ink-light);
+  font: italic 0.78rem/1.45 var(--font-serif);
+}
+
+/* A persona note wears the shared comment-card layout; the older
+   stand-alone note card's padding and paper would frame it as a card
+   inside a card. */
+.persona-note-card.manuscript-comment-card,
+.suggestion-card.manuscript-comment-card {
+  padding: 0;
+  background: var(--color-paper);
+  border-color: var(--comment-color);
+}
+
+/* A conversation opened in the margin takes its card's place: the card
+   steps aside and the thread unfolds from the same top edge, in the same
+   accent, so it reads as the card opening rather than a second card. */
+.flow-card.is-unfolded {
+  visibility: hidden;
+  pointer-events: none;
+}
+.manuscript-comment-card.is-in-margin {
+  border-width: 1px;
+  border-color: var(--color-paper-3);
+  border-top: 3px solid var(--comment-color);
+  border-radius: 2px;
+  box-shadow:
+    0 1px 0 var(--color-paper-3),
+    0 18px 32px -18px rgb(0 0 0 / 0.45);
+  transform-origin: top center;
+  animation: margin-unfold 180ms ease-out;
+  transition:
+    top 160ms ease-out,
+    left 160ms ease-out;
+}
+@keyframes margin-unfold {
+  from {
+    opacity: 0.4;
+    transform: scaleY(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-card,
+  .flow-overlay__line,
+  .flow-work__disc,
+  .manuscript-comment-card.is-in-margin,
+  [data-flow] .editor-workspace-main > header {
+    animation: none;
+    transition: none;
+  }
+  .flow-overlay__line {
+    stroke-dashoffset: 0;
+  }
+}
+@media print {
+  .flow-surface,
+  .flow-dock {
+    display: none !important;
+  }
+}
+
+/* A narrow desk has one foreground surface at a time. Keep ambient cards
+   quiet while the writer uses a conversation, selection action or tool. */
+body:has(.manuscript-comment-card, .in-flow-rail, .in-flow-popover, .twyne-quick-review-card, .selection-actions, [role="dialog"]) .flow-dock {
+  display: none;
 }

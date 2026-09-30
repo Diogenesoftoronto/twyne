@@ -3,6 +3,38 @@ import type { Meta, StoryObj } from "storybook-framework-qwik";
 import { GradeStamp } from "./grade-stamp";
 import { WorkflowStamp } from "../ui/workflow-stamp";
 
+const VerdictPreview = component$(() => {
+  const verdict = useSignal(0);
+  const unrelated = useSignal(0);
+  return (
+    <div class="paper-sheet p-8" style="width: min(28rem, 90vw)">
+      <div class="rubric-proof flex items-center gap-3 px-4 py-3">
+        <GradeStamp
+          grade="A-"
+          score={92}
+          color="var(--color-vermilion)"
+          animated={verdict.value > 0}
+          impressionKey={verdict.value}
+        />
+        <div>
+          <p class="text-2xl" style="font-family: var(--font-display)">
+            92 <span class="text-sm">/ 100</span>
+          </p>
+          <p class="text-sm">Your argument holds together.</p>
+        </div>
+      </div>
+      <div class="mt-6 flex flex-wrap gap-3">
+        <button class="btn-press" onClick$={() => verdict.value++}>
+          Grade this draft
+        </button>
+        <button class="btn-paper" onClick$={() => unrelated.value++}>
+          Update detail ({unrelated.value})
+        </button>
+      </div>
+    </div>
+  );
+});
+
 const StampCollection = component$(() => {
   const replay = useSignal(0);
   return (
@@ -71,6 +103,7 @@ export const Animated: Story = {
   args: { animated: true, grade: "A", score: 96, size: "report" },
 };
 export const AllImpressions: Story = { render: () => <StampCollection /> };
+export const NewVerdict: Story = { render: () => <VerdictPreview /> };
 export const HighestGrade: Story = {
   args: {
     grade: "A+",

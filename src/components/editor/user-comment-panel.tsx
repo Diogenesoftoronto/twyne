@@ -30,12 +30,17 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
 
   return (
     <div
-      class="manuscript-comment-card manuscript-comment-card--writer"
+      class={[
+        "manuscript-comment-card manuscript-comment-card--writer",
+        { "is-in-margin": !!comment.margin },
+      ]}
+      data-margin-item={comment.margin ?? undefined}
       style={{
         left: `${comment.x}px`,
         top: comment.top != null ? `${comment.top}px` : "auto",
         bottom: comment.bottom != null ? `${comment.bottom}px` : "auto",
         "max-height": `${comment.maxH}px`,
+        width: comment.width ? `${comment.width}px` : undefined,
         "--comment-color": "var(--color-writer-note)",
       }}
       role="dialog"
@@ -181,6 +186,7 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
                   }
                 }}
                 placeholder="Reply as the writer…"
+                aria-label="Reply as the writer"
                 class="manuscript-comment-card__textarea"
                 rows={3}
               />

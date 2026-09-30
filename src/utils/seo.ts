@@ -1,4 +1,7 @@
 export const TWYNE_SITE_ORIGIN = "https://twyne.love";
+export const TWYNE_SOCIAL_IMAGE = `${TWYNE_SITE_ORIGIN}/assets/social/twyne-writers-desk-v2.jpg`;
+export const TWYNE_SOCIAL_IMAGE_ALT =
+  "Twyne's griffin logo and the words Make room for your writing, over a sunlit writer's desk with annotated manuscript pages, a fountain pen, a red pencil, and coffee.";
 
 const PRIVATE_ROUTE_ROOTS = new Set([
   "analysis",
@@ -43,7 +46,7 @@ export const TWYNE_HOME_STRUCTURED_DATA = {
       "@type": ["WebApplication", "SoftwareApplication"],
       name: "Twyne",
       url: `${TWYNE_SITE_ORIGIN}/`,
-      image: `${TWYNE_SITE_ORIGIN}/og-image.png`,
+      image: TWYNE_SOCIAL_IMAGE,
       applicationCategory: "DesignApplication",
       operatingSystem: "Any",
       description:
