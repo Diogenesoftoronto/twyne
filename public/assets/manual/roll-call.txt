@@ -1,0 +1,23 @@
+Roll Call — existing dialogue captions
+
+00:00:03.460–00:00:06.460 This sentence assumes the reader already agrees.
+00:00:06.840–00:00:07.600 They do not.
+00:00:08.140–00:00:08.640 Earn it.
+00:00:09.500–00:00:09.940 Here.
+00:00:10.600–00:00:11.440 This line.
+00:00:12.020–00:00:13.640 This is the one with a pulse.
+00:00:14.240–00:00:16.340 Everything else should be jealous of it.
+00:00:17.080–00:00:20.180 This is asserted, not demonstrated.
+00:00:20.800–00:00:23.400 What is the evidence, and where does it
+00:00:23.360–00:00:24.020 come from?
+00:00:24.560–00:00:25.760 In order to.
+00:00:26.760–00:00:27.240 Cut it.
+00:00:28.160–00:00:28.560 To.
+00:00:30.160–00:00:32.280 Again, twice more below.
+00:00:32.660–00:00:35.080 I followed you for two paragraphs.
+00:00:35.300–00:00:37.820 Then, right here, I lost the thread.
+00:00:38.740–00:00:39.760 Five editors.
+00:00:40.220–00:00:40.960 One desk.
+00:00:41.560–00:00:42.180 Twyne.
+
+Dialogue text copied from the existing English WebVTT; no new transcription.

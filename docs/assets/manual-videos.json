@@ -1,0 +1,4567 @@
+{
+  "schema_version": 1,
+  "prepared_on": "2026-09-30",
+  "verified_at_utc": "2026-09-30T06:46:42.873593+00:00",
+  "scope": {
+    "owned_paths": [
+      "public/assets/manual root video/poster/VTT/TXT files",
+      "docs/assets/manual-videos.json",
+      "docs/assets/manual-media-preparation.md"
+    ],
+    "other_workers_directories_untouched": [
+      "public/assets/manual/desk/",
+      "public/assets/manual/editorial/",
+      "public/assets/manual/work/"
+    ],
+    "ui_or_server_changed": false,
+    "masters_or_qa_recordings_changed": false,
+    "deployment_commit_or_environment_change": false,
+    "new_films_composed_or_generated": false,
+    "provider_calls_or_network_fees": false
+  },
+  "public_path_pattern": "/assets/manual/${id}.{mp4,jpg,vtt,txt}",
+  "tools": {
+    "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+    "ffprobe": "ffprobe version 9.0.1 Copyright (c) 2007-2026 the FFmpeg developers",
+    "hyperframes": "Entry-point skill read; no HyperFrames update, render or generation command invoked"
+  },
+  "assets": [
+    {
+      "id": "roll-call",
+      "title": "Roll Call",
+      "status": "ready",
+      "kind": "existing-launch-film",
+      "description": "Meet five editorial perspectives through their sample notes.",
+      "suggested_placement": {
+        "docs_url": "/docs/#room",
+        "section_id": "room",
+        "section_title": "Your editors",
+        "position": "section-start"
+      },
+      "video": "/assets/manual/roll-call.mp4",
+      "poster": "/assets/manual/roll-call.jpg",
+      "captions": "/assets/manual/roll-call.vtt",
+      "text": "/assets/manual/roll-call.txt",
+      "duration_seconds": 46.0,
+      "width": 1280,
+      "height": 720,
+      "frame_rate": "30/1",
+      "audio": {
+        "present": true,
+        "codec": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      },
+      "source": {
+        "path": "launch-videos/renders/02-roll-call.mp4",
+        "bytes": 51595941,
+        "sha256": "5fe0762d630a5f314f293727cff24397551e3125c273e2ac9a860bce60cc415f",
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.640032",
+              "width": 1920,
+              "height": 1080,
+              "coded_width": 1920,
+              "coded_height": 1080,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": 50,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "center",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 706560,
+              "duration": "46.000000",
+              "bit_rate": "8767858",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "1380",
+              "extradata_size": 52,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc61.19.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 2208000,
+              "duration": "46.000000",
+              "bit_rate": "198045",
+              "nb_frames": "2158",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "launch-videos/renders/02-roll-call.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "46.000000",
+            "size": "51595941",
+            "bit_rate": "8973207",
+            "probe_score": 100,
+            "tags": {
+              "minor_version": "512;512",
+              "major_brand": "isom;isom",
+              "compatible_brands": "isomiso2avc1mp41;isomiso2avc1mp41",
+              "hyperframes_version": "0.8.78",
+              "hyperframes_renderer": "hyperframes",
+              "encoder": "Lavf61.7.100"
+            }
+          }
+        },
+        "original_unchanged_after_preparation": true,
+        "captions": {
+          "path": "launch-videos/renders/02-roll-call.vtt",
+          "bytes": 996,
+          "sha256": "dac93be433dff2d35504bd5e6bf5d7ab2c2811dfdd6e915ea68ba844b5fb2925"
+        },
+        "poster": {
+          "path": "launch-videos/renders/02-roll-call.jpg",
+          "bytes": 29077,
+          "sha256": "418ecebd12b69d923d67c37083c32b26c336ef7b7fa2e0e7591b1eb3b2f4a430"
+        }
+      },
+      "preparation": {
+        "source_range_seconds": {
+          "start": 0,
+          "end": 46
+        },
+        "speed": 1,
+        "crop": null,
+        "overlays_added": false,
+        "retimed_or_reordered": false,
+        "reproduce_encoding_argv": [
+          "rtk",
+          "proxy",
+          "ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-n",
+          "-i",
+          "launch-videos/renders/02-roll-call.mp4",
+          "-t",
+          "46",
+          "-map",
+          "0:v:0",
+          "-map",
+          "0:a:0",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "96k",
+          "-ar",
+          "48000",
+          "-vf",
+          "scale=1280:720:flags=lanczos,setsar=1",
+          "-filter_threads",
+          "2",
+          "-c:v",
+          "libx264",
+          "-threads",
+          "4",
+          "-preset",
+          "medium",
+          "-crf",
+          "24",
+          "-profile:v",
+          "high",
+          "-level:v",
+          "3.1",
+          "-pix_fmt",
+          "yuv420p",
+          "-tag:v",
+          "avc1",
+          "-map_metadata",
+          "-1",
+          "-movflags",
+          "+faststart",
+          "public/assets/manual/roll-call.mp4"
+        ],
+        "video_settings": {
+          "codec": "H.264",
+          "pixel_format": "yuv420p",
+          "profile": "High",
+          "level": "3.1",
+          "crf": 24,
+          "preset": "medium",
+          "faststart": true
+        },
+        "audio_settings": {
+          "codec": "AAC",
+          "bitrate": "96k",
+          "sample_rate": 48000,
+          "channel_layout": "stereo"
+        }
+      },
+      "poster_info": {
+        "width": 960,
+        "height": 540,
+        "origin": "byte-for-byte existing JPG",
+        "output_time_seconds": null
+      },
+      "caption_info": {
+        "language": "en",
+        "html_track_kind": "captions",
+        "label": "English",
+        "spoken_dialogue": true,
+        "provenance": "Existing English VTT copied byte-for-byte; no new alignment or transcription",
+        "validation": {
+          "duration_bounds_passed": true,
+          "start_order_passed": true,
+          "cue_count": 19,
+          "first_start_seconds": 3.46,
+          "last_end_seconds": 42.18,
+          "overlaps": [
+            {
+              "previous_cue": 9,
+              "next_cue": 10,
+              "seconds": 0.04
+            }
+          ],
+          "cues": [
+            {
+              "start_seconds": 3.46,
+              "end_seconds": 6.46,
+              "text": "This sentence assumes the reader already agrees."
+            },
+            {
+              "start_seconds": 6.84,
+              "end_seconds": 7.6,
+              "text": "They do not."
+            },
+            {
+              "start_seconds": 8.14,
+              "end_seconds": 8.64,
+              "text": "Earn it."
+            },
+            {
+              "start_seconds": 9.5,
+              "end_seconds": 9.94,
+              "text": "Here."
+            },
+            {
+              "start_seconds": 10.6,
+              "end_seconds": 11.44,
+              "text": "This line."
+            },
+            {
+              "start_seconds": 12.02,
+              "end_seconds": 13.64,
+              "text": "This is the one with a pulse."
+            },
+            {
+              "start_seconds": 14.24,
+              "end_seconds": 16.34,
+              "text": "Everything else should be jealous of it."
+            },
+            {
+              "start_seconds": 17.08,
+              "end_seconds": 20.18,
+              "text": "This is asserted, not demonstrated."
+            },
+            {
+              "start_seconds": 20.8,
+              "end_seconds": 23.4,
+              "text": "What is the evidence, and where does it"
+            },
+            {
+              "start_seconds": 23.36,
+              "end_seconds": 24.02,
+              "text": "come from?"
+            },
+            {
+              "start_seconds": 24.56,
+              "end_seconds": 25.76,
+              "text": "In order to."
+            },
+            {
+              "start_seconds": 26.76,
+              "end_seconds": 27.24,
+              "text": "Cut it."
+            },
+            {
+              "start_seconds": 28.16,
+              "end_seconds": 28.56,
+              "text": "To."
+            },
+            {
+              "start_seconds": 30.16,
+              "end_seconds": 32.28,
+              "text": "Again, twice more below."
+            },
+            {
+              "start_seconds": 32.66,
+              "end_seconds": 35.08,
+              "text": "I followed you for two paragraphs."
+            },
+            {
+              "start_seconds": 35.3,
+              "end_seconds": 37.82,
+              "text": "Then, right here, I lost the thread."
+            },
+            {
+              "start_seconds": 38.74,
+              "end_seconds": 39.76,
+              "text": "Five editors."
+            },
+            {
+              "start_seconds": 40.22,
+              "end_seconds": 40.96,
+              "text": "One desk."
+            },
+            {
+              "start_seconds": 41.56,
+              "end_seconds": 42.18,
+              "text": "Twyne."
+            }
+          ]
+        }
+      },
+      "text_info": {
+        "kind": "dialogue-caption text"
+      },
+      "files": {
+        "video": {
+          "path": "public/assets/manual/roll-call.mp4",
+          "public_url": "/assets/manual/roll-call.mp4",
+          "bytes": 4953054,
+          "sha256": "aadc736268450a06af8487fec58c3d007e1027f3300cf7869a44229252bbdf51"
+        },
+        "poster": {
+          "path": "public/assets/manual/roll-call.jpg",
+          "public_url": "/assets/manual/roll-call.jpg",
+          "bytes": 29077,
+          "sha256": "418ecebd12b69d923d67c37083c32b26c336ef7b7fa2e0e7591b1eb3b2f4a430"
+        },
+        "captions": {
+          "path": "public/assets/manual/roll-call.vtt",
+          "public_url": "/assets/manual/roll-call.vtt",
+          "bytes": 996,
+          "sha256": "dac93be433dff2d35504bd5e6bf5d7ab2c2811dfdd6e915ea68ba844b5fb2925"
+        },
+        "text": {
+          "path": "public/assets/manual/roll-call.txt",
+          "public_url": "/assets/manual/roll-call.txt",
+          "bytes": 1051,
+          "sha256": "0e1852e528db83ed6fe925ef86a67fd06867df3c137e2694feca6e749ea6f257"
+        }
+      },
+      "verification": {
+        "output_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.64001f",
+              "width": 1280,
+              "height": 720,
+              "coded_width": 1280,
+              "coded_height": 720,
+              "has_b_frames": 2,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": 31,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "left",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 706560,
+              "duration": "46.000000",
+              "bit_rate": "754669",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "1380",
+              "extradata_size": 49,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc63.1.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 2208000,
+              "duration": "46.000000",
+              "bit_rate": "97627",
+              "nb_frames": "2158",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/roll-call.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "46.000000",
+            "size": "4953054",
+            "bit_rate": "861400",
+            "probe_score": 100,
+            "tags": {
+              "major_brand": "isom",
+              "minor_version": "512",
+              "compatible_brands": "isomiso2avc1mp41",
+              "encoder": "Lavf63.1.101"
+            }
+          }
+        },
+        "poster_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "mjpeg",
+              "codec_long_name": "Motion JPEG",
+              "profile": "Baseline",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 960,
+              "height": 540,
+              "coded_width": 960,
+              "coded_height": 540,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuvj420p",
+              "level": -99,
+              "color_range": "pc",
+              "color_space": "bt470bg",
+              "chroma_location": "center",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/25",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1,
+              "duration": "0.040000",
+              "bits_per_raw_sample": "8",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/roll-call.jpg",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "image2",
+            "format_long_name": "image2 sequence",
+            "start_time": "0.000000",
+            "duration": "0.040000",
+            "size": "29077",
+            "bit_rate": "5815400",
+            "probe_score": 50
+          }
+        },
+        "full_decode": {
+          "passed": true,
+          "argv": [
+            "rtk",
+            "proxy",
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-xerror",
+            "-err_detect",
+            "explode",
+            "-threads",
+            "2",
+            "-i",
+            "public/assets/manual/roll-call.mp4",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-f",
+            "null",
+            "-"
+          ],
+          "exit_code": 0,
+          "stderr": "",
+          "scope": "All video and audio frames"
+        },
+        "poster_decode": {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        "faststart_moov_before_mdat": true,
+        "mp4_top_level_atoms": [
+          {
+            "type": "ftyp",
+            "offset_bytes": 0,
+            "size_bytes": 32
+          },
+          {
+            "type": "moov",
+            "offset_bytes": 32,
+            "size_bytes": 52041
+          },
+          {
+            "type": "free",
+            "offset_bytes": 52073,
+            "size_bytes": 8
+          },
+          {
+            "type": "mdat",
+            "offset_bytes": 52081,
+            "size_bytes": 4900973
+          }
+        ],
+        "sampled_output_frames_reviewed": true,
+        "sampled_output_times_seconds": [0.5, 4, 11, 19, 27, 35, 43, 45.9],
+        "privacy_review": "Sampled existing promotional film frames reviewed; no account or credential footage.",
+        "boundary": "Sampled visual review plus complete media decode; no new listening review or browser/player integration test."
+      },
+      "excluded_ranges": [],
+      "demonstration_boundary": "Existing stylized promotional film, not a screen recording of authenticated or funded model execution."
+    },
+    {
+      "id": "edited",
+      "title": "Edited",
+      "status": "ready",
+      "kind": "existing-launch-film",
+      "description": "A staged copy critique shows editors cutting vague claims from a sample advertisement.",
+      "suggested_placement": {
+        "docs_url": "/docs/#marginalia",
+        "section_id": "marginalia",
+        "section_title": "Margin conversations",
+        "position": "section-start"
+      },
+      "video": "/assets/manual/edited.mp4",
+      "poster": "/assets/manual/edited.jpg",
+      "captions": "/assets/manual/edited.vtt",
+      "text": "/assets/manual/edited.txt",
+      "duration_seconds": 46.0,
+      "width": 1280,
+      "height": 720,
+      "frame_rate": "30/1",
+      "audio": {
+        "present": true,
+        "codec": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      },
+      "source": {
+        "path": "launch-videos/renders/03-edited.mp4",
+        "bytes": 7207737,
+        "sha256": "797ece4d994d6d0ae5fb1ba6b03e8ff2065a340c2a32ef6e7ac64054a4dc69d9",
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.640032",
+              "width": 1920,
+              "height": 1080,
+              "coded_width": 1920,
+              "coded_height": 1080,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": 50,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "center",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 706560,
+              "duration": "46.000000",
+              "bit_rate": "1046450",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "1380",
+              "extradata_size": 52,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc61.19.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 2208000,
+              "duration": "46.000000",
+              "bit_rate": "199766",
+              "nb_frames": "2158",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "launch-videos/renders/03-edited.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "46.000000",
+            "size": "7207737",
+            "bit_rate": "1253519",
+            "probe_score": 100,
+            "tags": {
+              "minor_version": "512;512",
+              "major_brand": "isom;isom",
+              "compatible_brands": "isomiso2avc1mp41;isomiso2avc1mp41",
+              "hyperframes_version": "0.8.78",
+              "hyperframes_renderer": "hyperframes",
+              "encoder": "Lavf61.7.100"
+            }
+          }
+        },
+        "original_unchanged_after_preparation": true,
+        "captions": {
+          "path": "launch-videos/renders/03-edited.vtt",
+          "bytes": 886,
+          "sha256": "e1d70c0bd9bda7171f27473e743705a0b7f0af7c1713d99d58d71433cfd1c3b6"
+        },
+        "poster": {
+          "path": "launch-videos/renders/03-edited.jpg",
+          "bytes": 26053,
+          "sha256": "bbffbabf4f7fb8de8f3ae321b164eae6c943d1ffd96411fb3758ad4b01d6d5e0"
+        }
+      },
+      "preparation": {
+        "source_range_seconds": {
+          "start": 0,
+          "end": 46
+        },
+        "speed": 1,
+        "crop": null,
+        "overlays_added": false,
+        "retimed_or_reordered": false,
+        "reproduce_encoding_argv": [
+          "rtk",
+          "proxy",
+          "ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-n",
+          "-i",
+          "launch-videos/renders/03-edited.mp4",
+          "-t",
+          "46",
+          "-map",
+          "0:v:0",
+          "-map",
+          "0:a:0",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "96k",
+          "-ar",
+          "48000",
+          "-vf",
+          "scale=1280:720:flags=lanczos,setsar=1",
+          "-filter_threads",
+          "2",
+          "-c:v",
+          "libx264",
+          "-threads",
+          "4",
+          "-preset",
+          "medium",
+          "-crf",
+          "24",
+          "-profile:v",
+          "high",
+          "-level:v",
+          "3.1",
+          "-pix_fmt",
+          "yuv420p",
+          "-tag:v",
+          "avc1",
+          "-map_metadata",
+          "-1",
+          "-movflags",
+          "+faststart",
+          "public/assets/manual/edited.mp4"
+        ],
+        "video_settings": {
+          "codec": "H.264",
+          "pixel_format": "yuv420p",
+          "profile": "High",
+          "level": "3.1",
+          "crf": 24,
+          "preset": "medium",
+          "faststart": true
+        },
+        "audio_settings": {
+          "codec": "AAC",
+          "bitrate": "96k",
+          "sample_rate": 48000,
+          "channel_layout": "stereo"
+        }
+      },
+      "poster_info": {
+        "width": 960,
+        "height": 540,
+        "origin": "byte-for-byte existing JPG",
+        "output_time_seconds": null
+      },
+      "caption_info": {
+        "language": "en",
+        "html_track_kind": "captions",
+        "label": "English",
+        "spoken_dialogue": true,
+        "provenance": "Existing English VTT copied byte-for-byte; no new alignment or transcription",
+        "validation": {
+          "duration_bounds_passed": true,
+          "start_order_passed": true,
+          "cue_count": 18,
+          "first_start_seconds": 6.36,
+          "last_end_seconds": 40.9,
+          "overlaps": [
+            {
+              "previous_cue": 3,
+              "next_cue": 4,
+              "seconds": 0.06
+            }
+          ],
+          "cues": [
+            {
+              "start_seconds": 6.36,
+              "end_seconds": 7.16,
+              "text": "Ultimate?"
+            },
+            {
+              "start_seconds": 7.54,
+              "end_seconds": 9.02,
+              "text": "Strike the qualifier."
+            },
+            {
+              "start_seconds": 9.48,
+              "end_seconds": 12.0,
+              "text": "Either you can defend the claim, or you"
+            },
+            {
+              "start_seconds": 11.94,
+              "end_seconds": 12.46,
+              "text": "cannot."
+            },
+            {
+              "start_seconds": 13.64,
+              "end_seconds": 14.54,
+              "text": "AI-powered."
+            },
+            {
+              "start_seconds": 14.98,
+              "end_seconds": 16.18,
+              "text": "Revolutionary."
+            },
+            {
+              "start_seconds": 16.7,
+              "end_seconds": 17.36,
+              "text": "Seamless."
+            },
+            {
+              "start_seconds": 17.94,
+              "end_seconds": 20.04,
+              "text": "Three words doing the work of none."
+            },
+            {
+              "start_seconds": 20.58,
+              "end_seconds": 20.96,
+              "text": "Cut."
+            },
+            {
+              "start_seconds": 21.96,
+              "end_seconds": 24.38,
+              "text": "Ten times your productivity."
+            },
+            {
+              "start_seconds": 24.94,
+              "end_seconds": 27.88,
+              "text": "A rate, a denominator, and a date are"
+            },
+            {
+              "start_seconds": 27.9,
+              "end_seconds": 28.7,
+              "text": "still owed."
+            },
+            {
+              "start_seconds": 29.54,
+              "end_seconds": 30.88,
+              "text": "But this word."
+            },
+            {
+              "start_seconds": 31.36,
+              "end_seconds": 32.14,
+              "text": "Writing."
+            },
+            {
+              "start_seconds": 32.74,
+              "end_seconds": 33.62,
+              "text": "Keep that one."
+            },
+            {
+              "start_seconds": 34.22,
+              "end_seconds": 35.56,
+              "text": "That one is true."
+            },
+            {
+              "start_seconds": 38.54,
+              "end_seconds": 38.96,
+              "text": "Oh."
+            },
+            {
+              "start_seconds": 39.4,
+              "end_seconds": 40.9,
+              "text": "Now I'd keep reading."
+            }
+          ]
+        }
+      },
+      "text_info": {
+        "kind": "dialogue-caption text"
+      },
+      "files": {
+        "video": {
+          "path": "public/assets/manual/edited.mp4",
+          "public_url": "/assets/manual/edited.mp4",
+          "bytes": 2058101,
+          "sha256": "620353945fe8d8ae5a832b4b3d8e00fb086e0b5ea9b2ed4ad7e5fc9c52c1cb0d"
+        },
+        "poster": {
+          "path": "public/assets/manual/edited.jpg",
+          "public_url": "/assets/manual/edited.jpg",
+          "bytes": 26053,
+          "sha256": "bbffbabf4f7fb8de8f3ae321b164eae6c943d1ffd96411fb3758ad4b01d6d5e0"
+        },
+        "captions": {
+          "path": "public/assets/manual/edited.vtt",
+          "public_url": "/assets/manual/edited.vtt",
+          "bytes": 886,
+          "sha256": "e1d70c0bd9bda7171f27473e743705a0b7f0af7c1713d99d58d71433cfd1c3b6"
+        },
+        "text": {
+          "path": "public/assets/manual/edited.txt",
+          "public_url": "/assets/manual/edited.txt",
+          "bytes": 941,
+          "sha256": "f7a97d8ce1168cef8bddcfdf4fe0f59225b6f43d3ef1567fc1b86f62f001bcdb"
+        }
+      },
+      "verification": {
+        "output_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.64001f",
+              "width": 1280,
+              "height": 720,
+              "coded_width": 1280,
+              "coded_height": 720,
+              "has_b_frames": 2,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": 31,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "left",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 706560,
+              "duration": "46.000000",
+              "bit_rate": "249987",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "1380",
+              "extradata_size": 49,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc63.1.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 2208000,
+              "duration": "46.000000",
+              "bit_rate": "98872",
+              "nb_frames": "2158",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/edited.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "46.000000",
+            "size": "2058101",
+            "bit_rate": "357930",
+            "probe_score": 100,
+            "tags": {
+              "major_brand": "isom",
+              "minor_version": "512",
+              "compatible_brands": "isomiso2avc1mp41",
+              "encoder": "Lavf63.1.101"
+            }
+          }
+        },
+        "poster_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "mjpeg",
+              "codec_long_name": "Motion JPEG",
+              "profile": "Baseline",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 960,
+              "height": 540,
+              "coded_width": 960,
+              "coded_height": 540,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuvj420p",
+              "level": -99,
+              "color_range": "pc",
+              "color_space": "bt470bg",
+              "chroma_location": "center",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/25",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1,
+              "duration": "0.040000",
+              "bits_per_raw_sample": "8",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/edited.jpg",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "image2",
+            "format_long_name": "image2 sequence",
+            "start_time": "0.000000",
+            "duration": "0.040000",
+            "size": "26053",
+            "bit_rate": "5210600",
+            "probe_score": 50
+          }
+        },
+        "full_decode": {
+          "passed": true,
+          "argv": [
+            "rtk",
+            "proxy",
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-xerror",
+            "-err_detect",
+            "explode",
+            "-threads",
+            "2",
+            "-i",
+            "public/assets/manual/edited.mp4",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-f",
+            "null",
+            "-"
+          ],
+          "exit_code": 0,
+          "stderr": "",
+          "scope": "All video and audio frames"
+        },
+        "poster_decode": {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        "faststart_moov_before_mdat": true,
+        "mp4_top_level_atoms": [
+          {
+            "type": "ftyp",
+            "offset_bytes": 0,
+            "size_bytes": 32
+          },
+          {
+            "type": "moov",
+            "offset_bytes": 32,
+            "size_bytes": 51849
+          },
+          {
+            "type": "free",
+            "offset_bytes": 51881,
+            "size_bytes": 8
+          },
+          {
+            "type": "mdat",
+            "offset_bytes": 51889,
+            "size_bytes": 2006212
+          }
+        ],
+        "sampled_output_frames_reviewed": true,
+        "sampled_output_times_seconds": [0.5, 7, 15, 24, 32, 39, 44, 45.9],
+        "privacy_review": "Sampled existing promotional film frames reviewed; no account or credential footage.",
+        "boundary": "Sampled visual review plus complete media decode; no new listening review or browser/player integration test."
+      },
+      "excluded_ranges": [],
+      "demonstration_boundary": "Existing stylized promotional film, not a screen recording of authenticated or funded model execution."
+    },
+    {
+      "id": "newsreel",
+      "title": "Newsreel",
+      "status": "ready",
+      "kind": "existing-launch-film",
+      "description": "A stylized introduction to the brief, five editors and the writing room.",
+      "suggested_placement": {
+        "docs_url": "/docs/#getting-started",
+        "section_id": "getting-started",
+        "section_title": "Getting started",
+        "position": "section-start"
+      },
+      "video": "/assets/manual/newsreel.mp4",
+      "poster": "/assets/manual/newsreel.jpg",
+      "captions": "/assets/manual/newsreel.vtt",
+      "text": "/assets/manual/newsreel.txt",
+      "duration_seconds": 34.0,
+      "width": 1280,
+      "height": 720,
+      "frame_rate": "30/1",
+      "audio": {
+        "present": true,
+        "codec": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      },
+      "source": {
+        "path": "launch-videos/renders/04-newsreel.mp4",
+        "bytes": 14043128,
+        "sha256": "8024e6d907fd54a1aa678caed4c4e4b37ea4c4c013f312f58ed88271db1459be",
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.640032",
+              "width": 1920,
+              "height": 1080,
+              "coded_width": 1920,
+              "coded_height": 1080,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": 50,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "left",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 522240,
+              "duration": "34.000000",
+              "bit_rate": "3105782",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "1020",
+              "extradata_size": 50,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc63.1.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1632000,
+              "duration": "34.000000",
+              "bit_rate": "191045",
+              "nb_frames": "1595",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "launch-videos/renders/04-newsreel.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "34.000000",
+            "size": "14043128",
+            "bit_rate": "3304265",
+            "probe_score": 100,
+            "tags": {
+              "minor_version": "512;512",
+              "major_brand": "isom;isom",
+              "compatible_brands": "isomiso2avc1mp41;isomiso2avc1mp41",
+              "hyperframes_version": "0.8.78",
+              "hyperframes_renderer": "hyperframes",
+              "encoder": "Lavf63.1.101"
+            }
+          }
+        },
+        "original_unchanged_after_preparation": true,
+        "captions": {
+          "path": "launch-videos/renders/04-newsreel.vtt",
+          "bytes": 867,
+          "sha256": "40d62667fa217ebf389971acc71d57d2a49d7588bddf7fca18be1a2303cae0e3"
+        },
+        "poster": {
+          "path": "launch-videos/renders/04-newsreel.jpg",
+          "bytes": 14027,
+          "sha256": "3ae939646bc4cb9cbf8db401a1e6d78c9c7590a59916ea543750941886ef4c42"
+        }
+      },
+      "preparation": {
+        "source_range_seconds": {
+          "start": 0,
+          "end": 34
+        },
+        "speed": 1,
+        "crop": null,
+        "overlays_added": false,
+        "retimed_or_reordered": false,
+        "reproduce_encoding_argv": [
+          "rtk",
+          "proxy",
+          "ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-n",
+          "-i",
+          "launch-videos/renders/04-newsreel.mp4",
+          "-t",
+          "34",
+          "-map",
+          "0:v:0",
+          "-map",
+          "0:a:0",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "96k",
+          "-ar",
+          "48000",
+          "-vf",
+          "scale=1280:720:flags=lanczos,setsar=1",
+          "-filter_threads",
+          "2",
+          "-c:v",
+          "libx264",
+          "-threads",
+          "4",
+          "-preset",
+          "medium",
+          "-crf",
+          "24",
+          "-profile:v",
+          "high",
+          "-level:v",
+          "3.1",
+          "-pix_fmt",
+          "yuv420p",
+          "-tag:v",
+          "avc1",
+          "-map_metadata",
+          "-1",
+          "-movflags",
+          "+faststart",
+          "public/assets/manual/newsreel.mp4"
+        ],
+        "video_settings": {
+          "codec": "H.264",
+          "pixel_format": "yuv420p",
+          "profile": "High",
+          "level": "3.1",
+          "crf": 24,
+          "preset": "medium",
+          "faststart": true
+        },
+        "audio_settings": {
+          "codec": "AAC",
+          "bitrate": "96k",
+          "sample_rate": 48000,
+          "channel_layout": "stereo"
+        }
+      },
+      "poster_info": {
+        "width": 960,
+        "height": 540,
+        "origin": "byte-for-byte existing JPG",
+        "output_time_seconds": null
+      },
+      "caption_info": {
+        "language": "en",
+        "html_track_kind": "captions",
+        "label": "English",
+        "spoken_dialogue": true,
+        "provenance": "Existing English VTT copied byte-for-byte; no new alignment or transcription",
+        "validation": {
+          "duration_bounds_passed": true,
+          "start_order_passed": true,
+          "cue_count": 17,
+          "first_start_seconds": 0.64,
+          "last_end_seconds": 30.82,
+          "overlaps": [
+            {
+              "previous_cue": 4,
+              "next_cue": 5,
+              "seconds": 0.02
+            }
+          ],
+          "cues": [
+            {
+              "start_seconds": 0.64,
+              "end_seconds": 1.2,
+              "text": "Extra!"
+            },
+            {
+              "start_seconds": 1.32,
+              "end_seconds": 1.88,
+              "text": "Extra!"
+            },
+            {
+              "start_seconds": 2.04,
+              "end_seconds": 3.1,
+              "text": "Stop the presses!"
+            },
+            {
+              "start_seconds": 4.24,
+              "end_seconds": 6.68,
+              "text": "From the desks of a great magazine comes"
+            },
+            {
+              "start_seconds": 6.66,
+              "end_seconds": 8.78,
+              "text": "a writing room for the modern writer!"
+            },
+            {
+              "start_seconds": 10.2,
+              "end_seconds": 12.78,
+              "text": "Five editors on call at every hour!"
+            },
+            {
+              "start_seconds": 13.04,
+              "end_seconds": 13.76,
+              "text": "The sceptic!"
+            },
+            {
+              "start_seconds": 13.98,
+              "end_seconds": 14.7,
+              "text": "The patron!"
+            },
+            {
+              "start_seconds": 14.86,
+              "end_seconds": 15.64,
+              "text": "The scholar!"
+            },
+            {
+              "start_seconds": 15.82,
+              "end_seconds": 16.68,
+              "text": "The copy chief!"
+            },
+            {
+              "start_seconds": 16.86,
+              "end_seconds": 17.82,
+              "text": "And the reader!"
+            },
+            {
+              "start_seconds": 19.08,
+              "end_seconds": 20.08,
+              "text": "The blank page?"
+            },
+            {
+              "start_seconds": 20.26,
+              "end_seconds": 21.02,
+              "text": "Abolished!"
+            },
+            {
+              "start_seconds": 21.28,
+              "end_seconds": 23.16,
+              "text": "Every draft starts from a brief!"
+            },
+            {
+              "start_seconds": 25.3,
+              "end_seconds": 26.0,
+              "text": "Twyne!"
+            },
+            {
+              "start_seconds": 26.2,
+              "end_seconds": 27.9,
+              "text": "The editorial room!"
+            },
+            {
+              "start_seconds": 28.2,
+              "end_seconds": 30.82,
+              "text": "Now open at twyne dot love!"
+            }
+          ]
+        }
+      },
+      "text_info": {
+        "kind": "dialogue-caption text"
+      },
+      "files": {
+        "video": {
+          "path": "public/assets/manual/newsreel.mp4",
+          "public_url": "/assets/manual/newsreel.mp4",
+          "bytes": 1962859,
+          "sha256": "e8cb62697499f524ab6a6bef4c46231f1e2c6466a98a7efa4f568aec6082fba9"
+        },
+        "poster": {
+          "path": "public/assets/manual/newsreel.jpg",
+          "public_url": "/assets/manual/newsreel.jpg",
+          "bytes": 14027,
+          "sha256": "3ae939646bc4cb9cbf8db401a1e6d78c9c7590a59916ea543750941886ef4c42"
+        },
+        "captions": {
+          "path": "public/assets/manual/newsreel.vtt",
+          "public_url": "/assets/manual/newsreel.vtt",
+          "bytes": 867,
+          "sha256": "40d62667fa217ebf389971acc71d57d2a49d7588bddf7fca18be1a2303cae0e3"
+        },
+        "text": {
+          "path": "public/assets/manual/newsreel.txt",
+          "public_url": "/assets/manual/newsreel.txt",
+          "bytes": 927,
+          "sha256": "6433702e400e6ee3d47790d8d029b30287cf26e31ec909ee54fd87b4f3a5c36c"
+        }
+      },
+      "verification": {
+        "output_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.64001f",
+              "width": 1280,
+              "height": 720,
+              "coded_width": 1280,
+              "coded_height": 720,
+              "has_b_frames": 2,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": 31,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "left",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 522240,
+              "duration": "34.000000",
+              "bit_rate": "356568",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "1020",
+              "extradata_size": 49,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc63.1.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1632000,
+              "duration": "34.000000",
+              "bit_rate": "96145",
+              "nb_frames": "1595",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/newsreel.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "34.000000",
+            "size": "1962859",
+            "bit_rate": "461849",
+            "probe_score": 100,
+            "tags": {
+              "major_brand": "isom",
+              "minor_version": "512",
+              "compatible_brands": "isomiso2avc1mp41",
+              "encoder": "Lavf63.1.101"
+            }
+          }
+        },
+        "poster_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "mjpeg",
+              "codec_long_name": "Motion JPEG",
+              "profile": "Baseline",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 960,
+              "height": 540,
+              "coded_width": 960,
+              "coded_height": 540,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuvj420p",
+              "level": -99,
+              "color_range": "pc",
+              "color_space": "bt470bg",
+              "chroma_location": "center",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/25",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1,
+              "duration": "0.040000",
+              "bits_per_raw_sample": "8",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/newsreel.jpg",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "image2",
+            "format_long_name": "image2 sequence",
+            "start_time": "0.000000",
+            "duration": "0.040000",
+            "size": "14027",
+            "bit_rate": "2805400",
+            "probe_score": 50
+          }
+        },
+        "full_decode": {
+          "passed": true,
+          "argv": [
+            "rtk",
+            "proxy",
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-xerror",
+            "-err_detect",
+            "explode",
+            "-threads",
+            "2",
+            "-i",
+            "public/assets/manual/newsreel.mp4",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-f",
+            "null",
+            "-"
+          ],
+          "exit_code": 0,
+          "stderr": "",
+          "scope": "All video and audio frames"
+        },
+        "poster_decode": {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        "faststart_moov_before_mdat": true,
+        "mp4_top_level_atoms": [
+          {
+            "type": "ftyp",
+            "offset_bytes": 0,
+            "size_bytes": 32
+          },
+          {
+            "type": "moov",
+            "offset_bytes": 32,
+            "size_bytes": 38517
+          },
+          {
+            "type": "free",
+            "offset_bytes": 38549,
+            "size_bytes": 8
+          },
+          {
+            "type": "mdat",
+            "offset_bytes": 38557,
+            "size_bytes": 1924302
+          }
+        ],
+        "sampled_output_frames_reviewed": true,
+        "sampled_output_times_seconds": [0.5, 2.5, 6, 13, 20, 27, 32, 33.9],
+        "privacy_review": "Sampled existing promotional film frames reviewed; no account or credential footage.",
+        "boundary": "Sampled visual review plus complete media decode; no new listening review or browser/player integration test."
+      },
+      "excluded_ranges": [],
+      "demonstration_boundary": "Existing stylized promotional film, not a screen recording of authenticated or funded model execution."
+    },
+    {
+      "id": "the-strike",
+      "title": "The Strike",
+      "status": "ready",
+      "kind": "existing-launch-film",
+      "description": "Two editorial replacements introduce the brief and the room full of editors.",
+      "suggested_placement": {
+        "docs_url": "/docs/#dossier",
+        "section_id": "dossier",
+        "section_title": "The dossier",
+        "position": "section-start"
+      },
+      "video": "/assets/manual/the-strike.mp4",
+      "poster": "/assets/manual/the-strike.jpg",
+      "captions": "/assets/manual/the-strike.vtt",
+      "text": "/assets/manual/the-strike.txt",
+      "duration_seconds": 15.0,
+      "width": 720,
+      "height": 1280,
+      "frame_rate": "30/1",
+      "audio": {
+        "present": true,
+        "codec": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      },
+      "source": {
+        "path": "launch-videos/renders/05-the-strike.mp4",
+        "bytes": 7592801,
+        "sha256": "e888c2051c34dd1e9ba82884d9b5980926ad240ceded0e0ee69c58cb552e79b4",
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.640032",
+              "width": 1080,
+              "height": 1920,
+              "coded_width": 1080,
+              "coded_height": 1920,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "9:16",
+              "pix_fmt": "yuv420p",
+              "level": 50,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "center",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 230400,
+              "duration": "15.000000",
+              "bit_rate": "3870120",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "450",
+              "extradata_size": 52,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc61.19.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 720000,
+              "duration": "15.000000",
+              "bit_rate": "171288",
+              "nb_frames": "705",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "launch-videos/renders/05-the-strike.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "15.000000",
+            "size": "7592801",
+            "bit_rate": "4049493",
+            "probe_score": 100,
+            "tags": {
+              "minor_version": "512;512",
+              "major_brand": "isom;isom",
+              "compatible_brands": "isomiso2avc1mp41;isomiso2avc1mp41",
+              "hyperframes_version": "0.8.78",
+              "hyperframes_renderer": "hyperframes",
+              "encoder": "Lavf61.7.100"
+            }
+          }
+        },
+        "original_unchanged_after_preparation": true,
+        "poster": {
+          "path": "launch-videos/renders/05-the-strike.jpg",
+          "bytes": 29385,
+          "sha256": "7f76648de2e794ad8a3d7edbdc5a3693e779ad505a8504d7c5bac11117e8289e"
+        }
+      },
+      "preparation": {
+        "source_range_seconds": {
+          "start": 0,
+          "end": 15
+        },
+        "speed": 1,
+        "crop": null,
+        "overlays_added": false,
+        "retimed_or_reordered": false,
+        "reproduce_encoding_argv": [
+          "rtk",
+          "proxy",
+          "ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-n",
+          "-i",
+          "launch-videos/renders/05-the-strike.mp4",
+          "-t",
+          "15",
+          "-map",
+          "0:v:0",
+          "-map",
+          "0:a:0",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "96k",
+          "-ar",
+          "48000",
+          "-vf",
+          "scale=720:1280:flags=lanczos,setsar=1",
+          "-filter_threads",
+          "2",
+          "-c:v",
+          "libx264",
+          "-threads",
+          "4",
+          "-preset",
+          "medium",
+          "-crf",
+          "24",
+          "-profile:v",
+          "high",
+          "-level:v",
+          "3.1",
+          "-pix_fmt",
+          "yuv420p",
+          "-tag:v",
+          "avc1",
+          "-map_metadata",
+          "-1",
+          "-movflags",
+          "+faststart",
+          "public/assets/manual/the-strike.mp4"
+        ],
+        "video_settings": {
+          "codec": "H.264",
+          "pixel_format": "yuv420p",
+          "profile": "High",
+          "level": "3.1",
+          "crf": 24,
+          "preset": "medium",
+          "faststart": true
+        },
+        "audio_settings": {
+          "codec": "AAC",
+          "bitrate": "96k",
+          "sample_rate": 48000,
+          "channel_layout": "stereo"
+        }
+      },
+      "poster_info": {
+        "width": 405,
+        "height": 720,
+        "origin": "frame from prepared MP4",
+        "output_time_seconds": 3.4
+      },
+      "caption_info": {
+        "language": "en",
+        "html_track_kind": "captions",
+        "label": "English · sound cues",
+        "spoken_dialogue": false,
+        "provenance": "Sound cues from inspected existing composition audio tracks and saved instrumental source prompts; onscreen words are in the companion text",
+        "validation": {
+          "duration_bounds_passed": true,
+          "start_order_passed": true,
+          "cue_count": 2,
+          "first_start_seconds": 0.0,
+          "last_end_seconds": 15.0,
+          "overlaps": [],
+          "cues": [
+            {
+              "start_seconds": 0.0,
+              "end_seconds": 10.8,
+              "text": "[Instrumental music with typing and swooshing effects]"
+            },
+            {
+              "start_seconds": 10.8,
+              "end_seconds": 15.0,
+              "text": "[Instrumental music continues]"
+            }
+          ]
+        }
+      },
+      "text_info": {
+        "kind": "visual transcript and sound description"
+      },
+      "files": {
+        "video": {
+          "path": "public/assets/manual/the-strike.mp4",
+          "public_url": "/assets/manual/the-strike.mp4",
+          "bytes": 807150,
+          "sha256": "44f2e3e38a291fbe7368e5575797173f54959e0679be2f3875f21af96e16aef2"
+        },
+        "poster": {
+          "path": "public/assets/manual/the-strike.jpg",
+          "public_url": "/assets/manual/the-strike.jpg",
+          "bytes": 30455,
+          "sha256": "ecc17a687e3e79784fe2c272d7d29586f7aaf831ef9b50401074e0f0f9050f49"
+        },
+        "captions": {
+          "path": "public/assets/manual/the-strike.vtt",
+          "public_url": "/assets/manual/the-strike.vtt",
+          "bytes": 155,
+          "sha256": "95da17a717efa667c94ad5df5f796aa44d0c8c6d5e076194ed235560ab4cb49f"
+        },
+        "text": {
+          "path": "public/assets/manual/the-strike.txt",
+          "public_url": "/assets/manual/the-strike.txt",
+          "bytes": 799,
+          "sha256": "a33fcafef51f3b7eb819c03f3cee5e1f0104709e1ef7e44b0fb08598e296727b"
+        }
+      },
+      "verification": {
+        "output_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.64001f",
+              "width": 720,
+              "height": 1280,
+              "coded_width": 720,
+              "coded_height": 1280,
+              "has_b_frames": 2,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "9:16",
+              "pix_fmt": "yuv420p",
+              "level": 31,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "left",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 230400,
+              "duration": "15.000000",
+              "bit_rate": "336741",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "450",
+              "extradata_size": 49,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc63.1.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 720000,
+              "duration": "15.000000",
+              "bit_rate": "84099",
+              "nb_frames": "705",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/the-strike.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "15.000000",
+            "size": "807150",
+            "bit_rate": "430480",
+            "probe_score": 100,
+            "tags": {
+              "major_brand": "isom",
+              "minor_version": "512",
+              "compatible_brands": "isomiso2avc1mp41",
+              "encoder": "Lavf63.1.101"
+            }
+          }
+        },
+        "poster_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "mjpeg",
+              "codec_long_name": "Motion JPEG",
+              "profile": "Baseline",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 405,
+              "height": 720,
+              "coded_width": 405,
+              "coded_height": 720,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "9:16",
+              "pix_fmt": "yuvj420p",
+              "level": -99,
+              "color_range": "pc",
+              "color_space": "bt470bg",
+              "chroma_location": "center",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/25",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1,
+              "duration": "0.040000",
+              "bits_per_raw_sample": "8",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/the-strike.jpg",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "image2",
+            "format_long_name": "image2 sequence",
+            "start_time": "0.000000",
+            "duration": "0.040000",
+            "size": "30455",
+            "bit_rate": "6091000",
+            "probe_score": 50
+          }
+        },
+        "full_decode": {
+          "passed": true,
+          "argv": [
+            "rtk",
+            "proxy",
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-xerror",
+            "-err_detect",
+            "explode",
+            "-threads",
+            "2",
+            "-i",
+            "public/assets/manual/the-strike.mp4",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-f",
+            "null",
+            "-"
+          ],
+          "exit_code": 0,
+          "stderr": "",
+          "scope": "All video and audio frames"
+        },
+        "poster_decode": {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        "faststart_moov_before_mdat": true,
+        "mp4_top_level_atoms": [
+          {
+            "type": "ftyp",
+            "offset_bytes": 0,
+            "size_bytes": 32
+          },
+          {
+            "type": "moov",
+            "offset_bytes": 32,
+            "size_bytes": 17801
+          },
+          {
+            "type": "free",
+            "offset_bytes": 17833,
+            "size_bytes": 8
+          },
+          {
+            "type": "mdat",
+            "offset_bytes": 17841,
+            "size_bytes": 789309
+          }
+        ],
+        "sampled_output_frames_reviewed": true,
+        "sampled_output_times_seconds": [
+          0.5, 1.8, 3.4, 5.8, 7.8, 9.5, 12.8, 14.9
+        ],
+        "privacy_review": "Sampled existing promotional film frames reviewed; no account or credential footage.",
+        "boundary": "Sampled visual review plus complete media decode; no new listening review or browser/player integration test."
+      },
+      "excluded_ranges": [],
+      "demonstration_boundary": "Existing stylized promotional film, not a screen recording of authenticated or funded model execution.",
+      "audio_source_inspection": {
+        "composition": {
+          "path": "launch-videos/05-the-strike/index.html",
+          "bytes": 5634,
+          "sha256": "fc6bf23cda84906a61a5188a9b374e1b99ef4e385e623e037c2322c8bf3874eb"
+        },
+        "prompt_source": {
+          "path": "launch-videos/_gen/prompts/audio.json",
+          "bytes": 7710,
+          "sha256": "5e3c1d40c52ee37e948d377e0bd68fce71ae18eb9c7dda40d0ecd45652186b0d"
+        },
+        "music_prompt_id": "m-strike",
+        "declared_tracks": "Instrumental music, typing and whoosh effects; background video is muted; no narration track",
+        "source_audio": [
+          {
+            "path": "launch-videos/05-the-strike/assets/audio/m-strike-cut.wav",
+            "bytes": 2880086,
+            "sha256": "8bae00b0d7ff05cf2673379dfd02e78fc41d43ceea06f84d586d01395f9ad3e2",
+            "probe": {
+              "streams": [
+                {
+                  "index": 0,
+                  "codec_name": "pcm_s16le",
+                  "codec_long_name": "PCM signed 16-bit little-endian",
+                  "codec_type": "audio",
+                  "codec_tag_string": "[1][0][0][0]",
+                  "codec_tag": "0x0001",
+                  "sample_fmt": "s16",
+                  "sample_rate": "48000",
+                  "channels": 2,
+                  "bits_per_sample": 16,
+                  "initial_padding": 0,
+                  "r_frame_rate": "0/0",
+                  "avg_frame_rate": "0/0",
+                  "time_base": "1/48000",
+                  "duration_ts": 720002,
+                  "duration": "15.000042",
+                  "bit_rate": "1536000",
+                  "disposition": {
+                    "default": 0,
+                    "dub": 0,
+                    "original": 0,
+                    "comment": 0,
+                    "lyrics": 0,
+                    "karaoke": 0,
+                    "forced": 0,
+                    "hearing_impaired": 0,
+                    "visual_impaired": 0,
+                    "clean_effects": 0,
+                    "attached_pic": 0,
+                    "timed_thumbnails": 0,
+                    "non_diegetic": 0,
+                    "captions": 0,
+                    "descriptions": 0,
+                    "metadata": 0,
+                    "dependent": 0,
+                    "still_image": 0,
+                    "multilayer": 0
+                  }
+                }
+              ],
+              "format": {
+                "filename": "launch-videos/05-the-strike/assets/audio/m-strike-cut.wav",
+                "nb_streams": 1,
+                "nb_programs": 0,
+                "nb_stream_groups": 0,
+                "format_name": "wav",
+                "format_long_name": "WAV / WAVE (Waveform Audio)",
+                "duration": "15.000042",
+                "size": "2880086",
+                "bit_rate": "1536041",
+                "probe_score": 99,
+                "tags": {
+                  "encoder": "Lavf63.1.101"
+                }
+              }
+            }
+          },
+          {
+            "path": "launch-videos/05-the-strike/assets/sfx/typing.mp3",
+            "bytes": 26852,
+            "sha256": "944160652faeb7b32acc9341ede4d735a5c9a4ce3fe8509ef7eab91efb430487",
+            "probe": {
+              "streams": [
+                {
+                  "index": 0,
+                  "codec_name": "mp3",
+                  "codec_long_name": "MP3 (MPEG audio layer 3)",
+                  "codec_type": "audio",
+                  "codec_tag_string": "[0][0][0][0]",
+                  "codec_tag": "0x0000",
+                  "mime_codec_string": "mp4a.40.34",
+                  "sample_fmt": "fltp",
+                  "sample_rate": "44100",
+                  "channels": 2,
+                  "channel_layout": "stereo",
+                  "bits_per_sample": 0,
+                  "initial_padding": 0,
+                  "r_frame_rate": "0/0",
+                  "avg_frame_rate": "0/0",
+                  "time_base": "1/14112000",
+                  "start_pts": 353600,
+                  "start_time": "0.025057",
+                  "duration_ts": 21168000,
+                  "duration": "1.500000",
+                  "bit_rate": "139147",
+                  "disposition": {
+                    "default": 0,
+                    "dub": 0,
+                    "original": 0,
+                    "comment": 0,
+                    "lyrics": 0,
+                    "karaoke": 0,
+                    "forced": 0,
+                    "hearing_impaired": 0,
+                    "visual_impaired": 0,
+                    "clean_effects": 0,
+                    "attached_pic": 0,
+                    "timed_thumbnails": 0,
+                    "non_diegetic": 0,
+                    "captions": 0,
+                    "descriptions": 0,
+                    "metadata": 0,
+                    "dependent": 0,
+                    "still_image": 0,
+                    "multilayer": 0
+                  },
+                  "tags": {
+                    "encoder": "Lavc62.28"
+                  }
+                }
+              ],
+              "format": {
+                "filename": "launch-videos/05-the-strike/assets/sfx/typing.mp3",
+                "nb_streams": 1,
+                "nb_programs": 0,
+                "nb_stream_groups": 0,
+                "format_name": "mp3",
+                "format_long_name": "MP2/3 (MPEG audio layer 2/3)",
+                "start_time": "0.025057",
+                "duration": "1.500000",
+                "size": "26852",
+                "bit_rate": "143210",
+                "probe_score": 52,
+                "tags": {
+                  "encoder": "Lavf62.12.100"
+                }
+              }
+            }
+          },
+          {
+            "path": "launch-videos/05-the-strike/assets/sfx/whoosh-short.mp3",
+            "bytes": 18390,
+            "sha256": "c2efd9d902a59bf9ec5019035d7deadd17762136896b6e3cb6dd99ea50997a30",
+            "probe": {
+              "streams": [
+                {
+                  "index": 0,
+                  "codec_name": "mp3",
+                  "codec_long_name": "MP3 (MPEG audio layer 3)",
+                  "codec_type": "audio",
+                  "codec_tag_string": "[0][0][0][0]",
+                  "codec_tag": "0x0000",
+                  "mime_codec_string": "mp4a.40.34",
+                  "sample_fmt": "fltp",
+                  "sample_rate": "44100",
+                  "channels": 2,
+                  "channel_layout": "stereo",
+                  "bits_per_sample": 0,
+                  "initial_padding": 0,
+                  "r_frame_rate": "0/0",
+                  "avg_frame_rate": "0/0",
+                  "time_base": "1/14112000",
+                  "start_pts": 0,
+                  "start_time": "0.000000",
+                  "duration_ts": 8109990,
+                  "duration": "0.574688",
+                  "bit_rate": "256000",
+                  "disposition": {
+                    "default": 0,
+                    "dub": 0,
+                    "original": 0,
+                    "comment": 0,
+                    "lyrics": 0,
+                    "karaoke": 0,
+                    "forced": 0,
+                    "hearing_impaired": 0,
+                    "visual_impaired": 0,
+                    "clean_effects": 0,
+                    "attached_pic": 0,
+                    "timed_thumbnails": 0,
+                    "non_diegetic": 0,
+                    "captions": 0,
+                    "descriptions": 0,
+                    "metadata": 0,
+                    "dependent": 0,
+                    "still_image": 0,
+                    "multilayer": 0
+                  }
+                }
+              ],
+              "format": {
+                "filename": "launch-videos/05-the-strike/assets/sfx/whoosh-short.mp3",
+                "nb_streams": 1,
+                "nb_programs": 0,
+                "nb_stream_groups": 0,
+                "format_name": "mp3",
+                "format_long_name": "MP2/3 (MPEG audio layer 2/3)",
+                "start_time": "0.000000",
+                "duration": "0.574688",
+                "size": "18390",
+                "bit_rate": "255999",
+                "probe_score": 52
+              }
+            }
+          }
+        ],
+        "listening_review_performed": false,
+        "caption_policy": "Sound cues only; visible words are explicitly labeled as onscreen text in the companion TXT."
+      }
+    },
+    {
+      "id": "sting",
+      "title": "Sting",
+      "status": "ready",
+      "kind": "existing-launch-film",
+      "description": "The griffin mark, wordmark and tagline form an existing brand close.",
+      "suggested_placement": {
+        "docs_url": "/docs/#folios",
+        "section_id": "folios",
+        "section_title": "Folios, export & publishing",
+        "position": "section-end"
+      },
+      "video": "/assets/manual/sting.mp4",
+      "poster": "/assets/manual/sting.jpg",
+      "captions": "/assets/manual/sting.vtt",
+      "text": "/assets/manual/sting.txt",
+      "duration_seconds": 6.0,
+      "width": 1280,
+      "height": 720,
+      "frame_rate": "30/1",
+      "audio": {
+        "present": true,
+        "codec": "aac",
+        "sample_rate": "48000",
+        "channels": 2
+      },
+      "source": {
+        "path": "launch-videos/renders/06-sting.mp4",
+        "bytes": 1163628,
+        "sha256": "90357d9d43895b9fa75c369c8af2ca11095f42d0dd4f03ef096b91e0c035ffc7",
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.640032",
+              "width": 1920,
+              "height": 1080,
+              "coded_width": 1920,
+              "coded_height": 1080,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": 50,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "center",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 92160,
+              "duration": "6.000000",
+              "bit_rate": "1359329",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "180",
+              "extradata_size": 52,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc61.19.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 288000,
+              "duration": "6.000000",
+              "bit_rate": "182279",
+              "nb_frames": "283",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "launch-videos/renders/06-sting.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "6.000000",
+            "size": "1163628",
+            "bit_rate": "1551504",
+            "probe_score": 100,
+            "tags": {
+              "minor_version": "512;512",
+              "major_brand": "isom;isom",
+              "compatible_brands": "isomiso2avc1mp41;isomiso2avc1mp41",
+              "hyperframes_version": "0.8.78",
+              "hyperframes_renderer": "hyperframes",
+              "encoder": "Lavf61.7.100"
+            }
+          }
+        },
+        "original_unchanged_after_preparation": true,
+        "poster": {
+          "path": "launch-videos/renders/06-sting.jpg",
+          "bytes": 26746,
+          "sha256": "a8b182d38b5687c50dae694b19d57591f2bd2ef1513bfb6c6942e5834ac584a0"
+        }
+      },
+      "preparation": {
+        "source_range_seconds": {
+          "start": 0,
+          "end": 6
+        },
+        "speed": 1,
+        "crop": null,
+        "overlays_added": false,
+        "retimed_or_reordered": false,
+        "reproduce_encoding_argv": [
+          "rtk",
+          "proxy",
+          "ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-n",
+          "-i",
+          "launch-videos/renders/06-sting.mp4",
+          "-t",
+          "6",
+          "-map",
+          "0:v:0",
+          "-map",
+          "0:a:0",
+          "-c:a",
+          "aac",
+          "-b:a",
+          "96k",
+          "-ar",
+          "48000",
+          "-vf",
+          "scale=1280:720:flags=lanczos,setsar=1",
+          "-filter_threads",
+          "2",
+          "-c:v",
+          "libx264",
+          "-threads",
+          "4",
+          "-preset",
+          "medium",
+          "-crf",
+          "24",
+          "-profile:v",
+          "high",
+          "-level:v",
+          "3.1",
+          "-pix_fmt",
+          "yuv420p",
+          "-tag:v",
+          "avc1",
+          "-map_metadata",
+          "-1",
+          "-movflags",
+          "+faststart",
+          "public/assets/manual/sting.mp4"
+        ],
+        "video_settings": {
+          "codec": "H.264",
+          "pixel_format": "yuv420p",
+          "profile": "High",
+          "level": "3.1",
+          "crf": 24,
+          "preset": "medium",
+          "faststart": true
+        },
+        "audio_settings": {
+          "codec": "AAC",
+          "bitrate": "96k",
+          "sample_rate": 48000,
+          "channel_layout": "stereo"
+        }
+      },
+      "poster_info": {
+        "width": 960,
+        "height": 540,
+        "origin": "byte-for-byte existing JPG",
+        "output_time_seconds": null
+      },
+      "caption_info": {
+        "language": "en",
+        "html_track_kind": "captions",
+        "label": "English · sound cues",
+        "spoken_dialogue": false,
+        "provenance": "Sound cues from inspected existing composition audio tracks and saved instrumental source prompts; onscreen words are in the companion text",
+        "validation": {
+          "duration_bounds_passed": true,
+          "start_order_passed": true,
+          "cue_count": 1,
+          "first_start_seconds": 0.0,
+          "last_end_seconds": 6.0,
+          "overlaps": [],
+          "cues": [
+            {
+              "start_seconds": 0.0,
+              "end_seconds": 6.0,
+              "text": "[Instrumental music]"
+            }
+          ]
+        }
+      },
+      "text_info": {
+        "kind": "visual transcript and sound description"
+      },
+      "files": {
+        "video": {
+          "path": "public/assets/manual/sting.mp4",
+          "public_url": "/assets/manual/sting.mp4",
+          "bytes": 274778,
+          "sha256": "9352327b6ec40c226754d59f27b9479e73accc4d7d89639a26310fef7e8282da"
+        },
+        "poster": {
+          "path": "public/assets/manual/sting.jpg",
+          "public_url": "/assets/manual/sting.jpg",
+          "bytes": 26746,
+          "sha256": "a8b182d38b5687c50dae694b19d57591f2bd2ef1513bfb6c6942e5834ac584a0"
+        },
+        "captions": {
+          "path": "public/assets/manual/sting.vtt",
+          "public_url": "/assets/manual/sting.vtt",
+          "bytes": 59,
+          "sha256": "6b862a9369ee397fe380314f642c5b73fc705a71615a7b6f5405be2824f9662b"
+        },
+        "text": {
+          "path": "public/assets/manual/sting.txt",
+          "public_url": "/assets/manual/sting.txt",
+          "bytes": 234,
+          "sha256": "6ac17267c6965bbf07e52bc87c61180765f0babd5762b5e3c46ca43544f9d00e"
+        }
+      },
+      "verification": {
+        "output_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.64001f",
+              "width": 1280,
+              "height": 720,
+              "coded_width": 1280,
+              "coded_height": 720,
+              "has_b_frames": 2,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuv420p",
+              "level": 31,
+              "color_range": "tv",
+              "color_space": "bt709",
+              "color_transfer": "bt709",
+              "color_primaries": "bt709",
+              "chroma_location": "left",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "30/1",
+              "avg_frame_rate": "30/1",
+              "time_base": "1/15360",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 92160,
+              "duration": "6.000000",
+              "bit_rate": "262652",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "180",
+              "extradata_size": 49,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc63.1.101 libx264"
+              }
+            },
+            {
+              "index": 1,
+              "codec_name": "aac",
+              "codec_long_name": "AAC (Advanced Audio Coding)",
+              "profile": "LC",
+              "codec_type": "audio",
+              "codec_tag_string": "mp4a",
+              "codec_tag": "0x6134706d",
+              "mime_codec_string": "mp4a.40.2",
+              "sample_fmt": "fltp",
+              "sample_rate": "48000",
+              "channels": 2,
+              "channel_layout": "stereo",
+              "bits_per_sample": 0,
+              "initial_padding": 1024,
+              "id": "0x2",
+              "r_frame_rate": "0/0",
+              "avg_frame_rate": "0/0",
+              "time_base": "1/48000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 288000,
+              "duration": "6.000000",
+              "bit_rate": "92678",
+              "nb_frames": "283",
+              "extradata_size": 5,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "SoundHandler"
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/sting.mp4",
+            "nb_streams": 2,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "6.000000",
+            "size": "274778",
+            "bit_rate": "366370",
+            "probe_score": 100,
+            "tags": {
+              "major_brand": "isom",
+              "minor_version": "512",
+              "compatible_brands": "isomiso2avc1mp41",
+              "encoder": "Lavf63.1.101"
+            }
+          }
+        },
+        "poster_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "mjpeg",
+              "codec_long_name": "Motion JPEG",
+              "profile": "Baseline",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 960,
+              "height": 540,
+              "coded_width": 960,
+              "coded_height": 540,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "16:9",
+              "pix_fmt": "yuvj420p",
+              "level": -99,
+              "color_range": "pc",
+              "color_space": "bt470bg",
+              "chroma_location": "center",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/25",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1,
+              "duration": "0.040000",
+              "bits_per_raw_sample": "8",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/sting.jpg",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "image2",
+            "format_long_name": "image2 sequence",
+            "start_time": "0.000000",
+            "duration": "0.040000",
+            "size": "26746",
+            "bit_rate": "5349200",
+            "probe_score": 50
+          }
+        },
+        "full_decode": {
+          "passed": true,
+          "argv": [
+            "rtk",
+            "proxy",
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-xerror",
+            "-err_detect",
+            "explode",
+            "-threads",
+            "2",
+            "-i",
+            "public/assets/manual/sting.mp4",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-f",
+            "null",
+            "-"
+          ],
+          "exit_code": 0,
+          "stderr": "",
+          "scope": "All video and audio frames"
+        },
+        "poster_decode": {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        "faststart_moov_before_mdat": true,
+        "mp4_top_level_atoms": [
+          {
+            "type": "ftyp",
+            "offset_bytes": 0,
+            "size_bytes": 32
+          },
+          {
+            "type": "moov",
+            "offset_bytes": 32,
+            "size_bytes": 7985
+          },
+          {
+            "type": "free",
+            "offset_bytes": 8017,
+            "size_bytes": 8
+          },
+          {
+            "type": "mdat",
+            "offset_bytes": 8025,
+            "size_bytes": 266753
+          }
+        ],
+        "sampled_output_frames_reviewed": true,
+        "sampled_output_times_seconds": [0, 0.5, 1, 2, 3, 4, 5, 5.9],
+        "privacy_review": "Sampled existing promotional film frames reviewed; no account or credential footage.",
+        "boundary": "Sampled visual review plus complete media decode; no new listening review or browser/player integration test."
+      },
+      "excluded_ranges": [],
+      "demonstration_boundary": "Existing stylized promotional film, not a screen recording of authenticated or funded model execution.",
+      "audio_source_inspection": {
+        "composition": {
+          "path": "launch-videos/06-sting/index.html",
+          "bytes": 2561,
+          "sha256": "4413613f29d507b52e6c9ca9922637e5b22fa3ea77907462483c6a9787312576"
+        },
+        "prompt_source": {
+          "path": "launch-videos/_gen/prompts/audio.json",
+          "bytes": 7710,
+          "sha256": "5e3c1d40c52ee37e948d377e0bd68fce71ae18eb9c7dda40d0ecd45652186b0d"
+        },
+        "music_prompt_id": "m-sting",
+        "declared_tracks": "Instrumental music only; no narration track",
+        "source_audio": [
+          {
+            "path": "launch-videos/06-sting/assets/audio/m-sting-cut.wav",
+            "bytes": 1152094,
+            "sha256": "2da89a1a67f106028b9904e2c7401c6ac62f55161c3bc8c6d79dd0fee09bdbc6",
+            "probe": {
+              "streams": [
+                {
+                  "index": 0,
+                  "codec_name": "pcm_s16le",
+                  "codec_long_name": "PCM signed 16-bit little-endian",
+                  "codec_type": "audio",
+                  "codec_tag_string": "[1][0][0][0]",
+                  "codec_tag": "0x0001",
+                  "sample_fmt": "s16",
+                  "sample_rate": "48000",
+                  "channels": 2,
+                  "bits_per_sample": 16,
+                  "initial_padding": 0,
+                  "r_frame_rate": "0/0",
+                  "avg_frame_rate": "0/0",
+                  "time_base": "1/48000",
+                  "duration_ts": 288004,
+                  "duration": "6.000083",
+                  "bit_rate": "1536000",
+                  "disposition": {
+                    "default": 0,
+                    "dub": 0,
+                    "original": 0,
+                    "comment": 0,
+                    "lyrics": 0,
+                    "karaoke": 0,
+                    "forced": 0,
+                    "hearing_impaired": 0,
+                    "visual_impaired": 0,
+                    "clean_effects": 0,
+                    "attached_pic": 0,
+                    "timed_thumbnails": 0,
+                    "non_diegetic": 0,
+                    "captions": 0,
+                    "descriptions": 0,
+                    "metadata": 0,
+                    "dependent": 0,
+                    "still_image": 0,
+                    "multilayer": 0
+                  }
+                }
+              ],
+              "format": {
+                "filename": "launch-videos/06-sting/assets/audio/m-sting-cut.wav",
+                "nb_streams": 1,
+                "nb_programs": 0,
+                "nb_stream_groups": 0,
+                "format_name": "wav",
+                "format_long_name": "WAV / WAVE (Waveform Audio)",
+                "duration": "6.000083",
+                "size": "1152094",
+                "bit_rate": "1536104",
+                "probe_score": 99,
+                "tags": {
+                  "encoder": "Lavf63.1.101"
+                }
+              }
+            }
+          }
+        ],
+        "listening_review_performed": false,
+        "caption_policy": "Sound cues only; visible words are explicitly labeled as onscreen text in the companion TXT."
+      }
+    },
+    {
+      "id": "house-context",
+      "title": "The House and inherited context",
+      "status": "ready",
+      "kind": "silent-local-walkthrough",
+      "description": "Inspect inherited folio fields, collection and House defaults, the charter, register and assembled model context.",
+      "suggested_placement": {
+        "docs_url": "/docs/#house",
+        "section_id": "house",
+        "section_title": "The House & collections",
+        "position": "section-start"
+      },
+      "video": "/assets/manual/house-context.mp4",
+      "poster": "/assets/manual/house-context.jpg",
+      "captions": "/assets/manual/house-context.vtt",
+      "text": "/assets/manual/house-context.txt",
+      "duration_seconds": 17.6,
+      "width": 1152,
+      "height": 720,
+      "frame_rate": "25/1",
+      "audio": {
+        "present": false,
+        "codec": null,
+        "sample_rate": null,
+        "channels": 0
+      },
+      "source": {
+        "path": "artifacts/qa-recordings/2026-09-30/house-context-walkthrough.webm",
+        "bytes": 2240746,
+        "sha256": "8ba40eb222dddbe2af3e25965064b677d0d962b1ea8d4bedcc90d5850f1e0c12",
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "vp8",
+              "codec_long_name": "On2 VP8",
+              "profile": "0",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "mime_codec_string": "vp8",
+              "width": 1440,
+              "height": 900,
+              "coded_width": 1440,
+              "coded_height": 900,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "8:5",
+              "pix_fmt": "yuv420p",
+              "level": -99,
+              "chroma_location": "center",
+              "field_order": "progressive",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/1000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "ENCODER": "Lavc61.3.100 libvpx",
+                "DURATION": "00:00:22.400000000"
+              }
+            }
+          ],
+          "format": {
+            "filename": "artifacts/qa-recordings/2026-09-30/house-context-walkthrough.webm",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "matroska,webm",
+            "format_long_name": "Matroska / WebM",
+            "start_time": "0.000000",
+            "duration": "22.400000",
+            "size": "2240746",
+            "bit_rate": "800266",
+            "probe_score": 100,
+            "tags": {
+              "ENCODER": "Lavf61.1.100"
+            }
+          }
+        },
+        "original_unchanged_after_preparation": true
+      },
+      "preparation": {
+        "source_range_seconds": {
+          "start": 4.8,
+          "end": 22.4
+        },
+        "speed": 1,
+        "crop": null,
+        "overlays_added": false,
+        "retimed_or_reordered": false,
+        "reproduce_encoding_argv": [
+          "rtk",
+          "proxy",
+          "ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-n",
+          "-ss",
+          "4.8",
+          "-i",
+          "artifacts/qa-recordings/2026-09-30/house-context-walkthrough.webm",
+          "-t",
+          "17.6",
+          "-map",
+          "0:v:0",
+          "-an",
+          "-vf",
+          "scale=1152:720:flags=lanczos,setsar=1",
+          "-filter_threads",
+          "2",
+          "-c:v",
+          "libx264",
+          "-threads",
+          "4",
+          "-preset",
+          "medium",
+          "-crf",
+          "24",
+          "-profile:v",
+          "high",
+          "-level:v",
+          "3.1",
+          "-pix_fmt",
+          "yuv420p",
+          "-tag:v",
+          "avc1",
+          "-map_metadata",
+          "-1",
+          "-movflags",
+          "+faststart",
+          "public/assets/manual/house-context.mp4"
+        ],
+        "video_settings": {
+          "codec": "H.264",
+          "pixel_format": "yuv420p",
+          "profile": "High",
+          "level": "3.1",
+          "crf": 24,
+          "preset": "medium",
+          "faststart": true
+        },
+        "audio_settings": null
+      },
+      "poster_info": {
+        "width": 1152,
+        "height": 720,
+        "origin": "frame from prepared MP4",
+        "output_time_seconds": 0.2
+      },
+      "caption_info": {
+        "language": "en",
+        "html_track_kind": "descriptions",
+        "label": "English · silent actions",
+        "spoken_dialogue": false,
+        "provenance": "Authored descriptions of sampled visible silent actions",
+        "validation": {
+          "duration_bounds_passed": true,
+          "start_order_passed": true,
+          "cue_count": 5,
+          "first_start_seconds": 0.0,
+          "last_end_seconds": 17.6,
+          "overlaps": [],
+          "cues": [
+            {
+              "start_seconds": 0.0,
+              "end_seconds": 4.04,
+              "text": "Inspect a folio's inherited fields, then its collection."
+            },
+            {
+              "start_seconds": 4.04,
+              "end_seconds": 7.12,
+              "text": "House defaults and the shared charter."
+            },
+            {
+              "start_seconds": 7.12,
+              "end_seconds": 10.2,
+              "text": "The register lists changes and their origins."
+            },
+            {
+              "start_seconds": 10.2,
+              "end_seconds": 14.0,
+              "text": "The Engine room shows thresholds and an empty decision log."
+            },
+            {
+              "start_seconds": 14.0,
+              "end_seconds": 17.6,
+              "text": "Inspect what the models read for the selected folio."
+            }
+          ]
+        }
+      },
+      "text_info": {
+        "kind": "silent-action description"
+      },
+      "files": {
+        "video": {
+          "path": "public/assets/manual/house-context.mp4",
+          "public_url": "/assets/manual/house-context.mp4",
+          "bytes": 598991,
+          "sha256": "818189e1d5bf8beca370cd875a3e39c49f6b7921a1828832459db6a162d325c8"
+        },
+        "poster": {
+          "path": "public/assets/manual/house-context.jpg",
+          "public_url": "/assets/manual/house-context.jpg",
+          "bytes": 88705,
+          "sha256": "f2a536ae9d9e7e65f09650646dcaf01e3f05f1eef7885a6bd28648c8acb22571"
+        },
+        "captions": {
+          "path": "public/assets/manual/house-context.vtt",
+          "public_url": "/assets/manual/house-context.vtt",
+          "bytes": 417,
+          "sha256": "c0fda998d618e44c2a7bbc87b046d05b3bd1b2bc94564e64762d99dcf08b40b8"
+        },
+        "text": {
+          "path": "public/assets/manual/house-context.txt",
+          "public_url": "/assets/manual/house-context.txt",
+          "bytes": 1054,
+          "sha256": "df0c0edbf28cc5fa71039282139b147ec9cc1a0ded5267d4c08a85f2ba424cd1"
+        }
+      },
+      "verification": {
+        "output_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.64001f",
+              "width": 1152,
+              "height": 720,
+              "coded_width": 1152,
+              "coded_height": 720,
+              "has_b_frames": 2,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "8:5",
+              "pix_fmt": "yuv420p",
+              "level": 31,
+              "color_range": "tv",
+              "color_space": "bt470bg",
+              "chroma_location": "left",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/12800",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 225280,
+              "duration": "17.600000",
+              "bit_rate": "269524",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "440",
+              "extradata_size": 49,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc63.1.101 libx264"
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/house-context.mp4",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "17.600000",
+            "size": "598991",
+            "bit_rate": "272268",
+            "probe_score": 100,
+            "tags": {
+              "major_brand": "isom",
+              "minor_version": "512",
+              "compatible_brands": "isomiso2avc1mp41",
+              "encoder": "Lavf63.1.101"
+            }
+          }
+        },
+        "poster_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "mjpeg",
+              "codec_long_name": "Motion JPEG",
+              "profile": "Baseline",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 1152,
+              "height": 720,
+              "coded_width": 1152,
+              "coded_height": 720,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "8:5",
+              "pix_fmt": "yuvj420p",
+              "level": -99,
+              "color_range": "pc",
+              "color_space": "bt470bg",
+              "chroma_location": "center",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/25",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1,
+              "duration": "0.040000",
+              "bits_per_raw_sample": "8",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/house-context.jpg",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "image2",
+            "format_long_name": "image2 sequence",
+            "start_time": "0.000000",
+            "duration": "0.040000",
+            "size": "88705",
+            "bit_rate": "17741000",
+            "probe_score": 50
+          }
+        },
+        "full_decode": {
+          "passed": true,
+          "argv": [
+            "rtk",
+            "proxy",
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-xerror",
+            "-err_detect",
+            "explode",
+            "-threads",
+            "2",
+            "-i",
+            "public/assets/manual/house-context.mp4",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-f",
+            "null",
+            "-"
+          ],
+          "exit_code": 0,
+          "stderr": "",
+          "scope": "All video and audio frames"
+        },
+        "poster_decode": {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        "faststart_moov_before_mdat": true,
+        "mp4_top_level_atoms": [
+          {
+            "type": "ftyp",
+            "offset_bytes": 0,
+            "size_bytes": 32
+          },
+          {
+            "type": "moov",
+            "offset_bytes": 32,
+            "size_bytes": 5989
+          },
+          {
+            "type": "free",
+            "offset_bytes": 6021,
+            "size_bytes": 8
+          },
+          {
+            "type": "mdat",
+            "offset_bytes": 6029,
+            "size_bytes": 592962
+          }
+        ],
+        "sampled_output_frames_reviewed": true,
+        "sampled_output_times_seconds": [
+          0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+          17, 17.56
+        ],
+        "privacy_review": "No keys, personal data, console or development badge observed in reviewed prepared frames; walkthrough fixture sources establish synthetic content.",
+        "boundary": "Sampled visual review plus complete media decode; no new listening review or browser/player integration test.",
+        "sampled_source_times_seconds": [
+          0, 0.2, 0.5, 1, 1.2, 1.6, 1.8, 2, 3, 4, 4.8, 5, 5.2, 6, 7, 8, 8.4, 9,
+          10, 11, 11.6, 12, 13, 14, 14.8, 15, 16, 17, 18, 18.4, 18.8, 19, 20,
+          21, 22, 22.32
+        ]
+      },
+      "excluded_ranges": [
+        {
+          "source": "artifacts/qa-recordings/2026-09-30/house-context-walkthrough.webm",
+          "start_seconds": 0,
+          "end_seconds": 4.8,
+          "excluded_from_public_export": true,
+          "reason": "Blank/loading startup and the bottom-right Click-to-Source: Alt development badge; the accepted continuous range starts after the badge disappears.",
+          "classification": "unsuitable public documentation footage"
+        }
+      ],
+      "demonstration_boundary": "Actual local UI with synthetic context/manuscript. No authenticated cloud sync, production OAuth exchange, generated editorial decision or funded model call is demonstrated.",
+      "capture_evidence": [
+        {
+          "path": "artifacts/qa-recordings/2026-09-30/recordings.json",
+          "bytes": 12917,
+          "sha256": "d7be03635d87f3bd5e5f1b9092292f1185efdd7bf012ac6255f3213fc3aa0723"
+        },
+        {
+          "path": "artifacts/qa-recordings/2026-09-30/house-walkthrough/replay.mjs",
+          "bytes": 5212,
+          "sha256": "affcaa229090060d39e00c2d7702a6260cb246b8fdb4a86ed064348658c1c3ad"
+        }
+      ]
+    },
+    {
+      "id": "source-workspace",
+      "title": "Typst source and proof",
+      "status": "ready",
+      "kind": "silent-local-walkthrough",
+      "description": "Revise a sample sentence in Typst Source, then inspect a locally typeset manuscript proof.",
+      "suggested_placement": {
+        "docs_url": "/docs/#manuscript-tools",
+        "section_id": "manuscript-tools",
+        "section_title": "Manuscript & source tools",
+        "position": "section-start"
+      },
+      "video": "/assets/manual/source-workspace.mp4",
+      "poster": "/assets/manual/source-workspace.jpg",
+      "captions": "/assets/manual/source-workspace.vtt",
+      "text": "/assets/manual/source-workspace.txt",
+      "duration_seconds": 6.72,
+      "width": 1152,
+      "height": 720,
+      "frame_rate": "25/1",
+      "audio": {
+        "present": false,
+        "codec": null,
+        "sample_rate": null,
+        "channels": 0
+      },
+      "source": {
+        "path": "artifacts/qa-recordings/2026-09-30/source-tools-and-proof.webm",
+        "bytes": 1302469,
+        "sha256": "d96894c065970506cf13b7cb382b0052e4df28ae05745e6a4a94889296738d34",
+        "probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "vp8",
+              "codec_long_name": "On2 VP8",
+              "profile": "0",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "mime_codec_string": "vp8",
+              "width": 1440,
+              "height": 900,
+              "coded_width": 1440,
+              "coded_height": 900,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "8:5",
+              "pix_fmt": "yuv420p",
+              "level": -99,
+              "chroma_location": "center",
+              "field_order": "progressive",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/1000",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "ENCODER": "Lavc61.3.100 libvpx",
+                "DURATION": "00:00:14.200000000"
+              }
+            }
+          ],
+          "format": {
+            "filename": "artifacts/qa-recordings/2026-09-30/source-tools-and-proof.webm",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "matroska,webm",
+            "format_long_name": "Matroska / WebM",
+            "start_time": "0.000000",
+            "duration": "14.200000",
+            "size": "1302469",
+            "bit_rate": "733785",
+            "probe_score": 100,
+            "tags": {
+              "ENCODER": "Lavf61.1.100"
+            }
+          }
+        },
+        "original_unchanged_after_preparation": true
+      },
+      "preparation": {
+        "source_range_seconds": {
+          "start": 4.16,
+          "end": 10.88
+        },
+        "speed": 1,
+        "crop": null,
+        "overlays_added": false,
+        "retimed_or_reordered": false,
+        "reproduce_encoding_argv": [
+          "rtk",
+          "proxy",
+          "ffmpeg",
+          "-nostdin",
+          "-hide_banner",
+          "-loglevel",
+          "error",
+          "-n",
+          "-ss",
+          "4.16",
+          "-i",
+          "artifacts/qa-recordings/2026-09-30/source-tools-and-proof.webm",
+          "-t",
+          "6.72",
+          "-map",
+          "0:v:0",
+          "-an",
+          "-vf",
+          "scale=1152:720:flags=lanczos,setsar=1",
+          "-filter_threads",
+          "2",
+          "-c:v",
+          "libx264",
+          "-threads",
+          "4",
+          "-preset",
+          "medium",
+          "-crf",
+          "24",
+          "-profile:v",
+          "high",
+          "-level:v",
+          "3.1",
+          "-pix_fmt",
+          "yuv420p",
+          "-tag:v",
+          "avc1",
+          "-map_metadata",
+          "-1",
+          "-movflags",
+          "+faststart",
+          "public/assets/manual/source-workspace.mp4"
+        ],
+        "video_settings": {
+          "codec": "H.264",
+          "pixel_format": "yuv420p",
+          "profile": "High",
+          "level": "3.1",
+          "crf": 24,
+          "preset": "medium",
+          "faststart": true
+        },
+        "audio_settings": null
+      },
+      "poster_info": {
+        "width": 1152,
+        "height": 720,
+        "origin": "frame from prepared MP4",
+        "output_time_seconds": 6.24
+      },
+      "caption_info": {
+        "language": "en",
+        "html_track_kind": "descriptions",
+        "label": "English · silent actions",
+        "spoken_dialogue": false,
+        "provenance": "Authored descriptions of sampled visible silent actions",
+        "validation": {
+          "duration_bounds_passed": true,
+          "start_order_passed": true,
+          "cue_count": 3,
+          "first_start_seconds": 0.0,
+          "last_end_seconds": 6.72,
+          "overlaps": [],
+          "cues": [
+            {
+              "start_seconds": 0.0,
+              "end_seconds": 2.72,
+              "text": "Switch to Source; format and revise a sample sentence."
+            },
+            {
+              "start_seconds": 2.72,
+              "end_seconds": 5.72,
+              "text": "Load a sample Typst manuscript and prepare its proof."
+            },
+            {
+              "start_seconds": 5.72,
+              "end_seconds": 6.72,
+              "text": "Open the typeset proof."
+            }
+          ]
+        }
+      },
+      "text_info": {
+        "kind": "silent-action description"
+      },
+      "files": {
+        "video": {
+          "path": "public/assets/manual/source-workspace.mp4",
+          "public_url": "/assets/manual/source-workspace.mp4",
+          "bytes": 350146,
+          "sha256": "481dfc8d0bcd53b9554f59f4c103bf60c9cc8aa7512c707176b7f346463ba88a"
+        },
+        "poster": {
+          "path": "public/assets/manual/source-workspace.jpg",
+          "public_url": "/assets/manual/source-workspace.jpg",
+          "bytes": 79964,
+          "sha256": "26cd832bd4d25a97ac21a7963b9f167d53967058401b8c00c3bc066022904181"
+        },
+        "captions": {
+          "path": "public/assets/manual/source-workspace.vtt",
+          "public_url": "/assets/manual/source-workspace.vtt",
+          "bytes": 233,
+          "sha256": "f128e42ba37898da546e7b8588862c41fe1f2318d741270fcd4c5940360b0491"
+        },
+        "text": {
+          "path": "public/assets/manual/source-workspace.txt",
+          "public_url": "/assets/manual/source-workspace.txt",
+          "bytes": 927,
+          "sha256": "93a73948f464a2f9248359bb37b22e3559cf1da2f2852a7f7aa393c04bd3f0f5"
+        }
+      },
+      "verification": {
+        "output_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "h264",
+              "codec_long_name": "H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10",
+              "profile": "High",
+              "codec_type": "video",
+              "codec_tag_string": "avc1",
+              "codec_tag": "0x31637661",
+              "mime_codec_string": "avc1.64001f",
+              "width": 1152,
+              "height": 720,
+              "coded_width": 1152,
+              "coded_height": 720,
+              "has_b_frames": 2,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "8:5",
+              "pix_fmt": "yuv420p",
+              "level": 31,
+              "color_range": "tv",
+              "color_space": "bt470bg",
+              "chroma_location": "left",
+              "field_order": "progressive",
+              "is_avc": "true",
+              "nal_length_size": "4",
+              "id": "0x1",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/12800",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 86016,
+              "duration": "6.720000",
+              "bit_rate": "413472",
+              "bits_per_raw_sample": "8",
+              "nb_frames": "168",
+              "extradata_size": 49,
+              "disposition": {
+                "default": 1,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              },
+              "tags": {
+                "language": "und",
+                "handler_name": "VideoHandler",
+                "encoder": "Lavc63.1.101 libx264"
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/source-workspace.mp4",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "mov,mp4,m4a,3gp,3g2,mj2",
+            "format_long_name": "QuickTime / MOV",
+            "start_time": "0.000000",
+            "duration": "6.720000",
+            "size": "350146",
+            "bit_rate": "416840",
+            "probe_score": 100,
+            "tags": {
+              "major_brand": "isom",
+              "minor_version": "512",
+              "compatible_brands": "isomiso2avc1mp41",
+              "encoder": "Lavf63.1.101"
+            }
+          }
+        },
+        "poster_probe": {
+          "streams": [
+            {
+              "index": 0,
+              "codec_name": "mjpeg",
+              "codec_long_name": "Motion JPEG",
+              "profile": "Baseline",
+              "codec_type": "video",
+              "codec_tag_string": "[0][0][0][0]",
+              "codec_tag": "0x0000",
+              "width": 1152,
+              "height": 720,
+              "coded_width": 1152,
+              "coded_height": 720,
+              "has_b_frames": 0,
+              "sample_aspect_ratio": "1:1",
+              "display_aspect_ratio": "8:5",
+              "pix_fmt": "yuvj420p",
+              "level": -99,
+              "color_range": "pc",
+              "color_space": "bt470bg",
+              "chroma_location": "center",
+              "r_frame_rate": "25/1",
+              "avg_frame_rate": "25/1",
+              "time_base": "1/25",
+              "start_pts": 0,
+              "start_time": "0.000000",
+              "duration_ts": 1,
+              "duration": "0.040000",
+              "bits_per_raw_sample": "8",
+              "disposition": {
+                "default": 0,
+                "dub": 0,
+                "original": 0,
+                "comment": 0,
+                "lyrics": 0,
+                "karaoke": 0,
+                "forced": 0,
+                "hearing_impaired": 0,
+                "visual_impaired": 0,
+                "clean_effects": 0,
+                "attached_pic": 0,
+                "timed_thumbnails": 0,
+                "non_diegetic": 0,
+                "captions": 0,
+                "descriptions": 0,
+                "metadata": 0,
+                "dependent": 0,
+                "still_image": 0,
+                "multilayer": 0
+              }
+            }
+          ],
+          "format": {
+            "filename": "public/assets/manual/source-workspace.jpg",
+            "nb_streams": 1,
+            "nb_programs": 0,
+            "nb_stream_groups": 0,
+            "format_name": "image2",
+            "format_long_name": "image2 sequence",
+            "start_time": "0.000000",
+            "duration": "0.040000",
+            "size": "79964",
+            "bit_rate": "15992800",
+            "probe_score": 50
+          }
+        },
+        "full_decode": {
+          "passed": true,
+          "argv": [
+            "rtk",
+            "proxy",
+            "ffmpeg",
+            "-nostdin",
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-xerror",
+            "-err_detect",
+            "explode",
+            "-threads",
+            "2",
+            "-i",
+            "public/assets/manual/source-workspace.mp4",
+            "-map",
+            "0:v:0",
+            "-map",
+            "0:a?",
+            "-f",
+            "null",
+            "-"
+          ],
+          "exit_code": 0,
+          "stderr": "",
+          "scope": "All video and audio frames"
+        },
+        "poster_decode": {
+          "passed": true,
+          "exit_code": 0,
+          "stderr": ""
+        },
+        "faststart_moov_before_mdat": true,
+        "mp4_top_level_atoms": [
+          {
+            "type": "ftyp",
+            "offset_bytes": 0,
+            "size_bytes": 32
+          },
+          {
+            "type": "moov",
+            "offset_bytes": 32,
+            "size_bytes": 2781
+          },
+          {
+            "type": "free",
+            "offset_bytes": 2813,
+            "size_bytes": 8
+          },
+          {
+            "type": "mdat",
+            "offset_bytes": 2821,
+            "size_bytes": 347325
+          }
+        ],
+        "sampled_output_frames_reviewed": true,
+        "sampled_output_times_seconds": [0, 0.2, 0.5, 1, 2, 3, 4, 5, 6, 6.68],
+        "privacy_review": "No keys, personal data, console or development badge observed in reviewed prepared frames; walkthrough fixture sources establish synthetic content.",
+        "boundary": "Sampled visual review plus complete media decode; no new listening review or browser/player integration test.",
+        "sampled_source_times_seconds": [
+          0, 0.2, 0.5, 1, 2, 3, 3.6, 3.8, 4, 4.2, 5, 5.2, 5.6, 6, 6.4, 6.8, 7,
+          7.2, 7.6, 8, 8.4, 8.8, 9, 9.2, 9.6, 10, 10.2, 10.4, 10.6, 10.8, 10.84,
+          10.88, 10.92, 11, 12, 13, 14, 14.12
+        ]
+      },
+      "excluded_ranges": [
+        {
+          "source": "artifacts/qa-recordings/2026-09-30/source-tools-and-proof.webm",
+          "start_seconds": 0,
+          "end_seconds": 4.16,
+          "excluded_from_public_export": true,
+          "reason": "Blank/loading startup with the bottom-right Click-to-Source: Alt development badge; excluded through the settled manuscript view.",
+          "classification": "unsuitable public documentation footage"
+        },
+        {
+          "source": "artifacts/qa-recordings/2026-09-30/source-tools-and-proof.webm",
+          "start_seconds": 10.88,
+          "end_seconds": 14.2,
+          "excluded_from_public_export": true,
+          "reason": "Programmatic theme change starts at 10.88 seconds, followed by a 390×844 mobile viewport inside a 1440×900 recording with large gray padding. Excluded to keep the continuous desktop source/proof demonstration coherent.",
+          "classification": "unsuitable layout/capture transition; no privacy leak observed"
+        }
+      ],
+      "demonstration_boundary": "Actual local UI with synthetic context/manuscript. No authenticated cloud sync, production OAuth exchange, generated editorial decision or funded model call is demonstrated.",
+      "capture_evidence": [
+        {
+          "path": "artifacts/qa-recordings/2026-09-30/recordings.json",
+          "bytes": 12917,
+          "sha256": "d7be03635d87f3bd5e5f1b9092292f1185efdd7bf012ac6255f3213fc3aa0723"
+        },
+        {
+          "path": "e2e/typst-editor.e2e.ts",
+          "bytes": 12937,
+          "sha256": "b9dfc1fe37817a2149524a60c78e597d05a50b484d9e0909a23969361a69e519"
+        }
+      ]
+    }
+  ],
+  "excluded_footage": [
+    {
+      "source": "artifacts/qa-recordings/2026-09-30/house-context-walkthrough.webm",
+      "start_seconds": 0,
+      "end_seconds": 4.8,
+      "excluded_from_public_export": true,
+      "reason": "Blank/loading startup and the bottom-right Click-to-Source: Alt development badge; the accepted continuous range starts after the badge disappears.",
+      "classification": "unsuitable public documentation footage"
+    },
+    {
+      "source": "artifacts/qa-recordings/2026-09-30/source-tools-and-proof.webm",
+      "start_seconds": 0,
+      "end_seconds": 4.16,
+      "excluded_from_public_export": true,
+      "reason": "Blank/loading startup with the bottom-right Click-to-Source: Alt development badge; excluded through the settled manuscript view.",
+      "classification": "unsuitable public documentation footage"
+    },
+    {
+      "source": "artifacts/qa-recordings/2026-09-30/source-tools-and-proof.webm",
+      "start_seconds": 10.88,
+      "end_seconds": 14.2,
+      "excluded_from_public_export": true,
+      "reason": "Programmatic theme change starts at 10.88 seconds, followed by a 390×844 mobile viewport inside a 1440×900 recording with large gray padding. Excluded to keep the continuous desktop source/proof demonstration coherent.",
+      "classification": "unsuitable layout/capture transition; no privacy leak observed"
+    }
+  ],
+  "verification_summary": {
+    "assets_verified": 7,
+    "all_mp4s_full_decoded": true,
+    "all_posters_decoded": true,
+    "all_caption_cues_within_output_duration": true,
+    "all_mp4s_h264_yuv420p": true,
+    "all_film_audio_aac": true,
+    "silent_recordings_kept_silent": true,
+    "all_faststart_atoms_verified": true,
+    "all_master_recording_and_original_sidecar_hashes_unchanged": true,
+    "encoded_output_frames_sampled_and_reviewed": true,
+    "review_boundary": "Complete decode is not a full-frame privacy or listening audit. Visual suitability uses listed source/output samples and capture fixture inspection. Existing dialogue captions were copied, not newly transcribed or realigned. Browser/player/track integration belongs to the parent guide task."
+  },
+  "totals": {
+    "video_bytes": 11005079,
+    "poster_bytes": 295027,
+    "caption_bytes": 3613,
+    "text_bytes": 5933,
+    "original_video_bytes": 85146450
+  }
+}

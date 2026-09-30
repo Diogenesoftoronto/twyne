@@ -6,10 +6,9 @@ import { DataModel } from "./_generated/dataModel";
 import authConfig from "./auth.config.js";
 import { makeFunctionReference } from "convex/server";
 import { notOrganicIssuer } from "./lib/notorganic";
-import { redeemProviderLink } from "./lib/providerLink";
 import {
-  NOTORGANIC_SIGN_IN_PATH,
   notOrganicSignIn,
+  redeemNotOrganicSignIn,
 } from "./lib/notorganicSignIn";
 
 const siteUrl = normalizeOrigin(
@@ -58,12 +57,10 @@ export const createAuthOptions = (ctx: GenericCtx<DataModel>) =>
           if (!trustedOrigins(siteUrl).includes(origin)) {
             throw new Error("This sign-in came from an untrusted origin.");
           }
-          return redeemProviderLink(
+          return redeemNotOrganicSignIn(
             { code, verifier },
             origin,
             notOrganicIssuer(),
-            fetch,
-            NOTORGANIC_SIGN_IN_PATH,
           );
         },
         onSignedIn: async ({ did, userId, sessionVersion }) => {
@@ -86,12 +83,16 @@ export const createAuth = (ctx: GenericCtx<DataModel>) =>
   betterAuth(createAuthOptions(ctx));
 
 function normalizeOrigin(value: string): string {
-  const origin = new URL(value).origin;
-  const host = new URL(origin).hostname;
-  if (host === "twyne.love" || host === "www.twyne.love") {
-    return "https://www.twyne.love";
+  const url = new URL(value);
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username ||
+    url.password ||
+    url.hostname.includes("*")
+  ) {
+    throw new Error("Twyne auth needs an exact HTTP(S) origin.");
   }
-  return origin;
+  return url.origin;
 }
 
 function isLoopbackOrigin(value: string): boolean {
@@ -104,35 +105,31 @@ function isLoopbackOrigin(value: string): boolean {
   );
 }
 
-function trustedOrigins(origin: string): string[] {
+export function trustedOrigins(
+  origin: string,
+  configuredOrigins = process.env.TRUSTED_ORIGINS ?? "",
+): string[] {
   const origins = new Set<string>([origin]);
-  if (isLoopbackOrigin(origin)) {
-    const url = new URL(origin);
-    const port = url.port ? `:${url.port}` : "";
-    // ATProto OAuth must return to an IP-literal loopback URI (RFC 8252),
-    // while Vite commonly starts at localhost. Trust both representations of
-    // the same local development service so the callback can use 127.0.0.1.
-    origins.add(`http://localhost${port}`);
-    origins.add(`http://127.0.0.1${port}`);
-  }
-  if (isTwyneProductionOrigin(origin)) {
-    for (const prodOrigin of TWYNE_PRODUCTION_ORIGINS) {
-      origins.add(prodOrigin);
+  const addAliases = (value: string) => {
+    if (isLoopbackOrigin(value)) {
+      const url = new URL(value);
+      const port = url.port ? `:${url.port}` : "";
+      for (const host of ["localhost", "127.0.0.1", "[::1]"]) {
+        origins.add(`${url.protocol}//${host}${port}`);
+      }
     }
-  }
-  for (const raw of (process.env.TRUSTED_ORIGINS ?? "").split(",")) {
+    if (isTwyneProductionOrigin(value)) {
+      for (const prodOrigin of TWYNE_PRODUCTION_ORIGINS)
+        origins.add(prodOrigin);
+    }
+  };
+  addAliases(origin);
+  for (const raw of configuredOrigins.split(",")) {
     const trimmed = raw.trim();
     if (!trimmed) continue;
     const normalized = normalizeOrigin(trimmed);
     origins.add(normalized);
-    if (
-      isTwyneProductionOrigin(trimmed) ||
-      isTwyneProductionOrigin(normalized)
-    ) {
-      for (const prodOrigin of TWYNE_PRODUCTION_ORIGINS) {
-        origins.add(prodOrigin);
-      }
-    }
+    addAliases(normalized);
   }
   return [...origins];
 }

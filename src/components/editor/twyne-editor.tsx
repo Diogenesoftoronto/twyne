@@ -179,7 +179,12 @@ import {
   saveSuggestionLocally,
 } from "../../utils/convex-sync";
 import type { SuggestionPayload, Suggestion } from "../../types";
-import { computeMarginCardGeometry } from "./popover-positioning";
+import {
+  computeFallbackCardGeometry,
+  computeMarginCardGeometry,
+  type AnchorRect,
+  type PopoverGeometry,
+} from "./popover-positioning";
 import {
   EMPTY_TABLE_TOOLBAR_SNAPSHOT,
   FloatingTableToolbar,
@@ -2566,6 +2571,174 @@ export const TwyneEditor = component$(
       setMarginThread(comment ?? note ?? suggestion);
     });
 
+    // Fallback conversations own no margin slot. Read their live passage on
+    // scroll/reflow; the margin-slot listener above continues to own slot cards.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track, cleanup }) => {
+      const editor = track(() => store.editor);
+      const commentKey = track(() =>
+        store.userCommentPopover?.visible &&
+        store.userCommentPopover.margin == null
+          ? `${store.userCommentPopover.mode}:${store.userCommentPopover.id}`
+          : null,
+      );
+      const noteKey = track(() =>
+        store.notePopover &&
+        !store.notePopover.dismissed &&
+        store.notePopover.margin == null
+          ? store.notePopover.id
+          : null,
+      );
+      const suggestionKey = track(() =>
+        store.suggestionPopover && store.suggestionPopover.margin == null
+          ? store.suggestionPopover.id
+          : null,
+      );
+      if (!editor || (!commentKey && !noteKey && !suggestionKey)) return;
+      const mount = editor.view.dom;
+      const canvas = mount.closest<HTMLElement>(".page-canvas");
+      const scroller = canvas?.parentElement;
+      if (!canvas || !scroller) return;
+      let frame = 0;
+      const reposition = () => {
+        frame = 0;
+        if (editor.isDestroyed || !mount.isConnected) return;
+        const page = canvas.getBoundingClientRect();
+        const scrollRect = scroller.getBoundingClientRect();
+        const viewport = {
+          top: Math.max(0, scrollRect.top),
+          bottom: Math.min(window.innerHeight, scrollRect.bottom),
+        };
+        const markedRect = (
+          attribute: string,
+          id: string,
+        ): AnchorRect | null => {
+          const rects = Array.from(
+            mount.querySelectorAll<HTMLElement>(
+              `[${attribute}="${CSS.escape(id)}"]`,
+            ),
+          ).map((span) => span.getBoundingClientRect());
+          // A mark may be split across nodes: a visible fragment still owns
+          // the conversation even when its first fragment has scrolled away.
+          return (
+            rects.find(
+              (rect) =>
+                rect.bottom > viewport.top && rect.top < viewport.bottom,
+            ) ??
+            rects[0] ??
+            null
+          );
+        };
+        const place = (
+          rect: AnchorRect | null,
+          keepOpen: boolean,
+          idealH?: number,
+        ) =>
+          computeFallbackCardGeometry({
+            vw: window.innerWidth,
+            vh: window.innerHeight,
+            page,
+            viewport,
+            // A removed mark follows the same close/protect rule as one off screen.
+            rect: rect ?? {
+              left: page.left,
+              top: viewport.top - 1,
+              bottom: viewport.top - 1,
+            },
+            keepOpen,
+            idealH,
+          });
+        // Replacing a Qwik popover also wakes this task. Write only changed
+        // geometry so the first placement cannot start a frame/render loop.
+        const moved = (
+          card: {
+            x: number;
+            top: number | null;
+            bottom: number | null;
+            maxH: number;
+          },
+          geometry: PopoverGeometry,
+        ) =>
+          card.x !== geometry.x ||
+          card.top !== geometry.top ||
+          card.bottom !== geometry.bottom ||
+          card.maxH !== geometry.maxH;
+
+        const note = store.notePopover;
+        if (note && !note.dismissed && note.margin == null) {
+          const geometry = place(
+            markedRect("data-persona-note-id", note.id),
+            note.pinned || !!note.draft.trim(),
+          );
+          if (!geometry) store.notePopover = null;
+          else if (
+            moved(note, geometry) ||
+            note.placement !== geometry.placement
+          )
+            store.notePopover = { ...note, ...geometry };
+        }
+        const comment = store.userCommentPopover;
+        if (comment?.visible && comment.margin == null) {
+          let rect: AnchorRect | null = null;
+          if (
+            comment.mode === "compose" &&
+            comment.from != null &&
+            comment.to != null
+          ) {
+            try {
+              const range = findTextRange(editor.state.doc, comment.quote) ?? {
+                from: comment.from,
+                to: comment.to,
+              };
+              const start = editor.view.coordsAtPos(range.from);
+              const end = editor.view.coordsAtPos(range.to);
+              rect = {
+                left: Math.min(start.left, end.left),
+                top: Math.min(start.top, end.top),
+                bottom: Math.max(start.bottom, end.bottom),
+              };
+            } catch {
+              // The selection was removed while the writer kept a draft open.
+            }
+          } else rect = markedRect("data-comment-id", comment.id);
+          const geometry = place(
+            rect,
+            !!comment.draft.trim(),
+            comment.mode === "compose" ? 360 : undefined,
+          );
+          if (!geometry) store.userCommentPopover = null;
+          else if (moved(comment, geometry))
+            store.userCommentPopover = { ...comment, ...geometry };
+        }
+        const suggestion = store.suggestionPopover;
+        if (suggestion && suggestion.margin == null) {
+          const geometry = place(
+            markedRect("data-suggestion-id", suggestion.id),
+            false,
+          );
+          if (!geometry) store.suggestionPopover = null;
+          else if (moved(suggestion, geometry))
+            store.suggestionPopover = { ...suggestion, ...geometry };
+        }
+      };
+      const schedule = () => {
+        if (!frame) frame = requestAnimationFrame(reposition);
+      };
+      scroller.addEventListener("scroll", schedule, { passive: true });
+      window.addEventListener("resize", schedule);
+      editor.on("update", schedule);
+      const observer = new ResizeObserver(schedule);
+      observer.observe(canvas);
+      schedule();
+      cleanup(() => {
+        cancelAnimationFrame(frame);
+        scroller.removeEventListener("scroll", schedule);
+        window.removeEventListener("resize", schedule);
+        editor.off("update", schedule);
+        observer.disconnect();
+      });
+    });
+
     // Marginalia list deletion routes through the editor so the stored thread
     // and its document mark cannot diverge.
     // eslint-disable-next-line qwik/no-use-visible-task
@@ -3432,7 +3605,7 @@ export const TwyneEditor = component$(
     );
 
     return (
-      <div ref={editorRoot} class="flex flex-1 flex-col min-h-0">
+      <div ref={editorRoot} class="flex h-full flex-1 flex-col min-h-0">
         {readOnly && (
           <div
             class="border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-2 text-xs text-[var(--color-ink-light)]"

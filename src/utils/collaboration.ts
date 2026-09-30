@@ -208,7 +208,9 @@ export function watchRemoteChanges(editor: Editor, folioId: string): void {
       _lastPolledHtml = html;
       _lastPolledSource = source;
       if (source !== null) {
-        await saveFolioTypstToIdb(folioId, source, html);
+        // This is a collaborator's snapshot, never an acknowledgement of
+        // the writer's pending visual save or source draft.
+        await saveFolioTypstToIdb(folioId, source, html, undefined, "remote");
         window.dispatchEvent(
           new CustomEvent("twyne:typst-remote-change", {
             detail: { folioId, source, html },

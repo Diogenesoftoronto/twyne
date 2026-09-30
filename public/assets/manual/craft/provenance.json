@@ -1,0 +1,222 @@
+{
+  "capturedAt": "2026-09-30T07:14:21.341Z",
+  "kind": "Actual running application screenshots",
+  "viewport": {
+    "width": 1280,
+    "height": 950
+  },
+  "captures": [
+    {
+      "file": "outline-slash.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/outline-slash.png",
+      "width": 820,
+      "height": 570,
+      "clip": {
+        "x": 235,
+        "y": 325,
+        "width": 820,
+        "height": 570
+      },
+      "description": "Actual filtered slash insertion menu for the three heading levels.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "outline-navigate.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/outline-navigate.png",
+      "width": 820,
+      "height": 570,
+      "clip": {
+        "x": 0,
+        "y": 80,
+        "width": 820,
+        "height": 570
+      },
+      "description": "Actual outline after dragging The ford before The departure, with heading navigation exercised.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "outline-find.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/outline-find.png",
+      "width": 820,
+      "height": 570,
+      "clip": {
+        "x": 440,
+        "y": 60,
+        "width": 820,
+        "height": 570
+      },
+      "description": "Actual find/replace panel: harbour, two matches, port replacement and Whole word matching.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "table-insert.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/table-insert.png",
+      "width": 820,
+      "height": 570,
+      "clip": {
+        "x": 230,
+        "y": 60,
+        "width": 820,
+        "height": 570
+      },
+      "description": "Actual 3 by 3 table grid selection in Insert tools.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "table-tools.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/table-tools.png",
+      "width": 820,
+      "height": 570,
+      "clip": {
+        "x": 230,
+        "y": 325,
+        "width": 820,
+        "height": 570
+      },
+      "description": "Actual table row/column actions, banded-rows style, width, caption and cell-format controls.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "image-inspector.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/image-inspector.png",
+      "width": 820,
+      "height": 570,
+      "clip": {
+        "x": 440,
+        "y": 80,
+        "width": 820,
+        "height": 570
+      },
+      "description": "Actual selected standalone local illustration with committed alt text, caption, Centre alignment and 25% width.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "layout-paper.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/layout-paper.png",
+      "width": 820,
+      "height": 640,
+      "clip": {
+        "x": 60,
+        "y": 245,
+        "width": 820,
+        "height": 640
+      },
+      "description": "Actual paper, orientation, writing width and column controls: A4, Portrait, Match paper and One selected.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "layout-ornaments.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/layout-ornaments.png",
+      "width": 820,
+      "height": 640,
+      "clip": {
+        "x": 60,
+        "y": 245,
+        "width": 820,
+        "height": 640
+      },
+      "description": "Actual Illustrated opening initial, Original collection, Small size and Botanical page border controls.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "layout-running-heads.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/layout-running-heads.png",
+      "width": 820,
+      "height": 640,
+      "clip": {
+        "x": 60,
+        "y": 245,
+        "width": 820,
+        "height": 640
+      },
+      "description": "Actual running heads: margin controls, header and page-number toggles, and fully visible Header line and Footer line fields.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "notes-edit.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/notes-edit.png",
+      "width": 820,
+      "height": 570,
+      "clip": {
+        "x": 230,
+        "y": 325,
+        "width": 820,
+        "height": 570
+      },
+      "description": "Actual editable Footnote 1 popover, Note kind conversion and reference/navigation/delete controls.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "equation-editor.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/equation-editor.png",
+      "width": 820,
+      "height": 570,
+      "clip": {
+        "x": 230,
+        "y": 325,
+        "width": 820,
+        "height": 570
+      },
+      "description": "Actual Block LaTeX source editor and preview, Render equation and Cancel controls, with a rendered inline fraction below.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    },
+    {
+      "file": "diagram-editor.webp",
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/diagram-editor.png",
+      "width": 920,
+      "height": 640,
+      "clip": {
+        "x": 180,
+        "y": 190,
+        "width": 920,
+        "height": 640
+      },
+      "description": "Actual Mermaid diagram source, rendered three-place route preview and insertion controls.",
+      "route": "/editor/",
+      "origin": "http://127.0.0.1:5180",
+      "data": "Original fictional Salt Roads manuscript; isolated local browser profile."
+    }
+  ],
+  "video": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/craft-walkthrough.webm",
+  "replay": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/replay.mjs",
+  "pageErrors": [],
+  "blockedRequests": [
+    "https://fonts.googleapis.com/css2",
+    "https://acoustic-meerkat-189.convex.site/api/auth/get-session"
+  ],
+  "staging": "Existing IndexedDB helpers and editor folio-load event; fictional manuscript only. All photographed controls and edits use the actual application.",
+  "illustration": {
+    "source": "public/assets/landing/options-2026-09/option-03-768.avif",
+    "purpose": "Existing local botanical artwork used as sample manuscript image."
+  },
+  "boundaries": [
+    "Local current worktree only",
+    "No external providers, microphone, payment, deployment or backend changes",
+    "Development click-to-source badge hidden; app controls and manuscript rendering preserved",
+    "HMR WebSockets blocked to prevent concurrent docs edits from interrupting capture",
+    "Current visual writing canvas does not render editable header/footer bands; working Layout controls are shown"
+  ],
+  "supplementalVideo": "artifacts/qa-recordings/2026-09-30/manual-visual/craft/running-heads.webm"
+}

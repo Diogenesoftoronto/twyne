@@ -528,10 +528,14 @@ export async function loadFolioContentSnapshotFromIdb(
 }
 
 export const FOLIO_CONTENT_SAVED = "twyne:folio-content-saved";
+export interface FolioContentSavedDetail extends FolioContentSnapshot {
+  origin: "local" | "remote";
+}
 
 async function updateFolioContent(
   folioId: string,
   update: (previous: FolioContentSnapshot | undefined) => FolioContentSnapshot,
+  origin: FolioContentSavedDetail["origin"] = "local",
 ): Promise<FolioContentSnapshot | undefined> {
   if (!isBrowser()) return;
   const rec = await tx("folio-content", "readwrite", async (t) => {
@@ -543,7 +547,11 @@ async function updateFolioContent(
     await reqAsPromise(store.put(next));
     return next;
   });
-  window.dispatchEvent(new CustomEvent(FOLIO_CONTENT_SAVED, { detail: rec }));
+  window.dispatchEvent(
+    new CustomEvent<FolioContentSavedDetail>(FOLIO_CONTENT_SAVED, {
+      detail: { ...rec, origin },
+    }),
+  );
   return rec;
 }
 
@@ -571,39 +579,48 @@ export async function saveFolioTypstToIdb(
   source: string,
   html?: string,
   expectedSource?: string | null,
+  origin: FolioContentSavedDetail["origin"] = "local",
 ): Promise<void> {
-  await updateFolioContent(folioId, (previous) => {
-    if (
-      expectedSource !== undefined &&
-      (previous?.typstSource ?? null) !== expectedSource
-    )
-      throw new Error(
-        "The manuscript changed while this source was being edited. Review the latest source before applying.",
-      );
-    return {
-      folioId,
-      html: html ?? typstToHtml(source),
-      format: "typst",
-      typstSource: source,
-      updatedAt:
-        previous?.typstSource === source ? previous.updatedAt : Date.now(),
-    };
-  });
+  await updateFolioContent(
+    folioId,
+    (previous) => {
+      if (
+        expectedSource !== undefined &&
+        (previous?.typstSource ?? null) !== expectedSource
+      )
+        throw new Error(
+          "The manuscript changed while this source was being edited. Review the latest source before applying.",
+        );
+      return {
+        folioId,
+        html: html ?? typstToHtml(source),
+        format: "typst",
+        typstSource: source,
+        updatedAt:
+          previous?.typstSource === source ? previous.updatedAt : Date.now(),
+      };
+    },
+    origin,
+  );
 }
 
 /** Sync installs the remote revision stamp instead of inventing a local edit. */
 export async function saveFolioContentSnapshotToIdb(
   snapshot: FolioContentSnapshot,
 ): Promise<void> {
-  const saved = await updateFolioContent(snapshot.folioId, (previous) => ({
-    ...snapshot,
-    format: "typst",
-    typstSource:
-      snapshot.typstSource ??
-      (previous?.typstSource !== undefined
-        ? reconcileTypstSource(previous.typstSource, snapshot.html)
-        : htmlToTypst(snapshot.html)),
-  }));
+  const saved = await updateFolioContent(
+    snapshot.folioId,
+    (previous) => ({
+      ...snapshot,
+      format: "typst",
+      typstSource:
+        snapshot.typstSource ??
+        (previous?.typstSource !== undefined
+          ? reconcileTypstSource(previous.typstSource, snapshot.html)
+          : htmlToTypst(snapshot.html)),
+    }),
+    "remote",
+  );
   if (saved)
     window.dispatchEvent(
       new CustomEvent("twyne:typst-remote-change", {

@@ -114,7 +114,7 @@ describe("Typst document source", () => {
   });
 });
 
-test("canonical source compiles rich content with the real Typst compiler", async () => {
+async function createDocumentCompiler() {
   const { createTypstCompiler } = await import(
     "@myriaddreamin/typst.ts/compiler"
   );
@@ -134,6 +134,11 @@ test("canonical source compiles rich content with the real Typst compiler", asyn
       ),
     beforeBuild: [loadFonts([font], { assets: false })],
   });
+  return compiler;
+}
+
+test("canonical source compiles rich content with the real Typst compiler", async () => {
+  const compiler = await createDocumentCompiler();
   compiler.addSource(
     "/main.typ",
     htmlToTypst(
@@ -148,6 +153,58 @@ test("canonical source compiles rich content with the real Typst compiler", asyn
         result.diagnostics?.filter((d) => d.severity === "error") ?? [],
       ).toEqual([]);
       expect(result.result).toBeDefined();
+    },
+  );
+}, 30000);
+
+test("ordered list starts produce real Typst numbering and preserve HTML attributes", async () => {
+  const cases = [
+    { attribute: "", start: 1 },
+    { attribute: ' start="1"', start: 1 },
+    { attribute: ' start="7"', start: 7 },
+    { attribute: ' start="7.6"', start: 8 },
+    { attribute: ' start="0"', start: 1 },
+    { attribute: ' start="-12"', start: 1 },
+    { attribute: ' start="1000001"', start: 1000000 },
+    { attribute: ' start=""', start: 1 },
+    { attribute: ' start="invalid"', start: 1 },
+    { attribute: ' start="NaN"', start: 1 },
+    { attribute: ' start="Infinity"', start: 1 },
+    { attribute: ' start="7oops"', start: 1 },
+    { attribute: ' start="1e3"', start: 1 },
+  ];
+  const html = cases
+    .map(
+      ({ attribute }) =>
+        `<ol${attribute}><li><p>First</p></li><li><p>Second</p></li></ol>`,
+    )
+    .join("");
+  const source = htmlToTypst(html);
+  expect(canonical(typstToHtml(source))).toBe(canonical(html));
+  const compiler = await createDocumentCompiler();
+  // Metadata comes from Typst's label callback, after layout has numbered each item.
+  compiler.addSource(
+    "/numbering.typ",
+    source.replace(
+      TYPST_DOCUMENT_PREAMBLE,
+      TYPST_DOCUMENT_PREAMBLE +
+        '\n#set enum(numbering: n => { metadata(n); numbering("1.", n) })\n',
+    ),
+  );
+  await compiler.runWithWorld(
+    { mainFilePath: "/numbering.typ", inputs: {} },
+    async (world) => {
+      const result = await world.pdf({ diagnostics: "full" });
+      expect(
+        result.diagnostics?.filter((d) => d.severity === "error") ?? [],
+      ).toEqual([]);
+      expect(result.result).toBeDefined();
+      expect(
+        await world.query<number[]>({ selector: "enum", field: "start" }),
+      ).toEqual(cases.map(({ start }) => start));
+      expect(
+        await world.query<number[]>({ selector: "metadata", field: "value" }),
+      ).toEqual(cases.flatMap(({ start }) => [start, start + 1]));
     },
   );
 }, 30000);

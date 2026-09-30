@@ -1,5 +1,6 @@
 import { $, component$, useStore } from "@qwik.dev/core";
 import { useAuth } from "../../utils/auth-context";
+import { accountDisplayName } from "../../utils/account-display";
 import { signOut } from "../../utils/auth-client";
 import { startNotOrganicSignIn } from "../../utils/notorganic-connect";
 import type { AppError } from "../../types/application-errors";
@@ -80,7 +81,7 @@ export const AuthPanel = component$(() => {
               class="text-[11px] text-[var(--color-ink-muted)] truncate"
               style="font-family: var(--font-typewriter); letter-spacing: 0.08em;"
             >
-              {user.name || user.email}
+              {accountDisplayName(user)}
             </p>
           </div>
           <button

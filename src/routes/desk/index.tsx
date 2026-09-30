@@ -25,6 +25,7 @@ import { UsageCost } from "../../components/desk/usage-cost";
 import { WriterPatterns } from "../../components/desk/writer-patterns";
 import { WritingActivity } from "../../components/desk/writing-activity";
 import { useAuth } from "../../utils/auth-context";
+import { accountDisplayName } from "../../utils/account-display";
 import { useConvexClient } from "../../utils/convex-context";
 import { loadFolioContentFromIdb, loadFoliosFromIdb } from "../../utils/idb";
 import {
@@ -407,9 +408,9 @@ export default component$(() => {
         </nav>
         <DeskSummary
           displayName={
-            auth.value.user?.name ??
-            auth.value.atproto?.displayName ??
-            "Writer on this device"
+            auth.value.user
+              ? accountDisplayName(auth.value.user)
+              : "Writer on this device"
           }
           signedIn={auth.value.provider === "convex"}
           rangeLabel={RANGE_LABELS[preset.value]}

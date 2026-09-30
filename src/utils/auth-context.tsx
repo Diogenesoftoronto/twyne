@@ -14,6 +14,8 @@ import { analyticsIdFromConvexJwt } from "./auth-analytics";
 import { reportApplicationError } from "./application-diagnostics";
 import { setConvexSyncContext, clearConvexSyncContext } from "./convex-sync";
 import { useConvexClient } from "./convex-context";
+import { api } from "../../convex/_generated/api";
+import { withAccountProfile, type AccountProfile } from "./account-display";
 
 export interface AuthUser {
   id: string;
@@ -22,6 +24,7 @@ export interface AuthUser {
   email: string;
   name?: string;
   image?: string;
+  handle?: string;
 }
 
 export interface AuthState {
@@ -78,10 +81,14 @@ export const AuthProvider = component$(() => {
       let betterAuthPending = true;
       const isAtprotoCallback = window.location.pathname === "/auth/callback/";
       let unsubscribe: (() => void) | undefined;
+      let unsubscribeProfile: (() => void) | undefined;
+      let profile: AccountProfile | null = null;
+      let sessionUser: AuthUser | null = null;
       cleanup(() => {
         disposed = true;
         authGeneration++;
         unsubscribe?.();
+        unsubscribeProfile?.();
         clearConvexSyncContext();
       });
 
@@ -135,10 +142,6 @@ export const AuthProvider = component$(() => {
         const sessionData = val?.data;
         if (val?.isPending && !sessionData?.user) return;
         if (sessionData?.user) {
-          if (currentUserId === sessionData.user.id) return;
-          currentUserId = sessionData.user.id;
-          const generation = ++authGeneration;
-          const isCurrent = () => !disposed && generation === authGeneration;
           const user: AuthUser = {
             id: sessionData.user.id,
             // Not Organic users carry an undeliverable placeholder address.
@@ -148,8 +151,25 @@ export const AuthProvider = component$(() => {
             name: sessionData.user.name ?? undefined,
             image: sessionData.user.image ?? undefined,
           };
+          if (currentUserId === user.id && sessionUser) {
+            // A refresh can update a name/photo without changing the account.
+            // Keep the token callback's base user current as well as the UI.
+            Object.assign(sessionUser, user);
+            authState.value = {
+              ...authState.value,
+              user: withAccountProfile(sessionUser, profile),
+            };
+            return;
+          }
+          unsubscribeProfile?.();
+          unsubscribeProfile = undefined;
+          profile = null;
+          sessionUser = user;
+          currentUserId = user.id;
+          const generation = ++authGeneration;
+          const isCurrent = () => !disposed && generation === authGeneration;
           authState.value = {
-            user,
+            user: withAccountProfile(user, profile),
             loading: isAtprotoCallback && atprotoPending,
             provider: "convex",
             convexAuthenticated: false,
@@ -183,17 +203,43 @@ export const AuthProvider = component$(() => {
           }, isCurrent);
           convex.setAuth(fetchToken, (authenticated) => {
             if (!isCurrent()) return;
+            if (!authenticated) {
+              unsubscribeProfile?.();
+              unsubscribeProfile = undefined;
+              profile = null;
+            }
             authState.value = {
-              user,
+              user: withAccountProfile(user, profile),
               loading: isAtprotoCallback && atprotoPending,
               provider: "convex",
               convexAuthenticated: authenticated,
               atproto,
             };
-            if (authenticated) setConvexSyncContext(convex, user.id);
-            else clearConvexSyncContext();
+            if (authenticated) {
+              setConvexSyncContext(convex, user.id);
+              if (!unsubscribeProfile) {
+                unsubscribeProfile = convex.onUpdate(
+                  api.profiles.getMyHandle,
+                  {},
+                  (row) => {
+                    if (!isCurrent() || !authState.value.convexAuthenticated)
+                      return;
+                    profile = row;
+                    authState.value = {
+                      ...authState.value,
+                      user: withAccountProfile(user, profile),
+                    };
+                  },
+                  () => undefined,
+                );
+              }
+            } else clearConvexSyncContext();
           });
         } else {
+          unsubscribeProfile?.();
+          unsubscribeProfile = undefined;
+          profile = null;
+          sessionUser = null;
           currentUserId = null;
           authGeneration++;
           convex?.setAuth(async () => null);

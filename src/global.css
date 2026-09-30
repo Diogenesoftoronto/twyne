@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Diagnostic log labels are text, not arbitrary CSS-property utilities. */
+@source not inline("[twyne:{account,agents,apparatus,arize,editor,eval,extract,interview,judge,litert,posthog,rateLimit,robustness,rubric,suggestion,usage}]");
+
 /*
  * TWYNE — The Editorial Room
  * ─────────────────────────────────────────────────────────────
@@ -1587,9 +1590,9 @@ body {
   .manuscript-comment-card {
     left: 0.5rem !important;
     right: 0.5rem;
-    bottom: 0.5rem;
+    bottom: 0.5rem !important;
     top: auto !important;
-    width: auto;
+    width: auto !important;
     max-height: 70vh;
   }
 }
@@ -2749,20 +2752,8 @@ body {
   animation: persona-note-flash 1.4s ease-out;
 }
 
-.suggestion-card {
-  position: fixed;
-  z-index: var(--z-dropdown);
-  width: min(21rem, calc(100vw - 1rem));
-  padding: 0.85rem 1rem 1rem;
-  background: var(--color-paper-soft);
-  border: 1px solid
-    color-mix(in srgb, var(--suggestion-color) 45%, var(--color-paper-3));
-  border-radius: 2px;
-  box-shadow:
-    0 1px 0 color-mix(in srgb, var(--emboss) 70%, transparent) inset,
-    0 18px 36px -20px color-mix(in srgb, var(--shade) 50%, transparent);
-  animation: persona-note-pop 0.18s cubic-bezier(0.22, 1, 0.36, 1);
-}
+/* The suggestion card is a .manuscript-comment-card; its layout and
+   layering come from there. */
 
 /* The approval stamp — a vermilion rubber stamp thunking onto the page. */
 .approval-stamp-overlay {
@@ -7198,7 +7189,7 @@ a {
 .flow-dock {
   position: fixed;
   right: 16px;
-  bottom: 16px;
+  bottom: var(--flow-dock-bottom, calc(4.5rem + env(safe-area-inset-bottom)));
   z-index: var(--z-dropdown);
   width: min(300px, calc(100vw - 32px));
   pointer-events: auto;
@@ -7218,11 +7209,12 @@ a {
 [data-flow="settling"] .editor-workspace-main > header,
 [data-flow="settling"] .twyne-toolbar,
 [data-flow="settling"] .in-flow-rails,
-[data-flow="settling"] .flow-surface {
+[data-flow="settling"] .flow-surface > :not(.flow-desk) {
   opacity: 0.4;
   transition: opacity 1.2s ease;
 }
-[data-flow="flow"] .flow-surface,
+/* The desk (post and galley slip) stays: it is what flow leaves behind. */
+[data-flow="flow"] .flow-surface > :not(.flow-desk),
 [data-flow="flow"] .in-flow-rails {
   opacity: 0;
   pointer-events: none;
@@ -7252,6 +7244,457 @@ a {
 }
 [data-flow="stuck"] .flow-card {
   animation: flow-slip-in 360ms ease-out;
+}
+
+/* ── The desk: what outlasts the cards ─────────────────────────────────
+   Pneumatic post at the head of the room while the page is quiet; the
+   galley slip at its foot when a run of focus ends. Both are sticky, so
+   they stay in view however long the manuscript. */
+.flow-desk {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(100% + 28px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.flow-desk > * {
+  pointer-events: auto;
+}
+.flow-desk__top {
+  position: sticky;
+  top: 1rem;
+  z-index: var(--z-sticky);
+}
+.flow-desk__bottom {
+  position: sticky;
+  bottom: 1rem;
+  z-index: var(--z-sticky);
+}
+.flow-desk--dock {
+  position: fixed;
+  inset: auto 16px
+    var(--flow-dock-bottom, calc(4.5rem + env(safe-area-inset-bottom))) auto;
+  width: min(320px, calc(100vw - 32px));
+  z-index: var(--z-dropdown);
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+.flow-desk--dock .flow-desk__top,
+.flow-desk--dock .flow-desk__bottom {
+  position: static;
+  display: flex;
+  justify-content: flex-end;
+}
+/* Relevant help has the corner before the receipt for a finished run. */
+.flow-surface:has(.flow-dock .flow-card) .flow-desk--dock .flow-desk__bottom {
+  display: none;
+}
+
+/* The pneumatic post: a brass-capped capsule and a count. It never
+   pulses; a new arrival only darkens the count for a moment. */
+.flow-post {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem 0.25rem 0.4rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-paper) 92%, var(--color-mustard));
+  color: var(--color-ink-light);
+  font: 0.64rem/1 var(--font-typewriter);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0.85;
+  transition:
+    opacity 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease;
+}
+.flow-post:hover,
+.flow-post:focus-visible {
+  opacity: 1;
+  color: var(--color-ink);
+  border-color: color-mix(
+    in srgb,
+    var(--color-mustard) 60%,
+    var(--color-paper-3)
+  );
+}
+.flow-post__capsule {
+  flex: none;
+  fill: color-mix(in srgb, var(--color-paper) 70%, var(--color-mustard));
+  stroke: color-mix(in srgb, var(--color-mustard) 70%, var(--color-ink));
+  stroke-width: 1.1;
+}
+.flow-post__count {
+  min-width: 1ch;
+  color: var(--color-ink);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.3s ease;
+}
+.flow-post__pips {
+  display: inline-flex;
+  gap: 2px;
+}
+.flow-post__pips i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 0.8;
+}
+.flow-post.is-arriving {
+  opacity: 0.9;
+}
+.flow-post.is-arriving .flow-post__count {
+  color: var(--color-vermilion);
+}
+.flow-post.is-arriving .flow-post__capsule {
+  animation: flow-post-drop 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes flow-post-drop {
+  from {
+    transform: translateY(-5px);
+    opacity: 0.2;
+  }
+}
+
+/* The galley slip: a strip of proof paper, typed, with a pressman's
+   stamp. Filed by writing again, by its ✕, or by leaving the page. */
+.flow-slip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.6rem 0.75rem 0.55rem;
+  background: color-mix(in srgb, var(--color-paper) 94%, var(--color-mustard));
+  border: 1px solid var(--color-paper-3);
+  border-radius: 1px;
+  color: var(--color-ink);
+  font-family: var(--font-typewriter);
+  box-shadow: 0 1px 0 var(--color-paper-3);
+  animation: flow-slip-feed 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes flow-slip-feed {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0);
+    transform: none;
+  }
+}
+.flow-slip__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-light);
+}
+.flow-slip__title {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+.flow-slip__head time {
+  margin-right: auto;
+}
+.flow-slip__toggle {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  min-width: 0;
+  min-height: 2rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink-light);
+  font: inherit;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+}
+.flow-slip__summary {
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.flow-slip__toggle:hover {
+  color: var(--color-ink);
+}
+.flow-slip__close {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink-light);
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.flow-slip__close:hover {
+  color: var(--color-vermilion);
+}
+.flow-slip__toggle:focus-visible,
+.flow-slip__close:focus-visible,
+.flow-post:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 3px;
+}
+.flow-slip__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.flow-slip__body[hidden] {
+  display: none;
+}
+.flow-slip__rows {
+  display: grid;
+  gap: 0.1rem;
+  margin: 0;
+}
+/* Each row is a line of a contents page: label, leader dots, figure. */
+.flow-slip__rows > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  line-height: 1.35rem;
+  background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-ink) 30%, transparent) 0.6px,
+      transparent 0.9px
+    )
+    0 0.92rem / 5px 3px repeat-x;
+}
+.flow-slip__rows dt,
+.flow-slip__rows dd {
+  margin: 0;
+  background: color-mix(in srgb, var(--color-paper) 94%, var(--color-mustard));
+}
+.flow-slip__rows dt {
+  padding-right: 0.25rem;
+  color: var(--color-ink-light);
+}
+.flow-slip__rows dd {
+  padding-left: 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+.flow-slip__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.66rem;
+}
+.flow-slip__foot em {
+  flex: 1 0 60%;
+  color: var(--color-ink-light);
+  font: italic 0.74rem/1.3 var(--font-serif);
+}
+.flow-slip__stamp {
+  flex: none;
+  padding: 0.05rem 0.35rem;
+  border: 1.5px solid var(--color-vermilion);
+  border-radius: 2px;
+  color: var(--color-vermilion);
+  font: 0.56rem/1.3 var(--font-typewriter);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  transform: rotate(-6deg);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* The ink ribbon in the status line: black half up while writing, the red
+   struck in flow, slack when stuck. It shifts slowly and never pulses. */
+.manuscript-status {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-sticky);
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.5rem 1.25rem;
+  border-top: 1px solid var(--color-paper-3);
+  background: var(--color-paper-soft);
+  color: var(--color-ink-light);
+  font: 0.72rem/1.5 var(--font-typewriter);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.manuscript-status__writing {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.75rem;
+  min-width: 0;
+}
+.manuscript-status__count,
+.manuscript-status__saved {
+  white-space: nowrap;
+}
+.manuscript-status__saved {
+  margin-left: auto;
+}
+@media (max-width: 1100px) {
+  .manuscript-status__colophon {
+    display: none;
+  }
+}
+.flow-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--color-ink-light);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: default;
+}
+.flow-ribbon__spool {
+  flex: none;
+  overflow: visible;
+}
+.flow-ribbon__reel {
+  fill: var(--color-paper);
+  stroke: color-mix(in srgb, var(--color-ink) 55%, transparent);
+  stroke-width: 1;
+}
+.flow-ribbon__band {
+  transition:
+    transform 1.6s ease,
+    opacity 1.2s ease;
+}
+.flow-ribbon__black {
+  fill: var(--color-ink);
+}
+.flow-ribbon__red {
+  fill: var(--color-vermilion);
+}
+.flow-ribbon__slack {
+  fill: none;
+  stroke: var(--color-ink);
+  stroke-width: 2.4;
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+/* Settling: the ribbon lifts halfway toward the red. */
+.flow-ribbon[data-mode="settling"] .flow-ribbon__band {
+  transform: translateY(-1.4px);
+}
+/* In flow the red half is the one striking the page. */
+.flow-ribbon[data-mode="flow"] .flow-ribbon__band {
+  transform: translateY(-2.8px);
+}
+.flow-ribbon[data-mode="flow"] {
+  color: var(--color-vermilion);
+}
+.flow-ribbon[data-mode="stuck"] .flow-ribbon__band {
+  opacity: 0;
+}
+.flow-ribbon[data-mode="stuck"] .flow-ribbon__slack {
+  opacity: 0.7;
+}
+.flow-ribbon[data-mode="away"] {
+  opacity: 0.45;
+}
+@media (max-width: 640px) {
+  .manuscript-status {
+    gap: 0.15rem 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+  }
+  .manuscript-status__folios {
+    display: none;
+  }
+  .flow-ribbon__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+@media (pointer: coarse) {
+  .flow-post,
+  .flow-slip__toggle,
+  .flow-slip__close,
+  .flow-card__close {
+    min-height: 44px;
+  }
+  .flow-slip__close,
+  .flow-card__close {
+    width: 44px;
+  }
+  .flow-card__close {
+    opacity: 1;
+  }
+  .flow-card__head {
+    align-items: center;
+  }
+  .flow-card__body {
+    font-size: 0.95rem;
+  }
+  .flow-card__title {
+    font-size: 1rem;
+  }
+  .flow-card__kicker,
+  .flow-card .flow-way-in__hint,
+  .flow-post,
+  .flow-slip__summary {
+    font-size: 0.875rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-ribbon__band,
+  .flow-ribbon__slack {
+    transition: none;
+  }
+}
+
+/* A way in: the one thing Jev offers when the writer is stuck. */
+.flow-card--way-in {
+  background: color-mix(
+    in srgb,
+    var(--color-paper) 94%,
+    var(--color-periwinkle) 6%
+  );
+}
+.flow-card--way-in .flow-card__title {
+  font-style: italic;
+}
+.flow-way-in {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem 0.6rem;
+}
+.flow-way-in__hint {
+  color: var(--color-ink-light);
+  font: 0.6rem/1.3 var(--font-typewriter);
 }
 /* A proposed rewrite: the struck original above, the new wording below. */
 .suggestion-card__struck {
@@ -7325,8 +7768,15 @@ a {
 }
 @media print {
   .flow-surface,
-  .flow-dock {
+  .flow-dock,
+  .flow-desk {
     display: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flow-slip,
+  .flow-post.is-arriving .flow-post__capsule {
+    animation: none;
   }
 }
 
@@ -7340,6 +7790,6 @@ body:has(
     .selection-actions,
     [role="dialog"]
   )
-  .flow-dock {
+  :is(.flow-dock, .flow-desk--dock) {
   display: none;
 }

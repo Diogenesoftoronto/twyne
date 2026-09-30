@@ -13,6 +13,7 @@ import { isFileDrag } from "../../utils/file-drag";
 import type { EditorStore } from "./editor-state";
 import { MarginRails } from "../in-flow/margin-rail";
 import { FlowSurface } from "../in-flow/flow-surface";
+import { FlowRibbon } from "../in-flow/flow-ribbon";
 import { PageChrome, type PageChromeProps } from "./page-chrome";
 import { PageRuler } from "./page-ruler";
 import { LastSavedLine } from "./sync-indicator";
@@ -87,7 +88,7 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
     <>
       <div
         ref={scrollerRef}
-        class="flex-1 overflow-y-auto overflow-x-auto scroll-pb-12"
+        class="flex-1 min-h-0 overflow-y-auto overflow-x-auto scroll-pb-12"
         style="background: var(--color-editor-bg);"
         onDragOver$={props.onDragOver$}
         onDragLeave$={props.onDragLeave$}
@@ -207,24 +208,24 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
         </div>
       </div>
 
-      <div
-        class="flex items-center justify-between px-5 py-1.5 border-t border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] text-[var(--color-ink-light)] sticky bottom-0"
-        style={{
-          fontFamily: "var(--font-typewriter)",
-          letterSpacing: "0.1em",
-          textTransform: "uppercase",
-          fontSize: "0.72rem",
-          zIndex: "var(--z-sticky)",
-        }}
-      >
-        <span>
-          {formatWordCount(store.meta.wordCount)} words ·{" "}
-          {formatFolioCount(store.meta.wordCount)} folios
+      <div class="manuscript-status" aria-label="Manuscript status">
+        <span class="manuscript-status__writing">
+          <span class="manuscript-status__count">
+            {formatWordCount(store.meta.wordCount)} words
+            <span class="manuscript-status__folios">
+              {" "}
+              · {formatFolioCount(store.meta.wordCount)} folios
+            </span>
+          </span>
+          {!props.readOnly && <FlowRibbon />}
         </span>
-        <span>
-          <LastSavedLine savedAt={store.lastSavedAt} /> ·{" "}
-          {readingTimeLabel(store.meta.readingTime)} · set in Lora &amp; Libre
-          Baskerville
+        <span class="manuscript-status__saved">
+          <LastSavedLine savedAt={store.lastSavedAt} />
+          <span class="manuscript-status__colophon">
+            {" "}
+            · {readingTimeLabel(store.meta.readingTime)} · set in Lora &amp;
+            Libre Baskerville
+          </span>
         </span>
       </div>
     </>

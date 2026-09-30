@@ -4561,6 +4561,26 @@ export default component$(() => {
               </div>
             </section>
 
+            {auth.value.user?.email && (
+              <section class="folio p-5" aria-label="Private account details">
+                <h2
+                  class="text-base font-semibold mb-1"
+                  style={{ fontFamily: "var(--font-display)" }}
+                >
+                  Private account details
+                </h2>
+                <p class="mb-3 text-xs text-[var(--color-ink-light)]">
+                  Your email is shown only here, in Preferences.
+                </p>
+                <dl>
+                  <dt class="text-xs text-[var(--color-ink-light)]">Email</dt>
+                  <dd class="mt-1 break-all text-sm text-[var(--color-ink)]">
+                    {auth.value.user.email}
+                  </dd>
+                </dl>
+              </section>
+            )}
+
             {/* ── Writer handle (public identity) ── */}
             {auth.value.provider === "convex" && store.handleLoaded && (
               <section class="folio p-5 border border-[var(--color-paper-3)]">

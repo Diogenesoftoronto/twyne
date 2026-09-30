@@ -5,7 +5,7 @@ import {
   FOLIO_CONTENT_SAVED,
   loadFolioContentSnapshotFromIdb,
   saveFolioTypstToIdb,
-  type FolioContentSnapshot,
+  type FolioContentSavedDetail,
 } from "../idb";
 import { htmlToTypst, typstToHtml, reconcileTypstSource } from "./document";
 import { compileTypstSource, type TypstCompilation } from "./client";
@@ -224,11 +224,14 @@ export async function createTypstSession(
     schedule();
   }
   function saved(event: Event) {
-    const rec = (event as CustomEvent<FolioContentSnapshot>).detail;
+    const rec = (event as CustomEvent<FolioContentSavedDetail>).detail;
+    // Remote restorations can match visualHistory. Only local acknowledgements
+    // may advance a draft's base; remoteChanged detects remote conflicts.
     if (
       destroyed ||
       applying ||
       rec?.folioId !== folioId ||
+      rec.origin === "remote" ||
       rec.typstSource === undefined
     )
       return;

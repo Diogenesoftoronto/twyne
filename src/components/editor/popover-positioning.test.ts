@@ -1,11 +1,82 @@
 import { describe, expect, test } from "bun:test";
 import {
+  computeFallbackCardGeometry,
   computeMarginCardGeometry,
   computePopoverGeometry,
   MARGIN_CARD_GAP,
   POPOVER_CARD_MARGIN,
   POPOVER_CARD_WIDTH,
 } from "./popover-positioning";
+
+describe("scrolling fallback cards", () => {
+  const view = {
+    vw: 760,
+    vh: 700,
+    page: { left: 70, right: 690 },
+    keepOpen: false,
+    idealH: 260,
+    viewport: { top: 50, bottom: 650 },
+  };
+  test("follows the passage as its viewport coordinates change", () => {
+    const initial = computeFallbackCardGeometry({
+      ...view,
+      rect: { left: 100, top: 180, bottom: 210 },
+    });
+    const scrolled = computeFallbackCardGeometry({
+      ...view,
+      rect: { left: 100, top: 110, bottom: 140 },
+    });
+    expect(initial?.top).toBe(218);
+    expect(scrolled?.top).toBe(148);
+  });
+  test("closes idle cards when the passage fully leaves the manuscript viewport", () => {
+    for (const rect of [
+      { left: 100, top: 20, bottom: 50 },
+      { left: 100, top: 650, bottom: 680 },
+    ])
+      expect(computeFallbackCardGeometry({ ...view, rect })).toBeNull();
+    expect(
+      computeFallbackCardGeometry({
+        ...view,
+        rect: { left: 100, top: 20, bottom: 51 },
+      }),
+    ).not.toBeNull();
+  });
+  test("clamps pinned cards and unsent drafts above or below the viewport", () => {
+    for (const rect of [
+      { left: 100, top: -500, bottom: -470 },
+      { left: 100, top: 900, bottom: 930 },
+    ]) {
+      const geometry = computeFallbackCardGeometry({
+        ...view,
+        rect,
+        keepOpen: true,
+      })!;
+      const top =
+        geometry.top ?? view.vh - (geometry.bottom ?? 0) - geometry.maxH;
+      expect(top).toBeGreaterThanOrEqual(
+        view.viewport.top + POPOVER_CARD_MARGIN,
+      );
+      expect(top + geometry.maxH).toBeLessThanOrEqual(
+        view.viewport.bottom - POPOVER_CARD_MARGIN,
+      );
+      expect(geometry.maxH).toBeGreaterThan(0);
+    }
+  });
+  test("protected cards also stay on screen with a wide outside margin", () => {
+    const geometry = computeFallbackCardGeometry({
+      ...view,
+      vw: 1440,
+      page: { left: 320, right: 980 },
+      keepOpen: true,
+      rect: { left: 620, top: 900, bottom: 930 },
+    })!;
+    expect(geometry.x).toBe(980 + MARGIN_CARD_GAP);
+    expect(geometry.top! + geometry.maxH).toBeLessThanOrEqual(
+      view.viewport.bottom - POPOVER_CARD_MARGIN,
+    );
+  });
+});
 
 describe("manuscript margin card positioning", () => {
   test("uses the right outside margin when it fits", () => {
@@ -50,6 +121,34 @@ describe("manuscript margin card positioning", () => {
     expect((geom.top ?? 0) + geom.maxH).toBeLessThanOrEqual(
       420 - MARGIN_CARD_GAP,
     );
+  });
+
+  test("tucks under the passage instead of covering it when over the page", () => {
+    const rect = { left: 360, top: 240, bottom: 262 };
+    const geom = computeMarginCardGeometry({
+      vw: 1100,
+      vh: 1000,
+      rect,
+      page: { left: 180, right: 925 },
+      idealH: 360,
+    });
+
+    expect(geom.placement).toBe("below");
+    expect(geom.top).toBeGreaterThan(rect.bottom);
+  });
+
+  test("sits above a passage near the bottom when over the page", () => {
+    const rect = { left: 360, top: 880, bottom: 902 };
+    const geom = computeMarginCardGeometry({
+      vw: 1100,
+      vh: 1000,
+      rect,
+      page: { left: 180, right: 925 },
+      idealH: 360,
+    });
+
+    expect(geom.placement).toBe("above");
+    expect(1000 - (geom.bottom ?? 0)).toBeLessThan(rect.top);
   });
 });
 

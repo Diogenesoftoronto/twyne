@@ -1,6 +1,7 @@
 import { Extension, type CommandProps } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
+import { accountDisplayName } from "../../../utils/account-display";
 
 /**
  * Remote cursors overlay — shows where other collaborators are in the document.
@@ -126,14 +127,15 @@ function buildDecorations(
         const safePos = Math.min(pos, state.doc.resolve(0).end() + 1);
         decorations.push(
           Decoration.widget(safePos, () => {
+            const displayName = accountDisplayName({ name: c.displayName });
             const el = document.createElement("span");
             el.className = "remote-cursor";
-            el.dataset.collaborator = c.displayName;
-            el.setAttribute("aria-label", `${c.displayName}'s cursor`);
+            el.dataset.collaborator = displayName;
+            el.setAttribute("aria-label", `${displayName}'s cursor`);
             el.style.cssText = `position:relative;display:inline-block;width:2px;height:1.4em;background:${c.color};vertical-align:text-bottom;margin-left:-1px;`;
             const label = document.createElement("span");
             label.style.cssText = `position:absolute;top:-1.2em;left:0;white-space:nowrap;font-size:9px;line-height:1;padding:1px 4px;border-radius:2px;background:${c.color};color:#fff;font-family:var(--font-typewriter,monospace);pointer-events:none;`;
-            label.textContent = c.displayName.charAt(0).toUpperCase();
+            label.textContent = displayName.charAt(0).toUpperCase();
             el.appendChild(label);
             return el;
           }),

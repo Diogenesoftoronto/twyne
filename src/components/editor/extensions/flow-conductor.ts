@@ -65,6 +65,7 @@ import {
 import {
   decideSurface,
   type FlowItem,
+  type FlowItemKind,
   type WorkCard,
 } from "../../../utils/flow-items";
 import {
@@ -77,6 +78,15 @@ import {
 } from "../../../utils/flow-connections";
 import { lookupWork } from "../../../utils/flow-media";
 import { logFlow } from "../../../utils/flow-diagnostics";
+import { countWords } from "../../../utils/document";
+import {
+  appendSession,
+  FLOW_SESSION_EVENT,
+  loadFlowSessions,
+  summarizeSession,
+  type FlowSession,
+  type FlowSessionEnd,
+} from "../../../utils/flow-session";
 import {
   assembleContextStack,
   contextForModels,
@@ -105,6 +115,8 @@ const OVERRIDE_MS = 10 * 60_000;
 const GATHER_EVERY_MS = 20_000;
 const DRIFT_EVERY_WORDS = 300;
 const REACH_DWELL_MS = 600;
+// Folio teardown and its replacement can both save a slip in the same turn.
+let sessionWrites: Promise<void> = Promise.resolve();
 
 export interface FlowSnapshot {
   enabled: boolean;
@@ -112,6 +124,8 @@ export interface FlowSnapshot {
   reading: FlowReading | null;
   visible: FlowItem[];
   held: number;
+  /** What is being held back, by kind: the pneumatic post's tally. */
+  heldKinds: Partial<Record<FlowItemKind, number>>;
   autoFocus: boolean;
 }
 
@@ -133,6 +147,8 @@ export interface FlowController {
   items(): FlowItem[];
   /** Viewport top of the caret's line, for placing cards with no anchor. */
   cursorTop(): number | null;
+  /** The most recent qualifying slip for this folio, including after a remount. */
+  lastSession(): FlowSession | null;
 }
 
 let snapshot: FlowSnapshot = {
@@ -141,6 +157,7 @@ let snapshot: FlowSnapshot = {
   reading: null,
   visible: [],
   held: 0,
+  heldKinds: {},
   autoFocus: false,
 };
 let controller: FlowController | null = null;
@@ -193,6 +210,7 @@ export function startFlowConductor(
   let gathering = false;
   let lastGatherAt = 0;
   let lastGatherKey = "";
+  let lastGatherMode: FlowMode | null = null;
   let wordsSinceDrift = 0;
   let drifting = false;
   const driftLows: Partial<Record<DossierField, number>> = {};
@@ -205,6 +223,53 @@ export function startFlowConductor(
   let archive: PassageIndex | null = null;
   let archiveBuilding: Promise<void> | null = null;
   let lastVisibleKey = "";
+  let latestSession: FlowSession | null = null;
+  let session: {
+    startedAt: number;
+    startWords: number;
+    waited: Set<string>;
+    amendments: Set<string>;
+  } | null = null;
+
+  const documentWords = () =>
+    countWords(
+      editor.state.doc.textBetween(0, editor.state.doc.content.size, " "),
+    );
+
+  const closeSession = (ended: FlowSessionEnd) => {
+    if (!session) return;
+    const detail = summarizeSession({
+      ...session,
+      folioId,
+      endedAt: Date.now(),
+      endWords: documentWords(),
+      ended,
+    });
+    session = null;
+    if (!detail) return;
+    latestSession = detail;
+    logFlow(
+      "focus",
+      `Galley slip: ${detail.words} words in ${round(detail.flowMs / 60_000)} minutes (${ended})`,
+      { ...detail },
+    );
+    sessionWrites = sessionWrites
+      .then(async () => {
+        const saved = await loadFlowSessions();
+        await saveMetaToIdb(
+          "flow-sessions",
+          toStorable(appendSession(saved, detail)),
+        );
+      })
+      .catch((error) => {
+        logFlow("error", "The galley slip could not be saved", {
+          error: String(error),
+        });
+      });
+    window.dispatchEvent(
+      new CustomEvent<FlowSession>(FLOW_SESSION_EVENT, { detail }),
+    );
+  };
 
   /* ── Publishing ─────────────────────────────────────────────── */
 
@@ -244,12 +309,21 @@ export function startFlowConductor(
         },
       );
     }
+    const heldKinds: Partial<Record<FlowItemKind, number>> = {};
+    for (const [id, reason] of Object.entries(decision.reasons)) {
+      const kind = items.get(id)?.kind;
+      if (kind && reason.startsWith("held")) {
+        heldKinds[kind] = (heldKinds[kind] ?? 0) + 1;
+        session?.waited.add(id);
+      }
+    }
     snapshot = {
       enabled,
       mode,
       reading,
       visible: decision.visible,
       held: decision.held,
+      heldKinds,
       autoFocus,
     };
     window.dispatchEvent(
@@ -261,6 +335,9 @@ export function startFlowConductor(
     if (!active()) return;
     const previous = items.get(item.id);
     items.set(item.id, previous ? { ...previous, ...item } : item);
+    session?.waited.add(item.id);
+    if (!previous && item.kind === "amendment")
+      session?.amendments.add(item.id);
     if (!previous)
       logFlow("item", `${item.kind}: ${item.title}`, {
         anchors: item.anchors.map((a) => a.slice(0, 80)),
@@ -284,6 +361,13 @@ export function startFlowConductor(
     const detail = (event as CustomEvent<{ on?: boolean; source?: string }>)
       .detail;
     if (detail?.source === "flow") return;
+    if (detail?.on === false) {
+      closeSession("manual");
+      reaching = true;
+      mode = "working";
+      flowConfirmedUntil = 0;
+      setFlowAttribute(enabled ? mode : null);
+    }
     // The writer toggled focus by hand. Turning it off while Twyne held it
     // is an override: respect it for a while and remember it happened.
     if (autoFocus && !detail?.on) {
@@ -296,6 +380,7 @@ export function startFlowConductor(
       );
     }
     autoFocus = false;
+    publish();
   };
 
   const setFlowAttribute = (value: FlowMode | null) => {
@@ -387,10 +472,23 @@ export function startFlowConductor(
 
   const onModeChange = (from: FlowMode, to: FlowMode, r: FlowReading) => {
     if (to === "flow") {
+      session ??= {
+        startedAt: Date.now(),
+        startWords: documentWords(),
+        waited: new Set(),
+        amendments: new Set(),
+      };
       profile = recordFlowEntry(profile, r.runMs, Date.now());
       profileDirty = true;
       if (Date.now() >= overrideUntil) setFocus(true, "a steady run held");
     } else if (from === "flow") {
+      closeSession(
+        to === "away"
+          ? "away"
+          : reaching || interactingWithRoom()
+            ? "reached"
+            : "pause",
+      );
       setFocus(false, r.reason.toLowerCase());
     }
     if (to === "stuck") void gather(true);
@@ -468,6 +566,7 @@ export function startFlowConductor(
 
   const release = () => {
     if (!active()) return;
+    closeSession("reached");
     reaching = true;
     mode = "working";
     flowConfirmedUntil = 0;
@@ -536,11 +635,13 @@ export function startFlowConductor(
     const now = Date.now();
     if (
       !force &&
-      (key === lastGatherKey || now - lastGatherAt < GATHER_EVERY_MS)
+      ((key === lastGatherKey && mode === lastGatherMode) ||
+        (mode === lastGatherMode && now - lastGatherAt < GATHER_EVERY_MS))
     )
       return;
     gathering = true;
     lastGatherKey = key;
+    lastGatherMode = mode;
     lastGatherAt = now;
     try {
       await ensureArchive();
@@ -622,11 +723,36 @@ export function startFlowConductor(
         };
       });
 
-      if (mode === "stuck")
+      const wayInId = `way-in:${key.slice(0, 40)}`;
+      const existingEcho = [...items.values()]
+        .filter(
+          (item) =>
+            item.kind === "echo" &&
+            item.anchors.includes(text) &&
+            !dismissed.has(item.id),
+        )
+        .sort((a, b) => (b.relevance ?? 0) - (a.relevance ?? 0))[0];
+      const waysIn = [
+        "Say it plainly first",
+        "Start from the thing itself",
+        "Who is this for?",
+        ...(echoes.length || existingEcho ? ["Pick up an earlier thread"] : []),
+        "Leave a mark and move on",
+      ];
+      if (existingEcho) state.earlierThread = existingEcho.body.slice(0, 900);
+      const lookingForWayIn = mode === "stuck" && !dismissed.has(wayInId);
+      const hasClient = !!options.getClient();
+      if (lookingForWayIn) {
         questions.stuck = {
           type: "noul",
           instructions: `${EVIDENCE} The writer has paused over \`passage\` after cutting and rewriting it. Does the passage look unresolved — an argument or scene they are circling — rather than finished?`,
         };
+        questions.wayIn = {
+          type: "choice",
+          instructions: `${EVIDENCE} If the writer is stuck over \`passage\`, which small way back into writing would help? Use \`audience\` and \`goal\` from the dossier, and the earlier passages when supplied. Choose an earlier thread only if it offers something concrete to pick up.`,
+          criteria: waysIn,
+        };
+      }
 
       const answers = await ask(state, questions, `gather (${mode})`);
       if (!active()) return;
@@ -668,6 +794,63 @@ export function startFlowConductor(
           folioName: match.passage.sourceName,
         });
       });
+
+      // A late judgement belongs to the passage it read, and only to a stuck
+      // moment. A configured but unavailable/budgeted client is not local proof.
+      const stuck = answers?.stuck?.noul;
+      const localStuck =
+        !hasClient &&
+        (reading?.recentChurn ?? 0) >= 0.6 &&
+        (reading?.pauseMs ?? 0) >= thresholdsFor(profile).stuckPauseMs;
+      if (
+        lookingForWayIn &&
+        mode === "stuck" &&
+        cursorBlock()?.node.textContent.trim() === text &&
+        !dismissed.has(wayInId) &&
+        (stuck !== undefined ? stuck >= 0.6 : localStuck)
+      ) {
+        const echo = [...items.values()]
+          .filter(
+            (item) =>
+              item.kind === "echo" &&
+              item.anchors.includes(text) &&
+              !dismissed.has(item.id),
+          )
+          .sort((a, b) => (b.relevance ?? 0) - (a.relevance ?? 0))[0];
+        const choice = answers?.wayIn?.choice;
+        const title =
+          choice &&
+          waysIn.includes(choice) &&
+          (choice !== "Pick up an earlier thread" || echo)
+            ? choice
+            : "Say it plainly first";
+        const audience = state.audience.trim() || "someone you know";
+        const goal = state.goal.trim();
+        const detail = text.replace(/\s+/g, " ").slice(-100);
+        const body =
+          title === "Start from the thing itself"
+            ? `One detail you can see in “${detail}” could carry the next sentence.`
+            : title === "Who is this for?"
+              ? `This piece is for ${audience}${goal ? `, with this purpose: ${goal}` : ""}. What would help them understand this passage?`
+              : title === "Pick up an earlier thread"
+                ? "An earlier passage touches this one. A detail or unfinished thought there could be a place to begin."
+                : title === "Leave a mark and move on"
+                  ? "TK can keep this spot for later. The next paragraph might show what belongs here."
+                  : `A sentence as you'd say it to ${audience} is enough for now. The phrasing can come later.`;
+        for (const item of items.values())
+          if (item.kind === "way-in" && item.id !== wayInId)
+            items.delete(item.id);
+        upsert({
+          id: wayInId,
+          kind: "way-in",
+          anchors: [text],
+          title,
+          body,
+          ...(echo ? { links: [echo.id] } : {}),
+          createdAt: Date.now(),
+          relevance: stuck ?? reading?.recentChurn,
+        });
+      }
 
       for (const [i, title] of titles.entries()) {
         const medium = mediumFor(answers?.[`medium${i}`]?.choice);
@@ -1054,6 +1237,9 @@ export function startFlowConductor(
     if (!active()) return;
     enabled = flow !== false && inFlow !== false;
     if (!enabled) {
+      closeSession("manual");
+      mode = "working";
+      flowConfirmedUntil = 0;
       setFocus(false, "automatic focus switched off");
       setFlowAttribute(null);
     }
@@ -1232,6 +1418,9 @@ export function startFlowConductor(
         return null;
       }
     },
+    lastSession() {
+      return latestSession ? { ...latestSession } : null;
+    },
   };
 
   /* ── Wiring ─────────────────────────────────────────────────── */
@@ -1270,6 +1459,17 @@ export function startFlowConductor(
   window.addEventListener("keydown", onKeyDown);
 
   void (async () => {
+    const savedSessions = await sessionWrites.then(() => loadFlowSessions());
+    if (!active()) return;
+    const savedSession = [...savedSessions]
+      .reverse()
+      .find((entry) => entry.folioId === folioId);
+    const currentSession = ownedController?.lastSession();
+    if (
+      savedSession &&
+      (!currentSession || savedSession.endedAt > currentSession.endedAt)
+    )
+      latestSession = savedSession;
     const savedProfile = await loadMetaFromIdb<FlowProfile>(PROFILE_KEY);
     if (!active()) return;
     profile = normalizeProfile(savedProfile);
@@ -1282,10 +1482,11 @@ export function startFlowConductor(
     scanPersonaNotes();
   })();
 
-  return () => {
+  const stop = () => {
     if (stopped) return;
     const ownsSnapshot = controller === ownedController;
     stopped = true;
+    closeSession("closed");
     clearInterval(interval);
     clearTimeout(reachTimer);
     clearTimeout(notesTimer);
@@ -1295,6 +1496,7 @@ export function startFlowConductor(
       setFlowAttribute(null);
     }
     editor.off("transaction", onTransaction);
+    editor.off("destroy", stop);
     window.removeEventListener("twyne:zen-mode", onZen);
     window.removeEventListener(FLOW_SETTING_EVENT, settings);
     window.removeEventListener("twyne:live-review-setting", settings);
@@ -1316,12 +1518,15 @@ export function startFlowConductor(
       enabled: false,
       visible: [],
       held: 0,
+      heldKinds: {},
       autoFocus: false,
     };
     window.dispatchEvent(
       new CustomEvent<FlowSnapshot>(FLOW_EVENT, { detail: snapshot }),
     );
   };
+  editor.on("destroy", stop);
+  return stop;
 }
 
 const round = (n: number) => Math.round(n * 100) / 100;

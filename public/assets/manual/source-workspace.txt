@@ -1,0 +1,9 @@
+Typst source and proof — silent walkthrough description
+
+An actual local Twyne session uses synthetic manuscript text. There is no audio or spoken narration.
+
+0–2.72 seconds: switch from Write to Source. The short sample “A careful sentence.” is formatted, undone, redone and commented; Find and Replace changes “careful” to “clear”.
+2.72–5.72 seconds: a sample manuscript titled “The art of paying attention” replaces the short sentence. Its Typst source contains headings, a quotation, a list, a footnote, an example.com link and a table. The proof prepares locally, and Split proof is opened briefly.
+5.72–6.72 seconds: Proof displays the locally typeset page and its zoom changes.
+
+The local-writing sign-in notice remains visible until it is dismissed. No authentication occurs. This illustrates local editing and typesetting, not authenticated sync, production sign-in or funded model generation.

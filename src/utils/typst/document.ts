@@ -87,7 +87,7 @@ export const TYPST_DOCUMENT_PREAMBLE = `${START}
   else if tag == "code" { text(font: "DejaVu Sans Mono", body) }
   else if tag == "li" { list.item(if kind == "taskItem" { text(if a.at("data-checked", default: "false") == "true" { "[x] " } else { "[ ] " }) + body } else { body }) }
   else if tag == "ul" { list(marker: if kind == "taskList" { [] } else { [•] }, ..if body.has("children") { body.children } else { (body,) }) }
-  else if tag == "ol" { enum(..if body.has("children") { body.children.map(item => item.body) } else { (body.body,) }) }
+  else if tag == "ol" { enum(start: int(calc.clamp(calc.round(twyne-number(a.at("start", default: "1"), fallback: 1)), 1, 1000000)), ..if body.has("children") { body.children.map(item => item.body) } else { (body.body,) }) }
   else if tag == "td" or tag == "th" {
     let horizontal = a.at("data-cell-horizontal-alignment", default: styles.at("text-align", default: "left"))
     let vertical = a.at("data-cell-vertical-alignment", default: "top")

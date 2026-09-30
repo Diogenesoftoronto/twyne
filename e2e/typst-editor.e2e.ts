@@ -69,7 +69,7 @@ test("source drafts recover after reload and valid source applies with paginated
   const source =
     "= Revised manuscript\n\nWords written in native source.\n\n#pagebreak()\n\nSecond typeset page.";
   await replaceSource(page, source);
-  await expect(workspace.getByRole("status")).toContainText("2 pages", {
+  await expect(workspace.locator(".typst-status")).toContainText("2 pages", {
     timeout: 30000,
   });
   await workspace
@@ -94,7 +94,7 @@ test("source drafts recover after reload and valid source applies with paginated
   await expect(page.locator(".ProseMirror")).toContainText(
     "Words written in native source.",
   );
-  await expect(workspace.getByRole("status")).toContainText("2 pages", {
+  await expect(workspace.locator(".typst-status")).toContainText("2 pages", {
     timeout: 30000,
   });
   await workspace.getByRole("button", { name: "Proof", exact: true }).click();
@@ -241,7 +241,7 @@ A useful reference belongs close to the passage it supports.#footnote[This is an
 #table(columns: (1fr, 2fr), table.header([*Pass*], [*Purpose*]), [First], [Find the shape of the argument.], [Second], [Make every sentence earn its place.])
 `,
   );
-  await expect(workspace.getByRole("status")).toContainText("1 page", {
+  await expect(workspace.locator(".typst-status")).toContainText("1 page", {
     timeout: 30000,
   });
   await workspace

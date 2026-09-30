@@ -1,0 +1,11 @@
+The House and inherited context — silent walkthrough description
+
+An actual local Twyne session uses the synthetic House “Éditions du Passage”, collection “Journeys & Returns” and folios “Salt Roads” and “The Coast in Winter”. There is no audio or spoken narration.
+
+0–4.04 seconds: the cabinet shows the selected folio's dossier, including which fields come from the folio, the House or its collection. The collection is then selected to inspect its defaults and charter.
+4.04–7.12 seconds: the House is selected to inspect its reader, aim, tone and shared charter.
+7.12–10.2 seconds: the register lists the seeded changes and their origins.
+10.2–14 seconds: the Engine room shows thresholds, weights and an empty decision log.
+14–17.6 seconds: the cabinet returns to the folio and scrolls to “What the models read”, which lists the assembled context.
+
+This illustrates local context inspection with synthetic data. It does not demonstrate authenticated cloud sync, generated editorial decisions or a funded model call.

@@ -1,0 +1,191 @@
+.manual-editors {
+  container: manual-editors / inline-size;
+  margin: 1.5rem 0 2rem;
+  color: var(--color-ink);
+}
+
+.manual-editors__note {
+  max-width: 58ch;
+  margin: 0 0 1.5rem;
+  color: var(--color-ink-light);
+  font: 400 0.9375rem/1.65 var(--font-sans);
+}
+
+.manual-editors__cast {
+  border-top: 3px double var(--color-ink);
+}
+
+.manual-editors__profile {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 1.25rem 1rem;
+  padding: 1.75rem 0 2rem;
+  border-bottom: 1px solid var(--color-paper-3);
+}
+
+.manual-editors__profile:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+/* Complete individual illustrations, not avatar crops. Their warm paper
+ * belongs to the spread; there is no frame or card around the portrait. */
+.manual-editors__portrait {
+  display: block;
+  grid-column: 1;
+  align-self: start;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+}
+
+.manual-editors__mark {
+  flex: 0 0 auto;
+  padding-top: 0.125rem;
+  font:
+    400 1.25rem/1.35 Georgia,
+    serif;
+  user-select: none;
+}
+
+.manual-editors__identity {
+  grid-column: 2;
+  min-width: 0;
+  align-self: center;
+}
+
+.manual-editors__name {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0;
+  font: 700 1.3125rem/1.35 var(--font-display);
+  letter-spacing: -0.025em;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+.manual-editors__role {
+  margin: 0.375rem 0 0;
+  color: var(--color-ink-light);
+  font: 400 0.9375rem/1.45 var(--font-sans);
+}
+
+.manual-editors__reading {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 1.375rem;
+  min-width: 0;
+}
+
+.manual-editors__brief {
+  min-width: 0;
+}
+
+.manual-editors__narrative {
+  max-width: 62ch;
+  margin: 0;
+  font: 400 1rem/1.75 var(--font-serif);
+}
+
+.manual-editors__prompt {
+  margin: 1rem 0 0;
+}
+
+.manual-editors__prompt dt,
+.manual-editors__signature figcaption {
+  margin: 0 0 0.375rem;
+  color: var(--color-ink-light);
+  font: 600 0.875rem/1.5 var(--font-sans);
+}
+
+.manual-editors__prompt dd {
+  max-width: 56ch;
+  margin: 0;
+  font: 400 0.9375rem/1.65 var(--font-sans);
+}
+
+.manual-editors__signature {
+  min-width: 0;
+  margin: 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-paper-3);
+}
+
+.manual-editors__signature blockquote {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: var(--color-ink);
+  font: italic 400 1.1875rem/1.6 var(--font-serif);
+}
+
+.manual-editors__signature blockquote p {
+  max-width: 42ch;
+  margin: 0;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+@container manual-editors (min-width: 34rem) {
+  .manual-editors__profile {
+    grid-template-columns: 8rem minmax(0, 1fr);
+    column-gap: 1.5rem;
+    padding-top: 2rem;
+    padding-bottom: 2.5rem;
+  }
+
+  .manual-editors__portrait {
+    grid-row: 1 / 3;
+  }
+
+  .manual-editors__identity {
+    align-self: start;
+  }
+
+  .manual-editors__name {
+    font-size: 1.5rem;
+  }
+
+  .manual-editors__reading {
+    grid-column: 2;
+  }
+}
+
+@container manual-editors (min-width: 40rem) {
+  .manual-editors__profile {
+    grid-template-columns: 9rem minmax(0, 1fr);
+  }
+
+  .manual-editors__reading {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2rem;
+  }
+
+  .manual-editors__signature {
+    border-top: 0;
+    padding-top: 0;
+  }
+}
+
+@container manual-editors (min-width: 46rem) {
+  .manual-editors__profile {
+    grid-template-columns: 10rem minmax(0, 1fr);
+  }
+}
+
+@media print {
+  .manual-editors {
+    container-type: normal;
+    margin-block: 1rem;
+  }
+
+  .manual-editors__profile {
+    break-inside: avoid;
+    padding-block: 1rem;
+  }
+
+  .manual-editors__identity {
+    break-after: avoid;
+  }
+}

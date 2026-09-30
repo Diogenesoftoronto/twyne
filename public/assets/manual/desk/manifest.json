@@ -1,0 +1,446 @@
+{
+  "schemaVersion": 1,
+  "domain": "desk",
+  "capturedOn": "2026-09-30",
+  "generatedAt": "2026-09-30T06:56:27.812Z",
+  "guide": "src/routes/docs/guide-at-the-desk.ts",
+  "export": "AT_THE_DESK_GUIDES",
+  "chapters": {
+    "getting-started": {
+      "title": "Find your way around the desk",
+      "images": 3,
+      "note": "Illustrated with a sample draft and staged editorial feedback."
+    },
+    "dossier": {
+      "title": "File the intent, then refine it",
+      "images": 4
+    },
+    "house": {
+      "title": "Let shared intent flow into each folio",
+      "images": 4
+    },
+    "flow": {
+      "title": "Choose when the room becomes quiet",
+      "images": 4,
+      "note": "Illustrated with a sample draft and staged editorial feedback."
+    }
+  },
+  "provenance": {
+    "application": "Twyne local development application",
+    "origin": "http://127.0.0.1:5180",
+    "treatment": "Actual application components, captured by Playwright with an isolated browser context and non-personal sample data stored through application IndexedDB helpers.",
+    "editorialFeedback": "Illustrated with a sample draft and staged editorial feedback.",
+    "drafts": ["Salt Roads", "The Coast in Winter"],
+    "house": "Éditions du Passage",
+    "collection": "Journeys & Returns",
+    "developmentUI": "Only the Popmelt launcher and Qwik inspector overlays were hidden. Product controls and manuscript layout were left intact.",
+    "network": "Only the local application and its Google Fonts stylesheet/font assets were allowed. Other HTTP traffic and WebSockets were blocked.",
+    "behaviourSources": [
+      "src/routes/editor/index.tsx",
+      "src/components/editor/twyne-editor.tsx",
+      "src/components/onboarding/anti-tabula-rasa.tsx",
+      "src/routes/dossier/create/index.tsx",
+      "src/routes/dossier/refine/index.tsx",
+      "src/routes/house/index.tsx",
+      "src/utils/house-model.ts",
+      "src/utils/house-store.ts",
+      "src/components/writing-tools/review-controls.tsx",
+      "src/components/editor/extensions/flow-conductor.ts",
+      "src/components/in-flow/flow-surface.tsx"
+    ]
+  },
+  "captures": [
+    {
+      "chapter": "getting-started",
+      "step": 1,
+      "title": "Write with the dossier beside you",
+      "alt": "The Salt Roads manuscript in Write mode, with the drawer open to its filed dossier and the Home formatting controls above the page.",
+      "image": "/assets/manual/desk/desk-drawer.webp",
+      "width": 1340,
+      "height": 800,
+      "route": "/editor/",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1340,
+        "height": 800
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/desk-drawer.png",
+      "format": "webp",
+      "bytes": 71076,
+      "sha256": "ed64733876a4f74d356a34bbf63d76a297c21ea6c301e4cfe7039808d44c6676"
+    },
+    {
+      "chapter": "getting-started",
+      "step": 2,
+      "title": "Open a note at its passage",
+      "alt": "Marguerite's Pacing note beside the marked passage, with a reply field, Strike, and Reply controls.",
+      "image": "/assets/manual/desk/desk-note.webp",
+      "width": 1100,
+      "height": 650,
+      "route": "/editor/",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "crop": {
+        "x": 0,
+        "y": 230,
+        "width": 1100,
+        "height": 650
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/desk-note.png",
+      "format": "webp",
+      "bytes": 55714,
+      "sha256": "9f54ba6d88d23b93014c8304ed0f8cda17ee02e1a45eabb7a84e3f871796bc72"
+    },
+    {
+      "chapter": "getting-started",
+      "step": 3,
+      "title": "Decide on a proposed edit",
+      "alt": "A proposed replacement for progress slowed considerably, showing the existing words, the mules refused the water, the rationale, Strike, and Accept & stamp.",
+      "image": "/assets/manual/desk/desk-suggestion.webp",
+      "width": 1100,
+      "height": 650,
+      "route": "/editor/",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "crop": {
+        "x": 0,
+        "y": 230,
+        "width": 1100,
+        "height": 650
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/desk-suggestion.png",
+      "format": "webp",
+      "bytes": 54082,
+      "sha256": "86c046070d1c03fb01d287c62ed7bafc62c8718bcbfb58731e51aabd24757d84"
+    },
+    {
+      "chapter": "dossier",
+      "step": 1,
+      "title": "Begin with a working title",
+      "alt": "The initial dossier form for The Coast in Winter, showing the working-title input, working-copy preview, Form and Conversation choices, Next, and the section navigation.",
+      "image": "/assets/manual/desk/dossier-create.webp",
+      "width": 1100,
+      "height": 780,
+      "route": "/dossier/create/",
+      "viewport": {
+        "width": 1100,
+        "height": 780
+      },
+      "crop": {
+        "locator": "undefined"
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/dossier-create.png",
+      "format": "webp",
+      "bytes": 40386,
+      "sha256": "79a33739e0f8ce388c81c9151589895aec91184a87697620b5a0bdc20bc8e494"
+    },
+    {
+      "chapter": "dossier",
+      "step": 2,
+      "title": "Say what the piece should accomplish",
+      "alt": "Section IV asks what the piece should accomplish; the harbour essay's answer appears in both the editable field and the highlighted Goal preview.",
+      "image": "/assets/manual/desk/dossier-intent.webp",
+      "width": 1100,
+      "height": 780,
+      "route": "/dossier/create/",
+      "viewport": {
+        "width": 1100,
+        "height": 780
+      },
+      "crop": {
+        "locator": "undefined"
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/dossier-intent.png",
+      "format": "webp",
+      "bytes": 43778,
+      "sha256": "6716db011b30b65168c79280f74213a05585f81ad31408570a8f209f1246458b"
+    },
+    {
+      "chapter": "dossier",
+      "step": 3,
+      "title": "Attach material with a purpose",
+      "alt": "The References section with Document and Link controls, title and material fields, a reason field, Add to dossier, a sample Harbour field notes reference, and Send to press.",
+      "image": "/assets/manual/desk/dossier-references.webp",
+      "width": 1100,
+      "height": 780,
+      "route": "/dossier/create/",
+      "viewport": {
+        "width": 1100,
+        "height": 780
+      },
+      "crop": {
+        "locator": "undefined"
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/dossier-references.png",
+      "format": "webp",
+      "bytes": 51710,
+      "sha256": "235a10e0ccadec04b98a1af8d89f7e3493ebb6ccc5bf1172d48eb9abab280242"
+    },
+    {
+      "chapter": "dossier",
+      "step": 4,
+      "title": "Refile a changed brief",
+      "alt": "The refined dossier on its Voice section, with a changed tone in the field and preview, Back to desk, Start over, and the inherited-standards link.",
+      "image": "/assets/manual/desk/dossier-refine.webp",
+      "width": 1100,
+      "height": 780,
+      "route": "/dossier/refine/",
+      "viewport": {
+        "width": 1100,
+        "height": 780
+      },
+      "crop": {
+        "locator": "undefined"
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/dossier-refine.png",
+      "format": "webp",
+      "bytes": 50818,
+      "sha256": "dcecdf6f02fadbc0743a1b0c458d11ad6c010f8758d0d5b9161e4fb015d37fd6"
+    },
+    {
+      "chapter": "house",
+      "step": 1,
+      "title": "Set the House defaults and Charter",
+      "alt": "The House cabinet beside editable Reader, Aim, and Tone defaults, and a Charter article requiring each claim to be grounded in a concrete scene.",
+      "image": "/assets/manual/desk/house-defaults.webp",
+      "width": 1052,
+      "height": 967,
+      "route": "/house/",
+      "viewport": {
+        "width": 1100,
+        "height": 1800
+      },
+      "crop": {
+        "x": 24,
+        "y": 196.890625,
+        "width": 1052,
+        "height": 967
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/house-defaults.png",
+      "format": "webp",
+      "bytes": 63498,
+      "sha256": "a508823cf2b6a93389c80522ba2bdce69bf81853a107e110b561d9a932e610eb"
+    },
+    {
+      "chapter": "house",
+      "step": 2,
+      "title": "Give a collection its own direction",
+      "alt": "Journeys & Returns overrides the House tone, inherits its Charter, and shows membership checkboxes for Salt Roads and The Coast in Winter.",
+      "image": "/assets/manual/desk/house-collection.webp",
+      "width": 1052,
+      "height": 967,
+      "route": "/house/",
+      "viewport": {
+        "width": 1100,
+        "height": 1800
+      },
+      "crop": {
+        "x": 24,
+        "y": 196.890625,
+        "width": 1052,
+        "height": 967
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/house-collection.png",
+      "format": "webp",
+      "bytes": 69514,
+      "sha256": "e8de0eb4ab051e5094126b8c2905c2670ca7163cd9ee197b0acee5255930220f"
+    },
+    {
+      "chapter": "house",
+      "step": 3,
+      "title": "Inspect the folio's inherited context",
+      "alt": "Salt Roads inherits its reader and aim from the House while its own tone overrides collection and House tones; the collection selector, inherited Charter, and merged model-context preview appear below.",
+      "image": "/assets/manual/desk/house-folio-context.webp",
+      "width": 1052,
+      "height": 967,
+      "route": "/house/",
+      "viewport": {
+        "width": 1100,
+        "height": 1800
+      },
+      "crop": {
+        "x": 24,
+        "y": 496.890625,
+        "width": 1052,
+        "height": 967
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/house-folio-context.png",
+      "format": "webp",
+      "bytes": 72650,
+      "sha256": "b956c42a8d22b7c9f7c9945a5d2a3f1b54417c184615e25f602f8045820d95d3"
+    },
+    {
+      "chapter": "house",
+      "step": 4,
+      "title": "Follow changes in the register",
+      "alt": "The register with Everything, Amendments, Dossiers, Charters, and Collections filters, and dated rows showing the source and changed values of dossier and House edits.",
+      "image": "/assets/manual/desk/house-register.webp",
+      "width": 1052,
+      "height": 967,
+      "route": "/house/",
+      "viewport": {
+        "width": 1100,
+        "height": 1800
+      },
+      "crop": {
+        "x": 24,
+        "y": 159.09375,
+        "width": 1052,
+        "height": 967
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/house-register.png",
+      "format": "webp",
+      "bytes": 47814,
+      "sha256": "6ee90816368caa04213aa374c09becfa9f24fbc7b99aeb229ac81576cf3f8c92"
+    },
+    {
+      "chapter": "flow",
+      "step": 1,
+      "title": "Choose the automatic controls",
+      "alt": "The Tools board shows Automatic review, Margin tools, and Automatic focus on, Cover lookups off, and a link to AI settings.",
+      "image": "/assets/manual/desk/flow-review-controls.webp",
+      "width": 650,
+      "height": 410,
+      "route": "/editor/",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "crop": {
+        "x": 790,
+        "y": 110,
+        "width": 650,
+        "height": 410
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/flow-review-controls.png",
+      "format": "webp",
+      "bytes": 11854,
+      "sha256": "047a01288099df0dba01588efdd63a2beae7d95e66852778a95ac2e550608a35"
+    },
+    {
+      "chapter": "flow",
+      "step": 2,
+      "title": "Follow a margin connection",
+      "alt": "Two margin cards beside Salt Roads, with a bracket and line connecting the writer's map-checking note to its marked passage.",
+      "image": "/assets/manual/desk/flow-margin.webp",
+      "width": 1140,
+      "height": 710,
+      "route": "/editor/",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "crop": {
+        "x": 300,
+        "y": 250,
+        "width": 1140,
+        "height": 710
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/flow-margin.png",
+      "format": "webp",
+      "bytes": 55236,
+      "sha256": "a068a6e06978c80c462322539013e36cfeb71739703e9f30a308dc547302f578"
+    },
+    {
+      "chapter": "flow",
+      "step": 3,
+      "title": "Enter focus yourself",
+      "alt": "The compositor's View tab with its Focus button above the annotated manuscript.",
+      "image": "/assets/manual/desk/flow-manual-focus.webp",
+      "width": 1140,
+      "height": 710,
+      "route": "/editor/",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "crop": {
+        "x": 0,
+        "y": 145,
+        "width": 1140,
+        "height": 710
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/flow-manual-focus.png",
+      "format": "webp",
+      "bytes": 47054,
+      "sha256": "142e86bb6e0851d2f79ecf15c848e437bd8113a735f6f628e074aa9cf8852d34"
+    },
+    {
+      "chapter": "flow",
+      "step": 4,
+      "title": "Return to the room when you're ready",
+      "alt": "Salt Roads in focus mode, with editor notes and writer-comment marks hidden and the proposed edit still visible in the manuscript.",
+      "image": "/assets/manual/desk/flow-focus-page.webp",
+      "width": 840,
+      "height": 520,
+      "route": "/editor/",
+      "viewport": {
+        "width": 1440,
+        "height": 960
+      },
+      "crop": {
+        "x": 300,
+        "y": 220,
+        "width": 840,
+        "height": 520
+      },
+      "source": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/stills/flow-focus-page.png",
+      "format": "webp",
+      "bytes": 40418,
+      "sha256": "b9e08a0d15968e1538a722a985e7be09eb850f70bdc2fa7e3a81d502fb44885a"
+    }
+  ],
+  "optimization": {
+    "format": "WebP",
+    "quality": 86,
+    "maximumWidth": 1440,
+    "totalImageBytes": 775602,
+    "sameAspectRatioWithinChapter": "Dossier and House are identical; desk and flow crops are closely matched."
+  },
+  "replay": {
+    "script": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/replay.mjs",
+    "fixture": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/fixture.mjs",
+    "result": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/result.json",
+    "manifestGenerator": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/manifest.mjs",
+    "command": "rtk proxy node artifacts/qa-recordings/2026-09-30/manual-visual/desk/replay.mjs",
+    "prerequisite": "Installed Playwright Chromium; set PLAYWRIGHT_BROWSERS_PATH to the browser cache if needed. Keep the existing app at the capture origin running.",
+    "steps": [
+      "Seed sample drafts, dossier, House defaults, collection, Charter, and staged marks.",
+      "Open the drawer and the actual note and proposed-edit cards.",
+      "Show Tools switches, margin connections, View > Focus, and the quiet manuscript.",
+      "Fill and file the dossier form, attach a sample reference, and refine the filed tone.",
+      "Inspect House defaults, collection membership, folio inheritance and model context, then the register."
+    ]
+  },
+  "video": {
+    "file": "artifacts/qa-recordings/2026-09-30/manual-visual/desk/walkthrough.webm",
+    "durationSeconds": 59.04,
+    "bytes": 5264570,
+    "codec": "vp8",
+    "width": 1440,
+    "height": 960
+  },
+  "verification": {
+    "captureCompleted": true,
+    "pageErrors": 0,
+    "inspectedImages": 15,
+    "dimensionsMatchGuide": true,
+    "focusedTypecheck": "passed",
+    "formatting": "passed",
+    "broadBuild": "not run; integration belongs to the parent"
+  },
+  "limitations": [
+    "Editorial feedback and proposed wording are staged, not generated model results.",
+    "No funded model request, production authentication, or cloud sync was verified.",
+    "Automatic focus is documented from its actual controls and source; the quiet manuscript capture uses manual Focus."
+  ]
+}
