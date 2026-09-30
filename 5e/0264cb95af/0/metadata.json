@@ -1,0 +1,153 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "5e0264cb95af",
+  "session_id": "01a0dd61-d08c-7f71-9e6c-24cf8966c3df",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-30T02:51:11.950226482Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "save_step_count": 3,
+  "files_touched": [
+    "bun.lock",
+    "convex/integrations.ts",
+    "convex/schema.ts",
+    "convex/sync.ts",
+    "convex/typstSync.test.ts",
+    "devenv.lock",
+    "docs/typst-native-editor-execution.md",
+    "docs/typst-native-editor-plan.md",
+    "e2e/typst-editor.e2e.ts",
+    "e2e/typst-export.e2e.ts",
+    "e2e/typst-storage.e2e.ts",
+    "package.json",
+    "public/licenses/typst-fonts.txt",
+    "skills-lock.json",
+    "src/assets/typst/LibertinusMath-Regular.otf",
+    "src/assets/typst/README.md",
+    "src/assets/typst/dmsans-DMSans-Italic-opsz-wght.ttf",
+    "src/assets/typst/dmsans-DMSans-opsz-wght.ttf",
+    "src/assets/typst/dmsans-OFL.txt",
+    "src/assets/typst/fraunces-Fraunces-Italic-SOFT-WONK-opsz-wght.ttf",
+    "src/assets/typst/fraunces-Fraunces-SOFT-WONK-opsz-wght.ttf",
+    "src/assets/typst/fraunces-OFL.txt",
+    "src/assets/typst/librebaskerville-LibreBaskerville-Italic-wght.ttf",
+    "src/assets/typst/librebaskerville-LibreBaskerville-wght.ttf",
+    "src/assets/typst/librebaskerville-OFL.txt",
+    "src/assets/typst/lora-Lora-Italic-wght.ttf",
+    "src/assets/typst/lora-Lora-wght.ttf",
+    "src/assets/typst/lora-OFL.txt",
+    "src/assets/typst/specialelite-LICENSE.txt",
+    "src/assets/typst/specialelite-SpecialElite-Regular.ttf",
+    "src/components/editor/compositor-panel.tsx",
+    "src/components/editor/editor-state.ts",
+    "src/components/editor/extensions/raw-typst.ts",
+    "src/components/editor/test-harness.ts",
+    "src/components/editor/twyne-editor.tsx",
+    "src/components/editor/typst-code-editor.ts",
+    "src/components/editor/typst-workspace.tsx",
+    "src/components/folio/folio-menu.tsx",
+    "src/components/revisions/version-history-panel.tsx",
+    "src/routes/editor/index.tsx",
+    "src/utils/collaboration.ts",
+    "src/utils/compositor-toolbar-wiring.test.ts",
+    "src/utils/convex-sync.test.ts",
+    "src/utils/convex-sync.ts",
+    "src/utils/exchange-import.test.ts",
+    "src/utils/exchange.ts",
+    "src/utils/folio-export.ts",
+    "src/utils/idb.ts",
+    "src/utils/lix.ts",
+    "src/utils/revision-history.test.ts",
+    "src/utils/revision-history.ts",
+    "src/utils/typst/assets.ts",
+    "src/utils/typst/client.ts",
+    "src/utils/typst/compiler.worker.ts",
+    "src/utils/typst/document.test.ts",
+    "src/utils/typst/document.ts",
+    "src/utils/typst/export.test.ts",
+    "src/utils/typst/export.ts",
+    "src/utils/typst/protocol.ts",
+    "src/utils/typst/render-assets.ts",
+    "src/utils/typst/serialize.test.ts",
+    "src/utils/typst/serialize.ts",
+    "src/utils/typst/session.test.ts",
+    "src/utils/typst/session.ts",
+    "src/utils/typst/source-drafts.ts",
+    "src/utils/typst/string.ts"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6-astra",
+  "turn_id": "649f91921397",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 749813,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 32258432,
+    "output_tokens": 76325,
+    "api_call_count": 261
+  },
+  "skill_events_version": 1,
+  "skill_events": [
+    {
+      "id": "prompt-skill-codex-compact-2026-09-28T23:40:49.290322098Z",
+      "event_type": "prompt_invocation",
+      "skill": {
+        "name": "compact"
+      },
+      "source": {
+        "agent": "codex",
+        "signal": "prompt_slash_command",
+        "confidence": "explicit"
+      },
+      "turn_id": "cf2e9ea3cb69",
+      "timestamp": "2026-09-28T23:40:49.290322098Z",
+      "native": {
+        "command": "/compact"
+      },
+      "collapse": {
+        "target": "user_message",
+        "label": "/compact",
+        "default_collapsed": true
+      }
+    }
+  ],
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-30T02:51:11.581810125Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 651,
+    "human_removed": 6464,
+    "total_committed": 651,
+    "total_lines_changed": 7115,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 6,
+      "agent_lines_added": 13222,
+      "agent_lines_removed": 324,
+      "user_removed_per_file": {
+        "launch-videos/renders/work-46b45a14-f84e-4741-b0c1-6ec5b34f6917-dVyOUb/compiled/__hyperframes_video_frames/bullpen": 1,
+        "launch-videos/renders/work-46b45a14-f84e-4741-b0c1-6ec5b34f6917-dVyOUb/compiled/__hyperframes_video_frames/desk": 1,
+        "launch-videos/renders/work-46b45a14-f84e-4741-b0c1-6ec5b34f6917-dVyOUb/compiled/__hyperframes_video_frames/press": 1,
+        "launch-videos/renders/work-4c103a46-b8b9-43fd-ac00-230b87381be1-WuzM5r/compiled/__hyperframes_video_frames/bullpen": 1,
+        "launch-videos/renders/work-4c103a46-b8b9-43fd-ac00-230b87381be1-WuzM5r/compiled/__hyperframes_video_frames/desk": 1,
+        "launch-videos/renders/work-4c103a46-b8b9-43fd-ac00-230b87381be1-WuzM5r/compiled/__hyperframes_video_frames/press": 1
+      }
+    }
+  ]
+}
