@@ -8,7 +8,6 @@ interface PersonaNotePanelProps {
   note: NotePopover | null;
   onPin$: PropFunction<(noteId: string) => void>;
   onClose$: PropFunction<() => void>;
-  onDraftChange$: PropFunction<(draft: string) => void>;
   onReply$: PropFunction<
     (noteId: string, text: string, author: string) => void
   >;
@@ -20,7 +19,6 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
   const note = props.note;
   const onPin$ = props.onPin$;
   const onClose$ = props.onClose$;
-  const onDraftChange$ = props.onDraftChange$;
   const onReply$ = props.onReply$;
   const onStrike$ = props.onStrike$;
 
@@ -167,7 +165,8 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
         <div class="manuscript-comment-card__composer">
           <textarea
             value={note.draft}
-            onInput$={(_, element) => onDraftChange$(element.value)}
+            data-thread-draft-kind="note"
+            data-thread-draft-id={note.id}
             onKeyDown$={(event) => {
               if (
                 (event.metaKey || event.ctrlKey) &&

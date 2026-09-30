@@ -288,6 +288,7 @@ export const TwyneEditor = component$(
     const clientSig = useConvexClient();
     const auth = useAuth();
     const threadDrafts = useStore<Record<string, string>>({});
+    const editorRoot = useSignal<HTMLDivElement>();
     const threadRequest = useSignal(0);
     const store = useStore<EditorStore>({
       editor: null,
@@ -490,6 +491,35 @@ export const TwyneEditor = component$(
         root.style.removeProperty("--page-gap");
         root.style.removeProperty("--page-content-h");
       }
+    });
+
+    // Capture replies before Qwik loads a lazy event handler or another thread
+    // opens. The field carries its own identity, independent of the active card.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ cleanup }) => {
+      const root = editorRoot.value;
+      if (!root) return;
+      const saveThreadDraft = (event: Event) => {
+        const field = event.target;
+        if (!(field instanceof HTMLTextAreaElement)) return;
+        const id = field.dataset.threadDraftId;
+        const kind = field.dataset.threadDraftKind;
+        if (!id) return;
+        const draft = field.value;
+        if (kind === "note") {
+          threadDrafts[noteItemId(id)] = draft;
+          const note = store.notePopover;
+          if (note?.id === id) store.notePopover = { ...note, draft };
+        } else if (kind === "comment") {
+          threadDrafts[commentItemId(id)] = draft;
+          const comment = store.userCommentPopover;
+          if (comment?.id === id) {
+            store.userCommentPopover = { ...comment, draft };
+          }
+        }
+      };
+      root.addEventListener("input", saveThreadDraft, true);
+      cleanup(() => root.removeEventListener("input", saveThreadDraft, true));
     });
 
     // Dismiss the editor popovers on outside click.
@@ -3402,7 +3432,7 @@ export const TwyneEditor = component$(
     );
 
     return (
-      <div class="flex flex-1 flex-col min-h-0">
+      <div ref={editorRoot} class="flex flex-1 flex-col min-h-0">
         {readOnly && (
           <div
             class="border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-4 py-2 text-xs text-[var(--color-ink-light)]"
@@ -3673,13 +3703,6 @@ export const TwyneEditor = component$(
             threadRequest.value++;
             store.notePopover = null;
           }}
-          onDraftChange$={(draft) => {
-            const note = store.notePopover;
-            if (note) {
-              threadDrafts[noteItemId(note.id)] = draft;
-              store.notePopover = { ...note, draft };
-            }
-          }}
           onReply$={(noteId, text, author) => {
             window.dispatchEvent(
               new CustomEvent("twyne:persona-reply", {
@@ -3713,14 +3736,6 @@ export const TwyneEditor = component$(
         <UserCommentPanel
           comment={store.userCommentPopover}
           onClose$={closeUserCommentPopover}
-          onDraftChange$={(draft) => {
-            if (!store.userCommentPopover) return;
-            threadDrafts[commentItemId(store.userCommentPopover.id)] = draft;
-            store.userCommentPopover = {
-              ...store.userCommentPopover,
-              draft,
-            };
-          }}
           onCreate$={submitWriterMargin}
           onDiscard$={discardWriterMargin}
           onSubmit$={submitUserCommentReply}

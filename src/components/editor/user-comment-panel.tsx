@@ -6,7 +6,6 @@ import type { UserCommentPopover } from "./editor-state";
 interface UserCommentPanelProps {
   comment: UserCommentPopover | null;
   onClose$: PropFunction<() => void>;
-  onDraftChange$: PropFunction<(draft: string) => void>;
   onCreate$: PropFunction<() => void>;
   onDiscard$: PropFunction<() => void>;
   onSubmit$: PropFunction<(commentId: string) => void>;
@@ -17,7 +16,6 @@ interface UserCommentPanelProps {
 /** The writer's conversation around one inline comment mark. */
 export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
   const comment = props.comment;
-  const onDraftChange$ = props.onDraftChange$;
   const onCreate$ = props.onCreate$;
   const onDiscard$ = props.onDiscard$;
   const onSubmit$ = props.onSubmit$;
@@ -95,7 +93,8 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
             <textarea
               autoFocus
               value={comment.draft}
-              onInput$={(_, element) => onDraftChange$(element.value)}
+              data-thread-draft-kind="comment"
+              data-thread-draft-id={comment.id}
               onKeyDown$={(event) => {
                 if (
                   (event.metaKey || event.ctrlKey) &&
@@ -176,7 +175,8 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
             <div class="manuscript-comment-card__composer">
               <textarea
                 value={comment.draft}
-                onInput$={(_, element) => onDraftChange$(element.value)}
+                data-thread-draft-kind="comment"
+                data-thread-draft-id={comment.id}
                 onKeyDown$={(event) => {
                   if (
                     (event.metaKey || event.ctrlKey) &&
