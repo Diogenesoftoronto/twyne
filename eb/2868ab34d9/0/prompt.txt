@@ -1,0 +1,33 @@
+.
+
+---
+
+i want you to improve the base styling of the proof to make it appear in theme with the editor and look presentable much like the html export does.
+
+---
+
+.
+
+---
+
+can you  type check pls
+
+---
+
+see if there  are any errors as w ell
+
+---
+
+i think that resulting pdf doesn't really look comparible to what the writing editor looks like and so i want improved styling colour here thata woorks with thata.
+
+---
+
+i think a nice border too would be awesome.
+
+---
+
+borders for the title and text for the top and bottom margin need to be more the spacingn is way too tight there, it just doesn't feel natural to something professionally typeset
+
+---
+
+.
