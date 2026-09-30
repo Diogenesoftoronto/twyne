@@ -2,7 +2,7 @@
 
 ## 0.23.0
 
-<sub>2026-09-29</sub>
+<sub>2026-09-30</sub>
 
 - Bring comments, editorial replies, related passages, and reference covers into
   the manuscript margin, with one conversation surface and automatic quiet focus.
@@ -10,6 +10,7 @@
   charters, and amendments, with an inspectable ledger and developer diagnostics.
 - Keep inherited context available to editorial models and synchronize House
   settings and collections across devices.
+- Preserve unfinished replies when switching quickly between margin conversations.
 - Fix the voice desk freezing when closed, private feedback leaking into native
   source exports, inactive asset helpers blocking proof, and stale margin results
   arriving after a folio closes.

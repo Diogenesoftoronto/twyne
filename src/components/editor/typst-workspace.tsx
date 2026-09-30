@@ -16,6 +16,7 @@ import type {
   TypstSessionState,
 } from "../../utils/typst/session";
 import { buildFolioExportPayload } from "../../utils/folio-export";
+import { stripTypstAnnotationMetadata } from "../../utils/typst/document";
 import { Icon } from "../ui/icon";
 import type { TypstCodeState } from "./typst-code-editor";
 import { TypstSourceRibbon } from "./typst-source-ribbon";
@@ -186,7 +187,9 @@ export const TypstWorkspace = component$<{
   });
   const saveSourceCopy = $(() => {
     const url = URL.createObjectURL(
-      new Blob([state.source], { type: "text/plain;charset=utf-8" }),
+      new Blob([stripTypstAnnotationMetadata(state.source)], {
+        type: "text/plain;charset=utf-8",
+      }),
     );
     const link = document.createElement("a");
     link.href = url;

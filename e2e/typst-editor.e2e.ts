@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 async function seedFolio(page: Page) {
   await page.route("**/__typst-seed", (route) =>
@@ -198,7 +199,9 @@ test("source tools preserve selection and proof uses the editorial sheet", async
   await workspace.getByRole("button", { name: "Toggle comment" }).click();
   await expect(source).toHaveText("// *A careful sentence.*");
   await workspace.getByRole("button", { name: "Toggle comment" }).click();
-  await workspace.getByRole("button", { name: "Find", exact: true }).click();
+  await workspace
+    .getByRole("button", { name: "Find and replace in source", exact: true })
+    .click();
   await workspace.getByPlaceholder("Find", { exact: true }).fill("careful");
   await workspace.getByPlaceholder("Replace", { exact: true }).fill("clear");
   await workspace
@@ -290,4 +293,34 @@ A useful reference belongs close to the passage it supports.#footnote[This is an
     contentType: "application/json",
   });
   expect(runtimeErrors).toEqual([]);
+});
+
+test("saving a native source copy removes private feedback and preserves the open draft", async ({
+  page,
+}) => {
+  await seedFolio(page);
+  await page.evaluate(async () => {
+    const path = "/src/utils/idb.ts";
+    const idb = await import(/* @vite-ignore */ path);
+    await idb.saveFolioContentToIdb(
+      "e2e-typst-editor",
+      '<p>The original <span data-persona-note-id="privacy-note" data-persona-note-author="Editor" data-persona-note-note="PRIVATE_FEEDBACK" data-persona-note-quote="manuscript">manuscript</span>.</p>',
+    );
+  });
+  await page.reload();
+  const workspace = page.getByRole("region", { name: "Manuscript workspace" });
+  await workspace.getByRole("button", { name: "Source", exact: true }).click();
+  const source = page.getByRole("textbox", { name: "Typst source" });
+  await expect(source).toContainText("PRIVATE_FEEDBACK");
+  const before = await source.innerText();
+  const downloading = page.waitForEvent("download");
+  await workspace
+    .getByRole("button", { name: "Save source copy", exact: true })
+    .click();
+  const download = await downloading;
+  const contents = await readFile((await download.path())!, "utf8");
+  expect(contents).not.toContain("PRIVATE_FEEDBACK");
+  expect(contents).not.toContain("data-persona-note-");
+  expect(contents).toContain('"manuscript"');
+  expect(await source.innerText()).toBe(before);
 });
