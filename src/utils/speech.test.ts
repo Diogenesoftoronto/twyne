@@ -9,8 +9,21 @@ import {
 import { PERSONAS } from "./personas";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
 
-const originalWindow = globalThis.window;
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
+const browserGlobalNames = [
+  "window",
+  "localStorage",
+  "CustomEvent",
+  "Audio",
+] as const;
+const originalGlobals = new Map(
+  browserGlobalNames.map((name) => [
+    name,
+    Object.getOwnPropertyDescriptor(globalThis, name),
+  ]),
+);
+const originalCreateObjectURL = URL.createObjectURL;
+const originalRevokeObjectURL = URL.revokeObjectURL;
 
 /**
  * The playback manager's invariants. The synthesis providers are exercised
@@ -63,7 +76,11 @@ beforeEach(async () => {
     key: () => null,
     length: 0,
   };
-  (globalThis as Record<string, unknown>).localStorage = storage;
+  Object.defineProperty(globalThis, "localStorage", {
+    configurable: true,
+    writable: true,
+    value: storage,
+  });
   Object.defineProperty(globalThis, "window", {
     configurable: true,
     value: {
@@ -73,7 +90,7 @@ beforeEach(async () => {
       localStorage: storage,
     },
   });
-  (globalThis as Record<string, unknown>).CustomEvent = class {
+  const customEvent = class {
     type: string;
     detail: unknown;
     constructor(type: string, init?: { detail?: unknown }) {
@@ -81,7 +98,15 @@ beforeEach(async () => {
       this.detail = init?.detail;
     }
   };
-  (globalThis as Record<string, unknown>).Audio = FakeAudio;
+  for (const [name, value] of Object.entries({
+    CustomEvent: customEvent,
+    Audio: FakeAudio,
+  }))
+    Object.defineProperty(globalThis, name, {
+      configurable: true,
+      writable: true,
+      value,
+    });
   // Patch only the object-URL helpers — replacing the whole `URL` global
   // takes the constructor with it, which several dependencies rely on.
   URL.createObjectURL = () => `blob:fake-${++createdUrls}`;
@@ -98,14 +123,13 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  if (originalWindow === undefined) {
-    Reflect.deleteProperty(globalThis, "window");
-  } else {
-    Object.defineProperty(globalThis, "window", {
-      configurable: true,
-      value: originalWindow,
-    });
+  for (const name of browserGlobalNames) {
+    const descriptor = originalGlobals.get(name);
+    if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+    else Reflect.deleteProperty(globalThis, name);
   }
+  URL.createObjectURL = originalCreateObjectURL;
+  URL.revokeObjectURL = originalRevokeObjectURL;
   releaseBrowserGlobalsLock();
 });
 
