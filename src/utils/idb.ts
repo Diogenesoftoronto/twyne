@@ -48,6 +48,7 @@ import {
   typstToHtml,
   reconcileTypstSource,
 } from "./typst/document";
+import { clearCrashMirror, readCrashMirror } from "./crash-mirror";
 
 const DB_NAME = "twyne";
 /**
@@ -547,6 +548,9 @@ async function updateFolioContent(
     await reqAsPromise(store.put(next));
     return next;
   });
+  // A remote restoration may carry a historical timestamp. Invalidate its
+  // obsolete emergency copy explicitly instead of relying on wall clocks.
+  if (origin === "remote") clearCrashMirror(folioId);
   window.dispatchEvent(
     new CustomEvent<FolioContentSavedDetail>(FOLIO_CONTENT_SAVED, {
       detail: { ...rec, origin },
@@ -559,6 +563,9 @@ export async function saveFolioContentToIdb(
   folioId: string,
   html: string,
 ): Promise<void> {
+  // Stamp when the snapshot is queued, not when an asynchronous read finishes.
+  // An older in-flight save must not look newer than a departure mirror.
+  const updatedAt = Date.now();
   await updateFolioContent(folioId, (previous) => ({
     folioId,
     html,
@@ -569,8 +576,46 @@ export async function saveFolioContentToIdb(
           ? previous.typstSource
           : reconcileTypstSource(previous.typstSource, html)
         : htmlToTypst(html),
-    updatedAt: previous?.html === html ? previous.updatedAt : Date.now(),
+    updatedAt: previous?.html === html ? previous.updatedAt : updatedAt,
   }));
+}
+
+/** Recover under the same transaction that checks the canonical revision. */
+export async function recoverFolioContentFromCrashMirror(
+  folioId: string,
+): Promise<boolean> {
+  if (!isBrowser() || readCrashMirror(folioId) === null) return false;
+  const result = await tx("folio-content", "readwrite", async (t) => {
+    const store = t.objectStore("folio-content");
+    const previous = await reqAsPromise<FolioContentSnapshot | undefined>(
+      store.get(folioId),
+    );
+    const html = readCrashMirror(folioId, previous);
+    if (html === null) return null;
+    if (previous?.html === html)
+      return { html, recovered: false, snapshot: previous };
+    const snapshot: FolioContentSnapshot = {
+      folioId,
+      html,
+      format: "typst",
+      typstSource:
+        previous?.typstSource !== undefined
+          ? reconcileTypstSource(previous.typstSource, html)
+          : htmlToTypst(html),
+      updatedAt: Date.now(),
+    };
+    await reqAsPromise(store.put(snapshot));
+    return { html, recovered: true, snapshot };
+  });
+  if (!result) return false;
+  clearCrashMirror(folioId, result.html);
+  if (result.recovered)
+    window.dispatchEvent(
+      new CustomEvent<FolioContentSavedDetail>(FOLIO_CONTENT_SAVED, {
+        detail: { ...result.snapshot, origin: "local" },
+      }),
+    );
+  return result.recovered;
 }
 
 /** Save source and its visual projection as one recoverable document. */
@@ -602,6 +647,8 @@ export async function saveFolioTypstToIdb(
     },
     origin,
   );
+  // An explicitly applied source supersedes the pending visual fallback.
+  clearCrashMirror(folioId);
 }
 
 /** Sync installs the remote revision stamp instead of inventing a local edit. */

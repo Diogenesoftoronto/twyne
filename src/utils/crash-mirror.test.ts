@@ -43,7 +43,7 @@ Object.defineProperty(globalThis, "localStorage", {
 });
 
 const { writeCrashMirror, readCrashMirror, clearCrashMirror } = await import(
-  "./anti-tabula-rasa"
+  "./crash-mirror"
 );
 
 afterAll(() => {
@@ -99,5 +99,64 @@ describe("crash mirror", () => {
   test("survives a corrupt entry without throwing", () => {
     localStorageShim.setItem("twyne:draft-crash-mirror", "{not json");
     expect(readCrashMirror("f1")).toBeNull();
+  });
+
+  test("an older save acknowledgement cannot remove a newer departure", () => {
+    writeCrashMirror("f1", "<p>new tail</p>");
+    clearCrashMirror("f1", "<p>previous save</p>");
+    clearCrashMirror("f2", "<p>new tail</p>");
+    expect(readCrashMirror("f1")).toBe("<p>new tail</p>");
+    clearCrashMirror("f1", "<p>new tail</p>");
+    expect(readCrashMirror("f1")).toBeNull();
+  });
+
+  test("a stale mirror never replaces a newer committed revision", () => {
+    writeCrashMirror("f1", "<p>older tail</p>");
+    const { savedAt } = JSON.parse(
+      localStorageShim.getItem("twyne:draft-crash-mirror")!,
+    );
+    expect(readCrashMirror("f1", { updatedAt: savedAt + 1 })).toBeNull();
+    expect(readCrashMirror("f1", { updatedAt: savedAt - 1 })).toBe(
+      "<p>older tail</p>",
+    );
+  });
+
+  test("rejects malformed recovery data", () => {
+    for (const entry of [
+      null,
+      {},
+      { folioId: "f1", html: 42, savedAt: 1 },
+      { folioId: "f1", html: "text" },
+    ]) {
+      localStorageShim.setItem(
+        "twyne:draft-crash-mirror",
+        JSON.stringify(entry),
+      );
+      expect(readCrashMirror("f1")).toBeNull();
+    }
+  });
+
+  test("denied storage and quota failures never crash the save path", () => {
+    const denied = new Proxy(localStorageShim, {
+      get() {
+        return () => {
+          throw new Error("Storage denied");
+        };
+      },
+    });
+    Object.defineProperty(globalThis, "localStorage", {
+      configurable: true,
+      value: denied,
+    });
+    try {
+      expect(() => writeCrashMirror("f1", "<p>tail</p>")).not.toThrow();
+      expect(readCrashMirror("f1")).toBeNull();
+      expect(() => clearCrashMirror("f1")).not.toThrow();
+    } finally {
+      Object.defineProperty(globalThis, "localStorage", {
+        configurable: true,
+        value: localStorageShim,
+      });
+    }
   });
 });

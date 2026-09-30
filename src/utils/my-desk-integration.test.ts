@@ -20,9 +20,7 @@ describe("My Desk coordinator integration", () => {
   });
 
   test("records writing activity only after folio persistence succeeds", () => {
-    const saveIndex = editor.indexOf(
-      "saveFolioContentToIdb(folioId, html).then",
-    );
+    const saveIndex = editor.indexOf("saveFolioContentToIdb(folioId, html)");
     const activityIndex = editor.indexOf(
       ".recordWritingActivity({ folioId })",
       saveIndex,
