@@ -34,7 +34,8 @@ export const SuggestionPanel = component$<SuggestionPanelProps>((props) => {
           style={{
             left: `${suggestion.x}px`,
             top: suggestion.top != null ? `${suggestion.top}px` : "auto",
-            bottom: suggestion.bottom != null ? `${suggestion.bottom}px` : "auto",
+            bottom:
+              suggestion.bottom != null ? `${suggestion.bottom}px` : "auto",
             "max-height": `${suggestion.maxH}px`,
             width: suggestion.width ? `${suggestion.width}px` : undefined,
             "--comment-color": suggestion.color,

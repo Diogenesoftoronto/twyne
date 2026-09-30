@@ -4,6 +4,15 @@
 
 <sub>2026-09-29</sub>
 
+- Bring comments, editorial replies, related passages, and reference covers into
+  the manuscript margin, with one conversation surface and automatic quiet focus.
+- Organize reusable context through the House, collections, folio dossiers,
+  charters, and amendments, with an inspectable ledger and developer diagnostics.
+- Keep inherited context available to editorial models and synchronize House
+  settings and collections across devices.
+- Fix the voice desk freezing when closed, private feedback leaking into native
+  source exports, inactive asset helpers blocking proof, and stale margin results
+  arriving after a folio closes.
 - Write and revise native Typst source with live paginated proofs, source tools,
   local recovery, revision history, and PDF or standalone source export.
 - Choose from two complete illuminated alphabets, plain drop caps, or no opening

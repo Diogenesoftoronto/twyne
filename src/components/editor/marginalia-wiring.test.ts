@@ -90,7 +90,7 @@ describe("marginalia interaction wiring", () => {
     expect(editor).toMatch(/document\.addEventListener\(\s*"pointerup"/);
   });
 
-  test("writer margins use the same hover-preview path as persona notes", async () => {
+  test("writer margin previews route through the shared conversation owner", async () => {
     const editor = await Bun.file(
       "src/components/editor/twyne-editor.tsx",
     ).text();
@@ -98,8 +98,10 @@ describe("marginalia interaction wiring", () => {
     expect(editor).toContain(
       'target.closest(\n            ".twyne-comment-mark"',
     );
+    expect(editor).toContain("openWriterComment(commentId, writerCommentSpan)");
+    expect(editor).toContain("OPEN_WRITER_COMMENT_EVENT");
     expect(editor).toContain(
-      "void openUserCommentPopover(commentId, writerCommentSpan)",
+      "const slot = await marginSurface()?.reveal(itemId",
     );
   });
 

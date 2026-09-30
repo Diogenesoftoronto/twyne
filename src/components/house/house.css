@@ -255,9 +255,14 @@
   width: 100%;
   padding: 0.45rem 0.6rem 0.4rem;
   margin-top: 0.35rem;
-  border: 1px solid color-mix(in srgb, var(--color-mustard) 45%, var(--color-paper-3));
+  border: 1px solid
+    color-mix(in srgb, var(--color-mustard) 45%, var(--color-paper-3));
   border-radius: 0 3px 3px 3px;
-  background: color-mix(in srgb, var(--color-paper) 82%, var(--color-mustard) 14%);
+  background: color-mix(
+    in srgb,
+    var(--color-paper) 82%,
+    var(--color-mustard) 14%
+  );
   color: inherit;
   text-align: left;
   cursor: pointer;
@@ -713,7 +718,11 @@
 .house-register__from {
   color: var(--color-ink-muted);
   text-decoration: line-through;
-  text-decoration-color: color-mix(in srgb, var(--color-vermilion) 60%, transparent);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--color-vermilion) 60%,
+    transparent
+  );
 }
 .house-register__why {
   font: italic 0.8rem var(--font-serif);
@@ -721,7 +730,11 @@
 }
 /* An amendment is a slip pasted into the register. */
 .house-register__row--amendment {
-  background: color-mix(in srgb, var(--color-editor-bg) 88%, var(--color-writer-note) 6%);
+  background: color-mix(
+    in srgb,
+    var(--color-editor-bg) 88%,
+    var(--color-writer-note) 6%
+  );
   box-shadow: inset 3px 0 0 var(--color-writer-note);
 }
 .house-register__filters {
@@ -885,7 +898,8 @@
     min-width: 0;
     overflow-wrap: anywhere;
   }
-  .house-sheet__foot, .house-section-head {
+  .house-sheet__foot,
+  .house-section-head {
     flex-wrap: wrap;
   }
 }

@@ -178,11 +178,31 @@ const ownerQueries = {
       .query("published")
       .withIndex("by_ownerId", (q) => q.eq("ownerId", id))
       .take(DELETE_BATCH_SIZE),
-  houses: (ctx, id) => ctx.db.query("houses").withIndex("by_userId", (q) => q.eq("userId", id)).take(DELETE_BATCH_SIZE),
-  houseCollections: (ctx, id) => ctx.db.query("houseCollections").withIndex("by_userId", (q) => q.eq("userId", id)).take(DELETE_BATCH_SIZE),
-  collectionMembers: (ctx, id) => ctx.db.query("collectionMembers").withIndex("by_userId", (q) => q.eq("userId", id)).take(DELETE_BATCH_SIZE),
-  charterItems: (ctx, id) => ctx.db.query("charterItems").withIndex("by_userId", (q) => q.eq("userId", id)).take(DELETE_BATCH_SIZE),
-  contextLedger: (ctx, id) => ctx.db.query("contextLedger").withIndex("by_userId_and_at", (q) => q.eq("userId", id)).take(DELETE_BATCH_SIZE),
+  houses: (ctx, id) =>
+    ctx.db
+      .query("houses")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  houseCollections: (ctx, id) =>
+    ctx.db
+      .query("houseCollections")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  collectionMembers: (ctx, id) =>
+    ctx.db
+      .query("collectionMembers")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  charterItems: (ctx, id) =>
+    ctx.db
+      .query("charterItems")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
+  contextLedger: (ctx, id) =>
+    ctx.db
+      .query("contextLedger")
+      .withIndex("by_userId_and_at", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
   userComments: (ctx, id) =>
     ctx.db
       .query("userComments")

@@ -46,13 +46,18 @@ export async function lookupWork(
   return card;
 }
 
-async function openLibrary(title: string, fetchImpl: Fetch): Promise<WorkCard | null> {
+async function openLibrary(
+  title: string,
+  fetchImpl: Fetch,
+): Promise<WorkCard | null> {
   const url = `https://openlibrary.org/search.json?${new URLSearchParams({
     q: title,
     limit: "1",
     fields: "key,title,author_name,first_publish_year,cover_i",
   })}`;
-  const response = await fetchImpl(url, { headers: { Accept: "application/json" } });
+  const response = await fetchImpl(url, {
+    headers: { Accept: "application/json" },
+  });
   if (!response.ok) return null;
   const body = (await response.json()) as {
     docs?: Array<{
@@ -88,15 +93,22 @@ async function musicBrainz(
   lastMusicBrainz = now();
   const entity = medium === "album" ? "release-group" : "recording";
   const url = `https://musicbrainz.org/ws/2/${entity}/?${new URLSearchParams({
-    query: medium === "album" ? `releasegroup:"${title}"` : `recording:"${title}"`,
+    query:
+      medium === "album" ? `releasegroup:"${title}"` : `recording:"${title}"`,
     limit: "1",
     fmt: "json",
   })}`;
-  const response = await fetchImpl(url, { headers: { Accept: "application/json" } });
+  const response = await fetchImpl(url, {
+    headers: { Accept: "application/json" },
+  });
   if (!response.ok) return null;
   const body = (await response.json()) as {
     "release-groups"?: MbItem[];
-    recordings?: Array<MbItem & { releases?: Array<{ "release-group"?: { id?: string; title?: string } }> }>;
+    recordings?: Array<
+      MbItem & {
+        releases?: Array<{ "release-group"?: { id?: string; title?: string } }>;
+      }
+    >;
   };
   const item =
     medium === "album" ? body["release-groups"]?.[0] : body.recordings?.[0];
@@ -114,9 +126,7 @@ async function musicBrainz(
     cover: group
       ? `https://coverartarchive.org/release-group/${group}/front-250`
       : undefined,
-    url: item.id
-      ? `https://musicbrainz.org/${entity}/${item.id}`
-      : undefined,
+    url: item.id ? `https://musicbrainz.org/${entity}/${item.id}` : undefined,
   };
 }
 
@@ -130,7 +140,10 @@ interface MbItem {
 /** Search engines always return something; only keep a real match. */
 export function similarTitle(found: string, wanted: string): boolean {
   const norm = (s: string) =>
-    s.toLowerCase().replace(/^(the|a|an)\s+/, "").replace(/[^\p{L}\p{N}]+/gu, "");
+    s
+      .toLowerCase()
+      .replace(/^(the|a|an)\s+/, "")
+      .replace(/[^\p{L}\p{N}]+/gu, "");
   const a = norm(found);
   const b = norm(wanted);
   return !!a && !!b && (a === b || a.startsWith(b) || b.startsWith(a));
