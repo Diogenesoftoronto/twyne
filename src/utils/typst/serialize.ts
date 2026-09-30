@@ -1,6 +1,7 @@
-import { DEFAULT_LAYOUT, resolveMargins, resolvePageSetup } from "../../types";
 import type { ExportPayload } from "../exchange";
 import { formatCitation } from "../bibliography";
+import { typstPageSetup } from "./theme";
+import { typstDecorations } from "./decorative-assets";
 
 /** Outbound bridge only. HTML remains authoritative until source editing can round-trip. */
 export interface TypstDocument {
@@ -9,21 +10,8 @@ export interface TypstDocument {
 }
 
 /** Typst strings are not JSON strings: control characters use \u{...}. */
-export function typstString(value: string): string {
-  return (
-    '"' +
-    // Typst requires control bytes to be escaped in string literals.
-    // eslint-disable-next-line no-control-regex
-    value.replace(/["\\\u0000-\u001f\u007f]/g, (c) => {
-      if (c === '"' || c === "\\") return "\\" + c;
-      if (c === "\n") return "\\n";
-      if (c === "\r") return "\\r";
-      if (c === "\t") return "\\t";
-      return "\\u{" + c.charCodeAt(0).toString(16) + "}";
-    }) +
-    '"'
-  );
-}
+export { typstString } from "./string";
+import { typstString } from "./string";
 
 const text = (value: string) => (value ? `#text(${typstString(value)})` : "");
 const number = (
@@ -56,14 +44,15 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
   const dom = new DOMParser().parseFromString(payload.html, "text/html");
   const assets: TypstDocument["assets"] = [];
   const endnotes: string[] = [];
-  const layout = payload.layout ?? DEFAULT_LAYOUT;
-  const margins = resolveMargins(layout);
-  const page = resolvePageSetup(layout);
   const children = (element: Node): string =>
     Array.from(element.childNodes).map(visit).join("");
 
   function inlineStyle(el: HTMLElement, body: string): string {
     const args: string[] = [];
+    if (el.style.fontFamily)
+      args.push(
+        `font: ${typstString(el.style.fontFamily.includes("monospace") ? "DejaVu Sans Mono" : el.style.fontFamily.split(",")[0].replace(/['"]/g, "").trim())}`,
+      );
     const fill = color(el.style.color);
     if (fill) args.push(`fill: ${fill}`);
     const size = /^(\d+(?:\.\d+)?)(px|pt|rem|em)$/.exec(el.style.fontSize);
@@ -83,9 +72,14 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
   }
 
   function paragraph(el: HTMLElement, body: string): string {
+    if (el.tagName === "P" && el.parentElement === dom.body && body) {
+      body = `#twyne-opening[${body}]`;
+    }
     const align = el.style.textAlign;
     const settings: string[] = [];
     if (align === "justify") settings.push("#set par(justify: true)");
+    else if (["left", "center", "right"].includes(align))
+      settings.push("#set par(justify: false)");
     const leading = el.style.lineHeight;
     if (/^[\d.]+$/.test(leading)) {
       settings.push(
@@ -140,6 +134,7 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
             cell.style.backgroundColor,
         );
         if (fill) options.push(`fill: ${fill}`);
+        else if (cell.tagName === "TH") options.push('fill: rgb("#ebe1c9")');
         const align =
           cell.getAttribute("data-cell-horizontal-alignment") ||
           cell.style.textAlign;
@@ -158,7 +153,7 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
     });
     const caption =
       el.caption?.textContent || el.getAttribute("data-table-caption");
-    const body = `#table(columns: ${columns}, inset: 6pt, stroke: 0.5pt + rgb("#bbb"),\n${cells.join(",\n")},\n)`;
+    const body = `#table(columns: ${columns},\n${cells.join(",\n")},\n)`;
     return (
       body + (caption ? `\n#align(center)[#emph[${text(caption)}]]` : "") + "\n"
     );
@@ -177,11 +172,10 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
     const kind = el.getAttribute("data-type");
     if (kind === "page-break" || el.hasAttribute("data-page-break"))
       return "#pagebreak()\n";
-    if (["inline-math", "block-math", "mermaid-diagram"].includes(kind ?? "")) {
-      throw new Error(
-        "Typst export does not yet support equations or diagrams. Use PDF… for this folio.",
-      );
-    }
+    if (kind === "inline-math" || kind === "block-math")
+      return `#twyne-math(${typstString(el.getAttribute("data-latex") ?? el.textContent ?? "")}, block: ${kind === "block-math"})`;
+    if (kind === "mermaid-diagram")
+      return `#twyne-mermaid(${typstString(el.getAttribute("data-mermaid-source") ?? el.textContent ?? "")})`;
     if (kind === "footnote")
       return `#footnote[${text(el.getAttribute("data-endnote-text") ?? "")}]`;
     if (kind === "endnote") {
@@ -213,8 +207,7 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
       return `#raw(${typstString(el.textContent ?? "")}, block: true)\n`;
     if (tag === "code") return `#raw(${typstString(el.textContent ?? "")})`;
     if (tag === "br") return "#linebreak()";
-    if (tag === "hr")
-      return '#line(length: 100%, stroke: 0.5pt + rgb("#bbb"))\n';
+    if (tag === "hr") return "#line(length: 100%)\n";
     if (tag === "ul" || tag === "ol") {
       const items = Array.from(el.children)
         .filter((c) => c.tagName === "LI")
@@ -292,19 +285,6 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
     entries.length
       ? `\n#heading(level: 2)[${text(title)}]\n#enum(${entries.map((entry) => `[${text(entry)}]`).join(",\n")})\n`
       : "";
-  const header = payload.header || (layout.runningHeader ? payload.title : "");
-  const footer = [
-    text(payload.footer ?? ""),
-    layout.pageNumbers ? '#context counter(page).display("1")' : "",
-  ]
-    .filter(Boolean)
-    .join(" #h(1fr) ");
-  const margin = Object.entries(margins)
-    .map(
-      ([key, value]) =>
-        `${key}: ${Math.min(8, Math.max(0, Number.isFinite(value) ? value : 0)) * 12}pt`,
-    )
-    .join(", ");
   const title =
     dom.body.firstElementChild?.tagName === "H1"
       ? ""
@@ -312,17 +292,12 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
   return {
     source: [
       "// Exported from Twyne. Editing this file does not change your saved folio.",
-      `#set document(title: ${typstString(payload.title)})`,
-      '#set text(font: "Libertinus Serif", size: 12pt)',
-      '#show raw: set text(font: "DejaVu Sans Mono")',
-      "#set par(leading: 0.65em, spacing: 0.8em)",
-      "#set heading(numbering: none)",
-      `#set page(width: ${page.widthIn}in, height: ${page.heightIn}in, margin: (${margin}), header: [${text(header)}], footer: [${footer}])`,
+      typstPageSetup(payload),
       title +
         body +
         section("Notes", notes) +
         section("Bibliography", bibliography),
     ].join("\n\n"),
-    assets,
+    assets: [...assets, ...typstDecorations(payload).assets],
   };
 }

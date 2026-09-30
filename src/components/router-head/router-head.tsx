@@ -1,7 +1,8 @@
 import { component$ } from "@qwik.dev/core";
 import { useDocumentHead, useLocation } from "@qwik.dev/router";
 import {
-  TWYNE_SITE_ORIGIN,
+  TWYNE_SOCIAL_IMAGE,
+  TWYNE_SOCIAL_IMAGE_ALT,
   canonicalUrl,
   isPrivateWorkspacePath,
 } from "../../utils/seo";
@@ -13,7 +14,7 @@ export const RouterHead = component$(() => {
   const head = useDocumentHead();
   const loc = useLocation();
 
-  const ogImage = `${TWYNE_SITE_ORIGIN}/og-image.png`;
+  const ogImage = TWYNE_SOCIAL_IMAGE;
   const pageUrl = canonicalUrl(loc.url);
 
   // Keys (name or property) a route already declared — render site-wide
@@ -40,11 +41,17 @@ export const RouterHead = component$(() => {
     { property: "og:image", content: ogImage },
     { property: "og:image:width", content: "1200" },
     { property: "og:image:height", content: "630" },
-    { property: "og:image:alt", content: "Twyne — The Editorial Room" },
+    { property: "og:image:alt", content: TWYNE_SOCIAL_IMAGE_ALT },
+    ...(!declared.has("og:image")
+      ? [{ property: "og:image:type", content: "image/jpeg" }]
+      : []),
     { name: "twitter:card", content: "summary_large_image" },
     { name: "twitter:title", content: title },
     { name: "twitter:description", content: description },
     { name: "twitter:image", content: ogImage },
+    ...(!declared.has("twitter:image")
+      ? [{ name: "twitter:image:alt", content: TWYNE_SOCIAL_IMAGE_ALT }]
+      : []),
   ].filter((m) => !declared.has((m.property ?? m.name) as string));
 
   const privateWorkspace = isPrivateWorkspacePath(loc.url.pathname);

@@ -34,6 +34,30 @@ const preview: Preview = {
     },
   ],
   parameters: {
+    viewport: {
+      options: {
+        phone: {
+          name: "Phone (390px)",
+          styles: { width: "390px", height: "844px" },
+          type: "mobile",
+        },
+        compactPhone: {
+          name: "Small phone (320px)",
+          styles: { width: "320px", height: "568px" },
+          type: "mobile",
+        },
+        tablet: {
+          name: "Tablet",
+          styles: { width: "834px", height: "1112px" },
+          type: "tablet",
+        },
+        desktop: {
+          name: "Desktop",
+          styles: { width: "1280px", height: "900px" },
+          type: "desktop",
+        },
+      },
+    },
     controls: {
       matchers: {
         color: /(background|color)$/i,

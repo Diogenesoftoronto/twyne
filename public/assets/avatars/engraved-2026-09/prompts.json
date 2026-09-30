@@ -1,0 +1,25 @@
+{
+  "generator": "Built-in imagegen",
+  "avatars": [
+    {
+      "name": "owl",
+      "prompt": "Use case: illustration-story. Create one square default profile avatar for Twyne, a literary writing desk. Subject: A front-facing barn owl with a distinctive heart-shaped face. Sophisticated antique wood engraving with bold readable silhouette, warm ivory engraved linework and near-black ink shadows, against a flat muted ochre background. Head and upper shoulders only, centrally composed with generous 15 percent safe margins for circular crop, recognizable at 32 pixels. Tactile printed ink, restrained detail, no distressed overlay obscuring the face. Cohesive collectible bookplate portrait, calm character, not cartoon mascot. No letters, text, frame, border, clothing, accessories, watermark, or multiple panels. Output one square image.",
+      "source": "exec-be141f44-18b0-4051-b786-67f4bfa34800.png"
+    },
+    {
+      "name": "fox",
+      "prompt": "Use case: illustration-story. Create one square default profile avatar for Twyne, a literary writing desk. Subject: A red fox in three-quarter portrait with clear pointed ears. Sophisticated antique wood engraving with bold readable silhouette, warm ivory engraved linework and near-black ink shadows, against a flat muted vermilion background. Head and upper shoulders only, centrally composed with generous 15 percent safe margins for circular crop, recognizable at 32 pixels. Tactile printed ink, restrained detail, no distressed overlay obscuring the face. Cohesive collectible bookplate portrait, calm character, not cartoon mascot. No letters, text, frame, border, clothing, accessories, watermark, or multiple panels. Output one square image.",
+      "source": "exec-815b01a1-6bc5-4fda-9ef7-2c3155334a55.png"
+    },
+    {
+      "name": "hare",
+      "prompt": "Use case: illustration-story. Create one square default profile avatar for Twyne, a literary writing desk. Subject: A hare in three-quarter portrait with long upright ears. Sophisticated antique wood engraving with bold readable silhouette, warm ivory engraved linework and near-black ink shadows, against a flat muted sage green background. Head and upper shoulders only, centrally composed with generous 15 percent safe margins for circular crop, recognizable at 32 pixels. Tactile printed ink, restrained detail, no distressed overlay obscuring the face. Cohesive collectible bookplate portrait, calm character, not cartoon mascot. No letters, text, frame, border, clothing, accessories, watermark, or multiple panels. Output one square image.",
+      "source": "exec-77dca955-f918-4048-8d61-7ff72691f095.png"
+    },
+    {
+      "name": "raven",
+      "prompt": "Use case: illustration-story. Create one square default profile avatar for Twyne, a literary writing desk. Subject: A raven in side profile with a strong curved beak. Sophisticated antique wood engraving with bold readable silhouette, warm ivory engraved linework and near-black ink shadows, against a flat muted slate blue background. Head and upper shoulders only, centrally composed with generous 15 percent safe margins for circular crop, recognizable at 32 pixels. Tactile printed ink, restrained detail, no distressed overlay obscuring the face. Cohesive collectible bookplate portrait, calm character, not cartoon mascot. No letters, text, frame, border, clothing, accessories, watermark, or multiple panels. Output one square image.",
+      "source": "exec-fd52997b-49db-47b2-a3e7-89048ebac547.png"
+    }
+  ]
+}

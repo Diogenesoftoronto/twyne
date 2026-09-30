@@ -133,7 +133,6 @@ export const LiveVoiceDesk = component$(() => {
     { strategy: "document-ready" },
   );
 
-  if (!ui.open) return null;
   const active = !["idle", "error"].includes(live.status);
   const connected = ["listening", "speaking"].includes(live.status);
   const speaker = ui.cast.find(
@@ -154,8 +153,11 @@ export const LiveVoiceDesk = component$(() => {
               ? "Conversation ended"
               : "Talk through your next draft";
   return (
+    // Keep the host mounted: returning null reruns visible tasks on close,
+    // whose voice-state reset would schedule another render indefinitely.
     <aside
       class={`live-voice-desk ${ui.compact ? "is-compact" : ""}`}
+      hidden={!ui.open}
       aria-label="Live voice desk"
     >
       <header class="live-voice-head">

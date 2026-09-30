@@ -1,5 +1,5 @@
 import { component$ } from "@qwik.dev/core";
-import { StampShader } from "./stamp-shader";
+import { StampPress } from "../ui/stamp-press";
 import {
   rubricGradeStampAsset,
   rubricGradeTier,
@@ -11,6 +11,8 @@ interface GradeStampProps {
   color: string;
   size?: "compact" | "report";
   animated?: boolean;
+  /** Stable result identity: only a new verdict should receive a fresh press. */
+  impressionKey?: string | number;
 }
 
 /** A complete grade-specific impression, recolored by the active theme. */
@@ -34,12 +36,12 @@ export const GradeStamp = component$<GradeStampProps>((props) => {
       role="img"
       aria-label={`Overall grade ${props.grade}, ${props.score} of 100`}
     >
-      {props.animated && (tier === "a" || tier === "b") && (
-        <StampShader
-          key={props.grade}
-          strength={highest ? 3 : tier === "a" ? 2 : 1}
-        />
-      )}
+      <StampPress
+        key={props.impressionKey ?? `${props.grade}:${props.score}`}
+        animated={props.animated}
+      >
+        <span class="rubric-grade-stamp__mark" />
+      </StampPress>
     </div>
   );
 });

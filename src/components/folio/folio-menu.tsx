@@ -1,3 +1,5 @@
+import { Link } from "@qwik.dev/router";
+import { htmlToTypst } from "../../utils/typst/document";
 import {
   component$,
   useStore,
@@ -22,7 +24,7 @@ import {
 } from "../../utils/exchange";
 import {
   loadFoliosFromIdb,
-  saveFolioContentToIdb,
+  saveFolioTypstToIdb,
   saveFoliosToIdb,
   saveActiveFolioIdToIdb,
 } from "../../utils/idb";
@@ -49,6 +51,8 @@ import {
 import { reportApplicationDiagnostic } from "../../utils/application-diagnostics";
 import { captureProductEvent } from "../../utils/product-analytics";
 import { publishViaMicropub } from "../../utils/micropub";
+import { Icon } from "../ui/icon";
+import type { TwyneIconName } from "../../utils/icon-system";
 
 /**
  * The folio's "File" menu. Sits in the editor toolbar and gives the
@@ -331,7 +335,11 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
       // Persist to the active folio.
       const activeId = props.activeFolioId;
       if (activeId) {
-        await saveFolioContentToIdb(activeId, result.html);
+        await saveFolioTypstToIdb(
+          activeId,
+          result.typstSource ?? htmlToTypst(result.html),
+          result.html,
+        );
       } else {
         // No active folio — create one.
         const folio: Folio = {
@@ -343,7 +351,11 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         };
         const folios = await loadFoliosFromIdb();
         await saveFoliosToIdb([...folios, folio]);
-        await saveFolioContentToIdb(folio.id, result.html);
+        await saveFolioTypstToIdb(
+          folio.id,
+          result.typstSource ?? htmlToTypst(result.html),
+          result.html,
+        );
         await saveActiveFolioIdToIdb(folio.id);
         void captureProductEvent("folio_created", {
           source: "import",
@@ -656,7 +668,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
   return (
     <div class="relative" data-folio-menu>
       <button
-        class="btn-paper text-xs"
+        class="btn-paper inline-flex items-center gap-1.5 text-xs"
         onClick$={() => {
           menuOpen.value = !menuOpen.value;
         }}
@@ -664,7 +676,8 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
         aria-expanded={menuOpen.value}
         title="Export, import, share"
       >
-        File ▾
+        <Icon name="file" size={16} />
+        File <span aria-hidden="true">▾</span>
       </button>
       {menuOpen.value && (
         <div
@@ -672,6 +685,18 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           role="menu"
           style={{ padding: "0.4rem 0" }}
         >
+          <Link
+            href={
+              props.activeFolioId
+                ? `/house/?folio=${encodeURIComponent(props.activeFolioId)}`
+                : "/house/"
+            }
+            role="menuitem"
+            class="block px-3 py-2 text-sm hover:bg-[var(--color-paper-2)]"
+            onClick$={() => (menuOpen.value = false)}
+          >
+            Dossier &amp; House context
+          </Link>
           <p class="dept-label px-3 py-1.5">Export</p>
           <label class="mx-3 mb-1 flex cursor-pointer items-start gap-2 border-b border-dashed border-[var(--color-paper-3)] pb-2 text-[12px] text-[var(--color-ink)]">
             <input
@@ -699,39 +724,54 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
               </span>
             </span>
           </label>
-          <MenuItem label="PDF…" onClick$={doExportPdf} />
+          <MenuItem icon="file-pdf" label="PDF…" onClick$={doExportPdf} />
           <MenuItem
+            icon="file-pdf"
             label={typstBusy.value ? "Preparing Typst export…" : "PDF (Typst)…"}
             disabled={typstBusy.value}
             onClick$={() => doExportTypst("pdf")}
           />
           <MenuItem
+            icon="code-file"
             label="Typst source (.typ)"
             disabled={typstBusy.value}
             onClick$={() => doExportTypst("source")}
           />
           {typstBusy.value && (
             <MenuItem
+              icon="close-circle"
               label="Cancel Typst export"
               onClick$={() => typstAbort.value?.abort()}
             />
           )}
           <MenuItem
+            icon="document-text"
             label="Markdown (.md)"
             onClick$={() => doExport("markdown")}
           />
-          <MenuItem label="Standalone HTML" onClick$={() => doExport("html")} />
           <MenuItem
+            icon="code-file"
+            label="Standalone HTML"
+            onClick$={() => doExport("html")}
+          />
+          <MenuItem
+            icon="document-text"
             label="Microsoft Word (.docx)"
             onClick$={() => doExport("docx")}
           />
-          <MenuItem label="Plain text" onClick$={() => doExport("txt")} />
           <MenuItem
+            icon="file"
+            label="Plain text"
+            onClick$={() => doExport("txt")}
+          />
+          <MenuItem
+            icon="save"
             label="Twyne backup (.json)"
             onClick$={() => doExport("twyne-backup")}
           />
           <hr class="my-1 border-[var(--color-paper-3)]" />
           <MenuItem
+            icon="file-up"
             label="Import…"
             onClick$={() => {
               menuOpen.value = false;
@@ -741,6 +781,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
           />
           <hr class="my-1 border-[var(--color-paper-3)]" />
           <MenuItem
+            icon="share"
             label={shareSlug.value ? "Manage share…" : "Share…"}
             onClick$={() => {
               menuOpen.value = false;
@@ -820,7 +861,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
             >
               <input
                 type="file"
-                accept=".docx,.md,.markdown,.html,.htm,.txt,.json,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/markdown,text/html,text/plain,application/json"
+                accept=".typ,.docx,.md,.markdown,.html,.htm,.txt,.json,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/markdown,text/html,text/plain,application/json"
                 class="sr-only"
                 onChange$={async (e) => {
                   const file = (e.target as HTMLInputElement).files?.[0];
@@ -1242,6 +1283,7 @@ export const FolioMenu = component$<FolioMenuProps>((props) => {
 });
 
 interface MenuItemProps {
+  icon: TwyneIconName;
   label: string;
   disabled?: boolean;
   onClick$: import("@qwik.dev/core").PropFunction<() => void>;
@@ -1250,12 +1292,13 @@ interface MenuItemProps {
 const MenuItem = component$<MenuItemProps>((props) => {
   return (
     <button
-      class="w-full text-left px-3 py-1.5 text-[13px] text-[var(--color-ink)] hover:bg-[var(--color-paper-soft)] focus-ring"
+      class="flex w-full items-center gap-2 text-left px-3 py-1.5 text-[13px] text-[var(--color-ink)] hover:bg-[var(--color-paper-soft)] focus-ring"
       style="font-family: var(--font-serif); border-radius: 0;"
       onClick$={props.onClick$}
       disabled={props.disabled}
       role="menuitem"
     >
+      <Icon name={props.icon} size={16} />
       {props.label}
     </button>
   );

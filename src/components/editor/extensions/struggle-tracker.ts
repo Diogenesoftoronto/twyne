@@ -1,3 +1,4 @@
+import { loadModelBriefForFolio } from "../../../utils/model-context";
 /**
  * The struggle tracker — watches how the writer edits each paragraph, and on
  * a pause offers one tool in the margin when the edits say they are stuck.
@@ -363,8 +364,14 @@ export function startInFlowTools(
           typeof value === "string" ? value : JSON.stringify(value),
         ]),
       );
+      const modelBrief = await loadModelBriefForFolio(folioId, brief);
       return (await askJudgement(client, {
-        state,
+        state: {
+          ...state,
+          goal: modelBrief?.answers.goal ?? "",
+          audience: modelBrief?.answers.audience ?? "",
+          dossier: JSON.stringify(modelBrief?.answers ?? {}),
+        },
         questions: input.questions,
       })) as Awaited<ReturnType<Ask>>;
     } catch (error) {
@@ -492,7 +499,11 @@ export function startInFlowTools(
   };
 
   const fill = async (tool: ActiveTool, passage: string, blockPos: number) => {
-    const settings = await loadAiSettingsFromIdb();
+    const [settings, modelBrief] = await Promise.all([
+      loadAiSettingsFromIdb(),
+      loadModelBriefForFolio(folioId, brief),
+    ]);
+    if (stopped || editor.isDestroyed || active?.id !== tool.id) return;
     const generate =
       settings && hasConfiguredAiProvider(settings)
         ? (request: Parameters<typeof runClientInFlowTool>[0]) =>
@@ -508,8 +519,10 @@ export function startInFlowTools(
           Math.min(blockPos, editor.state.doc.content.size),
           "\n",
         ),
-        goal: brief?.answers.goal ?? "",
-        audience: brief?.answers.audience ?? "",
+        goal: [modelBrief?.answers.goal, modelBrief?.answers.constraints]
+          .filter(Boolean)
+          .join("\n"),
+        audience: modelBrief?.answers.audience ?? "",
       },
       generate,
       (spec) => {

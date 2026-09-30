@@ -15,6 +15,9 @@
   font-family: var(--font-typewriter);
   font-size: 0.78rem;
 }
+.live-voice-desk[hidden] {
+  display: none;
+}
 .live-voice-head {
   display: flex;
   align-items: center;

@@ -1,3 +1,4 @@
+import { loadModelBriefForFolio } from "../../../utils/model-context";
 import { Extension, type Editor } from "@tiptap/core";
 import { askJudgement } from "../../../utils/judgement-client";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
@@ -218,13 +219,25 @@ export function startQuickReview(
     }
     const from = $head.before();
     const to = from + $head.parent.nodeSize;
+    const contextDoc = editor.state.doc;
+    const contextGeneration = generation;
+    const modelBrief = await loadModelBriefForFolio(folioId, brief);
+    if (
+      stopped ||
+      !enabled ||
+      editor.isDestroyed ||
+      generation !== contextGeneration ||
+      !editor.state.doc.eq(contextDoc)
+    )
+      return;
     const state = {
+      dossier: JSON.stringify(modelBrief?.answers ?? {}),
       passage: passage.slice(0, 3000),
       precedingContext: editor.state.doc
         .textBetween(Math.max(0, from - 3000), from, "\n")
         .slice(-2000),
-      goal: (brief?.answers.goal ?? "").slice(0, 500),
-      audience: (brief?.answers.audience ?? "").slice(0, 500),
+      goal: (modelBrief?.answers.goal ?? "").slice(0, 500),
+      audience: (modelBrief?.answers.audience ?? "").slice(0, 500),
     };
     const cacheKey = JSON.stringify(state);
     if (cache.has(cacheKey)) {

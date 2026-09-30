@@ -1,6 +1,7 @@
 import {
   component$,
   useStore,
+  useSignal,
   useStyles$,
   useVisibleTask$,
   noSerialize,
@@ -33,10 +34,11 @@ import {
   DOC_WIDTH_REM,
   resolveMargins,
   resolvePageSetup,
+  resolveOpeningInitial,
 } from "../../types";
 import { computePageGeometry } from "./pagination-geometry";
 import { pxToRem, rootFontSize } from "../../utils/css-units";
-import { exportPdf } from "../../utils/exchange";
+import { downloadBlob } from "../../utils/exchange";
 import { isFileDrag } from "../../utils/file-drag";
 import { buildFolioExportPayload } from "../../utils/folio-export";
 import {
@@ -149,9 +151,12 @@ import { Indent } from "./extensions/indent";
 import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 import { QuickReview, startQuickReview } from "./extensions/quick-review";
 import { InFlowAnchor, startInFlowTools } from "./extensions/struggle-tracker";
+import { startFlowConductor } from "./extensions/flow-conductor";
 import { PageBreakNode } from "./extensions/page-break-node";
-import { Pagination, type PaginationInfo } from "./extensions/pagination";
+import { RawTypst, RawTypstInline } from "./extensions/raw-typst";
+import { TypstWorkspace } from "./typst-workspace";
 import { ParagraphFormat } from "./extensions/paragraph-format";
+import { IlluminatedInitial } from "./extensions/illuminated-initial";
 import {
   DRAFT_SNAPSHOT_REQUEST,
   type DraftSnapshotRequest,
@@ -211,6 +216,24 @@ import type {
   TwyneEditorProps,
 } from "./editor-state";
 export type { EditorNote, EditorStore } from "./editor-state";
+import {
+  MARGIN_SLOT_EVENT,
+  OPEN_MARGIN_THREAD_EVENT,
+  commentItemId,
+  marginSurface,
+  noteItemId,
+  setMarginThread,
+  suggestionItemId,
+  slotPlacement,
+  type MarginSlotDetail,
+  type OpenMarginThreadDetail,
+} from "../../utils/margin-surface";
+
+const OPEN_WRITER_COMMENT_EVENT = "twyne:open-writer-comment";
+interface OpenWriterCommentDetail {
+  commentId: string;
+  markEl: HTMLElement;
+}
 
 function reportCommentSyncError(operation: string, thrown: unknown): void {
   reportApplicationError(`twyne:editor:${operation}`, thrown, {
@@ -264,6 +287,8 @@ export const TwyneEditor = component$(
   }: TwyneEditorProps) => {
     const clientSig = useConvexClient();
     const auth = useAuth();
+    const threadDrafts = useStore<Record<string, string>>({});
+    const threadRequest = useSignal(0);
     const store = useStore<EditorStore>({
       editor: null,
       meta: {
@@ -428,6 +453,8 @@ export const TwyneEditor = component$(
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(({ track }) => {
       const layout = track(() => store.layout);
+      const editor = track(() => store.editor);
+      editor?.commands.setOpeningInitial(resolveOpeningInitial(layout));
       const root = document.documentElement;
       const m = resolveMargins(layout);
       const setup = resolvePageSetup(layout);
@@ -463,11 +490,6 @@ export const TwyneEditor = component$(
         root.style.removeProperty("--page-gap");
         root.style.removeProperty("--page-content-h");
       }
-
-      // Push the new settings into the engine. A layout change invalidates
-      // every measured height, so this is what makes the pages resettle after
-      // a paper change or a margin drag.
-      store.editor?.commands.setPaginationLayout(layout);
     });
 
     // Dismiss the editor popovers on outside click.
@@ -641,8 +663,36 @@ export const TwyneEditor = component$(
             void syncDraftToLix(store.activeFolioId, html);
           }, 1200);
         };
+        const mirrorSourceCommit = (event: Event) => {
+          const detail = (
+            event as CustomEvent<{
+              folioId: string;
+              source: string;
+              html: string;
+            }>
+          ).detail;
+          if (!sharedLixId || detail.folioId !== store.activeFolioId) return;
+          if (mirrorTimer) clearTimeout(mirrorTimer);
+          mirrorTimer = null;
+          void syncDraftToLix(detail.folioId, detail.html, detail.source).catch(
+            (error) =>
+              reportApplicationDiagnostic(
+                "twyne:editor:source-collaboration",
+                error,
+                { operation: "sync" },
+              ),
+          );
+        };
+        window.addEventListener(
+          "twyne:typst-source-committed",
+          mirrorSourceCommit,
+        );
         cleanup(() => {
           if (mirrorTimer) clearTimeout(mirrorTimer);
+          window.removeEventListener(
+            "twyne:typst-source-committed",
+            mirrorSourceCommit,
+          );
         });
 
         // Reconciliation of writer comments against the current document.
@@ -756,6 +806,9 @@ export const TwyneEditor = component$(
               },
             }),
             Typography,
+            IlluminatedInitial.configure({
+              settings: resolveOpeningInitial(store.layout),
+            }),
             TaskList.configure({
               HTMLAttributes: { class: "twyne-task-list" },
             }),
@@ -776,18 +829,8 @@ export const TwyneEditor = component$(
             SectionReorder,
             ParagraphFormat,
             PageBreakNode,
-            Pagination.configure({
-              layout: store.layout,
-              // The notes block sits after the editor but inside the page
-              // canvas, so it has to be counted or it spills past the last
-              // sheet with nothing under it.
-              getTailElement: () =>
-                document.querySelector<HTMLElement>(".manuscript-notes"),
-              onPaginate: (info: PaginationInfo) => {
-                store.pageCount = info.pageCount;
-                store.paginationActive = info.active;
-              },
-            }),
+            RawTypst,
+            RawTypstInline,
           ],
           content: initialContent,
           editorProps: {
@@ -842,6 +885,13 @@ export const TwyneEditor = component$(
               folioId: activeFolioId,
               brief: brief ?? null,
               openPanel: (panel) => void onEditorialContext$?.(panel),
+            }),
+          );
+          cleanup(
+            startFlowConductor(editor, {
+              getClient: () => clientSig.value,
+              folioId: activeFolioId,
+              brief: brief ?? null,
             }),
           );
         }
@@ -1253,7 +1303,7 @@ export const TwyneEditor = component$(
             note: attrs.note,
             quote: attrs.quote,
             briefTitle: attrs.briefTitle,
-            draft: "",
+            draft: threadDrafts[noteItemId(attrs.id)] ?? "",
             dismissed: false,
             pinned,
             x: geom.x,
@@ -1308,6 +1358,39 @@ export const TwyneEditor = component$(
           requestThreadFor(pop.id);
         };
 
+        // Open a persona note's conversation. While the flow surface is
+        // carrying the margin, the note already has a card there, so the
+        // conversation unfolds in that card's slot rather than floating in
+        // a second place.
+        const openNoteThread = async (
+          noteSpan: HTMLElement,
+          anchorRect: DOMRect,
+        ) => {
+          const token = ++threadRequest.value;
+          const attrs = readPersonaNoteAttrs(noteSpan);
+          const itemId = noteItemId(attrs.id);
+          const slot = await marginSurface()?.reveal(
+            itemId,
+            noteSpan.getBoundingClientRect().top,
+          );
+          if (token !== threadRequest.value || !noteSpan.isConnected) return;
+          const pop = buildNotePopoverFromRect(anchorRect, attrs, true);
+          // One conversation at a time — but never throw away a reply the
+          // writer has started.
+          store.userCommentPopover = null;
+          store.suggestionPopover = null;
+          store.selectionAction = null;
+          store.notePopover = slot
+            ? {
+                ...pop,
+                ...slotPlacement(slot),
+                placement: "below",
+                margin: itemId,
+              }
+            : pop;
+          requestThreadFor(pop.id);
+        };
+
         // Open the suggestion card from any source (click on the
         // marked text, click on its mark-anchor chip). The chip's own
         // rect is usually a better anchor than the marked text's (it
@@ -1317,10 +1400,28 @@ export const TwyneEditor = component$(
           suggestionSpan: HTMLElement,
           anchorEl?: HTMLElement,
         ) => {
+          const token = ++threadRequest.value;
           const target = anchorEl ?? suggestionSpan;
           const rect = target.getBoundingClientRect();
+          const pageRect = el
+            .closest<HTMLElement>(".page-canvas")
+            ?.getBoundingClientRect();
+          // A proposed rewrite is read beside its passage, like any note —
+          // never over a dimmed page.
+          const geom = computeMarginCardGeometry({
+            vw: window.innerWidth,
+            vh: window.innerHeight,
+            rect: { left: rect.left, top: rect.top, bottom: rect.bottom },
+            page: pageRect
+              ? { left: pageRect.left, right: pageRect.right }
+              : { left: rect.left, right: rect.right },
+          });
+          const id = suggestionSpan.getAttribute("data-suggestion-id") ?? "";
+          store.notePopover = null;
+          store.userCommentPopover = null;
+          store.selectionAction = null;
           store.suggestionPopover = {
-            id: suggestionSpan.getAttribute("data-suggestion-id") ?? "",
+            id,
             versionId:
               suggestionSpan.getAttribute("data-suggestion-versionId") ?? "",
             author: suggestionSpan.getAttribute("data-suggestion-author") ?? "",
@@ -1332,10 +1433,28 @@ export const TwyneEditor = component$(
               suggestionSpan.getAttribute("data-suggestion-replacement") ?? "",
             rationale:
               suggestionSpan.getAttribute("data-suggestion-rationale") ?? "",
-            x: Math.max(8, Math.min(rect.left, window.innerWidth - 360)),
-            y: rect.bottom + 8,
+            x: geom.x,
+            top: geom.top,
+            bottom: geom.bottom,
+            maxH: geom.maxH,
             busy: false,
           };
+          const itemId = suggestionItemId(id);
+          void marginSurface()
+            ?.reveal(itemId, suggestionSpan.getBoundingClientRect().top)
+            .then((slot) => {
+              if (
+                !slot ||
+                token !== threadRequest.value ||
+                store.suggestionPopover?.id !== id
+              )
+                return;
+              store.suggestionPopover = {
+                ...store.suggestionPopover,
+                ...slotPlacement(slot),
+                margin: itemId,
+              };
+            });
         };
 
         // ── Hover: preview a persona note below its sentence ──
@@ -1348,6 +1467,18 @@ export const TwyneEditor = component$(
         //      synthetic mousemove that scroll-under-cursor fires.
         //   3. Pinned / replying / has-thread cards never close from
         //      mouseout alone.
+        // `openUserCommentPopover` is declared further down the component,
+        // after this task, so the optimizer cannot hand it to this closure.
+        // Ask for it by event; the task beside its declaration answers.
+        const openWriterComment = (commentId: string, markEl: HTMLElement) =>
+          window.dispatchEvent(
+            new CustomEvent<OpenWriterCommentDetail>(
+              OPEN_WRITER_COMMENT_EVENT,
+              {
+                detail: { commentId, markEl },
+              },
+            ),
+          );
         let hoverTimer: ReturnType<typeof setTimeout> | null = null;
         let hoverArmed = true;
         let hoveredWriterCommentId: string | null = null;
@@ -1370,6 +1501,13 @@ export const TwyneEditor = component$(
             ".twyne-mark-anchor",
           ) as HTMLElement | null;
           if (!noteSpan && !writerCommentSpan && !chip) return;
+          // With the margin carrying notes, pointing at a passage peeks its
+          // card there (the flow surface draws the connection); the floating
+          // preview would be a second copy of the same note.
+          if (marginSurface()) {
+            clearHoverTimer();
+            return;
+          }
           if (writerCommentSpan) {
             if (store.userCommentPopover?.visible) return;
             if (!hoverArmed) return;
@@ -1379,7 +1517,7 @@ export const TwyneEditor = component$(
             clearHoverTimer();
             hoverTimer = setTimeout(() => {
               hoveredWriterCommentId = commentId;
-              void openUserCommentPopover(commentId, writerCommentSpan);
+              openWriterComment(commentId, writerCommentSpan);
             }, 350);
             return;
           }
@@ -1449,7 +1587,7 @@ export const TwyneEditor = component$(
               const span = el.querySelector(
                 `.twyne-comment-mark[data-comment-id="${CSS.escape(id)}"]`,
               ) as HTMLElement | null;
-              if (span) openUserCommentPopover(id, span);
+              if (span) openWriterComment(id, span);
             } else if (kind === "suggestion") {
               const span = el.querySelector(
                 `.twyne-suggestion[data-suggestion-id="${CSS.escape(id)}"]`,
@@ -1459,15 +1597,7 @@ export const TwyneEditor = component$(
               const span = el.querySelector(
                 `.twyne-persona-note[data-persona-note-id="${CSS.escape(id)}"]`,
               ) as HTMLElement | null;
-              if (span) {
-                const pop = buildNotePopoverFromRect(
-                  chipRect,
-                  readPersonaNoteAttrs(span),
-                  true,
-                );
-                store.notePopover = pop;
-                requestThreadFor(pop.id);
-              }
+              if (span) void openNoteThread(span, chipRect);
             }
             return;
           }
@@ -1561,7 +1691,12 @@ export const TwyneEditor = component$(
               (target.isContentEditable && !target.closest(".ProseMirror")));
           const key = e.key.toLowerCase();
 
-          if (!editingField) {
+          if (
+            !editingField &&
+            !e.defaultPrevented &&
+            !store.typstSourcePending &&
+            (!store.typstView || store.typstView === "write")
+          ) {
             const matched = EDITOR_KEYBINDINGS.find((binding) =>
               chordMatches(
                 {
@@ -1576,11 +1711,16 @@ export const TwyneEditor = component$(
             );
             if (matched) {
               e.preventDefault();
-              void runRegistryCommand(matched.commandId);
+              window.dispatchEvent(
+                new CustomEvent("twyne:editor-shortcut", {
+                  detail: matched.commandId,
+                }),
+              );
               return;
             }
           }
           if (e.key !== "Escape") return;
+          threadRequest.value++;
           store.selectionAction = null;
           if (store.notePopover) store.notePopover = null;
           if (store.userCommentPopover) store.userCommentPopover = null;
@@ -1832,6 +1972,40 @@ export const TwyneEditor = component$(
             error: detail.message ?? null,
           };
         };
+        // A card in the margin asked for its conversation.
+        const onOpenMarginThread = (e: Event) => {
+          const detail = (e as CustomEvent<OpenMarginThreadDetail>).detail;
+          if (!detail?.id) return;
+          hoveredWriterCommentId = null;
+          if (detail.kind === "comment") {
+            const span = el.querySelector<HTMLElement>(
+              `.twyne-comment-mark[data-comment-id="${CSS.escape(detail.id)}"]`,
+            );
+            if (!span) return;
+            openWriterComment(detail.id, span);
+          } else {
+            const span = el.querySelector<HTMLElement>(
+              `.twyne-persona-note[data-persona-note-id="${CSS.escape(detail.id)}"]`,
+            );
+            if (span) void openNoteThread(span, span.getBoundingClientRect());
+          }
+        };
+        // The slot follows its passage as the page scrolls or reflows.
+        const onMarginSlot = (e: Event) => {
+          const { itemId, slot } = (e as CustomEvent<MarginSlotDetail>).detail;
+          const place = slotPlacement(slot);
+          if (store.notePopover?.margin === itemId)
+            store.notePopover = { ...store.notePopover, ...place };
+          if (store.userCommentPopover?.margin === itemId)
+            store.userCommentPopover = {
+              ...store.userCommentPopover,
+              ...place,
+            };
+          if (store.suggestionPopover?.margin === itemId)
+            store.suggestionPopover = { ...store.suggestionPopover, ...place };
+        };
+        window.addEventListener(OPEN_MARGIN_THREAD_EVENT, onOpenMarginThread);
+        window.addEventListener(MARGIN_SLOT_EVENT, onMarginSlot);
         window.addEventListener("twyne:persona-reply-thread", onReplyThread);
         window.addEventListener("twyne:persona-replying", onReplying);
         window.addEventListener("twyne:persona-reply-stream", onReplyStream);
@@ -2024,6 +2198,11 @@ export const TwyneEditor = component$(
             onReplyStream,
           );
           window.removeEventListener("twyne:persona-reply-error", onReplyError);
+          window.removeEventListener(
+            OPEN_MARGIN_THREAD_EVENT,
+            onOpenMarginThread,
+          );
+          window.removeEventListener(MARGIN_SLOT_EVENT, onMarginSlot);
           window.removeEventListener("twyne:suggestions", onSuggestions);
           window.removeEventListener("twyne:propose-edit", onProposeEdit);
           window.removeEventListener(
@@ -2161,6 +2340,7 @@ export const TwyneEditor = component$(
      */
     const openUserCommentPopover = $(
       async (commentId: string, markEl: HTMLElement) => {
+        const token = ++threadRequest.value;
         const rect = markEl.getBoundingClientRect();
         const pageRect = markEl
           .closest<HTMLElement>(".page-canvas")
@@ -2177,7 +2357,16 @@ export const TwyneEditor = component$(
             ? { left: pageRect.left, right: pageRect.right }
             : { left: rect.left, right: rect.right },
         });
+        const itemId = commentItemId(commentId);
+        const slot = await marginSurface()?.reveal(itemId, rect.top);
+        const place = slot
+          ? { ...slotPlacement(slot), margin: itemId }
+          : { x: geom.x, top: geom.top, bottom: geom.bottom, maxH: geom.maxH };
         const all = await loadUserComments();
+        if (token !== threadRequest.value || !markEl.isConnected) return;
+        store.notePopover = null;
+        store.suggestionPopover = null;
+        store.selectionAction = null;
         const c = all.find(
           (x) => x.id === commentId && x.folioId === store.activeFolioId,
         );
@@ -2193,15 +2382,12 @@ export const TwyneEditor = component$(
             text: "(comment body not yet synced)",
             quote: markEl.textContent ?? "",
             createdAt: Date.now(),
-            x: geom.x,
-            top: geom.top,
-            bottom: geom.bottom,
-            maxH: geom.maxH,
+            ...place,
             from: null,
             to: null,
             resolved: false,
             replies: [],
-            draft: "",
+            draft: threadDrafts[itemId] ?? "",
           };
           return;
         }
@@ -2213,20 +2399,34 @@ export const TwyneEditor = component$(
           text: c.text,
           quote: c.anchor ?? markEl.textContent ?? "",
           createdAt: c.createdAt,
-          x: geom.x,
-          top: geom.top,
-          bottom: geom.bottom,
-          maxH: geom.maxH,
+          ...place,
           from: null,
           to: null,
           resolved: c.resolved,
           replies: c.replies,
-          draft: "",
+          draft: threadDrafts[itemId] ?? "",
         };
       },
     );
 
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ cleanup }) => {
+      const onOpen = (event: Event) => {
+        const { commentId, markEl } = (
+          event as CustomEvent<OpenWriterCommentDetail>
+        ).detail;
+        if (!markEl.isConnected) return;
+        // One conversation at a time, as for notes.
+        void openUserCommentPopover(commentId, markEl);
+      };
+      window.addEventListener(OPEN_WRITER_COMMENT_EVENT, onOpen);
+      cleanup(() =>
+        window.removeEventListener(OPEN_WRITER_COMMENT_EVENT, onOpen),
+      );
+    });
+
     const closeUserCommentPopover = $(() => {
+      threadRequest.value++;
       const popover = store.userCommentPopover;
       store.userCommentPopover =
         popover?.mode === "compose" ? { ...popover, visible: false } : null;
@@ -2248,15 +2448,18 @@ export const TwyneEditor = component$(
       const all = await appendUserCommentReply(commentId, reply);
       const updated = all.find((x) => x.id === commentId);
       if (updated) {
-        store.userCommentPopover = {
-          ...popover,
-          replies: updated.replies,
-          draft: "",
-        };
+        const savedDraft = threadDrafts[commentItemId(commentId)]?.trim();
+        if (savedDraft === text) threadDrafts[commentItemId(commentId)] = "";
+        if (store.userCommentPopover?.id === commentId)
+          store.userCommentPopover = {
+            ...store.userCommentPopover,
+            replies: updated.replies,
+            draft: threadDrafts[commentItemId(commentId)] ?? "",
+          };
       }
-      // Cloud sync (best-effort, silent on failure)
+      // Local replies sync only when there is an authenticated identity.
       const client = clientSig.value;
-      if (client) {
+      if (client && hasAuthenticatedConvexIdentity(auth.value)) {
         try {
           await client.mutation(api.userComments.addReply, {
             replyId: reply.id,
@@ -2317,6 +2520,20 @@ export const TwyneEditor = component$(
         }
       }
       window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+    });
+
+    // Whichever conversation is open in the margin, its card steps aside for
+    // it; when it closes (Escape, click-away, resolve), the card returns.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track }) => {
+      const comment = track(() =>
+        store.userCommentPopover?.visible
+          ? (store.userCommentPopover.margin ?? null)
+          : null,
+      );
+      const note = track(() => store.notePopover?.margin ?? null);
+      const suggestion = track(() => store.suggestionPopover?.margin ?? null);
+      setMarginThread(comment ?? note ?? suggestion);
     });
 
     // Marginalia list deletion routes through the editor so the stored thread
@@ -2633,6 +2850,7 @@ export const TwyneEditor = component$(
 
     /** Push the new layout to the parent (which writes to the Folio) and apply live CSS vars. */
     const emitLayout = $((next: LayoutSettings) => {
+      if (readOnly) return;
       store.layout = next;
       window.dispatchEvent(new CustomEvent("twyne:layout", { detail: next }));
     });
@@ -2693,7 +2911,11 @@ export const TwyneEditor = component$(
           footer: store.footerText,
           includePersonaComments: store.includePersonaCommentsInExport,
         });
-        await exportPdf(payload);
+        const { exportTypst } = await import("../../utils/typst/export");
+        downloadBlob(
+          await exportTypst(payload, "pdf"),
+          `${payload.title || "Untitled"}.pdf`,
+        );
       } catch (err) {
         reportApplicationDiagnostic("twyne:editor:export-pdf", err, {
           operation: "export",
@@ -2704,6 +2926,7 @@ export const TwyneEditor = component$(
     });
 
     const updateChromeText = $((kind: "header" | "footer", next: string) => {
+      if (readOnly) return;
       if (kind === "header") store.headerText = next;
       else store.footerText = next;
       window.dispatchEvent(new CustomEvent(`twyne:${kind}`, { detail: next }));
@@ -3084,6 +3307,28 @@ export const TwyneEditor = component$(
       }
     });
 
+    // Register after the QRL exists; the editor's key listener must not capture
+    // a forward declaration when Qwik extracts the initialization task.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ cleanup }) => {
+      const runShortcut = (event: Event) => {
+        void runRegistryCommand((event as CustomEvent<EditorCommandId>).detail);
+      };
+      window.addEventListener("twyne:editor-shortcut", runShortcut);
+      // The flow conductor eases the page into focus (and out) by itself;
+      // the manual toggles above stay the writer's.
+      const followFlowFocus = (event: Event) => {
+        const detail = (event as CustomEvent<{ on?: boolean; source?: string }>)
+          .detail;
+        if (detail?.source === "flow") store.zenMode = !!detail.on;
+      };
+      window.addEventListener("twyne:zen-mode", followFlowFocus);
+      cleanup(() => {
+        window.removeEventListener("twyne:editor-shortcut", runShortcut);
+        window.removeEventListener("twyne:zen-mode", followFlowFocus);
+      });
+    });
+
     const selectSlashCommand = $(async (commandId: EditorCommandId) => {
       const editor = store.editor;
       if (!editor) return;
@@ -3167,224 +3412,246 @@ export const TwyneEditor = component$(
             owner and editors can change the manuscript.
           </div>
         )}
-        {/* Sticky chrome stack: toolbar plus whichever inline input bar is
+        <TypstWorkspace
+          store={store}
+          editor={store.editor ? noSerialize(store.editor) : undefined}
+          readOnly={readOnly}
+          folioName={activeFolio?.name ?? "Untitled"}
+          brief={brief}
+        >
+          {/* Sticky chrome stack: toolbar plus whichever inline input bar is
             active (image, note, comment, mermaid). All live in one sticky
             wrapper so the active bar always sits flush under the toolbar
             rather than scrolling out of view as the manuscript scrolls. */}
-        <div class="sticky top-0" style={{ zIndex: "var(--z-sticky)" }}>
-          <CompositorPanel
-            store={store}
-            onCommand$={runCommand}
-            onHighlight$={applyHighlight}
-            onTextColor$={applyTextColor}
-            onFontFamily$={applyFontFamily}
-            onFontSize$={applyFontSize}
-            onLineHeight$={applyLineHeight}
-            onSpaceBefore$={applySpaceBefore}
-            onSpaceAfter$={applySpaceAfter}
-            onKeepWithNext$={applyKeepWithNext}
-            onTextCase$={applyTextCase}
-            onReadAloud$={readAloud}
-            onLayoutChange$={emitLayout}
-            onChromeTextChange$={updateChromeText}
-            onSavePdf$={saveAsPdf}
-          />
-          {store.showFindReplace && (
-            <div
-              class="fixed right-4 top-16"
-              style={{ zIndex: "var(--z-dropdown)" }}
-            >
-              <FindReplacePanel
-                editor={store.editor ? noSerialize(store.editor) : null}
-                onClose$={() => {
-                  store.showFindReplace = false;
-                }}
-              />
-            </div>
-          )}
-
-          {store.showGrammar && !onEditorialContext$ && (
-            <GrammarPanel
-              editor={store.editor ? noSerialize(store.editor) : null}
+          <div
+            q:slot="writing-tools"
+            class="sticky top-0"
+            hidden={store.typstView === "source" || store.typstView === "proof"}
+            inert={store.typstSourcePending}
+            style={{
+              zIndex: "var(--z-sticky)",
+              opacity: store.typstSourcePending ? "0.5" : undefined,
+            }}
+          >
+            <CompositorPanel
+              store={store}
               readOnly={readOnly}
-              onClose$={() => {
-                store.showGrammar = false;
-              }}
+              onCommand$={runCommand}
+              onHighlight$={applyHighlight}
+              onTextColor$={applyTextColor}
+              onFontFamily$={applyFontFamily}
+              onFontSize$={applyFontSize}
+              onLineHeight$={applyLineHeight}
+              onSpaceBefore$={applySpaceBefore}
+              onSpaceAfter$={applySpaceAfter}
+              onKeepWithNext$={applyKeepWithNext}
+              onTextCase$={applyTextCase}
+              onReadAloud$={readAloud}
+              onLayoutChange$={emitLayout}
+              onChromeTextChange$={updateChromeText}
+              onSavePdf$={saveAsPdf}
             />
-          )}
-
-          {store.showOutline && (
-            <aside
-              class="fixed bottom-16 left-4 top-20 w-72 overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3 shadow-lg"
-              style={{ zIndex: "var(--z-dropdown)" }}
-              aria-label="Document outline panel"
-            >
-              <div class="mb-2 flex items-center justify-between gap-3">
-                <p class="dept-label">Document outline</p>
-                <button
-                  type="button"
-                  class="tool-btn"
-                  aria-label="Close document outline"
-                  onClick$={() => {
-                    store.showOutline = false;
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-              <DocumentOutline
-                outline={store.outline}
-                editor={store.editor ? noSerialize(store.editor) : undefined}
-              />
-            </aside>
-          )}
-
-          <ShortcutDialog
-            open={store.showShortcutDialog}
-            onClose$={() => {
-              store.showShortcutDialog = false;
-            }}
-          />
-
-          <InsertPanels
-            noteKind={store.noteInputKind}
-            mermaidOpen={store.showMermaidInput}
-            imageOpen={store.showImageInput}
-            imageUrl={store.imageUrl}
-            imageUploadAvailable={!!store.imageUploadAdapter}
-            imageUploadError={store.imageUploadError}
-            onCancelNote$={() => {
-              store.noteInputKind = null;
-              store.noteText = "";
-            }}
-            onConfirmNote$={async (value) => {
-              store.noteText = value.trim();
-              if (!store.noteText) {
-                store.noteInputKind = null;
-                return;
-              }
-              await runCommand("insertNote");
-            }}
-            onCancelMermaid$={() => {
-              store.showMermaidInput = false;
-              store.mermaidSource = "";
-            }}
-            onConfirmMermaid$={async (value) => {
-              store.mermaidSource = value.trim();
-              if (!store.mermaidSource) {
-                store.showMermaidInput = false;
-                return;
-              }
-              await runCommand("insertMermaid");
-            }}
-            onChooseImage$={chooseImageFiles}
-            onImageUrlChange$={(value) => {
-              store.imageUrl = value;
-            }}
-            onInsertImage$={(url) => {
-              if (url) insertImage(url);
-              store.showImageInput = false;
-              store.imageUrl = "";
-            }}
-            onCancelImage$={() => {
-              store.showImageInput = false;
-              store.imageUrl = "";
-            }}
-          />
-          <SlashCommandMenu
-            open={store.slashOpen}
-            query={store.slashQuery}
-            left={store.slashLeft}
-            top={store.slashTop}
-            context={{
-              hasSelection: store.hasSelection,
-              inTable: !!store.active.isInTable,
-              canMergeCells: !!store.active.canMergeCells,
-              canSplitCell: !!store.active.canSplitCell,
-              canUndo: store.canUndo,
-              canRedo: store.canRedo,
-              hasDocument: true,
-              paginationActive: store.paginationActive,
-            }}
-            onSelect$={selectSlashCommand}
-            onClose$={() => {
-              store.editor?.commands.closeSlashCommand();
-              store.slashOpen = false;
-            }}
-          />
-
-          {store.showTableInsertion && (
-            <div
-              class="fixed left-1/2 top-16 -translate-x-1/2"
-              style={{ zIndex: "var(--z-dropdown)" }}
-            >
-              <TableInsertionGrid
-                onInsert$={insertTableDimensions}
-                onCancel$={() => {
-                  store.showTableInsertion = false;
-                }}
-              />
-            </div>
-          )}
-
-          <FloatingTableToolbar
-            snapshot={store.tableToolbar}
-            onIntent$={handleTableToolbarIntent}
-          />
-          {store.tableToolbar.visible &&
-            store.tableToolbar.position &&
-            store.tableToolbar.position.cellRowTop != null &&
-            store.cellFormat.cellCount > 0 && (
+            {store.showFindReplace && (
               <div
-                data-table-cell-format-panel
-                class="fixed overflow-x-auto border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2 shadow-lg"
-                style={{
-                  left: `${store.tableToolbar.position.left}px`,
-                  top: `${store.tableToolbar.position.cellRowTop}px`,
-                  width: `${store.tableToolbar.position.width}px`,
-                  zIndex: "var(--z-dropdown)",
-                }}
+                class="fixed right-4 top-16"
+                style={{ zIndex: "var(--z-dropdown)" }}
               >
-                <TableCellFormatControls
-                  format={store.cellFormat}
-                  onIntent$={handleCellFormatIntent}
+                <FindReplacePanel
+                  editor={store.editor ? noSerialize(store.editor) : null}
+                  onClose$={() => {
+                    store.showFindReplace = false;
+                  }}
                 />
               </div>
             )}
 
-          {store.selectedImage && (
-            <div
-              class="fixed right-4 top-24 w-72 shadow-lg"
-              style={{ zIndex: "var(--z-dropdown)" }}
-            >
-              <ImageInspector
-                attributes={store.selectedImage}
-                onPatch$={patchSelectedImage}
-                onChooseFiles$={chooseImageFiles}
-                onRetry$={retrySelectedImage}
-                onRemove$={removeSelectedImage}
+            {store.showGrammar && !onEditorialContext$ && (
+              <GrammarPanel
+                editor={store.editor ? noSerialize(store.editor) : null}
+                readOnly={readOnly}
+                onClose$={() => {
+                  store.showGrammar = false;
+                }}
               />
-            </div>
-          )}
-        </div>
-        <ManuscriptPanel
-          store={store}
-          readOnly={readOnly}
-          pageWidthRem={pageWidthRem()}
-          canvasMinHeight={canvasMinHeight()}
-          pageChromeGeometry={pageChromeGeometry()}
-          onDragOver$={handleDragOver}
-          onDragLeave$={handleDragLeave}
-          onDrop$={handleDrop}
-          onLayoutChange$={emitLayout}
-          onHeaderCommit$={(value) => updateChromeText("header", value)}
-          onFooterCommit$={(value) => updateChromeText("footer", value)}
-          onJumpToNote$={jumpToNote}
-        />
+            )}
+
+            {store.showOutline && (
+              <aside
+                class="fixed bottom-16 left-4 top-20 w-72 overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-3 shadow-lg"
+                style={{ zIndex: "var(--z-dropdown)" }}
+                aria-label="Document outline panel"
+              >
+                <div class="mb-2 flex items-center justify-between gap-3">
+                  <p class="dept-label">Document outline</p>
+                  <button
+                    type="button"
+                    class="tool-btn"
+                    aria-label="Close document outline"
+                    onClick$={() => {
+                      store.showOutline = false;
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <DocumentOutline
+                  outline={store.outline}
+                  editor={store.editor ? noSerialize(store.editor) : undefined}
+                />
+              </aside>
+            )}
+
+            <ShortcutDialog
+              open={store.showShortcutDialog}
+              onClose$={() => {
+                store.showShortcutDialog = false;
+              }}
+            />
+
+            <InsertPanels
+              noteKind={store.noteInputKind}
+              mermaidOpen={store.showMermaidInput}
+              imageOpen={store.showImageInput}
+              imageUrl={store.imageUrl}
+              imageUploadAvailable={!!store.imageUploadAdapter}
+              imageUploadError={store.imageUploadError}
+              onCancelNote$={() => {
+                store.noteInputKind = null;
+                store.noteText = "";
+              }}
+              onConfirmNote$={async (value) => {
+                store.noteText = value.trim();
+                if (!store.noteText) {
+                  store.noteInputKind = null;
+                  return;
+                }
+                await runCommand("insertNote");
+              }}
+              onCancelMermaid$={() => {
+                store.showMermaidInput = false;
+                store.mermaidSource = "";
+              }}
+              onConfirmMermaid$={async (value) => {
+                store.mermaidSource = value.trim();
+                if (!store.mermaidSource) {
+                  store.showMermaidInput = false;
+                  return;
+                }
+                await runCommand("insertMermaid");
+              }}
+              onChooseImage$={chooseImageFiles}
+              onImageUrlChange$={(value) => {
+                store.imageUrl = value;
+              }}
+              onInsertImage$={(url) => {
+                if (url) insertImage(url);
+                store.showImageInput = false;
+                store.imageUrl = "";
+              }}
+              onCancelImage$={() => {
+                store.showImageInput = false;
+                store.imageUrl = "";
+              }}
+            />
+            <SlashCommandMenu
+              open={store.slashOpen}
+              query={store.slashQuery}
+              left={store.slashLeft}
+              top={store.slashTop}
+              context={{
+                hasSelection: store.hasSelection,
+                inTable: !!store.active.isInTable,
+                canMergeCells: !!store.active.canMergeCells,
+                canSplitCell: !!store.active.canSplitCell,
+                canUndo: store.canUndo,
+                canRedo: store.canRedo,
+                hasDocument: true,
+                paginationActive: store.paginationActive,
+              }}
+              onSelect$={selectSlashCommand}
+              onClose$={() => {
+                store.editor?.commands.closeSlashCommand();
+                store.slashOpen = false;
+              }}
+            />
+
+            {store.showTableInsertion && (
+              <div
+                class="fixed left-1/2 top-16 -translate-x-1/2"
+                style={{ zIndex: "var(--z-dropdown)" }}
+              >
+                <TableInsertionGrid
+                  onInsert$={insertTableDimensions}
+                  onCancel$={() => {
+                    store.showTableInsertion = false;
+                  }}
+                />
+              </div>
+            )}
+
+            <FloatingTableToolbar
+              snapshot={store.tableToolbar}
+              onIntent$={handleTableToolbarIntent}
+            />
+            {store.tableToolbar.visible &&
+              store.tableToolbar.position &&
+              store.tableToolbar.position.cellRowTop != null &&
+              store.cellFormat.cellCount > 0 && (
+                <div
+                  data-table-cell-format-panel
+                  class="fixed overflow-x-auto border border-[var(--color-paper-3)] bg-[var(--color-paper)] p-2 shadow-lg"
+                  style={{
+                    left: `${store.tableToolbar.position.left}px`,
+                    top: `${store.tableToolbar.position.cellRowTop}px`,
+                    width: `${store.tableToolbar.position.width}px`,
+                    zIndex: "var(--z-dropdown)",
+                  }}
+                >
+                  <TableCellFormatControls
+                    format={store.cellFormat}
+                    onIntent$={handleCellFormatIntent}
+                  />
+                </div>
+              )}
+
+            {store.selectedImage && (
+              <div
+                class="fixed right-4 top-24 w-72 shadow-lg"
+                style={{ zIndex: "var(--z-dropdown)" }}
+              >
+                <ImageInspector
+                  attributes={store.selectedImage}
+                  onPatch$={patchSelectedImage}
+                  onChooseFiles$={chooseImageFiles}
+                  onRetry$={retrySelectedImage}
+                  onRemove$={removeSelectedImage}
+                />
+              </div>
+            )}
+          </div>
+          <ManuscriptPanel
+            store={store}
+            readOnly={readOnly}
+            pageWidthRem={pageWidthRem()}
+            canvasMinHeight={canvasMinHeight()}
+            pageChromeGeometry={pageChromeGeometry()}
+            onDragOver$={handleDragOver}
+            onDragLeave$={handleDragLeave}
+            onDrop$={handleDrop}
+            onLayoutChange$={emitLayout}
+            onHeaderCommit$={(value) => updateChromeText("header", value)}
+            onFooterCommit$={(value) => updateChromeText("footer", value)}
+            onJumpToNote$={jumpToNote}
+          />
+        </TypstWorkspace>
 
         <SelectionActions
           selection={
-            store.userCommentPopover?.visible ? null : store.selectionAction
+            store.userCommentPopover?.visible ||
+            store.notePopover ||
+            store.suggestionPopover
+              ? null
+              : store.selectionAction
           }
           onGetSources$={getSourcesForSelection}
           onAddMargin$={addMarginForSelection}
@@ -3403,11 +3670,15 @@ export const TwyneEditor = component$(
             }
           }}
           onClose$={() => {
+            threadRequest.value++;
             store.notePopover = null;
           }}
           onDraftChange$={(draft) => {
             const note = store.notePopover;
-            if (note) store.notePopover = { ...note, draft };
+            if (note) {
+              threadDrafts[noteItemId(note.id)] = draft;
+              store.notePopover = { ...note, draft };
+            }
           }}
           onReply$={(noteId, text, author) => {
             window.dispatchEvent(
@@ -3415,6 +3686,7 @@ export const TwyneEditor = component$(
                 detail: { noteId, text, author },
               }),
             );
+            threadDrafts[noteItemId(noteId)] = "";
             const note = store.notePopover;
             if (note?.id === noteId) {
               store.notePopover = { ...note, draft: "", error: null };
@@ -3431,6 +3703,7 @@ export const TwyneEditor = component$(
           suggestion={store.suggestionPopover}
           stampVisible={store.stampVisible}
           onClose$={() => {
+            threadRequest.value++;
             store.suggestionPopover = null;
           }}
           onStrike$={strikeSuggestion}
@@ -3442,6 +3715,7 @@ export const TwyneEditor = component$(
           onClose$={closeUserCommentPopover}
           onDraftChange$={(draft) => {
             if (!store.userCommentPopover) return;
+            threadDrafts[commentItemId(store.userCommentPopover.id)] = draft;
             store.userCommentPopover = {
               ...store.userCommentPopover,
               draft,

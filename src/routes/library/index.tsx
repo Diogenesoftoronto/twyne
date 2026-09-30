@@ -149,7 +149,10 @@ export default component$(() => {
               {store.cards.length === 1 ? "" : "s"}.
             </p>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-wrap items-center gap-3">
+            <Link href="/house/" class="btn-paper">
+              The House
+            </Link>
             <button
               onClick$={() => {
                 store.sort = store.sort === "recent" ? "name" : "recent";
@@ -168,6 +171,13 @@ export default component$(() => {
             </Link>
           </div>
         </div>
+
+        <p class="mb-6 text-sm text-[var(--color-ink-light)]">
+          <Link href="/house/" class="underline underline-offset-4">
+            House → Collection → Folio
+          </Link>
+          {" — shared context and standards, down to each piece."}
+        </p>
 
         {store.loaded && store.cards.length === 0 && (
           <div class="text-center py-20 text-[var(--color-ink-muted)]">

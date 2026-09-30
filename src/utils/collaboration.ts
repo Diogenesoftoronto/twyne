@@ -170,10 +170,13 @@ export async function joinSharedLix(
 /* ── Remote → local sync ────────────────────────────────────────── */
 
 import type { Editor } from "@tiptap/core";
-import { getDraftBlocks } from "./lix";
+import { getDraftBlocks, getDraftTypstSource } from "./lix";
+import { saveFolioTypstToIdb } from "./idb";
+import { reconcileTypstSource } from "./typst/document";
 
 let _remoteSyncTimer: ReturnType<typeof setInterval> | null = null;
 let _lastPolledHtml: string | null = null;
+let _lastPolledSource: string | null = null;
 
 /**
  * Poll the local Lix instance for remote changes and reflect them into the
@@ -196,13 +199,32 @@ export function watchRemoteChanges(editor: Editor, folioId: string): void {
   const poll = async () => {
     try {
       const blocks = await getDraftBlocks(folioId);
-      if (blocks.length === 0) return;
+      const rawSource = await getDraftTypstSource(folioId);
+      if (blocks.length === 0 && rawSource === null) return;
       const html = blocks.map((b) => b.html).join("");
-      if (html === _lastPolledHtml) return;
+      const source =
+        rawSource === null ? null : reconcileTypstSource(rawSource, html);
+      if (html === _lastPolledHtml && source === _lastPolledSource) return;
       _lastPolledHtml = html;
+      _lastPolledSource = source;
+      if (source !== null) {
+        await saveFolioTypstToIdb(folioId, source, html);
+        window.dispatchEvent(
+          new CustomEvent("twyne:typst-remote-change", {
+            detail: { folioId, source, html },
+          }),
+        );
+      }
       // Only update if the editor doesn't already have this content (avoids
       // clobbering cursor position when the change was local & already mirrored).
-      if (editor.getHTML() !== html) {
+      const sourceDraft: { folioId: string; pending?: boolean } = { folioId };
+      window.dispatchEvent(
+        new CustomEvent("twyne:request-typst-source", { detail: sourceDraft }),
+      );
+      if (!sourceDraft.pending && editor.getHTML() !== html) {
+        window.dispatchEvent(
+          new CustomEvent("twyne:typst-applying", { detail: { folioId } }),
+        );
         editor.commands.setContent(html, { emitUpdate: false });
       }
     } catch {
@@ -220,6 +242,7 @@ export function stopWatchingRemote(): void {
     _remoteSyncTimer = null;
   }
   _lastPolledHtml = null;
+  _lastPolledSource = null;
 }
 
 /* ── Presence ───────────────────────────────────────────────────── */

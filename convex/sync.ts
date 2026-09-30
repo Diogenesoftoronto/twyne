@@ -131,8 +131,14 @@ export const listFolioContent = query({
 });
 
 export const putFolioContent = mutation({
-  args: { folioId: v.string(), html: v.string() },
-  handler: async (ctx, { folioId, html }) => {
+  args: {
+    folioId: v.string(),
+    html: v.string(),
+    format: v.optional(v.union(v.literal("html"), v.literal("typst"))),
+    typstSource: v.optional(v.string()),
+  },
+  returns: v.id("folioContent"),
+  handler: async (ctx, { folioId, html, format, typstSource }) => {
     const userId = await requireIdentity(ctx);
     const existing = await ctx.db
       .query("folioContent")
@@ -142,13 +148,24 @@ export const putFolioContent = mutation({
       .first();
     const now = Date.now();
     if (existing) {
-      await ctx.db.patch(existing._id, { html, updatedAt: now });
+      if (existing.typstSource !== undefined && typstSource === undefined)
+        throw new Error(
+          "This document uses Typst. Update your client before editing it.",
+        );
+      await ctx.db.patch(existing._id, {
+        html,
+        format,
+        typstSource,
+        updatedAt: now,
+      });
       return existing._id;
     }
     return await ctx.db.insert("folioContent", {
       userId,
       folioId,
       html,
+      format,
+      typstSource,
       updatedAt: now,
     });
   },
@@ -595,7 +612,14 @@ export const pushAll = mutation({
     ),
     folios: v.optional(v.array(v.any())),
     folioContent: v.optional(
-      v.array(v.object({ folioId: v.string(), html: v.string() })),
+      v.array(
+        v.object({
+          folioId: v.string(),
+          html: v.string(),
+          format: v.optional(v.union(v.literal("html"), v.literal("typst"))),
+          typstSource: v.optional(v.string()),
+        }),
+      ),
     ),
     customPersonas: v.optional(v.array(v.any())),
     personaNotes: v.optional(
@@ -720,8 +744,17 @@ export const pushAll = mutation({
           )
           .first();
         if (existing) {
+          if (
+            existing.typstSource !== undefined &&
+            fc.typstSource === undefined
+          )
+            throw new Error(
+              "This document uses Typst. Update your client before editing it.",
+            );
           await ctx.db.patch(existing._id, {
             html: fc.html,
+            format: fc.format,
+            typstSource: fc.typstSource,
             updatedAt: now,
           });
         } else {
@@ -729,6 +762,8 @@ export const pushAll = mutation({
             userId,
             folioId: fc.folioId,
             html: fc.html,
+            format: fc.format,
+            typstSource: fc.typstSource,
             updatedAt: now,
           });
         }
@@ -978,6 +1013,8 @@ export const pullAll = query({
       folioContent: folioContent.map((fc) => ({
         folioId: fc.folioId,
         html: fc.html,
+        format: fc.format,
+        typstSource: fc.typstSource,
         updatedAt: fc.updatedAt,
       })),
       // Null still means "this user has no persona record at all", which is

@@ -73,7 +73,8 @@ export const SpeechTransport = component$<SpeechTransportProps>((props) => {
         title={props.playLabel ?? "Read aloud"}
         aria-label={props.playLabel ?? "Read aloud"}
       >
-        ♪ read
+        <span aria-hidden="true">♪</span>{" "}
+        <span class="compositor-tool-label">read</span>
       </button>
     </span>
   );

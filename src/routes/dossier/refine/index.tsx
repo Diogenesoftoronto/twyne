@@ -337,7 +337,8 @@ export default component$(() => {
             No dossier on file.
           </h1>
           <p class="text-[var(--color-ink-light)]">
-            The refinery needs a brief to refine. Start a fresh one.
+            File a dossier to define this piece’s audience, purpose and
+            constraints.
           </p>
           <Link
             href={
@@ -367,6 +368,18 @@ export default component$(() => {
   // surfaces swaps a leaf, not the page.
   return (
     <div class={dossierRouteClass(store.style)}>
+      <nav class="px-4 py-2 text-sm" aria-label="Dossier context">
+        <Link
+          href={
+            store.folioId
+              ? `/house/?folio=${encodeURIComponent(store.folioId)}`
+              : "/house/"
+          }
+          class="underline underline-offset-4 text-[var(--color-ink-light)]"
+        >
+          House, collection &amp; inherited standards
+        </Link>
+      </nav>
       {store.style === "form" ? (
         <AntiTabulaRasa
           mode="refine"

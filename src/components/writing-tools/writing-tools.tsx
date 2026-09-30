@@ -1,3 +1,4 @@
+import { loadModelBriefForFolio } from "../../utils/model-context";
 import { liveReviewSnapshot } from "../../utils/live-review";
 import {
   $,
@@ -17,7 +18,6 @@ import { loadMetaFromIdb } from "../../utils/idb";
 import { useConvexClient } from "../../utils/convex-context";
 import {
   loadActiveFolioIdFromIdb,
-  loadBriefFromIdb,
   loadFolioContentFromIdb,
   loadFoliosFromIdb,
 } from "../../utils/idb";
@@ -199,7 +199,7 @@ export const WritingTools = component$<{ embedded?: boolean }>(
       if (state.folioId !== folioId) {
         const [notebook, brief] = await Promise.all([
           loadWritingToolsNotebook(folioId),
-          loadBriefFromIdb(folioId),
+          loadModelBriefForFolio(folioId),
         ]);
         if (
           (await loadActiveFolioIdFromIdb()) !== folioId ||

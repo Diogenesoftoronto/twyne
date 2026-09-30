@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Twyne — five hero directions</title
+  ><style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #f5eddc;
+      color: #241d16;
+      font-family: Georgia, serif;
+    }
+    main {
+      max-width: 1400px;
+      margin: auto;
+      padding: 32px;
+    }
+    h1 {
+      font-size: clamp(28px, 4vw, 48px);
+      margin: 0 0 12px;
+    }
+    header {
+      margin-bottom: 36px;
+    }
+    header p {
+      max-width: 65ch;
+      line-height: 1.6;
+    }
+    section {
+      margin-bottom: 48px;
+    }
+    h2 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    section > p {
+      margin: 0 0 18px;
+      color: #584938;
+    }
+    .hero {
+      position: relative;
+      aspect-ratio: 3/2;
+      overflow: hidden;
+      background: #17130f;
+    }
+    .hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .copy {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      color: #f7f0dd;
+      background: radial-gradient(
+        ellipse at center,
+        #0c0a0833,
+        transparent 70%
+      );
+    }
+    .copy h3 {
+      font-size: clamp(30px, 4.4vw, 64px);
+      line-height: 1.2;
+      margin: 0;
+      max-width: 16ch;
+      text-shadow: 0 2px 10px #000;
+    }
+    .copy p {
+      font-size: clamp(16px, 2vw, 22px);
+      text-shadow: 0 2px 6px #000;
+    }
+    .copy span {
+      margin-top: 14px;
+      background: #f7f0dd;
+      color: #211a13;
+      padding: 14px 22px;
+      font: 600 15px system-ui;
+    }
+    a {
+      display: inline-block;
+      color: #8e2924;
+      margin-top: 12px;
+    }
+    footer {
+      border-top: 1px solid #c6b89d;
+      padding-top: 20px;
+      color: #584938;
+    }
+    @media (min-width: 1200px) {
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 32px;
+      }
+      .copy h3 {
+        font-size: 38px;
+      }
+      .copy p {
+        font-size: 17px;
+      }
+    }
+  </style>
+  <main>
+    <header>
+      <h1>Five directions for Twyne</h1>
+      <p>
+        Generated artwork, encoded as AVIF. Each option leaves space for the
+        landing headline. These previews use sample copy so the composition is
+        easy to compare.
+      </p>
+    </header>
+    <div class="grid">
+      <section>
+        <h2>1. The editorial table</h2>
+        <p>A shared desk and several editorial voices.</p>
+        <div class="hero">
+          <img
+            src="option-01-1536.avif"
+            width="1536"
+            height="1024"
+            alt="The editorial table"
+          />
+          <div class="copy">
+            <h3>A room for your writing.</h3>
+            <p>A fresh perspective. A stronger next draft.</p>
+            <span>Start your brief →</span>
+          </div>
+        </div>
+        <a href="option-01-1536.avif">View full image</a> ·
+        <a href="option-01.json">Generation prompt</a>
+      </section>
+      <section>
+        <h2>2. The revision</h2>
+        <p>Writing improves one precise mark at a time.</p>
+        <div class="hero">
+          <img
+            src="option-02-1536.avif"
+            width="1536"
+            height="1024"
+            alt="The revision"
+          />
+          <div class="copy">
+            <h3>A room for your writing.</h3>
+            <p>A fresh perspective. A stronger next draft.</p>
+            <span>Start your brief →</span>
+          </div>
+        </div>
+        <a href="option-02-1536.avif">View full image</a> ·
+        <a href="option-02.json">Generation prompt</a>
+      </section>
+      <section>
+        <h2>3. The manuscript garden</h2>
+        <p>
+          Connects directly with Twyne’s illuminated initials and ornate pages.
+        </p>
+        <div class="hero">
+          <img
+            src="option-03-1536.avif"
+            width="1536"
+            height="1024"
+            alt="The manuscript garden"
+          />
+          <div class="copy">
+            <h3>A room for your writing.</h3>
+            <p>A fresh perspective. A stronger next draft.</p>
+            <span>Start your brief →</span>
+          </div>
+        </div>
+        <a href="option-03-1536.avif">View full image</a> ·
+        <a href="option-03.json">Generation prompt</a>
+      </section>
+      <section>
+        <h2>4. The paper passage</h2>
+        <p>Revision as a passage from draft to finished work.</p>
+        <div class="hero">
+          <img
+            src="option-04-1536.avif"
+            width="1536"
+            height="1024"
+            alt="The paper passage"
+          />
+          <div class="copy">
+            <h3>A room for your writing.</h3>
+            <p>A fresh perspective. A stronger next draft.</p>
+            <span>Start your brief →</span>
+          </div>
+        </div>
+        <a href="option-04-1536.avif">View full image</a> ·
+        <a href="option-04.json">Generation prompt</a>
+      </section>
+      <section>
+        <h2>5. The impression</h2>
+        <p>Tactile letterpress, ink, and the final impression.</p>
+        <div class="hero">
+          <img
+            src="option-05-1536.avif"
+            width="1536"
+            height="1024"
+            alt="The impression"
+          />
+          <div class="copy">
+            <h3>A room for your writing.</h3>
+            <p>A fresh perspective. A stronger next draft.</p>
+            <span>Start your brief →</span>
+          </div>
+        </div>
+        <a href="option-05-1536.avif">View full image</a> ·
+        <a href="option-05.json">Generation prompt</a>
+      </section>
+    </div>
+    <footer>
+      Generated with built-in imagegen. Exact prompts and source provenance are
+      saved alongside each image.
+    </footer>
+  </main>
+</html>
