@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.23.3
+
+<sub>2026-09-30</sub>
+
+- Preserve the final edit when leaving the editor before autosave completes,
+  including full-page navigation and an interrupted IndexedDB write.
+- Recover emergency drafts with their native source, without replacing a newer
+  saved revision or clearing a different draft's recovery copy.
+- Cancel delayed visual updates when switching folios or applying source, so
+  stale text cannot be saved into the next manuscript.
+
 ## 0.23.0
 
 <sub>2026-09-30</sub>

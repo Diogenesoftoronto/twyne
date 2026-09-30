@@ -203,63 +203,11 @@ export function loadLegacyDraftHtml(): string {
   }
 }
 
-/* ── Crash mirror ───────────────────────────────────────────────────────
- *
- * IndexedDB is the store of record, but a write started as the tab is closing
- * is not guaranteed to commit — the browser can tear the page down first.
- * localStorage is synchronous, so a write there does survive.
- *
- * That is the *only* reason this exists, so it is written exactly once per
- * departure (`pagehide` / tab hidden) rather than on a typing timer, and it is
- * scoped to a folio so it cannot overwrite a different manuscript the way the
- * old single global draft key did.
- */
-const CRASH_MIRROR_KEY = "twyne:draft-crash-mirror";
-
-interface CrashMirror {
-  folioId: string;
-  html: string;
-  savedAt: number;
-}
-
-/** Synchronously stash the manuscript on the way out. Safe to call often. */
-export function writeCrashMirror(folioId: string, html: string): void {
-  if (typeof window === "undefined" || !folioId) return;
-  try {
-    const entry: CrashMirror = { folioId, html, savedAt: Date.now() };
-    localStorage.setItem(CRASH_MIRROR_KEY, JSON.stringify(entry));
-  } catch {
-    // Quota or private mode — the IndexedDB write is still the main path.
-  }
-}
-
-/**
- * The stashed manuscript for `folioId`, if the last departure left one.
- *
- * Returns it whenever it exists: it was written *after* the IndexedDB write
- * was issued, so either that write landed (and the two agree, making this a
- * no-op) or it did not (and this is the only surviving copy).
- */
-export function readCrashMirror(folioId: string): string | null {
-  if (typeof window === "undefined" || !folioId) return null;
-  try {
-    const raw = localStorage.getItem(CRASH_MIRROR_KEY);
-    if (!raw) return null;
-    const entry = JSON.parse(raw) as CrashMirror;
-    return entry.folioId === folioId ? entry.html : null;
-  } catch {
-    return null;
-  }
-}
-
-export function clearCrashMirror(): void {
-  if (typeof window === "undefined") return;
-  try {
-    localStorage.removeItem(CRASH_MIRROR_KEY);
-  } catch {
-    // nothing to clear
-  }
-}
+export {
+  writeCrashMirror,
+  readCrashMirror,
+  clearCrashMirror,
+} from "./crash-mirror";
 
 export function loadStartingMaterial(): string {
   if (typeof window === "undefined") return "";

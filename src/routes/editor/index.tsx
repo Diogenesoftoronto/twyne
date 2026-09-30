@@ -27,7 +27,6 @@ import {
   loadLegacyDraftHtml,
   loadProjectBrief,
   loadProjectBriefForFolio,
-  readCrashMirror,
   saveProjectBriefForFolio,
   UNTITLED_FOLIO_NAME,
   writeCrashMirror,
@@ -37,6 +36,9 @@ import {
   loadActiveFolioIdFromIdb,
   loadAllBriefsFromIdb,
   loadFolioContentFromIdb,
+  recoverFolioContentFromCrashMirror,
+  FOLIO_CONTENT_SAVED,
+  type FolioContentSavedDetail,
   saveFoliosToIdb,
   saveActiveFolioIdToIdb,
   saveFolioContentToIdb,
@@ -289,16 +291,10 @@ export default component$(() => {
         } else if (folios.length > 0) {
           store.folios = folios;
           store.activeFolioId = activeFolioId ?? folios[0].id;
-          const stored = await loadFolioContentFromIdb(store.activeFolioId);
-          // If the tab went away before the last IndexedDB write committed,
-          // the crash mirror holds the newer copy. When the write did land the
-          // two are identical, so preferring the mirror is always safe.
-          const rescued = readCrashMirror(store.activeFolioId);
-          store.editorSeed = rescued ?? stored;
-          if (rescued && rescued !== stored) {
-            await saveFolioContentToIdb(store.activeFolioId, rescued);
+          if (await recoverFolioContentFromCrashMirror(store.activeFolioId)) {
+            markDirty(["folioContent"], store.activeFolioId);
           }
-          clearCrashMirror();
+          store.editorSeed = await loadFolioContentFromIdb(store.activeFolioId);
         }
 
         store.brief = await loadProjectBriefForFolio(store.activeFolioId);
@@ -363,40 +359,67 @@ export default component$(() => {
     // and to force a flush when the tab is hidden so a quick close never
     // drops the tail.
     //
-    // Nothing here writes localStorage. That write was synchronous, carried
-    // the entire manuscript, and — being a single global key rather than a
-    // folio-scoped one — was clobbered by whichever folio saved last.
-    // Folio-scoped IndexedDB is the store of record.
+    // Only lifecycle departures write the synchronous crash mirror.
+    // Folio-scoped IndexedDB remains the store of record during typing.
     const LOCAL_PERSIST_DEBOUNCE_MS = 400;
     let localPersistTimer: number | null = null;
     let pendingDraftHtml: string | null = null;
     let pendingDraftFolioId: string | null = null;
     let folioArrayDirty = false;
+    let pageLeaving = false;
+    const unacknowledgedDrafts = new Map<string, string>();
 
     const flushLocalPersist = (leaving = false) => {
       localPersistTimer = null;
+      // A timer may already have started the IDB write and cleared pending.
+      // Keep that draft recoverable until its own acknowledgement arrives.
+      if (leaving) {
+        for (const [folioId, html] of unacknowledgedDrafts) {
+          if (folioId === store.activeFolioId) continue;
+          writeCrashMirror(folioId, html);
+        }
+        // The legacy emergency slot contains one folio. A save from a folio
+        // opened earlier must never displace the manuscript being left now.
+        const activeHtml =
+          store.activeFolioId && unacknowledgedDrafts.get(store.activeFolioId);
+        if (
+          store.activeFolioId &&
+          activeHtml !== undefined &&
+          activeHtml !== null
+        ) {
+          writeCrashMirror(store.activeFolioId, activeHtml);
+        }
+      }
       if (pendingDraftHtml !== null && pendingDraftFolioId !== null) {
         const [html, folioId] = [pendingDraftHtml, pendingDraftFolioId];
         pendingDraftHtml = null;
         pendingDraftFolioId = null;
         // On the way out the IndexedDB write may not get to commit, so leave a
         // synchronous copy behind first. During normal typing this is skipped.
-        if (leaving) writeCrashMirror(folioId, html);
-        void saveFolioContentToIdb(folioId, html).then(() => {
-          clearCrashMirror();
-          void usageLedger
-            .recordWritingActivity({ folioId })
-            .catch(() => undefined);
-          void createRevisionSnapshot({
-            folioId,
-            html,
-            source: "automatic",
-          });
-          // "Saved Xs ago" means on disk, so stamp it only once IDB commits.
-          window.dispatchEvent(
-            new CustomEvent("twyne:draft-saved", { detail: { folioId } }),
+        void saveFolioContentToIdb(folioId, html)
+          .then(() => {
+            if (unacknowledgedDrafts.get(folioId) === html) {
+              unacknowledgedDrafts.delete(folioId);
+            }
+            clearCrashMirror(folioId, html);
+            void usageLedger
+              .recordWritingActivity({ folioId })
+              .catch(() => undefined);
+            void createRevisionSnapshot({
+              folioId,
+              html,
+              source: "automatic",
+            });
+            // "Saved Xs ago" means on disk, so stamp it only once IDB commits.
+            window.dispatchEvent(
+              new CustomEvent("twyne:draft-saved", { detail: { folioId } }),
+            );
+          })
+          .catch((error) =>
+            reportApplicationDiagnostic("twyne:editor:save-draft", error, {
+              operation: "save-draft",
+            }),
           );
-        });
       }
       if (folioArrayDirty) {
         folioArrayDirty = false;
@@ -422,6 +445,8 @@ export default component$(() => {
 
     const cancelStaleVisualSave = (event: Event) => {
       const { folioId } = (event as CustomEvent<{ folioId: string }>).detail;
+      unacknowledgedDrafts.delete(folioId);
+      clearCrashMirror(folioId);
       if (pendingDraftFolioId !== folioId) return;
       if (localPersistTimer !== null) window.clearTimeout(localPersistTimer);
       localPersistTimer = null;
@@ -434,8 +459,18 @@ export default component$(() => {
     };
     window.addEventListener("twyne:typst-applying", cancelStaleVisualSave);
     window.addEventListener("twyne:typst-source-committed", sourceCommitted);
+    const remoteSaved = (event: Event) => {
+      if (
+        (event as CustomEvent<FolioContentSavedDetail>).detail.origin ===
+        "remote"
+      ) {
+        cancelStaleVisualSave(event);
+      }
+    };
+    window.addEventListener(FOLIO_CONTENT_SAVED, remoteSaved);
     cleanup(() => {
       window.removeEventListener("twyne:typst-applying", cancelStaleVisualSave);
+      window.removeEventListener(FOLIO_CONTENT_SAVED, remoteSaved);
       window.removeEventListener(
         "twyne:typst-source-committed",
         sourceCommitted,
@@ -443,10 +478,17 @@ export default component$(() => {
     });
 
     const onLocalPersistPageHide = () => {
-      // The editor flushes its own derive on the same event, which re-enters
-      // `contentHandler` synchronously; that handler flushes directly when the
-      // page is hidden, so this does not depend on listener ordering.
+      // pagehide can precede visibilitychange during a same-tab navigation.
+      // Keep departure explicit so a later editor listener cannot schedule a
+      // new debounce after this route listener has already flushed.
+      pageLeaving = true;
       flushLocalPersistNow(true);
+    };
+    const onLocalPersistPageShow = () => {
+      pageLeaving = false;
+    };
+    const onLocalPersistVisibility = () => {
+      if (document.visibilityState === "hidden") flushLocalPersistNow(true);
     };
 
     // ── Save editor content to the active folio ──
@@ -485,9 +527,10 @@ export default component$(() => {
         }
         pendingDraftHtml = html;
         pendingDraftFolioId = folioId;
+        unacknowledgedDrafts.set(folioId, html);
         // When the editor flushes its derive because the page is going away,
         // there is no later tick to coalesce into — write it out now.
-        if (document.visibilityState === "hidden") {
+        if (pageLeaving || document.visibilityState === "hidden") {
           flushLocalPersistNow(true);
         } else {
           scheduleLocalPersist();
@@ -501,8 +544,15 @@ export default component$(() => {
     // A hidden tab is a reliable cue that the writer is leaving — flush the
     // pending draft synchronously instead of waiting on the coalesce window.
     window.addEventListener("pagehide", onLocalPersistPageHide);
+    window.addEventListener("pageshow", onLocalPersistPageShow);
+    document.addEventListener("visibilitychange", onLocalPersistVisibility);
     cleanup(() => {
       window.removeEventListener("pagehide", onLocalPersistPageHide);
+      window.removeEventListener("pageshow", onLocalPersistPageShow);
+      document.removeEventListener(
+        "visibilitychange",
+        onLocalPersistVisibility,
+      );
       if (localPersistTimer !== null) {
         window.clearTimeout(localPersistTimer);
         localPersistTimer = null;

@@ -664,11 +664,39 @@ export const TwyneEditor = component$(
         const flushDerive = () => {
           if (deriveTimer) runDerive(editor);
         };
+        const cancelDerive = () => {
+          if (deriveTimer) clearTimeout(deriveTimer);
+          deriveTimer = null;
+          deriveDeadline = 0;
+        };
+        const cancelReplacedDerive = (event: Event) => {
+          const detail = (
+            event as CustomEvent<{ folioId: string; origin?: string }>
+          ).detail;
+          if (
+            detail.folioId === store.activeFolioId &&
+            detail.origin !== "local"
+          )
+            cancelDerive();
+        };
         window.addEventListener("pagehide", flushDerive);
         document.addEventListener("visibilitychange", flushDerive);
+        window.addEventListener("twyne:typst-applying", cancelReplacedDerive);
+        window.addEventListener(
+          "twyne:folio-content-saved",
+          cancelReplacedDerive,
+        );
         cleanup(() => {
           window.removeEventListener("pagehide", flushDerive);
           document.removeEventListener("visibilitychange", flushDerive);
+          window.removeEventListener(
+            "twyne:typst-applying",
+            cancelReplacedDerive,
+          );
+          window.removeEventListener(
+            "twyne:folio-content-saved",
+            cancelReplacedDerive,
+          );
         });
 
         // The route stamps this once content is actually on disk locally.
@@ -1833,6 +1861,7 @@ export const TwyneEditor = component$(
         // ── Listen for folio switches ──
         const onLoadFolio = (e: Event) => {
           invalidateVoiceWorkspace();
+          cancelDerive();
           const content = (e as CustomEvent).detail as string;
           editor.commands.setContent(content, { emitUpdate: false });
           applyDocumentMeta(store.meta, editor.getText());
