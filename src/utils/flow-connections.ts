@@ -119,9 +119,17 @@ export function similar(
     const score = dot / (qNorm * p.norm);
     if (score >= min)
       matches.push({
-        passage: { id: p.id, text: p.text, source: p.source, sourceName: p.sourceName },
+        passage: {
+          id: p.id,
+          text: p.text,
+          source: p.source,
+          sourceName: p.sourceName,
+        },
         score,
-        shared: shared.sort((a, b) => b[1] - a[1]).slice(0, 4).map(([t]) => t),
+        shared: shared
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 4)
+          .map(([t]) => t),
       });
   }
   return matches.sort((a, b) => b.score - a.score).slice(0, k);
@@ -140,7 +148,10 @@ export function paragraphs(text: string, minChars = 80): string[] {
  * words, plus any italic spans the editor hands in. Jev decides later which
  * are real works worth a card.
  */
-export function workCandidates(text: string, italics: readonly string[] = []): string[] {
+export function workCandidates(
+  text: string,
+  italics: readonly string[] = [],
+): string[] {
   const found = new Set<string>();
   const quoted = /[“"]([^”"]{2,80})[”"]/g;
   let m: RegExpExecArray | null;
@@ -148,7 +159,8 @@ export function workCandidates(text: string, italics: readonly string[] = []): s
     const title = m[1].trim().replace(/[,.;:!?]+$/, "");
     const words = title.split(/\s+/);
     const capitals = words.filter((w) => /^[\p{Lu}\d]/u.test(w)).length;
-    if (words.length <= 9 && capitals >= Math.ceil(words.length / 2)) found.add(title);
+    if (words.length <= 9 && capitals >= Math.ceil(words.length / 2))
+      found.add(title);
   }
   for (const span of italics) {
     const title = span.trim().replace(/[,.;:!?]+$/, "");

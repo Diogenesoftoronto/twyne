@@ -21,6 +21,7 @@ test("quick review paints feedback without changing saved text, then removes it 
   await withEditor(
     { content: `<p>${paragraph}</p>`, extensions: [QuickReview] },
     async ({ editor, dom, host, html }) => {
+      dom.reconfigure({ url: "https://twyne.test/editor/" });
       Object.defineProperty(dom.window.document, "hidden", { value: false });
       const prior = globalThis.CustomEvent;
       globalThis.CustomEvent = dom.window.CustomEvent;
@@ -50,6 +51,7 @@ test("a response for an earlier paragraph cannot paint the changed draft", async
   await withEditor(
     { content: `<p>${paragraph}</p>`, extensions: [QuickReview] },
     async ({ editor, dom, host }) => {
+      dom.reconfigure({ url: "https://twyne.test/editor/" });
       Object.defineProperty(dom.window.document, "hidden", { value: false });
       const prior = globalThis.CustomEvent;
       globalThis.CustomEvent = dom.window.CustomEvent;

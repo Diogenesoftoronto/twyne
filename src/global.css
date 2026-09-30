@@ -6919,7 +6919,11 @@ a {
 .flow-column--archive .flow-card {
   border-top-width: 1px;
   border-left: 3px solid var(--flow-accent, var(--color-cobalt));
-  background: color-mix(in srgb, var(--color-paper) 88%, var(--color-cobalt) 4%);
+  background: color-mix(
+    in srgb,
+    var(--color-paper) 88%,
+    var(--color-cobalt) 4%
+  );
 }
 .flow-card.is-hovered {
   transform: translateY(-1px);
@@ -7142,7 +7146,12 @@ a {
   height: 64px;
   border-radius: 50%;
   background:
-    radial-gradient(circle, var(--color-mustard) 0 14%, #111 15% 17%, transparent 18%),
+    radial-gradient(
+      circle,
+      var(--color-mustard) 0 14%,
+      #111 15% 17%,
+      transparent 18%
+    ),
     repeating-radial-gradient(circle, #1a1a1a 0 1px, #262626 1px 3px);
   transition: transform 240ms ease;
 }
@@ -7323,6 +7332,14 @@ a {
 
 /* A narrow desk has one foreground surface at a time. Keep ambient cards
    quiet while the writer uses a conversation, selection action or tool. */
-body:has(.manuscript-comment-card, .in-flow-rail, .in-flow-popover, .twyne-quick-review-card, .selection-actions, [role="dialog"]) .flow-dock {
+body:has(
+    .manuscript-comment-card,
+    .in-flow-rail,
+    .in-flow-popover,
+    .twyne-quick-review-card,
+    .selection-actions,
+    [role="dialog"]
+  )
+  .flow-dock {
   display: none;
 }

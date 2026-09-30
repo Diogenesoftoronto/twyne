@@ -33,6 +33,25 @@ let judgement: Promise<Judgement>;
 let cover: Promise<{ medium: "book"; title: string }>;
 let comments: Promise<unknown[]>;
 
+// Bun module mocks survive mock.restore(). Preserve and restore their exports
+// so later editor tests use the real judgement and storage implementations.
+const dependencies = [
+  "../../../utils/judgement-client",
+  "../../../utils/flow-media",
+  "../../../utils/system-one-budget",
+  "../../../utils/idb",
+  "../../../utils/anti-tabula-rasa",
+  "../../../utils/user-comments",
+  "../../../utils/bibliography",
+  "../../../utils/house-store",
+  "../../../utils/flow-diagnostics",
+];
+const savedModules = await Promise.all(
+  dependencies.map(
+    async (path) => [path, { ...(await import(path)) }] as const,
+  ),
+);
+
 mock.module("../../../utils/judgement-client", () => ({
   askJudgement: () => {
     judgementCalls++;
@@ -91,6 +110,7 @@ beforeAll(() => {
   for (const name of ["window", "document", "CustomEvent"] as const)
     Object.defineProperty(globalThis, name, {
       configurable: true,
+      writable: true,
       value: name === "window" ? dom.window : dom.window[name],
     });
   Object.defineProperty(globalThis, "setInterval", {
@@ -111,6 +131,7 @@ afterEach(() => {
   ticks.clear();
 });
 afterAll(() => {
+  for (const [path, exports] of savedModules) mock.module(path, () => exports);
   for (const [name, descriptor] of originals) {
     if (descriptor) Object.defineProperty(globalThis, name, descriptor);
     else Reflect.deleteProperty(globalThis, name);

@@ -700,32 +700,80 @@ export default defineSchema({
     .index("by_action_identifier", ["action", "identifier"])
     .index("by_identifier", ["identifier"]),
   houses: defineTable({
-    userId: v.string(), name: v.string(), dossier: v.any(), updatedAt: v.number(),
+    userId: v.string(),
+    name: v.string(),
+    dossier: v.any(),
+    updatedAt: v.number(),
   }).index("by_userId", ["userId"]),
   houseCollections: defineTable({
-    userId: v.string(), collectionId: v.string(), name: v.string(), description: v.string(),
-    dossier: v.any(), createdAt: v.number(), updatedAt: v.number(),
-  }).index("by_userId", ["userId"])
+    userId: v.string(),
+    collectionId: v.string(),
+    name: v.string(),
+    description: v.string(),
+    dossier: v.any(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
     .index("by_userId_and_collectionId", ["userId", "collectionId"]),
   collectionMembers: defineTable({
-    userId: v.string(), collectionId: v.string(), folioId: v.string(),
-  }).index("by_userId", ["userId"])
+    userId: v.string(),
+    collectionId: v.string(),
+    folioId: v.string(),
+  })
+    .index("by_userId", ["userId"])
     .index("by_userId_and_collectionId", ["userId", "collectionId"])
     .index("by_userId_and_folioId", ["userId", "folioId"]),
   charterItems: defineTable({
-    userId: v.string(), itemId: v.string(),
-    scope: v.union(v.literal("house"), v.literal("collection"), v.literal("folio")),
-    ownerRef: v.string(), text: v.string(), severity: v.union(v.literal("must"), v.literal("prefer")),
-    kind: v.union(v.literal("length"), v.literal("citation"), v.literal("style"), v.literal("voice"), v.literal("other")),
-    order: v.number(), updatedAt: v.number(),
-  }).index("by_userId", ["userId"])
+    userId: v.string(),
+    itemId: v.string(),
+    scope: v.union(
+      v.literal("house"),
+      v.literal("collection"),
+      v.literal("folio"),
+    ),
+    ownerRef: v.string(),
+    text: v.string(),
+    severity: v.union(v.literal("must"), v.literal("prefer")),
+    kind: v.union(
+      v.literal("length"),
+      v.literal("citation"),
+      v.literal("style"),
+      v.literal("voice"),
+      v.literal("other"),
+    ),
+    order: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_userId", ["userId"])
     .index("by_userId_and_itemId", ["userId", "itemId"]),
   contextLedger: defineTable({
-    userId: v.string(), entryId: v.string(), at: v.number(),
-    layer: v.union(v.literal("house"), v.literal("collection"), v.literal("folio"), v.literal("amendment"), v.literal("charter")),
-    ownerRef: v.string(), field: v.optional(v.string()), from: v.optional(v.string()), to: v.optional(v.string()),
-    source: v.union(v.literal("interview"), v.literal("refine"), v.literal("amendment"), v.literal("house"), v.literal("collection"), v.literal("charter"), v.literal("manual"), v.literal("sync")),
+    userId: v.string(),
+    entryId: v.string(),
+    at: v.number(),
+    layer: v.union(
+      v.literal("house"),
+      v.literal("collection"),
+      v.literal("folio"),
+      v.literal("amendment"),
+      v.literal("charter"),
+    ),
+    ownerRef: v.string(),
+    field: v.optional(v.string()),
+    from: v.optional(v.string()),
+    to: v.optional(v.string()),
+    source: v.union(
+      v.literal("interview"),
+      v.literal("refine"),
+      v.literal("amendment"),
+      v.literal("house"),
+      v.literal("collection"),
+      v.literal("charter"),
+      v.literal("manual"),
+      v.literal("sync"),
+    ),
     reason: v.optional(v.string()),
-  }).index("by_userId_and_at", ["userId", "at"])
+  })
+    .index("by_userId_and_at", ["userId", "at"])
     .index("by_userId_and_entryId", ["userId", "entryId"]),
 });

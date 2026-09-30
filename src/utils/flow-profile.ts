@@ -78,7 +78,11 @@ export function normalizeProfile(value: unknown): FlowProfile {
 const push = (list: number[], value: number) =>
   [...list, Math.round(value)].slice(-MAX_SAMPLES);
 
-export function recordPause(p: FlowProfile, ms: number, now: number): FlowProfile {
+export function recordPause(
+  p: FlowProfile,
+  ms: number,
+  now: number,
+): FlowProfile {
   // Sub-second gaps are typing, and long ones are someone making tea.
   if (ms < 1_500 || ms > 10 * 60_000) return p;
   return { ...p, pauses: push(p.pauses, ms), updatedAt: now };
@@ -96,7 +100,11 @@ export function recordRun(
   return { ...p, runs: push(p.runs, ms), hours, updatedAt: now };
 }
 
-export function recordFlowEntry(p: FlowProfile, runMs: number, now: number): FlowProfile {
+export function recordFlowEntry(
+  p: FlowProfile,
+  runMs: number,
+  now: number,
+): FlowProfile {
   return { ...p, flowEntries: push(p.flowEntries, runMs), updatedAt: now };
 }
 
@@ -121,13 +129,17 @@ export function recordItem(
 export function quantile(values: readonly number[], q: number): number | null {
   if (!values.length) return null;
   const sorted = [...values].sort((a, b) => a - b);
-  const index = Math.min(sorted.length - 1, Math.max(0, (sorted.length - 1) * q));
+  const index = Math.min(
+    sorted.length - 1,
+    Math.max(0, (sorted.length - 1) * q),
+  );
   const lo = Math.floor(index);
   const hi = Math.ceil(index);
   return sorted[lo] + (sorted[hi] - sorted[lo]) * (index - lo);
 }
 
-const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+const clamp = (v: number, lo: number, hi: number) =>
+  Math.min(hi, Math.max(lo, v));
 
 /**
  * Fit the detector to the writer. Needs a dozen pauses before it trusts

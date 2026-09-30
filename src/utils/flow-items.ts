@@ -139,7 +139,11 @@ export function anchorOverlap(item: FlowItem, text: string): number {
 }
 
 const normalize = (s: string) =>
-  s.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim();
+  s
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 export function scoreItem(item: FlowItem, context: SurfaceContext): number {
   const ageMin = Math.max(0, (context.now - item.createdAt) / 60_000);
@@ -184,19 +188,24 @@ export function decideSurface(
       visible =
         context.mode === "flow"
           ? []
-          : ranked.filter((r) => context.shown.has(r.item.id)).map((r) => r.item);
+          : ranked
+              .filter((r) => context.shown.has(r.item.id))
+              .map((r) => r.item);
       for (const { item } of ranked)
         reasons[item.id] ??= visible.includes(item)
           ? "kept: already on the page"
           : `held: ${context.mode}`;
       break;
     case "stuck": {
-      const best = ranked.find(
-        (r) => anchorOverlap(r.item, context.cursorText) > 0.3,
-      ) ?? ranked[0];
+      const best =
+        ranked.find((r) => anchorOverlap(r.item, context.cursorText) > 0.3) ??
+        ranked[0];
       const linked = new Set(best?.item.links ?? []);
       visible = best
-        ? [best.item, ...ranked.filter((r) => linked.has(r.item.id)).map((r) => r.item)]
+        ? [
+            best.item,
+            ...ranked.filter((r) => linked.has(r.item.id)).map((r) => r.item),
+          ]
         : [];
       for (const { item, score } of ranked)
         reasons[item.id] = visible.includes(item)
@@ -238,7 +247,8 @@ export function stackCards(
       moved = false;
       for (const block of placed) {
         const overlaps =
-          top < block.top + block.height + gap && top + card.height + gap > block.top;
+          top < block.top + block.height + gap &&
+          top + card.height + gap > block.top;
         if (overlaps) {
           top = block.top + block.height + gap;
           moved = true;
