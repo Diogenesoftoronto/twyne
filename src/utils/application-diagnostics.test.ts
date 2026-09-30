@@ -6,6 +6,7 @@ const captured: Array<{
 }> = [];
 
 mock.module("./posthog-context", () => ({
+  maybeDisplayProgressSurvey: async () => {},
   capturePostHogEvent: async (
     event: string,
     properties: Record<string, unknown>,
