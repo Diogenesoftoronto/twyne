@@ -6,6 +6,7 @@ import { WebSocket } from "ws";
 import {
   installLiveVoiceRelay,
   liveHandshake,
+  liveOriginAllowed,
 } from "../scripts/live-voice-relay.mjs";
 const issuer = "https://api.notorganic.info";
 const proof = (htu = `${issuer}/v1/live/sessions`) =>
@@ -78,6 +79,13 @@ async function checkUpgrades(
     if (!address || typeof address === "string")
       throw new Error("Expected a local TCP server.");
     for (const entry of cases(address.port)) {
+      expect(
+        liveOriginAllowed(
+          entry.origin,
+          origin,
+          entry.host ?? `127.0.0.1:${address.port}`,
+        ),
+      ).toBe(entry.status === 101);
       const status = await new Promise<number>((resolve, reject) => {
         const client = new WebSocket(
           `ws://127.0.0.1:${address.port}/api/live`,
@@ -90,7 +98,12 @@ async function checkUpgrades(
           },
         );
         clients.add(client);
-        client.once("error", reject);
+        client.once("error", (error) => {
+          // Older supported Bun versions expose rejection as a connection
+          // error, without an unexpected-response event or HTTP status.
+          if (entry.status === 403) resolve(0);
+          else reject(error);
+        });
         client.once("open", () => {
           resolve(101);
           client.close();
@@ -101,11 +114,8 @@ async function checkUpgrades(
           client.terminate();
         });
       });
-      expect({ origin: entry.origin, host: entry.host, status }).toEqual({
-        ...entry,
-        host: entry.host,
-        origin: entry.origin,
-      });
+      if (entry.status === 101) expect(status).toBe(101);
+      else expect([403, 0]).toContain(status);
       expect(upstreamRequest).not.toHaveBeenCalled();
       expect(upstreamConnections).toBe(0);
     }
