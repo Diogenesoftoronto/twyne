@@ -1,0 +1,5 @@
+hey imagine a the current editor, it has the comments streamed in that the editors and your team are making, some of the components that jev decides are relevant like a book from your knowledge base that might apply or a music line with book cover and album cover appearing. the application finds things you have been working on, creataes connections to your wrritingn as you hover o verr a comment it shows you relevant passages that are  connected the arrows going to each part of your writing or relevant components on the side. at any time you can fully go into zen mode where just the text appears make surethat you don't break oout of flow or conccentration. this zen mode is somethingn that is detected as well by jev so the user doesn't even need to think about. what you have before you  is a fluid application. something that removes noise when needed and brings in things when you are stuck that are necessary or helpful.
+
+---
+
+.
