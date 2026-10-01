@@ -1,0 +1,51 @@
+hey i want a much nicer embed with opengraph. use your images
+
+---
+
+give  me a few different options
+
+---
+
+i want the editor ribbon on mobile devices to be more compact.
+
+---
+
+.
+
+---
+
+put this in the storybook
+
+---
+
+can you serve the images for opengraph
+
+---
+
+<send_user_message_question_reply>
+[{"answer":"i just want to see them not on live site just separately serve directly locally","question":"Should the generated Open Graph images be live at twyne.love, or served only by the local app for now?","questionItemId":"[\"request_user_input_async\",\"REDACTED\",0]"}]
+</send_user_message_question_reply>
+
+---
+
+okay my favourite one is thhe writers desk.
+
+---
+
+one thing thata i would like is to have  the logo and also I thhink just the background image and then put the text properly on top as code with the image mamkes sense. maybe even have the opengraph be a short video with  t he desk
+
+---
+
+did you get the video for this
+
+---
+
+.
+
+---
+
+use fal to render a video of the scene instead of shift
+
+---
+
+use the seeddance 2.5 video model
