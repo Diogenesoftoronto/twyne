@@ -1,0 +1,67 @@
+# Task: Convex sync + backend for "the House" (Twyne)
+
+Repo: /home/diogenes/Projects/twyne (Qwik + Convex, Bun). Read `CLAUDE.md` and `convex/_generated/ai/guidelines.md` FIRST.
+
+Another agent is editing UI files in this working tree at the same time. The tree also has many unrelated uncommitted changes.
+- ONLY create or edit the files listed under "Files you own".
+- Never reformat or revert anything else.
+- Do not run `prettier --write .`, `git checkout`, `git stash`, or `git commit`.
+
+## Context (already written; read these, do not change their exported types)
+- `src/utils/house-model.ts`: types `HouseState`, `House`, `Collection`, `CharterItem`, `LedgerEntry`, plus pure stack assembly.
+- `src/utils/house-store.ts`: local-first storage.
+  - The whole `HouseState` lives in IDB meta key `house-state`.
+  - Every change fires `window` event `twyne:house-changed` with `{ state, remote }`.
+  - Write remote pulls with `replaceHouseState(state, { remote: true })` so they don't bounce back out.
+
+## Files you own
+1. **`convex/schema.ts`**: APPEND new tables only; touch nothing else.
+   - Rows, not arrays (see the guidelines); index names include every field.
+   - Tables:
+     - `houses` { userId, name, dossier: v.any(), updatedAt }, index `by_userId`
+     - `houseCollections` { userId, collectionId, name, description, dossier: v.any(), createdAt, updatedAt }, indexes `by_userId`, `by_userId_and_collectionId`
+     - `collectionMembers` { userId, collectionId, folioId }, indexes `by_userId`, `by_userId_and_collectionId`, `by_userId_and_folioId`
+     - `charterItems` { userId, itemId, scope: "house"|"collection"|"folio", ownerRef, text, severity: "must"|"prefer", kind: "length"|"citation"|"style"|"voice"|"other", order, updatedAt }, indexes `by_userId`, `by_userId_and_itemId`
+     - `contextLedger` { userId, entryId, at, layer, ownerRef, field?, from?, to?, source, reason? }, indexes `by_userId_and_at`, `by_userId_and_entryId`
+2. **`convex/house.ts`** (new). Follow the auth pattern in `convex/userComments.ts`.
+   - The owner is ALWAYS `(await ctx.auth.getUserIdentity()).tokenIdentifier`. Never accept a userId argument. Throw "Not signed in" when there is no identity.
+   - Validators on every arg; string fields bounded (cap lengths, reject oversize).
+   - Functions:
+     - `getHouse` query: returns `{ house, collections (with folioIds from collectionMembers), charter, ledger: newest 200 }` in the `HouseState` shape, or null when there is nothing.
+     - `putHouseSnapshot` mutation: takes a full `HouseState`-shaped arg (ledger capped at 200 per call).
+       - Upserts the house row.
+       - Replaces collections, members and charter rows to match exactly (delete missing).
+       - Inserts ledger entries idempotently by entryId. The ledger is append-only and never deleted by this mutation.
+     - `listLedger` paginated query ordered by `at` desc.
+   - Add every new table to the account-deletion map in `convex/account.ts`, following the existing entries (e.g. `userComments` near line 181).
+3. **`convex/house.test.ts`** (new). Same style as `convex/userComments.test.ts` (`describeConvex`, `import.meta.glob` guard). Cover:
+   - round-trip `putHouseSnapshot` → `getHouse`
+   - replacing removes deleted collections and charter items
+   - ledger idempotency
+   - signed-out throws
+   - writer B cannot see writer A's house
+4. **`src/utils/house-sync.ts`** (new): `startHouseSync(getClient: () => ConvexClient | null): () => void`.
+   - On start, and on `twyne:remote-sync`: query `api.house.getHouse`.
+     - Merge rule: the newer `house.updatedAt` wins for house and collections, charter items merge by `updatedAt` per itemId, and ledger entries union by id.
+     - Write back with `replaceHouseState(merged, { remote: true })` only when something changed.
+   - On `twyne:house-changed` where `remote === false`: debounce 2s, then call `api.house.putHouseSnapshot`.
+   - Fail quietly offline (retry on the `online` event).
+   - Keep the merge logic a pure exported function `mergeHouseStates(local, remote)`.
+   - Also `src/utils/house-sync.test.ts` (bun:test) for `mergeHouseStates`.
+5. **Wire `startHouseSync`**: find where `startBackgroundResearch`/convex sync context is set in `src/routes/editor/index.tsx` (`useConvexClient` usage). Add ONE `useVisibleTask$` (or one line in an existing client-ready task) that starts it with cleanup. Keep the diff to a few lines.
+6. **`src/utils/brief-history.ts`**:
+   - `archiveBriefEdition(folioId, brief, provenance?: { source: LedgerSource; reason?: string })`.
+   - Store the provenance on the edition (`BriefEdition.source?`, `BriefEdition.reason?`).
+   - After archiving, call `appendLedger` from `house-store.ts` with one entry per changed dossier field (`layer: "folio"`, `ownerRef: folioId`, from/to strings). Compare the previous and next briefs, which means passing the next brief too: change `saveProjectBriefForFolio` in `src/utils/anti-tabula-rasa.ts` to accept optional provenance and pass it through. Default source is `"refine"`.
+   - Existing callers must keep compiling unchanged.
+7. **`src/utils/ai-client.ts`**: add `runClientDossierAmend({ field, label, current, excerpt, dossier }, settings): Promise<string | null>`.
+   - Model it on `runClientDossierCheck` (~line 3619): `resolveFeatureConfig(settings, "dossier-check")`, `createModel`, `generateTrackedText`.
+   - It returns ONE revised line (≤ 240 chars) for that dossier field, describing what the recent draft `excerpt` is actually doing.
+   - Strip quotes and reasoning tags; return null on failure.
+   - Add a small test if there's an existing pattern for mocking these.
+
+## Done means
+- `bunx tsc --noEmit -p .` has no NEW errors in your files. Check with `bun run build.types 2>&1 | grep -E "house|brief-history|anti-tabula|ai-client"`.
+- Your tests pass when run individually: `bun test src/utils/house-sync.test.ts`, and the convex test via the repo's vitest setup (see `vitest.config.ts` and how `convex/userComments.test.ts` runs).
+- If `npx convex codegen` can't run offline, add the `house` module to `convex/_generated/api.d.ts` by hand, following the existing entries.
+- End with a short report: files changed, test commands and their results, anything left undone.
