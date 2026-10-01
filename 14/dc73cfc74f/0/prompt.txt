@@ -1,0 +1,5 @@
+i want you to take a look at t he last claude entire cli session and continue from there
+
+---
+
+what do you think of the changes made to this repository by claude, the plan that it had and the changes that it made, where else would you take things?
