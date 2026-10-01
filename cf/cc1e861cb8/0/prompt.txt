@@ -1,0 +1,139 @@
+# Brief: flow sessions, the "way in" item, and fallback-card scrolling (Twyne)
+
+You are working in /home/diogenes/Projects/twyne (Qwik + TipTap + Convex, Bun).
+Another agent (Claude) is building the UI for these features **at the same time**
+in other files. Stay inside the files you own. Do NOT commit, do NOT run
+`git stash`, `git checkout`, `git reset`, or any formatter over the whole repo.
+The working tree has many unrelated uncommitted changes: leave them alone.
+
+Do NOT start a Vite dev server (one is already running on 127.0.0.1:5180 and a
+second one corrupts the shared `node_modules/.vite` cache). Do not run
+Playwright e2e. Verify with `npx tsc --noEmit -p .` (filter to your files) and
+`bun test <file>` run ONE FILE AT A TIME (the full suite has known cross-file
+flakes). `npx eslint <your files>` too.
+
+## Files you own
+
+- `src/components/editor/extensions/flow-conductor.ts`
+- `src/components/editor/extensions/flow-conductor.test.ts`
+- `src/utils/flow-session.ts` (keep the existing exported types, field names and
+  `FLOW_SESSION_EVENT` exactly as they are; you may ADD pure helpers)
+- new `src/utils/flow-session.test.ts`
+- `src/utils/flow-items.ts` — only `decideSurface`/`scoreItem` if the way-in item
+  needs policy changes (the `"way-in"` kind, its label, side and priority are
+  already added; keep them)
+- `src/utils/flow-policy.test.ts`
+- `src/components/editor/twyne-editor.tsx` — only for task 3
+- `src/components/editor/popover-positioning.ts` + its test — only if task 3 needs it
+- `src/routes/house/index.tsx` — only for task 4
+- `docs/flow-and-context.md` — task 5
+- new unit test files for `flow-state.ts`, `flow-profile.ts`, `margin-surface.ts`
+
+Claude owns (do not edit): `src/components/in-flow/*`, `src/global.css`,
+`src/components/editor/manuscript-panel.tsx`, `src/components/house/house.css`.
+
+## Background
+
+Read `docs/flow-and-context.md` first. `flow-conductor.ts` reads typing cadence
+(`flow-state.ts` → modes `away | working | settling | flow | stuck`), learns the
+writer's thresholds (`flow-profile.ts`), gathers margin items (echoes, works,
+shelf, charter, amendments…) with budgeted Jev (System One) calls via `ask()`,
+and publishes a `FlowSnapshot` on `FLOW_EVENT`. `FlowSnapshot.heldKinds` was just
+added (a tally of held items by kind); keep it.
+
+## Task 1 — flow sessions (the "galley slip")
+
+When the page enters `flow` mode, open a session; when it leaves flow (to any
+other mode), when the writer releases focus (Escape / reaching / manual zen
+off), or when the conductor stops (editor destroyed / folio change), close it.
+Build a `FlowSession` (see `src/utils/flow-session.ts`):
+
+- `flowMs`: time from entering flow to leaving it.
+- `words`: net words added during the session (the conductor already tracks
+  inserted/deleted chars per transaction; count words with the same 5.5
+  chars/word used by `wordsSinceDrift`, or better, diff the doc's word count
+  at start vs end — choose the more honest one, never negative).
+- `wpm`: words / minutes, rounded.
+- `waited`: how many distinct items were upserted or held while the session
+  was open (i.e. what the quiet page kept from the writer).
+- `amendments`: amendment items proposed during the session.
+- `ended`: map the cause to `FlowSessionEnd`.
+
+Only announce sessions worth a slip: `flowMs >= 60_000` (or `words >= 40`).
+Dispatch `new CustomEvent<FlowSession>(FLOW_SESSION_EVENT, { detail })` on
+`window`, log it with `logFlow("focus", ...)`, and persist the last 30 sessions
+to IndexedDB meta key `"flow-sessions"` using the existing helpers in
+`src/utils/idb.ts` (`saveMetaToIdb`, `loadMetaFromIdb`, `toStorable`). IMPORTANT:
+never put Qwik store proxies into IDB (DataCloneError fails silently); build
+plain objects and use `toStorable`. Add a pure, tested helper in
+`flow-session.ts`, e.g. `summarizeSession(...)` and `appendSession(list, s, max)`,
+plus `loadFlowSessions()`.
+
+Also add `lastSession(): FlowSession | null` to the `FlowController` interface
+so the margin can show the most recent slip after a remount.
+
+## Task 2 — "a way in" when stuck
+
+`gather()` already asks Jev `questions.stuck` when `mode === "stuck"` but never
+uses the answer. When the writer is stuck and Jev confirms (noul ≥ 0.6, or when
+no client is available, fall back to the local reading only if the struggle
+signal is strong), upsert ONE item:
+
+```ts
+{ id: `way-in:${key.slice(0, 40)}`, kind: "way-in", anchors: [text],
+  title: <short prompt>, body: <one or two sentences>, byline?: string,
+  links?: [<id of the best echo item for this passage, if any>], createdAt, relevance }
+```
+
+System One returns typed judgements, not prose, so pick the prompt with a
+`choice` question from a fixed set of ways in, and fill the body from a
+template that uses the dossier (`stack.fields.goal/audience`) and the
+passage. Suggested set (tune the wording; keep it short, warm, never bossy):
+
+- "Say it plainly first" — write the sentence as you'd say it to <audience>, then dress it.
+- "Start from the thing itself" — one concrete detail you can see.
+- "Who is this for?" — <goal / audience line from the dossier>.
+- "Pick up an earlier thread" — only offered when an echo matched; link it.
+- "Leave a mark and move on" — type TK and write the next paragraph.
+
+Only one way-in at a time; dismissing it must keep it dismissed for that
+passage. It should rank first while stuck (priority is already 0.95), and it
+should not be offered in any other mode (make `decideSurface` hold it outside
+`stuck`, with a reason string). Add policy tests.
+
+## Task 3 — fallback conversation cards follow their passage
+
+On screens where the flow margin is not active (`marginSurface()` returns null),
+the comment / persona-note / suggestion popovers are placed once with
+`computeMarginCardGeometry` (which now tucks the card under or over the passage
+when there is no margin room) and then stay fixed while the manuscript scrolls.
+Make them follow their passage on scroll/resize (rAF-throttled, passive
+listener on the manuscript scroller, found the same way `flow-surface.tsx`
+finds it: `.page-canvas` parent). Only for popovers whose `margin` is null. If
+the passage scrolls fully out of the viewport and the card has no unsent
+draft and is not pinned, close it; otherwise clamp it on screen. Keep the
+existing `margin`-slot path untouched.
+
+## Task 4 — House engine room
+
+In `src/routes/house/index.tsx`, in the existing engine-room / diagnostics tab,
+add a small "Galley slips" list of the recent `flow-sessions` (date, folio name
+if resolvable, minutes in flow, words, wpm, items that waited, how it ended).
+Reuse existing classes from that page; don't add CSS (tell me which class names
+you used so I can style them). Beware Qwik optimizer gotchas documented in
+comments in that file: no tuple destructuring in `.map` callbacks that feed
+event handlers; build fragment JSX lazily (functions), not as eager constants.
+
+## Task 5 — docs and tests
+
+- Update `docs/flow-and-context.md`: sessions/galley slip, the way-in item, the
+  pneumatic-post tally (`heldKinds`), and the fallback-card scrolling.
+- Unit tests: `flow-session` helpers, way-in policy, and (if time) `flow-state`
+  `readFlow` transitions, `flow-profile` threshold learning, `margin-surface`
+  register/unregister/`marginSurface()` gating.
+
+## When done
+
+Print a short report: files changed, the public API you added (names +
+signatures), class names used in the House page, test results, and anything
+you could not verify.
