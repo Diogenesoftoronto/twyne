@@ -5,6 +5,13 @@
  * state; the code is redeemed by Convex (`/sign-in/notorganic`), which verifies
  * the DID and issues the Twyne session.
  */
+import {
+  claimBriefDraftHandoff,
+  FLUSH_BRIEF_DRAFT,
+  prepareBriefDraftHandoff,
+  type BriefDraftHandoff,
+} from "./brief-form-draft";
+
 export const NOTORGANIC_SIGN_IN_ATTEMPT = "twyne:notorganic-sign-in";
 export const NOTORGANIC_CALLBACK_PATH = "/auth/notorganic/";
 
@@ -15,6 +22,7 @@ export interface NotOrganicSignInAttempt {
   origin: string;
   /** Where to land after the session is issued. Same-origin path only. */
   returnTo: string;
+  briefDraft?: BriefDraftHandoff;
 }
 
 const encode = (bytes: Uint8Array) =>
@@ -106,6 +114,8 @@ export async function startNotOrganicSignIn(returnTo?: string): Promise<void> {
     location.origin,
     returnTo ?? location.pathname + location.search,
   );
+  window.dispatchEvent(new Event(FLUSH_BRIEF_DRAFT));
+  attempt.briefDraft = prepareBriefDraftHandoff(sessionStorage);
   sessionStorage.setItem(NOTORGANIC_SIGN_IN_ATTEMPT, JSON.stringify(attempt));
   location.assign(url);
 }
@@ -114,7 +124,8 @@ export async function startNotOrganicSignIn(returnTo?: string): Promise<void> {
 export async function completeNotOrganicSignIn(
   url: URL,
   dependencies: {
-    storage?: Pick<Storage, "getItem" | "removeItem">;
+    storage?: Pick<Storage, "getItem" | "removeItem"> &
+      Partial<Pick<Storage, "setItem">>;
     client?: {
       $fetch: (
         path: string,
@@ -171,6 +182,12 @@ export async function completeNotOrganicSignIn(
       "Twyne could not confirm your session. Please sign in again.",
     );
   }
+  if (storage.setItem)
+    claimBriefDraftHandoff(
+      storage as Storage,
+      attempt.briefDraft,
+      issuedUser.id,
+    );
   return safeReturnTo(attempt.returnTo);
 }
 

@@ -383,6 +383,8 @@ export default component$(() => {
       {store.style === "form" ? (
         <AntiTabulaRasa
           mode="refine"
+          draftScope={`refine:${store.folioId}`}
+          draftBase={String(store.brief.updatedAt)}
           filingState={store.filingState}
           chromeBackHref="/editor/"
           chromeBackLabel="Back to desk"

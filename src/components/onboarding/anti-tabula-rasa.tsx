@@ -1,5 +1,12 @@
 import { currentModelLocale } from "../../i18n/model-language";
-import { component$, $, useStore, type PropFunction } from "@qwik.dev/core";
+import {
+  component$,
+  $,
+  useStore,
+  useSignal,
+  useVisibleTask$,
+  type PropFunction,
+} from "@qwik.dev/core";
 import type {
   DossierAttachment,
   DossierCheckResult,
@@ -36,6 +43,13 @@ import { DossierTopBar } from "./dossier-top-bar";
 import { WritingFormatInput } from "./writing-format-input";
 import type { DossierFilingState } from "../../utils/dossier-filing";
 import type { BriefEdition } from "../../utils/brief-history";
+
+import {
+  clearBriefFormDraft,
+  FLUSH_BRIEF_DRAFT,
+  loadBriefFormDraft,
+  saveBriefFormDraft,
+} from "../../utils/brief-form-draft";
 
 type InterviewMode = "first-run" | "refine";
 
@@ -182,6 +196,8 @@ interface AntiTabulaRasaProps {
   onSwitchSurface$: PropFunction<() => void>;
   onStartOver$?: PropFunction<() => void>;
   filingState?: DossierFilingState;
+  draftScope?: string;
+  draftBase?: string;
   initialAnswers?: ProjectInterviewAnswers | null;
   initialAttachments?: DossierAttachment[];
   initialProbes?: DossierProbe[];
@@ -221,6 +237,8 @@ export const AntiTabulaRasa = component$(
     onSwitchSurface$,
     onStartOver$,
     filingState = "idle",
+    draftScope,
+    draftBase = "",
     initialAnswers,
     initialAttachments,
     initialProbes,
@@ -271,6 +289,126 @@ export const AntiTabulaRasa = component$(
     });
     const clientSig = useConvexClient();
     const auth = useAuth();
+
+    const textareaRef = useSignal<HTMLTextAreaElement>();
+    const draftReady = useSignal(!draftScope);
+    const draftOwner = useSignal<string | null>(null);
+    const draftIdentityScope = useSignal("");
+    const draftIdentityInitialized = useSignal(false);
+    const draftStorageError = useSignal("");
+    const persistDraft = $(() => {
+      if (!draftScope || !draftReady.value) return;
+      try {
+        saveBriefFormDraft(
+          sessionStorage,
+          draftScope,
+          draftOwner.value,
+          draftBase,
+          {
+            answers: store.answers,
+            attachments: store.attachments,
+            probes: store.probes,
+            existingMaterial: store.existingMaterial,
+            importedFilename: store.importedFilename,
+            step: store.step,
+          },
+        );
+        draftStorageError.value = "";
+      } catch {
+        draftStorageError.value =
+          "This browser could not keep a recovery copy. Keep this form open until the dossier is filed.";
+      }
+    });
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(
+      ({ track, cleanup }) => {
+        const loading = track(() => auth.value.loading);
+        const owner = track(() => auth.value.user?.id ?? null);
+        track(() => draftScope);
+        if (!draftScope) return;
+        if (loading) {
+          draftReady.value = false;
+          return;
+        }
+        if (
+          !draftIdentityInitialized.value ||
+          draftOwner.value !== owner ||
+          draftIdentityScope.value !== draftScope
+        ) {
+          draftReady.value = false;
+          draftOwner.value = owner;
+          draftIdentityScope.value = draftScope;
+          const saved = loadBriefFormDraft(
+            sessionStorage,
+            draftScope,
+            owner,
+            draftBase,
+          );
+          const initial = !draftIdentityInitialized.value;
+          store.answers = saved?.answers ?? {
+            ...DEFAULT_INTERVIEW_ANSWERS,
+            ...(initial ? initialAnswers : {}),
+          };
+          store.attachments =
+            saved?.attachments ?? (initial ? initialAttachments : []) ?? [];
+          store.probes = saved?.probes ?? (initial ? initialProbes : []) ?? [];
+          store.existingMaterial =
+            saved?.existingMaterial ?? (initial ? initialMaterial : "") ?? "";
+          store.importedFilename = saved?.importedFilename ?? "";
+          store.step = saved?.step ?? 0;
+          store.probesRequested = store.probes.length > 0;
+          store.probesAnswersKey = JSON.stringify(store.answers);
+          store.submitting = false;
+          draftIdentityInitialized.value = true;
+          draftReady.value = true;
+        } else {
+          draftReady.value = true;
+        }
+        // Native departure listeners must write synchronously; QRL invocation
+        // can yield while the browser is already replacing this document.
+        const flush = () => {
+          if (!draftReady.value) return;
+          try {
+            saveBriefFormDraft(sessionStorage, draftScope, owner, draftBase, {
+              answers: store.answers,
+              attachments: store.attachments,
+              probes: store.probes,
+              existingMaterial: store.existingMaterial,
+              importedFilename: store.importedFilename,
+              step: store.step,
+            });
+          } catch {
+            draftStorageError.value =
+              "This browser could not keep a recovery copy. Keep this form open until the dossier is filed.";
+          }
+        };
+        window.addEventListener("pagehide", flush);
+        window.addEventListener(FLUSH_BRIEF_DRAFT, flush);
+        cleanup(() => {
+          flush();
+          window.removeEventListener("pagehide", flush);
+          window.removeEventListener(FLUSH_BRIEF_DRAFT, flush);
+        });
+      },
+      { strategy: "document-ready" },
+    );
+
+    // Qwik beta.42 assigns escapeHTML(value) to textarea.value when mounting
+    // a client-rendered leaf. Recovery must preserve literal punctuation and
+    // source text, so reconcile the native value after the leaf is mounted.
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(
+      ({ track }) => {
+        const textarea = track(textareaRef);
+        const index = track(() => store.step);
+        const field = STEPS[index]?.field;
+        const value = field
+          ? track(() => store.answers[field])
+          : track(() => store.existingMaterial);
+        if (textarea && textarea.value !== value) textarea.value = value;
+      },
+      { strategy: "document-ready" },
+    );
 
     /**
      * Ask the interviewer for follow-ups based on the answers filled in so far.
@@ -389,6 +527,7 @@ export const AntiTabulaRasa = component$(
         });
       } finally {
         store.probesLoading = false;
+        void persistDraft();
       }
     });
 
@@ -398,6 +537,7 @@ export const AntiTabulaRasa = component$(
 
     const goNext = $(async () => {
       // Read step from the reactive store at CALL time, not captured value
+      await persistDraft();
       const currentStep = store.step;
       const lastStep = currentStep === STEPS.length - 1;
 
@@ -414,6 +554,10 @@ export const AntiTabulaRasa = component$(
               store.attachments,
               store.probes.filter((p) => p.answer !== undefined),
             );
+            if (draftScope) {
+              draftReady.value = false;
+              clearBriefFormDraft(sessionStorage, draftScope, draftOwner.value);
+            }
           } catch (err) {
             store.submitError =
               (err as Error).message || "The dossier could not be saved.";
@@ -437,6 +581,7 @@ export const AntiTabulaRasa = component$(
       }
       const next = currentStep + 1;
       store.step = next;
+      void persistDraft();
       // Fetch the follow-ups as the writer arrives, not on mount — they are
       // derived from answers that don't exist until this point.
       if (STEPS[next]?.kind === "probes") {
@@ -451,17 +596,20 @@ export const AntiTabulaRasa = component$(
       const raw = await file.text();
       store.existingMaterial = raw;
       store.importedFilename = file.name;
+      void persistDraft();
       if (input) input.value = "";
     });
 
     const clearMaterial = $(() => {
       store.existingMaterial = "";
       store.importedFilename = "";
+      void persistDraft();
     });
 
     const goBack = $(() => {
       if (store.step > 0) {
         store.step -= 1;
+        void persistDraft();
       }
     });
 
@@ -474,6 +622,7 @@ export const AntiTabulaRasa = component$(
     const goToStep = $((index: number) => {
       if (index < 0 || index >= STEPS.length || index === store.step) return;
       store.step = index;
+      void persistDraft();
       if (STEPS[index]?.kind === "probes") {
         void loadProbes(false);
       }
@@ -481,7 +630,10 @@ export const AntiTabulaRasa = component$(
 
     const jumpToField = $((field: keyof ProjectInterviewAnswers) => {
       const index = STEPS.findIndex((entry) => entry.field === field);
-      if (index >= 0) store.step = index;
+      if (index >= 0) {
+        store.step = index;
+        void persistDraft();
+      }
     });
 
     /** A department is "filed" once it holds something worth carrying. */
@@ -502,6 +654,7 @@ export const AntiTabulaRasa = component$(
 
     const answerFormProbe = $((answered: DossierProbe) => {
       store.probes = upsertProbe(store.probes, answered);
+      void persistDraft();
     });
 
     const readDraft = $(async () => {
@@ -517,6 +670,7 @@ export const AntiTabulaRasa = component$(
         [observation.field]: observation.suggested,
       };
       store.answers = next;
+      void persistDraft();
       store.submitError = "";
       try {
         await onApplyDraftObservation$?.(index, next);
@@ -531,6 +685,9 @@ export const AntiTabulaRasa = component$(
     const dismissDraftObservation = $(async (index: number) => {
       await onDismissDraftObservation$?.(index);
     });
+
+    if (!draftReady.value && !store.submitting)
+      return <p role="status">Restoring the brief…</p>;
 
     return (
       <DossierFolio
@@ -575,6 +732,11 @@ export const AntiTabulaRasa = component$(
               </div>
             )}
 
+            {draftStorageError.value && (
+              <p role="alert" class="error-slip">
+                {draftStorageError.value}
+              </p>
+            )}
             {store.submitError && (
               <div
                 class="fixed top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded"
@@ -706,6 +868,7 @@ export const AntiTabulaRasa = component$(
                             ...store.answers,
                             format: value,
                           };
+                          void persistDraft();
                         })}
                         onCommit$={goNext}
                       />
@@ -723,6 +886,7 @@ export const AntiTabulaRasa = component$(
                             store.answers[step.field!] = (
                               e.target as HTMLInputElement
                             ).value;
+                            void persistDraft();
                           }}
                           onKeyDown$={(e) => {
                             if (e.key === "Enter") goNext();
@@ -734,6 +898,7 @@ export const AntiTabulaRasa = component$(
                       )}
                     {step.kind === "textarea" && step.field && (
                       <textarea
+                        ref={textareaRef}
                         key={step.field}
                         value={store.answers[step.field!]}
                         aria-labelledby="atr-question"
@@ -743,6 +908,7 @@ export const AntiTabulaRasa = component$(
                           store.answers[step.field!] = (
                             e.target as HTMLTextAreaElement
                           ).value;
+                          void persistDraft();
                         }}
                         onKeyDown$={(e) => {
                           if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -758,6 +924,7 @@ export const AntiTabulaRasa = component$(
                     {step.kind === "import" && (
                       <div>
                         <textarea
+                          ref={textareaRef}
                           value={store.existingMaterial}
                           aria-labelledby="atr-question"
                           aria-describedby="atr-hint"
@@ -768,6 +935,7 @@ export const AntiTabulaRasa = component$(
                             if (store.importedFilename) {
                               store.importedFilename = "";
                             }
+                            void persistDraft();
                           }}
                           placeholder={step.placeholder}
                           rows={8}
@@ -900,6 +1068,7 @@ export const AntiTabulaRasa = component$(
                         attachments={store.attachments}
                         onChange$={(next) => {
                           store.attachments = next;
+                          void persistDraft();
                         }}
                       />
                     )}
