@@ -25,6 +25,7 @@ import {
   createProjectBrief,
   briefTitleFromFolioName,
   loadStartingMaterial,
+  loadProjectBriefForFolio,
   saveProjectBriefForFolio,
   UNTITLED_FOLIO_NAME,
   withFolioTitle,
@@ -46,11 +47,19 @@ import {
   type DossierFilingState,
 } from "../../../utils/dossier-filing";
 
+import {
+  clearBriefFormDraft,
+  moveBriefFormDraft,
+} from "../../../utils/brief-form-draft";
+
 interface OnboardingStore {
   hydrated: boolean;
   style: InterviewStyle;
   formAnswers: Partial<ProjectInterviewAnswers> | null;
   formAttachments: DossierAttachment[];
+  formProbes: DossierProbe[];
+  draftScope: string;
+  draftBase: string;
   folioId: string | null;
   folioName: string;
   initialMaterial: string;
@@ -76,6 +85,9 @@ export default component$(() => {
     style: "form",
     formAnswers: null,
     formAttachments: [],
+    formProbes: [],
+    draftScope: "create:new",
+    draftBase: "0",
     folioId: null,
     folioName: "",
     initialMaterial: "",
@@ -97,10 +109,23 @@ export default component$(() => {
       folios.find((candidate) => candidate.id === activeFolioId) ??
       null;
     store.folioId = folio?.id ?? null;
+    store.draftScope = `create:${store.folioId ?? "new"}`;
     store.folioName = folio?.name ?? "";
     // A folio named in the editor already has a title; start the brief there.
     const folioTitle = briefTitleFromFolioName(store.folioName);
     if (folioTitle) store.formAnswers = { workingTitle: folioTitle };
+    const savedBrief = await loadProjectBriefForFolio(store.folioId);
+    store.draftBase = String(savedBrief?.updatedAt ?? 0);
+    if (savedBrief) {
+      store.formAnswers = savedBrief.answers;
+      store.formAttachments = savedBrief.attachments;
+      store.formProbes = savedBrief.probes ?? [];
+      // A cleared brief from Start over intentionally stays in the interview.
+      briefDone.value =
+        Object.values(savedBrief.answers).some((value) => value.trim()) ||
+        savedBrief.attachments.length > 0 ||
+        (savedBrief.probes?.length ?? 0) > 0;
+    }
     // Pull the manuscript text the refine page stashed when the writer hit
     // "Start over", then clear it so a subsequent ordinary /dossier/create
     // visit doesn't see a stale carry-over.
@@ -142,6 +167,18 @@ export default component$(() => {
           folioName = folio.name;
           store.folioId = folio.id;
           store.folioName = folio.name;
+          const scope = `create:${folio.id}`;
+          try {
+            moveBriefFormDraft(
+              sessionStorage,
+              store.draftScope,
+              scope,
+              auth.value.user?.id ?? null,
+            );
+            store.draftScope = scope;
+          } catch {
+            /* the open form still holds the full submission */
+          }
         }
 
         await saveProjectBriefForFolio(folioId, brief);
@@ -177,6 +214,15 @@ export default component$(() => {
         filingState.value = "filed";
         await waitForDossierFiledFeedback();
         briefDone.value = true;
+        try {
+          clearBriefFormDraft(
+            sessionStorage,
+            store.draftScope,
+            auth.value.user?.id ?? null,
+          );
+        } catch {
+          /* the saved brief remains authoritative */
+        }
       } catch (error) {
         filingState.value = "idle";
         throw error;
@@ -226,7 +272,7 @@ export default component$(() => {
           </div>
 
           <div class="mt-6 border-2 border-[var(--color-ink)] bg-[var(--color-paper)]">
-            <AuthPanel />
+            <AuthPanel returnTo="/editor/" />
           </div>
 
           <button
@@ -280,6 +326,8 @@ export default component$(() => {
     <div class={DOSSIER_ROUTE_CLASS}>
       <AntiTabulaRasa
         mode="first-run"
+        draftScope={store.draftScope}
+        draftBase={store.draftBase}
         filingState={filingState.value}
         chromeBackHref={store.folioId ? "/editor/" : "/"}
         chromeBackLabel={store.folioId ? "Back to desk" : "Back home"}
@@ -290,6 +338,7 @@ export default component$(() => {
           store.formAnswers as ProjectInterviewAnswers | null | undefined
         }
         initialAttachments={store.formAttachments}
+        initialProbes={store.formProbes}
         initialMaterial={store.initialMaterial}
         onSubmit$={completeOnboarding$}
       />

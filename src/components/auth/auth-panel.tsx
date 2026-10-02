@@ -19,7 +19,7 @@ import {
  * Twyne accounts are Not Organic accounts: one button, one redirect. The same
  * DID backs your plan, hosted inference and PDS publishing.
  */
-export const AuthPanel = component$(() => {
+export const AuthPanel = component$<{ returnTo?: string }>((props) => {
   const auth = useAuth();
   const store = useStore({
     redirecting: false,
@@ -35,7 +35,7 @@ export const AuthPanel = component$(() => {
       flow: "signin",
     });
     try {
-      await startNotOrganicSignIn();
+      await startNotOrganicSignIn(props.returnTo);
     } catch (error) {
       clearAuthAttempt();
       reportApplicationDiagnostic("twyne:auth:notorganic-sign-in", error, {
