@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
   briefDraftKey,
-  BRIEF_DRAFT_PREFIX,
   claimBriefDraftHandoff,
   clearBriefFormDraft,
   loadBriefFormDraft,
