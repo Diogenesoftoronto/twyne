@@ -1132,7 +1132,7 @@ export const TwyneEditor = component$(
 
         const refreshActive = () => {
           if (!selectionPointerActive) refreshSelectionAction();
-          store.active = {
+          const active = {
             bold: editor.isActive("bold"),
             italic: editor.isActive("italic"),
             underline: editor.isActive("underline"),
@@ -1153,9 +1153,13 @@ export const TwyneEditor = component$(
             superscript: editor.isActive("superscript"),
             subscript: editor.isActive("subscript"),
             isInTable: editor.isActive("table"),
-            canMergeCells: editor.can().mergeCells(),
-            canSplitCell: editor.can().splitCell(),
+            canMergeCells:
+              editor.isActive("table") && editor.can().mergeCells(),
+            canSplitCell: editor.isActive("table") && editor.can().splitCell(),
           };
+          // Keep formatting subscribers quiet while typing in an unchanged
+          // style; replacing this object invalidated the entire compositor.
+          Object.assign(store.active, active);
           store.selectedImage = editor.isActive("image")
             ? (editor.getAttributes("image") as ImageNodeAttributes)
             : null;
@@ -1830,7 +1834,6 @@ export const TwyneEditor = component$(
         // vertical mouse drags into row.style.height.
         const REFRESH = () => refreshRowResizeHandles(el);
         editor.on("update", REFRESH);
-        editor.on("selectionUpdate", REFRESH);
         REFRESH();
 
         el.addEventListener("mousedown", (e) => {

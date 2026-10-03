@@ -191,6 +191,9 @@ export const SectionReorder = Extension.create({
   },
 
   addProseMirrorPlugins() {
+    let decoratedDoc: ProseMirrorNode | undefined;
+    let decoratedState: SectionReorderPluginState | undefined;
+    let decorations = DecorationSet.empty;
     return [
       new Plugin<SectionReorderPluginState>({
         key: sectionReorderPluginKey,
@@ -214,10 +217,13 @@ export const SectionReorder = Extension.create({
         },
         props: {
           decorations(state) {
-            return sectionDecorations(
-              state.doc,
-              sectionReorderPluginKey.getState(state),
-            );
+            const next = sectionReorderPluginKey.getState(state);
+            if (state.doc !== decoratedDoc || next !== decoratedState) {
+              decorations = sectionDecorations(state.doc, next);
+              decoratedDoc = state.doc;
+              decoratedState = next;
+            }
+            return decorations;
           },
           handleDOMEvents: {
             dragstart(view, event) {

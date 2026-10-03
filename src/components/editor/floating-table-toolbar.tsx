@@ -285,6 +285,7 @@ export function createTableToolbarController(
   targetWindow: Window = window,
 ): TableToolbarController {
   let observedTable: HTMLTableElement | null = null;
+  let hiddenPublished = false;
   let observer: ResizeObserver | null =
     typeof ResizeObserver === "undefined"
       ? null
@@ -304,6 +305,14 @@ export function createTableToolbarController(
       observedTable = nextTable;
       if (observedTable) observer?.observe(observedTable);
     }
+    if (!nextTable) {
+      if (!hiddenPublished) {
+        onChange(EMPTY_TABLE_TOOLBAR_SNAPSHOT, getSelectedCellFormat(editor));
+        hiddenPublished = true;
+      }
+      return;
+    }
+    hiddenPublished = false;
     const cellFormat = getSelectedCellFormat(editor);
     const metrics = measureTableToolbar(targetWindow.document);
     lastMetrics = metrics;
@@ -343,7 +352,8 @@ export function createTableToolbarController(
     });
   };
 
-  editor.on("selectionUpdate", refresh);
+  // Transactions already include selection changes. Registering both invokes
+  // all table commands and layout measurements twice on each typed character.
   editor.on("transaction", refresh);
   editor.on("focus", refresh);
   targetWindow.addEventListener("resize", refresh);
@@ -353,7 +363,6 @@ export function createTableToolbarController(
   return {
     refresh,
     destroy: () => {
-      editor.off("selectionUpdate", refresh);
       editor.off("transaction", refresh);
       editor.off("focus", refresh);
       targetWindow.removeEventListener("resize", refresh);

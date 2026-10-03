@@ -26,6 +26,7 @@ export interface TypstSessionState {
   applying: boolean;
 }
 export interface TypstSession {
+  flushVisual(): void;
   changeSource(source: string): void;
   apply(): Promise<void>;
   discard(): Promise<void>;
@@ -72,6 +73,8 @@ export async function createTypstSession(
   let replacing = false;
   let revision = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
+  let visualTimer: ReturnType<typeof setTimeout> | undefined;
+  let visualPending = false;
   let controller: AbortController | undefined;
   let baselineHtml = editor.getHTML();
   const visualHistory = new Set([baselineHtml]);
@@ -144,6 +147,7 @@ export async function createTypstSession(
     if (state.pdfUrl) URL.revokeObjectURL(state.pdfUrl);
   }
   async function compile(): Promise<TypstCompilation | undefined> {
+    flushVisual();
     cancel();
     const currentRevision = revision;
     const source = state.source;
@@ -201,8 +205,11 @@ export async function createTypstSession(
       void compile();
     }, 450);
   }
-  function editorUpdated() {
-    if (destroyed || replacing || applying) return;
+  function flushVisual() {
+    if (visualTimer !== undefined) clearTimeout(visualTimer);
+    visualTimer = undefined;
+    if (!visualPending || destroyed || replacing || applying) return;
+    visualPending = false;
     const html = editor.getHTML();
     if (state.dirty) {
       if (html !== baselineHtml) {
@@ -223,6 +230,24 @@ export async function createTypstSession(
     emit();
     schedule();
   }
+  function editorUpdated() {
+    if (destroyed || replacing || applying) return;
+    // Serialization, source reconciliation and updating the hidden CodeMirror
+    // document must never run synchronously inside a typing transaction.
+    visualPending = true;
+    cancel(); // Invalidate proofs of the previous manuscript immediately.
+    if (visualTimer !== undefined) clearTimeout(visualTimer);
+    visualTimer = setTimeout(flushVisual, 500);
+  }
+  function contentDerived(event: Event) {
+    const html = (event as CustomEvent<{ html?: string }>).detail?.html;
+    if (typeof html !== "string" || destroyed || applying || replacing) return;
+    // Remember only snapshots that could actually be saved, rather than
+    // retaining a full HTML copy of each of the last 100 keystrokes.
+    visualHistory.add(html);
+    if (visualHistory.size > 100)
+      visualHistory.delete(visualHistory.values().next().value!);
+  }
   function saved(event: Event) {
     const rec = (event as CustomEvent<FolioContentSavedDetail>).detail;
     // Remote restorations can match visualHistory. Only local acknowledgements
@@ -235,6 +260,7 @@ export async function createTypstSession(
       rec.typstSource === undefined
     )
       return;
+    flushVisual();
     if (visualHistory.has(rec.html)) committedHtml = rec.html;
     if (visualHistory.has(rec.html) && rec.html !== baselineHtml) {
       // A debounced save can complete after another keystroke. Never project
@@ -259,7 +285,10 @@ export async function createTypstSession(
     if (!visualHistory.has(rec.html)) return;
     baseSource = rec.typstSource;
     baselineHtml = editor.getHTML();
-    cleanSource = reconcileTypstSource(rec.typstSource, baselineHtml);
+    cleanSource =
+      rec.html === baselineHtml
+        ? rec.typstSource
+        : reconcileTypstSource(rec.typstSource, baselineHtml);
     state.source = cleanSource;
     sourceEvent();
     emit();
@@ -275,6 +304,7 @@ export async function createTypstSession(
       }>
     ).detail;
     if (destroyed || rec?.folioId !== folioId || applying) return;
+    flushVisual();
     if (state.dirty) {
       if (rec.source !== baseSource) {
         state.conflict = true;
@@ -328,11 +358,13 @@ export async function createTypstSession(
       }>
     ).detail;
     if (detail && (!detail.folioId || detail.folioId === folioId)) {
+      flushVisual();
       detail.source = state.source;
       detail.pending = state.dirty;
     }
   }
   editor.on("update", editorUpdated);
+  window.addEventListener("twyne:content", contentDerived);
   window.addEventListener(FOLIO_CONTENT_SAVED, saved);
   window.addEventListener("twyne:typst-remote-change", remoteChanged);
   window.addEventListener("twyne:request-typst-source", requestSource);
@@ -340,9 +372,11 @@ export async function createTypstSession(
   sourceEvent();
   schedule();
   return {
+    flushVisual,
     changeSource(source) {
-      if (destroyed || options.readOnly || applying || source === state.source)
-        return;
+      if (destroyed || options.readOnly || applying) return;
+      flushVisual();
+      if (source === state.source) return;
       state.source = source;
       state.dirty = source !== cleanSource;
       state.error = "";
@@ -353,7 +387,9 @@ export async function createTypstSession(
       schedule();
     },
     async apply() {
-      if (destroyed || options.readOnly || applying || !state.dirty) return;
+      if (destroyed || options.readOnly || applying) return;
+      flushVisual();
+      if (!state.dirty) return;
       if (state.conflict) {
         state.error =
           "Resolve the newer manuscript conflict before applying this draft.";
@@ -456,9 +492,11 @@ export async function createTypstSession(
       if (destroyed) return;
       if (state.dirty) draft();
       destroyed = true;
+      if (visualTimer !== undefined) clearTimeout(visualTimer);
       cancel();
       releaseProof();
       editor.off("update", editorUpdated);
+      window.removeEventListener("twyne:content", contentDerived);
       window.removeEventListener(FOLIO_CONTENT_SAVED, saved);
       window.removeEventListener("twyne:typst-remote-change", remoteChanged);
       window.removeEventListener("twyne:request-typst-source", requestSource);

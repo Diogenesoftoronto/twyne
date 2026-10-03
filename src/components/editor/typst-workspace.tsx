@@ -265,6 +265,7 @@ export const TypstWorkspace = component$<{
               title={view.title}
               aria-pressed={mode.value === view.id}
               onClick$={() => {
+                if (view.id !== "write") session.value?.flushVisual();
                 mode.value = view.id;
               }}
             >

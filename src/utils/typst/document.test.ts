@@ -100,6 +100,21 @@ describe("Typst document source", () => {
     );
     expect(reconcileTypstSource(source, typstToHtml(source))).toBe(source);
   });
+  test("repeated rich edits retain authored whitespace without accumulating separators", () => {
+    let source = "= Authored heading\n\n  An untouched paragraph.\n\nTail 0";
+    const originalSize = source.length;
+    for (let i = 1; i <= 20; i++) {
+      source = reconcileTypstSource(
+        source,
+        typstToHtml(source).replace(`<p>Tail ${i - 1}</p>`, `<p>Tail ${i}</p>`),
+      );
+    }
+    expect(source).toContain("= Authored heading\n\n  An untouched paragraph.");
+    expect(source.length).toBeLessThan(
+      TYPST_DOCUMENT_PREAMBLE.length + originalSize + 100,
+    );
+    expect(typstToHtml(source)).toContain("<p>Tail 20</p>");
+  });
   test("preserves escaped strings, unicode and nested delimiters", () => {
     const html =
       '<p>"Back\\slash" [bracket] {brace} #hash 💚 &lt;angle&gt;</p>';

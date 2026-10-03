@@ -41,6 +41,7 @@ async function setup(
 ) {
   let html = initialSnapshot?.html ?? "<p>Initial</p>";
   let editable = true;
+  let htmlReads = 0;
   const listeners = new Set<() => void>();
   const states: TypstSessionState[] = [];
   const saved: string[] = [];
@@ -57,7 +58,10 @@ async function setup(
     updatedAt: 1,
   };
   const editor = {
-    getHTML: () => html,
+    getHTML: () => {
+      htmlReads++;
+      return html;
+    },
     get isEditable() {
       return editable;
     },
@@ -119,6 +123,9 @@ async function setup(
     get editable() {
       return editable;
     },
+    get htmlReads() {
+      return htmlReads;
+    },
     edit(value: string) {
       html = value;
       listeners.forEach((fn) => fn());
@@ -129,10 +136,87 @@ async function setup(
     get snapshot() {
       return snap;
     },
+    get source() {
+      // Source inspection/export is an explicit synchronization boundary.
+      const detail = { folioId: "folio", source: "", pending: false };
+      window.dispatchEvent(
+        new CustomEvent("twyne:request-typst-source", { detail }),
+      );
+      return detail.source;
+    },
   };
 }
 
 describe("Typst source session", () => {
+  test("applying source checks a visual conflict still inside the quiet window", async () => {
+    const t = await setup();
+    try {
+      t.session.changeSource("Authored source draft");
+      t.edit("<p>A programmatic visual change</p>");
+      await t.session.apply();
+      expect(t.saved).toHaveLength(0);
+      expect(t.html).toBe("<p>A programmatic visual change</p>");
+      expect(t.states.at(-1)?.conflict).toBe(true);
+      expect(t.states.at(-1)?.source).toBe("Authored source draft");
+    } finally {
+      t.session.destroy();
+    }
+  });
+  test("a typing burst performs no synchronous serialization and reconciles once after quiet", async () => {
+    const t = await setup();
+    try {
+      const reads = t.htmlReads;
+      const initial = t.states.at(-1)?.source;
+      for (let i = 0; i < 30; i++) t.edit(`<p>Typed ${i}</p>`);
+      expect(t.htmlReads).toBe(reads);
+      expect(t.states.at(-1)?.source).toBe(initial);
+      await Bun.sleep(550);
+      expect(t.htmlReads).toBe(reads + 1);
+      expect(t.states.at(-1)?.source).toContain("Typed 29");
+    } finally {
+      t.session.destroy();
+    }
+  });
+  test("an immediate source request flushes the final visual edit", async () => {
+    const t = await setup();
+    try {
+      t.edit("<p>Final keystroke</p>");
+      expect(t.source).toContain("Final keystroke");
+      t.session.changeSource(t.source + "\n\nAuthored addition");
+      expect(t.states.at(-1)?.dirty).toBe(true);
+      expect(t.states.at(-1)?.source).toContain("Final keystroke");
+    } finally {
+      t.session.destroy();
+    }
+  });
+  test("an acknowledgement of a coalesced snapshot advances the base while newer typing stays live", async () => {
+    const t = await setup();
+    try {
+      const first = "<p>Saved burst</p>";
+      t.edit(first);
+      window.dispatchEvent(
+        new CustomEvent("twyne:content", { detail: { html: first } }),
+      );
+      t.edit("<p>Later keystroke</p>");
+      const acknowledged = {
+        ...t.snapshot,
+        html: first,
+        typstSource: htmlToTypst(first),
+        origin: "local",
+      };
+      t.setSnapshot(acknowledged);
+      window.dispatchEvent(
+        new CustomEvent(FOLIO_CONTENT_SAVED, { detail: acknowledged }),
+      );
+      expect(t.states.at(-1)?.source).toContain("Later keystroke");
+      t.session.changeSource("Authored source");
+      expect(t.drafts.at(-1)?.baseSource).toBe(acknowledged.typstSource);
+      await t.session.apply();
+      expect(t.saved).toEqual(["Authored source"]);
+    } finally {
+      t.session.destroy();
+    }
+  });
   test("only a successfully compiled source replaces the manuscript", async () => {
     let fail = true;
     const t = await setup({
@@ -161,6 +245,7 @@ describe("Typst source session", () => {
     const t = await setup();
     try {
       t.edit("<p>First edit</p>");
+      t.session.flushVisual();
       const first: FolioContentSavedDetail = {
         ...t.snapshot,
         html: t.html,
@@ -187,7 +272,7 @@ describe("Typst source session", () => {
           const local: FolioContentSavedDetail = {
             ...initial,
             html: t.html,
-            typstSource: t.states.at(-1)!.source,
+            typstSource: t.source,
             updatedAt: 2,
             origin: "local",
           };
@@ -201,9 +286,7 @@ describe("Typst source session", () => {
             ...initial,
             html: restoredVersion === "historical" ? initial.html : visualHtml,
             typstSource:
-              restoredVersion === "historical"
-                ? initial.typstSource
-                : t.states.at(-1)!.source,
+              restoredVersion === "historical" ? initial.typstSource : t.source,
             updatedAt: 3,
             origin: "remote",
           };
@@ -286,7 +369,7 @@ describe("Typst source session", () => {
         const queued: FolioContentSavedDetail = {
           ...t.snapshot,
           html: t.html,
-          typstSource: t.states.at(-1)!.source,
+          typstSource: t.source,
           updatedAt: 2,
           origin: "local",
         };

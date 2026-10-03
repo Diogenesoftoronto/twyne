@@ -638,6 +638,36 @@ export function typstToHtml(source: string): string {
   );
 }
 
+// Normalization creates a detached HTML document. Reusing unchanged block
+// results avoids thousands of DOMParser calls per autosave in a long draft.
+const canonicalBlocks = new Map<string, string>();
+let canonicalBlockBytes = 0;
+function canonicalBlock(html: string): string {
+  const cached = canonicalBlocks.get(html);
+  if (cached !== undefined) {
+    canonicalBlocks.delete(html);
+    canonicalBlocks.set(html, cached);
+    return cached;
+  }
+  const normalized = new DOMParser().parseFromString(html, "text/html").body
+    .innerHTML;
+  const size = html.length + normalized.length;
+  if (size <= 32_768) {
+    while (
+      canonicalBlocks.size >= 2048 ||
+      canonicalBlockBytes + size > 2_000_000
+    ) {
+      const oldest = canonicalBlocks.keys().next().value!;
+      canonicalBlockBytes -=
+        oldest.length + canonicalBlocks.get(oldest)!.length;
+      canonicalBlocks.delete(oldest);
+    }
+    canonicalBlocks.set(html, normalized);
+    canonicalBlockBytes += size;
+  }
+  return normalized;
+}
+
 /** Reuse exact authored blocks when unchanged, including their comments and whitespace. */
 export function reconcileTypstSource(
   previousSource: string,
@@ -654,7 +684,7 @@ export function reconcileTypstSource(
   const old = pieces(previousSource);
   const available = new Map<string, string[]>();
   for (const p of old) {
-    const key = canonical(p.html);
+    const key = canonicalBlock(p.html);
     const list = available.get(key) ?? [];
     list.push(p.source);
     available.set(key, list);
@@ -663,7 +693,13 @@ export function reconcileTypstSource(
   return (
     TYPST_DOCUMENT_PREAMBLE +
     generated
-      .map((p) => available.get(canonical(p.html))?.shift() ?? p.source)
-      .join("\n\n")
+      .map((p, index) => {
+        const source =
+          available.get(canonicalBlock(p.html))?.shift() ?? p.source;
+        // Pieces already own their leading whitespace. Adding another separator
+        // on every edit made untouched source blocks grow without bound.
+        return index > 0 && !/^\s/.test(source) ? `\n\n${source}` : source;
+      })
+      .join("")
   );
 }
