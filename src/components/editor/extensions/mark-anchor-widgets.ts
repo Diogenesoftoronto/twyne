@@ -46,12 +46,13 @@ function idForMark(mark: Mark): string | null {
 }
 
 function buildDecorations(doc: PmNode): DecorationSet {
-  const decos: Decoration[] = [];
-
-  // Walk every text node in document order. For each text node we
-  // inspect its marks; for the first anchored mark we find, we emit
-  // a widget at the *end* of the contiguous (kind, id) run that
-  // begins at this text node's start position.
+  const runs: { kind: AnchorKind; id: string; to: number; index: number }[] =
+    [];
+  const latest = new Map<string, (typeof runs)[number]>();
+  const counts = new Map<string, number>();
+  // One pass, including overlapping marks. A second document walk for each
+  // anchor made annotated manuscripts quadratic on every keystroke. Position
+  // adjacency also keeps separate passages with the same thread id separate.
   doc.descendants((node: PmNode, pos: number) => {
     if (!node.isText || !node.marks.length) return true;
 
@@ -61,64 +62,31 @@ function buildDecorations(doc: PmNode): DecorationSet {
       const id = idForMark(mark);
       if (!id) continue;
 
-      // Detect whether this text node continues a previous run of
-      // the same (kind, id) marks. We only need the immediately
-      // preceding position; if it carries the same mark, this node
-      // is a continuation and the chip is emitted from the *start*
-      // of the run (handled by the first node in the run).
-      const prevPos = pos - 1;
-      const continues =
-        prevPos >= 0 &&
-        doc
-          .resolve(prevPos)
-          .marks()
-          .some((m) => kindFor(m.type.name) === kind && idForMark(m) === id);
-      if (continues) continue;
-
-      // Otherwise this is the start of a new run: scan forward to
-      // find the run end. The simplest correct definition: walk
-      // forward from this node's end position; the latest position
-      // at which the (kind, id) marks still appear is the run end.
-      const runStart = pos;
-      const runEnd = findRunEnd(doc, kind, id, runStart);
-      // Place the chip *at* the run end (after the last character
-      // of the marked span) with side: 1 so it sits outside the
-      // marked text rather than inside the next character.
-      decos.push(
-        Decoration.widget(runEnd, () => createChip(kind, id), {
-          // Stable identity, so ProseMirror reuses the chip's DOM instead of
-          // recreating it on every keystroke. Without a key the whole set is
-          // rebuilt on each doc change, which both costs layout and makes the
-          // pagination engine's ResizeObserver fire far more than it should.
-          key: `twyne-anchor:${kind}:${id}`,
-          side: 1,
-          ignoreSelection: true,
-        }),
-      );
+      const key = JSON.stringify([kind, id]);
+      const previous = latest.get(key);
+      if (previous?.to === pos) {
+        previous.to = pos + node.nodeSize;
+      } else {
+        const index = counts.get(key) ?? 0;
+        const run = { kind, id, to: pos + node.nodeSize, index };
+        counts.set(key, index + 1);
+        runs.push(run);
+        latest.set(key, run);
+      }
     }
     return true;
   });
 
-  return DecorationSet.create(doc, decos);
-}
-
-function findRunEnd(
-  doc: PmNode,
-  kind: AnchorKind,
-  id: string,
-  fromPos: number,
-): number {
-  let last = fromPos;
-  doc.descendants((node, pos) => {
-    if (pos + node.nodeSize <= fromPos) return true;
-    if (!node.isText) return true;
-    const has = node.marks.some(
-      (m) => kindFor(m.type.name) === kind && idForMark(m) === id,
-    );
-    if (has) last = pos + node.nodeSize;
-    return true;
-  });
-  return last;
+  return DecorationSet.create(
+    doc,
+    runs.map(({ kind, id, to, index }) =>
+      Decoration.widget(to, () => createChip(kind, id), {
+        key: `twyne-anchor:${JSON.stringify([kind, id, index])}`,
+        side: 1,
+        ignoreSelection: true,
+      }),
+    ),
+  );
 }
 
 function createChip(kind: AnchorKind, id: string): HTMLButtonElement {
