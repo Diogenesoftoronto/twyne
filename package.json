@@ -44,6 +44,7 @@
     "tools:check": "bun run --cwd packages/twyne-tools check",
     "tools:test": "bun --cwd packages/twyne-tools test",
     "test:e2e": "playwright test",
+    "test:typing": "PLAYWRIGHT_HTML_OPEN=never playwright test e2e/editor-typing-benchmark.e2e.ts --workers=1 --retries=0 --reporter=list,html",
     "ci": "dagger call all",
     "ci.test": "dagger call test",
     "ci.build": "dagger call build export --path ./build-output",

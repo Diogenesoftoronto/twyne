@@ -27,6 +27,7 @@ export interface TypstSessionState {
 }
 export interface TypstSession {
   flushVisual(): void;
+  setProofActive(active: boolean): void;
   changeSource(source: string): void;
   apply(): Promise<void>;
   discard(): Promise<void>;
@@ -37,6 +38,7 @@ export interface TypstSessionOptions {
   editor: Editor;
   folioId: string;
   readOnly: boolean;
+  proofActive?: boolean;
   onState(state: TypstSessionState): void;
   getPayload(source: string): Promise<ExportPayload>;
   onPages(pageCount: number): void;
@@ -68,6 +70,7 @@ export async function createTypstSession(
     saveRevision: createRevisionSnapshot,
     ...overrides,
   };
+  let proofActive = options.proofActive ?? true;
   let destroyed = false;
   let applying = false;
   let replacing = false;
@@ -96,7 +99,11 @@ export async function createTypstSession(
         recovered.source !== cleanSource &&
         recovered.baseSource !== (baseSource ?? cleanSource),
     ),
-    status: recovered ? "Recovered source draft" : "Preparing proof…",
+    status: recovered
+      ? "Recovered source draft"
+      : proofActive
+        ? "Preparing proof…"
+        : "Proof updates when opened",
     error: "",
     pages: [],
     pdfUrl: "",
@@ -200,6 +207,7 @@ export async function createTypstSession(
   }
   function schedule() {
     cancel();
+    if (!proofActive) return;
     timer = setTimeout(() => {
       timer = undefined;
       void compile();
@@ -260,6 +268,13 @@ export async function createTypstSession(
       rec.typstSource === undefined
     )
       return;
+    if (visualPending && !state.dirty && visualHistory.has(rec.html)) {
+      // Acknowledge the saved snapshot without forcing newer unsaved typing
+      // through source reconciliation. The idle timer still owns that work.
+      committedHtml = rec.html;
+      baseSource = rec.typstSource;
+      return;
+    }
     flushVisual();
     if (visualHistory.has(rec.html)) committedHtml = rec.html;
     if (visualHistory.has(rec.html) && rec.html !== baselineHtml) {
@@ -373,6 +388,12 @@ export async function createTypstSession(
   schedule();
   return {
     flushVisual,
+    setProofActive(active) {
+      if (destroyed || proofActive === active) return;
+      proofActive = active;
+      if (active) schedule();
+      else cancel();
+    },
     changeSource(source) {
       if (destroyed || options.readOnly || applying) return;
       flushVisual();
@@ -486,7 +507,7 @@ export async function createTypstSession(
       }
     },
     refreshProof() {
-      if (!destroyed) void compile();
+      if (!destroyed && proofActive) void compile();
     },
     destroy() {
       if (destroyed) return;

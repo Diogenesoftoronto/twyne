@@ -100,10 +100,11 @@ test("source drafts recover after reload and valid source applies with paginated
   await expect(page.locator(".ProseMirror")).toContainText(
     "Words written in native source.",
   );
+  // Write mode keeps the last proof until the writer opens it again.
+  await chooseView(page, "Proof");
   await expect(workspace.locator(".typst-status")).toContainText("2 pages", {
     timeout: 30000,
   });
-  await chooseView(page, "Proof");
   await expect(
     page.getByRole("button", { name: "Proof", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");

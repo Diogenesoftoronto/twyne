@@ -648,14 +648,10 @@ export const TwyneEditor = component$(
         const scheduleDerive = (e: Editor) => {
           const now = Date.now();
           if (!deriveDeadline) deriveDeadline = now + DERIVE_MAX_WAIT_MS;
-          if (now >= deriveDeadline) {
-            runDerive(e);
-            return;
-          }
           if (deriveTimer) clearTimeout(deriveTimer);
           deriveTimer = setTimeout(
             () => runDerive(e),
-            Math.min(DERIVE_DEBOUNCE_MS, deriveDeadline - now),
+            Math.max(0, Math.min(DERIVE_DEBOUNCE_MS, deriveDeadline - now)),
           );
         };
         cleanup(() => {

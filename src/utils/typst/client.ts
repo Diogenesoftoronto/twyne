@@ -29,24 +29,58 @@ export function splitProofPages(
   const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
   const root = doc.documentElement;
   const groups = Array.from(root.querySelectorAll(".typst-page"));
+  // Serialize shared definitions once. Deep-cloning the complete document for
+  // every page makes proof construction quadratic in manuscript length.
+  const separate =
+    groups.length === sizes.length &&
+    groups.every((group) => group.parentElement === root);
+  const shell = root.cloneNode(false) as Element;
+  let shared = "";
+  if (separate) {
+    for (const child of Array.from(root.childNodes)) {
+      if (
+        child.nodeType === 1 &&
+        (child as Element).classList.contains("typst-page")
+      )
+        continue;
+      const holder = root.cloneNode(false) as Element;
+      holder.appendChild(child.cloneNode(true));
+      const markup = holder.outerHTML;
+      shared += markup.slice(markup.indexOf(">") + 1, markup.lastIndexOf("</"));
+    }
+  }
   let top = 0;
   return sizes.map((size, index) => {
-    const page = root.cloneNode(true) as Element;
-    const pageGroups = Array.from(page.querySelectorAll(".typst-page"));
-    if (groups.length === sizes.length) {
-      pageGroups.forEach((group, i) => {
-        if (i !== index) group.remove();
-        else group.removeAttribute("transform");
-      });
-      page.setAttribute("viewBox", `0 0 ${size.width} ${size.height}`);
-    } else {
-      page.setAttribute("viewBox", `0 ${top} ${size.width} ${size.height}`);
-    }
+    const page = shell.cloneNode(false) as Element;
+    page.setAttribute(
+      "viewBox",
+      separate
+        ? `0 0 ${size.width} ${size.height}`
+        : `0 ${top} ${size.width} ${size.height}`,
+    );
     top += size.height;
     page.setAttribute("width", String(size.width));
     page.setAttribute("height", String(size.height));
     page.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    return page.outerHTML;
+    if (!separate) {
+      // Preserve compatibility with renderer layouts that nest page groups.
+      for (const child of Array.from(root.childNodes))
+        page.appendChild(child.cloneNode(true));
+      if (groups.length === sizes.length) {
+        Array.from(page.querySelectorAll(".typst-page")).forEach((group, i) => {
+          if (i !== index) group.remove();
+          else group.removeAttribute("transform");
+        });
+        page.setAttribute("viewBox", `0 0 ${size.width} ${size.height}`);
+      }
+      return page.outerHTML;
+    }
+    const group = groups[index].cloneNode(true) as Element;
+    group.removeAttribute("transform");
+    page.appendChild(group);
+    const markup = page.outerHTML;
+    const boundary = markup.indexOf(">") + 1;
+    return markup.slice(0, boundary) + shared + markup.slice(boundary);
   });
 }
 /** Exports are cancellable even while Rust is synchronously compiling in WASM. */

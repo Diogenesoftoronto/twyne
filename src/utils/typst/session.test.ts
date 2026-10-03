@@ -38,6 +38,7 @@ afterAll(() => {
 async function setup(
   overrides: Partial<TypstSessionDependencies> = {},
   initialSnapshot?: FolioContentSnapshot,
+  proofActive = true,
 ) {
   let html = initialSnapshot?.html ?? "<p>Initial</p>";
   let editable = true;
@@ -84,6 +85,7 @@ async function setup(
       editor,
       folioId: "folio",
       readOnly: false,
+      proofActive,
       onState: (state) => states.push(state),
       onPages: () => {},
       getPayload: async () => ({ html, title: "Test" }) as ExportPayload,
@@ -205,10 +207,12 @@ describe("Typst source session", () => {
         origin: "local",
       };
       t.setSnapshot(acknowledged);
+      const reads = t.htmlReads;
       window.dispatchEvent(
         new CustomEvent(FOLIO_CONTENT_SAVED, { detail: acknowledged }),
       );
-      expect(t.states.at(-1)?.source).toContain("Later keystroke");
+      expect(t.htmlReads).toBe(reads);
+      expect(t.source).toContain("Later keystroke");
       t.session.changeSource("Authored source");
       expect(t.drafts.at(-1)?.baseSource).toBe(acknowledged.typstSource);
       await t.session.apply();
@@ -257,7 +261,7 @@ describe("Typst source session", () => {
         new CustomEvent(FOLIO_CONTENT_SAVED, { detail: first }),
       );
       expect(t.html).toBe("<p>Second edit</p>");
-      expect(t.states.at(-1)?.source).toContain("Second edit");
+      expect(t.source).toContain("Second edit");
     } finally {
       t.session.destroy();
     }
@@ -525,6 +529,38 @@ describe("Typst source session", () => {
     } finally {
       t.session.destroy();
       window.removeEventListener("twyne:typst-source-committed", listener);
+    }
+  });
+  test("Write view never compiles a hidden proof; opening it compiles the newest text", async () => {
+    const compiled: string[] = [];
+    const t = await setup(
+      {
+        compile: async (source) => {
+          compiled.push(source);
+          return { pdf: new Blob(["PDF"]), pages: [], pageCount: 1 };
+        },
+      },
+      undefined,
+      false,
+    );
+    try {
+      t.edit("<p>Latest visual text</p>");
+      t.session.refreshProof();
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      expect(compiled).toHaveLength(0);
+      t.session.setProofActive(true);
+      await new Promise((resolve) => setTimeout(resolve, 550));
+      expect(compiled).toHaveLength(1);
+      expect(compiled[0]).toContain("Latest visual text");
+      t.session.changeSource("= Draft");
+      t.session.setProofActive(false);
+      await new Promise((resolve) => setTimeout(resolve, 550));
+      expect(compiled).toHaveLength(1);
+      await t.session.apply();
+      expect(compiled).toHaveLength(2);
+      expect(t.saved).toEqual(["= Draft"]);
+    } finally {
+      t.session.destroy();
     }
   });
   test("a superseded compilation cannot replace the newest proof", async () => {
