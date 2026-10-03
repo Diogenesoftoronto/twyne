@@ -116,7 +116,10 @@ export const TypstWorkspace = component$<{
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track }) => {
-    props.store.typstView = track(() => mode.value);
+    const view = track(() => mode.value);
+    const current = track(() => session.value);
+    props.store.typstView = view;
+    current?.setProofActive(view !== "write");
   });
 
   // Focus after the source pane has become visible, including recovered drafts.
@@ -172,6 +175,7 @@ export const TypstWorkspace = component$<{
         editor,
         folioId,
         readOnly: !!readOnly,
+        proofActive: mode.value !== "write",
         onState: (next) => {
           if (disposed) return;
           Object.assign(state, next);

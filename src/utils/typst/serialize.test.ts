@@ -357,6 +357,37 @@ describe("Typst serializer with the real bundled compiler", () => {
     );
   });
 
+  test("proof splitting retains shared definitions without cloning unrelated pages", () => {
+    const prototype = dom.window.Node.prototype;
+    const original = prototype.cloneNode;
+    let pageClones = 0;
+    prototype.cloneNode = function (deep: boolean) {
+      if (deep) {
+        const node = this as unknown as Element;
+        pageClones += node.querySelectorAll?.(".typst-page").length ?? 0;
+      }
+      return original.call(this, deep);
+    };
+    try {
+      const pages = splitProofPages(
+        '<svg xmlns="http://www.w3.org/2000/svg"><defs><path id="glyph" d="M0 0"/></defs><style>.ink{fill:red}</style><g class="typst-page" transform="translate(0 10)"><use href="#glyph"/><text>First</text></g><g class="typst-page" transform="translate(0 20)"><text>Second</text></g></svg>',
+        [
+          { width: 100, height: 200 },
+          { width: 100, height: 200 },
+        ],
+      );
+      expect(pageClones).toBe(0);
+      expect(pages[0]).toContain('id="glyph"');
+      expect(pages[0]).toContain(".ink{fill:red}");
+      expect(pages[0]).toContain("First");
+      expect(pages[0]).not.toContain("Second");
+      expect(pages[1]).toContain("Second");
+      expect(pages[1]).not.toContain("First");
+    } finally {
+      prototype.cloneNode = original;
+    }
+  });
+
   test("canonical tables retain column widths and image figures apply their crop ratio", async () => {
     const previousWindow = Object.getOwnPropertyDescriptor(
       globalThis,
