@@ -49,6 +49,8 @@ export const LiveReviewStatus = component$<{ folioId: string }>(
       },
       { strategy: "document-ready" },
     );
+    // Idle review status does not need a full row above the text.
+    if (!state.detail) return <span class="sr-only">{state.label}</span>;
     return (
       <div class="live-review-status">
         <div class="live-review-status__line">

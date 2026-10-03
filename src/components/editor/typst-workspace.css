@@ -294,9 +294,16 @@
 }
 
 @media (max-width: 850px) {
-  .typst-proof.typst-split,
-  .typst-split-toggle {
-    display: none !important;
+  .typst-panes--split {
+    flex-direction: column;
+  }
+  .typst-panes--split > .typst-proof {
+    border-left: 0;
+    border-top: 1px solid var(--color-paper-3);
+  }
+  .typst-panes--split > :not([hidden]) {
+    flex: 1 1 50%;
+    min-height: 0;
   }
   .typst-action-label {
     display: none;
@@ -344,5 +351,190 @@
   }
   .typst-pane-title {
     font-size: 0.6875rem;
+  }
+}
+
+/* One persistent view row; compositor tabs and the selected tools form two levels. */
+.editor-desk-controls {
+  display: flex;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+  gap: 0 0.25rem;
+  padding: 0 0.5rem;
+  border-bottom: 1px solid var(--color-paper-3);
+  background: var(--color-paper);
+}
+.editor-desk-controls .tool-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.25rem;
+  padding-inline: 0.45rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.editor-desk-controls .typst-view {
+  min-height: 2.25rem;
+  padding: 0.3rem 0.5rem;
+}
+.editor-desk-controls .typst-views {
+  border-inline: 1px solid var(--color-paper-3);
+}
+.editor-compositor,
+.editor-writing-compositor:not([hidden]),
+.editor-writing-compositor .twyne-toolbar {
+  display: contents;
+}
+.editor-compositor[hidden] {
+  display: none;
+}
+.editor-compositor .compositor-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.editor-compositor .compositor-tab {
+  min-height: 2.25rem;
+  padding: 0.3rem 0.5rem;
+}
+.editor-compositor .compositor-ribbon,
+.editor-compositor .typst-proof-tools,
+.editor-compositor .typst-ribbon {
+  flex: 1 0 100%;
+  min-width: 0;
+  min-height: 2.5rem;
+  padding: 0.125rem 0;
+  border-top: 1px solid var(--color-paper-3);
+  border-bottom: 0;
+  background: var(--color-paper-soft);
+}
+.editor-compositor .compositor-ribbon {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.editor-compositor .compositor-group {
+  align-items: center;
+  min-height: 2.25rem;
+  padding: 0 0.375rem;
+}
+.editor-compositor .compositor-group::after {
+  display: none;
+}
+.editor-compositor .compositor-title {
+  display: none;
+}
+.editor-compositor .compositor-quick-actions {
+  padding-inline: 0.25rem;
+}
+.editor-compositor .compositor-group:has([role="dialog"]),
+.editor-compositor .compositor-group:has(.compositor-layout-panel) {
+  position: static;
+}
+.editor-desk-controls {
+  position: relative;
+}
+.editor-compositor [role="dialog"] {
+  position: fixed;
+  top: 8rem;
+  left: max(0.5rem, calc(50vw - 16rem));
+  max-width: calc(100vw - 1rem);
+  max-height: calc(100dvh - 10rem);
+  overflow: auto;
+}
+.editor-compositor select[aria-label="Text style"] {
+  max-width: 7rem;
+  min-height: 1.875rem;
+  border: 1px solid var(--color-paper-3);
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 0.75rem;
+}
+.editor-bottom-bar {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  min-height: 2rem;
+  padding: 0.125rem 0.75rem;
+}
+.editor-page-navigation {
+  min-width: 0;
+  max-width: 8rem;
+  min-height: 1.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-light);
+  font-size: 0.6875rem;
+}
+.editor-zen-toggle {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0 0.25rem;
+  min-height: 1.75rem;
+  font-size: 0.6875rem;
+  white-space: nowrap;
+}
+.editor-word-count {
+  white-space: nowrap;
+}
+.editor-desk-controls button:focus-visible,
+.editor-bottom-bar button:focus-visible,
+.editor-page-navigation:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: -2px;
+}
+@media (max-width: 639px) {
+  .editor-desk-controls {
+    padding-inline: 0.25rem;
+    gap: 0 0.125rem;
+  }
+  .editor-desk-controls .tool-btn {
+    min-height: 2.5rem;
+    padding-inline: 0.3rem;
+  }
+  .editor-desk-controls .typst-view {
+    min-height: 2.5rem;
+    padding-inline: 0.35rem;
+    gap: 0.2rem;
+  }
+  .editor-desk-controls .typst-view svg {
+    display: none;
+  }
+  .editor-compositor .compositor-tabs {
+    flex-basis: 100%;
+    max-width: 100%;
+  }
+  .editor-compositor .compositor-tab {
+    min-height: 2.5rem;
+  }
+  .editor-compositor .compositor-ribbon .tool-btn,
+  .editor-compositor select[aria-label="Text style"] {
+    min-height: 2.5rem;
+  }
+  .editor-compositor .compositor-ribbon {
+    min-height: 2.75rem;
+  }
+  .editor-bottom-bar {
+    gap: 0.4rem;
+    padding-inline: 0.5rem;
+    min-height: 2.25rem;
+  }
+  .editor-bottom-bar .flow-ribbon,
+  .editor-last-saved,
+  .editor-bottom-bar .typst-cursor {
+    display: none;
+  }
+  .editor-page-navigation {
+    max-width: 6rem;
+  }
+  .editor-zen-toggle {
+    min-height: 2rem;
   }
 }

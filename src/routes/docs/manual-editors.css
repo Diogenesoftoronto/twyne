@@ -28,15 +28,14 @@
   padding-bottom: 0;
 }
 
-/* Complete individual illustrations, not avatar crops. Their warm paper
- * belongs to the spread; there is no frame or card around the portrait. */
+/* Transparent illustrations sit directly on the spread without a frame. */
 .manual-editors__portrait {
   display: block;
   grid-column: 1;
   align-self: start;
   width: 100%;
   height: auto;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1122 / 1402;
 }
 
 .manual-editors__mark {

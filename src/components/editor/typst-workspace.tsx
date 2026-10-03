@@ -18,6 +18,10 @@ import type {
 import { buildFolioExportPayload } from "../../utils/folio-export";
 import { stripTypstAnnotationMetadata } from "../../utils/typst/document";
 import { Icon } from "../ui/icon";
+import { formatWordCount } from "../../utils/document";
+import { LastSavedLine, SyncDot } from "./sync-indicator";
+import { FlowRibbon } from "../in-flow/flow-ribbon";
+import { saveEditorViewPreferences } from "../../utils/editor-view-preferences";
 import type { TypstCodeState } from "./typst-code-editor";
 import { TypstSourceRibbon } from "./typst-source-ribbon";
 import styles from "./typst-workspace.css?inline";
@@ -83,6 +87,32 @@ export const TypstWorkspace = component$<{
       >
     >();
   const sourceMount = useSignal<HTMLElement>();
+  const workspaceRef = useSignal<HTMLElement>();
+  const pageTo = useSignal(0);
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const page = track(() => pageTo.value);
+    const view = track(() => mode.value);
+    track(() => state.pages.length);
+    if (view !== "proof" || !page) return;
+    const frame = requestAnimationFrame(() => {
+      workspaceRef.value
+        ?.querySelector(`[data-typst-page="${page}"]`)
+        ?.scrollIntoView({ block: "start" });
+    });
+    cleanup(() => cancelAnimationFrame(frame));
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    const open = track(() => props.store.compositorOpen);
+    const zen = track(() => props.store.zenMode);
+    if (!open || zen) {
+      props.store.openPicker = null;
+      props.store.showLayout = false;
+    }
+  });
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track }) => {
@@ -198,8 +228,34 @@ export const TypstWorkspace = component$<{
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   });
   return (
-    <section class="typst-workspace" aria-label="Manuscript workspace">
-      <div class="typst-bar">
+    <section
+      ref={workspaceRef}
+      class="typst-workspace"
+      aria-label="Manuscript workspace"
+    >
+      <div class="editor-desk-controls" aria-label="Writing desk controls">
+        <button
+          type="button"
+          class="tool-btn editor-compositor-toggle"
+          aria-label="Toggle compositor"
+          aria-controls="document-compositor"
+          aria-expanded={!!props.store.compositorOpen && !props.store.zenMode}
+          onClick$={() => {
+            const opening = !props.store.compositorOpen || props.store.zenMode;
+            props.store.compositorOpen = opening;
+            if (opening && props.store.zenMode) {
+              window.dispatchEvent(
+                new CustomEvent("twyne:zen-mode", { detail: { on: false } }),
+              );
+            }
+            saveEditorViewPreferences(localStorage, {
+              zenMode: opening ? false : props.store.zenMode,
+              compositorOpen: opening,
+            });
+          }}
+        >
+          <Icon name="settings" size={16} /> Compositor
+        </button>
         <div class="typst-views" role="group" aria-label="Editor view">
           {views.map((view) => (
             <button
@@ -217,94 +273,125 @@ export const TypstWorkspace = component$<{
             </button>
           ))}
         </div>
-        <div class="typst-bar-actions">
-          {mode.value !== "proof" && (
-            <button
-              type="button"
-              class="tool-btn typst-tool-btn typst-split-toggle"
-              title="Show typeset proof beside the editor"
-              aria-label="Show proof"
-              aria-pressed={split.value}
-              onClick$={() => {
-                split.value = !split.value;
+        <button
+          type="button"
+          class="tool-btn typst-tool-btn typst-split-toggle"
+          title="Show typeset proof beside your manuscript or source"
+          aria-label="Split"
+          aria-pressed={split.value && mode.value !== "proof"}
+          onClick$={() => {
+            const enabled = split.value && mode.value !== "proof";
+            split.value = !enabled;
+            if (mode.value === "proof") mode.value = "write";
+          }}
+        >
+          <Icon name="sidebar-right" size={17} /> <span>Split</span>
+        </button>
+        {state.pdfUrl && !state.error && (
+          <a
+            class="tool-btn typst-tool-btn editor-pdf-download"
+            href={state.pdfUrl}
+            download={`${props.folioName || "Untitled"}.pdf`}
+            title={state.dirty ? "Download draft PDF" : "Download PDF"}
+            aria-label={state.dirty ? "Download draft PDF" : "Download PDF"}
+          >
+            <Icon name="file-download" size={17} />{" "}
+            <span class="typst-action-label">PDF</span>
+          </a>
+        )}
+        <div
+          id="document-compositor"
+          class="editor-compositor"
+          role="group"
+          aria-label="Compositor"
+          hidden={!props.store.compositorOpen || props.store.zenMode}
+          onKeyDown$={(event, element) => {
+            if (event.key !== "Escape") return;
+            event.preventDefault();
+            event.stopPropagation();
+            if (props.store.openPicker || props.store.showLayout) {
+              props.store.openPicker = null;
+              props.store.showLayout = false;
+              element
+                .querySelector<HTMLButtonElement>(
+                  '[role="tab"][aria-selected="true"]',
+                )
+                ?.focus();
+              return;
+            }
+            props.store.compositorOpen = false;
+            saveEditorViewPreferences(localStorage, {
+              zenMode: props.store.zenMode,
+              compositorOpen: false,
+            });
+            element
+              .closest(".typst-workspace")
+              ?.querySelector<HTMLButtonElement>(".editor-compositor-toggle")
+              ?.focus();
+          }}
+        >
+          <Slot name="compositor" />
+          {mode.value === "source" && (
+            <TypstSourceRibbon
+              canUndo={codeState.canUndo}
+              canRedo={codeState.canRedo}
+              codeReady={!!code.value}
+              sessionReady={!!session.value}
+              readOnly={props.readOnly}
+              applying={state.applying}
+              wrapping={wrapping.value}
+              onCommand$={(command) => code.value?.command(command)}
+              onInsert$={(snippet) => code.value?.insert(snippet)}
+              onToggleWrap$={() => {
+                wrapping.value = !wrapping.value;
+                code.value?.setWrapping(wrapping.value);
               }}
-            >
-              <Icon name="sidebar-right" size={17} />
-              <span class="typst-action-label">Split proof</span>
-            </button>
+              onSaveCopy$={saveSourceCopy}
+            />
           )}
-          {state.pdfUrl && !state.error && (
-            <a
-              class="tool-btn typst-tool-btn"
-              href={state.pdfUrl}
-              download={`${props.folioName || "Untitled"}.pdf`}
-              title={state.dirty ? "Download draft PDF" : "Download PDF"}
-            >
-              <Icon name="file-download" size={17} />
-              {state.dirty ? "Draft PDF" : "PDF"}
-            </a>
+          {mode.value === "proof" && (
+            <div class="typst-proof-tools" role="group" aria-label="Proof zoom">
+              <span class="typst-pane-title">
+                <Icon name="book-open" size={16} /> Typeset proof
+              </span>
+              <button
+                type="button"
+                class="tool-btn typst-tool-btn"
+                aria-label="Zoom out"
+                disabled={zoom.value <= 50}
+                onClick$={() => {
+                  zoom.value = Math.max(50, zoom.value - 25);
+                }}
+              >
+                <Icon name="section-divider" size={16} />
+              </button>
+              <span class="typst-zoom-value">{zoom.value}%</span>
+              <button
+                type="button"
+                class="tool-btn typst-tool-btn"
+                aria-label="Zoom in"
+                disabled={zoom.value >= 200}
+                onClick$={() => {
+                  zoom.value = Math.min(200, zoom.value + 25);
+                }}
+              >
+                <Icon name="add" size={16} />
+              </button>
+              <button
+                type="button"
+                class="tool-btn typst-tool-btn"
+                onClick$={() => {
+                  zoom.value = 100;
+                }}
+                title="Fit proof to available width"
+              >
+                <Icon name="fullscreen" size={16} /> Fit
+              </button>
+            </div>
           )}
         </div>
       </div>
       <Slot name="writing-tools" />
-      {mode.value === "source" && (
-        <TypstSourceRibbon
-          canUndo={codeState.canUndo}
-          canRedo={codeState.canRedo}
-          codeReady={!!code.value}
-          sessionReady={!!session.value}
-          readOnly={props.readOnly}
-          applying={state.applying}
-          wrapping={wrapping.value}
-          onCommand$={(command) => code.value?.command(command)}
-          onInsert$={(snippet) => code.value?.insert(snippet)}
-          onToggleWrap$={() => {
-            wrapping.value = !wrapping.value;
-            code.value?.setWrapping(wrapping.value);
-          }}
-          onSaveCopy$={saveSourceCopy}
-        />
-      )}
-      {mode.value === "proof" && (
-        <div class="typst-proof-tools" role="group" aria-label="Proof zoom">
-          <span class="typst-pane-title">
-            <Icon name="book-open" size={16} /> Typeset proof
-          </span>
-          <button
-            type="button"
-            class="tool-btn typst-tool-btn"
-            aria-label="Zoom out"
-            disabled={zoom.value <= 50}
-            onClick$={() => {
-              zoom.value = Math.max(50, zoom.value - 25);
-            }}
-          >
-            <Icon name="section-divider" size={16} />
-          </button>
-          <span class="typst-zoom-value">{zoom.value}%</span>
-          <button
-            type="button"
-            class="tool-btn typst-tool-btn"
-            aria-label="Zoom in"
-            disabled={zoom.value >= 200}
-            onClick$={() => {
-              zoom.value = Math.min(200, zoom.value + 25);
-            }}
-          >
-            <Icon name="add" size={16} />
-          </button>
-          <button
-            type="button"
-            class="tool-btn typst-tool-btn"
-            onClick$={() => {
-              zoom.value = 100;
-            }}
-            title="Fit proof to available width"
-          >
-            <Icon name="fullscreen" size={16} /> Fit
-          </button>
-        </div>
-      )}
       {state.dirty && (
         <div class="typst-draft-bar">
           <span class="typst-draft-message">
@@ -371,7 +458,12 @@ export const TypstWorkspace = component$<{
           </div>
         </div>
       )}
-      <div class="typst-panes">
+      <div
+        class={{
+          "typst-panes": true,
+          "typst-panes--split": split.value && mode.value !== "proof",
+        }}
+      >
         <div class="typst-writing" hidden={mode.value !== "write"}>
           <Slot />
         </div>
@@ -420,7 +512,7 @@ export const TypstWorkspace = component$<{
             }
           >
             {state.pages.map((page, index) => (
-              <figure key={page}>
+              <figure key={page} data-typst-page={index + 1}>
                 <img
                   src={page}
                   width={800}
@@ -435,8 +527,57 @@ export const TypstWorkspace = component$<{
           </div>
         </div>
       </div>
-      <div class="typst-statusbar">
-        <span class="typst-status" role="status" aria-live="polite">
+      <footer
+        class="typst-statusbar editor-bottom-bar"
+        aria-label="Manuscript status"
+      >
+        <span class="editor-word-count">
+          {formatWordCount(props.store.meta.wordCount)} words
+        </span>
+        <select
+          class="editor-page-navigation"
+          aria-label="Go to page"
+          value={String(pageTo.value)}
+          disabled={!state.pages.length}
+          onChange$={(_, element) => {
+            pageTo.value = Number(element.value);
+            if (pageTo.value) mode.value = "proof";
+          }}
+        >
+          <option value="0">
+            {state.pages.length
+              ? `${state.pages.length} ${state.pages.length === 1 ? "page" : "pages"}`
+              : "Pages"}
+          </option>
+          {state.pages.map((_, index) => (
+            <option key={index} value={String(index + 1)}>
+              {`Page ${index + 1} of ${state.pages.length}`}
+            </option>
+          ))}
+        </select>
+        {!props.readOnly && <FlowRibbon />}
+        <span class="editor-last-saved">
+          <LastSavedLine savedAt={props.store.lastSavedAt} />
+        </span>
+        <SyncDot />
+        <button
+          type="button"
+          class="tool-btn editor-zen-toggle"
+          aria-label="Toggle Zen mode"
+          aria-pressed={props.store.zenMode}
+          title="Toggle distraction-free writing"
+          onClick$={() =>
+            window.dispatchEvent(
+              new CustomEvent("twyne:zen-mode", {
+                detail: { on: !props.store.zenMode },
+              }),
+            )
+          }
+        >
+          <Icon name="eye" size={15} />{" "}
+          {props.store.zenMode ? "Writing focus" : "Zen"}
+        </button>
+        <span class="typst-status sr-only" role="status" aria-live="polite">
           <Icon
             name={
               state.error || state.conflict
@@ -454,7 +595,7 @@ export const TypstWorkspace = component$<{
             Ln {codeState.line}, Col {codeState.column}
           </span>
         )}
-      </div>
+      </footer>
     </section>
   );
 });

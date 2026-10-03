@@ -68,6 +68,10 @@ import { UserCommentPanel } from "./user-comment-panel";
 import { PersonaNotePanel } from "./persona-note-panel";
 import { InsertPanels } from "./insert-panels";
 import { CompositorPanel } from "./compositor-panel";
+import {
+  loadEditorViewPreferences,
+  saveEditorViewPreferences,
+} from "../../utils/editor-view-preferences";
 import { SelectionActions } from "./selection-actions";
 import { researchSelection } from "../../utils/background-research";
 
@@ -361,7 +365,8 @@ export const TwyneEditor = component$(
       slashQuery: "",
       slashLeft: 0,
       slashTop: 0,
-      zenMode: false,
+      zenMode: true,
+      compositorOpen: false,
       openPicker: null,
       currentColor: null,
       currentHighlight: null,
@@ -3336,6 +3341,9 @@ export const TwyneEditor = component$(
           // heading a heading would not match anyone's expectation.
           chain.unsetAllMarks().unsetParagraphFormat().clearNodes().run();
           break;
+        case "paragraph":
+          chain.setParagraph().run();
+          break;
         case "h1":
           chain.toggleHeading({ level: 1 }).run();
           break;
@@ -3547,17 +3555,32 @@ export const TwyneEditor = component$(
         void runRegistryCommand((event as CustomEvent<EditorCommandId>).detail);
       };
       window.addEventListener("twyne:editor-shortcut", runShortcut);
-      // The flow conductor eases the page into focus (and out) by itself;
-      // the manual toggles above stay the writer's.
-      const followFlowFocus = (event: Event) => {
+      const followZenChoice = (event: Event) => {
         const detail = (event as CustomEvent<{ on?: boolean; source?: string }>)
           .detail;
-        if (detail?.source === "flow") store.zenMode = !!detail.on;
+        // Automatic flow quiets transient chrome; it must not undo a chosen view.
+        if (detail?.source === "flow") return;
+        store.zenMode = !!detail?.on;
+        if (detail?.source !== "preference")
+          saveEditorViewPreferences(localStorage, {
+            zenMode: store.zenMode,
+            compositorOpen: !!store.compositorOpen,
+          });
       };
-      window.addEventListener("twyne:zen-mode", followFlowFocus);
+      window.addEventListener("twyne:zen-mode", followZenChoice);
+      const preferences = loadEditorViewPreferences(localStorage);
+      Object.assign(store, preferences);
+      // Explicit panel deep links remain reachable without changing a preference.
+      if (new URLSearchParams(window.location.search).get("panel"))
+        store.zenMode = false;
+      window.dispatchEvent(
+        new CustomEvent("twyne:zen-mode", {
+          detail: { on: store.zenMode, source: "preference" },
+        }),
+      );
       cleanup(() => {
         window.removeEventListener("twyne:editor-shortcut", runShortcut);
-        window.removeEventListener("twyne:zen-mode", followFlowFocus);
+        window.removeEventListener("twyne:zen-mode", followZenChoice);
       });
     });
 
@@ -3651,21 +3674,13 @@ export const TwyneEditor = component$(
           folioName={activeFolio?.name ?? "Untitled"}
           brief={brief}
         >
-          {/* Sticky chrome stack: toolbar plus whichever inline input bar is
-            active (image, note, comment, mermaid). All live in one sticky
-            wrapper so the active bar always sits flush under the toolbar
-            rather than scrolling out of view as the manuscript scrolls. */}
           <div
-            q:slot="writing-tools"
-            class="sticky top-0"
-            hidden={store.typstView === "source" || store.typstView === "proof"}
-            inert={store.typstSourcePending}
-            style={{
-              zIndex: "var(--z-sticky)",
-              opacity: store.typstSourcePending ? "0.5" : undefined,
-            }}
+            q:slot="compositor"
+            class="editor-writing-compositor"
+            hidden={store.typstView !== "write"}
           >
             <CompositorPanel
+              compact
               store={store}
               readOnly={readOnly}
               onCommand$={runCommand}
@@ -3683,6 +3698,21 @@ export const TwyneEditor = component$(
               onChromeTextChange$={updateChromeText}
               onSavePdf$={saveAsPdf}
             />
+          </div>
+          {/* Sticky chrome stack: toolbar plus whichever inline input bar is
+            active (image, note, comment, mermaid). All live in one sticky
+            wrapper so the active bar always sits flush under the toolbar
+            rather than scrolling out of view as the manuscript scrolls. */}
+          <div
+            q:slot="writing-tools"
+            class="sticky top-0"
+            hidden={store.typstView === "source" || store.typstView === "proof"}
+            inert={store.typstSourcePending}
+            style={{
+              zIndex: "var(--z-sticky)",
+              opacity: store.typstSourcePending ? "0.5" : undefined,
+            }}
+          >
             {store.showFindReplace && (
               <div
                 class="fixed right-4 top-16"
