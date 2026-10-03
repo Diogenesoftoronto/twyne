@@ -39,7 +39,13 @@ for (const paragraphs of [80, 800]) {
     });
     await page.goto("/editor/");
     const manuscript = page.locator(".ProseMirror");
-    await expect(manuscript).toHaveAttribute("contenteditable", "true");
+    // A fresh CI Vite server compiles the editor's lazy modules on first load.
+    // Startup has its own timeout; it is never counted as typing latency.
+    const startup = Date.now();
+    await expect(manuscript).toHaveAttribute("contenteditable", "true", {
+      timeout: 60_000,
+    });
+    const startupMs = Date.now() - startup;
     await expect(
       page.getByRole("button", { name: "Source", exact: true }),
     ).toBeVisible();
@@ -58,6 +64,19 @@ for (const paragraphs of [80, 800]) {
       );
       editor.commands.setTextSelection(editor.state.doc.content.size - 1);
     }, paragraphs);
+    await expect
+      .poll(
+        () =>
+          page.evaluate((last) => {
+            const detail = { source: "" };
+            window.dispatchEvent(
+              new CustomEvent("twyne:request-typst-source", { detail }),
+            );
+            return detail.source.includes(`Paragraph ${last}`);
+          }, paragraphs - 1),
+        { timeout: 60_000 },
+      )
+      .toBe(true);
     // Let initialization and the seed's first save settle outside the sample.
     await page.waitForTimeout(2500);
     await manuscript.focus();
@@ -119,6 +138,7 @@ for (const paragraphs of [80, 800]) {
       samples,
       {
         paragraphs,
+        startupMs,
         cpuThrottle: 4,
         repeats: 3,
         keystrokes: burst.length * 9,
