@@ -8,39 +8,75 @@
   },
   "promptSummary": "Five distinct fictional 1955 editorial voices, based on the approved diverse cast: an East Asian sceptic, Black patron of strengths, older North African scholar, white copy chief, and South Asian reader. Rich black pen-and-ink crosshatching on warm cream, restrained red and blue props, recognizable faces, expressive role-specific poses, full heads and hands, no lettering, borders, or watermarks.",
   "portraitSize": {
-    "width": 480,
-    "height": 600
+    "width": 1122,
+    "height": 1402
   },
   "portraits": [
     {
       "personaId": "devil",
-      "file": "devil.webp",
+      "file": "devil-transparent.webp",
       "selectedGeneration": "devil-v2",
-      "bytes": 76168
+      "bytes": 1420890,
+      "originalFile": "devil.webp",
+      "originalBytes": 76168,
+      "transparentSourceLibraryFileId": "libfile_0d329585b6148191bf0a5e1b2517d4f3",
+      "responsiveFile": "devil-transparent-480.webp",
+      "responsiveBytes": 281502
     },
     {
       "personaId": "angel",
-      "file": "angel.webp",
+      "file": "angel-transparent.webp",
       "selectedGeneration": "angel-v1",
-      "bytes": 89498
+      "bytes": 1668442,
+      "originalFile": "angel.webp",
+      "originalBytes": 89498,
+      "transparentSourceLibraryFileId": "libfile_3800e1a4fc988191bbf40291069b35d5",
+      "responsiveFile": "angel-transparent-480.webp",
+      "responsiveBytes": 333776
     },
     {
       "personaId": "scholar",
-      "file": "scholar.webp",
+      "file": "scholar-transparent.webp",
       "selectedGeneration": "scholar-v1",
-      "bytes": 92884
+      "bytes": 1746042,
+      "originalFile": "scholar.webp",
+      "originalBytes": 92884,
+      "transparentSourceLibraryFileId": "libfile_4676ac799224819198f0d0ea5b6cae2d",
+      "responsiveFile": "scholar-transparent-480.webp",
+      "responsiveBytes": 354238
     },
     {
       "personaId": "editor",
-      "file": "editor.webp",
+      "file": "editor-transparent.webp",
       "selectedGeneration": "editor-v1",
-      "bytes": 65120
+      "bytes": 1410130,
+      "originalFile": "editor.webp",
+      "originalBytes": 65120,
+      "transparentSourceLibraryFileId": "libfile_3463aabea89c819187d1d30bbb372017",
+      "responsiveFile": "editor-transparent-480.webp",
+      "responsiveBytes": 278072
     },
     {
       "personaId": "reader",
-      "file": "reader.webp",
+      "file": "reader-transparent.webp",
       "selectedGeneration": "reader-v2",
-      "bytes": 78508
+      "bytes": 1582514,
+      "originalFile": "reader.webp",
+      "originalBytes": 78508,
+      "transparentSourceLibraryFileId": "libfile_d2914984b81081918569ee0862522e66",
+      "responsiveFile": "reader-transparent-480.webp",
+      "responsiveBytes": 304098
     }
-  ]
+  ],
+  "originalPortraitSize": {
+    "width": 480,
+    "height": 600
+  },
+  "responsivePortraitSize": {
+    "width": 480,
+    "height": 600
+  },
+  "transparentBackground": true,
+  "encoding": "Lossless WebP; alpha and visible colors preserved from supplied PNG sources",
+  "backgroundEdit": "Imagegen transparent edits; original opaque portrait assets retained"
 }

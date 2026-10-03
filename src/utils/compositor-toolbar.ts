@@ -17,7 +17,7 @@ export const COMPOSITOR_TABS = [
   {
     id: "view",
     label: "View",
-    groups: ["Navigation", "Page", "Focus", "Help"],
+    groups: ["Navigation", "Page", "Help"],
   },
 ] as const;
 

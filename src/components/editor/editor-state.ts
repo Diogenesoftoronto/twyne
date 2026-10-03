@@ -159,6 +159,8 @@ export interface EditorStore {
   slashLeft: number;
   slashTop: number;
   zenMode: boolean;
+  /** Presentation only; hiding tools never unmounts the manuscript. */
+  compositorOpen?: boolean;
   openPicker: "highlight" | "textColor" | "type" | "spacing" | null;
   currentColor: string | null;
   currentHighlight: string | null;

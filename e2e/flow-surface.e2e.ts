@@ -61,6 +61,10 @@ test("margin conversations preserve replies, own one surface and adapt to mobile
   });
 
   await page.goto("/editor/");
+  // Inspect the editorial margin outside the default writing-only Zen view.
+  await page
+    .getByRole("button", { name: "Toggle Zen mode", exact: true })
+    .click();
   const note = page
     .locator('.twyne-mark-anchor[data-anchor-kind="note"]')
     .first();

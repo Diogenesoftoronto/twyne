@@ -33,6 +33,7 @@ import { openLiveVoice } from "../../utils/live-voice-workspace";
 
 interface CompositorPanelProps {
   store: EditorPanelState;
+  compact?: boolean;
   readOnly?: boolean;
   onCommand$: PropFunction<(command: string) => void>;
   onHighlight$: PropFunction<(hex: string | null) => void>;
@@ -85,7 +86,7 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
         data-active-tab={store.toolbarTab}
       >
         <div class="compositor-tabs" role="tablist" aria-label="Tools">
-          <span class="compositor-title">Compositor</span>
+          {!props.compact && <span class="compositor-title">Compositor</span>}
           {COMPOSITOR_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -159,7 +160,7 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
             >
               <Icon name={COMPOSITOR_ICONS.redo} size={17} />
             </button>
-            <SyncDot />
+            {!props.compact && <SyncDot />}
           </div>
         </div>
 
@@ -545,6 +546,24 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
             role="group"
             aria-label="Styles"
           >
+            <select
+              aria-label="Text style"
+              value={
+                store.active.h1
+                  ? "h1"
+                  : store.active.h2
+                    ? "h2"
+                    : store.active.h3
+                      ? "h3"
+                      : "paragraph"
+              }
+              onChange$={(_, element) => runCommand(element.value)}
+            >
+              <option value="paragraph">Text</option>
+              <option value="h1">Title</option>
+              <option value="h2">Heading</option>
+              <option value="h3">Subheading</option>
+            </select>
             <button
               title="Heading 1"
               aria-label="Heading 1"
@@ -821,40 +840,6 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
             >
               <span aria-hidden="true">†</span>
               <span class="compositor-tool-label">footnote</span>
-            </button>
-          </div>
-
-          {/* Zen mode — dims inline notes/comments and asks the route to
-              collapse the side panels, for distraction-free writing. */}
-          <div
-            class="compositor-group"
-            data-compositor-tab="view"
-            data-group-label="Focus"
-            role="group"
-            aria-label="Focus"
-          >
-            <button
-              title={
-                store.zenMode
-                  ? "Exit distraction-free writing"
-                  : "Distraction-free writing — hides notes, comments, and side panels"
-              }
-              aria-label="Toggle zen mode"
-              aria-pressed={store.zenMode}
-              onClick$={() => {
-                store.zenMode = !store.zenMode;
-                window.dispatchEvent(
-                  new CustomEvent("twyne:zen-mode", {
-                    detail: { on: store.zenMode },
-                  }),
-                );
-              }}
-              class="tool-btn"
-            >
-              <Icon name={COMPOSITOR_ICONS.zen} size={16} />
-              <span class="compositor-tool-label">
-                {store.zenMode ? "Exit focus" : "Focus"}
-              </span>
             </button>
           </div>
 

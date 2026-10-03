@@ -226,7 +226,7 @@ export default component$(() => {
     // board remains one click away and retains its unread badges.
     rightPanelOpen: opensVersionHistory,
     panelsBeforeZen: null,
-    zenActive: false,
+    zenActive: !opensVersionHistory,
     hydrated: false,
     brief: null,
     modelBrief: null,
@@ -640,15 +640,8 @@ export default component$(() => {
       const detail = (e as CustomEvent<{ on?: boolean; source?: string }>)
         .detail;
       const on = !!detail?.on;
-      // Automatic focus moves nothing: collapsing the masthead or closing a
-      // docked panel re-centres and re-wraps the page under the writer's
-      // caret, which is the interruption focus exists to prevent. The flow
-      // chrome fade (`[data-flow]` in global.css) quiets them instead. Only
-      // a zen the writer asked for rearranges the room.
-      if (detail?.source === "flow") {
-        if (!store.panelsBeforeZen) return;
-        if (on) return;
-      }
+      // Manual/device preferences own the layout. Flow never shifts the caret.
+      if (detail?.source === "flow") return;
       store.zenActive = on;
       if (on) {
         if (store.panelsBeforeZen) return;
@@ -1438,6 +1431,7 @@ export default component$(() => {
         <div class="editor-workspace-main flex-1 flex flex-col min-w-0">
           {/* Masthead */}
           <header
+            hidden={store.zenActive}
             class={`border-b-2 border-double border-[var(--color-paper-3)] bg-[var(--color-paper)]${store.zenActive ? " zen-masthead" : ""}`}
           >
             <div class="flex items-center px-5 pt-3 pb-1.5 gap-4">

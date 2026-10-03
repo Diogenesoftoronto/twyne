@@ -7,16 +7,12 @@ import {
 import type { LayoutSettings } from "../../types";
 import { resolveColumns, resolveColumnGap } from "../../types";
 import { hasOrnateBorder } from "../../utils/page-ornaments";
-import { formatWordCount, readingTimeLabel } from "../../utils/document";
-import { formatFolioCount } from "../../utils/draft-thresholds";
 import { isFileDrag } from "../../utils/file-drag";
 import type { EditorStore } from "./editor-state";
 import { MarginRails } from "../in-flow/margin-rail";
 import { FlowSurface } from "../in-flow/flow-surface";
-import { FlowRibbon } from "../in-flow/flow-ribbon";
 import { PageChrome, type PageChromeProps } from "./page-chrome";
 import { PageRuler } from "./page-ruler";
-import { LastSavedLine } from "./sync-indicator";
 import { PageBorder } from "./page-border";
 
 export const MANUSCRIPT_READING_ID = "manuscript";
@@ -88,7 +84,7 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
     <>
       <div
         ref={scrollerRef}
-        class="flex-1 min-h-0 overflow-y-auto overflow-x-auto scroll-pb-12"
+        class="manuscript-scroller flex-1 min-h-0 overflow-y-auto overflow-x-auto scroll-pb-12"
         style="background: var(--color-editor-bg);"
         onDragOver$={props.onDragOver$}
         onDragLeave$={props.onDragLeave$}
@@ -100,12 +96,14 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
           </div>
         )}
 
-        <PageRuler
-          layout={store.layout}
-          pageWidthRem={props.pageWidthRem}
-          zen={store.zenMode}
-          onChange$={props.onLayoutChange$}
-        />
+        <div hidden={store.zenMode}>
+          <PageRuler
+            layout={store.layout}
+            pageWidthRem={props.pageWidthRem}
+            zen={store.zenMode}
+            onChange$={props.onLayoutChange$}
+          />
+        </div>
 
         <div
           class={[
@@ -206,27 +204,6 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
             </div>
           )}
         </div>
-      </div>
-
-      <div class="manuscript-status" aria-label="Manuscript status">
-        <span class="manuscript-status__writing">
-          <span class="manuscript-status__count">
-            {formatWordCount(store.meta.wordCount)} words
-            <span class="manuscript-status__folios">
-              {" "}
-              · {formatFolioCount(store.meta.wordCount)} folios
-            </span>
-          </span>
-          {!props.readOnly && <FlowRibbon />}
-        </span>
-        <span class="manuscript-status__saved">
-          <LastSavedLine savedAt={store.lastSavedAt} />
-          <span class="manuscript-status__colophon">
-            {" "}
-            · {readingTimeLabel(store.meta.readingTime)} · set in Lora &amp;
-            Libre Baskerville
-          </span>
-        </span>
       </div>
     </>
   );

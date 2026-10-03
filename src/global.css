@@ -7793,3 +7793,27 @@ body:has(
   :is(.flow-dock, .flow-desk--dock) {
   display: none;
 }
+
+/* Zen gives a continuous manuscript more of the desk without changing its
+   physical print setup or imposing monitor-wide lines. */
+.page-canvas.zen-mode:not(.is-paginated) {
+  width: calc(100% - 2rem);
+  max-width: 74rem !important;
+  padding-inline: clamp(1rem, 3vw, 3rem) !important;
+  padding-top: 1.25rem !important;
+  padding-bottom: 3rem !important;
+  --ornament-clearance: 0px;
+}
+.page-canvas.zen-mode > .manuscript-border {
+  display: none;
+}
+.zen-masthead[hidden] {
+  display: none;
+}
+@media (max-width: 639px) {
+  .page-canvas.zen-mode:not(.is-paginated) {
+    width: 100%;
+    padding-inline: 1rem !important;
+    padding-top: 0.75rem !important;
+  }
+}

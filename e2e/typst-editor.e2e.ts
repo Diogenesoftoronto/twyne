@@ -1,5 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+async function chooseView(page: Page, name: "Write" | "Source" | "Proof") {
+  await page.getByRole("button", { name, exact: true }).click();
+}
 
 async function seedFolio(page: Page) {
   await page.route("**/__typst-seed", (route) =>
@@ -33,6 +36,9 @@ async function seedFolio(page: Page) {
     "The original manuscript.",
     { timeout: 30000 },
   );
+  await page
+    .getByRole("button", { name: "Toggle compositor", exact: true })
+    .click();
 }
 async function replaceSource(page: Page, source: string) {
   const editor = page.getByRole("textbox", { name: "Typst source" });
@@ -52,7 +58,7 @@ test("source drafts recover after reload and valid source applies with paginated
   });
   await seedFolio(page);
   const workspace = page.getByRole("region", { name: "Manuscript workspace" });
-  await workspace.getByRole("button", { name: "Source", exact: true }).click();
+  await chooseView(page, "Source");
   await replaceSource(page, "#this-is-not-valid(");
   await expect(
     workspace.getByRole("button", { name: "Apply source", exact: true }),
@@ -78,7 +84,7 @@ test("source drafts recover after reload and valid source applies with paginated
   await expect(
     workspace.getByRole("button", { name: "Apply source", exact: true }),
   ).toHaveCount(0, { timeout: 30000 });
-  await workspace.getByRole("button", { name: "Write", exact: true }).click();
+  await chooseView(page, "Write");
   await expect(page.locator(".ProseMirror")).toContainText(
     "Words written in native source.",
   );
@@ -97,9 +103,9 @@ test("source drafts recover after reload and valid source applies with paginated
   await expect(workspace.locator(".typst-status")).toContainText("2 pages", {
     timeout: 30000,
   });
-  await workspace.getByRole("button", { name: "Proof", exact: true }).click();
+  await chooseView(page, "Proof");
   await expect(
-    workspace.getByRole("button", { name: "Proof", exact: true }),
+    page.getByRole("button", { name: "Proof", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
     workspace.getByRole("img", { name: "Typeset page 1", exact: true }),
@@ -121,9 +127,9 @@ test("source drafts recover after reload and valid source applies with paginated
     fullPage: true,
     animations: "disabled",
   });
-  await workspace.getByRole("button", { name: "Source", exact: true }).click();
+  await chooseView(page, "Source");
   await expect(
-    workspace.getByRole("button", { name: "Source", exact: true }),
+    page.getByRole("button", { name: "Source", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
   await page.screenshot({
     path: testInfo.outputPath("twyne-typst-source-mobile.png"),
@@ -136,7 +142,7 @@ test("source drafts recover after reload and valid source applies with paginated
     fullPage: true,
     animations: "disabled",
   });
-  await workspace.getByRole("button", { name: "Proof", exact: true }).click();
+  await chooseView(page, "Proof");
   expect(
     await workspace
       .getByRole("img")
@@ -150,7 +156,7 @@ test("source drafts recover after reload and valid source applies with paginated
     "Words written in native source.",
     { timeout: 30000 },
   );
-  await workspace.getByRole("button", { name: "Source", exact: true }).click();
+  await chooseView(page, "Source");
   const recoveredSource = page.getByRole("textbox", { name: "Typst source" });
   await recoveredSource.click();
   await page.keyboard.press("ControlOrMeta+End");
@@ -183,7 +189,7 @@ test("source tools preserve selection and proof uses the editorial sheet", async
   });
   await seedFolio(page);
   const workspace = page.getByRole("region", { name: "Manuscript workspace" });
-  await workspace.getByRole("button", { name: "Source", exact: true }).click();
+  await chooseView(page, "Source");
   const source = page.getByRole("textbox", { name: "Typst source" });
   await expect(source).toBeFocused();
   await replaceSource(page, "A careful sentence.");
@@ -244,16 +250,14 @@ A useful reference belongs close to the passage it supports.#footnote[This is an
   await expect(workspace.locator(".typst-status")).toContainText("1 page", {
     timeout: 30000,
   });
-  await workspace
-    .getByRole("button", { name: "Show proof", exact: true })
-    .click();
+  await workspace.getByRole("button", { name: "Split", exact: true }).click();
   const notice = page.getByRole("button", { name: "Not now", exact: true });
   if (await notice.isVisible()) await notice.click();
   await page.screenshot({
     path: testInfo.outputPath("typst-source-split.png"),
     animations: "disabled",
   });
-  await workspace.getByRole("button", { name: "Proof", exact: true }).click();
+  await chooseView(page, "Proof");
   const proof = workspace.getByRole("img", {
     name: "Typeset page 1",
     exact: true,
@@ -278,7 +282,7 @@ A useful reference belongs close to the passage it supports.#footnote[This is an
     animations: "disabled",
   });
   await page.setViewportSize({ width: 390, height: 844 });
-  await workspace.getByRole("button", { name: "Source", exact: true }).click();
+  await chooseView(page, "Source");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -309,7 +313,7 @@ test("saving a native source copy removes private feedback and preserves the ope
   });
   await page.reload();
   const workspace = page.getByRole("region", { name: "Manuscript workspace" });
-  await workspace.getByRole("button", { name: "Source", exact: true }).click();
+  await chooseView(page, "Source");
   const source = page.getByRole("textbox", { name: "Typst source" });
   await expect(source).toContainText("PRIVATE_FEEDBACK");
   const before = await source.innerText();

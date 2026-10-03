@@ -76,9 +76,11 @@ export const ManualEditors = component$(() => {
             >
               <img
                 class="manual-editors__portrait"
-                src={`/assets/manual/editors/${persona.id}.webp`}
-                width={480}
-                height={600}
+                src={`/assets/manual/editors/${persona.id}-transparent.webp`}
+                srcset={`/assets/manual/editors/${persona.id}-transparent-480.webp 480w, /assets/manual/editors/${persona.id}-transparent.webp 1122w`}
+                sizes="(min-width: 1024px) 144px, (min-width: 768px) 128px, 96px"
+                width={1122}
+                height={1402}
                 loading="eager"
                 decoding="async"
                 alt={brief.portraitAlt}
