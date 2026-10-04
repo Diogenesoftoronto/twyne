@@ -1,0 +1,21 @@
+i am experiencing a ton of lag on twyne when entiring text not sure what is blocking things and slowing things done but it is possible the main thread is really too busy, either way it really is somethingn needs to be resolved because this is an unacceptable level of lag.
+
+---
+
+.
+
+---
+
+deploy
+
+---
+
+okay the improved typing is considerable. is there a way thata we could possible mamke it even fasterr though? it is that p95 and p99 of key strokes that i really feel the lag
+
+---
+
+i think this sosrt of benchmark test should be part of the testing of the application i would also like bar charts and stuff on this as it is significant part of what makes an deditor nice to use
+
+---
+
+okay feels fairly fast now and smooth which i really love great job
