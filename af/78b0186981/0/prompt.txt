@@ -1,0 +1,5 @@
+one thing i noticed is that the illustrative text at the begining the drop cap i think? that thing it is not word wrapping properly in the proof or the pdf generation. instead it is just place like a normal character whereas in the app it IS word wrapping correctly that needs to be  fixed
+
+---
+
+deploy
