@@ -89,6 +89,62 @@ export const TYPST_EDITORIAL_STYLES = `
     (initial: first.initial, prefix: wrap(first.prefix), rest: wrap(first.rest), skip: first.skip)
   } else { (initial: none, prefix: [], rest: body, skip: false) }
 }
+// Keep rich inline styling while finding word boundaries for the side of the
+// drop cap. Adjacent marked fragments of one word must stay together.
+#let twyne-opening-tokens(body) = {
+  if body.func() == text and body.has("text") {
+    body.text.matches(regex("\\\\s+|[^\\\\s]+")).map(part => (
+      body: text(part.text), space: part.text.trim() == "",
+    ))
+  } else if body.has("children") {
+    body.children.fold((), (tokens, child) => tokens + twyne-opening-tokens(child))
+  } else if body.has("child") and body.has("styles") {
+    twyne-opening-tokens(body.child).map(token => (
+      body: body.func()(token.body, body.styles), space: token.space,
+    ))
+  } else if (strong, emph, underline, strike, super, sub, link, highlight, smallcaps).contains(body.func()) {
+    let fields = body.fields()
+    let discarded = fields.remove("body")
+    let wrap(content) = if body.func() == link { link(fields.dest, content) } else { body.func()(content, ..fields) }
+    twyne-opening-tokens(body.body).map(token => (body: wrap(token.body), space: token.space))
+  } else { ((body: body, space: body.func() == [ ].func()),) }
+}
+#let twyne-opening-line(body) = [#par(body)<twyne-opening-line>]
+#let twyne-wrap-opening(initial, body) = layout(bounds => {
+  show par: it => it
+  let cap = measure(initial)
+  let gap = 0.14 * twyne-initial-size
+  let width = bounds.width - cap.width - gap
+  // Very narrow columns still retain all manuscript content.
+  if width < (2em).to-absolute() { return initial + h(gap) + body }
+  let tokens = twyne-opening-tokens(body)
+  let breaks = tokens.enumerate().filter(pair => pair.at(1).space).map(pair => pair.at(0))
+  breaks.push(tokens.len())
+  let join(start, end) = tokens.slice(start, end).map(token => token.body).join()
+  // Measure with the active font, paragraph leading and actual column width.
+  // Binary search bounds the work even for a long opening paragraph.
+  let low = 0
+  let high = breaks.len()
+  while low < high {
+    let middle = calc.floor((low + high) / 2)
+    let height = measure(block(width: width, above: 0pt, below: 0pt, twyne-opening-line(join(0, breaks.at(middle))))).height
+    if height <= cap.height { low = middle + 1 } else { high = middle }
+  }
+  let end = if low == 0 { breaks.first() } else { breaks.at(low - 1) }
+  let next = end
+  while next < tokens.len() and tokens.at(next).space { next += 1 }
+  let beside = join(0, end)
+  let below = join(next, tokens.len())
+  block(width: 100%, above: 0pt, below: 0pt, grid(
+    columns: (cap.width, 1fr), column-gutter: gap,
+    initial,
+    twyne-opening-line([#beside#if next < tokens.len() { linebreak(justify: par.justify) }]),
+  ))
+  if next < tokens.len() {
+    v(par.leading, weak: true)
+    twyne-opening-line(below)
+  }
+})
 #let twyne-opening(body) = context {
   show par: it => it
   if twyne-opening-depth.get() > 0 or twyne-initial-mode == "off" { body } else {
@@ -96,12 +152,10 @@ export const TYPST_EDITORIAL_STYLES = `
   twyne-opening-seen.update(true)
   let parts = if seen { (initial: none, prefix: [], rest: body) } else { twyne-initial-parts(body) }
   if parts.initial == none { body } else {
-    // Typst has no native side float. A raised initial occupies only the first
-    // line and keeps the remaining rich paragraph at the full column width.
     let initial = if twyne-initial-mode == "illuminated" and upper(parts.initial) == twyne-initial-letter {
-      box(baseline: 10%, twyne-initial-artwork(parts.initial, twyne-initial-size))
-    } else { text(size: twyne-initial-size, weight: 700, fill: rgb("#c1272d"), parts.initial) }
-    parts.prefix + initial + h(2pt) + parts.rest
+      twyne-initial-artwork(parts.initial, twyne-initial-size)
+    } else { text(size: twyne-initial-size, weight: 700, top-edge: "bounds", bottom-edge: "bounds", fill: rgb("#c1272d"), parts.initial) }
+    twyne-wrap-opening(box(parts.prefix + initial), parts.rest)
   }
   }
 }
