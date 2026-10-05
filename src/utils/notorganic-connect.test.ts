@@ -22,6 +22,7 @@ describe("Not Organic sign-in", () => {
         "/library/?view=drafts",
       );
       const authorize = new URL(url);
+      expect(authorize.searchParams.get("prompt")).toBe("select_account");
       expect(authorize.searchParams.get("client_id")).toBe(origin);
       expect(authorize.searchParams.get("redirect_uri")).toBe(
         `${origin}/auth/notorganic/`,

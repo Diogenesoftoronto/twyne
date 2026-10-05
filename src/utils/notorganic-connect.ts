@@ -67,6 +67,9 @@ export async function beginNotOrganicSignIn(
     state,
     scope: "wallet:read",
     product: "twyne",
+    // Twyne sign-out does not clear the portal's session. Let the writer
+    // choose an account rather than silently reusing that previous identity.
+    prompt: "select_account",
   }).toString();
   return {
     attempt: {
