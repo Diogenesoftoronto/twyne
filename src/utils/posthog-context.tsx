@@ -8,7 +8,6 @@ import {
   useVisibleTask$,
   type Signal,
 } from "@qwik.dev/core";
-import type posthog from "posthog-js";
 import { useAuth } from "./auth-context";
 import { ANALYTICS_VERSION } from "./analytics-version";
 import { authIdentityTransition, consumeAuthAttempt } from "./auth-analytics";
@@ -18,7 +17,8 @@ import {
   setRuntimeFeatures,
   type FeatureFlags,
 } from "./feature-flags";
-import { buildPostHogInitOptions } from "./posthog-config";
+import { buildPostHogInitOptions, shouldLoadPostHog } from "./posthog-config";
+import { createPostHogRuntime, type PostHogClient } from "./posthog-runtime";
 
 interface FeatureFlagState {
   flags: FeatureFlags;
@@ -26,8 +26,6 @@ interface FeatureFlagState {
   configured: boolean;
   error?: string;
 }
-
-type PostHogClient = typeof posthog;
 
 export interface PostHogIdentityContext {
   distinctId?: string;
@@ -39,14 +37,17 @@ export const FeatureFlagContext = createContextId<Signal<FeatureFlagState>>(
   "twyne.feature-flags",
 );
 
-let clientPromise: Promise<PostHogClient | null> | null = null;
-let initialized = false;
-
 function posthogConfig(): {
   key: string;
   host: string;
   capture: boolean;
 } | null {
+  if (
+    typeof navigator !== "undefined" &&
+    !shouldLoadPostHog(navigator.userAgent)
+  ) {
+    return null;
+  }
   const key = import.meta.env.PUBLIC_POSTHOG_KEY as string | undefined;
   if (!key) return null;
   return {
@@ -60,26 +61,30 @@ function posthogConfig(): {
 
 async function getPostHogClient(): Promise<PostHogClient | null> {
   if (typeof window === "undefined") return null;
-  const config = posthogConfig();
-  if (!config) return null;
+  if (!posthogConfig()) return null;
+  return posthogRuntime.get();
+}
 
-  clientPromise ??= import("posthog-js").then((mod) => {
-    const client = mod.default;
-    if (!initialized) {
-      client.init(
-        config.key,
-        buildPostHogInitOptions({
-          host: config.host,
-          capture: config.capture,
-          flagKeys: Object.values(POSTHOG_FEATURE_FLAG_KEYS),
-        }),
-      );
-      initialized = true;
-    }
-    return client;
-  });
+const posthogRuntime = createPostHogRuntime(
+  () => import("posthog-js").then((mod) => mod.default),
+  (client) => {
+    const config = posthogConfig();
+    if (!config) return;
+    client.init(config.key, {
+      ...buildPostHogInitOptions({
+        host: config.host,
+        capture: config.capture,
+        flagKeys: Object.values(POSTHOG_FEATURE_FLAG_KEYS),
+      }),
+      // SDK failures are optional analytics failures, not app errors.
+      on_request_error: () => {},
+    });
+  },
+);
 
-  return clientPromise;
+function runPostHogAction(action: (client: PostHogClient) => void): void {
+  if (typeof window === "undefined" || !posthogConfig()) return;
+  posthogRuntime.run(action);
 }
 
 function optionalString(value: unknown): string | undefined {
@@ -87,8 +92,21 @@ function optionalString(value: unknown): string | undefined {
 }
 
 export async function getPostHogIdentityContext(): Promise<PostHogIdentityContext> {
-  const client = await getPostHogClient();
-  if (!client) return {};
+  const client = posthogRuntime.peek();
+  if (!client) {
+    // Identity is optional: an AI action must not await SDK loading.
+    void getPostHogClient();
+    return {};
+  }
+  try {
+    return readIdentity(client);
+  } catch {
+    posthogRuntime.disable();
+    return {};
+  }
+}
+
+function readIdentity(client: PostHogClient): PostHogIdentityContext {
   return {
     distinctId: optionalString(client.get_distinct_id()),
     anonymousId: optionalString(client.get_property("$device_id")),
@@ -100,17 +118,18 @@ export async function capturePostHogEvent(
   event: string,
   properties: Record<string, unknown>,
 ): Promise<void> {
-  const client = await getPostHogClient();
-  if (!client) return;
-  const identity = await getPostHogIdentityContext();
-  client.capture(event, {
-    ...properties,
-    ...(event === "$ai_generation" && !properties.$ai_session_id
-      ? { $ai_session_id: identity.sessionId }
-      : {}),
-    twyne_distinct_id: identity.distinctId,
-    twyne_anonymous_id: identity.anonymousId,
-    twyne_session_id: identity.sessionId,
+  // Queue analytics independently; callers can continue their work immediately.
+  runPostHogAction((client) => {
+    const identity = readIdentity(client);
+    client.capture(event, {
+      ...properties,
+      ...(event === "$ai_generation" && !properties.$ai_session_id
+        ? { $ai_session_id: identity.sessionId }
+        : {}),
+      twyne_distinct_id: identity.distinctId,
+      twyne_anonymous_id: identity.anonymousId,
+      twyne_session_id: identity.sessionId,
+    });
   });
 }
 
@@ -127,17 +146,18 @@ export async function maybeDisplayProgressSurvey(
   );
   if (!surveyName) return;
 
-  const client = await getPostHogClient();
-  if (!client) return;
-
-  client.getActiveMatchingSurveys((surveys) => {
-    const survey = surveys.find((candidate) => candidate.name === surveyName);
-    if (!survey) return;
-    client.displaySurvey(survey.id, {
-      displayType: "popover",
-      ignoreConditions: false,
-      ignoreDelay: false,
-      properties: { twyne_milestone: milestone },
+  runPostHogAction((client) => {
+    client.getActiveMatchingSurveys((surveys) => {
+      const survey = surveys.find((candidate) => candidate.name === surveyName);
+      if (!survey) return;
+      runPostHogAction((current) => {
+        current.displaySurvey(survey.id, {
+          displayType: "popover",
+          ignoreConditions: false,
+          ignoreDelay: false,
+          properties: { twyne_milestone: milestone },
+        });
+      });
     });
   });
 }
@@ -160,7 +180,8 @@ export function useFeatureFlags(): Signal<FeatureFlagState> {
 export const PostHogProvider = component$(() => {
   const flags = useSignal<FeatureFlagState>({
     flags: FALLBACK_FEATURES,
-    loaded: !posthogConfig(),
+    // The app is ready with its fallback flags before analytics is ready.
+    loaded: true,
     configured: !!posthogConfig(),
   });
   const auth = useAuth();
@@ -170,52 +191,62 @@ export const PostHogProvider = component$(() => {
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(
     async ({ cleanup }) => {
+      let disposed = false;
+      cleanup(() => {
+        disposed = true;
+      });
       const client = await getPostHogClient();
+      if (disposed) return;
       if (!client) {
-        setRuntimeFeatures(FALLBACK_FEATURES);
         flags.value = {
-          flags: FALLBACK_FEATURES,
+          flags: flags.value.flags,
           loaded: true,
           configured: false,
         };
         return;
       }
 
-      const apply = (next: FeatureFlags, error?: string) => {
+      const apply = (next: FeatureFlags) => {
+        const previous = flags.value.flags;
+        if (
+          previous.pricing === next.pricing &&
+          previous.localAi === next.localAi
+        ) {
+          return;
+        }
         setRuntimeFeatures(next);
         flags.value = {
           flags: next,
           loaded: true,
           configured: true,
-          error,
         };
       };
 
-      const unsubscribe = client.onFeatureFlags((_keys, _variants, meta) => {
-        const next = meta?.errorsLoading
-          ? FALLBACK_FEATURES
-          : readFlags(client);
-        apply(
-          next,
-          meta?.errorsLoading
-            ? "PostHog feature flags failed to load"
-            : undefined,
-        );
-      });
-
-      const cached = readFlags(client);
-      apply(cached);
-
-      if (typeof unsubscribe === "function") {
-        cleanup(unsubscribe);
+      try {
+        const unsubscribe = client.onFeatureFlags((_keys, _variants, meta) => {
+          // Keep defaults or the last good values when a request is blocked.
+          if (disposed || meta?.errorsLoading || !posthogRuntime.peek()) return;
+          try {
+            apply(readFlags(client));
+          } catch {
+            posthogRuntime.disable();
+          }
+        });
+        if (typeof unsubscribe === "function") cleanup(unsubscribe);
+      } catch {
+        posthogRuntime.disable();
       }
     },
-    { strategy: "document-ready" },
+    { strategy: "document-idle" },
   );
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(
-    async ({ track }) => {
+    ({ track, cleanup }) => {
+      let disposed = false;
+      cleanup(() => {
+        disposed = true;
+      });
       track(() => auth.value.user?.id);
       track(() => auth.value.user?.analyticsId);
       track(() => auth.value.user?.email);
@@ -223,59 +254,64 @@ export const PostHogProvider = component$(() => {
       track(() => auth.value.loading);
       track(() => auth.value.provider);
 
-      const client = await getPostHogClient();
-      if (!client || auth.value.loading) return;
+      if (auth.value.loading) return;
+      // Snapshot the account so deferred analytics cannot read another account.
+      const user = auth.value.user;
+      const provider = auth.value.provider;
+      runPostHogAction((client) => {
+        if (disposed) return;
+        if (user) {
+          const analyticsId = user.analyticsId ?? user.id;
+          const previousUserId = optionalString(
+            client.get_property("$user_id"),
+          );
+          const identityTransition = authIdentityTransition(
+            previousUserId,
+            user.id,
+            analyticsId,
+          );
 
-      if (auth.value.user) {
-        const user = auth.value.user;
-        const analyticsId = user.analyticsId ?? user.id;
-        const previousUserId = optionalString(client.get_property("$user_id"));
-        const identityTransition = authIdentityTransition(
-          previousUserId,
-          user.id,
-          analyticsId,
-        );
+          if (identityTransition === "alias_legacy_id") {
+            // Before analytics v2 the browser used Better Auth's raw user ID,
+            // while authenticated server events used Convex's tokenIdentifier.
+            // Alias only that known same-account legacy ID; a different account
+            // must receive a clean anonymous identity instead.
+            client.alias(analyticsId, previousUserId);
+          } else if (identityTransition === "reset_other_account") {
+            client.reset();
+          }
+          client.identify(analyticsId, {
+            email: user.email,
+            name: user.name,
+            auth_provider: provider,
+            auth_identity_source: user.analyticsId
+              ? "convex_token_identifier"
+              : "better_auth_user_id_fallback",
+          });
 
-        if (identityTransition === "alias_legacy_id") {
-          // Before analytics v2 the browser used Better Auth's raw user ID,
-          // while authenticated server events used Convex's tokenIdentifier.
-          // Alias only that known same-account legacy ID; a different account
-          // must receive a clean anonymous identity instead.
-          client.alias(analyticsId, previousUserId);
-        } else if (identityTransition === "reset_other_account") {
+          const attempt = consumeAuthAttempt();
+          if (attempt) {
+            client.capture("sign_in_completed", {
+              analytics_version: ANALYTICS_VERSION,
+              provider: provider ?? "convex",
+              method: attempt.method,
+              flow: attempt.flow,
+            });
+          } else if (identityTransition !== "already_identified") {
+            client.capture("auth_session_restored", {
+              analytics_version: ANALYTICS_VERSION,
+              provider: provider ?? "convex",
+            });
+          }
+        } else if (client.get_property("$user_id")) {
+          // `reset()` creates a fresh anonymous id. Only do that when an
+          // identified session actually ended; resetting every anonymous page
+          // load made the same returning writer look like a brand-new person.
           client.reset();
         }
-        client.identify(analyticsId, {
-          email: user.email,
-          name: user.name,
-          auth_provider: auth.value.provider,
-          auth_identity_source: user.analyticsId
-            ? "convex_token_identifier"
-            : "better_auth_user_id_fallback",
-        });
-
-        const attempt = consumeAuthAttempt();
-        if (attempt) {
-          client.capture("sign_in_completed", {
-            analytics_version: ANALYTICS_VERSION,
-            provider: auth.value.provider ?? "convex",
-            method: attempt.method,
-            flow: attempt.flow,
-          });
-        } else if (identityTransition !== "already_identified") {
-          client.capture("auth_session_restored", {
-            analytics_version: ANALYTICS_VERSION,
-            provider: auth.value.provider ?? "convex",
-          });
-        }
-      } else if (client.get_property("$user_id")) {
-        // `reset()` creates a fresh anonymous id. Only do that when an
-        // identified session actually ended; resetting every anonymous page
-        // load made the same returning writer look like a brand-new person.
-        client.reset();
-      }
+      });
     },
-    { strategy: "document-ready" },
+    { strategy: "document-idle" },
   );
 
   return <Slot />;
