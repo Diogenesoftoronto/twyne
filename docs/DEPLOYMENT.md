@@ -106,6 +106,18 @@ Set `PUBLIC_POSTHOG_KEY` and optionally `PUBLIC_POSTHOG_HOST`
 defaults for local/offline builds where PostHog is absent; PostHog should own
 production rollout.
 
+Firefox (including Android and iOS) skips the browser PostHog SDK entirely:
+no analytics, session replay, surveys, or remote feature-flag requests. It
+uses the `PUBLIC_FEATURE_*` fallback values regardless of the user's location.
+Server-side PostHog capture remains configured separately.
+
+In other browsers, PostHog starts when the document is idle, with a 1.5-second
+SDK-load deadline. Blocked or failed initialization is skipped for the rest of
+the page session. Analytics and identity lookups never wait for SDK loading before an
+app action continues. Feature flags start ready with the fallback values;
+failed refreshes preserve the current values, and unchanged values do not
+trigger UI updates.
+
 PostHog also captures AI Observability events for evals. Browser-side BYOK and
 desktop-local model calls emit `$ai_generation` through `posthog-js`; Convex
 server-side hosted AI calls emit the same event via the capture API when

@@ -7,6 +7,11 @@ import type { PostHogConfig } from "posthog-js";
  */
 export const POSTHOG_DEFAULTS_VERSION = "2026-05-30";
 
+/** Skip the SDK entirely in Firefox, including config, flags, and assets. */
+export function shouldLoadPostHog(userAgent: string): boolean {
+  return !/\b(?:Firefox|FxiOS)\//i.test(userAgent);
+}
+
 interface PostHogInitOptions {
   host: string;
   capture: boolean;
