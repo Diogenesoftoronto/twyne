@@ -117,6 +117,71 @@ async function compile(source: string) {
 }
 
 describe("Typst serializer with the real bundled compiler", () => {
+  test("opening prose wraps beside the drop cap and resumes the full column width", async () => {
+    const prose =
+      "At last, the page came alive. The opening paragraph carries enough words to fill several lines beside the illuminated letter, then continues beneath it across the full width of the column. Every word survives the change of width, along with its emphasis and links. ".repeat(
+        3,
+      );
+    const html = `<h1>Wrapping</h1><p><strong><em>${prose.slice(0, 40)}</em></strong><a href="https://example.com">${prose.slice(40, 120)}</a>${prose.slice(120)}</p><p>Later prose.</p>`;
+    for (const [mode, size, columns] of [
+      ["illuminated", "small", 2],
+      ["illuminated", "medium", 1],
+      ["illuminated", "large", 2],
+      ["plain", "large", 1],
+    ] as const) {
+      const payload = {
+        title: "Wrapping",
+        html,
+        layout: {
+          ...DEFAULT_LAYOUT,
+          columns,
+          pageBorder: "none" as const,
+          openingInitial: {
+            mode,
+            collection: "botanical" as const,
+            size,
+          },
+        },
+      };
+      // PDF serialization, rich manuscript proof, and handwritten Typst use
+      // the same wrapping contract, including inside a two-column page.
+      for (const source of [
+        serializeTypst(payload).source,
+        applyTypstPageSetup(htmlToTypst(html), payload),
+        applyTypstPageSetup(`= Wrapping\n\n${prose}\n\nLater prose.`, payload),
+      ]) {
+        const rendered = await compile(
+          source +
+            "\n#context metadata(query(metadata).filter(it => type(it.value) == str).map(it => (text: it.value, x: it.location().position().x / 1pt, y: it.location().position().y / 1pt)))",
+        );
+        // A word boundary becomes a line break where the width changes.
+        expect(rendered.join("").replace(/\s/g, "")).toContain(
+          prose.replace(/\s/g, ""),
+        );
+        const positions = (rendered as unknown[]).find(Array.isArray) as {
+          text: string;
+          x: number;
+          y: number;
+        }[];
+        const initialIndex = positions.findIndex((p) => p.text === "A");
+        expect(initialIndex).toBeGreaterThanOrEqual(0);
+        const initial = positions[initialIndex];
+        const body = positions
+          .slice(initialIndex + 1)
+          .filter((p) => p.text.trim());
+        const resume = body.findIndex(
+          (p) => Math.abs(p.x - initial.x) < 0.1 && p.y > initial.y + 1,
+        );
+        expect(resume).toBeGreaterThan(0);
+        const beside = body.slice(0, resume);
+        expect(beside.every((p) => p.x > initial.x + 5)).toBe(true);
+        expect(
+          new Set(beside.map((p) => Math.round(p.y))).size,
+        ).toBeGreaterThanOrEqual(2);
+      }
+    }
+  });
+
   test("decorative PDF settings use authoritative marked prose, nine-slice borders, and columns", async () => {
     const html =
       '<h1>Ornament</h1><p>“<strong><em>At last</em></strong>, <span style="color:#224466">the page</span> came alive.</p><p>Later prose.</p>';

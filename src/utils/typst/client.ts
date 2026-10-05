@@ -210,7 +210,10 @@ export function applyTypstPageSetup(
 #show table: it => { show par: it => it; it }
 #show par: it => {
   show par: it => it
-  block(twyne-opening(it.body))
+  // Layout probes and the two parts of an already wrapped opening must not
+  // re-enter the automatic paragraph rule during contextual measurement.
+  if it.has("label") and it.label == <twyne-opening-line> { it }
+  else { block(twyne-opening(it.body)) }
 }
 ${source}`;
   }
