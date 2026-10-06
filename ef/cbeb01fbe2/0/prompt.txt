@@ -1,0 +1,25 @@
+please add us.posthog.com (or eu.posthog.com) to the list of permitted domains
+
+---
+
+ah yeah fair, i get this issue in prod which is deployed on railway, here you go mate:
+
+```
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://us-assets.i.posthog.com/array/REDACTED/config.js. (Reason: CORS request did not succeed). Status code: (null). 
+<script> source URI is not allowed in this document: “https://us-assets.i.posthog.com/array/REDACTED/config.js”. twyne.love:1:1
+Cross-Origin Request Blocked: The Same Origin Policy disallows reading the remote resource at https://us-assets.i.posthog.com/array/REDACTED/config?ip=0&_=1791143960505&ver=1.386.6. (Reason: CORS request did not succeed). Status code: (null). 
+Cookie “dmn_chk_01a1087f-e096-76b7-b81f-7402edaef03e” has been rejected for invalid domain. twyne.love
+Security Error: Content at https://twyne.love/ may not load or link to file:///.
+```
+
+---
+
+okay let's disable posthog for firefox here ithink that might be  the problem the person that had this issue was using firefox in the uk
+
+---
+
+are there other browsers with this issue?
+
+---
+
+if posthog is blocked i dont want these  terrible jitterry affects that cause the page not to load the assets properly
