@@ -48,6 +48,142 @@ async function replaceSource(page: Page, source: string) {
   await page.keyboard.insertText(source);
 }
 
+test("Write+Split compiles its first proof and pauses again when Split closes", async ({
+  page,
+}) => {
+  let proofWorkers = 0;
+  page.on("worker", (worker) => {
+    if (/\/compiler\.worker(?:[.-]|$)/.test(new URL(worker.url()).pathname))
+      proofWorkers++;
+  });
+  await seedFolio(page);
+  const workspace = page.getByRole("region", { name: "Manuscript workspace" });
+  const split = workspace.getByRole("button", { name: "Split", exact: true });
+  const proofPane = workspace.locator(".typst-proof");
+  const proof = proofPane.locator("img").first();
+  const manuscript = page.locator(".ProseMirror");
+
+  // No Source or Proof visit should be needed before the first split proof.
+  await expect(workspace.locator(".typst-status")).toContainText(
+    "Proof updates when opened",
+  );
+  await expect(proofPane).toBeHidden();
+  await expect(proofPane.locator("img")).toHaveCount(0);
+  expect(proofWorkers).toBe(0);
+  await split.click();
+  await expect(split).toHaveAttribute("aria-pressed", "true");
+  await expect(manuscript).toBeVisible();
+  await expect(proof).toBeVisible({ timeout: 30000 });
+  await expect(workspace.locator(".typst-status")).toHaveText("1 page", {
+    timeout: 30000,
+  });
+  const initialProof = await proof.getAttribute("src");
+  expect(initialProof).toBeTruthy();
+  await expect(
+    workspace.getByRole("link", { name: "Download PDF", exact: true }),
+  ).toBeVisible();
+
+  await manuscript.click();
+  await page.keyboard.press("ControlOrMeta+End");
+  await page.keyboard.insertText(" An edit beside the first proof.");
+  await expect(manuscript).toContainText("An edit beside the first proof.");
+  await expect(proof).not.toHaveAttribute("src", initialProof!, {
+    timeout: 30000,
+  });
+  const splitProof = await proof.getAttribute("src");
+  expect(splitProof).toBeTruthy();
+  const compiledWorkers = proofWorkers;
+  expect(compiledWorkers).toBeGreaterThan(0);
+
+  await split.click();
+  await expect(split).toHaveAttribute("aria-pressed", "false");
+  await expect(proofPane).toBeHidden();
+  await manuscript.click();
+  await page.keyboard.press("ControlOrMeta+End");
+  await page.keyboard.insertText(" An edit with the proof closed.");
+  await expect(manuscript).toContainText("An edit with the proof closed.");
+  await expect(
+    workspace.getByRole("link", {
+      name: "Download previous PDF (proof is out of date)",
+      exact: true,
+    }),
+  ).toContainText("Previous PDF");
+  // Observe past both the visual-source and proof debounces. A hidden Write
+  // view should retain its last proof without starting another compiler.
+  await page.waitForTimeout(1200);
+  expect(proofWorkers).toBe(compiledWorkers);
+  await expect(proof).toHaveAttribute("src", splitProof!);
+
+  await split.click();
+  await expect(proof).toBeVisible();
+  await expect(proof).not.toHaveAttribute("src", splitProof!, {
+    timeout: 30000,
+  });
+  await expect(
+    workspace.getByRole("link", { name: "Download PDF", exact: true }),
+  ).toBeVisible();
+  await expect
+    .poll(() => proof.evaluate((image: HTMLImageElement) => image.naturalWidth))
+    .toBeGreaterThan(0);
+});
+
+test("Proof to Split keeps compilation active and Source validates with Split open or closed", async ({
+  page,
+}) => {
+  await seedFolio(page);
+  const workspace = page.getByRole("region", { name: "Manuscript workspace" });
+  const split = workspace.getByRole("button", { name: "Split", exact: true });
+  const proofPane = workspace.locator(".typst-proof");
+  const proof = proofPane.locator("img").first();
+
+  // Switch before waiting for the first proof, so pending work must survive.
+  await chooseView(page, "Proof");
+  await split.click();
+  await expect(
+    workspace.getByRole("button", { name: "Write", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(split).toHaveAttribute("aria-pressed", "true");
+  await expect(proof).toBeVisible({ timeout: 30000 });
+  await expect(workspace.locator(".typst-status")).toHaveText("1 page", {
+    timeout: 30000,
+  });
+  const initialProof = await proof.getAttribute("src");
+  expect(initialProof).toBeTruthy();
+  await page.locator(".ProseMirror").click();
+  await page.keyboard.press("ControlOrMeta+End");
+  await page.keyboard.insertText(" A live edit after leaving Proof.");
+  await expect(proof).not.toHaveAttribute("src", initialProof!, {
+    timeout: 30000,
+  });
+
+  await chooseView(page, "Source");
+  await replaceSource(
+    page,
+    "First source page.\n\n#pagebreak()\n\nSecond source page.",
+  );
+  await expect(proofPane).toBeVisible();
+  await expect(proofPane.locator("img")).toHaveCount(2, { timeout: 30000 });
+  await expect(workspace.locator(".typst-status")).toHaveText(
+    "2 pages · source draft",
+    { timeout: 30000 },
+  );
+
+  await split.click();
+  await expect(proofPane).toBeHidden();
+  await replaceSource(
+    page,
+    "First source page.\n\n#pagebreak()\n\nSecond source page.\n\n#pagebreak()\n\nThird source page.",
+  );
+  await expect(workspace.locator(".typst-status")).toHaveText(
+    "3 pages · source draft",
+    { timeout: 30000 },
+  );
+  await expect(proofPane.locator("img")).toHaveCount(3);
+  await split.click();
+  await expect(proof).toBeVisible();
+  await expect(proofPane.locator("img")).toHaveCount(3);
+});
+
 test("source drafts recover after reload and valid source applies with paginated proof", async ({
   page,
 }, testInfo) => {

@@ -23,6 +23,7 @@ export interface TypstSessionState {
   error: string;
   pages: string[];
   pdfUrl: string;
+  proofStale: boolean;
   applying: boolean;
 }
 export interface TypstSession {
@@ -31,7 +32,7 @@ export interface TypstSession {
   changeSource(source: string): void;
   apply(): Promise<void>;
   discard(): Promise<void>;
-  refreshProof(): void;
+  refreshProof(force?: boolean): void;
   destroy(): void;
 }
 export interface TypstSessionOptions {
@@ -78,7 +79,17 @@ export async function createTypstSession(
   let timer: ReturnType<typeof setTimeout> | undefined;
   let visualTimer: ReturnType<typeof setTimeout> | undefined;
   let visualPending = false;
-  let controller: AbortController | undefined;
+  let requestId = 0;
+  let pendingRequest: Promise<boolean> | undefined;
+  let job:
+    | {
+        key: string;
+        controller: AbortController;
+        promise: Promise<TypstCompilation>;
+      }
+    | undefined;
+  let completedKey: string | undefined;
+  let completedPageCount = 0;
   let baselineHtml = editor.getHTML();
   const visualHistory = new Set([baselineHtml]);
   const snapshot = await deps.loadSnapshot(folioId);
@@ -107,6 +118,7 @@ export async function createTypstSession(
     error: "",
     pages: [],
     pdfUrl: "",
+    proofStale: true,
     applying: false,
   };
   if (recovered && state.dirty) baseSource = recovered.baseSource;
@@ -142,68 +154,122 @@ export async function createTypstSession(
         emit();
       });
   }
-  function cancel() {
+  function clearScheduledCompile() {
     if (timer !== undefined) clearTimeout(timer);
     timer = undefined;
-    controller?.abort();
-    controller = undefined;
+  }
+  function cancel() {
+    clearScheduledCompile();
+    job?.controller.abort();
+    job = undefined;
+    pendingRequest = undefined;
+    requestId++;
     revision++;
   }
   function releaseProof() {
     state.pages.forEach((url) => URL.revokeObjectURL(url));
     if (state.pdfUrl) URL.revokeObjectURL(state.pdfUrl);
   }
-  async function compile(): Promise<TypstCompilation | undefined> {
+  function readyStatus() {
+    return `${completedPageCount} ${completedPageCount === 1 ? "page" : "pages"}${state.dirty ? " · source draft" : ""}`;
+  }
+  function compile(force = false): Promise<boolean> {
     flushVisual();
-    cancel();
+    clearScheduledCompile();
     const currentRevision = revision;
+    const currentRequest = ++requestId;
     const source = state.source;
-    const task = new AbortController();
-    controller = task;
+    const current = () =>
+      !destroyed && currentRevision === revision && source === state.source;
     state.status = "Typesetting…";
     state.error = "";
+    state.proofStale = true;
     emit();
-    try {
-      const payload = await options.getPayload(source);
-      task.signal.throwIfAborted();
-      const compiled = await deps.compile(source, {
-        payload,
-        signal: task.signal,
-        onProgress: (status) => {
-          if (!destroyed && currentRevision === revision) {
-            state.status = status;
-            emit();
-          }
-        },
-      });
-      if (destroyed || currentRevision !== revision || source !== state.source)
-        return undefined;
-      const urls = compiled.pages.map((svg) =>
-        URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })),
-      );
-      const pdfUrl = URL.createObjectURL(compiled.pdf);
-      releaseProof();
-      state.pages = urls;
-      state.pdfUrl = pdfUrl;
-      state.status = `${compiled.pageCount} ${compiled.pageCount === 1 ? "page" : "pages"}${state.dirty ? " · source draft" : ""}`;
-      options.onPages(compiled.pageCount);
-      emit();
-      return compiled;
-    } catch (error) {
-      if (destroyed || task.signal.aborted || currentRevision !== revision)
-        return undefined;
-      state.status = state.pages.length
-        ? "Showing last valid proof"
-        : "Proof unavailable";
-      state.error =
-        error instanceof Error
-          ? error.message
-          : "The source could not be typeset.";
-      emit();
-      return undefined;
-    } finally {
-      if (controller === task) controller = undefined;
-    }
+    const run = async (): Promise<boolean> => {
+      let currentJob: typeof job;
+      try {
+        const payload = await options.getPayload(source);
+        if (!current()) return false;
+        // A later request owns publication. Joining it also lets Apply wait for
+        // the newest payload check instead of silently dropping the apply.
+        if (currentRequest !== requestId) return pendingRequest ?? false;
+        const key = JSON.stringify([source, payload]);
+        if (job?.key === key && !job.controller.signal.aborted) {
+          currentJob = job;
+        } else if (!force && completedKey === key) {
+          job?.controller.abort();
+          job = undefined;
+          state.proofStale = false;
+          state.status = readyStatus();
+          emit();
+          return true;
+        } else {
+          job?.controller.abort();
+          const controller = new AbortController();
+          currentJob = {
+            key,
+            controller,
+            promise: deps.compile(source, {
+              payload,
+              signal: controller.signal,
+              onProgress: (status) => {
+                if (current() && job === currentJob) {
+                  state.status = status;
+                  emit();
+                }
+              },
+            }),
+          };
+          job = currentJob;
+        }
+        const compiled = await currentJob.promise;
+        if (!current()) return false;
+        if (currentRequest !== requestId) return pendingRequest ?? false;
+        if (currentJob.controller.signal.aborted) return false;
+        const urls = compiled.pages.map((svg) =>
+          URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" })),
+        );
+        const pdfUrl = URL.createObjectURL(compiled.pdf);
+        releaseProof();
+        state.pages = urls;
+        state.pdfUrl = pdfUrl;
+        completedKey = key;
+        completedPageCount = compiled.pageCount;
+        state.proofStale = false;
+        state.status = readyStatus();
+        options.onPages(compiled.pageCount);
+        emit();
+        return true;
+      } catch (error) {
+        if (!current()) return false;
+        if (currentRequest !== requestId) return pendingRequest ?? false;
+        if (currentJob?.controller.signal.aborted) return false;
+        // A failed payload check also supersedes any older worker. Do not keep
+        // a rejected job available for the next retry to accidentally rejoin.
+        job?.controller.abort();
+        job = undefined;
+        // A failed explicit refresh must remain retryable even when the last
+        // valid proof used the same inputs.
+        completedKey = undefined;
+        state.status = state.pages.length
+          ? "Showing last valid proof"
+          : "Proof unavailable";
+        state.error =
+          error instanceof Error
+            ? error.message
+            : "The source could not be typeset.";
+        emit();
+        return false;
+      } finally {
+        if (currentRequest === requestId) {
+          if (job === currentJob) job = undefined;
+          // Keep the latest settled validation available to older payload
+          // requests (notably Apply) until it is superseded or cancelled.
+        }
+      }
+    };
+    pendingRequest = run();
+    return pendingRequest;
   }
   function schedule() {
     cancel();
@@ -233,6 +299,7 @@ export async function createTypstSession(
     if (visualHistory.size > 100)
       visualHistory.delete(visualHistory.values().next().value!);
     cleanSource = reconcileTypstSource(state.source, html);
+    state.proofStale ||= state.source !== cleanSource;
     state.source = cleanSource;
     sourceEvent();
     emit();
@@ -243,6 +310,10 @@ export async function createTypstSession(
     // Serialization, source reconciliation and updating the hidden CodeMirror
     // document must never run synchronously inside a typing transaction.
     visualPending = true;
+    if (!state.proofStale) {
+      state.proofStale = true;
+      emit();
+    }
     cancel(); // Invalidate proofs of the previous manuscript immediately.
     if (visualTimer !== undefined) clearTimeout(visualTimer);
     visualTimer = setTimeout(flushVisual, 500);
@@ -304,10 +375,13 @@ export async function createTypstSession(
       rec.html === baselineHtml
         ? rec.typstSource
         : reconcileTypstSource(rec.typstSource, baselineHtml);
+    const changed = state.source !== cleanSource;
+    state.proofStale ||= changed;
     state.source = cleanSource;
     sourceEvent();
     emit();
-    schedule();
+    // Persistence acknowledgements do not change the rendered snapshot.
+    if (changed) schedule();
   }
   function remoteChanged(event: Event) {
     const rec = (
@@ -344,9 +418,11 @@ export async function createTypstSession(
       emit();
       return;
     }
+    const changed = state.source !== rec.source || baselineHtml !== rec.html;
     committedHtml = rec.html;
     baseSource = rec.source;
     cleanSource = rec.source;
+    state.proofStale ||= changed;
     state.source = rec.source;
     replacing = true;
     try {
@@ -362,7 +438,7 @@ export async function createTypstSession(
     }
     sourceEvent();
     emit();
-    schedule();
+    if (changed) schedule();
   }
   function requestSource(event: Event) {
     const detail = (
@@ -399,6 +475,7 @@ export async function createTypstSession(
       flushVisual();
       if (source === state.source) return;
       state.source = source;
+      state.proofStale = true;
       state.dirty = source !== cleanSource;
       state.error = "";
       if (!state.dirty) state.conflict = false;
@@ -479,6 +556,7 @@ export async function createTypstSession(
         if (destroyed) return;
         baseSource = latest?.typstSource;
         cleanSource = baseSource ?? htmlToTypst(editor.getHTML());
+        state.proofStale ||= state.source !== cleanSource;
         state.source = cleanSource;
         state.dirty = false;
         state.conflict = false;
@@ -506,8 +584,12 @@ export async function createTypstSession(
         emit();
       }
     },
-    refreshProof() {
-      if (!destroyed && proofActive) void compile();
+    refreshProof(force = true) {
+      // Settings can change while Write hides the proof. Preserve the previous
+      // artifact, but never advertise it as current until its payload is checked.
+      state.proofStale = true;
+      if (!destroyed && (proofActive || applying)) void compile(force);
+      else emit();
     },
     destroy() {
       if (destroyed) return;

@@ -24,6 +24,7 @@ import { FlowRibbon } from "../in-flow/flow-ribbon";
 import { saveEditorViewPreferences } from "../../utils/editor-view-preferences";
 import type { TypstCodeState } from "./typst-code-editor";
 import { TypstSourceRibbon } from "./typst-source-ribbon";
+import { isTypstProofActive } from "./typst-workspace-state";
 import styles from "./typst-workspace.css?inline";
 
 type Session = Awaited<ReturnType<typeof createTypstSession>>;
@@ -64,6 +65,7 @@ export const TypstWorkspace = component$<{
     error: "",
     pages: [],
     pdfUrl: "",
+    proofStale: true,
     applying: false,
   });
   const mode = useSignal<"write" | "source" | "proof">("write");
@@ -117,9 +119,10 @@ export const TypstWorkspace = component$<{
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track }) => {
     const view = track(() => mode.value);
+    const splitOpen = track(() => split.value);
     const current = track(() => session.value);
     props.store.typstView = view;
-    current?.setProofActive(view !== "write");
+    current?.setProofActive(isTypstProofActive(view, splitOpen));
   });
 
   // Focus after the source pane has become visible, including recovered drafts.
@@ -175,7 +178,7 @@ export const TypstWorkspace = component$<{
         editor,
         folioId,
         readOnly: !!readOnly,
-        proofActive: mode.value !== "write",
+        proofActive: isTypstProofActive(mode.value, split.value),
         onState: (next) => {
           if (disposed) return;
           Object.assign(state, next);
@@ -217,7 +220,7 @@ export const TypstWorkspace = component$<{
     track(() => JSON.stringify(props.store.layout));
     track(() => props.store.headerText);
     track(() => props.store.footerText);
-    session.value?.refreshProof();
+    session.value?.refreshProof(false);
   });
   const saveSourceCopy = $(() => {
     const url = URL.createObjectURL(
@@ -297,11 +300,25 @@ export const TypstWorkspace = component$<{
             class="tool-btn typst-tool-btn editor-pdf-download"
             href={state.pdfUrl}
             download={`${props.folioName || "Untitled"}.pdf`}
-            title={state.dirty ? "Download draft PDF" : "Download PDF"}
-            aria-label={state.dirty ? "Download draft PDF" : "Download PDF"}
+            title={
+              state.proofStale
+                ? "Download previous PDF (proof is out of date)"
+                : state.dirty
+                  ? "Download draft PDF"
+                  : "Download PDF"
+            }
+            aria-label={
+              state.proofStale
+                ? "Download previous PDF (proof is out of date)"
+                : state.dirty
+                  ? "Download draft PDF"
+                  : "Download PDF"
+            }
           >
             <Icon name="file-download" size={17} />{" "}
-            <span class="typst-action-label">PDF</span>
+            <span class="typst-action-label">
+              {state.proofStale ? "Previous PDF" : "PDF"}
+            </span>
           </a>
         )}
         <div
