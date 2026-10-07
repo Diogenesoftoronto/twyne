@@ -6,7 +6,9 @@ import {
   createTypstSession,
   type TypstSessionState,
   type TypstSessionDependencies,
+  type TypstSessionOptions,
 } from "./session";
+import type { TypstCompilation, TypstCompileOptions } from "./client";
 import { htmlToTypst } from "./document";
 import {
   FOLIO_CONTENT_SAVED,
@@ -15,6 +17,7 @@ import {
 } from "../idb";
 import type { TypstSourceDraft } from "./source-drafts";
 import type { ExportPayload } from "../exchange";
+import { DEFAULT_LAYOUT } from "../../types";
 
 const previous = new Map<string, PropertyDescriptor | undefined>();
 beforeAll(() => {
@@ -39,12 +42,15 @@ async function setup(
   overrides: Partial<TypstSessionDependencies> = {},
   initialSnapshot?: FolioContentSnapshot,
   proofActive = true,
+  getPayload?: TypstSessionOptions["getPayload"],
 ) {
+  const folioId = initialSnapshot?.folioId ?? "folio";
   let html = initialSnapshot?.html ?? "<p>Initial</p>";
   let editable = true;
   let htmlReads = 0;
   const listeners = new Set<() => void>();
   const states: TypstSessionState[] = [];
+  const pageCounts: number[] = [];
   const saved: string[] = [];
   const drafts: TypstSourceDraft[] = [];
   const saveAttempts: Array<{
@@ -52,7 +58,7 @@ async function setup(
     expectedSource: string | null | undefined;
   }> = [];
   let snap: FolioContentSnapshot = initialSnapshot ?? {
-    folioId: "folio",
+    folioId,
     html,
     typstSource: htmlToTypst(html),
     format: "typst",
@@ -83,12 +89,13 @@ async function setup(
   const session = await createTypstSession(
     {
       editor,
-      folioId: "folio",
+      folioId,
       readOnly: false,
       proofActive,
       onState: (state) => states.push(state),
-      onPages: () => {},
-      getPayload: async () => ({ html, title: "Test" }) as ExportPayload,
+      onPages: (count) => pageCounts.push(count),
+      getPayload:
+        getPayload ?? (async () => ({ html, title: "Test" }) as ExportPayload),
     },
     {
       loadSnapshot: async () => snap,
@@ -116,6 +123,7 @@ async function setup(
   return {
     session,
     states,
+    pageCounts,
     saved,
     drafts,
     saveAttempts,
@@ -140,7 +148,7 @@ async function setup(
     },
     get source() {
       // Source inspection/export is an explicit synchronization boundary.
-      const detail = { folioId: "folio", source: "", pending: false };
+      const detail = { folioId, source: "", pending: false };
       window.dispatchEvent(
         new CustomEvent("twyne:request-typst-source", { detail }),
       );
@@ -148,6 +156,49 @@ async function setup(
     },
   };
 }
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason: Error) => void;
+  const promise = new Promise<T>((yes, no) => {
+    resolve = yes;
+    reject = no;
+  });
+  return { promise, resolve, reject };
+}
+
+function proof(pageCount = 1): TypstCompilation {
+  return {
+    pdf: new Blob([`PDF with ${pageCount} pages`]),
+    pages: Array.from(
+      { length: pageCount },
+      (_, index) =>
+        `<svg xmlns="http://www.w3.org/2000/svg"><text>Page ${index + 1}</text></svg>`,
+    ),
+    pageCount,
+  };
+}
+
+function controlledCompiler() {
+  const jobs: Array<{
+    source: string;
+    options?: TypstCompileOptions;
+    resolve(value: TypstCompilation): void;
+    reject(reason: Error): void;
+  }> = [];
+  const compile: TypstSessionDependencies["compile"] = (source, options) => {
+    const pending = deferred<TypstCompilation>();
+    jobs.push({ source, options, ...pending });
+    // Deliberately ignore aborts so late worker results exercise publication
+    // guards rather than relying on the compiler to respect cancellation.
+    return pending.promise;
+  };
+  return { jobs, compile };
+}
+
+// Let payload preparation, compilation, and their chained continuations settle
+// without advancing the session's 450/500 ms debounce windows.
+const settle = () => Bun.sleep(0);
 
 describe("Typst source session", () => {
   test("applying source checks a visual conflict still inside the quiet window", async () => {
@@ -601,6 +652,915 @@ describe("Typst source session", () => {
       expect(t.states.at(-1)?.status).toBe("2 pages · source draft");
     } finally {
       t.session.destroy();
+    }
+  });
+});
+
+describe("Typst proof scheduling", () => {
+  test("a same-source save acknowledgement preserves the running compilation", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      const acknowledged: FolioContentSavedDetail = {
+        ...t.snapshot,
+        updatedAt: 2,
+        origin: "local",
+      };
+      t.setSnapshot(acknowledged);
+      window.dispatchEvent(
+        new CustomEvent(FOLIO_CONTENT_SAVED, { detail: acknowledged }),
+      );
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(false);
+      await Bun.sleep(500);
+      expect(compiler.jobs).toHaveLength(1);
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(false);
+      compiler.jobs[0].resolve(proof(2));
+      await settle();
+      expect(t.states.at(-1)).toMatchObject({
+        status: "2 pages",
+        proofStale: false,
+        error: "",
+      });
+      expect(t.pageCounts).toEqual([2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("reopening an unchanged completed proof reuses its existing URLs", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof(2));
+      await settle();
+      const ready = t.states.at(-1)!;
+      expect(ready.pdfUrl).not.toBe("");
+      t.session.setProofActive(false);
+      t.session.setProofActive(true);
+      await Bun.sleep(500);
+      expect(compiler.jobs).toHaveLength(1);
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: ready.pdfUrl,
+        pages: ready.pages,
+        proofStale: false,
+        status: "2 pages",
+      });
+      expect(t.pageCounts).toEqual([2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("an unchanged remote echo preserves pending work while a real remote edit replaces it", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      window.dispatchEvent(
+        new CustomEvent("twyne:typst-remote-change", {
+          detail: {
+            folioId: "folio",
+            source: t.snapshot.typstSource,
+            html: t.snapshot.html,
+          },
+        }),
+      );
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(false);
+      await Bun.sleep(500);
+      expect(compiler.jobs).toHaveLength(1);
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(false);
+      window.dispatchEvent(
+        new CustomEvent("twyne:typst-remote-change", {
+          detail: {
+            folioId: "folio",
+            source: "= Remote manuscript",
+            html: "<h1>Remote manuscript</h1>",
+          },
+        }),
+      );
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(true);
+      expect(t.states.at(-1)?.proofStale).toBe(true);
+      await Bun.sleep(500);
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[1].source).toBe("= Remote manuscript");
+      expect(compiler.jobs[1].options?.payload?.html).toBe(
+        "<h1>Remote manuscript</h1>",
+      );
+      compiler.jobs[1].resolve(proof(2));
+      await settle();
+      const ready = t.states.at(-1)!;
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      expect(t.states.at(-1)).toEqual(ready);
+      expect(t.pageCounts).toEqual([2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("automatic refreshes coalesce identical in-flight work and publish once", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      for (let i = 0; i < 5; i++) t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(false);
+      compiler.jobs[0].resolve(proof(3));
+      await settle();
+      expect(t.states.at(-1)).toMatchObject({
+        status: "3 pages",
+        proofStale: false,
+      });
+      expect(t.pageCounts).toEqual([3]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("automatic refresh reuses completed work for a newly allocated equal payload", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      async () => ({
+        html: "<p>Initial</p>",
+        title: "Test",
+        layout: { ...DEFAULT_LAYOUT },
+        bibliography: [],
+      }),
+    );
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      const ready = t.states.at(-1)!;
+      t.session.refreshProof(false);
+      expect(t.states.at(-1)?.proofStale).toBe(true);
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: ready.pdfUrl,
+        pages: ready.pages,
+        proofStale: false,
+      });
+      expect(t.pageCounts).toEqual([1]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  const payloadChanges: Array<[string, Partial<ExportPayload>]> = [
+    ["title", { title: "Renamed manuscript" }],
+    ["HTML", { html: "<p>Different projected content</p>" }],
+    ["canonical payload source", { typstSource: "= Payload source" }],
+    ["header", { header: "Changed running header" }],
+    ["footer", { footer: "Changed running footer" }],
+    ["layout", { layout: { ...DEFAULT_LAYOUT, marginLeft: 7 } }],
+    ["citation style", { citationStyle: "apa" }],
+    [
+      "bibliography",
+      {
+        bibliography: [
+          {
+            id: "reference",
+            folioId: "folio",
+            title: "Revised citation",
+            url: "https://example.com/reference",
+            accessedAt: 1,
+          },
+        ],
+      },
+    ],
+    [
+      "marginalia",
+      {
+        marginalia: [
+          {
+            personaId: "editor",
+            personaName: "Editor",
+            personaColor: "blue",
+            feedback: "Revised note",
+            timestamp: 1,
+            type: "suggestion",
+          },
+        ],
+      },
+    ],
+    [
+      "brief",
+      {
+        brief: {
+          answers: {
+            workingTitle: "Changed brief",
+            format: "Essay",
+            audience: "Readers",
+            goal: "Explain",
+            tone: "Direct",
+            constraints: "Short",
+            successSignal: "Clear",
+          },
+          attachments: [],
+          completedAt: 1,
+          updatedAt: 1,
+        },
+      },
+    ],
+    [
+      "folios",
+      {
+        folios: [
+          {
+            id: "folio",
+            name: "Changed folio",
+            type: "draft",
+            createdAt: 1,
+            updatedAt: 2,
+          },
+        ],
+      },
+    ],
+  ];
+  for (const [field, change] of payloadChanges) {
+    test(`automatic refresh recompiles when ${field} changes without a source edit`, async () => {
+      const compiler = controlledCompiler();
+      let payload: ExportPayload = {
+        html: "<p>Initial</p>",
+        title: "Test",
+      };
+      const t = await setup(
+        { compile: compiler.compile },
+        undefined,
+        true,
+        async () => structuredClone(payload),
+      );
+      try {
+        t.session.refreshProof(false);
+        await settle();
+        compiler.jobs[0].resolve(proof());
+        await settle();
+        const ready = t.states.at(-1)!;
+        payload = { ...payload, ...change };
+        t.session.refreshProof(false);
+        expect(t.states.at(-1)).toMatchObject({
+          pdfUrl: ready.pdfUrl,
+          pages: ready.pages,
+          proofStale: true,
+        });
+        await settle();
+        expect(compiler.jobs).toHaveLength(2);
+        expect(compiler.jobs[1].source).toBe(compiler.jobs[0].source);
+        expect(compiler.jobs[1].options?.payload).toEqual(payload);
+        compiler.jobs[1].resolve(proof(2));
+        await settle();
+        expect(t.states.at(-1)?.proofStale).toBe(false);
+        expect(t.states.at(-1)?.pdfUrl).not.toBe(ready.pdfUrl);
+        expect(t.pageCounts).toEqual([1, 2]);
+      } finally {
+        t.session.destroy();
+      }
+    });
+  }
+
+  test("automatic refresh includes source in the key even when its payload is unchanged", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      async () => ({ html: "<p>Initial</p>", title: "Test" }),
+    );
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      const ready = t.states.at(-1)!;
+      t.session.changeSource("= Changed source");
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: ready.pdfUrl,
+        pages: ready.pages,
+        proofStale: true,
+      });
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[1].source).toBe("= Changed source");
+      expect(compiler.jobs[1].options?.payload).toEqual(
+        compiler.jobs[0].options?.payload,
+      );
+      compiler.jobs[1].resolve(proof(2));
+      await settle();
+      expect(t.states.at(-1)?.proofStale).toBe(false);
+      expect(t.states.at(-1)?.status).toBe("2 pages · source draft");
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("default explicit refresh rebuilds a completed proof and automatic refresh joins it", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      const ready = t.states.at(-1)!;
+      t.session.refreshProof();
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[1].options?.signal?.aborted).toBe(false);
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: ready.pdfUrl,
+        proofStale: true,
+      });
+      compiler.jobs[1].resolve(proof(2));
+      await settle();
+      expect(t.states.at(-1)?.pdfUrl).not.toBe(ready.pdfUrl);
+      expect(t.states.at(-1)?.proofStale).toBe(false);
+      expect(t.pageCounts).toEqual([1, 2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("a failed initial compilation is retried by an automatic refresh", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].reject(new Error("Temporary compiler failure"));
+      await settle();
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: "",
+        proofStale: true,
+        error: "Temporary compiler failure",
+      });
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      compiler.jobs[1].resolve(proof());
+      await settle();
+      expect(t.states.at(-1)).toMatchObject({ proofStale: false, error: "" });
+      expect(t.pageCounts).toEqual([1]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("a failed forced refresh retains the old artifact but never caches the failure", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      const ready = t.states.at(-1)!;
+      t.session.refreshProof();
+      await settle();
+      compiler.jobs[1].reject(new Error("Refresh failed"));
+      await settle();
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: ready.pdfUrl,
+        pages: ready.pages,
+        proofStale: true,
+        status: "Showing last valid proof",
+        error: "Refresh failed",
+      });
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(3);
+      compiler.jobs[2].resolve(proof(2));
+      await settle();
+      expect(t.states.at(-1)).toMatchObject({ proofStale: false, error: "" });
+      expect(t.pageCounts).toEqual([1, 2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("a visual keystroke immediately marks the retained proof stale without serializing", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      const ready = t.states.at(-1)!;
+      const reads = t.htmlReads;
+      t.edit("<p>A newer visual manuscript</p>");
+      expect(t.htmlReads).toBe(reads);
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: ready.pdfUrl,
+        pages: ready.pages,
+        proofStale: true,
+      });
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[1].source).toContain("A newer visual manuscript");
+      compiler.jobs[1].resolve(proof(2));
+      await settle();
+      expect(t.states.at(-1)?.proofStale).toBe(false);
+      expect(t.states.at(-1)?.pdfUrl).not.toBe(ready.pdfUrl);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("a latest payload failure cancels old work and allows a fresh same-key retry", async () => {
+    const compiler = controlledCompiler();
+    let payloadFailure = false;
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      async () => {
+        if (payloadFailure) throw new Error("Payload preparation failed");
+        return { html: "<p>Initial</p>", title: "Test" };
+      },
+    );
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      payloadFailure = true;
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(true);
+      expect(t.states.at(-1)).toMatchObject({
+        proofStale: true,
+        error: "Payload preparation failed",
+      });
+      compiler.jobs[0].reject(new Error("Obsolete worker rejected"));
+      await settle();
+      expect(t.states.at(-1)?.error).toBe("Payload preparation failed");
+      payloadFailure = false;
+      t.session.refreshProof();
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[1].options?.payload).toEqual(
+        compiler.jobs[0].options?.payload,
+      );
+      compiler.jobs[1].resolve(proof());
+      await settle();
+      expect(t.states.at(-1)).toMatchObject({
+        proofStale: false,
+        error: "",
+      });
+      expect(t.pageCounts).toEqual([1]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("settings changed while hidden mark the retained artifact stale until reopening", async () => {
+    const compiler = controlledCompiler();
+    let header = "Original header";
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      async () => ({ html: "<p>Initial</p>", title: "Test", header }),
+    );
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      const ready = t.states.at(-1)!;
+      t.session.setProofActive(false);
+      header = "New header";
+      t.session.refreshProof(false);
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: ready.pdfUrl,
+        pages: ready.pages,
+        proofStale: true,
+      });
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      t.session.setProofActive(true);
+      await Bun.sleep(500);
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[1].options?.payload?.header).toBe(header);
+      compiler.jobs[1].resolve(proof(2));
+      await settle();
+      expect(t.states.at(-1)?.proofStale).toBe(false);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("late payload preparation cannot compile or publish an obsolete source", async () => {
+    const compiler = controlledCompiler();
+    const payloads: Array<{
+      source: string;
+      pending: ReturnType<typeof deferred<ExportPayload>>;
+    }> = [];
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      (source) => {
+        const pending = deferred<ExportPayload>();
+        payloads.push({ source, pending });
+        return pending.promise;
+      },
+    );
+    try {
+      t.session.refreshProof(false);
+      t.session.changeSource("= Newer source");
+      t.session.refreshProof(false);
+      expect(payloads).toHaveLength(2);
+      payloads[1].pending.resolve({
+        html: "<h1>Newer source</h1>",
+        title: "New",
+      });
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      expect(compiler.jobs[0].source).toBe("= Newer source");
+      compiler.jobs[0].resolve(proof(2));
+      await settle();
+      const ready = t.states.at(-1)!;
+      payloads[0].pending.resolve({ html: "<p>Initial</p>", title: "Old" });
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      expect(t.states.at(-1)).toEqual(ready);
+      expect(t.pageCounts).toEqual([2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("out-of-order payloads for unchanged source use only the newest settings", async () => {
+    const compiler = controlledCompiler();
+    const payloads: Array<ReturnType<typeof deferred<ExportPayload>>> = [];
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      () => {
+        const pending = deferred<ExportPayload>();
+        payloads.push(pending);
+        return pending.promise;
+      },
+    );
+    try {
+      t.session.refreshProof(false);
+      t.session.refreshProof(false);
+      payloads[1].resolve({ html: "<p>Initial</p>", title: "Newest settings" });
+      await settle();
+      compiler.jobs[0].resolve(proof(2));
+      await settle();
+      const ready = t.states.at(-1)!;
+      payloads[0].resolve({
+        html: "<p>Initial</p>",
+        title: "Obsolete settings",
+      });
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      expect(compiler.jobs[0].options?.payload?.title).toBe("Newest settings");
+      expect(t.states.at(-1)).toEqual(ready);
+      expect(t.pageCounts).toEqual([2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("a superseded settings worker cannot report progress or publish a stale PDF", async () => {
+    const compiler = controlledCompiler();
+    let header = "Old header";
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      async () => ({ html: "<p>Initial</p>", title: "Test", header }),
+    );
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      header = "Newest header";
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(true);
+      compiler.jobs[1].resolve(proof(2));
+      await settle();
+      const ready = t.states.at(-1)!;
+      const emitted = t.states.length;
+      compiler.jobs[0].options?.onProgress?.("Obsolete worker progress");
+      compiler.jobs[0].resolve(proof(3));
+      await settle();
+      expect(t.states).toHaveLength(emitted);
+      expect(t.states.at(-1)).toEqual(ready);
+      expect(t.pageCounts).toEqual([2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("returning to a completed payload cancels different work and reuses the valid artifact", async () => {
+    const compiler = controlledCompiler();
+    let header = "Original header";
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      async () => ({ html: "<p>Initial</p>", title: "Test", header }),
+    );
+    try {
+      t.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      const ready = t.states.at(-1)!;
+      header = "Intermediate header";
+      t.session.refreshProof(false);
+      await settle();
+      header = "Original header";
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[1].options?.signal?.aborted).toBe(true);
+      expect(t.states.at(-1)).toMatchObject({
+        pdfUrl: ready.pdfUrl,
+        pages: ready.pages,
+        proofStale: false,
+      });
+      compiler.jobs[1].resolve(proof(3));
+      await settle();
+      expect(t.states.at(-1)?.pdfUrl).toBe(ready.pdfUrl);
+      expect(t.pageCounts).toEqual([1]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("Apply joins the matching in-flight proof and saves exactly once", async () => {
+    const compiler = controlledCompiler();
+    const t = await setup({ compile: compiler.compile });
+    try {
+      t.session.changeSource("= Applied draft");
+      t.session.refreshProof(false);
+      await settle();
+      const applying = t.session.apply();
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(false);
+      expect(t.states.at(-1)?.applying).toBe(true);
+      expect(t.saved).toHaveLength(0);
+      compiler.jobs[0].resolve(proof());
+      await applying;
+      expect(t.saved).toEqual(["= Applied draft"]);
+      expect(t.html).toBe("<h1>Applied draft</h1>");
+      expect(t.states.at(-1)).toMatchObject({
+        dirty: false,
+        applying: false,
+        proofStale: false,
+        error: "",
+      });
+      expect(t.pageCounts).toEqual([1]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("Apply waiting for payload preparation joins a later matching refresh", async () => {
+    const compiler = controlledCompiler();
+    const payloads: Array<ReturnType<typeof deferred<ExportPayload>>> = [];
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      () => {
+        const pending = deferred<ExportPayload>();
+        payloads.push(pending);
+        return pending.promise;
+      },
+    );
+    try {
+      t.session.changeSource("= Applied after payload race");
+      const applying = t.session.apply();
+      t.session.refreshProof(false);
+      expect(payloads).toHaveLength(2);
+      const payload = { html: "<p>Initial</p>", title: "Test" };
+      payloads[1].resolve(payload);
+      await settle();
+      payloads[0].resolve(payload);
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(false);
+      compiler.jobs[0].resolve(proof());
+      await applying;
+      expect(t.saved).toEqual(["= Applied after payload race"]);
+      expect(t.states.at(-1)).toMatchObject({
+        dirty: false,
+        applying: false,
+        proofStale: false,
+      });
+      expect(t.pageCounts).toEqual([1]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("Apply can finish after a newer refresh already published the matching proof", async () => {
+    const compiler = controlledCompiler();
+    const payloads: Array<ReturnType<typeof deferred<ExportPayload>>> = [];
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      () => {
+        const pending = deferred<ExportPayload>();
+        payloads.push(pending);
+        return pending.promise;
+      },
+    );
+    try {
+      t.session.changeSource("= Applied after the newer proof");
+      const applying = t.session.apply();
+      t.session.refreshProof(false);
+      expect(payloads).toHaveLength(2);
+      const payload = { html: "<p>Initial</p>", title: "Test" };
+      payloads[1].resolve(payload);
+      await settle();
+      compiler.jobs[0].resolve(proof(2));
+      await settle();
+      expect(t.pageCounts).toEqual([2]);
+      expect(t.saved).toHaveLength(0);
+      payloads[0].resolve(payload);
+      await applying;
+      expect(compiler.jobs).toHaveLength(1);
+      expect(t.saved).toEqual(["= Applied after the newer proof"]);
+      expect(t.states.at(-1)).toMatchObject({
+        dirty: false,
+        applying: false,
+        proofStale: false,
+        error: "",
+      });
+      expect(t.pageCounts).toEqual([2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  for (const obsoleteResult of ["resolve", "reject"] as const) {
+    test(`Apply follows a settings replacement when its aborted worker ${obsoleteResult}s`, async () => {
+      const compiler = controlledCompiler();
+      let header = "Original header";
+      const t = await setup(
+        { compile: compiler.compile },
+        undefined,
+        true,
+        async () => ({ html: "<p>Initial</p>", title: "Test", header }),
+      );
+      try {
+        t.session.changeSource("= Applied with the latest settings");
+        const applying = t.session.apply();
+        await settle();
+        expect(compiler.jobs).toHaveLength(1);
+        header = "Latest header";
+        t.session.refreshProof(false);
+        await settle();
+        expect(compiler.jobs).toHaveLength(2);
+        expect(compiler.jobs[0].options?.signal?.aborted).toBe(true);
+        if (obsoleteResult === "resolve") compiler.jobs[0].resolve(proof());
+        else compiler.jobs[0].reject(new Error("Obsolete worker aborted"));
+        await settle();
+        expect(t.saved).toHaveLength(0);
+        expect(t.states.at(-1)).toMatchObject({ applying: true, error: "" });
+        compiler.jobs[1].resolve(proof(2));
+        await applying;
+        expect(t.saved).toEqual(["= Applied with the latest settings"]);
+        expect(t.states.at(-1)).toMatchObject({
+          dirty: false,
+          applying: false,
+          proofStale: false,
+          error: "",
+        });
+        expect(t.pageCounts).toEqual([2]);
+      } finally {
+        t.session.destroy();
+      }
+    });
+  }
+
+  test("Apply in hidden Write view revalidates changed settings before saving", async () => {
+    const compiler = controlledCompiler();
+    let header = "Original header";
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      async () => ({ html: "<p>Initial</p>", title: "Test", header }),
+    );
+    try {
+      t.session.changeSource("= Hidden source draft");
+      t.session.setProofActive(false);
+      const applying = t.session.apply();
+      await settle();
+      expect(compiler.jobs).toHaveLength(1);
+      header = "Latest header";
+      t.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      expect(compiler.jobs[0].options?.signal?.aborted).toBe(true);
+      expect(compiler.jobs[1].options?.payload?.header).toBe("Latest header");
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      expect(t.saved).toHaveLength(0);
+      expect(t.states.at(-1)?.applying).toBe(true);
+      compiler.jobs[1].resolve(proof(2));
+      await applying;
+      expect(t.saved).toEqual(["= Hidden source draft"]);
+      expect(t.states.at(-1)).toMatchObject({
+        dirty: false,
+        applying: false,
+        proofStale: false,
+        error: "",
+      });
+      expect(t.pageCounts).toEqual([2]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("a destroyed session never starts a compiler after late payload preparation", async () => {
+    const compiler = controlledCompiler();
+    const payload = deferred<ExportPayload>();
+    const t = await setup(
+      { compile: compiler.compile },
+      undefined,
+      true,
+      () => payload.promise,
+    );
+    try {
+      t.session.refreshProof(false);
+      t.session.destroy();
+      const emitted = t.states.length;
+      payload.resolve({ html: "<p>Initial</p>", title: "Test" });
+      await settle();
+      expect(compiler.jobs).toHaveLength(0);
+      expect(t.states).toHaveLength(emitted);
+      expect(t.pageCounts).toEqual([]);
+    } finally {
+      t.session.destroy();
+    }
+  });
+
+  test("a folio transition isolates late worker output and does not reuse another folio's cache", async () => {
+    const compiler = controlledCompiler();
+    const first = await setup({ compile: compiler.compile });
+    let second: Awaited<ReturnType<typeof setup>> | undefined;
+    try {
+      first.session.refreshProof(false);
+      await settle();
+      compiler.jobs[0].resolve(proof());
+      await settle();
+      first.session.refreshProof();
+      await settle();
+      expect(compiler.jobs).toHaveLength(2);
+      first.session.destroy();
+      const firstEmitted = first.states.length;
+      expect(compiler.jobs[1].options?.signal?.aborted).toBe(true);
+      second = await setup(
+        { compile: compiler.compile },
+        { ...first.snapshot, folioId: "another-folio" },
+      );
+      second.session.refreshProof(false);
+      await settle();
+      expect(compiler.jobs).toHaveLength(3);
+      expect(compiler.jobs[2].source).toBe(compiler.jobs[0].source);
+      compiler.jobs[2].resolve(proof(2));
+      await settle();
+      const ready = second.states.at(-1)!;
+      compiler.jobs[1].options?.onProgress?.("Previous folio progress");
+      compiler.jobs[1].resolve(proof(3));
+      await settle();
+      expect(first.states).toHaveLength(firstEmitted);
+      expect(first.pageCounts).toEqual([1]);
+      expect(second.states.at(-1)).toEqual(ready);
+      expect(second.pageCounts).toEqual([2]);
+    } finally {
+      first.session.destroy();
+      second?.session.destroy();
     }
   });
 });
