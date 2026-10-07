@@ -94,10 +94,13 @@ afterAll(() => {
   dom.window.close();
 });
 
-async function compile(source: string) {
+async function compile(source: string, trailingMetadata = false) {
   compiler.addSource(
     "/main.typ",
-    "#show text: it => { metadata(it.text); it }\n#show image: it => { if it.alt != none { metadata(it.alt) }; it }\n" +
+    (trailingMetadata
+      ? "#show text: it => box({ it; metadata(it.text) })\n"
+      : "#show text: it => { metadata(it.text); it }\n") +
+      "#show image: it => { if it.alt != none { metadata(it.alt) }; it }\n" +
       source,
   );
   return compiler.runWithWorld(
@@ -115,6 +118,102 @@ async function compile(source: string) {
     },
   );
 }
+
+async function proseBaselines(source: string) {
+  const rendered = await compile(
+    source +
+      "\n#context metadata(query(metadata).filter(it => type(it.value) == str).map(it => (text: it.value, y: it.location().position().y / 1pt)))",
+    true,
+  );
+  const positions = (rendered as unknown[]).find(Array.isArray) as {
+    text: string;
+    y: number;
+  }[];
+  return ["First line.", "Second line.", "Next paragraph."].map((text) => {
+    const position = positions
+      .filter((position) => position.text === text)
+      .at(-1);
+    expect(position).toBeDefined();
+    return position!.y;
+  });
+}
+
+const spacingLayout = {
+  ...DEFAULT_LAYOUT,
+  pageBorder: "none" as const,
+  openingInitial: {
+    mode: "off" as const,
+    collection: "botanical" as const,
+    size: "small" as const,
+  },
+};
+
+test("body paragraph boundaries exceed within-paragraph leading in proof and PDF", async () => {
+  const html = "<p>First line.<br>Second line.</p><p>Next paragraph.</p>";
+  const payload = { title: "Spacing", html, layout: spacingLayout };
+  for (const [route, source] of [
+    ["manuscript", applyTypstPageSetup(htmlToTypst(html), payload)],
+    ["PDF", serializeTypst(payload).source],
+    [
+      "native",
+      applyTypstPageSetup(
+        '#text("First line.")#linebreak()#text("Second line.")\n\n#text("Next paragraph.")',
+        payload,
+      ),
+    ],
+  ]) {
+    const [first, second, next] = await proseBaselines(source);
+    expect(second - first, route).toBeCloseTo(20.25, 2);
+    expect(next - second).toBeGreaterThan(second - first);
+    expect(next - second).toBeCloseTo(25.65, 2);
+  }
+});
+
+test("custom paragraph gaps, zero gaps, and line heights survive proof and PDF", async () => {
+  for (const gap of [0, 6, 24]) {
+    const html = `<p data-space-after="${gap}" style="line-height:1.6">First line.<br>Second line.</p><p>Next paragraph.</p>`;
+    const payload = { title: "Custom spacing", html, layout: spacingLayout };
+    for (const source of [
+      applyTypstPageSetup(htmlToTypst(html), payload),
+      serializeTypst(payload).source,
+    ]) {
+      const [first, second, next] = await proseBaselines(source);
+      expect(second - first).toBeCloseTo(17.55, 2);
+      expect(next - second).toBeCloseTo(9.45 + gap, 2);
+    }
+  }
+});
+
+test("nested paragraph spacing remains unchanged", async () => {
+  const prose = "<p>First line.<br>Second line.</p><p>Next paragraph.</p>";
+  for (const html of [
+    `<ul><li>${prose}</li></ul>`,
+    `<ol><li>${prose}</li></ol>`,
+    `<blockquote>${prose}</blockquote>`,
+    `<table><tr><td>${prose}</td></tr></table>`,
+    ...[1, 2, 3, 4, 5, 6].map(
+      (level) =>
+        `<h${level}>First line.<br>Second line.</h${level}><p>Next paragraph.</p>`,
+    ),
+  ]) {
+    const payload = { title: "Nested spacing", html, layout: spacingLayout };
+    for (const source of [
+      applyTypstPageSetup(htmlToTypst(html), payload),
+      serializeTypst(payload).source,
+    ]) {
+      const original = source
+        .replace(
+          "leading: 0.8em, spacing: 1.2em",
+          "leading: 0.8em, spacing: 0.45em",
+        )
+        .replaceAll('"16.2"', '"6.075"');
+      const before = await proseBaselines(original);
+      const after = await proseBaselines(source);
+      expect(after[1] - after[0]).toBeCloseTo(before[1] - before[0], 4);
+      expect(after[2] - after[1]).toBeCloseTo(before[2] - before[1], 4);
+    }
+  }
+});
 
 describe("Typst serializer with the real bundled compiler", () => {
   test("opening prose wraps beside the drop cap and resumes the full column width", async () => {

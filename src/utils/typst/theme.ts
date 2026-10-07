@@ -10,13 +10,15 @@ import { typstString } from "./string";
 import { typstDecorations } from "./decorative-assets";
 import { pageBorderTileCounts } from "../page-ornaments";
 
-/** Matches the writing surface in global.css, including the exported paper colour. */
+/** Editorial proof styling, including the exported paper colour. */
 export const TYPST_EDITORIAL_STYLES = `
 #set text(font: ("Lora", "Libertinus Serif"), size: 13.5pt, fill: rgb("#1f1b16"), lang: "en", number-type: "old-style")
-#set par(leading: 0.8em, spacing: 0.45em, justify: true)
+// Typst leading is the gap between line boxes. Paragraph spacing must exceed
+// it so a paragraph boundary is visibly larger than an ordinary line break.
+#set par(leading: 0.8em, spacing: 1.2em, justify: true)
 #set heading(numbering: none)
 #show heading: set text(font: ("Libre Baskerville", "Libertinus Serif"), weight: 700)
-#show heading: set par(justify: false, leading: 0.4em)
+#show heading: set par(justify: false, leading: 0.4em, spacing: 0.45em)
 #show heading.where(level: 1): set text(size: 30pt, tracking: -0.01em)
 #show heading.where(level: 1): it => block(sticky: true, width: 100%, above: 48pt, below: 24pt)[
   #set align(center)
@@ -34,7 +36,7 @@ export const TYPST_EDITORIAL_STYLES = `
 #show link: underline.with(stroke: 0.75pt, offset: 2pt)
 #show quote.where(block: true): it => block(width: 100%, inset: (x: 1.25em, y: 0.4em), stroke: (left: 2.25pt + rgb("#c1272d")), above: 1.2em, below: 1.2em)[
   #set text(font: ("Libre Baskerville", "Libertinus Serif"), size: 1.25em, fill: rgb("#4a3f33"), style: "italic")
-  #set par(leading: 0.55em, justify: false)
+  #set par(leading: 0.55em, spacing: 0.45em, justify: false)
   #it.body
   #if it.attribution != none { align(right, [— #it.attribution]) }
 ]
@@ -44,9 +46,11 @@ export const TYPST_EDITORIAL_STYLES = `
 #show math.equation: set text(font: "Libertinus Math")
 #set list(indent: 1.2em, body-indent: 0.4em)
 #set enum(indent: 1.2em, body-indent: 0.4em)
+#show list: set par(spacing: 0.45em)
+#show enum: set par(spacing: 0.45em)
 #set table(inset: (x: 0.8em, y: 0.55em), stroke: 0.75pt + rgb("#ddd0b1"))
 #show table: set text(font: ("DM Sans", "DM Sans 9pt"), size: 11.4pt)
-#show table: set par(justify: false)
+#show table: set par(justify: false, spacing: 0.45em)
 #show table: it => { show par: it => it; it }
 #show figure.caption: set text(font: ("DM Sans", "DM Sans 9pt"), size: 9.36pt, fill: rgb("#4a3f33"))
 #show footnote.entry: set text(size: 0.85em, fill: rgb("#4a3f33"))
@@ -172,13 +176,15 @@ export const TYPST_MANUSCRIPT_STYLES = `
 }
 #let twyne-unstyled-node = twyne-node
 #let twyne-node(tag, attributes, body) = {
-  if tag == "p" {
+  if tag == "p" { context {
     let a = json.decode(attributes)
     let styles = a.at("style", default: "")
     if not styles.contains("line-height") { a.insert("style", styles + ";line-height:1.8") }
-    if not a.keys().contains("data-space-after") { a.insert("data-space-after", "6.075") }
+    if not a.keys().contains("data-space-after") {
+      a.insert("data-space-after", if twyne-opening-depth.get() == 0 { "16.2" } else { "6.075" })
+    }
     twyne-unstyled-node(tag, json.encode(a), twyne-opening(body))
-  } else if tag == "pre" {
+  } } else if tag == "pre" {
     block(width: 100%, fill: rgb("#1f1b16"), inset: (x: 1.25em, y: 1em), radius: 2pt,
       text(font: "DejaVu Sans Mono", size: 10.5pt, fill: rgb("#f4ecd8"), body))
   } else if tag == "th" or tag == "td" {
