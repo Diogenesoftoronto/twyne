@@ -92,6 +92,12 @@ export function serializeTypst(payload: ExportPayload): TypstDocument {
     const indent = number(el.getAttribute("data-indent"), 0, 0, 8);
     if (indent) body = `#pad(left: ${indent * 18}pt)[${body}]`;
     const options: string[] = [];
+    // Keep the following paragraph's automatic above-space from overriding
+    // an author's explicit space-after (including zero).
+    if (el.tagName === "P" && el.parentElement === dom.body) {
+      if (!el.hasAttribute("data-space-before")) options.push("above: 0pt");
+      if (!el.hasAttribute("data-space-after")) options.push("below: 16.2pt");
+    }
     for (const [attr, key] of [
       ["data-space-before", "above"],
       ["data-space-after", "below"],
