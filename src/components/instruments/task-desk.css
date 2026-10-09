@@ -1,0 +1,134 @@
+.task-desk {
+  color: var(--color-ink);
+  font-family: var(--font-typewriter);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  max-width: 56rem;
+  margin-inline: auto;
+  padding: 1rem;
+}
+.task-desk h2,
+.task-desk h3 {
+  font-family: var(--font-display);
+  margin: 0.3rem 0;
+  font-size: 1.35rem;
+}
+.task-desk h3 {
+  font-size: 1.05rem;
+}
+.task-desk .task-form {
+  display: grid;
+  gap: 0.8rem;
+  padding-block: 1rem;
+}
+.task-desk label {
+  display: grid;
+  gap: 0.3rem;
+}
+.task-desk select,
+.task-desk textarea {
+  font: inherit;
+  color: inherit;
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-3);
+  border-radius: 3px;
+  padding: 0.5rem;
+  width: 100%;
+  min-width: 0;
+}
+.task-desk textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+.task-desk .task-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.task-desk button {
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 3px;
+  background: var(--color-paper);
+  font: inherit;
+}
+.task-desk button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.task-desk button:focus-visible,
+.task-desk input:focus-visible,
+.task-desk select:focus-visible,
+.task-desk textarea:focus-visible,
+.task-desk a:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 3px;
+}
+.task-desk fieldset {
+  border: 1px solid var(--color-paper-3);
+  padding: 0.7rem;
+  min-width: 0;
+}
+.task-desk .resource-choice {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 44px;
+  overflow-wrap: anywhere;
+}
+.task-desk .task-card {
+  border-top: 1px solid var(--color-paper-3);
+  padding-block: 1rem;
+}
+.task-desk .task-meta {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.task-desk .task-status {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.task-desk .task-result,
+.task-desk blockquote {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.task-desk blockquote {
+  border-inline-start: 2px solid var(--color-paper-3);
+  padding-inline-start: 0.8rem;
+  margin: 1rem 0;
+  max-height: 14rem;
+  overflow: auto;
+}
+.task-desk .task-notice {
+  padding: 0.7rem;
+  border-inline-start: 3px solid var(--color-vermilion);
+  background: var(--color-paper-2);
+}
+.task-desk .task-small {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+.task-desk details {
+  padding-block: 0.5rem;
+}
+.task-desk summary {
+  cursor: pointer;
+  min-height: 44px;
+}
+@media (max-width: 600px) {
+  .task-desk {
+    padding: 0.65rem;
+  }
+  .task-desk select,
+  .task-desk textarea {
+    font-size: 1rem;
+  }
+}

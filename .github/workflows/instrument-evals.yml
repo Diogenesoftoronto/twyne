@@ -1,0 +1,68 @@
+name: Writing instrument evaluations
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      real_models:
+        description: Download pinned local packs and verify real browser inference
+        type: boolean
+        default: false
+  pull_request:
+    paths:
+      - 'src/utils/**'
+      - 'src/components/editor/extensions/**'
+      - 'convex/instrument*'
+      - 'convex/knowledge*'
+      - 'convex/house*'
+      - 'convex/account*'
+      - 'convex/schema.ts'
+      - 'evals/instruments/**'
+      - 'e2e/instruments-models.e2e.ts'
+      - 'playwright.models.config.ts'
+      - '.github/workflows/instrument-evals.yml'
+permissions:
+  contents: read
+jobs:
+  local:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.6
+      - run: bun install --frozen-lockfile
+      - run: bun run eval:instruments --strict-performance --max-p95-ms 250
+      - name: Check hosted task, resource and ownership contracts
+        run: bunx vitest run convex/instrumentTasks.test.ts convex/house.test.ts convex/account.test.ts convex/knowledge.test.ts
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrument-eval-report
+          path: artifacts/instrument-evals/
+          retention-days: 30
+  model-packs:
+    if: github.event_name == 'workflow_dispatch' && inputs.real_models
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.6
+      - run: bun install --frozen-lockfile
+      - run: bunx playwright install --with-deps chromium
+      - run: TWYNE_MODEL_DOWNLOADS=1 bun run test:models
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: instrument-real-model-report
+          path: artifacts/instrument-evals/
+          retention-days: 30

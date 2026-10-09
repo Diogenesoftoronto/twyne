@@ -1,5 +1,7 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { taskFields } from "./instrumentTaskValidators";
+import { charterExceptionValidator } from "./lib/charterExceptionValidator";
 
 /**
  * One item of a per-user collection.
@@ -81,6 +83,10 @@ const usageMetricFields = {
 };
 
 export default defineSchema({
+  instrumentTasks: defineTable(taskFields)
+    .index("by_userId", ["userId"])
+    .index("by_userId_and_folioId", ["userId", "folioId"])
+    .index("by_userId_and_requestId", ["userId", "requestId"]),
   // Optimistic concurrency head for the bulk browser snapshot. Every push
   // compares the revision it last pulled with this row before writing, so two
   // open devices cannot silently ratify stale state over one another.
@@ -744,6 +750,7 @@ export default defineSchema({
     ),
     order: v.number(),
     updatedAt: v.number(),
+    occurrenceException: v.optional(charterExceptionValidator),
   })
     .index("by_userId", ["userId"])
     .index("by_userId_and_itemId", ["userId", "itemId"]),

@@ -73,6 +73,18 @@ import {
   saveEditorViewPreferences,
 } from "../../utils/editor-view-preferences";
 import { SelectionActions } from "./selection-actions";
+import { InstrumentDock } from "../instruments/instrument-dock";
+import { ThreadsInstrument } from "../in-flow/thread-instrument";
+import { openInstrumentDock } from "../../utils/instrument-dock";
+import {
+  instrumentPassage,
+  locateInstrumentSpan,
+} from "../../utils/instrument-source";
+import { buildEntityInstrumentIndex } from "../../utils/entity-instrument";
+import { segmentDocument } from "../../utils/living-desk/segment";
+import { livingDeskController } from "../../utils/living-desk-contract";
+import { threadInstrumentController, threadInstrumentSnapshot } from "../../utils/thread-instrument";
+import { inFlowController } from "./extensions/struggle-tracker";
 import { researchSelection } from "../../utils/background-research";
 
 /**
@@ -156,7 +168,10 @@ import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 import { QuickReview, startQuickReview } from "./extensions/quick-review";
 import { InFlowAnchor, startInFlowTools } from "./extensions/struggle-tracker";
 import { startFlowConductor } from "./extensions/flow-conductor";
-import { LivingDeskDecorations, startLivingDesk } from "./extensions/living-desk";
+import {
+  LivingDeskDecorations,
+  startLivingDesk,
+} from "./extensions/living-desk";
 import { PageBreakNode } from "./extensions/page-break-node";
 import { RawTypst, RawTypstInline } from "./extensions/raw-typst";
 import { TypstWorkspace } from "./typst-workspace";
@@ -297,6 +312,12 @@ export const TwyneEditor = component$(
   }: TwyneEditorProps) => {
     const clientSig = useConvexClient();
     const auth = useAuth();
+    // eslint-disable-next-line qwik/no-use-visible-task
+    useVisibleTask$(({ track }) => {
+      track(() => JSON.stringify(brief?.answers ?? {}));
+      track(() => auth.value.user?.id);
+      livingDeskController()?.refreshContext();
+    });
     const threadDrafts = useStore<Record<string, string>>({});
     const editorRoot = useSignal<HTMLDivElement>();
     const threadRequest = useSignal(0);
@@ -937,10 +958,16 @@ export const TwyneEditor = component$(
         });
 
         if (activeFolioId && !readOnly) {
-          cleanup(startLivingDesk(editor, {
-            getClient: () => clientSig.value,
-            folioId: activeFolioId,
-          }));
+          cleanup(
+            startLivingDesk(editor, {
+              getClient: () => clientSig.value,
+              folioId: activeFolioId,
+              getReviewContext: () => ({
+                brief: JSON.stringify(brief?.answers ?? {}),
+              }),
+              getAccountKey: () => auth.value.user?.id ?? null,
+            }),
+          );
           cleanup(
             startQuickReview(
               editor,
@@ -1002,7 +1029,7 @@ export const TwyneEditor = component$(
 
         /** Record the finished text range as a durable manuscript action. */
         const refreshSelectionAction = () => {
-          if (nativeTextDragActive) {
+          if (nativeTextDragActive || threadInstrumentSnapshot().open) {
             store.selectionAction = null;
             return;
           }
@@ -3921,12 +3948,103 @@ export const TwyneEditor = component$(
               : store.selectionAction
           }
           onGetSources$={getSourcesForSelection}
+          disabled={readOnly}
+          onSentenceBench$={() => {
+            const text = store.selectionAction?.text;
+            inFlowController()?.openKind("sentence-lab", text);
+            store.selectionAction = null;
+          }}
+          onHear$={() => {
+            void readAloud();
+          }}
+          onThreads$={() => {
+            threadInstrumentController()?.open(store.selectionAction?.text);
+            store.selectionAction = null;
+          }}
+          onTaskDesk$={() => {
+            const passage =
+              store.editor && store.activeFolioId
+                ? instrumentPassage(
+                    store.editor.state.doc,
+                    store.activeFolioId,
+                    store.selectionAction ?? undefined,
+                  )
+                : undefined;
+            openInstrumentDock("tasks", store.selectionAction?.text, passage);
+            store.selectionAction = null;
+          }}
+          onSceneBench$={() => {
+            if (!store.editor || !store.activeFolioId) return;
+            const passage = instrumentPassage(
+              store.editor.state.doc,
+              store.activeFolioId,
+              store.selectionAction ?? undefined,
+            );
+            openInstrumentDock("scene", passage.text, passage);
+            store.selectionAction = null;
+          }}
           onAddMargin$={addMarginForSelection}
           onSendToPersona$={sendSelectionToPersona}
           onClose$={() => {
             store.selectionAction = null;
           }}
         />
+
+        {store.activeFolioId && (
+          <InstrumentDock
+            folioId={store.activeFolioId}
+            selectedText={store.selectionAction?.text}
+            disabled={readOnly}
+            onEntities$={() =>
+              store.editor
+                ? buildEntityInstrumentIndex(
+                    segmentDocument(store.editor.state.doc),
+                  )
+                : null
+            }
+            onEntityJump$={(span, indexKey) => {
+              const editor = store.editor;
+              if (
+                !editor ||
+                indexKey !==
+                  buildEntityInstrumentIndex(segmentDocument(editor.state.doc))
+                    .key ||
+                editor.state.doc.textBetween(span.from, span.to) !== span.text
+              )
+                return false;
+              editor
+                .chain()
+                .setTextSelection({ from: span.from, to: span.to })
+                .scrollIntoView()
+                .focus()
+                .run();
+              return true;
+            }}
+            onLocate$={(span, passage) => {
+              const editor = store.editor;
+              if (!editor) return false;
+              const range = locateInstrumentSpan(
+                editor.state.doc,
+                store.activeFolioId!,
+                passage,
+                span,
+              );
+              if (!range) return false;
+              editor
+                .chain()
+                .setTextSelection(range)
+                .scrollIntoView()
+                .focus()
+                .run();
+              return true;
+            }}
+          />
+        )}
+        {!store.zenMode && (
+          <div class="writing-threads-host">
+            <ThreadsInstrument readOnly={readOnly} />
+          </div>
+        )}
 
         <PersonaNotePanel
           note={store.notePopover}

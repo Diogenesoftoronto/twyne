@@ -38,6 +38,8 @@ import {
   type SystemOneAnswer,
   type SystemOneQuestion,
 } from "./system-one";
+import { localSentenceCandidates, sentenceCandidate } from "./sentence-bench";
+import { completeSentence } from "./sentence-ledger";
 
 export {
   IN_FLOW_EVENT,
@@ -203,11 +205,16 @@ export function seedSpec(
       );
       const sentence = sentences[index]?.text ?? passage.trim();
       const attempts = (options.activity?.attempts[index] ?? [])
-        .filter((a) => a !== sentence)
+        .filter((a) => a !== sentence && completeSentence(a))
         .slice(-5);
       return toolSpec({
         type: "SentenceLab",
-        props: { sentence, attempts, variants: [] },
+        props: {
+          sentence,
+          attempts,
+          variants: [],
+          candidates: localSentenceCandidates(sentence),
+        },
         children: [],
       });
     }
@@ -297,7 +304,7 @@ export async function fillSpec(
     return {
       spec: seed,
       notice:
-        "Your own attempts only — connect a model in Settings for fresh variants.",
+        "Local wordings. Read each in context; meaning has not been checked.",
     };
 
   const max = element.type === "SentenceLab" ? MAX_VARIANTS : MAX_QUESTIONS;
@@ -339,7 +346,31 @@ ${streamingInstructions(element.type, max)}`;
       notice: "The model didn't answer; showing what the draft already holds.",
     };
   stream.push(text);
-  return { spec: stream.finish() };
+  const final = stream.finish();
+  if (final.elements.tool.type === "SentenceLab") {
+    const props = final.elements.tool.props;
+    return {
+      spec: toolSpec({
+        ...final.elements.tool,
+        props: {
+          ...props,
+          candidates: [
+            ...(props.candidates ?? []),
+            ...props.variants.map((text) =>
+              sentenceCandidate(
+                props.sentence,
+                text,
+                "text-model",
+                "Model wording",
+                "Meaning has not been checked.",
+              ),
+            ),
+          ].slice(0, 16),
+        },
+      }),
+    };
+  }
+  return { spec: final };
 }
 
 /** The longest sentence: the default target when no rewrite pinned one. */

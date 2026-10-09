@@ -72,9 +72,13 @@ describe("createToolStream", () => {
 
   test("caps the list and flushes a final line without a newline", () => {
     const stream = createToolStream(lab(), 2);
-    stream.push(`${line("A.")}\n${line("B.")}\n${line("C")}`);
+    stream.push(
+      `${line("A complete sentence.")}\n${line("Another complete sentence.")}\n${line("An unfinished sentence")}`,
+    );
     const spec = stream.finish();
-    expect(spec.elements.tool.props).toMatchObject({ variants: ["A.", "B."] });
+    expect(spec.elements.tool.props).toMatchObject({
+      variants: ["A complete sentence.", "Another complete sentence."],
+    });
   });
 
   test("never mutates the seed", () => {

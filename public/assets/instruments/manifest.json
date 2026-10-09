@@ -1,0 +1,85 @@
+{
+  "version": 1,
+  "created": "2026-10-09",
+  "method": "OpenAI built-in image_gen tool",
+  "model": "Tool-managed; model ID not returned",
+  "direction": "Copperplate tools",
+  "selection": "Implementation choice after parent-agent visual review; not an explicit user selection",
+  "provenance": "Original generated illustrations; no external image sources. Reference was the generated direction study, then the generated sentence-bench illustration.",
+  "directionStudy": "direction-study-v1.png",
+  "prompts": "prompts.json",
+  "export": {
+    "command": "rtk proxy bun public/assets/instruments/export-assets.mjs",
+    "sharpVersion": "0.34.5",
+    "changes": "Resize and WebP encoding only. Preserve alpha and color; do not remove backgrounds or repaint.",
+    "maxAssetBytes": 150000
+  },
+  "assets": [
+    {
+      "id": "sentence-bench",
+      "source": "sentence-bench-source-v1.png",
+      "sourceSha256": "a30f499dfa812d45ced8688bb92a0c517109bbe96a59edf91b5536bcf1aebf8f",
+      "output": "sentence-bench-v1.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 72400,
+      "hasAlpha": true,
+      "promptKey": "sentence-bench"
+    },
+    {
+      "id": "threads",
+      "source": "threads-source-v1.png",
+      "sourceSha256": "72f6e199194e260a25614095ddbe5cdfeee4ba92b50353118fcbd9cc93a7fbe7",
+      "output": "threads-v1.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 42944,
+      "hasAlpha": true,
+      "promptKey": "threads"
+    },
+    {
+      "id": "research",
+      "source": "research-source-v1.png",
+      "sourceSha256": "d1204926d9f8646c6a35c3460e46d4de2fb44d8a8bd35ca63a28a2c2ba6b24d3",
+      "output": "research-v1.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 77168,
+      "hasAlpha": true,
+      "promptKey": "research"
+    },
+    {
+      "id": "scene",
+      "source": "scene-source-v1.png",
+      "sourceSha256": "6683a1aa984d8c39ac7c081c7ad6fdcea91a3f2d000700d625f91934ee830677",
+      "output": "scene-v1.webp",
+      "width": 512,
+      "height": 512,
+      "bytes": 80500,
+      "hasAlpha": true,
+      "promptKey": "scene"
+    },
+    {
+      "id": "press-grain",
+      "source": "press-grain-source-v1.png",
+      "sourceSha256": "bf10160257781bf0ea95b46b796ad943bdccaf39aa3f02bd2f2f8de4ed81c972",
+      "output": "press-grain-v1.webp",
+      "width": 256,
+      "height": 256,
+      "bytes": 7594,
+      "hasAlpha": true,
+      "promptKey": "press-grain"
+    },
+    {
+      "id": "proof-rule",
+      "source": "proof-rule-source-v1.png",
+      "sourceSha256": "815f21fc8d809fcea04405d96154c92378c918095c5b0a0cbc39000624762f7f",
+      "output": "proof-rule-v1.webp",
+      "width": 512,
+      "height": 171,
+      "bytes": 3828,
+      "hasAlpha": true,
+      "promptKey": "proof-rule"
+    }
+  ]
+}

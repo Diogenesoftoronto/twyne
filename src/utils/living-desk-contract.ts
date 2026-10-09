@@ -10,6 +10,7 @@
  * engine maps its own decorations, the interface never edits the document.
  */
 
+import type { ParagraphReview } from "./living-desk/paragraphs";
 export const LIVING_DESK_EVENT = "twyne:living-desk";
 /** Toggle the desk panel. `detail.open` forces a state; absent flips it. */
 export const LIVING_DESK_TOGGLE_EVENT = "twyne:living-desk-toggle";
@@ -154,6 +155,10 @@ export interface LivingDeskSnapshot {
   score: LiveScore;
   /** `offline` means rule-only: no judgement model is reachable. */
   judgement: "idle" | "reading" | "offline";
+  /** Paragraph distributions are separate from the unvalidated headline estimate. */
+  paragraphs?: ParagraphReview[];
+  paragraphStatus?: "ready" | "limited";
+  charterMessage?: string;
   updatedAt: number;
 }
 
@@ -173,6 +178,10 @@ export interface LivingDeskController {
   jumpTo(occurrenceId: string): void;
   /** Jump to the first position inside a section. */
   jumpToSection(index: number): void;
+  /** Select an exact paragraph snapshot; false when its text changed. */
+  jumpToParagraph(id: string): boolean;
+  /** Invalidate readings when the editor's effective brief/account changes. */
+  refreshContext(): void;
   /** 0..1 position of `pos` down the manuscript's rendered height. */
   spineFraction(pos: number): number | null;
   /** Ask for a whole-piece read now. */

@@ -50,6 +50,8 @@ const NOOP_CONTROLLER: LivingDeskController = {
   markDeliberate() {},
   jumpTo() {},
   jumpToSection() {},
+  jumpToParagraph: () => false,
+  refreshContext() {},
   spineFraction: () => null,
   confirm() {},
 };
@@ -664,6 +666,110 @@ export const LivingDeskPanel = component$<{
           </div>
         )}
       </section>
+      {snap.paragraphs && snap.paragraphs.length > 0 && (
+        <details class="ld-paragraphs">
+          <summary>
+            Paragraph readings{" "}
+            <span class="ld-quiet">scores and narrating tense</span>
+          </summary>
+          <p class="ld-quiet">
+            Each reading belongs to the exact paragraph and effective brief.
+            These distributions are separate from the whole-piece grade and its
+            rule estimate.
+          </p>
+          {snap.paragraphStatus === "limited" && (
+            <p class="ld-quiet">
+              The paragraph desk is bounded to the first 256 paragraphs. Longer
+              passages that exceed one request remain rule-only.
+            </p>
+          )}
+          <ol>
+            {snap.paragraphs.map((review) => (
+              <li key={review.passage.id} class="ld-paragraph">
+                <button
+                  class="ld-link ld-paragraph__jump"
+                  type="button"
+                  disabled={!ui.ready}
+                  preventdefault:mousedown
+                  onClick$={() =>
+                    controllerFor(!!props.fixture)?.jumpToParagraph(
+                      review.passage.id,
+                    )
+                  }
+                >
+                  ¶{review.passage.paragraph} ·{" "}
+                  {review.passage.text.slice(0, 65)}
+                  {review.passage.text.length > 65 ? "…" : ""}
+                </button>
+                <p class="ld-quiet">
+                  Narrating tense: {review.tense.label.replace("-", " ")} ·{" "}
+                  {review.tense.source === "jev"
+                    ? `Jev${review.tense.probability === null ? "" : ` · ${Math.round(review.tense.probability * 100)}% distribution weight`}`
+                    : "English verb cues"}
+                </p>
+                <p class="ld-quiet">{review.tense.note}</p>
+                <dl class="ld-paragraph__scores">
+                  {Object.entries(review.scores).map(([criterion, metric]) => (
+                    <div key={criterion}>
+                      <dt>{criterion}</dt>
+                      <dd>
+                        {metric.value === null ? "unread" : one(metric.value)}{" "}
+                        <em>
+                          {metric.source === "jev" ? "by Jev" : "by rule"}
+                        </em>
+                        {metric.bimodal && <span> · split distribution</span>}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <details class="ld-paragraph__distribution">
+                  <summary>Inspect distributions and context</summary>
+                  <p class="ld-quiet">
+                    {review.model
+                      ? `${review.model} · read ${new Date(review.at!).toLocaleTimeString()}`
+                      : "Local heuristics; no paragraph model reading yet."}
+                  </p>
+                  <blockquote>{review.passage.text}</blockquote>
+                  {Object.entries(review.scores).map(([criterion, metric]) => (
+                    <div key={criterion}>
+                      <strong>{criterion}</strong>
+                      <p class="ld-quiet">{metric.note}</p>
+                      {metric.probabilities && (
+                        <ul>
+                          {Object.entries(metric.probabilities).map(
+                            ([level, probability]) => (
+                              <li key={level}>
+                                {metric.legend?.[level] ?? level}:{" "}
+                                {Math.round(probability * 100)}%
+                              </li>
+                            ),
+                          )}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                  {review.tense.probabilities && (
+                    <ul>
+                      {Object.entries(review.tense.probabilities).map(
+                        ([label, probability]) => (
+                          <li key={label}>
+                            {label}: {Math.round(probability * 100)}%
+                          </li>
+                        ),
+                      )}
+                    </ul>
+                  )}
+                </details>
+              </li>
+            ))}
+          </ol>
+        </details>
+      )}
+      {snap.charterMessage && (
+        <p class="ld-charter-message" role="status">
+          {snap.charterMessage}
+        </p>
+      )}
       <div class="ld-lenses" role="group" aria-label="Lens">
         <span class="dept-label">Lens</span>
         {LENSES.map((lens) => (

@@ -25,6 +25,7 @@ errorOnDuplicatesPkgDeps(devDependencies, dependencies);
  */
 export default defineConfig((): UserConfig => {
   return {
+    ...(process.env.TWYNE_VISUAL_RUN === "1" ? { cacheDir: `/tmp/twyne-visual-vite-${process.env.TWYNE_DEV_PORT || "5187"}` } : {}),
     // The lazily loaded Typst compiler imports its WASM wrapper inside a worker.
     worker: { format: "es" },
     plugins: [tailwindcss(), qwikRouter(), qwikVite(), popmelt(), {
@@ -75,6 +76,7 @@ export default defineConfig((): UserConfig => {
     //     : undefined,
 
     server: {
+      ...(process.env.TWYNE_VISUAL_RUN === "1" ? { hmr: false as const, watch: null } : {}),
       headers: {
         // Don't cache the server response in dev mode
         "Cache-Control": "public, max-age=0",

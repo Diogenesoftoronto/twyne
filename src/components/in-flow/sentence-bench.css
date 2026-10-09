@@ -1,0 +1,141 @@
+.sentence-bench {
+  color: var(--color-ink);
+}
+.in-flow-rails:has(.sentence-bench) {
+  z-index: 4;
+}
+.in-flow-rail:has(.sentence-bench) {
+  max-height: 55dvh;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+/* The fallback host used to subtract no space for its top offset. A complete
+ * bench needs a bounded sheet so its working copy and use control are reachable. */
+.in-flow-popover:has(.sentence-bench) {
+  top: auto !important;
+  bottom: 2rem;
+  max-height: 55dvh;
+  overscroll-behavior: contain;
+}
+.sentence-bench-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--color-paper-3);
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.sentence-bench-tabs button,
+.sentence-bench-word-line button,
+.sentence-bench-link {
+  font: inherit;
+  color: var(--color-ink);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+}
+.sentence-bench-tabs button {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+}
+.sentence-bench-tabs .is-on {
+  box-shadow: inset 0 -2px var(--color-ink);
+}
+.sentence-bench button:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+.sentence-bench-candidates > li,
+.sentence-bench-slot {
+  border-bottom: 1px solid var(--color-paper-3);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.sentence-bench-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.4rem;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+}
+.sentence-bench-chip {
+  display: inline-block;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 1rem;
+  padding: 0.1rem 0.35rem;
+  font: 0.6875rem var(--font-sans);
+  margin-right: 0.35rem;
+}
+.sentence-bench .sentence-bench-note {
+  font: 0.75rem/1.5 var(--font-sans);
+  color: var(--color-ink);
+  opacity: 0.85;
+  margin: 0.3rem 0;
+}
+.sentence-bench-context {
+  font: 0.875rem/1.7 var(--font-serif);
+  margin: 0.4rem 0;
+  color: var(--color-ink);
+}
+.sentence-bench-context strong {
+  background: var(--color-highlight-mint);
+  font-weight: 600;
+}
+.sentence-bench-diff del {
+  color: var(--color-ink);
+  text-decoration: line-through;
+  background: var(--color-highlight-rose);
+}
+.sentence-bench-diff ins {
+  color: var(--color-ink);
+  background: var(--color-highlight-mint);
+  text-decoration: underline;
+  text-decoration-style: solid;
+}
+.sentence-bench-word-line {
+  font: 1rem/1.8 var(--font-serif);
+}
+.sentence-bench-word-line button {
+  padding: 0 0.1rem;
+}
+.sentence-bench-word-line button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.sentence-bench-word-line .is-repeated {
+  text-decoration: underline dotted 2px;
+  text-underline-offset: 0.2rem;
+}
+.sentence-bench-word-line .is-on {
+  background: var(--color-highlight-mint);
+}
+.sentence-bench-link {
+  font: 0.75rem var(--font-sans);
+  text-decoration: underline;
+}
+.sentence-bench-working {
+  border-top: 1px solid var(--color-paper-3);
+  padding-top: 0.75rem;
+  margin-top: 0.75rem;
+}
+.sentence-bench-preview,
+.sentence-bench-comparison p {
+  font: 0.875rem/1.6 var(--font-serif);
+  margin: 0.5rem 0;
+}
+.sentence-bench-notice {
+  font: 0.8125rem/1.5 var(--font-sans);
+  border-left: 2px solid var(--color-ink);
+  padding-left: 0.5rem;
+}
+@media (max-width: 480px) {
+  .sentence-bench-tabs button {
+    padding: 0.35rem;
+  }
+  .sentence-bench .in-flow-actions {
+    flex-wrap: wrap;
+  }
+}

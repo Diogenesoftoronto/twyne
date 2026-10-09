@@ -1,0 +1,342 @@
+{
+  "version": 1,
+  "date": "2026-10-09",
+  "owner": "instrument_art",
+  "scope": "Art, motion, Scene bench and scoped public writing-instruments documentation. Other instruments and provider integration belong to the parent team.",
+  "files": [
+    {
+      "path": "docs/instrument-art-direction.md",
+      "bytes": 11347,
+      "sha256": "6e5fdbbbd63b54fa7e4da7592acf163213a9bf277e872f882dbc57bb7b5b7024",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "docs/writing-instruments.md",
+      "bytes": 36232,
+      "sha256": "ef9023f5a5fcb23c2944d684e3b57d21794f2af8387c3ee0de2276c80e801815",
+      "releaseTransfer": "updated"
+    },
+    {
+      "path": "public/assets/instruments/direction-study-v1.png",
+      "bytes": 1463408,
+      "sha256": "fd109956f680c5d7774c0aa3cc3698f713c2732d1f6a1835c6279fc0686a745a",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/docs-writing-instruments-desktop-v1.png",
+      "bytes": 178923,
+      "sha256": "1bbb5b3d18536dc5736ac8657236eea8e0ba1ef9a35a7ccfeb45cb0eb140ddc3",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/docs-writing-instruments-mobile-v1.png",
+      "bytes": 102950,
+      "sha256": "46dbaa934944275de22436f636c39a9cff08b107f06938b5daecca852a182f43",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/docs-writing-instruments-narrow-v1.png",
+      "bytes": 104791,
+      "sha256": "5a7023d111a1ae4727f095993ec3df316dec26ebf92b5cb483b2a7223a02352c",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/docs-writing-instruments-verification.json",
+      "bytes": 1351,
+      "sha256": "4ed61c52e31867b82da78949c2298eccd3ac7d1857f6b4641f62c68a63881eff",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/export-assets.mjs",
+      "bytes": 2734,
+      "sha256": "a490d90803ba3877cab96b99c17672bf78089d9eb43bf561a6dbb0d0489a6b44",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/manifest.json",
+      "bytes": 2773,
+      "sha256": "acb577574ddff698355cc059f2f0573fd4032f3d252d5ee91fb14e0e67f30867",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/motion-study-v1.mp4",
+      "bytes": 370137,
+      "sha256": "c590836c86df80959474b939244e201d3cf85fa6f2d0add83d40b86a557de8ec",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/press-grain-source-v1.png",
+      "bytes": 150306,
+      "sha256": "bf10160257781bf0ea95b46b796ad943bdccaf39aa3f02bd2f2f8de4ed81c972",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/press-grain-v1.webp",
+      "bytes": 7594,
+      "sha256": "8fde55f5c42d2e487705765a4ee3b922bcca8c85e8485526212303b4360c4d92",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/prompts.json",
+      "bytes": 10591,
+      "sha256": "cafd96990da9f9b64cef87ae8922c0c805b95a0af24d49225ccd145d91f799e7",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/proof-rule-source-v1.png",
+      "bytes": 194243,
+      "sha256": "815f21fc8d809fcea04405d96154c92378c918095c5b0a0cbc39000624762f7f",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/proof-rule-v1.webp",
+      "bytes": 3828,
+      "sha256": "0ab56e662fbc6870ce861427f4ff74298c46ef0c15de9227069fc832d54ad5f2",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/research-source-v1.png",
+      "bytes": 2442255,
+      "sha256": "d1204926d9f8646c6a35c3460e46d4de2fb44d8a8bd35ca63a28a2c2ba6b24d3",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/research-v1.webp",
+      "bytes": 77168,
+      "sha256": "e78cb465c0613b4e8c515c7fabdafb41450c31abf293573e5dbb96169633b250",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/review-compact-v1.png",
+      "bytes": 224866,
+      "sha256": "717b9c9160a73c39d65575816027b53458c15401ee4cae48debf3524ecf8064e",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/review-editorial-v1.png",
+      "bytes": 225486,
+      "sha256": "647369289bffb6376fd970263f1843b916cba6ef912410768e4afce533287885",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/review-nightpress-v1.png",
+      "bytes": 214533,
+      "sha256": "a3207e7a5d93a4153ae46c48d6b4bb9e141cc2c4e2568ea66505734f3826b781",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/scene-bench-brief-v1.png",
+      "bytes": 144650,
+      "sha256": "66a257b9bf99a8866c8aea63614a7447b14dd8366c16540cf8fce97bc7687f07",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/scene-bench-model-specimen-mobile-v1.png",
+      "bytes": 161126,
+      "sha256": "f1193d9398cc2edb04583baf5af8d4cc0ebb2e39b9212e4a271d9ed51ba39d55",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/scene-bench-offline-v1.mp4",
+      "bytes": 536766,
+      "sha256": "7115e80b2d16a94dfa4c66b0d45acbc8969ac2cec260f2e975039719fb4d314a",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/scene-bench-offline-v1.png",
+      "bytes": 149143,
+      "sha256": "3ce180ecd95b224cb43ae59f293aaaa306df91fd84c8b6bcd74d14cd0971e0f0",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/scene-bench-verification.json",
+      "bytes": 1757,
+      "sha256": "8bf4c667d6630e1675b7c8a59ce6826ed9f5e45c69f9b7c4afb874d4261e6f83",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/scene-source-v1.png",
+      "bytes": 2596737,
+      "sha256": "6683a1aa984d8c39ac7c081c7ad6fdcea91a3f2d000700d625f91934ee830677",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/scene-v1.webp",
+      "bytes": 80500,
+      "sha256": "7cc85e6dd59af44d95876892a1db9f6faa7b4763615c258a245ab6dfcec4a2fd",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/sentence-bench-source-v1.png",
+      "bytes": 2267578,
+      "sha256": "a30f499dfa812d45ced8688bb92a0c517109bbe96a59edf91b5536bcf1aebf8f",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/sentence-bench-v1.webp",
+      "bytes": 72400,
+      "sha256": "ddc5264c8f3ca6b0426c3ba0ab1231c360af0c9f026f7699b6e012728f3f6bfb",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/threads-source-v1.png",
+      "bytes": 1320130,
+      "sha256": "72f6e199194e260a25614095ddbe5cdfeee4ba92b50353118fcbd9cc93a7fbe7",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/threads-v1.webp",
+      "bytes": 42944,
+      "sha256": "37581e8fc1b8482c599cc7b2c13d3a86bdef5fdcc6578dbf1f02aeb35187a388",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/instruments/verification.json",
+      "bytes": 5012,
+      "sha256": "34a5fda8890f37ffd3a77d8d14501373f984764f4077ce8eda182d349696e28e",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "public/assets/manual/writing-instruments.jpg",
+      "bytes": 163468,
+      "sha256": "2d659afcae9fa76355884d79299c22f30571036803cf886f1081fec9a5e55343",
+      "releaseTransfer": "new",
+      "provenance": "Parent-prepared test recording and stills"
+    },
+    {
+      "path": "public/assets/manual/writing-instruments.mp4",
+      "bytes": 531579,
+      "sha256": "8fbf9c19d0e87924ad57f47f75137d7bff5dacbbace35c51f5f73fccddebf0d5",
+      "releaseTransfer": "new",
+      "provenance": "Parent-prepared test recording and stills"
+    },
+    {
+      "path": "public/assets/manual/writing-instruments.txt",
+      "bytes": 607,
+      "sha256": "f4c6f8b8ec9966b0b17ea7174e7be08f7a895b97febcbff0ad6b75375d27ec62",
+      "releaseTransfer": "new",
+      "provenance": "Parent-prepared test recording and stills"
+    },
+    {
+      "path": "public/assets/manual/writing-instruments.vtt",
+      "bytes": 643,
+      "sha256": "d8389f477c8368fa78f1664bedfb147ee3f479f6815941e1de02f8fa8819629d",
+      "releaseTransfer": "new",
+      "provenance": "Parent-prepared test recording and stills"
+    },
+    {
+      "path": "public/assets/manual/writing-instruments/01-complete-wording-preview.webp",
+      "bytes": 73814,
+      "sha256": "d0187ddc711d71cea3db8127fdc735e25e33271e7f7ad9db4273137f66a96a4e",
+      "releaseTransfer": "new",
+      "provenance": "Parent-prepared test recording and stills"
+    },
+    {
+      "path": "public/assets/manual/writing-instruments/02-wording-used.webp",
+      "bytes": 31856,
+      "sha256": "b2fb06c0ac02a58bd173a9e9ff9ed16233c8f39b3293395c95d690868765c1cf",
+      "releaseTransfer": "new",
+      "provenance": "Parent-prepared test recording and stills"
+    },
+    {
+      "path": "public/assets/manual/writing-instruments/manifest.json",
+      "bytes": 3785,
+      "sha256": "8cef73152b9042dfa202f0d05c58d0de6fbc42f88e03ad422ac141296c4c0d27",
+      "releaseTransfer": "new",
+      "provenance": "Parent-prepared test recording and stills"
+    },
+    {
+      "path": "src/components/instruments/instrument-art.css",
+      "bytes": 1381,
+      "sha256": "d2c0c2cf5b0fa99cd1f161f348c43ca6a6c01f74c45f50fc30a43ed56f5e27e3",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/components/instruments/instrument-art.stories.tsx",
+      "bytes": 3764,
+      "sha256": "af434e1b6eb81f7638d5f88c76538b257db04c2327b7bceb653bf1257a980360",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/components/instruments/instrument-art.tsx",
+      "bytes": 2258,
+      "sha256": "b2a57cd7e8800cbca08e7ab41e3d07aa75d59fd6fa09b02fe130b5a3a945531b",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/components/instruments/instrument-motion.css",
+      "bytes": 2194,
+      "sha256": "7aa99f6fc15ea9de2ea4a9a5c9c53d79f767bce1825ccf66f0f14549fc3a46b0",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/components/instruments/instrument-motion.stories.tsx",
+      "bytes": 6352,
+      "sha256": "4c12b1cc732819789853c437cea9d47d467964b6059b564797dfc7bd2e18b7f8",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/components/instruments/instrument-motion.tsx",
+      "bytes": 1328,
+      "sha256": "13bcbdae40f02bcbdfb1521226c1444054f84ff1bead82b36be8304fd6e2460a",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/components/instruments/scene-bench.css",
+      "bytes": 4447,
+      "sha256": "acda33a5a31be36cd11216c4e24b4383c169f5b39246e141e257957a56369cd7",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/components/instruments/scene-bench.stories.tsx",
+      "bytes": 2702,
+      "sha256": "58af8d1ffd8fc4337e9af1c5dd3cc833f99fcdf824bda665d9a3e9f2a1a1a41a",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/components/instruments/scene-bench.tsx",
+      "bytes": 22372,
+      "sha256": "958d2bd6b29af43bbf14119d8466510f1efba8bfe24b1b2ecb7d2181cb724b09",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/routes/docs/guide-writing-instruments.ts",
+      "bytes": 1916,
+      "sha256": "f49b60d4fa6af10f01a0a3e0802978017422d71cc67e714ae46dc50ba7639b9b",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/routes/docs/index.tsx",
+      "bytes": 54332,
+      "sha256": "9e9d19d7dab4b480adbe12071b225ed29d849c6861fe83dad5770f98042b43bc",
+      "releaseTransfer": "updated"
+    },
+    {
+      "path": "src/routes/docs/manual-films.ts",
+      "bytes": 6251,
+      "sha256": "11ddcebadf9b0e19117b3b4bd68227b126aa74e896f97f56b0bd116ec8d055be",
+      "releaseTransfer": "updated",
+      "provenance": "Instrument public manual metadata"
+    },
+    {
+      "path": "src/utils/scene-bench.benchmark.ts",
+      "bytes": 2728,
+      "sha256": "0d206c4e7ef389b7eb55acf30344030a8cf5b14b4c5c5bb286794d91e53c4132",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/utils/scene-bench.test.ts",
+      "bytes": 9142,
+      "sha256": "466b22363450798dc5c8cfca3b82a061bb6357de2cd1fc4ef0182da401a78987",
+      "releaseTransfer": "new"
+    },
+    {
+      "path": "src/utils/scene-bench.ts",
+      "bytes": 16300,
+      "sha256": "017e304b4c6fb110a175a3256387b312b9afbc9a900dfb52805294416804373d",
+      "releaseTransfer": "new"
+    }
+  ],
+  "manifestPath": "public/assets/instruments/release-files.json",
+  "complete": true
+}

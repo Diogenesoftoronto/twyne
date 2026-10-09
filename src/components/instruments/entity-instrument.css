@@ -1,0 +1,72 @@
+.entity-instrument {
+  color: var(--color-ink);
+  font: 0.9rem/1.6 var(--font-sans);
+}
+.entity-instrument h2 {
+  font: 600 1.6rem var(--font-display);
+}
+.entity-instrument h3 {
+  font: 600 1rem var(--font-sans);
+}
+.entity-instrument label {
+  display: block;
+  margin: 1rem 0;
+}
+.entity-instrument select,
+.entity-instrument input {
+  display: block;
+  width: 100%;
+  margin: 0.4rem 0;
+  padding: 0.55rem;
+  color: var(--color-ink);
+  background: var(--color-paper);
+  border: 1px solid var(--color-ink-light);
+}
+.entity-instrument button {
+  padding: 0.4rem 0.7rem;
+  color: var(--color-ink);
+  background: var(--color-paper-2);
+  border: 1px solid var(--color-ink-light);
+  cursor: pointer;
+}
+.entity-instrument button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.entity-instrument :focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+.entity-presence {
+  display: flex;
+  gap: 0.5rem;
+  overflow: auto;
+}
+.entity-presence > div {
+  display: grid;
+  min-width: 6rem;
+  padding: 0.6rem;
+  background: var(--color-paper-2);
+  text-align: center;
+}
+.entity-note {
+  font: 0.8rem/1.6 var(--font-typewriter);
+  color: var(--color-ink-light);
+}
+.entity-source blockquote {
+  white-space: pre-wrap;
+  font-family: var(--font-serif);
+  border-left: 2px solid var(--color-ink-light);
+  padding-left: 0.7rem;
+  margin: 0.6rem 0;
+}
+.entity-reading {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: var(--color-paper-2);
+}
+.entity-probability {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}

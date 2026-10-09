@@ -821,3 +821,70 @@ html[data-flow] .ld-panel {
     opacity: 0;
   }
 }
+.ld-paragraphs {
+  border-block: 1px solid var(--color-paper-3);
+  padding: 0.75rem 1rem;
+  font: 0.75rem/1.6 var(--font-typewriter);
+}
+.ld-paragraphs > summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.ld-paragraphs > ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 32rem;
+  overflow: auto;
+}
+.ld-paragraph {
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--color-paper-3);
+}
+.ld-paragraph__jump {
+  text-align: start;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  min-height: 44px;
+}
+.ld-paragraph__scores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.4rem;
+  margin: 0.6rem 0;
+}
+.ld-paragraph__scores div {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.ld-paragraph__scores dt {
+  text-transform: capitalize;
+}
+.ld-paragraph__scores dd {
+  margin: 0;
+}
+.ld-paragraph__scores em {
+  font-style: normal;
+  opacity: 0.7;
+}
+.ld-paragraph__distribution summary {
+  cursor: pointer;
+  min-height: 44px;
+}
+.ld-paragraph__distribution blockquote {
+  margin: 0.5rem 0;
+  padding-inline-start: 0.6rem;
+  border-inline-start: 2px solid var(--color-paper-3);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ld-charter-message {
+  font: 0.75rem/1.5 var(--font-typewriter);
+  padding: 0.7rem 1rem;
+  margin: 0;
+}

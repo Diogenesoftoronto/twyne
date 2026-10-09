@@ -19,6 +19,12 @@ import * as liveReviewModule from "../../../utils/live-review";
 import { rubricDraftFingerprint } from "../../../utils/rubric-judgement-result";
 import { htmlToPlainText } from "../../../utils/anti-tabula-rasa";
 import { scoreStaticFeatures } from "../../../utils/rubric";
+import * as judgement from "../../../utils/judgement-client";
+import * as houseStore from "../../../utils/house-store";
+import { emptyHouseState } from "../../../utils/house-model";
+import { __resetSystemOneBudgetForTests } from "../../../utils/system-one-budget";
+import { SCORE_LEVELS } from "../../../utils/rubric-grade";
+import { TENSE_OPTIONS } from "../../../utils/living-desk/paragraphs";
 
 // The shared harness installs Event but leaves CustomEvent in Bun's realm.
 // Keep this engine's DOM-event bridge local to its tests.
@@ -340,6 +346,281 @@ test("a stale loaded reading keeps the estimate marker until the exact draft is 
       } finally {
         stop();
         read.mockRestore();
+      }
+    },
+  );
+});
+function paragraphAnswers(request: judgement.JudgementRequest) {
+  return Object.fromEntries(
+    Object.entries(request.questions).map(([id, question]) => [
+      id,
+      question.type === "score"
+        ? {
+            type: "score",
+            score: 3,
+            confidence: 0.8,
+            legend: Object.fromEntries(
+              SCORE_LEVELS.map((label, index) => [String(index), label]),
+            ),
+            probabilities: {
+              "0": 0.05,
+              "1": 0.05,
+              "2": 0.05,
+              "3": 0.8,
+              "4": 0.05,
+            },
+          }
+        : {
+            type: "choice",
+            choice: TENSE_OPTIONS[0],
+            confidence: 0.8,
+            probabilities: Object.fromEntries(
+              TENSE_OPTIONS.map((label, index) => [
+                label,
+                index === 0 ? 0.8 : 0.05,
+              ]),
+            ),
+          },
+    ]),
+  );
+}
+test("settled paragraphs are read even without a stance finding and their grades do not alter the headline", async () => {
+  await withEditor(
+    {
+      content:
+        "<p>She was waiting by the river. She opened her notebook and watched the water.</p>",
+      extensions: [LivingDeskDecorations],
+    },
+    async ({ editor }) => {
+      Object.defineProperty(document, "hidden", {
+        configurable: true,
+        value: false,
+      });
+      __resetSystemOneBudgetForTests();
+      const ask = spyOn(judgement, "askJudgement").mockImplementation(
+        async (_, request) => ({
+          ok: true,
+          model: "jev-test",
+          answers: paragraphAnswers(request),
+        }),
+      );
+      const stop = startLivingDesk(editor, {
+        folioId: "paragraph-only",
+        getClient: () => null,
+        getReviewContext: () => ({ audience: "Readers" }),
+      });
+      try {
+        const initial = livingDeskSnapshot().score;
+        expect(
+          livingDeskSnapshot().findings.some((f) => f.id === "stance"),
+        ).toBe(false);
+        await new Promise((resolve) => setTimeout(resolve, 2100));
+        const snapshot = livingDeskSnapshot();
+        expect(ask).toHaveBeenCalledTimes(1);
+        expect(snapshot.paragraphs?.[0].scores.voice.source).toBe("jev");
+        expect(snapshot.score.estimate).toBe(initial.estimate);
+        expect(snapshot.score.confirmed).toBe(initial.confirmed);
+        expect(
+          livingDeskController()!.jumpToParagraph(
+            snapshot.paragraphs![0].passage.id,
+          ),
+        ).toBe(true);
+        expect(
+          editor.state.doc.textBetween(
+            editor.state.selection.from,
+            editor.state.selection.to,
+          ),
+        ).toBe(snapshot.paragraphs![0].passage.text);
+        editor.commands.insertContent(" changed");
+        expect(
+          livingDeskController()!.jumpToParagraph(
+            snapshot.paragraphs![0].passage.id,
+          ),
+        ).toBe(false);
+      } finally {
+        stop();
+        ask.mockRestore();
+        __resetSystemOneBudgetForTests();
+      }
+    },
+  );
+});
+test("paragraph responses arriving after a text or brief revision are discarded", async () => {
+  await withEditor(
+    {
+      content: "<p>She was waiting by the river. She opened her notebook.</p>",
+      extensions: [LivingDeskDecorations],
+    },
+    async ({ editor }) => {
+      Object.defineProperty(document, "hidden", {
+        configurable: true,
+        value: false,
+      });
+      __resetSystemOneBudgetForTests();
+      let resolve: ((value: judgement.JudgementResult) => void) | undefined;
+      let asked: judgement.JudgementRequest | undefined;
+      let audience = "Readers";
+      const ask = spyOn(judgement, "askJudgement").mockImplementation(
+        (_, request) => {
+          asked = request;
+          return new Promise((done) => {
+            resolve = done;
+          });
+        },
+      );
+      const stop = startLivingDesk(editor, {
+        folioId: "paragraph-stale",
+        getClient: () => null,
+        getReviewContext: () => ({ audience }),
+      });
+      try {
+        await new Promise((done) => setTimeout(done, 2100));
+        expect(asked).toBeDefined();
+        audience = "Experts";
+        editor.commands.setContent(
+          "<p>She is waiting by the river. She opens her notebook.</p>",
+        );
+        resolve!({
+          ok: true,
+          model: "old-model",
+          answers: paragraphAnswers(asked!),
+        });
+        await new Promise((done) => setTimeout(done, 450));
+        expect(livingDeskSnapshot().paragraphs?.[0].scores.voice.source).toBe(
+          "rule",
+        );
+        expect(livingDeskSnapshot().paragraphs?.[0].model).toBeNull();
+        expect(livingDeskSnapshot().paragraphs?.[0].tense.label).toBe(
+          "present",
+        );
+      } finally {
+        stop();
+        ask.mockRestore();
+        __resetSystemOneBudgetForTests();
+      }
+    },
+  );
+});
+test("Deliberate saves exact folio Charter metadata; remote removal restores flags", async () => {
+  await withEditor(
+    { content, extensions: [LivingDeskDecorations] },
+    async ({ editor }) => {
+      let house = emptyHouseState();
+      const load = spyOn(houseStore, "loadHouseState").mockImplementation(
+        async () => house,
+      );
+      const upsert = spyOn(houseStore, "upsertCharterItem").mockImplementation(
+        async (item) => {
+          house = {
+            ...house,
+            charter: [{ ...item, id: item.id!, order: 0, updatedAt: 1 }],
+          };
+          return house;
+        },
+      );
+      const remove = spyOn(houseStore, "removeCharterItem").mockImplementation(
+        async () => {
+          house = { ...house, charter: [] };
+          return house;
+        },
+      );
+      const stop = startLivingDesk(editor, {
+        folioId: "charter-folio",
+        getClient: () => null,
+      });
+      try {
+        await new Promise((done) => setTimeout(done, 5));
+        livingDeskController()!.markDeliberate("stance", true);
+        await new Promise((done) => setTimeout(done, 10));
+        expect(upsert).toHaveBeenCalledTimes(1);
+        expect(house.charter[0]).toMatchObject({
+          scope: "folio",
+          ownerRef: "charter-folio",
+          occurrenceException: { version: 1, findingId: "stance" },
+        });
+        expect(livingDeskSnapshot().charterMessage).toContain("saved");
+        expect(
+          livingDeskSnapshot().findings.find((f) => f.id === "stance")?.count,
+        ).toBe(0);
+        window.dispatchEvent(
+          new window.CustomEvent(houseStore.HOUSE_CHANGED_EVENT, {
+            detail: { state: { ...house, charter: [] }, remote: true },
+          }),
+        );
+        expect(
+          livingDeskSnapshot().findings.find((f) => f.id === "stance")?.count,
+        ).toBe(2);
+      } finally {
+        stop();
+        load.mockRestore();
+        upsert.mockRestore();
+        remove.mockRestore();
+      }
+    },
+  );
+});
+test("refreshContext invalidates account readings and namespaces deliberate device mirrors", async () => {
+  await withEditor(
+    { content, extensions: [LivingDeskDecorations] },
+    async ({ editor }) => {
+      let account = "writer-a";
+      const storage = new Map<string, string>();
+      Object.defineProperty(window, "localStorage", {
+        configurable: true,
+        value: {
+          getItem: (key: string) => storage.get(key) ?? null,
+          setItem: (key: string, value: string) => storage.set(key, value),
+        },
+      });
+      const load = spyOn(houseStore, "loadHouseState").mockImplementation(
+        async () => emptyHouseState(),
+      );
+      let resolve:
+        | ((value: ReturnType<typeof emptyHouseState>) => void)
+        | undefined;
+      const upsert = spyOn(houseStore, "upsertCharterItem").mockImplementation(
+        () =>
+          new Promise((done) => {
+            resolve = done;
+          }),
+      );
+      const stop = startLivingDesk(editor, {
+        folioId: "account-folio",
+        getClient: () => null,
+        getAccountKey: () => account,
+      });
+      try {
+        await new Promise((done) => setTimeout(done, 5));
+        livingDeskController()!.markDeliberate("stance", true);
+        expect(
+          window.localStorage.getItem(
+            "living-desk-deliberate:account:writer-a:account-folio",
+          ),
+        ).toContain("stance");
+        account = "writer-b";
+        livingDeskController()!.refreshContext();
+        expect(
+          livingDeskSnapshot().findings.find(
+            (finding) => finding.id === "stance",
+          )?.count,
+        ).toBe(2);
+        expect(
+          window.localStorage.getItem(
+            "living-desk-deliberate:account:writer-b:account-folio",
+          ),
+        ).toBeNull();
+        resolve!(emptyHouseState());
+        await new Promise((done) => setTimeout(done, 5));
+        expect(livingDeskSnapshot().charterMessage).not.toContain("saved");
+        expect(
+          livingDeskSnapshot().findings.find(
+            (finding) => finding.id === "stance",
+          )?.count,
+        ).toBe(2);
+      } finally {
+        stop();
+        load.mockRestore();
+        upsert.mockRestore();
       }
     },
   );

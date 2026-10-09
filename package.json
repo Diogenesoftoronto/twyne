@@ -61,7 +61,11 @@
     "prompts:optimize:dry": "python evals/optimize_prompts.py --dry-run",
     "test:mutation": "stryker run",
     "i18n:prepare": "bun scripts/prepare-i18n.ts",
-    "test:visual": "playwright test --config playwright.visual.config.ts"
+    "test:visual": "playwright test --config playwright.visual.config.ts",
+    "test:manual": "playwright test --config playwright.manual.config.ts",
+    "eval:instruments": "bun evals/instruments/run.ts",
+    "bench:instruments": "bun evals/instruments/run.ts --benchmark-only",
+    "test:models": "playwright test --config playwright.models.config.ts"
   },
   "devDependencies": {
     "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-beta.42",

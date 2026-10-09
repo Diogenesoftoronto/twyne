@@ -9,13 +9,16 @@ manual player provides optional playback, captions, a description and download.
 
 ```sh
 rtk proxy bun run test:visual
+rtk proxy bun run test:manual
 ```
 
 The suite exercises real controls with the fictional manuscript in
 `e2e/fixtures/living-desk.ts`, in a fresh signed-out browser context. It checks
 preview, individual and batch fixes, Undo, persistence, presence, keyboard focus,
 four themes and two narrow widths. The manual tests check each image and step,
-printable instructions, video playback, captions and byte-range seeking.
+printable instructions, video playback, captions and byte-range seeking against
+the built app and its actual `server.js` handler. `test:manual` builds first;
+`TWYNE_MANUAL_PREBUILT=1` reuses a build only when it matches the current source.
 
 Every run keeps **successful** videos, stills and traces as well as failures under
 `artifacts/qa-recordings/living-desk/<timestamp>/`. Open its `report/index.html`
@@ -30,7 +33,7 @@ settings unchanged. `TWYNE_VISUAL_OUTPUT` can select a stable output directory f
 a particular review; otherwise each run has its own directory. Keep a selected
 recording's complete directory when filing it for a demo or commercial.
 
-The GitHub **Living desk visual review** workflow retains its downloadable review
+The GitHub **Writing instruments visual review** workflow retains its downloadable review
 bundle for 30 days, including passing footage. Archive selected masters before
 that expiry; CI retention is not a permanent media library.
 
@@ -67,7 +70,7 @@ writer's design review, not a claim that the writer has approved them.
    read-only manual checks on the public origin:
 
 ```sh
-rtk proxy env TWYNE_VISUAL_BASE_URL=https://www.twyne.love bun run test:visual
+rtk proxy env TWYNE_VISUAL_BASE_URL=https://twyne.love bun run test:manual
 ```
 
 With an explicit origin, the suite runs **only** the manual tests. It does not

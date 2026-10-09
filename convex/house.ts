@@ -5,6 +5,7 @@ import {
 import { v } from "convex/values";
 import { mutation, query, type QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
+import { charterExceptionValidator, validateCharterException } from "./lib/charterExceptionValidator";
 
 const dossier = v.object({
   workingTitle: v.optional(v.string()),
@@ -44,6 +45,7 @@ const charter = v.object({
   ),
   order: v.number(),
   updatedAt: v.number(),
+  occurrenceException: v.optional(charterExceptionValidator),
 });
 const ledger = v.object({
   id: v.string(),
@@ -156,6 +158,7 @@ export const putHouseSnapshot = mutation({
   handler: async (ctx, args) => {
     const userId = await owner(ctx);
     validateBounds(args);
+    args.charter.forEach(validateCharterException);
     if (args.ledger.length > 200)
       throw new Error("Ledger is limited to 200 entries per call");
     const memberCount = args.collections.reduce(

@@ -1,0 +1,9 @@
+Silent local walkthrough with a fictional manuscript. Descriptive captions, no spoken dialogue.
+
+00:00:00.000 A fictional manuscript. No prose or judgement model is connected.
+00:00:02.822 Select a complete sentence and open its bench.
+00:00:05.119 Preview a complete local wording between its actual neighbouring sentences.
+00:00:07.462 Use the checked wording. The change lands in the manuscript.
+00:00:09.735 Undo restores the original wording.
+00:00:12.170 Threads connects two real manuscript spans. The repeat is local evidence.
+00:00:14.431 Remove one literal repeated sentence, with undo available.
