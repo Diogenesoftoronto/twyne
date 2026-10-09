@@ -1,0 +1,64 @@
+.instrument-art {
+  --instrument-art-size: 8rem;
+  display: inline-block;
+  inline-size: var(--instrument-art-size);
+  max-inline-size: 100%;
+  aspect-ratio: 1;
+  flex: 0 0 auto;
+  vertical-align: middle;
+  pointer-events: none;
+  user-select: none;
+  contain: layout paint;
+}
+
+.instrument-art[data-size="compact"] {
+  --instrument-art-size: 4rem;
+}
+
+.instrument-art[data-size="large"] {
+  --instrument-art-size: 12rem;
+}
+
+.instrument-art__image {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: contain;
+}
+
+.instrument-art__texture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--color-ink);
+  mask-image: url("/assets/instruments/press-grain-v1.webp");
+  mask-size: 16rem 16rem;
+  mask-repeat: repeat;
+  opacity: 0.045;
+}
+
+.instrument-art__rule {
+  display: block;
+  inline-size: 4.5rem;
+  max-inline-size: 100%;
+  block-size: 0.375rem;
+  background: currentColor;
+  color: var(--color-ink-light);
+  mask-image: url("/assets/instruments/proof-rule-v1.webp");
+  /* The preserved source has ample transparent framing around its thin rule. */
+  mask-size: 100% 1600%;
+  mask-position: center;
+  mask-repeat: no-repeat;
+  pointer-events: none;
+  transform-origin: left center;
+}
+
+@media (forced-colors: active) {
+  .instrument-art__texture {
+    display: none;
+  }
+
+  .instrument-art__rule {
+    background: CanvasText;
+  }
+}

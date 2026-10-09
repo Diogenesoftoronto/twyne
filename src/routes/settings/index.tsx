@@ -1,3 +1,4 @@
+import { AccountKnowledge } from "../../components/knowledge/account-knowledge";
 import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
 import { ApplicationNotice } from "../../components/ui/application-notice";
@@ -4218,6 +4219,8 @@ export default component$(() => {
                 </div>
               </div>
             </section>
+
+            <section class="folio p-5"><AccountKnowledge /></section>
 
             {/* ── MCP servers ── */}
             <section class="folio p-5">

@@ -50,6 +50,15 @@ function setup() {
   return { t, writer: t.withIdentity({ tokenIdentifier: "issuer|a" }) };
 }
 describeConvex("House snapshots", () => {
+  test("folio Charter occurrence exceptions round-trip without granting another writer access", async () => {
+    const { writer, t } = setup();
+    const state = { ...snapshot, charter: [{ ...snapshot.charter[0], scope: "folio" as const, ownerRef: "f1", occurrenceException: { version: 1 as const, findingId: "stance", signatures: [{ key: "exact contextual occurrence", count: 1 }] } }] };
+    await writer.mutation(api.house.putHouseSnapshot, state); expect(await writer.query(api.house.getHouse, {})).toEqual(state);
+    const other = t.withIdentity({ tokenIdentifier: "issuer|other" }); expect(await other.query(api.house.getHouse, {})).toBeNull();
+    await expect(writer.mutation(api.house.putHouseSnapshot, { ...state, charter: [{ ...state.charter[0], scope: "house", ownerRef: "house" }] })).rejects.toThrow("bounded folio");
+    await expect(writer.mutation(api.house.putHouseSnapshot, { ...state, charter: [{ ...state.charter[0], occurrenceException: { ...state.charter[0].occurrenceException, signatures: [{ key: "exact", count: -1 }] } }] })).rejects.toThrow("bounded folio");
+  });
+
   test("round-trips a full snapshot", async () => {
     const { writer } = setup();
     expect(await writer.query(api.house.getHouse, {})).toBeNull();

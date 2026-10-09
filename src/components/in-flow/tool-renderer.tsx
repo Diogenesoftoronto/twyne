@@ -4,7 +4,8 @@
  * Svelte and Solid; this is the same contract — spec in, components out — for
  * Qwik, and it only ever sees specs `validateToolSpec` has already passed.
  */
-import { component$, useSignal, useStore } from "@qwik.dev/core";
+import { component$, useStore } from "@qwik.dev/core";
+import { SentenceBench } from "./sentence-bench";
 import { NumericStepper } from "../ui/numeric-stepper";
 import { inFlowController } from "../editor/extensions/struggle-tracker";
 import type { ActiveTool } from "../../utils/in-flow-tools";
@@ -13,7 +14,6 @@ import type {
   ClaimCheckProps,
   ReaderQuestionsProps,
   RhythmStripProps,
-  SentenceLabProps,
 } from "./catalog";
 
 /** What "Keep this tool" should remember about the tool as the writer left it. */
@@ -39,10 +39,11 @@ export const ToolRenderer = component$<{ tool: ActiveTool }>(({ tool }) => {
   switch (element.type) {
     case "SentenceLab":
       return (
-        <SentenceLab
+        <SentenceBench
           key={tool.id}
           props={element.props}
           filling={tool.status === "filling"}
+          toolId={tool.id}
         />
       );
     case "RhythmStrip":
@@ -59,92 +60,6 @@ export const ToolRenderer = component$<{ tool: ActiveTool }>(({ tool }) => {
       );
   }
 });
-
-/* ── Sentence Lab ──────────────────────────────────────────────── */
-
-/**
- * The writer's own attempts beside fresh ones. Clicking any line loads it into
- * a working copy they can edit before it replaces the sentence — so mixing
- * the start of one attempt with the end of another is just typing.
- */
-const SentenceLab = component$<{ props: SentenceLabProps; filling: boolean }>(
-  ({ props, filling }) => {
-    const working = useSignal(props.sentence);
-    const Row = ({ text, label }: { text: string; label: string }) => (
-      <li>
-        <button
-          type="button"
-          class={[
-            "in-flow-choice",
-            { "in-flow-choice--on": working.value === text },
-          ]}
-          onClick$={() => {
-            working.value = text;
-          }}
-          title={`Load this ${label} into the working copy`}
-        >
-          {text}
-        </button>
-      </li>
-    );
-    return (
-      <div class="in-flow-body">
-        {props.attempts.length > 0 && (
-          <section>
-            <p class="in-flow-label">Your earlier tries</p>
-            <ol class="in-flow-list">
-              {props.attempts.map((text) => (
-                <Row key={`a-${text}`} text={text} label="attempt" />
-              ))}
-            </ol>
-          </section>
-        )}
-        <section>
-          <p class="in-flow-label">Other ways</p>
-          <ol class="in-flow-list">
-            {props.variants.map((text) => (
-              <Row key={`v-${text}`} text={text} label="variant" />
-            ))}
-          </ol>
-          {filling && (
-            <p class="in-flow-quiet" role="status">
-              Finding other wordings…
-            </p>
-          )}
-        </section>
-        <section>
-          <label class="in-flow-label" for="in-flow-working">
-            Working copy
-          </label>
-          <textarea
-            id="in-flow-working"
-            class="in-flow-textarea"
-            rows={3}
-            value={working.value}
-            onInput$={(_, el) => {
-              working.value = el.value;
-            }}
-          />
-          <div class="in-flow-actions">
-            <button
-              type="button"
-              class="btn-press"
-              disabled={
-                !working.value.trim() || working.value === props.sentence
-              }
-              onClick$={() =>
-                inFlowController()?.applyVariant(working.value.trim())
-              }
-            >
-              Use this
-            </button>
-            <span class="in-flow-quiet">Undo puts yours back.</span>
-          </div>
-        </section>
-      </div>
-    );
-  },
-);
 
 /* ── Rhythm Strip ──────────────────────────────────────────────── */
 

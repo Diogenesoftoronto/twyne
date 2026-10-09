@@ -18,6 +18,7 @@ import {
 } from "@json-render/core";
 import { z } from "zod";
 import type { ToolKind } from "../../utils/struggle-signals";
+import { completeSentence } from "../../utils/sentence-ledger";
 
 const schema = defineSchema((s) => ({
   spec: s.object({
@@ -44,6 +45,55 @@ const sentenceLabProps = z.object({
   sentence: z.string().min(1).max(1200),
   attempts: z.array(z.string().max(1200)).max(6),
   variants: z.array(z.string().min(1).max(1200)).max(3),
+  candidates: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string().min(1).max(1200),
+        source: z.enum([
+          "yours",
+          "rule",
+          "thesaurus",
+          "on-device",
+          "text-model",
+          "spoken",
+        ]),
+        operation: z.string(),
+        wordDelta: z.number(),
+        caution: z.string().optional(),
+        at: z.number().optional(),
+        grammar: z.enum(["pending", "checked", "unavailable"]),
+        meaning: z
+          .object({ probability: z.number().min(0).max(1), model: z.string() })
+          .optional(),
+        likelihood: z
+          .object({ probability: z.number().min(0).max(1), model: z.string() })
+          .optional(),
+      }),
+    )
+    .max(16)
+    .optional(),
+  context: z
+    .object({ before: z.string(), after: z.string(), paragraph: z.string() })
+    .optional(),
+  placements: z
+    .array(
+      z.object({
+        id: z.string(),
+        before: z.string(),
+        after: z.string(),
+        paragraph: z.string(),
+        reason: z.string(),
+        offset: z.number(),
+        source: z.literal("rule"),
+      }),
+    )
+    .max(12)
+    .optional(),
+  sentenceId: z.string().optional(),
+  stale: z.boolean().optional(),
+  initialSection: z.enum(["rewrite", "words", "place", "hear"]).optional(),
+  initialWord: z.object({ from: z.number(), to: z.number() }).optional(),
 });
 const rhythmStripProps = z.object({
   sentences: z
@@ -76,7 +126,7 @@ export const toolCatalog = defineCatalog(schema, {
       props: sentenceLabProps,
       slots: [],
       description:
-        "One sentence the writer keeps rewording: their own earlier attempts beside up to three fresh variants.",
+        "Sentence bench: complete wordings, local alternatives, contextual comparison, words, placement and hearing.",
     },
     RhythmStrip: {
       props: rhythmStripProps,
@@ -201,7 +251,11 @@ export function createToolStream(seed: ToolSpec, max: number) {
         value?: unknown;
       };
       return (
-        op.op === "add" && op.path === path && typeof op.value === "string"
+        op.op === "add" &&
+        op.path === path &&
+        typeof op.value === "string" &&
+        (seed.elements.tool.type !== "SentenceLab" ||
+          completeSentence(op.value))
       );
     } catch {
       return false;

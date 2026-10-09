@@ -274,3 +274,81 @@ for (const width of [390, 320]) {
     await expect(paragraph).toContainText("After the rain,");
   });
 }
+
+test("deliberate editorial we persists and only a new occurrence becomes drift", async ({
+  page,
+}) => {
+  await seed(page);
+  const manuscript = page.locator(".ProseMirror");
+  const plural = "We all carried boxes from the school to the dry upper rooms.";
+  const quoted = "A witness said, “We argue that the river forgets nothing.”";
+  const added = "We argue that the new waterline deserves another record.";
+  const original = await draftText(page);
+  const appendParagraph = async (text: string) => {
+    await manuscript.locator("p").last().click();
+    await page.keyboard.press("ControlOrMeta+End");
+    await page.keyboard.press("Enter");
+    await page.keyboard.insertText(text);
+    await expect(manuscript.locator("p").last()).toHaveText(text);
+  };
+  // Add a quoted source through ordinary editor input so the mission also
+  // protects quoted editorial wording rather than relying on a nonexistent quote.
+  await appendParagraph(quoted);
+  await expect(stance(page)).toContainText("3 editorial");
+  await expect(page.getByText(/^Saved /)).toBeVisible();
+  const acceptedDraft = await draftText(page);
+  expect(acceptedDraft).toBe(`${original}${quoted}`);
+  await stance(page).locator(".ld-card__head").click();
+  await stance(page)
+    .getByRole("button", { name: "The mix is deliberate", exact: true })
+    .click();
+  await expect(stance(page)).toHaveAttribute("data-state", "deliberate");
+  await expect(stance(page)).toContainText("Twyne will flag only new drift.");
+  await expect(stance(page).locator(".ld-occrow__fix")).toHaveCount(0);
+  expect(await draftText(page)).toBe(acceptedDraft);
+
+  await page.reload();
+  await expect(stance(page)).toHaveAttribute("data-state", "deliberate");
+  await expect.poll(() => draftText(page)).toBe(acceptedDraft);
+  await stance(page).locator(".ld-card__head").click();
+  await expect(stance(page)).toContainText("Twyne will flag only new drift.");
+  await expect(stance(page).locator(".ld-occrow__fix")).toHaveCount(0);
+
+  await appendParagraph(added);
+  await expect(stance(page)).toHaveAttribute("data-state", "open");
+  await expect(stance(page)).toContainText(
+    "1 new exception · existing uses kept on purpose",
+  );
+  if (
+    (await stance(page)
+      .locator(".ld-card__head")
+      .getAttribute("aria-expanded")) !== "true"
+  )
+    await stance(page).locator(".ld-card__head").click();
+  const flagged = stance(page).locator(".ld-occrow:not(.is-context)");
+  await expect(flagged).toHaveCount(1);
+  await expect(flagged).toContainText(
+    "the new waterline deserves another record",
+  );
+  await expect(
+    flagged.getByRole("button", { name: "Make it I", exact: true }),
+  ).toBeVisible();
+  await expect(stance(page).locator(".ld-occrow__fix")).toHaveCount(1);
+  await stance(page)
+    .locator(".ld-context-disclosure")
+    .filter({ hasText: /plural uses left alone/ })
+    .locator("summary")
+    .click();
+  const kept = stance(page)
+    .locator(".ld-occrow.is-context")
+    .filter({ hasText: "Kept on purpose" });
+  await expect(kept).toHaveCount(3);
+  await expect(kept).toContainText([
+    "memory begins in places like this",
+    "the river keeps a record",
+    "the town will remember this differently",
+  ]);
+  await expect(manuscript).toContainText(plural);
+  await expect(manuscript.locator("p").nth(7)).toHaveText(quoted);
+  expect(await draftText(page)).toBe(`${acceptedDraft}${added}`);
+});

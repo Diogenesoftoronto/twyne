@@ -1,0 +1,212 @@
+{
+  "created": "2026-10-09",
+  "browser": "T3 collaborative browser, local Storybook development server",
+  "stories": [
+    "instruments-illustration-family--collection",
+    "instruments-illustration-family--compact",
+    "instruments-meaningful-motion--interactive"
+  ],
+  "imagesLoaded": 4,
+  "themesInspected": [
+    "editorial",
+    "nightpress"
+  ],
+  "viewports": [
+    {
+      "width": 1200,
+      "height": 800
+    },
+    {
+      "width": 390,
+      "height": 844
+    },
+    {
+      "width": 850,
+      "height": 720
+    }
+  ],
+  "horizontalOverflow": false,
+  "compactAssetCssSize": 64,
+  "finite": {
+    "events": [
+      {
+        "type": "start",
+        "name": "instrument-open"
+      },
+      {
+        "type": "start",
+        "name": "instrument-compare"
+      },
+      {
+        "type": "start",
+        "name": "instrument-result"
+      },
+      {
+        "type": "start",
+        "name": "instrument-rule"
+      },
+      {
+        "type": "end",
+        "name": "instrument-result",
+        "duration": 0.24
+      },
+      {
+        "type": "end",
+        "name": "instrument-rule",
+        "duration": 0.26
+      }
+    ],
+    "activeInstrumentAnimations": 0,
+    "resultOpacity": "1"
+  },
+  "quiet": {
+    "quiet": "true",
+    "resultAnimation": "none",
+    "resultOpacity": "1",
+    "ruleAnimation": "none",
+    "buttons": [
+      {
+        "disabled": false,
+        "visible": false
+      },
+      {
+        "disabled": false,
+        "visible": false
+      },
+      {
+        "disabled": false,
+        "visible": false
+      },
+      {
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "disabled": false,
+        "visible": true
+      },
+      {
+        "disabled": false,
+        "visible": true
+      }
+    ]
+  },
+  "reducedMotion": {
+    "reducedMotionRulesActivated": 1,
+    "method": "Activated the authored reduce CSS media block via CSSOM; OS preference unchanged",
+    "resultAnimation": "none",
+    "resultVisible": "1",
+    "browserPreference": {
+      "method": "Playwright browser reducedMotion: reduce media emulation; actual Storybook component controls",
+      "browser": "149.0.7827.55",
+      "states": [
+        {
+          "state": "open",
+          "prefersReduced": true,
+          "children": [
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            }
+          ],
+          "activeAnimations": 0
+        },
+        {
+          "state": "compare",
+          "prefersReduced": true,
+          "children": [
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            }
+          ],
+          "activeAnimations": 0
+        },
+        {
+          "state": "arrive",
+          "prefersReduced": true,
+          "children": [
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            },
+            {
+              "animation": "none",
+              "opacity": "1",
+              "visibility": "visible"
+            }
+          ],
+          "activeAnimations": 0
+        }
+      ]
+    }
+  },
+  "recording": {
+    "path": "motion-study-v1.mp4",
+    "bytes": 370137,
+    "scope": "Interactive component specimen only. No manuscript or provider request."
+  },
+  "limits": [
+    "No performance frame-rate benchmark.",
+    "No claim of app-wide integration or production deployment.",
+    "Browser media preference was emulated; no operating-system settings were changed."
+  ]
+}

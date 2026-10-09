@@ -1,0 +1,53 @@
+{
+  "verifiedAt": "2026-10-09",
+  "scope": "Local docs route; new chapter and actual Scene component walkthrough. No hosted deployment or provider inference.",
+  "browser": "149.0.7827.55",
+  "browserTool": "Isolated headless Playwright after T3 preview reported no automation host; development HMR websocket closed to prevent parallel work from reloading the page",
+  "results": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "theme": "editorial",
+      "steps": 2,
+      "imagesLoaded": true,
+      "overflow": false,
+      "printSteps": true,
+      "pageErrors": []
+    },
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "theme": "nightpress",
+      "steps": 2,
+      "imagesLoaded": true,
+      "overflow": false,
+      "printSteps": true,
+      "pageErrors": []
+    },
+    {
+      "name": "narrow",
+      "width": 320,
+      "height": 844,
+      "theme": "editorial",
+      "steps": 2,
+      "imagesLoaded": true,
+      "overflow": false,
+      "printSteps": true,
+      "pageErrors": []
+    }
+  ],
+  "film": {
+    "source": "/assets/manual/writing-instruments.mp4",
+    "width": 1440,
+    "height": 900,
+    "duration": 16.52,
+    "seekedTo": 3,
+    "rangeStatus": 206,
+    "acceptRanges": "bytes",
+    "captions": true,
+    "pausedInitially": true,
+    "pausedOnClose": true
+  }
+}

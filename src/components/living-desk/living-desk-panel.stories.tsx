@@ -2,6 +2,7 @@ import { component$, useStyles$ } from "@qwik.dev/core";
 import type { Meta, StoryObj } from "storybook-framework-qwik";
 import type { LivingDeskSnapshot } from "../../utils/living-desk-contract";
 import { LivingDeskPanel } from "./living-desk-panel";
+import { localParagraphReview } from "../../utils/living-desk/paragraphs";
 import {
   DESK_FIXTURE,
   EMPTY_FIXTURE,
@@ -146,3 +147,26 @@ export const Unconfirmed: Story = {
   },
 };
 export const LongPiece: Story = { args: { fixture: LIMITED_FIXTURE } };
+export const ParagraphReadings: Story = {
+  args: {
+    fixture: {
+      ...DESK_FIXTURE,
+      paragraphStatus: "ready",
+      paragraphs: FLOOD_MEMOIR[0].paragraphs.map((text, index) =>
+        localParagraphReview(
+          {
+            id: `fixture:${index}`,
+            text,
+            from: 1 + index * 200,
+            to: 1 + index * 200 + text.length,
+            paragraph: index + 1,
+            section: 0,
+          },
+          { audience: "Memoir readers", voice: "Measured and specific" },
+        ),
+      ),
+      charterMessage:
+        "Existing uses saved to this folio’s Charter; new drift still flags.",
+    },
+  },
+};

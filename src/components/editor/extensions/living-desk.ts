@@ -54,6 +54,31 @@ import {
   spendSystemOne,
   backOffSystemOne,
 } from "../../../utils/system-one-budget";
+import {
+  paragraphPassages,
+  readParagraphReviews,
+  buildParagraphBatch,
+  classifyParagraphs,
+  type ParagraphCache,
+  type ParagraphReviewContext,
+} from "../../../utils/living-desk/paragraphs";
+import {
+  deliberateCharterBaselines,
+  deliberateCharterId,
+  deliberateCharterItem,
+} from "../../../utils/living-desk/charter";
+import {
+  HOUSE_CHANGED_EVENT,
+  loadHouseState,
+  upsertCharterItem,
+  removeCharterItem,
+  type HouseChangedDetail,
+} from "../../../utils/house-store";
+import { emptyHouseState, type HouseState } from "../../../utils/house-model";
+import {
+  accountKnowledgeSnapshot,
+  subscribeAccountKnowledge,
+} from "../../../utils/account-knowledge";
 
 const key = new PluginKey<DecorationSet>("livingDeskDecorations");
 export const LivingDeskDecorations = Extension.create({
@@ -81,6 +106,8 @@ export function startLivingDesk(
   options: {
     getClient: () => ConvexClient | null | undefined;
     folioId: string;
+    getReviewContext?: () => ParagraphReviewContext;
+    getAccountKey?: () => string | null;
   },
 ): () => void {
   let stopped = false,
@@ -96,12 +123,47 @@ export function startLivingDesk(
   let segments: Segments = { blocks: [], sections: [], plainText: "" };
   let analysis: ReturnType<typeof analyzeDesk> | null = null;
   const cache: StanceCache = new Map();
+  const paragraphCache: ParagraphCache = new Map();
+  let house: HouseState = emptyHouseState();
+  let houseRevision = 0;
+  let managedCharterIds = new Set<string>();
+  let charterRequest = 0;
+  let preferParagraphs = false;
+  const accountKey = () =>
+    options.getAccountKey
+      ? options.getAccountKey()
+      : accountKnowledgeSnapshot().account;
+  let activeAccount = accountKey();
+  const reviewContext = (): ParagraphReviewContext => ({
+    ...(options.getReviewContext?.() ?? {}),
+    charter: house.charter
+      .filter(
+        (item) =>
+          item.scope === "house" ||
+          (item.scope === "folio" && item.ownerRef === options.folioId) ||
+          (item.scope === "collection" &&
+            house.collections.some(
+              (collection) =>
+                collection.id === item.ownerRef &&
+                collection.folioIds.includes(options.folioId),
+            )),
+      )
+      .map((item) => `${item.severity}: ${item.text}`)
+      .join("\n"),
+  });
+  const contextIdentity = () =>
+    JSON.stringify(
+      Object.entries(reviewContext()).sort(([a], [b]) => a.localeCompare(b)),
+    );
   const retained = new Map<string, Finding>();
   const peaks = new Map<string, number>();
   const deliberate = new Set<string>();
   const baselines = new Map<string, DeliberateBaseline>();
-  const deliberateKey = `living-desk-deliberate:${options.folioId}`;
-  const baselineKey = `${deliberateKey}:occurrences`;
+  const deliberateKey = () =>
+    activeAccount
+      ? `living-desk-deliberate:account:${encodeURIComponent(activeAccount)}:${options.folioId}`
+      : `living-desk-deliberate:${options.folioId}`;
+  const baselineKey = () => `${deliberateKey()}:occurrences`;
   let flashes: { from: number; to: number }[] = [];
   let pendingMapping = new Mapping();
   let snapshot: LivingDeskSnapshot = {
@@ -113,14 +175,14 @@ export function startLivingDesk(
     snapshot.open =
       window.localStorage.getItem(LIVING_DESK_OPEN_KEY) === "true";
     const ids: unknown = JSON.parse(
-      window.localStorage.getItem(deliberateKey) ?? "[]",
+      window.localStorage.getItem(deliberateKey()) ?? "[]",
     );
     if (Array.isArray(ids))
       ids
         .filter((id): id is string => typeof id === "string")
         .forEach((id) => deliberate.add(id));
     const savedBaselines: unknown = JSON.parse(
-      window.localStorage.getItem(baselineKey) ?? "[]",
+      window.localStorage.getItem(baselineKey()) ?? "[]",
     );
     if (Array.isArray(savedBaselines))
       savedBaselines.forEach((entry: unknown) => {
@@ -155,6 +217,14 @@ export function startLivingDesk(
           from: pendingMapping.map(o.from, 1),
           to: pendingMapping.map(o.to, -1),
         })),
+      })),
+      paragraphs: snapshot.paragraphs?.map((review) => ({
+        ...review,
+        passage: {
+          ...review.passage,
+          from: pendingMapping.map(review.passage.from, 1),
+          to: pendingMapping.map(review.passage.to, -1),
+        },
       })),
     };
     pendingMapping = new Mapping();
@@ -278,6 +348,16 @@ export function startLivingDesk(
   };
   const recompute = (fixedParagraph?: number) => {
     if (stopped || editor.isDestroyed) return;
+    if (activeAccount !== accountKey()) {
+      activeAccount = accountKey();
+      houseRevision++;
+      cache.clear();
+      paragraphCache.clear();
+      house = emptyHouseState();
+      managedCharterIds.clear();
+      deliberate.clear();
+      baselines.clear();
+    }
     const started = performance.now();
     segments = segmentDocument(editor.state.doc);
     pendingMapping = new Mapping();
@@ -292,6 +372,8 @@ export function startLivingDesk(
         presence: [],
         score: { ...EMPTY_LIVING_DESK.score },
         analysisStatus: "limited",
+        paragraphs: [],
+        paragraphStatus: "limited",
       };
       livingDeskRecomputeMs = performance.now() - started;
       publish();
@@ -303,8 +385,7 @@ export function startLivingDesk(
       const peak = Math.max(peaks.get(f.id) ?? 0, f.count);
       peaks.set(f.id, peak);
       if (deliberate.has(f.id)) {
-        const baseline =
-          baselines.get(f.id) ?? deliberateBaseline(f, segments.blocks);
+        const baseline = baselines.get(f.id) ?? new Map<string, number>();
         baselines.set(f.id, baseline);
         f = respectDeliberate(f, segments.blocks, baseline);
       } else if (f.count && f.count < peak) f = { ...f, state: "improving" };
@@ -335,6 +416,16 @@ export function startLivingDesk(
       presence: analysis.presence,
       findings,
       analysisStatus: "ready",
+      paragraphs: readParagraphReviews(
+        paragraphPassages(segments.blocks).slice(0, 256),
+        reviewContext(),
+        paragraphCache,
+      ),
+      paragraphStatus:
+        segments.blocks.filter((block) => block.kind === "paragraph").length >
+        256
+          ? "limited"
+          : "ready",
     };
     captureReview();
     let score = buildScore(
@@ -394,7 +485,7 @@ export function startLivingDesk(
     if (
       stopped ||
       running ||
-      !analysis?.stance.finding ||
+      !analysis ||
       document.hidden ||
       navigator.onLine === false
     )
@@ -404,27 +495,69 @@ export function startLivingDesk(
       queueJudgement(wait);
       return;
     }
-    if (
-      !analysis.stance.candidates.some(
+    const stancePending =
+      !!analysis.stance.finding &&
+      analysis.stance.candidates.some(
         (c) => !cache.get(c.cacheKey)?.has(c.offset),
-      )
-    )
-      return;
+      );
+    const context = reviewContext();
+    const paragraphs = paragraphPassages(segments.blocks).slice(0, 256);
+    const paragraphPending =
+      buildParagraphBatch(paragraphs, context, paragraphCache).passages.length >
+      0;
+    if (!stancePending && !paragraphPending) return;
     const token = revision;
+    const contextToken = contextIdentity();
+    const client = options.getClient();
+    const account = accountKey();
+    const current = () =>
+      !stopped &&
+      token === revision &&
+      contextToken === contextIdentity() &&
+      client === options.getClient() &&
+      account === accountKey();
     running = true;
     snapshot = { ...snapshot, judgement: "reading" };
     publish();
     spendSystemOne();
     try {
-      const result = await classifyStance(analysis.stance, cache, (request) =>
-        askJudgement(options.getClient(), request),
-      );
+      let result: { ok: boolean; remaining: boolean };
+      if (paragraphPending && (preferParagraphs || !stancePending)) {
+        result = await classifyParagraphs(
+          paragraphs,
+          context,
+          paragraphCache,
+          (request) => askJudgement(client, request),
+          current,
+        );
+        preferParagraphs = false;
+      } else {
+        const staged: StanceCache = new Map();
+        for (const [key, values] of cache) staged.set(key, new Map(values));
+        result = await classifyStance(analysis.stance, staged, (request) =>
+          askJudgement(client, request),
+        );
+        if (current()) {
+          cache.clear();
+          for (const [key, values] of staged) cache.set(key, values);
+        }
+        preferParagraphs = true;
+      }
       if (stopped) return;
       snapshot = { ...snapshot, judgement: result.ok ? "idle" : "offline" };
       if (!result.ok) backOffSystemOne();
-      if (token === revision) recompute();
+      if (current()) recompute();
       else publish();
-      if (result.remaining || token !== revision)
+      if (
+        result.remaining ||
+        !current() ||
+        (paragraphPending && stancePending) ||
+        buildParagraphBatch(
+          paragraphPassages(segments.blocks).slice(0, 256),
+          reviewContext(),
+          paragraphCache,
+        ).passages.length > 0
+      )
         queueJudgement(Math.max(2000, systemOneWait()));
     } catch {
       backOffSystemOne();
@@ -610,6 +743,11 @@ export function startLivingDesk(
     editor.view.focus();
   };
   const controller: LivingDeskController = {
+    refreshContext() {
+      revision++;
+      recompute();
+      queueJudgement();
+    },
     setOpen(open) {
       snapshot = { ...snapshot, open };
       try {
@@ -656,27 +794,44 @@ export function startLivingDesk(
       );
     },
     markDeliberate(findingId, on) {
+      const charterAccount = accountKey();
+      const charterGeneration = ++charterRequest;
+      if (!editor.isEditable) return;
+      let charterSave: Promise<HouseState> | null = null;
       if (on) {
         deliberate.add(findingId);
         mapPositions();
         segments = segmentDocument(editor.state.doc);
         const finding = snapshot.findings.find((f) => f.id === findingId);
-        if (finding)
-          baselines.set(
-            findingId,
-            deliberateBaseline(finding, segments.blocks),
-          );
+        if (finding) {
+          const baseline = deliberateBaseline(finding, segments.blocks);
+          baselines.set(findingId, baseline);
+          try {
+            charterSave = upsertCharterItem(
+              deliberateCharterItem(options.folioId, finding, baseline),
+            );
+          } catch {
+            snapshot = {
+              ...snapshot,
+              charterMessage:
+                "These uses are kept on this device. There are too many occurrence signatures for one Charter entry.",
+            };
+          }
+        }
       } else {
         deliberate.delete(findingId);
         baselines.delete(findingId);
+        charterSave = removeCharterItem(
+          deliberateCharterId(options.folioId, findingId),
+        );
       }
       try {
         window.localStorage.setItem(
-          deliberateKey,
+          deliberateKey(),
           JSON.stringify([...deliberate]),
         );
         window.localStorage.setItem(
-          baselineKey,
+          baselineKey(),
           JSON.stringify(
             [...baselines].map(([id, baseline]) => [id, [...baseline]]),
           ),
@@ -685,6 +840,44 @@ export function startLivingDesk(
         /* optional persistence */
       }
       recompute();
+      if (charterSave) {
+        snapshot = {
+          ...snapshot,
+          charterMessage: "Saving the folio Charter exception…",
+        };
+        publish();
+        void charterSave
+          .then((state) => {
+            if (
+              stopped ||
+              charterAccount !== accountKey() ||
+              charterGeneration !== charterRequest
+            )
+              return;
+            syncCharter(state);
+            snapshot = {
+              ...snapshot,
+              charterMessage: on
+                ? "Existing uses saved to this folio’s Charter; new drift still flags."
+                : "The Charter exception was removed.",
+            };
+            recompute();
+          })
+          .catch(() => {
+            if (
+              !stopped &&
+              charterAccount === accountKey() &&
+              charterGeneration === charterRequest
+            ) {
+              snapshot = {
+                ...snapshot,
+                charterMessage:
+                  "The Charter could not be saved. This choice remains on this device.",
+              };
+              publish();
+            }
+          });
+      }
     },
     jumpTo(id) {
       const o = findOccurrence(id);
@@ -696,6 +889,24 @@ export function startLivingDesk(
     jumpToSection(index) {
       const section = snapshot.sections[index];
       if (section) jump(section.from);
+    },
+    jumpToParagraph(id) {
+      mapPositions();
+      const review = snapshot.paragraphs?.find(
+        (item) => item.passage.id === id,
+      );
+      if (
+        !review ||
+        editor.state.doc.textBetween(
+          review.passage.from,
+          review.passage.to,
+          "",
+          "",
+        ) !== review.passage.text
+      )
+        return false;
+      jump(review.passage.from, review.passage.to);
+      return true;
     },
     spineFraction(pos) {
       try {
@@ -737,17 +948,99 @@ export function startLivingDesk(
   const onResume = () => {
     if (!document.hidden) queueJudgement();
   };
+  const syncCharter = (state: HouseState) => {
+    house = state;
+    const incoming = deliberateCharterBaselines(state, options.folioId);
+    for (const id of managedCharterIds)
+      if (!incoming.has(id)) {
+        deliberate.delete(id);
+        baselines.delete(id);
+      }
+    incoming.forEach((baseline, id) => {
+      deliberate.add(id);
+      baselines.set(id, baseline);
+    });
+    managedCharterIds = new Set(incoming.keys());
+    try {
+      window.localStorage.setItem(
+        deliberateKey(),
+        JSON.stringify([...deliberate]),
+      );
+      window.localStorage.setItem(
+        baselineKey(),
+        JSON.stringify(
+          [...baselines].map(([id, baseline]) => [id, [...baseline]]),
+        ),
+      );
+    } catch {
+      /* Optional device mirror. Charter remains authoritative. */
+    }
+  };
+  const onHouse = (event: Event) => {
+    const state = (event as CustomEvent<HouseChangedDetail>).detail?.state;
+    if (!state || stopped) return;
+    revision++;
+    houseRevision++;
+    syncCharter(state);
+    recompute();
+    queueJudgement();
+  };
+  const onContext = () => {
+    revision++;
+    recompute();
+    queueJudgement();
+  };
+  const stopAccount = subscribeAccountKnowledge(() => {
+    const account = accountKey();
+    if (stopped || account === activeAccount) return;
+    activeAccount = account;
+    revision++;
+    houseRevision++;
+    cache.clear();
+    paragraphCache.clear();
+    house = emptyHouseState();
+    managedCharterIds.clear();
+    deliberate.clear();
+    baselines.clear();
+    recompute();
+    queueJudgement();
+    void loadHouseState()
+      .then((state) => {
+        if (!stopped && account === accountKey()) {
+          syncCharter(state);
+          recompute();
+        }
+      })
+      .catch(() => {});
+  });
   window.addEventListener(LIVING_DESK_TOGGLE_EVENT, onToggle);
   window.addEventListener("twyne:live-review", onReview);
   window.addEventListener("online", onResume);
   window.addEventListener("twyne:ai-settings-saved", onResume);
+  window.addEventListener(HOUSE_CHANGED_EVENT, onHouse);
+  window.addEventListener("twyne:brief-saved", onContext);
   document.addEventListener("visibilitychange", onResume);
   editor.view.dom.addEventListener("keydown", onKeydown);
   editor.on("transaction", onTransaction);
   recompute();
+  const initialHouseRevision = houseRevision;
+  const initialHouseAccount = accountKey();
+  void loadHouseState()
+    .then((state) => {
+      if (
+        !stopped &&
+        initialHouseRevision === houseRevision &&
+        initialHouseAccount === accountKey()
+      ) {
+        syncCharter(state);
+        recompute();
+      }
+    })
+    .catch(() => {});
   queueJudgement();
   return () => {
     stopped = true;
+    stopAccount();
     clearTimeout(ruleTimer);
     clearTimeout(judgementTimer);
     clearTimeout(flashTimer);
@@ -757,6 +1050,8 @@ export function startLivingDesk(
     window.removeEventListener("twyne:live-review", onReview);
     window.removeEventListener("online", onResume);
     window.removeEventListener("twyne:ai-settings-saved", onResume);
+    window.removeEventListener(HOUSE_CHANGED_EVENT, onHouse);
+    window.removeEventListener("twyne:brief-saved", onContext);
     document.removeEventListener("visibilitychange", onResume);
     if (!editor.isDestroyed) {
       editor.view.dom.removeEventListener("keydown", onKeydown);

@@ -20,6 +20,11 @@ type Row = { _id: GenericId<keyof DataModel & string> };
 type IndexedQuery = (ctx: MutationCtx, value: string) => Promise<Row[]>;
 
 const userQueries = {
+  instrumentTasks: (ctx, id) =>
+    ctx.db
+      .query("instrumentTasks")
+      .withIndex("by_userId", (q) => q.eq("userId", id))
+      .take(DELETE_BATCH_SIZE),
   syncHeads: (ctx, id) =>
     ctx.db
       .query("syncHeads")

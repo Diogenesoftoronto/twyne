@@ -1,7 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
 const remote = process.env.TWYNE_VISUAL_BASE_URL;
-const port = process.env.TWYNE_DEV_PORT || "5173";
+const port = process.env.TWYNE_DEV_PORT || "5187";
 const run = new Date().toISOString().replace(/[:.]/g, "-");
 const output =
   (process.env.TWYNE_VISUAL_OUTPUT ||= `artifacts/qa-recordings/living-desk/${run}`);
@@ -10,8 +10,12 @@ const output =
 export default defineConfig({
   testDir: "./e2e",
   testMatch: remote
-    ? "manual-living-desk.e2e.ts"
-    : ["living-desk.e2e.ts", "manual-living-desk.e2e.ts"],
+    ? ["manual-living-desk.e2e.ts", "manual-instruments.e2e.ts"]
+    : [
+        "living-desk.e2e.ts",
+        "instruments.e2e.ts",
+        "instrument-dock.e2e.ts",
+      ],
   timeout: 90_000,
   expect: { timeout: 15_000, toHaveScreenshot: { maxDiffPixelRatio: 0.005 } },
   workers: 1,
@@ -39,9 +43,9 @@ export default defineConfig({
     : {
         webServer: {
           command: "bun run dev.frontend",
-          env: { TWYNE_DEV_PORT: port },
+          env: { TWYNE_DEV_PORT: port, TWYNE_VISUAL_RUN: "1" },
           url: `http://127.0.0.1:${port}`,
-          reuseExistingServer: !process.env.CI,
+          reuseExistingServer: false,
           timeout: 120_000,
         },
       }),

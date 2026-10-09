@@ -30,7 +30,7 @@ export const TOOL_KINDS: readonly ToolKind[] = [
 ];
 
 export const TOOL_LABELS: Record<ToolKind, string> = {
-  "sentence-lab": "Sentence Lab",
+  "sentence-lab": "Sentence bench",
   "rhythm-strip": "Rhythm Strip",
   "claim-check": "Claim Check",
   "reader-questions": "Reader Questions",

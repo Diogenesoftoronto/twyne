@@ -1,0 +1,49 @@
+{
+  "verifiedAt": "2026-10-09",
+  "surface": "Actual Storybook Scene bench component, fictional manuscript; local development browser",
+  "offlineChecks": [
+    "Exact source cue quotes visible",
+    "Writer idea saved in local IndexedDB and restored after reload",
+    "Remove and Undo restore a local idea",
+    "Sound brief preserves source and labels the writer addition separately",
+    "No horizontal overflow at 390px",
+    "No browser console errors"
+  ],
+  "judgementCheck": "Explicit Storybook specimen only: callback fixture exercised span selection and provenance; no live Jev request",
+  "mediaCheck": "Preparing a brief sends nothing; no image, sound or video generation service is connected",
+  "narrationCheck": "Existing speech adapter wired; no live narration provider tested",
+  "unitTests": {
+    "passed": 13,
+    "failed": 0,
+    "assertions": 67
+  },
+  "benchmark": {
+    "command": "bun src/utils/scene-bench.benchmark.ts --budget-ms=20",
+    "runtime": "Bun 1.4.2 linux x64",
+    "warmups": 30,
+    "samples": 200,
+    "budgetPassed": true,
+    "cases": [
+      {
+        "characters": 121,
+        "sentences": 4,
+        "p50Ms": 0.0333,
+        "p95Ms": 0.0493
+      },
+      {
+        "characters": 11031,
+        "sentences": 48,
+        "p50Ms": 0.2358,
+        "p95Ms": 0.3356
+      }
+    ],
+    "scope": "Pure local inventory; not editor, model or provider latency"
+  },
+  "artifacts": [
+    "scene-bench-offline-v1.png",
+    "scene-bench-brief-v1.png",
+    "scene-bench-model-specimen-mobile-v1.png",
+    "scene-bench-offline-v1.mp4"
+  ],
+  "publicScreenshotCapture": "Actual component at 1100x850 CSS pixels, screenshot scaled by preview service; Qwik developer click-to-source overlay hidden for public documentation."
+}

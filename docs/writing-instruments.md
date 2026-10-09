@@ -1,6 +1,31 @@
 # From cards to instruments
 
-Design proposal, 2026-10-09. Responds to `audit.md` (2026-10-05) and its proposed cards. Nothing here is implemented yet.
+Design proposal and implementation record, 2026-10-09. Responds to `audit.md` (2026-10-05) and its proposed cards.
+
+## Implementation status
+
+The first instrument slices now exist in the working tree: complete sentence comparisons and word choices, nearby placement, contextual narration, manuscript Threads, entity presence and bounded readings, paragraph readings and Charter exceptions, explicit local model packs, a durable Task desk, and a Scene bench with source inventory and separate writer ideas. The public manual now describes these controls under **Writing instruments**, beside **The piece**.
+
+This is an implementation map, not a deployment or live-provider certification. The original proposal below remains intact as a design target; its future capabilities are not promises about the current interface. In particular, automatic semantic placement ranking, generated bridges and merges, cross-folio scene continuity, cast voices, tension-curve soundtracks, and image/video generation are not supplied by this implementation.
+
+| Instrument | Current behavior | Implementation |
+| --- | --- | --- |
+| Sentence bench | Complete candidates with source labels, word diffs, editable working wording, side-by-side comparison, stale-span checks and undo. Bundled thesaurus choices and neighbouring placement work locally. Hear uses the existing narration player. | `src/components/in-flow/sentence-bench.tsx`, `src/utils/sentence-bench.ts`, `src/utils/sentence-ledger.ts`, `src/components/editor/extensions/struggle-tracker.ts` |
+| Selection tools | A selected word opens alternatives; passages can open Sentence bench, Hear, Threads, Scene bench and Task desk. The existing source/comment/persona actions remain available. | `src/components/editor/selection-actions.tsx`, `src/components/editor/twyne-editor.tsx`, `src/components/instruments/instrument-dock.tsx` |
+| Threads | Exact manuscript sentence pairs, local repeat/overlap/reference hypotheses, optional bounded relation judgements, passage highlighting and jumps, undoable removal of an exact repeat. Unverified relations remain labelled. | `src/utils/span-index.ts`, `src/utils/thread-instrument.ts`, `src/components/in-flow/thread-instrument.tsx` |
+| Entities | Local name candidates, section presence and exact source jumps. Explicit model readings cover co-present relationships, a chosen attribute's continuity and blind dialogue attribution. Full distributions and source evidence remain inspectable; no character-quality or dialogue-distinctness score is claimed. | `src/utils/entity-instrument.ts`, `src/components/instruments/entity-instrument.tsx` |
+| Paragraphs and Charter | Per-paragraph local cues and optional Jev score distributions remain distinct from the whole-piece estimate. Deliberate occurrence exceptions enter the folio Charter; new drift is still eligible for a finding. | `src/utils/living-desk/paragraphs.ts`, `src/utils/living-desk/charter.ts`, `src/components/editor/extensions/living-desk.ts`, `src/components/living-desk/living-desk-panel.tsx` |
+| On-device packs and Say it | Explicit, separately removable English embedding, masked-word and speech packs. Nearby passage comparison, word prediction, and editable local transcription feed reviewable results. No automatic model download. First load needs model/runtime downloads and an open tab. | `src/utils/local-writing-manifest.ts`, `src/utils/local-writing-models.ts`, `src/utils/local-writing.worker.ts`, `src/components/instruments/local-writing-tools.tsx` |
+| Task desk | Account-backed queue for passage reviews and research over up to three selected account resources, cancellation, saved source context, result provenance and feedback. Accepted server work can outlive the tab; browser-local work cannot. Uses hosted Not Organic inference and account credit. No open-web agent research is connected. | `src/components/instruments/task-desk.tsx`, `src/utils/instrument-tasks*.ts`, `convex/instrumentTasks.ts`, `convex/instrumentTasksRunner.ts` |
+| Scene bench | Exact selected-passage inventory for six English cue dimensions; optional closed-option Jev span/tension reading; existing narration; writer-added ideas saved locally to the exact passage; copyable image/sound/motion briefs with additions separated. No media generation API is connected. | `src/utils/scene-bench.ts`, `src/components/instruments/scene-bench.tsx` |
+| Art and motion | Generated copperplate proof slips for Sentence, Threads, Research and Scene; alpha textures and rule; brief open/compare/arrival states; quiet and reduced-motion behavior. Art belongs to the instrument, not the manuscript. | `src/components/instruments/instrument-art*`, `src/components/instruments/instrument-motion*`, `public/assets/instruments/`, `docs/instrument-art-direction.md` |
+| Public guide and reusable evidence | Product instructions, actual component/manuscript captures, downloadable contextual films, tests and recorded proof boundaries. | `src/routes/docs/guide-writing-instruments.ts`, `src/routes/docs/manual-films.ts`, `e2e/instruments.e2e.ts`, `public/assets/instruments/scene-bench-verification.json` |
+
+Scene verification currently includes 13 pure tests, exact-span and stale-context rejection checks, a reproducible local inventory benchmark (`bun src/utils/scene-bench.benchmark.ts --budget-ms=20`), actual Storybook interactions, local idea persistence after reload, mobile overflow inspection and an offline component recording. Its mock judgement specimen is explicitly labelled; no live Jev, narration or media generation success is inferred from it. Art verification records actual finite animation events, quiet behavior and browser reduced-motion preference emulation across open, compare and result-arrival controls. The public guide's two steps, image loading, print view and overflow checks passed at 1440, 390 and 320 pixels. See `docs/instrument-art-direction.md` and the verification manifests for the exact proof boundaries.
+
+## Original design proposal
+
+The critique and capability ladder below describe the starting point and intended direction. Read the implementation map above for present behavior.
 
 ## The problem in one paragraph
 

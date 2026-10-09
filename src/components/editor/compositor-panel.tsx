@@ -30,6 +30,7 @@ import type { EditorPanelState } from "./editor-state";
 import { MANUSCRIPT_READING_ID } from "./manuscript-panel";
 import { SyncDot } from "./sync-indicator";
 import { openLiveVoice } from "../../utils/live-voice-workspace";
+import { openInstrumentDock } from "../../utils/instrument-dock";
 import { LIVING_DESK_EVENT, LIVING_DESK_TOGGLE_EVENT, livingDeskController, livingDeskSnapshot, type LivingDeskSnapshot } from "../../utils/living-desk-contract";
 
 interface CompositorPanelProps {
@@ -890,6 +891,7 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
               class="tool-btn">
               <span class="compositor-tool-label">The piece</span>
             </button>
+            <button type="button" title="Saved writing and research tasks" aria-label="Task desk" preventdefault:mousedown onClick$={() => openInstrumentDock("tasks")} class="tool-btn"><span class="compositor-tool-label">Task desk</span></button>
             <button
               title="Find and replace (⌘F / ⌘H)"
               aria-label="Find and replace"

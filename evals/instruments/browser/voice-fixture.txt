@@ -1,0 +1,4 @@
+The river carried our story through the sleeping town.
+
+Authored fixture, rendered using espeak-ng -v en-us -s 145.
+A synthetic English voice checks the transcription path, not human speech quality.

@@ -1,0 +1,80 @@
+.intent-field {
+  display: grid;
+  gap: 0.55rem;
+}
+.intent-field label {
+  display: grid;
+  gap: 0.3rem;
+}
+.intent-field textarea {
+  width: 100%;
+  min-height: 6rem;
+  resize: vertical;
+  font: inherit;
+  color: inherit;
+  background: var(--color-paper);
+  border: 1px solid var(--color-paper-3);
+  border-radius: 3px;
+  padding: 0.5rem;
+}
+.intent-field .intent-preview {
+  border: 1px solid var(--color-paper-3);
+  padding: 0.7rem;
+  border-radius: 3px;
+}
+.intent-field h4 {
+  font: inherit;
+  font-weight: 600;
+  margin: 0 0 0.35rem;
+}
+.intent-field .intent-token {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.3rem 0;
+}
+.intent-field code {
+  font: inherit;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.intent-field .intent-label {
+  font-size: 0.75rem;
+  color: var(--color-ink);
+  opacity: 0.8;
+}
+.intent-field .intent-notice {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  margin: 0.3rem 0;
+}
+.intent-field .intent-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.intent-field button {
+  font: inherit;
+  color: inherit;
+  min-height: 44px;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 3px;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  background: var(--color-paper);
+}
+.intent-field button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.intent-field button:focus-visible,
+.intent-field textarea:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .intent-field textarea {
+    font-size: 1rem;
+  }
+}

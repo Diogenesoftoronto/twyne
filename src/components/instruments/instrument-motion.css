@@ -1,0 +1,92 @@
+.instrument-motion {
+  --instrument-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Content starts fully visible. Animation never gates a control or a result. */
+@media (prefers-reduced-motion: no-preference) {
+  .instrument-motion[data-instrument-motion="open"] .instrument-art__image {
+    animation: instrument-open 220ms var(--instrument-ease);
+  }
+
+  .instrument-motion[data-instrument-motion="compare"]
+    [data-instrument-part="alternative"] {
+    animation: instrument-compare 200ms var(--instrument-ease);
+  }
+
+  .instrument-motion[data-instrument-motion="arrive"]
+    [data-instrument-part="result"] {
+    animation: instrument-result 240ms var(--instrument-ease);
+  }
+
+  .instrument-motion[data-instrument-motion="arrive"] .instrument-art__rule {
+    animation: instrument-rule 260ms var(--instrument-ease);
+  }
+}
+
+@keyframes instrument-open {
+  from {
+    opacity: 0.6;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes instrument-compare {
+  from {
+    opacity: 0.6;
+    transform: translateX(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes instrument-result {
+  from {
+    opacity: 0.5;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes instrument-rule {
+  from {
+    opacity: 0.5;
+    transform: scaleX(0.3);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The host passes quiet for its exact typing/visibility state. Existing ambient
+ * flow and Zen containers are supported as an additional, CSS-only safeguard. */
+.instrument-motion[data-instrument-quiet="true"],
+.instrument-motion[data-instrument-quiet="true"] *,
+[data-flow="flow"] .instrument-motion,
+[data-flow="flow"] .instrument-motion *,
+[data-flow="settling"] .instrument-motion,
+[data-flow="settling"] .instrument-motion *,
+[data-zen="true"] .instrument-motion,
+[data-zen="true"] .instrument-motion *,
+.zen-mode .instrument-motion,
+.zen-mode .instrument-motion * {
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .instrument-motion,
+  .instrument-motion * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

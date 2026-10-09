@@ -1,3 +1,4 @@
+import { AccountToolReview } from "../components/knowledge/account-tool-review";
 import {
   component$,
   createContextId,
@@ -8,6 +9,7 @@ import {
   useVisibleTask$,
   type Signal,
 } from "@qwik.dev/core";
+import { setAccountKnowledgeContext } from "./account-knowledge";
 import { authClient } from "./auth-client";
 import { createConvexTokenFetcher } from "./convex-token";
 import { analyticsIdFromConvexJwt } from "./auth-analytics";
@@ -256,5 +258,14 @@ export const AuthProvider = component$(() => {
     { strategy: "document-ready" },
   );
 
-  return <Slot />;
+  // Account connections use only the client with an installed Convex identity.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track, cleanup }) => {
+    const account = track(() => authState.value.convexAuthenticated ? authState.value.user?.id ?? null : null);
+    const client = track(() => convexClient.value);
+    setAccountKnowledgeContext(account ? client ?? null : null, account);
+    cleanup(() => setAccountKnowledgeContext(null, null));
+  });
+
+  return <><AccountToolReview /><Slot /></>;
 });

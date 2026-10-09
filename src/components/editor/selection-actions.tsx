@@ -12,6 +12,11 @@ import type { SelectionActionState } from "./editor-state";
 interface SelectionActionsProps {
   selection: SelectionActionState | null;
   disabled?: boolean;
+  onSentenceBench$?: PropFunction<() => void>;
+  onHear$?: PropFunction<() => void>;
+  onThreads$?: PropFunction<() => void>;
+  onTaskDesk$?: PropFunction<() => void>;
+  onSceneBench$?: PropFunction<() => void>;
   onGetSources$: PropFunction<() => void>;
   onAddMargin$: PropFunction<() => void>;
   onSendToPersona$: PropFunction<
@@ -55,6 +60,55 @@ export const SelectionActions = component$<SelectionActionsProps>((props) => {
       <div class="selection-actions__quote" title={selection.text}>
         “{selection.text.slice(0, 82)}
         {selection.text.length > 82 ? "…" : ""}”
+      </div>
+      <div class="selection-actions__row">
+        {props.onSentenceBench$ && (
+          <button
+            type="button"
+            onClick$={props.onSentenceBench$}
+            disabled={props.disabled}
+          >
+            {/\s/.test(selection.text.trim())
+              ? "Sentence bench"
+              : "Word alternatives"}
+          </button>
+        )}
+        {props.onHear$ && (
+          <button
+            type="button"
+            onClick$={props.onHear$}
+            disabled={props.disabled}
+          >
+            Hear
+          </button>
+        )}
+        {props.onThreads$ && /\s/.test(selection.text.trim()) && (
+          <button
+            type="button"
+            onClick$={props.onThreads$}
+            disabled={props.disabled}
+          >
+            Threads
+          </button>
+        )}
+        {props.onSceneBench$ && /\s/.test(selection.text.trim()) && (
+          <button
+            type="button"
+            onClick$={props.onSceneBench$}
+            disabled={props.disabled}
+          >
+            Scene bench
+          </button>
+        )}
+        {props.onTaskDesk$ && (
+          <button
+            type="button"
+            onClick$={props.onTaskDesk$}
+            disabled={props.disabled}
+          >
+            Task desk
+          </button>
+        )}
       </div>
       <div class="selection-actions__row">
         <button

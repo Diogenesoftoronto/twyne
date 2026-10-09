@@ -1,0 +1,105 @@
+{
+  "capturedAt": "2026-10-09T06:14:15.760Z",
+  "sourceRevision": "5d3f7552ca17715dc2fe968c2db720e1295988a5",
+  "sourceHadLocalChanges": true,
+  "sample": "Fictional manuscript from e2e/fixtures/instruments.ts",
+  "models": "None. Actual local rules, editor transactions and undo.",
+  "verification": "Source tests passed; inspect these selected images and the encoded clip before deploying.",
+  "images": [
+    {
+      "file": "public/assets/manual/writing-instruments/01-complete-wording-preview.webp",
+      "source": "artifacts/qa-recordings/instruments/20261009-final-baselines/results/instruments.e2e.ts-selecti-27344--applies-and-undoes-offline-chromium/01-complete-wording-preview.png",
+      "sourceSha256": "4864e6c1003b007198496906171c015b19f38aebfe94c69a282e4df990d50855",
+      "sha256": "d0187ddc711d71cea3db8127fdc735e25e33271e7f7ad9db4273137f66a96a4e",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "public/assets/manual/writing-instruments/02-wording-used.webp",
+      "source": "artifacts/qa-recordings/instruments/20261009-final-baselines/results/instruments.e2e.ts-selecti-27344--applies-and-undoes-offline-chromium/02-wording-used.png",
+      "sourceSha256": "026bb80c4caec82069d406c592ce36e8066827494bd836cdacf4004650b1be89",
+      "sha256": "b2fb06c0ac02a58bd173a9e9ff9ed16233c8f39b3293395c95d690868765c1cf",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "video": {
+    "file": "public/assets/manual/writing-instruments.mp4",
+    "source": "artifacts/qa-recordings/instruments/20261009-final-baselines/results/instruments.e2e.ts--demo-c-510a1--in-a-readable-offline-take-chromium/instruments-master.webm",
+    "sourceSha256": "3e907b0ac27f83662bd2f654089c42eef1afa4db6bfcb701480f27c5557630e1",
+    "sha256": "8fbf9c19d0e87924ad57f47f75137d7bff5dacbbace35c51f5f73fccddebf0d5",
+    "width": 1440,
+    "height": 900,
+    "sourceRange": {
+      "start": 4.546,
+      "end": 21.08
+    },
+    "duration": 16.534,
+    "speed": 1,
+    "audio": "none",
+    "captions": "Descriptive actions",
+    "cues": [
+      {
+        "start": 0,
+        "end": 2.822,
+        "description": "A fictional manuscript. No prose or judgement model is connected."
+      },
+      {
+        "start": 2.822,
+        "end": 5.118999999999999,
+        "description": "Select a complete sentence and open its bench."
+      },
+      {
+        "start": 5.118999999999999,
+        "end": 7.461999999999999,
+        "description": "Preview a complete local wording between its actual neighbouring sentences."
+      },
+      {
+        "start": 7.461999999999999,
+        "end": 9.735,
+        "description": "Use the checked wording. The change lands in the manuscript."
+      },
+      {
+        "start": 9.735,
+        "end": 12.170000000000002,
+        "description": "Undo restores the original wording."
+      },
+      {
+        "start": 12.170000000000002,
+        "end": 14.431000000000001,
+        "description": "Threads connects two real manuscript spans. The repeat is local evidence."
+      },
+      {
+        "start": 14.431000000000001,
+        "end": 16.534,
+        "description": "Remove one literal repeated sentence, with undo available."
+      }
+    ],
+    "encodingArguments": [
+      "-ss",
+      "4.546",
+      "-i",
+      "artifacts/qa-recordings/instruments/20261009-final-baselines/results/instruments.e2e.ts--demo-c-510a1--in-a-readable-offline-take-chromium/instruments-master.webm",
+      "-t",
+      "16.534",
+      "-an",
+      "-r",
+      "25",
+      "-c:v",
+      "libx264",
+      "-threads",
+      "4",
+      "-preset",
+      "medium",
+      "-crf",
+      "20",
+      "-pix_fmt",
+      "yuv420p",
+      "-map_metadata",
+      "-1",
+      "-movflags",
+      "+faststart",
+      "public/assets/manual/writing-instruments.mp4"
+    ]
+  }
+}

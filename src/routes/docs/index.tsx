@@ -19,6 +19,7 @@ import { EDITORIAL_GUIDES } from "./guide-editorial-room";
 import { YOUR_WORK_GUIDES } from "./guide-your-work";
 import { MANUSCRIPT_CRAFT_GUIDES } from "./guide-manuscript-craft";
 import { LIVING_DESK_GUIDES } from "./guide-living-desk";
+import { WRITING_INSTRUMENT_GUIDES } from "./guide-writing-instruments";
 import type { ManualGuides } from "./manual-guide-types";
 
 const GUIDES: ManualGuides = {
@@ -27,6 +28,7 @@ const GUIDES: ManualGuides = {
   ...YOUR_WORK_GUIDES,
   ...MANUSCRIPT_CRAFT_GUIDES,
   ...LIVING_DESK_GUIDES,
+  ...WRITING_INSTRUMENT_GUIDES,
 };
 
 const ChapterIllustrations = component$<{ chapter: string }>(({ chapter }) => (
@@ -47,26 +49,27 @@ const CHAPTERS = [
       ["house", "03", "The House & collections"],
       ["flow", "04", "Writing in flow"],
       ["the-piece", "05", "The piece"],
+      ["writing-instruments", "06", "Writing instruments"],
     ],
   },
   {
     label: "The editorial room",
     links: [
-      ["room", "06", "Your editors"],
-      ["rubric", "07", "The galley proof"],
-      ["marginalia", "08", "Margin conversations"],
-      ["apparatus", "09", "Research & citations"],
-      ["account-and-live", "10", "Your account & Live"],
+      ["room", "07", "Your editors"],
+      ["rubric", "08", "The galley proof"],
+      ["marginalia", "09", "Margin conversations"],
+      ["apparatus", "10", "Research & citations"],
+      ["account-and-live", "11", "Your account & Live"],
     ],
   },
   {
     label: "Your work",
     links: [
-      ["manuscript-tools", "11", "Manuscript & source tools"],
-      ["folios", "12", "Folios, export & publishing"],
-      ["byok", "13", "Bring your own key"],
-      ["privacy", "14", "Privacy & your data"],
-      ["shortcuts", "15", "Keyboard shortcuts"],
+      ["manuscript-tools", "12", "Manuscript & source tools"],
+      ["folios", "13", "Folios, export & publishing"],
+      ["byok", "14", "Bring your own key"],
+      ["privacy", "15", "Privacy & your data"],
+      ["shortcuts", "16", "Keyboard shortcuts"],
       ["launch-film", "—", "Watch the film"],
     ],
   },
@@ -79,6 +82,21 @@ const MANUSCRIPT_TOPICS = [
   ["page-layout", "Page layout"],
   ["notes-and-equations", "Notes & equations"],
 ] as const;
+
+const INSTRUMENT_TOPICS = [
+  ["sentence-bench", "Sentence bench"],
+  ["writing-threads", "Threads"],
+  ["writing-entities", "Entities & continuity"],
+  ["paragraph-readings", "Paragraphs & Charter"],
+  ["task-desk", "Task desk"],
+  ["on-device-writing", "On-device tools & Say it"],
+  ["scene-bench", "Scene bench"],
+] as const;
+
+const CHAPTER_TOPICS: Record<string, readonly (readonly [string, string])[]> = {
+  "manuscript-tools": MANUSCRIPT_TOPICS,
+  "writing-instruments": INSTRUMENT_TOPICS,
+};
 
 const CHAPTER_LINKS = CHAPTERS.flatMap<readonly [string, string, string]>(
   (group) => group.links,
@@ -127,9 +145,9 @@ const ContentsLinks = component$<{ active: string; topic: string }>((props) => (
                 <span aria-hidden="true">{number}</span>
                 {label}
               </a>
-              {id === "manuscript-tools" && (
+              {CHAPTER_TOPICS[id] && (
                 <ul class="manual-contents-topics">
-                  {MANUSCRIPT_TOPICS.map(([topic, title]) => (
+                  {CHAPTER_TOPICS[id].map(([topic, title]) => (
                     <li key={topic}>
                       <a
                         href={`#${topic}`}
@@ -171,9 +189,14 @@ export default component$(() => {
     const sections = Array.from(
       manual.querySelectorAll<HTMLElement>(".manual-content > section[id]"),
     );
-    const topics = MANUSCRIPT_TOPICS.map(([id]) =>
-      document.getElementById(id),
-    ).filter((element): element is HTMLElement => element !== null);
+    const topics = Object.fromEntries(
+      Object.entries(CHAPTER_TOPICS).map(([chapter, entries]) => [
+        chapter,
+        entries
+          .map(([id]) => document.getElementById(id))
+          .filter((element): element is HTMLElement => element !== null),
+      ]),
+    );
     let frame = 0;
     const updateReadingPosition = () => {
       frame = 0;
@@ -190,8 +213,8 @@ export default component$(() => {
         current = sections[sections.length - 1]?.id ?? current;
       }
       let topic = "";
-      if (current === "manuscript-tools") {
-        for (const element of topics) {
+      if (topics[current]) {
+        for (const element of topics[current]) {
           if (element.getBoundingClientRect().top > line) break;
           topic = element.id;
         }
@@ -542,8 +565,161 @@ export default component$(() => {
                 </p>
               </div>
             </section>
+            <section id="writing-instruments" class="manual-section">
+              <p class="manual-chapter">06 · At the desk</p>
+              <h2 class="manual-h2">Writing instruments</h2>
+              <p class="manual-lead">
+                Choose the words, hear their rhythm, follow a connection, or
+                leave a question working at the desk.
+              </p>
+              <p class="manual-p">
+                Select text in the manuscript to open the tools that belong to
+                it. A word offers Word alternatives; a passage offers Sentence
+                bench, Hear, Threads, Scene bench and Task desk. The Compositor
+                also opens Task desk from Review. Close a tool or press Escape
+                to return to the page.
+              </p>
+              <ChapterIllustrations chapter="writing-instruments" />
+              <h3 id="sentence-bench" class="manual-h3">Work on a whole sentence</h3>
+              <p class="manual-p">
+                <strong>Rewrite</strong> brings together complete earlier
+                wordings, available rule changes and model alternatives. Each
+                identifies its source and word-count change. Compare alongside
+                keeps the original beside the candidate; hover or keyboard-focus
+                a candidate to preview it in the manuscript. Edit the working
+                wording, then choose Use this wording. Grammar status and any
+                unverified meaning are shown; your usual Undo restores the edit.
+              </p>
+              <p class="manual-p">
+                <strong>Words</strong> shows bundled thesaurus choices inside
+                the complete sentence and underlines words repeated in the
+                paragraph. These choices can change the meaning. With the Words
+                in context pack installed, On-device alternatives adds local
+                word predictions. A likely word still needs your reading.
+              </p>
+              <p class="manual-p">
+                <strong>Place</strong> shows neighbouring positions with the
+                sentences on either side. Read each arrangement before choosing
+                Move here. The reasons come from local rules; the positions have
+                not received a model judgement. <strong>Hear</strong> reads the
+                preceding sentence, the working wording and the following
+                sentence through your narration player. It can use a downloaded
+                local voice or your configured voice service.
+              </p>
+              <h3 id="writing-threads" class="manual-h3">Follow a thread</h3>
+              <p class="manual-p">
+                Threads pairs exact sentences from the manuscript. Hover or
+                keyboard-focus a pair to mark both passages; choose a sentence
+                to go to it. Local checks identify repeated wording, word overlap
+                and possible references. A relation remains unverified unless
+                the judgement service has read it; model readings name their
+                source and show their uncertainty.
+              </p>
+              <p class="manual-p">
+                For an exact repeat, you can remove either occurrence as one
+                undoable edit. Repetition may be deliberate, so leaving both is
+                always a choice. If the passage changes, reopen the instrument
+                before acting on its earlier reading.
+              </p>
+              <h3 id="writing-entities" class="manual-h3">Follow an entity through the piece</h3>
+              <p class="manual-p">
+                In the instrument desk, choose Entities. Select a name candidate
+                to see its mentions across sections and inspect the source
+                passages. This local index can include places or ordinary
+                capitalised words; a name candidate is not a confirmed character.
+                Spelling variants are grouped by a local rule.
+              </p>
+              <p class="manual-p">
+                Choose a reading, then Read with judgement model to inspect
+                relationships by section, compare a named attribute such as a
+                coat's colour, or try blind dialogue attribution. The blind
+                reading withholds speaker tags and can answer Unknown. Each
+                result keeps its exact evidence and full distribution available.
+                A possible contradiction is a lead to inspect, and a model's
+                confidence is not a grade for characterisation or dialogue.
+              </p>
+              <h3 id="paragraph-readings" class="manual-h3">Read paragraphs; keep your choices</h3>
+              <p class="manual-p">
+                Open Paragraph readings in The piece to inspect each paragraph's
+                scores and narrating tense. Local English cues and Jev readings
+                are labelled separately. Inspect distributions and context shows
+                the exact paragraph behind a reading, including a split or
+                uncertain result. These readings are separate from the
+                whole-piece grade and its estimate.
+              </p>
+              <p class="manual-p">
+                Keeping a deliberate style or name exception saves the existing
+                uses in the folio's Charter. New drift can still be flagged.
+                Check these again removes the exception. A save notice tells you
+                if the choice could only be kept on this device.
+              </p>
+              <h3 id="task-desk" class="manual-h3">Leave a question at the Task desk</h3>
+              <p class="manual-p">
+                Choose Writing review or Research selected account resources,
+                check the reference passage, and describe what would help. For
+                research, enable resource access in Account sources and choose
+                up to three texts. The task reads those resources; it does not
+                search the open web.
+              </p>
+              <p class="manual-p">
+                Sign in with Not Organic and sync the folio before queueing.
+                Once your account accepts the request, server work can continue
+                after the tab closes. It uses your hosted model and account
+                credit. Return to this folio's Task desk for its status, result,
+                saved passage and source excerpts. If the draft has changed,
+                review the earlier context before using the result.
+              </p>
+              <p class="manual-p">
+                You can cancel unfinished work. A request already sent to a
+                provider may still finish and incur its charge, but its cancelled
+                result is discarded. Mark a returned result Useful or Not useful
+                and add a comment to save feedback with the task. Results remain
+                proposals for your review.
+              </p>
+              <h3 id="on-device-writing" class="manual-h3">Keep a few tools on your device</h3>
+              <p class="manual-p">
+                From Task desk, choose On-device tools. Passage connections,
+                Words in context and Say it are separate English-language packs
+                with their download sizes shown. Download &amp; load is an
+                explicit choice; Stop download and Remove pack are available.
+                Model files come from Hugging Face and the shared runtime from
+                jsDelivr. Keep the page open for the first load. These operations
+                use no account credit, and your passages and recordings stay on
+                this device.
+              </p>
+              <p class="manual-p">
+                Passage connections compares nearby passages you supply. Its
+                similarity measure invites a closer reading; it does not prove
+                a repetition or missing transition. For <strong>Say it</strong>,
+                install the speech pack, select a sentence, then record up to a
+                minute or choose an audio clip. Review and edit the transcript
+                before using it as a sentence candidate. Browser storage can be
+                cleared or evicted, so a saved pack may need downloading again.
+              </p>
+              <h3 id="scene-bench" class="manual-h3">See what a scene gives you</h3>
+              <p class="manual-p">
+                Scene bench inventories place, time, light, sound, movement and
+                pressure through exact quotes from the selected passage. The
+                local English scan names its cues. A cue it does not find may
+                still be present in the writing. An optional judgement reading
+                can select evidence and assess pressure; its service and cost
+                information appear before you request it. Hear the passage uses
+                your narration player.
+              </p>
+              <ChapterIllustrations chapter="scene-bench" />
+              <div class="manual-callout">
+                <p>
+                  <strong>Ideas stay beside the evidence.</strong> Save a detail
+                  you want to try without changing the manuscript. Image, sound
+                  and motion briefs keep those additions separate from the
+                  original passage. You can copy a brief into another tool;
+                  media generation is not connected here. The bench asks for a
+                  shorter selection above 12,000 characters or 64 sentences.
+                </p>
+              </div>
+            </section>
             <section id="room" class="manual-section">
-              <p class="manual-chapter">06 · The editorial room</p>
+              <p class="manual-chapter">07 · The editorial room</p>
               <h2 class="manual-h2">Your editors</h2>
               <p class="manual-lead">
                 Five resident voices. Each reads with a different lens. Together
@@ -584,7 +760,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="rubric" class="manual-section">
-              <p class="manual-chapter">07 · The editorial room</p>
+              <p class="manual-chapter">08 · The editorial room</p>
               <h2 class="manual-h2">The galley proof</h2>
               <p class="manual-lead">
                 Check the shape of the draft, then choose an editorial reading.
@@ -641,7 +817,7 @@ export default component$(() => {
               </div>
             </section>
             <section id="marginalia" class="manual-section">
-              <p class="manual-chapter">08 · The editorial room</p>
+              <p class="manual-chapter">09 · The editorial room</p>
               <h2 class="manual-h2">Margin conversations</h2>
               <p class="manual-lead">
                 Threaded comments alongside the draft. Your own notes, plus the
@@ -665,7 +841,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="apparatus" class="manual-section">
-              <p class="manual-chapter">09 · The editorial room</p>
+              <p class="manual-chapter">10 · The editorial room</p>
               <h2 class="manual-h2">Research &amp; citations</h2>
               <p class="manual-lead">
                 Research, bibliography, and citation — the machinery behind the
@@ -701,7 +877,7 @@ export default component$(() => {
               </div>
             </section>
             <section id="account-and-live" class="manual-section">
-              <p class="manual-chapter">10 · The editorial room</p>
+              <p class="manual-chapter">11 · The editorial room</p>
               <h2 class="manual-h2">Your account &amp; Live</h2>
               <p class="manual-lead">
                 A name in the room. A conversation when you need one.
@@ -729,7 +905,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="manuscript-tools" class="manual-section">
-              <p class="manual-chapter">11 · Your work</p>
+              <p class="manual-chapter">12 · Your work</p>
               <h2 class="manual-h2">Manuscript &amp; source tools</h2>
               <p class="manual-lead">
                 Structure the page, work in the source, and check the printed
@@ -790,7 +966,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="folios" class="manual-section">
-              <p class="manual-chapter">12 · Your work</p>
+              <p class="manual-chapter">13 · Your work</p>
               <h2 class="manual-h2">Folios, export &amp; publishing</h2>
               <p class="manual-lead">
                 One piece per folio. Related pieces can share a collection.
@@ -832,7 +1008,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="byok" class="manual-section">
-              <p class="manual-chapter">13 · Your work</p>
+              <p class="manual-chapter">14 · Your work</p>
               <h2 class="manual-h2">Bring your own key</h2>
               <p class="manual-lead">
                 Choose a hosted model or connect a provider you already use.
@@ -880,7 +1056,7 @@ export default component$(() => {
               </div>
             </section>
             <section id="privacy" class="manual-section">
-              <p class="manual-chapter">14 · Your work</p>
+              <p class="manual-chapter">15 · Your work</p>
               <h2 class="manual-h2">Privacy &amp; your data</h2>
               <p class="manual-lead">
                 Your manuscript is yours. We intend to keep it that way.
@@ -914,7 +1090,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="shortcuts" class="manual-section">
-              <p class="manual-chapter">15 · Your work</p>
+              <p class="manual-chapter">16 · Your work</p>
               <h2 class="manual-h2">Keyboard shortcuts</h2>
               <p class="manual-p">
                 Choose the labels for your keyboard. The same shortcut registry
