@@ -100,6 +100,7 @@ import {
   notOrganicEnabled,
   notOrganicIssuer,
   notOrganicOpenAiRoute,
+  notOrganicGenerationRequestHeaders,
   type NotOrganicModelAlias,
 } from "./lib/notorganic";
 import {
@@ -236,7 +237,14 @@ async function trackedGenerateText(
 ) {
   let result: Awaited<ReturnType<typeof generateText>>;
   try {
-    result = await generateText(generation);
+    result = await generateText({
+      ...generation,
+      ...(notOrganicEnabled()
+        ? {
+            headers: notOrganicGenerationRequestHeaders(generation.headers),
+          }
+        : {}),
+    });
   } catch (error) {
     await recordHostedAttempt(capture, attempt, "failed").catch((recordError) =>
       console.error(

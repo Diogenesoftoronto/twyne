@@ -119,6 +119,9 @@ describe("Not Organic product assertions", () => {
       },
       "reasoning",
       "rubric-review",
+      undefined,
+      undefined,
+      { maxCostMicrousd: 50_000 },
     );
     expect(route).toMatchObject({
       baseURL: "https://api.notorganic.info/v1",
