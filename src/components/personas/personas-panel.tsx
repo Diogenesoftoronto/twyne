@@ -670,7 +670,10 @@ export const PersonasPanel = component$(
         }> = [];
 
         // ── Try client-side AI first (BYOK) ─────────────────────────
-        const settings = store.aiSettings;
+        // Read at the action boundary: another tab or the Settings route may
+        // have switched BYOK off since this panel was hydrated.
+        const settings = normalizeAiSettings(await loadAiSettingsFromIdb());
+        store.aiSettings = settings;
         const hasByok = hasConfiguredAiProvider(settings);
         if (hasByok && settings) {
           try {
@@ -776,7 +779,7 @@ export const PersonasPanel = component$(
           }
         }
 
-        // ── Server action only when no local provider is configured ──────────
+        // ── Hosted action when BYOK is off or unconfigured ──────────
         if (responses.length === 0 && !hasByok && client) {
           try {
             const personasForServer = store.personas.map(toAgentPersona);
@@ -1036,7 +1039,10 @@ export const PersonasPanel = component$(
           return;
         }
         const client = store.clientRef ?? clientSig.value;
-        const settings = store.aiSettings;
+        // Read at the action boundary: another tab or the Settings route may
+        // have switched BYOK off since this panel was hydrated.
+        const settings = normalizeAiSettings(await loadAiSettingsFromIdb());
+        store.aiSettings = settings;
         const hasByok = hasConfiguredAiProvider(settings);
         const briefTitle = brief?.answers.workingTitle;
 
@@ -1400,7 +1406,10 @@ export const PersonasPanel = component$(
             let responseText: string | null = null;
 
             // ── Try client-side AI first (BYOK) ─────────────────────────
-            const settings2 = store.aiSettings;
+            const settings2 = normalizeAiSettings(
+              await loadAiSettingsFromIdb(),
+            );
+            store.aiSettings = settings2;
             const hasByok = hasConfiguredAiProvider(settings2);
             if (hasByok && settings2) {
               try {
@@ -1733,7 +1742,10 @@ export const PersonasPanel = component$(
         let rationale = "";
 
         // ── Try client-side AI first (BYOK) ─────────────────────────
-        const settings = store.aiSettings;
+        // Read at the action boundary: another tab or the Settings route may
+        // have switched BYOK off since this panel was hydrated.
+        const settings = normalizeAiSettings(await loadAiSettingsFromIdb());
+        store.aiSettings = settings;
         const hasByok = hasConfiguredAiProvider(settings);
         if (hasByok && settings) {
           try {
@@ -1770,7 +1782,7 @@ export const PersonasPanel = component$(
           }
         }
 
-        // ── Server action only when no local provider is configured ──────────
+        // ── Hosted action when BYOK is off or unconfigured ──────────
         if (replacement.trim() === anchor.trim() && !hasByok && client) {
           try {
             const r = (await client.action(api.agents.suggestRewrite, {

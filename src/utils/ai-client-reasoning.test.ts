@@ -76,7 +76,7 @@ const DRAFT =
 
 function settings(): AiSettings {
   return {
-    advancedMode: false,
+    advancedMode: true,
     providers: [
       {
         id: "provider-local",

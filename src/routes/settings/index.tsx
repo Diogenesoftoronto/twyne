@@ -138,6 +138,8 @@ interface SettingsStore {
   settings: AiSettings;
   loaded: boolean;
   saving: boolean;
+  saveRevision: number;
+  saveError: string | null;
   toast: string | null;
   /* provider form */
   showAddProvider: boolean;
@@ -475,6 +477,8 @@ export default component$(() => {
     settings: DEFAULT_AI_SETTINGS,
     loaded: false,
     saving: false,
+    saveRevision: 0,
+    saveError: null,
     toast: null,
     showAddProvider: false,
     newProviderType: "openai",
@@ -554,44 +558,13 @@ export default component$(() => {
 
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
-    const [raw, writer, apparatus, catalog] = await Promise.all([
+    // Local preferences must be ready independently of the remote catalog.
+    const [raw, writer, apparatus] = await Promise.all([
       loadAiSettingsFromIdb(),
       loadWriterSettingsFromIdb(),
       loadApparatusSettingsFromIdb(),
-      loadModelsDevCatalog().catch((error) => {
-        store.modelsDevError = normalizeApplicationError(error, {
-          source: "fetch",
-          metadata: { operation: "load-models-dev-catalog" },
-        });
-        return [] as ModelsDevProvider[];
-      }),
     ]);
-    const normalized = normalizeAiSettings(raw);
-    store.settings = {
-      ...normalized,
-      providers: normalized.providers.map((provider) => {
-        const catalogProvider = findModelsDevProvider(catalog, provider);
-        const catalogModels = modelsDevModelsForFeature(
-          catalogProvider?.models ?? [],
-          "language",
-        ).map((model) => model.id);
-        return {
-          ...provider,
-          modelsDevId: catalogProvider?.id ?? provider.modelsDevId,
-          modelModalities: {
-            ...provider.modelModalities,
-            ...catalogModelModalities(catalogProvider),
-          },
-          modelReasoningOptions: {
-            ...provider.modelReasoningOptions,
-            ...catalogModelReasoningOptions(catalogProvider),
-          },
-          availableModels: Array.from(
-            new Set([...catalogModels, ...providerModelOptions(provider)]),
-          ),
-        };
-      }),
-    };
+    store.settings = normalizeAiSettings(raw);
     store.writerStyle = writer.interviewStyle;
     store.writerProfile = writer.profile;
     store.defaultCitationStyle = apparatus.defaultCitationStyle;
@@ -602,7 +575,6 @@ export default component$(() => {
     store.searchBackend = { ...apparatus.searchBackend };
     store.maxResults = apparatus.maxResults;
     store.mcpServers = apparatus.mcpServers.map((s) => ({ ...s }));
-    store.modelsDevProviders = catalog;
     store.theme = readThemePreference();
     store.themeCustomOpen = Boolean(store.theme.custom);
     store.loaded = true;
@@ -642,10 +614,57 @@ export default component$(() => {
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async ({ track, cleanup }) => {
+    if (!track(() => store.loaded)) return;
+    let cancelled = false;
+    cleanup(() => {
+      cancelled = true;
+    });
+    try {
+      const catalog = await loadModelsDevCatalog();
+      if (cancelled) return;
+      store.modelsDevProviders = catalog;
+      // Enrich the current choices, never the snapshot from initial hydration:
+      // the writer may have toggled BYOK or edited a provider during the fetch.
+      store.settings = {
+        ...store.settings,
+        providers: store.settings.providers.map((provider) => {
+          const catalogProvider = findModelsDevProvider(catalog, provider);
+          const catalogModels = modelsDevModelsForFeature(
+            catalogProvider?.models ?? [],
+            "language",
+          ).map((model) => model.id);
+          return {
+            ...provider,
+            modelsDevId: catalogProvider?.id ?? provider.modelsDevId,
+            modelModalities: {
+              ...provider.modelModalities,
+              ...catalogModelModalities(catalogProvider),
+            },
+            modelReasoningOptions: {
+              ...provider.modelReasoningOptions,
+              ...catalogModelReasoningOptions(catalogProvider),
+            },
+            availableModels: Array.from(
+              new Set([...catalogModels, ...providerModelOptions(provider)]),
+            ),
+          };
+        }),
+      };
+    } catch (error) {
+      if (cancelled) return;
+      store.modelsDevError = normalizeApplicationError(error, {
+        source: "fetch",
+        metadata: { operation: "load-models-dev-catalog" },
+      });
+    }
+  });
+
+  // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track }) => {
     track(() => featureFlags.value.loaded);
     track(() => featureFlags.value.flags.localAi);
-    if (!store.loaded) return;
+    if (!track(() => store.loaded)) return;
     store.settings = normalizeAiSettings(
       stripManagedDesktopLocalProvider(store.settings),
     );
@@ -708,23 +727,49 @@ export default component$(() => {
   });
 
   const persist = $(async () => {
+    if (!store.loaded) return false;
+    const revision = ++store.saveRevision;
     store.saving = true;
-    // Managed providers (desktop LiteRT, browser Supertonic) are re-injected
-    // on load, so strip them before persisting the writer's actual choices.
-    const settings = stripManagedSupertonicProvider(
-      stripManagedDesktopLocalProvider(store.settings),
-    );
-    await saveAiSettingsToIdb(settings);
-    const defaultProvider = settings.providers.find(
-      (provider) => provider.id === settings.defaultProviderId,
-    );
-    void captureProductEvent("ai_settings_saved", {
-      provider: defaultProvider?.type ?? "none",
-      feature_override_count: Object.keys(settings.perFeature).length,
-    });
-    store.saving = false;
-    store.toast = "Settings saved";
-    setTimeout(() => (store.toast = null), 2000);
+    store.saveError = null;
+    store.toast = null;
+    try {
+      // Managed providers are re-injected on load; keep the writer's choices.
+      const settings = stripManagedSupertonicProvider(
+        stripManagedDesktopLocalProvider(store.settings),
+      );
+      await saveAiSettingsToIdb(settings);
+      const defaultProvider = settings.providers.find(
+        (provider) => provider.id === settings.defaultProviderId,
+      );
+      void captureProductEvent("ai_settings_saved", {
+        provider: defaultProvider?.type ?? "none",
+        feature_override_count: Object.keys(settings.perFeature).length,
+      });
+      if (revision === store.saveRevision) {
+        store.toast = "Settings saved";
+        setTimeout(() => {
+          if (revision === store.saveRevision) store.toast = null;
+        }, 2000);
+      }
+      return true;
+    } catch {
+      if (revision === store.saveRevision) {
+        store.saveError =
+          "Your AI settings could not be saved in this browser. Try again.";
+      }
+      return false;
+    } finally {
+      if (revision === store.saveRevision) store.saving = false;
+    }
+  });
+
+  const toggleByok = $(async () => {
+    if (!store.loaded || store.saving) return;
+    const previous = store.settings.advancedMode;
+    store.settings = { ...store.settings, advancedMode: !previous };
+    if (!(await persist())) {
+      store.settings = { ...store.settings, advancedMode: previous };
+    }
   });
 
   const setWriterStyle = $(
@@ -1145,10 +1190,13 @@ export default component$(() => {
 
   const resetAll = $(async () => {
     store.showResetDialog = false;
+    const previous = store.settings;
     store.settings = DEFAULT_AI_SETTINGS;
-    await saveAiSettingsToIdb(DEFAULT_AI_SETTINGS);
-    store.toast = "Reset to defaults";
-    setTimeout(() => (store.toast = null), 2000);
+    if (await persist()) {
+      store.toast = "Reset to defaults";
+    } else {
+      store.settings = previous;
+    }
   });
 
   const openDeleteAccountDialog = $(() => {
@@ -2303,13 +2351,11 @@ export default component$(() => {
                   </p>
                 </div>
                 <button
-                  onClick$={() => {
-                    store.settings = {
-                      ...store.settings,
-                      advancedMode: !store.settings.advancedMode,
-                    };
-                    void persist();
-                  }}
+                  type="button"
+                  aria-label="Bring your own key"
+                  disabled={!store.loaded || store.saving}
+                  aria-busy={store.saving}
+                  onClick$={toggleByok}
                   class={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
                     store.settings.advancedMode
                       ? "bg-[var(--color-vermilion)]"
@@ -2326,6 +2372,15 @@ export default component$(() => {
                   />
                 </button>
               </div>
+
+              {store.saveError && (
+                <p
+                  role="alert"
+                  class="mt-3 text-xs text-[var(--color-vermilion)]"
+                >
+                  {store.saveError}
+                </p>
+              )}
 
               {store.settings.advancedMode &&
                 store.settings.providers.length === 0 && (

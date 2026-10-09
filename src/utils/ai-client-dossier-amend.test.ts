@@ -24,7 +24,7 @@ const { runClientDossierAmend, setClientUsageRecorderForTests } = await import(
   `./ai-client?dossier-amend-test=${Date.now()}`
 );
 const settings: AiSettings = {
-  advancedMode: false,
+  advancedMode: true,
   providers: [
     {
       id: "local",

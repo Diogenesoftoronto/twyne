@@ -161,12 +161,18 @@ function hasWindow(): boolean {
 function getLocalStorage(): {
   getItem: (key: string) => string | null;
   setItem: (key: string, value: string) => void;
+  removeItem: (key: string) => void;
 } | null {
-  if (typeof globalThis.localStorage !== "undefined") {
-    return globalThis.localStorage;
-  }
-  if (hasWindow() && typeof window.localStorage !== "undefined") {
-    return window.localStorage;
+  // Accessing the property itself can throw in a blocked browser context.
+  try {
+    if (typeof globalThis.localStorage !== "undefined") {
+      return globalThis.localStorage;
+    }
+    if (hasWindow() && typeof window.localStorage !== "undefined") {
+      return window.localStorage;
+    }
+  } catch {
+    /* IndexedDB may still be available. */
   }
   return null;
 }
@@ -186,13 +192,14 @@ function readLocalStorageJson<T>(key: string): T | null {
   }
 }
 
-function writeLocalStorageJson(key: string, value: unknown): void {
+function writeLocalStorageJson(key: string, value: unknown): boolean {
   const storage = getLocalStorage();
-  if (!storage) return;
+  if (!storage) return false;
   try {
     storage.setItem(key, JSON.stringify(value));
+    return true;
   } catch {
-    /* ignore */
+    return false;
   }
 }
 
@@ -1342,7 +1349,17 @@ export async function deleteLocalUsageHistoryFromIdb(
 
 /* ── AI settings (single record, key="current") ──────────────── */
 
+// Serialize writes so a slow earlier transaction cannot restore an old mode.
+let aiSettingsSaveQueue: Promise<void> = Promise.resolve();
+let aiSettingsRevision = 0;
+
 export async function loadAiSettingsFromIdb(): Promise<AiSettings | null> {
+  let pending: Promise<void>;
+  do {
+    pending = aiSettingsSaveQueue;
+    await pending;
+  } while (pending !== aiSettingsSaveQueue);
+  const revision = aiSettingsRevision;
   if (!getLocalStorage() && !hasIndexedDb()) return null;
   const local = readLocalStorageJson<AiSettings>(AI_SETTINGS_STORAGE_KEY);
   if (local) return local;
@@ -1356,6 +1373,8 @@ export async function loadAiSettingsFromIdb(): Promise<AiSettings | null> {
             .objectStore("ai-settings")
             .get("current"),
         )) ?? null;
+      // A save may have started while this older IndexedDB read was pending.
+      if (revision !== aiSettingsRevision) return loadAiSettingsFromIdb();
       const value = (rec?.value as AiSettings | undefined) ?? null;
       if (value) return value;
     } catch {
@@ -1381,25 +1400,52 @@ function announceAiSettingsSaved(): void {
 }
 
 export async function saveAiSettingsToIdb(settings: AiSettings): Promise<void> {
-  if (!getLocalStorage() && !hasIndexedDb()) return;
-  writeLocalStorageJson(AI_SETTINGS_STORAGE_KEY, settings);
-  announceAiSettingsSaved();
-  if (!hasIndexedDb()) return;
-  try {
-    const rec: MetaRecord = {
-      key: "current",
-      value: toStorable(settings),
-      updatedAt: Date.now(),
-    };
-    await reqAsPromise(
-      (await openDb())
-        .transaction("ai-settings", "readwrite")
-        .objectStore("ai-settings")
-        .put(rec),
-    );
-  } catch {
-    /* ignore */
-  }
+  // Capture before yielding: callers often pass mutable Qwik store proxies.
+  const snapshot = toStorable(settings);
+  aiSettingsRevision += 1;
+  const save = aiSettingsSaveQueue.then(async () => {
+    const localSaved = writeLocalStorageJson(AI_SETTINGS_STORAGE_KEY, snapshot);
+    let indexedDbSaved = false;
+    if (hasIndexedDb()) {
+      try {
+        // A successful put request is not a committed transaction: quota or
+        // storage failures can still abort it afterwards.
+        await tx("ai-settings", "readwrite", (transaction) => {
+          transaction.objectStore("ai-settings").put({
+            key: "current",
+            value: snapshot,
+            updatedAt: Date.now(),
+          } satisfies MetaRecord);
+        });
+        indexedDbSaved = true;
+      } catch {
+        // localStorage is a valid durable fallback when IndexedDB fails.
+      }
+    }
+    if (!localSaved) {
+      if (!indexedDbSaved) {
+        throw new Error(
+          "AI settings could not be saved in this browser. Try again.",
+        );
+      }
+      // Reads prefer localStorage. After the IDB commit, remove a stale copy
+      // left by a failed localStorage write so it cannot re-enable BYOK later.
+      const storage = getLocalStorage();
+      if (storage) {
+        try {
+          storage.removeItem(AI_SETTINGS_STORAGE_KEY);
+        } catch {
+          throw new Error(
+            "AI settings could not be saved in this browser. Try again.",
+          );
+        }
+      }
+    }
+    announceAiSettingsSaved();
+  });
+  // Failed saves must reject to the caller without poisoning later retries.
+  aiSettingsSaveQueue = save.catch(() => {});
+  return save;
 }
 
 /* ── Lix blob (the versioned draft store) ───────────────────────── */

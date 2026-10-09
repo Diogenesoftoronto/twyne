@@ -158,17 +158,14 @@ export const CitationsPanel = component$(
     });
 
     const autoFormatIfEnabled = $(async (citations: DetectedCitation[]) => {
-      if (
-        store.autoFormatting ||
-        !activeFolio ||
-        !store.aiSettings ||
-        !store.aiEnhanceCitations ||
-        !hasConfiguredAiProvider(store.aiSettings)
-      ) {
+      if (store.autoFormatting || !activeFolio || !store.aiEnhanceCitations) {
         return;
       }
       store.autoFormatting = true;
       try {
+        const settings = await loadAiSettingsFromIdb();
+        store.aiSettings = settings;
+        if (!settings || !hasConfiguredAiProvider(settings)) return;
         const seen = new Set(
           store.bibliography.map((entry) => entry.url.replace(/\/+$/, "")),
         );
@@ -186,7 +183,7 @@ export const CitationsPanel = component$(
               style: store.style,
               context: activeFolio.name,
             },
-            store.aiSettings,
+            settings,
           );
           if (!result) continue;
           all = await mergeBibEntry(
@@ -212,14 +209,16 @@ export const CitationsPanel = component$(
       if (!activeFolio) return;
       store.formattingIds = { ...store.formattingIds, [citation.id]: true };
       try {
-        if (store.aiSettings && hasConfiguredAiProvider(store.aiSettings)) {
+        const settings = await loadAiSettingsFromIdb();
+        store.aiSettings = settings;
+        if (settings && hasConfiguredAiProvider(settings)) {
           const result = await runClientCitationFormat(
             {
               rawText: citation.text,
               style: store.style,
               context: activeFolio.name,
             },
-            store.aiSettings,
+            settings,
           );
           if (result) {
             const all = await mergeBibEntry(

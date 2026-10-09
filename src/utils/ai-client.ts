@@ -396,8 +396,12 @@ export function resolveFeatureConfig(
   // before picking, so a writer with (say) Anthropic for the room and Fish
   // Audio for the voices gets the right one for each without configuring
   // per-feature overrides by hand.
-  const eligible = normalized.providers.filter((p) =>
-    providerSupportsFeature(p.type, feature, p),
+  // OFF disables saved custom providers and desktop models. The built-in
+  // offline narrator is independent of BYOK and never sends a provider request.
+  const eligible = normalized.providers.filter(
+    (p) =>
+      (normalized.advancedMode || p.id === BROWSER_TTS_PROVIDER_ID) &&
+      providerSupportsFeature(p.type, feature, p),
   );
   if (eligible.length === 0) return null;
 
@@ -453,7 +457,8 @@ export function resolveFeatureConfigForPersona(
 }
 
 /**
- * Is there a client-side provider that can do *language* work?
+ * Is BYOK enabled with a client-side provider that can do *language* work?
+ * Saved providers remain available for later, but OFF always uses hosted AI.
  *
  * Voice-only providers are excluded deliberately. Callers use this to decide
  * whether to take the BYOK path at all, and several of them treat a BYOK
@@ -464,7 +469,7 @@ export function resolveFeatureConfigForPersona(
 export function hasConfiguredAiProvider(
   settings: Partial<AiSettings> | AiSettings | null | undefined,
 ): boolean {
-  if (!settings) return false;
+  if (!settings?.advancedMode) return false;
   return normalizeAiSettings(settings).providers.some(
     (p) => !isVoiceOnlyProvider(p.type),
   );
@@ -475,10 +480,12 @@ export function hasConfiguredVoiceProvider(
   settings: Partial<AiSettings> | AiSettings | null | undefined,
 ): boolean {
   if (!settings) return false;
-  return normalizeAiSettings(settings).providers.some(
+  const normalized = normalizeAiSettings(settings);
+  return normalized.providers.some(
     (p) =>
-      supportsVoiceFeature(p.type, "voice-narration", p) ||
-      supportsVoiceFeature(p.type, "voice-transcription", p),
+      (normalized.advancedMode || p.id === BROWSER_TTS_PROVIDER_ID) &&
+      (supportsVoiceFeature(p.type, "voice-narration", p) ||
+        supportsVoiceFeature(p.type, "voice-transcription", p)),
   );
 }
 
@@ -3214,7 +3221,6 @@ function withDesktopLocalProvider(settings: AiSettings): AiSettings {
 
   return {
     ...settings,
-    advancedMode: true,
     providers,
     // Only claim the default slot if the writer hasn't chosen one.
     defaultProviderId: settings.defaultProviderId ?? LOCAL_PROVIDER_ID,
