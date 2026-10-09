@@ -165,13 +165,11 @@ export default component$(() => {
       }
     }
 
-    if (
-      store.aiEnhanceCitations &&
-      hasConfiguredAiProvider(store.aiSettings) &&
-      store.aiSettings &&
-      store.activeFolio
-    ) {
+    if (store.aiEnhanceCitations && store.activeFolio) {
       for (const citation of store.citations) {
+        const settings = await loadAiSettingsFromIdb();
+        store.aiSettings = settings;
+        if (!settings || !hasConfiguredAiProvider(settings)) break;
         const entryId = `ai-fmt-${store.activeFolio.id}-${citation.id}`.replace(
           /[^a-zA-Z0-9_-]/g,
           "-",
@@ -183,7 +181,7 @@ export default component$(() => {
             style: store.style,
             context: store.activeFolio.name,
           },
-          store.aiSettings,
+          settings,
         );
         if (!result) continue;
         const all = await mergeBibEntry(
@@ -375,14 +373,16 @@ export default component$(() => {
     if (store.aiLoading[key]) return;
     store.aiLoading = { ...store.aiLoading, [key]: true };
     try {
-      if (hasAi && store.aiSettings) {
+      const settings = await loadAiSettingsFromIdb();
+      store.aiSettings = settings;
+      if (settings && hasConfiguredAiProvider(settings)) {
         const result = await runClientCitationFormat(
           {
             rawText: citation.text,
             style: store.style,
             context: store.activeFolio?.name,
           },
-          store.aiSettings,
+          settings,
         );
         if (result) {
           const all = await mergeBibEntry(
@@ -419,13 +419,16 @@ export default component$(() => {
   });
 
   const summarizeSourceAi = $(async (entry: BibEntry) => {
-    if (!hasAi || !store.aiSettings) return;
     const key = `sum-${entry.id}`;
+    if (store.aiLoading[key]) return;
     store.aiLoading = { ...store.aiLoading, [key]: true };
     try {
+      const settings = await loadAiSettingsFromIdb();
+      store.aiSettings = settings;
+      if (!settings || !hasConfiguredAiProvider(settings)) return;
       const result = await runClientSourceSummarize(
         { title: entry.title, url: entry.url, author: entry.author },
-        store.aiSettings,
+        settings,
       );
       if (result) {
         store.aiSummaries = { ...store.aiSummaries, [entry.id]: result };
@@ -436,17 +439,24 @@ export default component$(() => {
   });
 
   const detectMissingSourcesAi = $(async () => {
-    if (!canFlagMissingSources || !store.aiSettings || !store.activeFolio)
+    if (
+      store.aiScanningMissing ||
+      !store.flagMissingSources ||
+      !store.activeFolio
+    )
       return;
     store.aiScanningMissing = true;
     store.aiMissingSources = null;
     try {
+      const settings = await loadAiSettingsFromIdb();
+      store.aiSettings = settings;
+      if (!settings || !hasConfiguredAiProvider(settings)) return;
       const html = await loadFolioContentFromIdb(store.activeFolio.id);
       const text = html.replace(/<[^>]+>/g, " ");
       const existing = writerEntries.map((e) => e.title);
       const result = await runClientMissingSourceDetect(
         { draftText: text, existingSources: existing },
-        store.aiSettings,
+        settings,
       );
       store.aiMissingSources = result;
     } finally {

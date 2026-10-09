@@ -45,6 +45,8 @@ interface OnboardingStore {
   style: InterviewStyle;
   citationStyle: ApparatusCitationStyle;
   byok: boolean;
+  savingByok: boolean;
+  byokError: string | null;
 }
 
 export default component$(() => {
@@ -57,6 +59,8 @@ export default component$(() => {
     style: "form",
     citationStyle: "mla",
     byok: false,
+    savingByok: false,
+    byokError: null,
   });
 
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -71,14 +75,20 @@ export default component$(() => {
       return;
     }
 
-    const [writer, apparatus, ai] = await Promise.all([
-      loadWriterSettingsFromIdb(),
-      loadApparatusSettingsFromIdb(),
-      loadAiSettingsFromIdb(),
-    ]);
-    store.style = writer.interviewStyle;
-    store.citationStyle = apparatus.defaultCitationStyle;
-    store.byok = normalizeAiSettings(ai).advancedMode;
+    // Auth changes can re-run this task. Hydrate only once, so an old read
+    // cannot overwrite a choice the writer has already changed.
+    if (!store.hydrated) {
+      const [writer, apparatus, ai] = await Promise.all([
+        loadWriterSettingsFromIdb(),
+        loadApparatusSettingsFromIdb(),
+        loadAiSettingsFromIdb(),
+      ]);
+      if (!store.hydrated) {
+        store.style = writer.interviewStyle;
+        store.citationStyle = apparatus.defaultCitationStyle;
+        store.byok = normalizeAiSettings(ai).advancedMode;
+      }
+    }
 
     // Signed-in writers (including anyone who just created an account on the
     // account step) don't need the "make an account?" choice — send them to
@@ -123,9 +133,21 @@ export default component$(() => {
   });
 
   const setByok$ = $(async (enabled: boolean) => {
+    if (!store.hydrated || store.savingByok) return;
+    const previous = store.byok;
+    store.savingByok = true;
+    store.byokError = null;
     store.byok = enabled;
-    const current = normalizeAiSettings(await loadAiSettingsFromIdb());
-    await saveAiSettingsToIdb({ ...current, advancedMode: enabled });
+    try {
+      const current = normalizeAiSettings(await loadAiSettingsFromIdb());
+      await saveAiSettingsToIdb({ ...current, advancedMode: enabled });
+    } catch {
+      store.byok = previous;
+      store.byokError =
+        "Your AI settings could not be saved in this browser. Try again.";
+    } finally {
+      store.savingByok = false;
+    }
   });
 
   if (!store.hydrated) {
@@ -302,6 +324,8 @@ export default component$(() => {
                 role="switch"
                 aria-checked={store.byok}
                 aria-label="Bring your own key"
+                disabled={store.savingByok}
+                aria-busy={store.savingByok}
                 onClick$={() => void setByok$(!store.byok)}
                 class={`inline-flex h-7 w-12 shrink-0 items-center rounded-full px-0.5 transition-colors ${
                   store.byok
@@ -312,6 +336,14 @@ export default component$(() => {
                 <span class="block h-6 w-6 rounded-full bg-white shadow-sm" />
               </button>
             </div>
+            {store.byokError && (
+              <p
+                role="alert"
+                class="mt-3 text-xs text-[var(--color-vermilion)]"
+              >
+                {store.byokError}
+              </p>
+            )}
           </div>
         )}
 

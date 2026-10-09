@@ -343,7 +343,9 @@ export const RubricPanel = component$(
         //    then Convex server action, then local heuristic.
         let judges: JudgeResult[] = [];
 
-        const settings = store.aiSettings;
+        const settings = normalizeAiSettings(await loadAiSettingsFromIdb());
+        if (!current()) return;
+        store.aiSettings = settings;
         if (hasConfiguredAiProvider(settings) && settings) {
           try {
             const personas = defaultPersonas();
@@ -446,7 +448,9 @@ export const RubricPanel = component$(
         //     reach one. These catch what the static regex/density scorers
         //     miss — padded citations, fake specificity, sophisticated
         //     bullshit, legitimate emphatic prose flagged as filler.
-        const settings2 = store.aiSettings;
+        const settings2 = normalizeAiSettings(await loadAiSettingsFromIdb());
+        if (!current()) return;
+        store.aiSettings = settings2;
 
         const localEvidence = () => {
           const f = scoreStaticFeatures(draftText).features;

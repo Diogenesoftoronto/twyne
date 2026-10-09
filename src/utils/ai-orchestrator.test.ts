@@ -4,6 +4,7 @@ import type { AiSettings } from "../types";
 
 const mockState: {
   settings: AiSettings | null;
+  loadSettings?: () => Promise<AiSettings | null>;
   clientResult: {
     text: string;
     type: "suggestion" | "perspective";
@@ -30,7 +31,8 @@ const mockState: {
 const realIdb = await import("./idb");
 mock.module("./idb", () => ({
   ...realIdb,
-  loadAiSettingsFromIdb: async () => mockState.settings,
+  loadAiSettingsFromIdb: async () =>
+    mockState.loadSettings ? mockState.loadSettings() : mockState.settings,
 }));
 
 // Spread the real module and override only the three functions this test
@@ -45,7 +47,7 @@ const realAiClient = await import(
 mock.module("./ai-client", () => ({
   ...realAiClient,
   hasConfiguredAiProvider: (settings: AiSettings | null) =>
-    Boolean(settings?.providers?.length),
+    realAiClient.hasConfiguredAiProvider(settings),
   normalizeAiSettings: (settings: AiSettings | null) =>
     settings ?? {
       advancedMode: false,
@@ -67,12 +69,12 @@ mock.module("./ai-client", () => ({
 // Other files mock the same dependencies process-globally under Bun. Import a
 // private instance so this unit always sees the mocks declared immediately
 // above, independent of full-suite module evaluation order.
-const { invalidateAiSettingsCache, runAiWithFallback } = await import(
-  `./ai-orchestrator?ai-orchestrator-test=${Date.now()}`
-);
+const { getCachedAiSettings, invalidateAiSettingsCache, runAiWithFallback } =
+  await import(`./ai-orchestrator?ai-orchestrator-test=${Date.now()}`);
 
 afterEach(() => {
   mockState.settings = null;
+  mockState.loadSettings = undefined;
   mockState.clientResult = null;
   mockState.runClientCalls = [];
   invalidateAiSettingsCache();
@@ -85,7 +87,7 @@ afterAll(() => {
 describe("ai-orchestrator", () => {
   test("uses the BYOK client path when providers are configured", async () => {
     mockState.settings = {
-      advancedMode: false,
+      advancedMode: true,
       providers: [
         {
           id: "provider-openai",
@@ -151,46 +153,80 @@ describe("ai-orchestrator", () => {
     expect(String(result.provider)).toBe("client-openai");
   });
 
-  test("falls back to the server path when no providers are configured", async () => {
-    mockState.settings = {
-      advancedMode: false,
-      providers: [],
-      defaultProviderId: null,
-      perFeature: {},
-      showProviderTags: false,
-    };
+  test.each([false, true])(
+    "uses the server with BYOK off (saved provider: %s)",
+    async (savedProvider) => {
+      mockState.settings = {
+        advancedMode: false,
+        providers: savedProvider
+          ? [
+              {
+                id: "saved",
+                name: "Saved",
+                type: "openai",
+                apiKey: "test",
+                defaultModel: "custom-model",
+              },
+            ]
+          : [],
+        defaultProviderId: savedProvider ? "saved" : null,
+        perFeature: {},
+        showProviderTags: false,
+      };
 
-    let serverCalls = 0;
+      let serverCalls = 0;
 
-    const result = await runAiWithFallback({
-      feature: "persona-feedback",
-      req: {
-        persona: {
-          id: "reader",
-          name: "Reader",
-          role: "Reader",
-          description: "Reads for audience fit",
-          focus: "audience",
-          color: "#000",
-          icon: "R",
+      const result = await runAiWithFallback({
+        feature: "persona-feedback",
+        req: {
+          persona: {
+            id: "reader",
+            name: "Reader",
+            role: "Reader",
+            description: "Reads for audience fit",
+            focus: "audience",
+            color: "#000",
+            icon: "R",
+          },
+          brief: null,
+          draftText: "Draft text",
+          instruction: "feedback",
         },
-        brief: null,
-        draftText: "Draft text",
-        instruction: "feedback",
-      },
-      client: null,
-      serverAction: async () => {
-        serverCalls += 1;
-        return {
-          text: "Server result",
-          type: "perspective",
-          provider: "portkey",
-        };
-      },
-    });
+        client: null,
+        serverAction: async () => {
+          serverCalls += 1;
+          return {
+            text: "Server result",
+            type: "perspective",
+            provider: "portkey",
+          };
+        },
+      });
 
-    expect(mockState.runClientCalls).toHaveLength(0);
-    expect(serverCalls).toBe(1);
-    expect(result.provider).toBe("portkey");
+      expect(mockState.runClientCalls).toHaveLength(0);
+      expect(serverCalls).toBe(1);
+      expect(result.provider).toBe("portkey");
+    },
+  );
+});
+
+test("a save invalidates an in-flight settings read before it can route BYOK", async () => {
+  const off: AiSettings = {
+    advancedMode: false,
+    providers: [],
+    defaultProviderId: null,
+    perFeature: {},
+    showProviderTags: false,
+  };
+  let resolveOld!: (settings: AiSettings) => void;
+  const oldRead = new Promise<AiSettings>((resolve) => {
+    resolveOld = resolve;
   });
+  mockState.loadSettings = () => oldRead;
+  const pending = getCachedAiSettings();
+  invalidateAiSettingsCache();
+  mockState.loadSettings = async () => off;
+  resolveOld({ ...off, advancedMode: true });
+  expect((await pending).advancedMode).toBe(false);
+  expect((await getCachedAiSettings()).advancedMode).toBe(false);
 });

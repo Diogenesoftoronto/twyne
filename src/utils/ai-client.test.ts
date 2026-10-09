@@ -50,7 +50,7 @@ const ALL_FEATURES: AiFeature[] = [
 
 function makeSettings(overrides: Partial<AiSettings> = {}): AiSettings {
   return {
-    advancedMode: false,
+    advancedMode: true,
     providers: [
       {
         id: "provider-openai",
@@ -89,18 +89,21 @@ describe("ai-client provider resolution", () => {
     expect(usesOpenAiResponsesApi({ apiMode: "responses" })).toBe(true);
   });
 
-  test("treats configured providers as active even when advancedMode is false", () => {
+  test("keeps saved providers inactive while BYOK is off", () => {
     const settings = makeSettings({ advancedMode: false });
-
-    expect(hasConfiguredAiProvider(settings)).toBe(true);
-
-    const resolved = resolveFeatureConfig(settings, "persona-feedback");
-    expect(resolved?.provider.id).toBe("provider-openai");
-    expect(resolved?.model).toBe("gpt-5.5-mini");
+    expect(hasConfiguredAiProvider(settings)).toBe(false);
+    expect(hasConfiguredVoiceProvider(settings)).toBe(false);
+    for (const feature of ALL_FEATURES) {
+      expect(resolveFeatureConfig(settings, feature)).toBeNull();
+    }
+    expect(settings.providers).toHaveLength(1);
+    expect(hasConfiguredAiProvider({ ...settings, advancedMode: true })).toBe(
+      true,
+    );
   });
 
   test("resolves every AI feature against the configured provider set", () => {
-    const settings = makeSettings({ advancedMode: false });
+    const settings = makeSettings({ advancedMode: true });
 
     for (const feature of ALL_FEATURES) {
       const resolved = resolveFeatureConfig(settings, feature);

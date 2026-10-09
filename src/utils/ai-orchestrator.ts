@@ -1,7 +1,7 @@
 /**
  * AI orchestrator — routes calls through the priority chain:
  *
- *   1. Client-side AI (BYOK) — if user has configured providers
+ *   1. Client-side AI (BYOK) — if enabled and user has configured providers
  *   2. Convex server action — the existing server-side path
  *   3. Local deterministic fallback — always works, no network
  *
@@ -23,15 +23,20 @@ import { reportApplicationDiagnostic } from "./application-diagnostics";
 /* ── Cached settings ────────────────────────────────────────────── */
 
 let _cachedSettings: AiSettings | null = null;
+let settingsRevision = 0;
 
 export async function getCachedAiSettings(): Promise<AiSettings> {
   if (_cachedSettings) return _cachedSettings;
+  const revision = settingsRevision;
   const raw = await loadAiSettingsFromIdb();
+  // An older read must not repopulate the cache after a save invalidates it.
+  if (revision !== settingsRevision) return getCachedAiSettings();
   _cachedSettings = normalizeAiSettings(raw);
   return _cachedSettings;
 }
 
 export function invalidateAiSettingsCache(): void {
+  settingsRevision += 1;
   _cachedSettings = null;
 }
 
@@ -44,6 +49,8 @@ if (
   typeof window.addEventListener === "function"
 ) {
   window.addEventListener("twyne:ai-settings-saved", invalidateAiSettingsCache);
+  // localStorage events are delivered to other tabs, not the saving tab.
+  window.addEventListener("storage", invalidateAiSettingsCache);
 }
 
 /* ── Convenience: run with full fallback chain ──────────────────── */
