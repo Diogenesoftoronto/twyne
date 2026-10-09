@@ -1,6 +1,51 @@
 export const NOTORGANIC_DEFAULT_ISSUER = "https://api.notorganic.info";
 export const NOTORGANIC_PRODUCT = "twyne";
 export const NOTORGANIC_ASSERTION_TTL_SECONDS = 60;
+export const NOTORGANIC_GENERATION_ID_HEADER = "x-twyne-generation-request-id";
+
+export function notOrganicGenerationRequestHeaders(
+  headers?: Readonly<Record<string, string | undefined>>,
+): Record<string, string | undefined> {
+  return { ...headers, [NOTORGANIC_GENERATION_ID_HEADER]: crypto.randomUUID() };
+}
+
+/** No implicit spending allowance: deployment must supply an approved limit. */
+export function notOrganicGenerationBudgetMicrousd(value: unknown): number {
+  const number =
+    typeof value === "string" && /^[1-9]\d*$/.test(value)
+      ? Number(value)
+      : value;
+  if (
+    typeof number !== "number" ||
+    !Number.isSafeInteger(number) ||
+    number <= 0
+  ) {
+    throw new Error(
+      "An explicit positive safe-integer Not Organic generation budget in micro-USD is required.",
+    );
+  }
+  return number;
+}
+
+function tokenBudgetCeiling(accessToken: string): number | undefined {
+  const parts = accessToken.split(".");
+  if (parts.length !== 3) return undefined;
+  try {
+    const payload = JSON.parse(
+      atob(parts[1]!.replace(/-/g, "+").replace(/_/g, "/")),
+    ) as { max_cost_microusd?: unknown };
+    if (typeof payload.max_cost_microusd !== "number") {
+      throw new Error("Invalid token budget type");
+    }
+    return notOrganicGenerationBudgetMicrousd(
+      payload.max_cost_microusd ?? null,
+    );
+  } catch {
+    throw new Error(
+      "The issued Not Organic token has no valid request-budget ceiling.",
+    );
+  }
+}
 
 export const NOTORGANIC_MODEL_ALIASES = [
   "fast",
@@ -13,6 +58,20 @@ export const NOTORGANIC_MODEL_ALIASES = [
   "realtime",
 ] as const;
 export type NotOrganicModelAlias = (typeof NOTORGANIC_MODEL_ALIASES)[number];
+
+// Existing Not Organic gateway ADMIN_CAPS_MICROUSD contract, verified against
+// the running gateway. These can only tighten Twyne's approved outer ceiling.
+const NOTORGANIC_ALIAS_CEILINGS_MICROUSD: Record<NotOrganicModelAlias, number> =
+  {
+    fast: 250_000,
+    balanced: 500_000,
+    reasoning: 2_000_000,
+    vision: 1_000_000,
+    embedding: 100_000,
+    image: 2_000_000,
+    audio: 1_000_000,
+    realtime: 2_000_000,
+  };
 
 export interface ProductAssertionInput {
   readonly did: string;
@@ -106,10 +165,23 @@ export function notOrganicOpenAiRoute(
   feature: string,
   issuer = NOTORGANIC_DEFAULT_ISSUER,
   fetchImpl: typeof fetch = fetch,
+  options: { readonly maxCostMicrousd?: number } = {},
 ): NotOrganicOpenAiRoute {
   if (!token.accessToken)
     throw new Error("A provider access token is required");
   if (!feature.trim()) throw new Error("A feature is required");
+  const configuredBudget = notOrganicGenerationBudgetMicrousd(
+    options.maxCostMicrousd ??
+      process.env.NOTORGANIC_GENERATION_MAX_COST_MICROUSD,
+  );
+  // A token claim can only tighten the approved application limit. The gateway
+  // independently verifies the token and still enforces its own alias caps.
+  const ceiling = tokenBudgetCeiling(token.accessToken);
+  const maxCostMicrousd = Math.min(
+    configuredBudget,
+    ceiling ?? configuredBudget,
+    NOTORGANIC_ALIAS_CEILINGS_MICROUSD[alias],
+  );
   return {
     baseURL: `${issuer.replace(/\/$/, "")}/v1`,
     apiKey: token.accessToken,
@@ -118,8 +190,50 @@ export function notOrganicOpenAiRoute(
       "x-notorganic-product": NOTORGANIC_PRODUCT,
       "x-notorganic-feature": feature,
     },
-    fetch: createDpopFetch(token, fetchImpl),
+    fetch: createMeteredDpopFetch(token, maxCostMicrousd, fetchImpl),
   };
+}
+
+function createMeteredDpopFetch(
+  token: NotOrganicAccessToken,
+  maxCostMicrousd: number,
+  fetchImpl: typeof fetch,
+): typeof fetch {
+  const fallbackGenerationId = crypto.randomUUID();
+  const authenticatedFetch = createDpopFetch(token, fetchImpl);
+  return (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const request = new Request(input, init);
+    request.signal.throwIfAborted();
+    const headers = new Headers(request.headers);
+    const generationId =
+      headers.get(NOTORGANIC_GENERATION_ID_HEADER) ?? fallbackGenerationId;
+    if (!/^[A-Za-z0-9_-]{1,128}$/.test(generationId)) {
+      throw new Error("Invalid logical generation request identifier.");
+    }
+    // SDK retries retain this ID and body. Tool steps change the body; separate
+    // generateText invocations receive distinct IDs even with identical prompts.
+    const prefix = new TextEncoder().encode(
+      JSON.stringify([
+        generationId,
+        request.method,
+        request.url,
+        maxCostMicrousd,
+      ]),
+    );
+    const body = new Uint8Array(await request.clone().arrayBuffer());
+    const bytes = new Uint8Array(prefix.length + body.length);
+    bytes.set(prefix);
+    bytes.set(body, prefix.length);
+    const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+    const key = Array.from(digest, (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
+    headers.delete(NOTORGANIC_GENERATION_ID_HEADER);
+    headers.set("idempotency-key", `twyne_${key}`);
+    headers.set("x-notorganic-max-cost-microusd", String(maxCostMicrousd));
+    request.signal.throwIfAborted();
+    return authenticatedFetch(new Request(request, { headers }));
+  }) as typeof fetch;
 }
 
 export async function createDpopKeyPair(): Promise<DpopKeyPair> {
@@ -184,6 +298,7 @@ export function createDpopFetch(
       "dpop",
       await createDpopProof(token, request.url, request.method),
     );
+    request.signal.throwIfAborted();
     return fetchImpl(new Request(request, { headers }));
   }) as typeof fetch;
 }
