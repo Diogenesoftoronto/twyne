@@ -40,7 +40,7 @@ async function serveRootStaticFile(req, res, next) {
     filename,
   );
   const manualMedia =
-    /^assets\/manual\/(roll-call|edited|newsreel|the-strike|sting|house-context|source-workspace)\.(mp4|jpg|vtt)$/.test(
+    /^assets\/manual\/(roll-call|edited|newsreel|the-strike|sting|house-context|source-workspace|living-desk)\.(mp4|jpg|vtt)$/.test(
       filename,
     );
   if (

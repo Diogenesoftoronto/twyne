@@ -11,6 +11,9 @@ import { isFileDrag } from "../../utils/file-drag";
 import type { EditorStore } from "./editor-state";
 import { MarginRails } from "../in-flow/margin-rail";
 import { FlowSurface } from "../in-flow/flow-surface";
+import { DocumentSpine } from "../living-desk/document-spine";
+import { LivingDeskPanel } from "../living-desk/living-desk-panel";
+import { LIVING_DESK_EVENT, livingDeskSnapshot, type LivingDeskSnapshot } from "../../utils/living-desk-contract";
 import { PageChrome, type PageChromeProps } from "./page-chrome";
 import { PageRuler } from "./page-ruler";
 import { PageBorder } from "./page-border";
@@ -47,6 +50,14 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
   const { store } = props;
   const onJumpToNote$ = props.onJumpToNote$;
   const scrollerRef = useSignal<HTMLDivElement>();
+  const deskOpen = useSignal(false);
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    deskOpen.value = livingDeskSnapshot().open;
+    const onDesk = (event: Event) => { deskOpen.value = (event as CustomEvent<LivingDeskSnapshot>).detail.open; };
+    window.addEventListener(LIVING_DESK_EVENT, onDesk);
+    cleanup(() => window.removeEventListener(LIVING_DESK_EVENT, onDesk));
+  }, { strategy: "document-ready" });
 
   /**
    * Stop the browser navigating away from a file dropped on the manuscript.
@@ -85,6 +96,7 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
       <div
         ref={scrollerRef}
         class="manuscript-scroller flex-1 min-h-0 overflow-y-auto overflow-x-auto scroll-pb-12"
+        data-living-desk-open={deskOpen.value && !store.zenMode ? "" : undefined}
         style="background: var(--color-editor-bg);"
         onDragOver$={props.onDragOver$}
         onDragLeave$={props.onDragLeave$}
@@ -158,6 +170,7 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
 
           <MarginRails zen={store.zenMode} readOnly={props.readOnly} />
           <FlowSurface zen={store.zenMode} readOnly={props.readOnly} />
+          <DocumentSpine zen={store.zenMode} readOnly={props.readOnly} />
 
           {store.notes.length > 0 && (
             <div
@@ -205,6 +218,7 @@ export const ManuscriptPanel = component$<ManuscriptPanelProps>((props) => {
           )}
         </div>
       </div>
+      <LivingDeskPanel zen={store.zenMode} readOnly={props.readOnly} />
     </>
   );
 });

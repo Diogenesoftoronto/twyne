@@ -60,7 +60,8 @@
     "prompts:optimize": "python evals/optimize_prompts.py",
     "prompts:optimize:dry": "python evals/optimize_prompts.py --dry-run",
     "test:mutation": "stryker run",
-    "i18n:prepare": "bun scripts/prepare-i18n.ts"
+    "i18n:prepare": "bun scripts/prepare-i18n.ts",
+    "test:visual": "playwright test --config playwright.visual.config.ts"
   },
   "devDependencies": {
     "@builder.io/qwik": "npm:@qwik.dev/core@2.0.0-beta.42",

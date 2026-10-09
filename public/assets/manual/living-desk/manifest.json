@@ -1,0 +1,129 @@
+{
+  "capturedAt": "2026-10-09T05:23:31.941Z",
+  "sample": "Fictional flood memoir from e2e/fixtures/living-desk.ts",
+  "models": "None. Actual local rules, editor transactions and undo.",
+  "verification": "Source tests passed; inspect these selected images and the encoded clip before deploying.",
+  "images": [
+    {
+      "file": "public/assets/manual/living-desk/01-piece-overview.webp",
+      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/01-piece-overview.png",
+      "sourceSha256": "a1894cc864fe31c40f5d676cbf401f9c46463548a48d1f9ca90595c74f2c9b20",
+      "sha256": "146326b59a1dfb897638e5f46cdbbcf9a6cfab392b2ef74577a39b93ca3faee9",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "public/assets/manual/living-desk/02-preview.webp",
+      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/02-preview.png",
+      "sourceSha256": "e601a5be1e5b21917880a7c9bc67b4b792c1e86b273c769b3993ba870ed8e378",
+      "sha256": "9965681114dbd69f8c7305fb027926249f4ff1875a01b263184d59e15e0054eb",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "public/assets/manual/living-desk/03-revised.webp",
+      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/03-revised.png",
+      "sourceSha256": "66723b4a6d222d165ad894a173de8dddbafb2db77835079e4a786d709f54d483",
+      "sha256": "268da93a40bd250319bc07dd48a0edec4f1e43087e13067a6d511d2fa62d501a",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "public/assets/manual/living-desk/04-deliberate.webp",
+      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/04-deliberate.png",
+      "sourceSha256": "b44f7568801869c7bc48b03c5a0048a03c70f3fd9a2860648bfbc6ec5a9ebfad",
+      "sha256": "19f1014c4809ec14ab3c7d1c144b949038fdc2430bf5557f259198b07cac3df9",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "file": "public/assets/manual/living-desk/05-presence.webp",
+      "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-17-39-675Z/results/living-desk.e2e.ts-preview-e08e8-onal-choice-without-a-model-chromium/05-presence.png",
+      "sourceSha256": "a4884b5fa2b8d8e43d5d0a2688262d8c7440ec336822fbb8fded6e3965cc5749",
+      "sha256": "478d0654f29378da3f19ef4ad6f416cd9dbedd8248cfc57091442f1e7a05b063",
+      "width": 1440,
+      "height": 900
+    }
+  ],
+  "video": {
+    "file": "public/assets/manual/living-desk.mp4",
+    "source": "artifacts/qa-recordings/living-desk/2026-10-09T05-21-14-192Z/results/living-desk.e2e.ts--demo-a-6cba7-the-local-revision-workflow-chromium/living-desk-master.webm",
+    "sourceSha256": "1700143e95fb59c067c5a36333d3e881797a745bbc3390837674f776551cec09",
+    "sha256": "6e565ac411cf311766a38fa715b7d7eb8b118702a9f48e0af1c39972613225a8",
+    "width": 1440,
+    "height": 900,
+    "sourceRange": {
+      "start": 5.119,
+      "end": 24.96
+    },
+    "duration": 19.841,
+    "speed": 1,
+    "audio": "none",
+    "captions": "Descriptive actions",
+    "cues": [
+      {
+        "start": 0,
+        "end": 2.7730000000000006,
+        "description": "A fictional memoir beside The piece. Local rules have found patterns across the draft."
+      },
+      {
+        "start": 2.7730000000000006,
+        "end": 5.515000000000001,
+        "description": "Open the stance finding to inspect each editorial use of we."
+      },
+      {
+        "start": 5.515000000000001,
+        "end": 8.308,
+        "description": "Hover a fix to preview I on the page. The manuscript has not changed."
+      },
+      {
+        "start": 8.308,
+        "end": 11.158000000000001,
+        "description": "Apply one fix. The sentence and local consistency measure update together."
+      },
+      {
+        "start": 11.158000000000001,
+        "end": 14.001999999999999,
+        "description": "Undo restores the original sentence and count."
+      },
+      {
+        "start": 14.001999999999999,
+        "end": 16.73,
+        "description": "Keep similar names distinct when that choice is intentional."
+      },
+      {
+        "start": 16.73,
+        "end": 19.841,
+        "description": "Follow recurring names across sections with the presence table and page highlights."
+      }
+    ],
+    "encodingArguments": [
+      "-ss",
+      "5.119",
+      "-i",
+      "artifacts/qa-recordings/living-desk/2026-10-09T05-21-14-192Z/results/living-desk.e2e.ts--demo-a-6cba7-the-local-revision-workflow-chromium/living-desk-master.webm",
+      "-t",
+      "19.841",
+      "-an",
+      "-r",
+      "25",
+      "-c:v",
+      "libx264",
+      "-threads",
+      "4",
+      "-preset",
+      "medium",
+      "-crf",
+      "20",
+      "-pix_fmt",
+      "yuv420p",
+      "-map_metadata",
+      "-1",
+      "-movflags",
+      "+faststart",
+      "public/assets/manual/living-desk.mp4"
+    ]
+  },
+  "sourceRevision": "5d3f7552ca17715dc2fe968c2db720e1295988a5",
+  "sourceHadLocalChanges": true
+}

@@ -18,6 +18,7 @@ import { AT_THE_DESK_GUIDES } from "./guide-at-the-desk";
 import { EDITORIAL_GUIDES } from "./guide-editorial-room";
 import { YOUR_WORK_GUIDES } from "./guide-your-work";
 import { MANUSCRIPT_CRAFT_GUIDES } from "./guide-manuscript-craft";
+import { LIVING_DESK_GUIDES } from "./guide-living-desk";
 import type { ManualGuides } from "./manual-guide-types";
 
 const GUIDES: ManualGuides = {
@@ -25,6 +26,7 @@ const GUIDES: ManualGuides = {
   ...EDITORIAL_GUIDES,
   ...YOUR_WORK_GUIDES,
   ...MANUSCRIPT_CRAFT_GUIDES,
+  ...LIVING_DESK_GUIDES,
 };
 
 const ChapterIllustrations = component$<{ chapter: string }>(({ chapter }) => (
@@ -44,26 +46,27 @@ const CHAPTERS = [
       ["dossier", "02", "The dossier"],
       ["house", "03", "The House & collections"],
       ["flow", "04", "Writing in flow"],
+      ["the-piece", "05", "The piece"],
     ],
   },
   {
     label: "The editorial room",
     links: [
-      ["room", "05", "Your editors"],
-      ["rubric", "06", "The galley proof"],
-      ["marginalia", "07", "Margin conversations"],
-      ["apparatus", "08", "Research & citations"],
-      ["account-and-live", "09", "Your account & Live"],
+      ["room", "06", "Your editors"],
+      ["rubric", "07", "The galley proof"],
+      ["marginalia", "08", "Margin conversations"],
+      ["apparatus", "09", "Research & citations"],
+      ["account-and-live", "10", "Your account & Live"],
     ],
   },
   {
     label: "Your work",
     links: [
-      ["manuscript-tools", "10", "Manuscript & source tools"],
-      ["folios", "11", "Folios, export & publishing"],
-      ["byok", "12", "Bring your own key"],
-      ["privacy", "13", "Privacy & your data"],
-      ["shortcuts", "14", "Keyboard shortcuts"],
+      ["manuscript-tools", "11", "Manuscript & source tools"],
+      ["folios", "12", "Folios, export & publishing"],
+      ["byok", "13", "Bring your own key"],
+      ["privacy", "14", "Privacy & your data"],
+      ["shortcuts", "15", "Keyboard shortcuts"],
       ["launch-film", "—", "Watch the film"],
     ],
   },
@@ -90,7 +93,7 @@ const ReadingPosition = component$<{
     <p class="manual-reading-label">
       {props.chapter === "—"
         ? "Closing film"
-        : `Reading · ${Number(props.chapter)} of 14`}
+        : `Reading · ${Number(props.chapter)} of ${CHAPTER_LINKS.length - 1}`}
     </p>
     <p class="manual-reading-title">{props.title}</p>
     <div
@@ -493,8 +496,54 @@ export default component$(() => {
                 </p>
               </div>
             </section>
+            <section id="the-piece" class="manual-section">
+              <p class="manual-chapter">05 · At the desk</p>
+              <h2 class="manual-h2">The piece</h2>
+              <p class="manual-lead">
+                See what changes across the draft, with the passages and controls to work on it.
+              </p>
+              <ChapterIllustrations chapter="the-piece" />
+              <h3 class="manual-h3">Useful without a model</h3>
+              <p class="manual-p">
+                The local desk watches first-person stance, similar names and
+                the conventions your draft mostly follows: spelling, small
+                numbers, quotation marks, dashes and list punctuation. It also
+                maps recurring names across headed sections. A finding is a
+                pattern to inspect; you decide whether it needs a change.
+              </p>
+              <p class="manual-p">
+                Select Stance, Names, Style or Presence to see that lens on the
+                page. Open a finding for its passages and available actions.
+                On a narrow screen, the desk sits below the writing area;
+                Close returns the space to your draft. Zen hides it while you
+                write.
+              </p>
+              <h3 class="manual-h3">Know what the score means</h3>
+              <p class="manual-p">
+                The ≈ sign identifies an estimate. Consistency can update from
+                local rules as you revise; that change is not a new editorial
+                reading. Score details separates measures by rule from those
+                by review. An overall estimate begins at about 150 words.
+              </p>
+              <p class="manual-p">
+                Confirm with a full read requests a fresh review of the current
+                draft. It needs automatic review enabled, at least 500 words
+                and an available signed-in model service. The desk explains
+                when a request cannot run. Later edits make the score an
+                estimate again until the revised draft has been read.
+              </p>
+              <div class="manual-callout">
+                <p>
+                  <strong>Your choices stay yours.</strong> Fixes change only
+                  the listed passages and support Undo. Deliberate exceptions
+                  stay with the folio on this device. For pieces above 80,000
+                  characters, the desk pauses these checks and asks you to
+                  divide the work into folios.
+                </p>
+              </div>
+            </section>
             <section id="room" class="manual-section">
-              <p class="manual-chapter">05 · The editorial room</p>
+              <p class="manual-chapter">06 · The editorial room</p>
               <h2 class="manual-h2">Your editors</h2>
               <p class="manual-lead">
                 Five resident voices. Each reads with a different lens. Together
@@ -535,7 +584,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="rubric" class="manual-section">
-              <p class="manual-chapter">06 · The editorial room</p>
+              <p class="manual-chapter">07 · The editorial room</p>
               <h2 class="manual-h2">The galley proof</h2>
               <p class="manual-lead">
                 Check the shape of the draft, then choose an editorial reading.
@@ -592,7 +641,7 @@ export default component$(() => {
               </div>
             </section>
             <section id="marginalia" class="manual-section">
-              <p class="manual-chapter">07 · The editorial room</p>
+              <p class="manual-chapter">08 · The editorial room</p>
               <h2 class="manual-h2">Margin conversations</h2>
               <p class="manual-lead">
                 Threaded comments alongside the draft. Your own notes, plus the
@@ -616,7 +665,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="apparatus" class="manual-section">
-              <p class="manual-chapter">08 · The editorial room</p>
+              <p class="manual-chapter">09 · The editorial room</p>
               <h2 class="manual-h2">Research &amp; citations</h2>
               <p class="manual-lead">
                 Research, bibliography, and citation — the machinery behind the
@@ -652,7 +701,7 @@ export default component$(() => {
               </div>
             </section>
             <section id="account-and-live" class="manual-section">
-              <p class="manual-chapter">09 · The editorial room</p>
+              <p class="manual-chapter">10 · The editorial room</p>
               <h2 class="manual-h2">Your account &amp; Live</h2>
               <p class="manual-lead">
                 A name in the room. A conversation when you need one.
@@ -680,7 +729,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="manuscript-tools" class="manual-section">
-              <p class="manual-chapter">10 · Your work</p>
+              <p class="manual-chapter">11 · Your work</p>
               <h2 class="manual-h2">Manuscript &amp; source tools</h2>
               <p class="manual-lead">
                 Structure the page, work in the source, and check the printed
@@ -741,7 +790,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="folios" class="manual-section">
-              <p class="manual-chapter">11 · Your work</p>
+              <p class="manual-chapter">12 · Your work</p>
               <h2 class="manual-h2">Folios, export &amp; publishing</h2>
               <p class="manual-lead">
                 One piece per folio. Related pieces can share a collection.
@@ -783,7 +832,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="byok" class="manual-section">
-              <p class="manual-chapter">12 · Your work</p>
+              <p class="manual-chapter">13 · Your work</p>
               <h2 class="manual-h2">Bring your own key</h2>
               <p class="manual-lead">
                 Choose a hosted model or connect a provider you already use.
@@ -831,7 +880,7 @@ export default component$(() => {
               </div>
             </section>
             <section id="privacy" class="manual-section">
-              <p class="manual-chapter">13 · Your work</p>
+              <p class="manual-chapter">14 · Your work</p>
               <h2 class="manual-h2">Privacy &amp; your data</h2>
               <p class="manual-lead">
                 Your manuscript is yours. We intend to keep it that way.
@@ -865,7 +914,7 @@ export default component$(() => {
               </p>
             </section>
             <section id="shortcuts" class="manual-section">
-              <p class="manual-chapter">14 · Your work</p>
+              <p class="manual-chapter">15 · Your work</p>
               <h2 class="manual-h2">Keyboard shortcuts</h2>
               <p class="manual-p">
                 Choose the labels for your keyboard. The same shortcut registry
