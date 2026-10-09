@@ -15,6 +15,7 @@ export default defineConfig({
         "living-desk.e2e.ts",
         "instruments.e2e.ts",
         "instrument-dock.e2e.ts",
+        "instrument-room.e2e.ts",
       ],
   timeout: 90_000,
   expect: { timeout: 15_000, toHaveScreenshot: { maxDiffPixelRatio: 0.005 } },

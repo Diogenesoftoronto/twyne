@@ -42,6 +42,10 @@ import {
   spendSystemOne,
   systemOneWait,
 } from "../../utils/system-one-budget";
+import type {
+  InstrumentRoomRequest,
+  InstrumentRoomResult,
+} from "../../utils/instrument-room";
 
 interface InstrumentDockProps {
   folioId: string;
@@ -51,6 +55,12 @@ interface InstrumentDockProps {
   onEntityJump$?: QRL<(span: EntityEvidence, indexKey: string) => boolean>;
   onLocate$?: QRL<
     (span: SceneSpan, passage: ScenePassage) => boolean | Promise<boolean>
+  >;
+  onAskRoom$?: QRL<
+    (
+      request: InstrumentRoomRequest,
+      passage: ScenePassage,
+    ) => Promise<InstrumentRoomResult>
   >;
 }
 
@@ -283,6 +293,18 @@ export const InstrumentDock = component$<InstrumentDockProps>((props) => {
                     }
                     judgement={capabilities.judgement}
                     narration={capabilities.narration}
+                    onAskRoom$={async (request, passage) => {
+                      const result = (await props.onAskRoom$?.(
+                        request,
+                        passage,
+                      )) ?? {
+                        ok: false,
+                        message:
+                          "This scene is not attached to a manuscript conversation.",
+                      };
+                      if (result.ok) dialog.value?.close("manuscript");
+                      return result;
+                    }}
                     onLocate$={async (span, passage) => {
                       if (await props.onLocate$?.(span, passage))
                         dialog.value?.close("manuscript");

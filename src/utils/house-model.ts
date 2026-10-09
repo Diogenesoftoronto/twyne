@@ -95,7 +95,11 @@ export interface CharterItem {
   order: number;
   updatedAt: number;
   /** Exact existing uses kept deliberately; never a blanket future exception. */
-  occurrenceException?: { version: 1; findingId: string; signatures: { key: string; count: number }[] };
+  occurrenceException?: {
+    version: 1;
+    findingId: string;
+    signatures: { key: string; count: number }[];
+  };
 }
 
 export type LedgerSource =

@@ -4,7 +4,7 @@ Companion to `docs/writing-instruments.md`. This governs how the living desk loo
 
 ## What it should feel like
 
-A copyeditor's style sheet and a proofreader's pencil, not a dashboard. The writer should feel the piece being *watched over*, never *graded at*. Three tests decide every detail:
+A copyeditor's style sheet and a proofreader's pencil, not a dashboard. The writer should feel the piece being _watched over_, never _graded at_. Three tests decide every detail:
 
 1. **Cause and effect are visible.** Every fix produces three linked reactions at once: the span in the manuscript, the card's count, and the score. If any one of the three is missing, the moment feels fake.
 2. **The manuscript stays the hero.** The desk recolours the page; it never covers it. Nothing animates while the writer types.
@@ -15,28 +15,28 @@ A copyeditor's style sheet and a proofreader's pencil, not a dashboard. The writ
 - **Left is the piece; right is the passage.** The right margin already holds passage notes (flow rail, in-flow tools). The desk and the spine sit on the left, beside the outline, because they are about the whole document.
 - **Panel:** a 20rem aside on the left, below the visible workspace controls. Opening it reserves space beside the manuscript; it must not cover the first words of a line. Opening the outline closes the desk, and opening the desk closes the outline. Narrow viewports use a bottom sheet capped at 55vh, with enough manuscript scroll space to reach the passage being edited.
 - **Spine:** a 6px strip hugging the page's left edge for the full height of the manuscript. It widens to 12px on hover or focus. Section boundaries are hairlines; occurrences of the active lens are ticks; the focused finding's ticks are full strength and the rest are 35%. The top of the spine carries a small score cap (the estimate, tabular figures) that opens the panel.
-- **Hidden when quiet:** no spine in manual Zen, in automatic flow (`html[data-flow]`), or in read-only mode without findings. The desk never reveals itself while the writer types: it can update counts, but it only *opens* on request.
+- **Hidden when quiet:** no spine in manual Zen, in automatic flow (`html[data-flow]`), or in read-only mode without findings. The desk never reveals itself while the writer types: it can update counts, but it only _opens_ on request.
 
 ## Visual language
 
 Use the existing tokens only; every theme (foolscap, broadsheet, nightpress) must work without overrides.
 
-| Element | Treatment |
-| --- | --- |
-| Panel | `--color-paper` background, 1px `--color-paper-3` border, `border-radius: 2px`, the same shadow as `.in-flow-card`. No rounded SaaS corners, no gradients. |
-| Section heads in the panel | `.dept-label` (typewriter, uppercase, 0.32em tracking, `--color-ink-muted`). |
-| Card | Like `.in-flow-card`: 2px radius, `--color-paper` on a `--color-paper-2` panel, 3px left rule coloured by lens. Kicker = level in `.dept-label` style. Title in `--font-display` 600, 0.9375rem. Metric in `--font-serif` italic 0.8125rem `--color-ink-light`. Impact right-aligned in `--font-sans` 0.75rem tabular, `--color-accent-green`. |
-| Score | Estimate in `--font-display` 2rem, tabular. Show "≈" whenever there is no confirmed read or the draft has changed since that read. Keep Consistency and the latest change visible; put the other criteria behind "Score details" so findings stay within reach. Confirmed letter appears beside the estimate with its source. Criteria use hairline bars, tabular values, and explicit "by rule" or "by review" labels. |
-| Occurrence rows | Manuscript serif at 0.875rem. Removed text `--color-accent-red` with line-through at 70% opacity; inserted text `--color-accent-green` on `--color-highlight-mint`. Provenance chips in sans 0.6875rem, 1px `--color-paper-3` border, pill radius allowed only here. |
+| Element                    | Treatment                                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Panel                      | `--color-paper` background, 1px `--color-paper-3` border, `border-radius: 2px`, the same shadow as `.in-flow-card`. No rounded SaaS corners, no gradients.                                                                                                                                                                                                                                                              |
+| Section heads in the panel | `.dept-label` (typewriter, uppercase, 0.32em tracking, `--color-ink-muted`).                                                                                                                                                                                                                                                                                                                                            |
+| Card                       | Like `.in-flow-card`: 2px radius, `--color-paper` on a `--color-paper-2` panel, 3px left rule coloured by lens. Kicker = level in `.dept-label` style. Title in `--font-display` 600, 0.9375rem. Metric in `--font-serif` italic 0.8125rem `--color-ink-light`. Impact right-aligned in `--font-sans` 0.75rem tabular, `--color-accent-green`.                                                                          |
+| Score                      | Estimate in `--font-display` 2rem, tabular. Show "≈" whenever there is no confirmed read or the draft has changed since that read. Keep Consistency and the latest change visible; put the other criteria behind "Score details" so findings stay within reach. Confirmed letter appears beside the estimate with its source. Criteria use hairline bars, tabular values, and explicit "by rule" or "by review" labels. |
+| Occurrence rows            | Manuscript serif at 0.875rem. Removed text `--color-accent-red` with line-through at 70% opacity; inserted text `--color-accent-green` on `--color-highlight-mint`. Provenance chips in sans 0.6875rem, 1px `--color-paper-3` border, pill radius allowed only here.                                                                                                                                                    |
 
 **Lens colours (flagged / context):**
 
-| Lens | Flagged | Context |
-| --- | --- | --- |
-| Stance | `--color-vermilion` underline 2px + `--color-highlight-rose` wash | `--color-cobalt` text weight 600 for "I" |
-| Naming | `--color-mustard` wavy underline | `--color-highlight-sky` wash on canonical spelling |
-| Style | `--color-text-periwinkle` dotted underline | none |
-| Presence | per-entity wash from the persona palette (cobalt, sage, periwinkle, mustard, blush) at 35% | none |
+| Lens     | Flagged                                                                                    | Context                                            |
+| -------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| Stance   | `--color-vermilion` underline 2px + `--color-highlight-rose` wash                          | `--color-cobalt` text weight 600 for "I"           |
+| Naming   | `--color-mustard` wavy underline                                                           | `--color-highlight-sky` wash on canonical spelling |
+| Style    | `--color-text-periwinkle` dotted underline                                                 | none                                               |
+| Presence | per-entity wash from the persona palette (cobalt, sage, periwinkle, mustard, blush) at 35% | none                                               |
 
 Colour is never the only signal: flagged spans always carry an underline style, and cards say what the colour means in words.
 
@@ -88,7 +88,7 @@ open · improving (some fixed) · resolved · deliberate · stale (the span move
 
 - Rounded, glossy cards, coloured gradients, emoji, or icons where a word fits.
 - Toasts for routine fixes. The reaction belongs where the change happened.
-- A score that moves while the writer types prose. Rule criteria may recompute on every edit, but the estimate's *animation* runs only after a fix or a 2s pause.
+- A score that moves while the writer types prose. Rule criteria may recompute on every edit, but the estimate's _animation_ runs only after a fix or a 2s pause.
 - A grade shown without saying whether it is confirmed or estimated.
 - Opening the panel automatically.
 - Measuring every occurrence's screen position on each keystroke or scroll event. The spine uses settled engine snapshots and layout changes, and skips hidden views.

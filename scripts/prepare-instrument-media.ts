@@ -19,10 +19,7 @@ for (const directory of [stills, demo]) {
   if (run.status !== "passed")
     throw new Error(`Choose a passing run: ${directory}`);
 }
-const names = [
-  "01-complete-wording-preview",
-  "02-wording-used",
-];
+const names = ["01-complete-wording-preview", "02-wording-used"];
 const output = "public/assets/manual";
 await mkdir(`${output}/writing-instruments`, { recursive: true });
 const ffmpeg = (args: string[]) =>
@@ -136,8 +133,12 @@ await writeFile(
 );
 const manifest = {
   capturedAt: new Date().toISOString(),
-  sourceRevision: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
-  sourceHadLocalChanges: execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim().length > 0,
+  sourceRevision: execFileSync("git", ["rev-parse", "HEAD"], {
+    encoding: "utf8",
+  }).trim(),
+  sourceHadLocalChanges:
+    execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim()
+      .length > 0,
   sample: "Fictional manuscript from e2e/fixtures/instruments.ts",
   models: "None. Actual local rules, editor transactions and undo.",
   verification:

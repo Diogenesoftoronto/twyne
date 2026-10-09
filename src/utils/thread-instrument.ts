@@ -157,6 +157,11 @@ export const EMPTY_THREAD_SNAPSHOT: ThreadInstrumentSnapshot = {
   stale: false,
 };
 export interface ThreadInstrumentController {
+  askRoom(
+    request: import("./instrument-room").InstrumentRoomRequest,
+    threadId: string,
+    fingerprint: string,
+  ): Promise<import("./instrument-room").InstrumentRoomResult>;
   open(passage?: string): void;
   close(): void;
   jump(spanId: string): boolean;

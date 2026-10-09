@@ -287,6 +287,31 @@ test("deliberate editorial we persists and only a new occurrence becomes drift",
   const appendParagraph = async (text: string) => {
     await manuscript.locator("p").last().click();
     await page.keyboard.press("ControlOrMeta+End");
+    // Keyboard dispatch finishes before native/ProseMirror selection can settle.
+    // Enter must split at the verified end, never at the preceding click position.
+    await expect
+      .poll(() =>
+        manuscript.evaluate((element) => {
+          const selection = window.getSelection();
+          const lastParagraph = element.querySelector("p:last-of-type");
+          if (!selection?.rangeCount || !lastParagraph) return null;
+          const tail = document.createRange();
+          tail.selectNodeContents(lastParagraph);
+          tail.setStart(selection.anchorNode!, selection.anchorOffset);
+          return {
+            focused: document.activeElement === element,
+            collapsed: selection.isCollapsed,
+            inLastParagraph: lastParagraph.contains(selection.anchorNode),
+            remaining: tail.toString(),
+          };
+        }),
+      )
+      .toEqual({
+        focused: true,
+        collapsed: true,
+        inLastParagraph: true,
+        remaining: "",
+      });
     await page.keyboard.press("Enter");
     await page.keyboard.insertText(text);
     await expect(manuscript.locator("p").last()).toHaveText(text);

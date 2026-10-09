@@ -19,6 +19,7 @@ import {
 } from "../../utils/sentence-bench";
 import styles from "./sentence-bench.css?inline";
 import { InstrumentArt } from "../instruments/instrument-art";
+import { InstrumentRoom } from "../instruments/instrument-room";
 import {
   InstrumentMotion,
   InstrumentMotionPart,
@@ -27,25 +28,56 @@ import { localWritingStatus } from "../../utils/local-writing-models";
 import { onModelDownload } from "../../utils/models-cache";
 import { localPackId } from "../../utils/local-writing-manifest";
 
-export const SentenceBench = component$<{
-  props: SentenceLabProps;
-  filling: boolean;
-  toolId: string;
-}>(({ props, filling, toolId }) => {
-  useStyles$(styles);
-  const working = useSignal(props.sentence);
-  const tab = useSignal<string>(props.initialSection ?? "rewrite");
-  const typing = useSignal(false);
-  const wordPackReady = useSignal(false);
-  const state = useStore({
+interface BenchSession {
+  sentence: string;
+  working: string;
+  tab: string;
+  typing: boolean;
+  wordFrom: number;
+  wordTo: number;
+  compare: string;
+  applying: boolean;
+  message: string;
+  modelBusy: boolean;
+  modelWords: SentenceCandidate[];
+}
+
+// Checked candidate updates can replace the renderer's component instance.
+// Keep the writer's unfinished choices with this tool session, not that instance.
+// This is browser-only, bounded, and a new tool ID starts a fresh working copy.
+const benchSessions = new Map<string, BenchSession>();
+function benchSession(toolId: string, props: SentenceLabProps): BenchSession {
+  const previous = typeof window !== "undefined" && benchSessions.get(toolId);
+  if (previous && previous.sentence === props.sentence) return previous;
+  const session: BenchSession = {
+    sentence: props.sentence,
+    working: props.sentence,
+    tab: props.initialSection ?? "rewrite",
+    typing: false,
     wordFrom: props.initialWord?.from ?? -1,
     wordTo: props.initialWord?.to ?? -1,
     compare: "",
     applying: false,
     message: "",
     modelBusy: false,
-    modelWords: [] as SentenceCandidate[],
-  });
+    modelWords: [],
+  };
+  if (typeof window !== "undefined") {
+    benchSessions.set(toolId, session);
+    while (benchSessions.size > 8)
+      benchSessions.delete(benchSessions.keys().next().value!);
+  }
+  return session;
+}
+
+export const SentenceBench = component$<{
+  props: SentenceLabProps;
+  filling: boolean;
+  toolId: string;
+}>(({ props, filling, toolId }) => {
+  useStyles$(styles);
+  const wordPackReady = useSignal(false);
+  const state = useStore<BenchSession>(benchSession(toolId, props));
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ cleanup }) => {
     let alive = true;
@@ -127,10 +159,10 @@ export const SentenceBench = component$<{
           <button
             type="button"
             key={id}
-            aria-pressed={tab.value === id}
-            class={tab.value === id ? "is-on" : ""}
+            aria-pressed={state.tab === id}
+            class={state.tab === id ? "is-on" : ""}
             onClick$={() => {
-              tab.value = id;
+              state.tab = id;
               inFlowController()?.previewVariant(null);
             }}
           >
@@ -144,7 +176,7 @@ export const SentenceBench = component$<{
           moving it.
         </p>
       )}
-      {tab.value === "rewrite" && (
+      {state.tab === "rewrite" && (
         <section aria-label="Complete sentence alternatives">
           <p class="in-flow-label">Complete wordings</p>
           <ol class="in-flow-list sentence-bench-candidates">
@@ -154,11 +186,11 @@ export const SentenceBench = component$<{
                   type="button"
                   class={[
                     "in-flow-choice",
-                    { "in-flow-choice--on": working.value === candidate.text },
+                    { "in-flow-choice--on": state.working === candidate.text },
                   ]}
                   onClick$={() => {
-                    typing.value = false;
-                    working.value = candidate.text;
+                    state.typing = false;
+                    state.working = candidate.text;
                     state.message = "";
                   }}
                   onMouseEnter$={() =>
@@ -225,7 +257,7 @@ export const SentenceBench = component$<{
           )}
         </section>
       )}
-      {tab.value === "words" && (
+      {state.tab === "words" && (
         <section aria-label="Word alternatives">
           <p class="in-flow-label">Choose a word</p>
           <p class="sentence-bench-word-line">
@@ -266,7 +298,7 @@ export const SentenceBench = component$<{
                   type="button"
                   class="in-flow-choice"
                   onClick$={() => {
-                    working.value = choice.sentence;
+                    state.working = choice.sentence;
                     state.message = "";
                   }}
                   onMouseEnter$={() =>
@@ -330,8 +362,8 @@ export const SentenceBench = component$<{
                   type="button"
                   class="in-flow-choice"
                   onClick$={() => {
-                    typing.value = false;
-                    working.value = candidate.text;
+                    state.typing = false;
+                    state.working = candidate.text;
                   }}
                   onMouseEnter$={() =>
                     inFlowController()?.previewVariant(candidate.text)
@@ -356,7 +388,7 @@ export const SentenceBench = component$<{
           </ol>
         </section>
       )}
-      {tab.value === "place" && (
+      {state.tab === "place" && (
         <section aria-label="Sentence placement choices">
           <p class="in-flow-label">Read another position</p>
           <p class="sentence-bench-note">
@@ -394,7 +426,7 @@ export const SentenceBench = component$<{
           )}
         </section>
       )}
-      {tab.value === "hear" && (
+      {state.tab === "hear" && (
         <section aria-label="Hear the sentence in context">
           <p class="in-flow-label">Listen in context</p>
           <p class="sentence-bench-note">
@@ -405,7 +437,7 @@ export const SentenceBench = component$<{
           <SpeechTransport
             id={`sentence-bench-${toolId}`}
             playLabel="Hear this wording in context"
-            onPlay$={() => inFlowController()?.hearVariant(working.value)}
+            onPlay$={() => inFlowController()?.hearVariant(state.working)}
           />
         </section>
       )}
@@ -413,7 +445,7 @@ export const SentenceBench = component$<{
         <InstrumentMotion
           key={state.compare}
           state="compare"
-          quiet={typing.value}
+          quiet={state.typing}
         >
           <section
             aria-label="Candidate comparison"
@@ -449,19 +481,19 @@ export const SentenceBench = component$<{
           id={`sentence-bench-working-${toolId}`}
           class="in-flow-textarea"
           rows={3}
-          value={working.value}
+          value={state.working}
           onInput$={(_, el) => {
-            typing.value = true;
-            working.value = el.value;
+            state.typing = true;
+            state.working = el.value;
             state.message = "";
           }}
         />
         {props.context?.after && (
           <p class="sentence-bench-context">{props.context.after}</p>
         )}
-        {working.value !== props.sentence && (
+        {state.working !== props.sentence && (
           <p class="sentence-bench-preview">
-            <Diff text={working.value} />
+            <Diff text={state.working} />
           </p>
         )}
         <div class="in-flow-actions">
@@ -471,13 +503,13 @@ export const SentenceBench = component$<{
             disabled={
               props.stale ||
               state.applying ||
-              !completeSentence(working.value) ||
-              working.value === props.sentence
+              !completeSentence(state.working) ||
+              state.working === props.sentence
             }
             onClick$={async () => {
               state.applying = true;
               const used = await inFlowController()?.applyVariant(
-                working.value.trim(),
+                state.working.trim(),
               );
               state.applying = false;
               if (!used)
@@ -490,9 +522,9 @@ export const SentenceBench = component$<{
           <button
             type="button"
             class="btn-paper in-flow-mini"
-            disabled={working.value === props.sentence}
+            disabled={state.working === props.sentence}
             onClick$={() => {
-              working.value = props.sentence;
+              state.working = props.sentence;
               inFlowController()?.previewVariant(null);
             }}
           >
@@ -508,6 +540,45 @@ export const SentenceBench = component$<{
           </p>
         )}
       </section>
+      <InstrumentRoom
+        context={{
+          instrument: "sentence",
+          key: JSON.stringify([
+            toolId,
+            props.sentence,
+            state.working,
+            state.tab,
+          ]),
+          source: props.sentence,
+          proposal: state.working,
+          question:
+            {
+              rewrite:
+                "What might this wording lose or strengthen in its context?",
+              words:
+                "Does this word choice fit this use and preserve the intended nuance?",
+              place:
+                "What should guide this sentence's position among its neighbours?",
+              hear: "How does this wording's rhythm read aloud beside its neighbours?",
+            }[state.tab] ??
+            "What would you attend to in this sentence and its proposed wording?",
+          detail: [
+            `Active pane: ${state.tab}`,
+            props.context?.before ? `Before: ${props.context.before}` : "",
+            props.context?.after ? `After: ${props.context.after}` : "",
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        }}
+        disabled={props.stale || filling || state.applying}
+        onAsk$={async (request) =>
+          (await inFlowController()?.askRoom(request, toolId)) ?? {
+            ok: false,
+            message:
+              "This sentence bench is no longer connected to the manuscript. Reopen it before asking an editor.",
+          }
+        }
+      />
     </div>
   );
 });

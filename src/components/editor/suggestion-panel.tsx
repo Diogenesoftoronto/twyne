@@ -2,6 +2,7 @@ import { component$, type PropFunction } from "@qwik.dev/core";
 import { WorkflowStamp } from "../ui/workflow-stamp";
 import { renderMarkdown } from "../../utils/markdown";
 import { SpeakButton } from "../ui/speak-button";
+import { PersonaMasthead } from "../personas/persona-portrait";
 import type { SuggestionPopover } from "./editor-state";
 
 interface SuggestionPanelProps {
@@ -42,16 +43,12 @@ export const SuggestionPanel = component$<SuggestionPanelProps>((props) => {
           }}
           onClick$={(event) => event.stopPropagation()}
         >
-          <div class="manuscript-comment-card__head">
-            <div class="min-w-0">
-              <p class="manuscript-comment-card__author">{suggestion.author}</p>
-              <p
-                class="manuscript-comment-card__label"
-                style={{ color: suggestion.color }}
-              >
-                proposes
-              </p>
-            </div>
+          <div class="manuscript-comment-card__head persona-critique-head">
+            <PersonaMasthead
+              name={suggestion.author}
+              label="proposes"
+              size={56}
+            />
             <div class="flex items-center gap-1.5 flex-shrink-0">
               <SpeakButton
                 compact

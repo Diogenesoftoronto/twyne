@@ -2,6 +2,37 @@ import type { Node as PmNode } from "@tiptap/pm/model";
 import { segmentDocument, posAtOffset } from "./living-desk/segment";
 import type { ScenePassage, SceneSpan } from "./scene-bench";
 
+export interface InstrumentRoomAnchor {
+  folioId: string;
+  from: number;
+  to: number;
+  text: string;
+  related?: { from: number; to: number; text: string }[];
+}
+
+/** An invitation must still refer to every exact source span it was made from. */
+export function instrumentRoomAnchorMatches(
+  doc: PmNode,
+  folioId: string,
+  anchor: InstrumentRoomAnchor,
+): boolean {
+  if (anchor.folioId !== folioId || !folioId) return false;
+  const spans = [anchor, ...(anchor.related ?? [])];
+  return (
+    spans.length <= 3 &&
+    spans.every(
+      (span) =>
+        Number.isInteger(span.from) &&
+        Number.isInteger(span.to) &&
+        span.from >= 0 &&
+        span.to > span.from &&
+        span.to <= doc.content.size &&
+        !!span.text.trim() &&
+        doc.textBetween(span.from, span.to, "\n\n") === span.text,
+    )
+  );
+}
+
 /** Built only on an explicit instrument request, never on a keystroke. */
 function sourceMap(doc: PmNode): {
   text: string;

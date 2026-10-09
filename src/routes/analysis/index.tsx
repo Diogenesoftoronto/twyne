@@ -20,6 +20,7 @@ import {
 } from "../../utils/exchange";
 import { ANALYSIS_READING_ID, speakQueue } from "../../utils/speech";
 import { SpeakButton } from "../../components/ui/speak-button";
+import { PersonaMasthead } from "../../components/personas/persona-portrait";
 import { SpeechTransport } from "../../components/ui/speech-transport";
 import { useConvexClient } from "../../utils/convex-context";
 import { useAuth } from "../../utils/auth-context";
@@ -236,16 +237,15 @@ export default component$(() => {
                       class="pl-4 border-b border-dashed border-[var(--color-paper-3)] pb-6 last:border-b-0 last:pb-0"
                       style={{ borderLeft: `3px solid ${memo.personaColor}` }}
                     >
-                      <div class="flex items-center justify-between gap-2">
-                        <p
-                          class="text-[11px] tracking-[0.15em] uppercase"
-                          style={{
-                            fontFamily: "var(--font-typewriter)",
-                            color: memo.personaColor,
-                          }}
-                        >
-                          {memo.personaName}
-                        </p>
+                      <div class="persona-critique-head">
+                        <PersonaMasthead
+                          personaId={memo.personaId}
+                          name={memo.personaName}
+                          role={
+                            store.personas.find((p) => p.id === memo.personaId)
+                              ?.role
+                          }
+                        />
                         <SpeakButton
                           compact
                           id={`analysis-memo-${memo.personaId}`}

@@ -22,7 +22,7 @@ They introduce the room’s ideas or show a recorded path through the app. The
 | `src/routes/docs/guide-editorial-room.ts`   | Cast management, rubric, margin threads and bibliography.              |
 | `src/routes/docs/guide-your-work.ts`        | Account, narration, Live, source/proof, folios, providers and privacy. |
 | `src/routes/docs/guide-manuscript-craft.ts` | Outline/search, tables/images, page layout, notes and equations.       |
-| `src/routes/docs/guide-living-desk.ts` | The piece, local patterns, previews, undo, exceptions and presence. |
+| `src/routes/docs/guide-living-desk.ts`      | The piece, local patterns, previews, undo, exceptions and presence.    |
 | `src/routes/docs/manual-editors.tsx`        | Illustrated cast profiles, prompts and source-backed example lines.    |
 
 `manual-guide-types.ts` defines the common data contract. The route owns chapter

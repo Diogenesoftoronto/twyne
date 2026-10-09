@@ -523,7 +523,8 @@ export default component$(() => {
               <p class="manual-chapter">05 · At the desk</p>
               <h2 class="manual-h2">The piece</h2>
               <p class="manual-lead">
-                See what changes across the draft, with the passages and controls to work on it.
+                See what changes across the draft, with the passages and
+                controls to work on it.
               </p>
               <ChapterIllustrations chapter="the-piece" />
               <h3 class="manual-h3">Useful without a model</h3>
@@ -536,24 +537,23 @@ export default component$(() => {
               </p>
               <p class="manual-p">
                 Select Stance, Names, Style or Presence to see that lens on the
-                page. Open a finding for its passages and available actions.
-                On a narrow screen, the desk sits below the writing area;
-                Close returns the space to your draft. Zen hides it while you
-                write.
+                page. Open a finding for its passages and available actions. On
+                a narrow screen, the desk sits below the writing area; Close
+                returns the space to your draft. Zen hides it while you write.
               </p>
               <h3 class="manual-h3">Know what the score means</h3>
               <p class="manual-p">
                 The ≈ sign identifies an estimate. Consistency can update from
                 local rules as you revise; that change is not a new editorial
-                reading. Score details separates measures by rule from those
-                by review. An overall estimate begins at about 150 words.
+                reading. Score details separates measures by rule from those by
+                review. An overall estimate begins at about 150 words.
               </p>
               <p class="manual-p">
                 Confirm with a full read requests a fresh review of the current
-                draft. It needs automatic review enabled, at least 500 words
-                and an available signed-in model service. The desk explains
-                when a request cannot run. Later edits make the score an
-                estimate again until the revised draft has been read.
+                draft. It needs automatic review enabled, at least 500 words and
+                an available signed-in model service. The desk explains when a
+                request cannot run. Later edits make the score an estimate again
+                until the revised draft has been read.
               </p>
               <div class="manual-callout">
                 <p>
@@ -580,7 +580,9 @@ export default component$(() => {
                 to return to the page.
               </p>
               <ChapterIllustrations chapter="writing-instruments" />
-              <h3 id="sentence-bench" class="manual-h3">Work on a whole sentence</h3>
+              <h3 id="sentence-bench" class="manual-h3">
+                Work on a whole sentence
+              </h3>
               <p class="manual-p">
                 <strong>Rewrite</strong> brings together complete earlier
                 wordings, available rule changes and model alternatives. Each
@@ -606,14 +608,16 @@ export default component$(() => {
                 sentence through your narration player. It can use a downloaded
                 local voice or your configured voice service.
               </p>
-              <h3 id="writing-threads" class="manual-h3">Follow a thread</h3>
+              <h3 id="writing-threads" class="manual-h3">
+                Follow a thread
+              </h3>
               <p class="manual-p">
                 Threads pairs exact sentences from the manuscript. Hover or
                 keyboard-focus a pair to mark both passages; choose a sentence
-                to go to it. Local checks identify repeated wording, word overlap
-                and possible references. A relation remains unverified unless
-                the judgement service has read it; model readings name their
-                source and show their uncertainty.
+                to go to it. Local checks identify repeated wording, word
+                overlap and possible references. A relation remains unverified
+                unless the judgement service has read it; model readings name
+                their source and show their uncertainty.
               </p>
               <p class="manual-p">
                 For an exact repeat, you can remove either occurrence as one
@@ -621,13 +625,15 @@ export default component$(() => {
                 always a choice. If the passage changes, reopen the instrument
                 before acting on its earlier reading.
               </p>
-              <h3 id="writing-entities" class="manual-h3">Follow an entity through the piece</h3>
+              <h3 id="writing-entities" class="manual-h3">
+                Follow an entity through the piece
+              </h3>
               <p class="manual-p">
                 In the instrument desk, choose Entities. Select a name candidate
                 to see its mentions across sections and inspect the source
                 passages. This local index can include places or ordinary
-                capitalised words; a name candidate is not a confirmed character.
-                Spelling variants are grouped by a local rule.
+                capitalised words; a name candidate is not a confirmed
+                character. Spelling variants are grouped by a local rule.
               </p>
               <p class="manual-p">
                 Choose a reading, then Read with judgement model to inspect
@@ -638,7 +644,9 @@ export default component$(() => {
                 A possible contradiction is a lead to inspect, and a model's
                 confidence is not a grade for characterisation or dialogue.
               </p>
-              <h3 id="paragraph-readings" class="manual-h3">Read paragraphs; keep your choices</h3>
+              <h3 id="paragraph-readings" class="manual-h3">
+                Read paragraphs; keep your choices
+              </h3>
               <p class="manual-p">
                 Open Paragraph readings in The piece to inspect each paragraph's
                 scores and narrating tense. Local English cues and Jev readings
@@ -653,7 +661,28 @@ export default component$(() => {
                 Check these again removes the exception. A save notice tells you
                 if the choice could only be kept on this device.
               </p>
-              <h3 id="task-desk" class="manual-h3">Leave a question at the Task desk</h3>
+              <h3 id="instrument-room" class="manual-h3">
+                Invite an editor into the work
+              </h3>
+              <p class="manual-p">
+                Sentence bench, each Threads pair and Scene bench offer
+                <strong> Ask the room</strong>. Your judgement model, including
+                Jev when selected, reads the current passage, your working
+                proposal and the tool's question to choose a helpful editor. It
+                can choose no one. You can also choose an editor yourself.
+              </p>
+              <p class="manual-p">
+                The chosen editor replies in Marginalia, with their portrait and
+                name above the critique. The saved question keeps the original
+                passage separate from unapplied wording or scene ideas. The
+                reply uses your writing model; provider settings govern charges.
+                If the source changes before the request is filed, reopen the
+                instrument. Your manuscript text stays yours to revise.
+              </p>
+              <ChapterIllustrations chapter="instrument-room" />
+              <h3 id="task-desk" class="manual-h3">
+                Leave a question at the Task desk
+              </h3>
               <p class="manual-p">
                 Choose Writing review or Research selected account resources,
                 check the reference passage, and describe what would help. For
@@ -671,32 +700,36 @@ export default component$(() => {
               </p>
               <p class="manual-p">
                 You can cancel unfinished work. A request already sent to a
-                provider may still finish and incur its charge, but its cancelled
-                result is discarded. Mark a returned result Useful or Not useful
-                and add a comment to save feedback with the task. Results remain
-                proposals for your review.
+                provider may still finish and incur its charge, but its
+                cancelled result is discarded. Mark a returned result Useful or
+                Not useful and add a comment to save feedback with the task.
+                Results remain proposals for your review.
               </p>
-              <h3 id="on-device-writing" class="manual-h3">Keep a few tools on your device</h3>
+              <h3 id="on-device-writing" class="manual-h3">
+                Keep a few tools on your device
+              </h3>
               <p class="manual-p">
                 From Task desk, choose On-device tools. Passage connections,
                 Words in context and Say it are separate English-language packs
                 with their download sizes shown. Download &amp; load is an
                 explicit choice; Stop download and Remove pack are available.
                 Model files come from Hugging Face and the shared runtime from
-                jsDelivr. Keep the page open for the first load. These operations
-                use no account credit, and your passages and recordings stay on
-                this device.
+                jsDelivr. Keep the page open for the first load. These
+                operations use no account credit, and your passages and
+                recordings stay on this device.
               </p>
               <p class="manual-p">
                 Passage connections compares nearby passages you supply. Its
-                similarity measure invites a closer reading; it does not prove
-                a repetition or missing transition. For <strong>Say it</strong>,
+                similarity measure invites a closer reading; it does not prove a
+                repetition or missing transition. For <strong>Say it</strong>,
                 install the speech pack, select a sentence, then record up to a
                 minute or choose an audio clip. Review and edit the transcript
                 before using it as a sentence candidate. Browser storage can be
                 cleared or evicted, so a saved pack may need downloading again.
               </p>
-              <h3 id="scene-bench" class="manual-h3">See what a scene gives you</h3>
+              <h3 id="scene-bench" class="manual-h3">
+                See what a scene gives you
+              </h3>
               <p class="manual-p">
                 Scene bench inventories place, time, light, sound, movement and
                 pressure through exact quotes from the selected passage. The
@@ -727,6 +760,13 @@ export default component$(() => {
               </p>
               <ManualVideo film={MANUAL_FILMS.room} />
               <ManualEditors />
+              <p class="manual-p">
+                Recognise a voice by its face as well as its name. The same
+                portraits accompany the editors' critiques, margin replies and
+                individual rubric readings. A custom editor without a portrait
+                uses their initials. From a writing instrument, Ask the room
+                brings an editor into the question you are already working on.
+              </p>
               <h3 class="manual-h3">Arrange your room</h3>
               <ManualWalkthrough id="room" guide={GUIDES.room} />
 

@@ -1,0 +1,94 @@
+.persona-portrait {
+  position: relative;
+  display: block;
+  flex: 0 0 var(--persona-portrait-size, 64px);
+  width: var(--persona-portrait-size, 64px);
+  height: var(--persona-portrait-size, 64px);
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--color-paper-2);
+}
+
+/* Use the approved transparent full portraits as a static head/shoulder crop. */
+.persona-portrait img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: block;
+  width: 145%;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.persona-portrait__initials {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  place-items: center;
+  border: 1px solid var(--color-paper-3);
+  color: var(--color-ink);
+  font: 600 1.125rem/1 var(--font-display);
+  letter-spacing: 0.025em;
+}
+
+.persona-masthead {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-width: 0;
+  color: var(--color-ink);
+  text-align: left;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.persona-masthead__identity {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.persona-masthead__name {
+  margin: 0;
+  color: inherit;
+  font: 600 0.9375rem/1.3 var(--font-display);
+}
+
+.persona-masthead__role,
+.persona-masthead__label {
+  margin: 0.25rem 0 0;
+  color: var(--color-ink-light);
+  font: 400 0.75rem/1.4 var(--font-sans);
+}
+
+.persona-masthead__label {
+  font-size: 0.6875rem;
+}
+
+.persona-masthead--on-color,
+.persona-masthead--on-color .persona-masthead__role,
+.persona-masthead--on-color .persona-masthead__label {
+  color: var(--color-paper);
+}
+
+/* Scoped opt-in for existing critique headers, leaving their actions intact. */
+.persona-critique-head {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+}
+
+.persona-critique-head > .persona-masthead {
+  flex: 1 1 10rem;
+}
+
+.persona-critique-head > .desk-card__stamp {
+  margin-left: auto;
+}
+
+.persona-critique-head > .desk-card__byline,
+.persona-critique-head > .desk-card__aside {
+  flex-basis: 100%;
+  min-width: 0;
+}

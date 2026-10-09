@@ -3,6 +3,32 @@ import type { ManualGuides } from "./manual-guide-types";
 const assets = "/assets/instruments/";
 
 export const WRITING_INSTRUMENT_GUIDES = {
+  "instrument-room": {
+    title: "Bring the right editor into the question",
+    summary:
+      "Ask the room from an instrument, then continue with one editor beside the passage.",
+    note: "Actual app screenshots with a fictional manuscript and explicitly simulated model responses. They demonstrate the interaction and attribution, not live Jev selection or the quality of a generated critique.",
+    steps: [
+      {
+        title: "Ask beside the work",
+        instruction:
+          "Sentence bench, each Threads pair and Scene bench keep the question close to its source. Ask the room lets your judgement model choose among your current editors, including nobody when a critique would not help. You can also choose an editor yourself. The original passage and any unapplied proposal are sent as separate context.",
+        image: "/assets/manual/instrument-room-invitation-v1.webp",
+        alt: "The real Sentence bench beside a fictional manuscript, showing its working wording and the Ask the room invitation before an editor is selected.",
+        width: 1440,
+        height: 900,
+      },
+      {
+        title: "Continue with a familiar face",
+        instruction:
+          "The chosen editor replies in Marginalia, with their portrait, name and role above the critique. Open Passage and invitation details to inspect the saved source, unapplied proposal and selection record. A selection score describes the model's choice; it is not a rating of your writing. The conversation leaves your manuscript words untouched.",
+        image: "/assets/manual/instrument-room-reply-v1.webp",
+        alt: "An anchored Marginalia conversation with the selected editor's portrait and name above a reply clearly marked as a browser transport fixture, beside unchanged manuscript text.",
+        width: 1440,
+        height: 900,
+      },
+    ],
+  },
   "scene-bench": {
     title: "Read the scene that is on the page",
     summary:

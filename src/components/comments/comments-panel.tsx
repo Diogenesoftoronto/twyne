@@ -4,9 +4,11 @@ import {
   useSignal,
   useStore,
   useVisibleTask$,
+  useTask$,
   $,
 } from "@qwik.dev/core";
 import { useConvexClient } from "../../utils/convex-context";
+import { useAuth } from "../../utils/auth-context";
 import type { ProjectBrief, Persona } from "../../types";
 import {
   type UserComment,
@@ -35,6 +37,8 @@ import { renderMarkdown } from "../../utils/markdown";
 import { MentionDropdown, mentionOptionId } from "../ui/mention-dropdown";
 import { ApplicationNotice } from "../ui/application-notice";
 import { SpeakButton } from "../ui/speak-button";
+import { PersonaMasthead } from "../personas/persona-portrait";
+import { CommentBody } from "./comment-body";
 import { formatDuration, readVoiceNote } from "../../utils/voice-notes";
 import type { AppError } from "../../types/application-errors";
 import {
@@ -63,6 +67,7 @@ interface CommentsStore {
   askPersonaFor: string | null;
   askPersonaId: string | null;
   isAskingEditor: boolean;
+  askGeneration: number;
   /** Visible text from the editor response currently being generated. */
   streamingEditorReply: string;
   askError: AppError | null;
@@ -161,149 +166,229 @@ function normalizeCommentError(
   return normalizeApplicationError(thrown, { source, metadata });
 }
 
-export const CommentsPanel = component$(
-  ({
-    brief,
-    activeFolioId,
-    initialComments,
-    collaborators,
-  }: CommentsPanelProps) => {
-    const clientSig = useConvexClient();
-    const store = useStore<CommentsStore>({
-      comments: initialComments ?? [],
-      replyingTo: null,
-      replyDrafts: {},
-      askPersonaFor: null,
-      askPersonaId: null,
-      isAskingEditor: false,
-      streamingEditorReply: "",
-      askError: null,
-      personas: DEFAULT_PERSONAS,
-      aiSettings: null,
-      ghostIds: new Set<string>(),
-      ghostsOnly: false,
-      mentionTarget: null,
-      mentionQuery: "",
-      mentionIndex: 0,
-    });
+export const CommentsPanel = component$((props: CommentsPanelProps) => {
+  const { brief, activeFolioId, initialComments, collaborators } = props;
+  const clientSig = useConvexClient();
+  const auth = useAuth();
+  const store = useStore<CommentsStore>({
+    comments: initialComments ?? [],
+    replyingTo: null,
+    replyDrafts: {},
+    askPersonaFor: null,
+    askPersonaId: null,
+    isAskingEditor: false,
+    askGeneration: 0,
+    streamingEditorReply: "",
+    askError: null,
+    personas: DEFAULT_PERSONAS,
+    aiSettings: null,
+    ghostIds: new Set<string>(),
+    ghostsOnly: false,
+    mentionTarget: null,
+    mentionQuery: "",
+    mentionIndex: 0,
+  });
 
-    // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(async () => {
-      if (initialComments) return;
-      store.comments = (await loadUserComments()).filter(
-        (comment) => comment.folioId === activeFolioId,
-      );
-      const custom = await loadPersonasFromIdb();
-      if (custom && custom.length > 0) store.personas = custom;
-      const aiRaw = await loadAiSettingsFromIdb();
-      store.aiSettings = normalizeAiSettings(aiRaw);
+  useTask$(({ track }) => {
+    track(() => props.activeFolioId);
+    track(() => auth.value.user?.id ?? null);
+    store.askGeneration++;
+    store.isAskingEditor = false;
+    store.streamingEditorReply = "";
+  });
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    cleanup(() => {
+      store.askGeneration++;
     });
+  });
 
-    // Refresh when a comment is filed or replied to elsewhere in the editor.
-    // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(() => {
-      const refresh = () => {
-        void loadUserComments().then((all) => {
-          if (initialComments) return;
-          store.comments = all.filter(
-            (comment) => comment.folioId === activeFolioId,
-          );
-        });
-      };
-      const onScroll = (e: Event) => {
-        const detail = (e as CustomEvent).detail;
-        const id = typeof detail === "string" ? detail : detail?.id;
-        if (!id) return;
-        const el = document.querySelector(`[data-comment-id="${id}"]`);
-        el?.scrollIntoView({ behavior: "smooth", block: "center" });
-      };
-      window.addEventListener("twyne:user-comments-changed", refresh);
-      window.addEventListener("twyne:scroll-to-comment", onScroll);
-      return () => {
-        window.removeEventListener("twyne:user-comments-changed", refresh);
-        window.removeEventListener("twyne:scroll-to-comment", onScroll);
-      };
-    });
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    if (initialComments) return;
+    store.comments = (await loadUserComments()).filter(
+      (comment) => comment.folioId === activeFolioId,
+    );
+    const custom = await loadPersonasFromIdb();
+    if (custom && custom.length > 0) store.personas = custom;
+    const aiRaw = await loadAiSettingsFromIdb();
+    store.aiSettings = normalizeAiSettings(aiRaw);
+  });
 
-    const triggerMentions = $((commentId: string, text: string) => {
-      // Personas + (eventually) collaborators. Computed inline rather than
-      // via a shared helper because Qwik's $() boundaries can't close over
-      // local functions — only serializable values.
-      const mentionables: Mentionable[] = [
-        ...store.personas.map(personaToMentionable),
-        ...(collaborators ?? []),
-      ];
-      for (const m of mentionedIn(text, mentionables)) {
-        switch (m.kind) {
-          case "persona":
-            void askEditor(commentId, m.id);
-            break;
-          case "collaborator":
-            // No-op for now: tagging a collaborator just highlights them in
-            // the thread. Wire a notification here once one exists.
-            break;
-        }
-      }
-    });
-
-    const addReply = $(async (commentId: string, text: string) => {
-      if (!text.trim()) return;
-      const reply: UserCommentReply = {
-        id: `r-${Date.now()}`,
-        author: "You",
-        authorKind: "user",
-        text,
-        createdAt: Date.now(),
-      };
-      const all = await appendUserCommentReply(commentId, reply);
-      store.comments = all;
-      store.replyingTo = null;
-      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
-      void triggerMentions(commentId, text);
-    });
-
-    const resolveComment = $(async (commentId: string) => {
-      const all = await toggleUserCommentResolved(commentId);
-      store.comments = all;
-      window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
-      const updated = all.find((comment) => comment.id === commentId);
-      if (updated) {
-        // The editor owns the Convex client. Tell it about a rail-side strike
-        // so another sync cannot immediately reopen this comment.
-        window.dispatchEvent(
-          new CustomEvent("twyne:toggle-user-comment-resolved", {
-            detail: { commentId, resolved: updated.resolved },
-          }),
+  // Refresh when a comment is filed or replied to elsewhere in the editor.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(() => {
+    const refresh = () => {
+      void loadUserComments().then((all) => {
+        if (initialComments) return;
+        store.comments = all.filter(
+          (comment) => comment.folioId === activeFolioId,
         );
-      }
-    });
+      });
+    };
+    const onScroll = (e: Event) => {
+      const detail = (e as CustomEvent).detail;
+      const id = typeof detail === "string" ? detail : detail?.id;
+      if (!id) return;
+      const el = document.querySelector(`[data-comment-id="${id}"]`);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+    window.addEventListener("twyne:user-comments-changed", refresh);
+    window.addEventListener("twyne:scroll-to-comment", onScroll);
+    return () => {
+      window.removeEventListener("twyne:user-comments-changed", refresh);
+      window.removeEventListener("twyne:scroll-to-comment", onScroll);
+    };
+  });
 
-    const deleteComment = $((commentId: string) => {
-      // The editor owns both the persisted thread and its ProseMirror mark.
-      // Optimistically remove the card, then let that single owner complete
-      // local storage, cloud sync, highlight, chip, and popover cleanup.
-      store.comments = store.comments.filter((item) => item.id !== commentId);
+  const triggerMentions = $((commentId: string, text: string) => {
+    // Personas + (eventually) collaborators. Computed inline rather than
+    // via a shared helper because Qwik's $() boundaries can't close over
+    // local functions — only serializable values.
+    const mentionables: Mentionable[] = [
+      ...store.personas.map(personaToMentionable),
+      ...(collaborators ?? []),
+    ];
+    for (const m of mentionedIn(text, mentionables)) {
+      switch (m.kind) {
+        case "persona":
+          void askEditor(commentId, m.id);
+          break;
+        case "collaborator":
+          // No-op for now: tagging a collaborator just highlights them in
+          // the thread. Wire a notification here once one exists.
+          break;
+      }
+    }
+  });
+
+  const addReply = $(async (commentId: string, text: string) => {
+    if (!text.trim()) return;
+    const reply: UserCommentReply = {
+      id: `r-${Date.now()}`,
+      author: "You",
+      authorKind: "user",
+      text,
+      createdAt: Date.now(),
+    };
+    const all = await appendUserCommentReply(commentId, reply);
+    store.comments = all;
+    store.replyingTo = null;
+    window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+    void triggerMentions(commentId, text);
+  });
+
+  const resolveComment = $(async (commentId: string) => {
+    const all = await toggleUserCommentResolved(commentId);
+    store.comments = all;
+    window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+    const updated = all.find((comment) => comment.id === commentId);
+    if (updated) {
+      // The editor owns the Convex client. Tell it about a rail-side strike
+      // so another sync cannot immediately reopen this comment.
       window.dispatchEvent(
-        new CustomEvent("twyne:delete-user-comment", {
-          detail: { commentId },
+        new CustomEvent("twyne:toggle-user-comment-resolved", {
+          detail: { commentId, resolved: updated.resolved },
         }),
       );
-    });
+    }
+  });
 
-    /**
-     * Ask an editor to weigh in on a comment thread. Pulls the persona's
-     * voice, anchors the question on the quoted passage, and appends the
-     * response as a persona-kind reply so the editor's colour + voice are
-     * preserved.
-     */
-    const askEditor = $(
-      async (commentId: string, personaIdOverride?: string) => {
-        const personaId = personaIdOverride ?? store.askPersonaId;
-        if (!personaId) return;
-        const comment = store.comments.find((c) => c.id === commentId);
-        if (!comment) return;
-        const persona = store.personas.find((p) => p.id === personaId);
-        if (!persona) return;
+  const deleteComment = $((commentId: string) => {
+    // The editor owns both the persisted thread and its ProseMirror mark.
+    // Optimistically remove the card, then let that single owner complete
+    // local storage, cloud sync, highlight, chip, and popover cleanup.
+    store.comments = store.comments.filter((item) => item.id !== commentId);
+    window.dispatchEvent(
+      new CustomEvent("twyne:delete-user-comment", {
+        detail: { commentId },
+      }),
+    );
+  });
+
+  /**
+   * Ask an editor to weigh in on a comment thread. Pulls the persona's
+   * voice, anchors the question on the quoted passage, and appends the
+   * response as a persona-kind reply so the editor's colour + voice are
+   * preserved.
+   */
+  const askEditor = $(
+    async (
+      commentId: string,
+      personaIdOverride?: string,
+      expectedPersonaName?: string,
+      expectedInvitation?: {
+        accountId: string | null;
+        folioId: string | null;
+      },
+    ) => {
+      if (store.isAskingEditor) return;
+      if (
+        expectedInvitation &&
+        (expectedInvitation.accountId !== (auth.value.user?.id ?? null) ||
+          expectedInvitation.folioId !== props.activeFolioId)
+      )
+        return;
+      const personaId = personaIdOverride ?? store.askPersonaId;
+      if (!personaId) return;
+      const comment = store.comments.find((c) => c.id === commentId);
+      if (!comment) return;
+      const folioId = props.activeFolioId;
+      if (comment.folioId !== folioId) return;
+      const account = auth.value.user?.id ?? null;
+      const generation = ++store.askGeneration;
+      const commentSnapshot = JSON.stringify(comment);
+      const active = () =>
+        store.askGeneration === generation &&
+        props.activeFolioId === folioId &&
+        (auth.value.user?.id ?? null) === account &&
+        JSON.stringify(store.comments.find((c) => c.id === commentId)) ===
+          commentSnapshot;
+      store.isAskingEditor = true;
+      store.streamingEditorReply = "";
+      store.askError = null;
+      try {
+        const [savedCast, savedSettings] = await Promise.all([
+          loadPersonasFromIdb(),
+          loadAiSettingsFromIdb(),
+        ]);
+        if (!active()) return;
+        const cast = savedCast.length ? savedCast : DEFAULT_PERSONAS;
+        store.personas = cast;
+        const settings = normalizeAiSettings(savedSettings);
+        store.aiSettings = settings;
+        const persona = cast.find((p) => p.id === personaId);
+        if (
+          !persona ||
+          (expectedPersonaName !== undefined &&
+            persona.name !== expectedPersonaName)
+        ) {
+          store.askError = commentConfigurationError("editor-changed");
+          return;
+        }
+        const castSnapshot = JSON.stringify(cast);
+        const settingsSnapshot = JSON.stringify(savedSettings);
+        const current = async () => {
+          if (!active()) return false;
+          const [latestComments, latestCast, latestSettings] =
+            await Promise.all([
+              initialComments
+                ? Promise.resolve(store.comments)
+                : loadUserComments(),
+              loadPersonasFromIdb(),
+              loadAiSettingsFromIdb(),
+            ]);
+          return (
+            active() &&
+            JSON.stringify(latestComments.find((c) => c.id === commentId)) ===
+              commentSnapshot &&
+            JSON.stringify(
+              latestCast.length ? latestCast : DEFAULT_PERSONAS,
+            ) === castSnapshot &&
+            JSON.stringify(latestSettings) === settingsSnapshot
+          );
+        };
+        if (!(await current())) return;
         const client = clientSig.value;
         store.askPersonaFor = commentId;
         store.askPersonaId = personaId;
@@ -327,698 +412,313 @@ export const CommentsPanel = component$(
           text: r.text,
         }));
 
-        store.isAskingEditor = true;
-        store.streamingEditorReply = "";
-        store.askError = null;
-        try {
-          let replyText = "";
+        let replyText = "";
 
-          // ── Try client-side AI first (BYOK) ─────────────────────────
-          const settings = store.aiSettings;
-          const hasByok = hasConfiguredAiProvider(settings);
-          if (hasByok && settings) {
-            try {
-              const res = await runClientAgent(
-                "comment-reply",
-                {
-                  persona: toAgentPersona(persona),
-                  brief: brief ?? null,
-                  draftText: "",
-                  priorMessages,
-                  userMessage,
-                  instruction: "elaborate",
-                },
-                settings,
-                (snapshot) => {
-                  store.streamingEditorReply = snapshot.text;
-                },
-              );
-              if (res && res.text.trim() && res.provider !== "local") {
-                replyText = res.text;
-              } else {
-                store.askError = commentProviderError("ask-editor");
-                return;
-              }
-            } catch (err) {
-              store.askError = normalizeCommentError(
-                "twyne:comments:ask-editor-client",
-                err,
-                "provider",
-                "ask-editor",
-              );
-              return;
-            }
-          }
-
-          // ── Server action only when no local provider is configured ────────
-          if (!replyText && !hasByok && client) {
-            try {
-              const res = await client.action(api.agents.runPersona, {
-                responseLocale: currentModelLocale(),
+        // ── Try client-side AI first (BYOK) ─────────────────────────
+        const hasByok = hasConfiguredAiProvider(settings);
+        if (hasByok && settings) {
+          try {
+            const res = await runClientAgent(
+              "comment-reply",
+              {
                 persona: toAgentPersona(persona),
-                userMessage,
-                draftText: "",
                 brief: brief ?? null,
+                draftText: "",
                 priorMessages,
-              });
-              const result = res as {
-                reply?: string;
-                text?: string;
-                provider?: string;
-              };
-              if (result.provider === "local") {
-                store.askError = commentProviderError("ask-editor");
-                return;
-              }
-              replyText = (result.reply ?? result.text ?? "").trim();
-            } catch (err) {
-              store.askError = normalizeCommentError(
-                "twyne:comments:ask-editor-server",
-                err,
-                "convex",
-                "ask-editor",
-              );
+                userMessage,
+                instruction: "elaborate",
+              },
+              settings,
+              (snapshot) => {
+                if (active()) store.streamingEditorReply = snapshot.text;
+              },
+            );
+            if (!active()) return;
+            if (res && res.text.trim() && res.provider !== "local") {
+              replyText = res.text;
+            } else {
+              store.askError = commentProviderError("ask-editor");
               return;
             }
-          }
-
-          if (!replyText) {
-            store.askError = hasByok
-              ? commentProviderError("ask-editor")
-              : commentConfigurationError("ask-editor");
+          } catch (err) {
+            if (!active()) return;
+            store.askError = normalizeCommentError(
+              "twyne:comments:ask-editor-client",
+              err,
+              "provider",
+              "ask-editor",
+            );
             return;
           }
-          const reply: UserCommentReply = {
-            id: `r-${Date.now()}`,
-            author: persona.name,
-            authorKind: "persona",
-            personaId: persona.id,
-            color: persona.color,
-            text: replyText,
-            createdAt: Date.now(),
-          };
-          const all = await appendUserCommentReply(commentId, reply);
-          store.comments = all;
-          window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
-          store.askPersonaFor = null;
-          store.askPersonaId = null;
-        } catch (err) {
-          store.askError = normalizeCommentError(
-            "twyne:comments:ask-editor",
-            err,
-            hasConfiguredAiProvider(store.aiSettings) ? "provider" : "convex",
-            "ask-editor",
-          );
-        } finally {
+        }
+
+        // ── Server action only when no local provider is configured ────────
+        if (!replyText && !hasByok && client) {
+          try {
+            const res = await client.action(api.agents.runPersona, {
+              responseLocale: currentModelLocale(),
+              persona: toAgentPersona(persona),
+              userMessage,
+              draftText: "",
+              brief: brief ?? null,
+              priorMessages,
+            });
+            if (!active()) return;
+            const result = res as {
+              reply?: string;
+              text?: string;
+              provider?: string;
+            };
+            if (result.provider === "local") {
+              store.askError = commentProviderError("ask-editor");
+              return;
+            }
+            replyText = (result.reply ?? result.text ?? "").trim();
+          } catch (err) {
+            if (!active()) return;
+            store.askError = normalizeCommentError(
+              "twyne:comments:ask-editor-server",
+              err,
+              "convex",
+              "ask-editor",
+            );
+            return;
+          }
+        }
+
+        if (!replyText) {
+          store.askError = hasByok
+            ? commentProviderError("ask-editor")
+            : commentConfigurationError("ask-editor");
+          return;
+        }
+        if (!(await current())) return;
+        const reply: UserCommentReply = {
+          id: `r-${Date.now()}`,
+          author: persona.name,
+          authorKind: "persona",
+          personaId: persona.id,
+          color: persona.color,
+          text: replyText,
+          createdAt: Date.now(),
+        };
+        const all = await appendUserCommentReply(
+          commentId,
+          reply,
+          (stored) => active() && JSON.stringify(stored) === commentSnapshot,
+        );
+        if (!active()) return;
+        if (
+          !all
+            .find((c) => c.id === commentId)
+            ?.replies.some((r) => r.id === reply.id)
+        )
+          return;
+        store.comments = all.filter((c) => c.folioId === folioId);
+        window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+        store.askPersonaFor = null;
+        store.askPersonaId = null;
+      } catch (err) {
+        if (!active()) return;
+        store.askError = normalizeCommentError(
+          "twyne:comments:ask-editor",
+          err,
+          hasConfiguredAiProvider(store.aiSettings) ? "provider" : "convex",
+          "ask-editor",
+        );
+      } finally {
+        if (store.askGeneration === generation) {
           store.isAskingEditor = false;
           store.streamingEditorReply = "";
         }
-      },
-    );
+      }
+    },
+  );
 
-    // Selection actions and manuscript-side @mentions both route through the
-    // same thread/model path as the Marginalia UI. Keeping these listeners
-    // mounted is why closing the Board does not cancel or lose the requested
-    // reading.
-    // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(({ cleanup }) => {
-      const onSelectionRequest = (event: Event) => {
-        const detail = (
-          event as CustomEvent<{ commentId?: string; personaId?: string }>
-        ).detail;
-        if (!detail?.commentId || !detail.personaId) return;
-        void loadUserComments().then((all) => {
-          const comment = all.find(
-            (item) =>
-              item.id === detail.commentId && item.folioId === activeFolioId,
-          );
-          if (!comment) return;
-          store.comments = all.filter((item) => item.folioId === activeFolioId);
-          void askEditor(detail.commentId!, detail.personaId!);
-        });
+  // Selection actions and manuscript-side @mentions both route through the
+  // same thread/model path as the Marginalia UI. Keeping these listeners
+  // mounted is why closing the Board does not cancel or lose the requested
+  // reading.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    const onSelectionRequest = (event: Event) => {
+      const detail = (
+        event as CustomEvent<{
+          commentId?: string;
+          personaId?: string;
+          personaName?: string;
+        }>
+      ).detail;
+      if (!detail?.commentId || !detail.personaId) return;
+      const invitation = {
+        accountId: auth.value.user?.id ?? null,
+        folioId: props.activeFolioId,
       };
-      const onMentionRequest = (event: Event) => {
-        const detail = (
-          event as CustomEvent<{ commentId?: string; text?: string }>
-        ).detail;
-        if (!detail?.commentId || !detail.text?.trim()) return;
-        void loadUserComments().then((all) => {
-          const comment = all.find(
-            (item) =>
-              item.id === detail.commentId && item.folioId === activeFolioId,
-          );
-          if (!comment) return;
-          store.comments = all.filter((item) => item.folioId === activeFolioId);
-          void triggerMentions(detail.commentId!, detail.text!);
-        });
-      };
-      window.addEventListener(
+      void loadUserComments().then((all) => {
+        if (
+          invitation.accountId !== (auth.value.user?.id ?? null) ||
+          invitation.folioId !== props.activeFolioId
+        )
+          return;
+        const comment = all.find(
+          (item) =>
+            item.id === detail.commentId &&
+            item.folioId === props.activeFolioId,
+        );
+        if (!comment) return;
+        store.comments = all.filter(
+          (item) => item.folioId === props.activeFolioId,
+        );
+        void askEditor(
+          detail.commentId!,
+          detail.personaId!,
+          detail.personaName,
+          invitation,
+        );
+      });
+    };
+    const onMentionRequest = (event: Event) => {
+      const detail = (
+        event as CustomEvent<{ commentId?: string; text?: string }>
+      ).detail;
+      if (!detail?.commentId || !detail.text?.trim()) return;
+      void loadUserComments().then((all) => {
+        const comment = all.find(
+          (item) =>
+            item.id === detail.commentId && item.folioId === activeFolioId,
+        );
+        if (!comment) return;
+        store.comments = all.filter((item) => item.folioId === activeFolioId);
+        void triggerMentions(detail.commentId!, detail.text!);
+      });
+    };
+    window.addEventListener("twyne:ask-persona-on-comment", onSelectionRequest);
+    window.addEventListener("twyne:user-comment-mentions", onMentionRequest);
+    cleanup(() => {
+      window.removeEventListener(
         "twyne:ask-persona-on-comment",
         onSelectionRequest,
       );
-      window.addEventListener("twyne:user-comment-mentions", onMentionRequest);
-      cleanup(() => {
-        window.removeEventListener(
-          "twyne:ask-persona-on-comment",
-          onSelectionRequest,
-        );
-        window.removeEventListener(
-          "twyne:user-comment-mentions",
-          onMentionRequest,
-        );
-      });
+      window.removeEventListener(
+        "twyne:user-comment-mentions",
+        onMentionRequest,
+      );
     });
+  });
 
-    const unresolved = store.comments.filter((c) => {
-      if (c.folioId !== activeFolioId) return false;
-      if (c.resolved) return false;
-      // The "ghosts only" filter shows threads whose anchor
-      // passage is gone from the manuscript. Ghosts come first
-      // so the writer sees the orphans before anything else.
-      if (store.ghostsOnly && !store.ghostIds.has(c.id)) return false;
-      return true;
-    });
-    const resolved = store.comments.filter(
-      (c) => c.folioId === activeFolioId && c.resolved,
-    );
-    const mentionables: Mentionable[] = [
-      ...store.personas.map(personaToMentionable),
-      ...(collaborators ?? []),
-    ];
+  const unresolved = store.comments.filter((c) => {
+    if (c.folioId !== activeFolioId) return false;
+    if (c.resolved) return false;
+    // The "ghosts only" filter shows threads whose anchor
+    // passage is gone from the manuscript. Ghosts come first
+    // so the writer sees the orphans before anything else.
+    if (store.ghostsOnly && !store.ghostIds.has(c.id)) return false;
+    return true;
+  });
+  const resolved = store.comments.filter(
+    (c) => c.folioId === activeFolioId && c.resolved,
+  );
+  const mentionables: Mentionable[] = [
+    ...store.personas.map(personaToMentionable),
+    ...(collaborators ?? []),
+  ];
 
-    return (
-      <div class="flex h-full min-h-0 flex-col bg-[var(--color-paper-2)]">
-        <div class="shrink-0 px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-          <p class="dept-label">Notes in the Margin</p>
-          <h2
-            class="mt-0.5 text-xl text-[var(--color-ink)]"
-            style="font-family: var(--font-display); font-weight: 600;"
-          >
-            Marginalia
-          </h2>
-          <p
-            class="mt-2 text-[11px] tracking-[0.2em] uppercase text-[var(--color-ink-muted)]"
-            style="font-family: var(--font-typewriter);"
-          >
-            {unresolved.length} pending · {resolved.length} struck
-            {store.ghostIds.size > 0 && (
-              <span
-                class="ml-1 text-[var(--color-vermilion)]"
-                title="Threads whose anchor passage is no longer in the manuscript"
-              >
-                · {store.ghostIds.size} ghost
-                {store.ghostIds.size === 1 ? "" : "s"}
-              </span>
-            )}
-          </p>
+  return (
+    <div class="flex h-full min-h-0 flex-col bg-[var(--color-paper-2)]">
+      <div class="shrink-0 px-5 py-4 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+        <p class="dept-label">Notes in the Margin</p>
+        <h2
+          class="mt-0.5 text-xl text-[var(--color-ink)]"
+          style="font-family: var(--font-display); font-weight: 600;"
+        >
+          Marginalia
+        </h2>
+        <p
+          class="mt-2 text-[11px] tracking-[0.2em] uppercase text-[var(--color-ink-muted)]"
+          style="font-family: var(--font-typewriter);"
+        >
+          {unresolved.length} pending · {resolved.length} struck
           {store.ghostIds.size > 0 && (
-            <button
-              type="button"
-              onClick$={() => {
-                store.ghostsOnly = !store.ghostsOnly;
-              }}
-              class="mt-2 inline-flex items-center gap-1 text-[10px] tracking-[0.16em] uppercase border px-2 py-0.5"
-              style={{
-                fontFamily: "var(--font-typewriter)",
-                borderColor: store.ghostsOnly
-                  ? "var(--color-vermilion)"
-                  : "var(--color-paper-3)",
-                color: store.ghostsOnly
-                  ? "var(--color-vermilion)"
-                  : "var(--color-ink-muted)",
-                borderRadius: "1px",
-                background: store.ghostsOnly
-                  ? "rgba(193, 39, 45, 0.06)"
-                  : "transparent",
-              }}
+            <span
+              class="ml-1 text-[var(--color-vermilion)]"
+              title="Threads whose anchor passage is no longer in the manuscript"
             >
-              {store.ghostsOnly ? "✓ ghosts only" : "show ghosts only"}
-            </button>
+              · {store.ghostIds.size} ghost
+              {store.ghostIds.size === 1 ? "" : "s"}
+            </span>
           )}
-        </div>
+        </p>
+        {store.ghostIds.size > 0 && (
+          <button
+            type="button"
+            onClick$={() => {
+              store.ghostsOnly = !store.ghostsOnly;
+            }}
+            class="mt-2 inline-flex items-center gap-1 text-[10px] tracking-[0.16em] uppercase border px-2 py-0.5"
+            style={{
+              fontFamily: "var(--font-typewriter)",
+              borderColor: store.ghostsOnly
+                ? "var(--color-vermilion)"
+                : "var(--color-paper-3)",
+              color: store.ghostsOnly
+                ? "var(--color-vermilion)"
+                : "var(--color-ink-muted)",
+              borderRadius: "1px",
+              background: store.ghostsOnly
+                ? "rgba(193, 39, 45, 0.06)"
+                : "transparent",
+            }}
+          >
+            {store.ghostsOnly ? "✓ ghosts only" : "show ghosts only"}
+          </button>
+        )}
+      </div>
 
-        <div class="shrink-0 px-4 py-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
-          <p class="panel-prose text-[var(--color-ink-light)]">
-            Select a passage, then choose <strong>Add margin</strong>. Your note
-            opens beside the text and appears here once placed.
-          </p>
-        </div>
+      <div class="shrink-0 px-4 py-3 border-b border-[var(--color-paper-3)] bg-[var(--color-paper-soft)]">
+        <p class="panel-prose text-[var(--color-ink-light)]">
+          Select a passage, then choose <strong>Add margin</strong>. Your note
+          opens beside the text and appears here once placed.
+        </p>
+      </div>
 
-        <div class="min-h-0 flex-1 overscroll-contain overflow-y-auto">
-          {store.comments.length === 0 && (
-            <div class="text-center py-10 px-6">
-              <p
-                class="text-3xl"
-                style="font-family: var(--font-display); color: var(--color-writer-note);"
-              >
-                ✎
-              </p>
-              <p
-                class="mt-3 text-sm text-[var(--color-ink-light)]"
-                style="font-family: var(--font-serif); font-style: italic;"
-              >
-                The margins are quiet.
-              </p>
-              <p
-                class="mt-1.5 text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
-                style="font-family: var(--font-typewriter);"
-              >
-                Select a passage to add the first note.
-              </p>
-            </div>
-          )}
+      <div class="min-h-0 flex-1 overscroll-contain overflow-y-auto">
+        {store.comments.length === 0 && (
+          <div class="text-center py-10 px-6">
+            <p
+              class="text-3xl"
+              style="font-family: var(--font-display); color: var(--color-writer-note);"
+            >
+              ✎
+            </p>
+            <p
+              class="mt-3 text-sm text-[var(--color-ink-light)]"
+              style="font-family: var(--font-serif); font-style: italic;"
+            >
+              The margins are quiet.
+            </p>
+            <p
+              class="mt-1.5 text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
+              style="font-family: var(--font-typewriter);"
+            >
+              Select a passage to add the first note.
+            </p>
+          </div>
+        )}
 
-          {unresolved.length > 0 && (
-            <div class="px-4 pt-4 pb-2">
-              <p class="dept-label">Pending</p>
-            </div>
-          )}
-          {unresolved.map((comment) => {
-            const isAsking = store.askPersonaFor === comment.id;
-            const isReplying = store.replyingTo === comment.id;
-            return (
-              <div
-                key={comment.id}
-                data-comment-id={comment.id}
-                class="px-4 py-3 mx-3 mb-2 border border-[var(--color-paper-3)]"
-                style="border-radius: 2px; background: color-mix(in srgb, var(--color-writer-note) 6%, var(--color-paper));"
-              >
-                <div class="flex items-start justify-between">
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-baseline gap-2 mb-1">
-                      <span
-                        class="text-xs text-[var(--color-ink)]"
-                        style="font-family: var(--font-display); font-weight: 600;"
-                      >
-                        {comment.author}
-                      </span>
-                      <span
-                        class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
-                        style="font-family: var(--font-typewriter);"
-                      >
-                        {getTimeAgo(comment.updatedAt ?? comment.createdAt)}
-                      </span>
-                    </div>
-                    {comment.anchor && (
-                      <p
-                        class="text-xs italic text-[var(--color-ink-light)] mb-1 border-l border-[var(--color-writer-note)] pl-2"
-                        style="font-family: var(--font-serif);"
-                      >
-                        « {truncate(comment.anchor, 120)} »
-                      </p>
-                    )}
-                    <div
-                      class="comment-markdown text-sm text-[var(--color-ink-light)] leading-6"
-                      style="font-family: var(--font-serif);"
-                      dangerouslySetInnerHTML={renderMarkdown(comment.text)}
-                    />
-                    {comment.audioId && (
-                      <VoiceNotePlayback
-                        audioId={comment.audioId}
-                        durationMs={comment.audioDurationMs}
-                      />
-                    )}
-                  </div>
-                  <div class="flex items-center gap-1 ml-2 flex-shrink-0">
-                    <button
-                      onClick$={() => resolveComment(comment.id)}
-                      class="icon-btn text-sm hover:text-[var(--color-accent-green)]"
-                      aria-label="Strike"
-                      title="Strike — mark as addressed"
-                    >
-                      ✓
-                    </button>
-                    <button
-                      onClick$={() => deleteComment(comment.id)}
-                      class="icon-btn text-sm hover:text-[var(--color-vermilion)]"
-                      aria-label="Erase"
-                      title="Erase"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-                {comment.replies.length > 0 && (
-                  <div class="mt-2 ml-4 pl-3 border-l border-dashed border-[var(--color-paper-3)] space-y-2">
-                    {comment.replies.map((reply) => (
-                      <div key={reply.id}>
-                        <div class="flex items-baseline gap-2 mb-0.5">
-                          <span
-                            class="text-xs"
-                            style={{
-                              fontFamily: "var(--font-display)",
-                              fontWeight: 600,
-                              color:
-                                reply.authorKind === "persona" && reply.color
-                                  ? reply.color
-                                  : "var(--color-ink-light)",
-                            }}
-                          >
-                            {reply.author}
-                            {reply.authorKind === "persona" && (
-                              <span
-                                class="ml-1.5 text-[0.55rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
-                                style="font-family: var(--font-typewriter);"
-                              >
-                                editor
-                              </span>
-                            )}
-                          </span>
-                          <span
-                            class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
-                            style="font-family: var(--font-typewriter);"
-                          >
-                            {getTimeAgo(reply.createdAt)}
-                          </span>
-                          {reply.authorKind === "persona" && (
-                            <SpeakButton
-                              compact
-                              id={`comment-reply-${reply.id}`}
-                              text={reply.text}
-                              voice={
-                                store.personas.find(
-                                  (p) => p.id === reply.personaId,
-                                )?.speechVoice
-                              }
-                              voices={
-                                store.personas.find(
-                                  (p) => p.id === reply.personaId,
-                                )?.speechVoices
-                              }
-                              instructions={
-                                store.personas.find(
-                                  (p) => p.id === reply.personaId,
-                                )?.voice
-                              }
-                              label={reply.author}
-                            />
-                          )}
-                        </div>
-                        <div
-                          data-speech-id={
-                            reply.authorKind === "persona"
-                              ? `comment-reply-${reply.id}`
-                              : undefined
-                          }
-                          class="comment-markdown text-xs text-[var(--color-ink-light)] leading-5"
-                          style={{
-                            fontFamily: "var(--font-serif)",
-                            fontStyle:
-                              reply.authorKind === "persona"
-                                ? "italic"
-                                : "normal",
-                          }}
-                          dangerouslySetInnerHTML={renderMarkdown(reply.text)}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {isAsking ? (
-                  <div
-                    class="mt-2 p-2 border border-[var(--color-paper-3)]"
-                    style="border-radius: 2px; background: var(--color-paper-2);"
-                  >
-                    <p
-                      class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] mb-1.5"
-                      style="font-family: var(--font-typewriter);"
-                    >
-                      Ask an editor
-                    </p>
-                    <div class="flex flex-wrap gap-1 mb-2">
-                      {store.personas.map((persona) => (
-                        <button
-                          key={persona.id}
-                          onClick$={() => (store.askPersonaId = persona.id)}
-                          class="text-[0.7rem] px-1.5 py-0.5 border"
-                          style={{
-                            borderColor:
-                              store.askPersonaId === persona.id
-                                ? persona.color
-                                : "var(--color-paper-3)",
-                            color:
-                              store.askPersonaId === persona.id
-                                ? persona.color
-                                : "var(--color-ink-light)",
-                            fontFamily: "var(--font-typewriter)",
-                            borderRadius: "1px",
-                          }}
-                        >
-                          {persona.icon} {persona.name}
-                        </button>
-                      ))}
-                    </div>
-                    {store.askError && (
-                      <div class="mb-2">
-                        <ApplicationNotice
-                          error={store.askError}
-                          compact
-                          recoveryLabel="Open AI settings"
-                          recoveryHref="/settings/"
-                          onRetry$={
-                            store.askError.recovery.canRetry
-                              ? () => askEditor(comment.id)
-                              : undefined
-                          }
-                          onDismiss$={() => {
-                            store.askError = null;
-                          }}
-                        />
-                      </div>
-                    )}
-                    {store.isAskingEditor && (
-                      <div
-                        class="comment-markdown mb-2 p-2 border-l-2 text-xs leading-5 text-[var(--color-ink-light)]"
-                        style={{
-                          borderColor:
-                            store.personas.find(
-                              (persona) => persona.id === store.askPersonaId,
-                            )?.color ?? "var(--color-paper-3)",
-                          fontFamily: "var(--font-serif)",
-                        }}
-                        aria-live="polite"
-                        dangerouslySetInnerHTML={renderMarkdown(
-                          store.streamingEditorReply ||
-                            "The editor is beginning to write…",
-                        )}
-                      />
-                    )}
-                    <div class="flex gap-3">
-                      <button
-                        onClick$={() => askEditor(comment.id)}
-                        disabled={!store.askPersonaId || store.isAskingEditor}
-                        class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)] disabled:opacity-40"
-                        style="font-family: var(--font-typewriter);"
-                      >
-                        {store.isAskingEditor
-                          ? "Editor is reading…"
-                          : "Send to editor"}
-                      </button>
-                      <button
-                        onClick$={() => {
-                          store.askPersonaFor = null;
-                          store.askPersonaId = null;
-                          store.askError = null;
-                        }}
-                        class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
-                        style="font-family: var(--font-typewriter);"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : isReplying ? (
-                  <div class="mt-2 space-y-2">
-                    <div class="relative">
-                      <textarea
-                        id={mentionInputId(comment.id)}
-                        value={store.replyDrafts[comment.id] ?? ""}
-                        aria-label="Reply to note"
-                        role="combobox"
-                        aria-expanded={store.mentionTarget === comment.id}
-                        aria-controls={mentionListId(comment.id)}
-                        aria-activedescendant={
-                          store.mentionTarget === comment.id
-                            ? mentionOptionId(
-                                mentionListId(comment.id),
-                                filterMentionables(
-                                  mentionables,
-                                  store.mentionQuery,
-                                )[store.mentionIndex]?.id ?? "",
-                              )
-                            : undefined
-                        }
-                        onInput$={(e) => {
-                          const el = e.target as HTMLTextAreaElement;
-                          store.replyDrafts[comment.id] = el.value;
-                          const q = activeMentionQuery(
-                            el.value,
-                            el.selectionStart,
-                          );
-                          if (q !== null) {
-                            store.mentionTarget = comment.id;
-                            store.mentionQuery = q;
-                            store.mentionIndex = 0;
-                          } else if (store.mentionTarget === comment.id) {
-                            store.mentionTarget = null;
-                          }
-                        }}
-                        onKeyDown$={(e) => {
-                          const el = e.target as HTMLTextAreaElement;
-                          if (store.mentionTarget === comment.id) {
-                            const candidates = filterMentionables(
-                              mentionables,
-                              store.mentionQuery,
-                            );
-                            if (e.key === "Escape") {
-                              store.mentionTarget = null;
-                              return;
-                            }
-                            if (candidates.length > 0) {
-                              if (
-                                e.key === "ArrowDown" ||
-                                e.key === "ArrowUp"
-                              ) {
-                                e.preventDefault();
-                                const step = e.key === "ArrowDown" ? 1 : -1;
-                                store.mentionIndex =
-                                  (store.mentionIndex +
-                                    step +
-                                    candidates.length) %
-                                  candidates.length;
-                                return;
-                              }
-                              if (
-                                (e.key === "Enter" &&
-                                  !e.metaKey &&
-                                  !e.ctrlKey) ||
-                                e.key === "Tab"
-                              ) {
-                                e.preventDefault();
-                                const item = candidates[store.mentionIndex];
-                                if (item) {
-                                  const applied = applyMention(
-                                    store.replyDrafts[comment.id] ?? "",
-                                    item.name,
-                                    el.selectionStart,
-                                  );
-                                  store.replyDrafts[comment.id] = applied.text;
-                                  store.mentionTarget = null;
-                                  restoreMentionCaret(
-                                    comment.id,
-                                    applied.caret,
-                                  );
-                                }
-                                return;
-                              }
-                            }
-                          }
-                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                            void addReply(
-                              comment.id,
-                              store.replyDrafts[comment.id] ?? "",
-                            );
-                          }
-                        }}
-                        onBlur$={(e) => {
-                          if (
-                            store.mentionTarget === comment.id &&
-                            blurLeavesMentionUi(e)
-                          ) {
-                            store.mentionTarget = null;
-                          }
-                        }}
-                        placeholder="Annotate… (@ to tag an editor)"
-                        class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-writer-note)]"
-                        style={commentEditorStyle("reply")}
-                        rows={5}
-                      />
-                      {store.mentionTarget === comment.id && (
-                        <MentionDropdown
-                          id={mentionListId(comment.id)}
-                          items={mentionables}
-                          query={store.mentionQuery}
-                          activeIndex={store.mentionIndex}
-                          size="sm"
-                          onSelect$={$((item: Mentionable) => {
-                            const draft = store.replyDrafts[comment.id] ?? "";
-                            const el = document.getElementById(
-                              mentionInputId(comment.id),
-                            ) as HTMLTextAreaElement | null;
-                            const applied = applyMention(
-                              draft,
-                              item.name,
-                              el?.selectionStart ?? draft.length,
-                            );
-                            store.replyDrafts[comment.id] = applied.text;
-                            store.mentionTarget = null;
-                            restoreMentionCaret(comment.id, applied.caret);
-                          })}
-                        />
-                      )}
-                    </div>
-                    <div class="flex gap-3">
-                      <button
-                        onClick$={() =>
-                          addReply(
-                            comment.id,
-                            store.replyDrafts[comment.id] ?? "",
-                          )
-                        }
-                        class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)]"
-                        style="font-family: var(--font-typewriter);"
-                      >
-                        File reply
-                      </button>
-                      <button
-                        onClick$={() => {
-                          store.replyingTo = null;
-                          store.replyDrafts[comment.id] = "";
-                        }}
-                        class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
-                        style="font-family: var(--font-typewriter);"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div class="mt-2 flex gap-3">
-                    <button
-                      onClick$={() => (store.replyingTo = comment.id)}
-                      class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
-                      style="font-family: var(--font-typewriter);"
-                    >
-                      + Annotate
-                    </button>
-                    <button
-                      onClick$={() => {
-                        store.askPersonaFor = comment.id;
-                        store.askPersonaId = store.personas[0]?.id ?? null;
-                        store.askError = null;
-                      }}
-                      class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
-                      style="font-family: var(--font-typewriter);"
-                    >
-                      ✎ Ask an editor
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {resolved.length > 0 && (
-            <div class="px-4 pt-5 pb-2">
-              <p class="dept-label">Struck</p>
-            </div>
-          )}
-          {resolved.map((comment) => (
+        {unresolved.length > 0 && (
+          <div class="px-4 pt-4 pb-2">
+            <p class="dept-label">Pending</p>
+          </div>
+        )}
+        {unresolved.map((comment) => {
+          const isAsking = store.askPersonaFor === comment.id;
+          const isReplying = store.replyingTo === comment.id;
+          return (
             <div
               key={comment.id}
               data-comment-id={comment.id}
-              class="px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] opacity-55"
-              style="border-radius: 2px;"
+              class="px-4 py-3 mx-3 mb-2 border border-[var(--color-paper-3)]"
+              style="border-radius: 2px; background: color-mix(in srgb, var(--color-writer-note) 6%, var(--color-paper));"
             >
               <div class="flex items-start justify-between">
                 <div class="flex-1 min-w-0">
@@ -1044,39 +744,446 @@ export const CommentsPanel = component$(
                       « {truncate(comment.anchor, 120)} »
                     </p>
                   )}
-                  <p
-                    class="text-sm text-[var(--color-ink-light)] line-through decoration-[var(--color-ink-muted)] decoration-1"
+                  <div
+                    class="comment-markdown text-sm text-[var(--color-ink-light)] leading-6"
                     style="font-family: var(--font-serif);"
                   >
-                    {comment.text}
-                  </p>
+                    <CommentBody text={comment.text} />
+                  </div>
+                  {comment.audioId && (
+                    <VoiceNotePlayback
+                      audioId={comment.audioId}
+                      durationMs={comment.audioDurationMs}
+                    />
+                  )}
                 </div>
                 <div class="flex items-center gap-1 ml-2 flex-shrink-0">
                   <button
                     onClick$={() => resolveComment(comment.id)}
                     class="icon-btn text-sm hover:text-[var(--color-accent-green)]"
-                    aria-label="Restore note"
-                    title="Restore"
+                    aria-label="Strike"
+                    title="Strike — mark as addressed"
                   >
-                    ↩
+                    ✓
                   </button>
                   <button
                     onClick$={() => deleteComment(comment.id)}
                     class="icon-btn text-sm hover:text-[var(--color-vermilion)]"
-                    aria-label="Erase note"
+                    aria-label="Erase"
                     title="Erase"
                   >
                     ✕
                   </button>
                 </div>
               </div>
+              {comment.replies.length > 0 && (
+                <div class="mt-2 ml-4 pl-3 border-l border-dashed border-[var(--color-paper-3)] space-y-2">
+                  {comment.replies.map((reply) => (
+                    <div key={reply.id}>
+                      <div class="flex flex-wrap items-center gap-2 mb-1.5">
+                        {reply.authorKind === "persona" ? (
+                          <PersonaMasthead
+                            personaId={reply.personaId}
+                            name={reply.author}
+                            role={
+                              store.personas.find(
+                                (p) => p.id === reply.personaId,
+                              )?.role
+                            }
+                            size={56}
+                          />
+                        ) : (
+                          <span
+                            class="text-xs text-[var(--color-ink-light)]"
+                            style="font-family: var(--font-display); font-weight: 600;"
+                          >
+                            {reply.author}
+                          </span>
+                        )}
+                        <span
+                          class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
+                          style="font-family: var(--font-typewriter);"
+                        >
+                          {getTimeAgo(reply.createdAt)}
+                        </span>
+                        {reply.authorKind === "persona" && (
+                          <SpeakButton
+                            compact
+                            id={`comment-reply-${reply.id}`}
+                            text={reply.text}
+                            voice={
+                              store.personas.find(
+                                (p) => p.id === reply.personaId,
+                              )?.speechVoice
+                            }
+                            voices={
+                              store.personas.find(
+                                (p) => p.id === reply.personaId,
+                              )?.speechVoices
+                            }
+                            instructions={
+                              store.personas.find(
+                                (p) => p.id === reply.personaId,
+                              )?.voice
+                            }
+                            label={reply.author}
+                          />
+                        )}
+                      </div>
+                      <div
+                        data-speech-id={
+                          reply.authorKind === "persona"
+                            ? `comment-reply-${reply.id}`
+                            : undefined
+                        }
+                        class="comment-markdown text-xs text-[var(--color-ink-light)] leading-5"
+                        style={{
+                          fontFamily: "var(--font-serif)",
+                          fontStyle:
+                            reply.authorKind === "persona"
+                              ? "italic"
+                              : "normal",
+                        }}
+                        dangerouslySetInnerHTML={renderMarkdown(reply.text)}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {isAsking ? (
+                <div
+                  class="mt-2 p-2 border border-[var(--color-paper-3)]"
+                  style="border-radius: 2px; background: var(--color-paper-2);"
+                >
+                  <p
+                    class="text-[0.6rem] tracking-[0.15em] uppercase text-[var(--color-ink-muted)] mb-1.5"
+                    style="font-family: var(--font-typewriter);"
+                  >
+                    Ask an editor
+                  </p>
+                  <div class="flex flex-wrap gap-1 mb-2">
+                    {store.personas.map((persona) => (
+                      <button
+                        key={persona.id}
+                        onClick$={() => (store.askPersonaId = persona.id)}
+                        class="text-[0.7rem] px-1.5 py-0.5 border"
+                        style={{
+                          borderColor:
+                            store.askPersonaId === persona.id
+                              ? persona.color
+                              : "var(--color-paper-3)",
+                          color:
+                            store.askPersonaId === persona.id
+                              ? persona.color
+                              : "var(--color-ink-light)",
+                          fontFamily: "var(--font-typewriter)",
+                          borderRadius: "1px",
+                        }}
+                      >
+                        {persona.icon} {persona.name}
+                      </button>
+                    ))}
+                  </div>
+                  {store.askError && (
+                    <div class="mb-2">
+                      <ApplicationNotice
+                        error={store.askError}
+                        compact
+                        recoveryLabel="Open AI settings"
+                        recoveryHref="/settings/"
+                        onRetry$={
+                          store.askError.recovery.canRetry
+                            ? () => askEditor(comment.id)
+                            : undefined
+                        }
+                        onDismiss$={() => {
+                          store.askError = null;
+                        }}
+                      />
+                    </div>
+                  )}
+                  {store.isAskingEditor && (
+                    <div
+                      class="comment-markdown mb-2 p-2 border-l-2 text-xs leading-5 text-[var(--color-ink-light)]"
+                      style={{
+                        borderColor:
+                          store.personas.find(
+                            (persona) => persona.id === store.askPersonaId,
+                          )?.color ?? "var(--color-paper-3)",
+                        fontFamily: "var(--font-serif)",
+                      }}
+                      aria-live="polite"
+                      dangerouslySetInnerHTML={renderMarkdown(
+                        store.streamingEditorReply ||
+                          "The editor is beginning to write…",
+                      )}
+                    />
+                  )}
+                  <div class="flex gap-3">
+                    <button
+                      onClick$={() => askEditor(comment.id)}
+                      disabled={!store.askPersonaId || store.isAskingEditor}
+                      class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)] disabled:opacity-40"
+                      style="font-family: var(--font-typewriter);"
+                    >
+                      {store.isAskingEditor
+                        ? "Editor is reading…"
+                        : "Send to editor"}
+                    </button>
+                    <button
+                      onClick$={() => {
+                        store.askPersonaFor = null;
+                        store.askPersonaId = null;
+                        store.askError = null;
+                      }}
+                      class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
+                      style="font-family: var(--font-typewriter);"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : isReplying ? (
+                <div class="mt-2 space-y-2">
+                  <div class="relative">
+                    <textarea
+                      id={mentionInputId(comment.id)}
+                      value={store.replyDrafts[comment.id] ?? ""}
+                      aria-label="Reply to note"
+                      role="combobox"
+                      aria-expanded={store.mentionTarget === comment.id}
+                      aria-controls={mentionListId(comment.id)}
+                      aria-activedescendant={
+                        store.mentionTarget === comment.id
+                          ? mentionOptionId(
+                              mentionListId(comment.id),
+                              filterMentionables(
+                                mentionables,
+                                store.mentionQuery,
+                              )[store.mentionIndex]?.id ?? "",
+                            )
+                          : undefined
+                      }
+                      onInput$={(e) => {
+                        const el = e.target as HTMLTextAreaElement;
+                        store.replyDrafts[comment.id] = el.value;
+                        const q = activeMentionQuery(
+                          el.value,
+                          el.selectionStart,
+                        );
+                        if (q !== null) {
+                          store.mentionTarget = comment.id;
+                          store.mentionQuery = q;
+                          store.mentionIndex = 0;
+                        } else if (store.mentionTarget === comment.id) {
+                          store.mentionTarget = null;
+                        }
+                      }}
+                      onKeyDown$={(e) => {
+                        const el = e.target as HTMLTextAreaElement;
+                        if (store.mentionTarget === comment.id) {
+                          const candidates = filterMentionables(
+                            mentionables,
+                            store.mentionQuery,
+                          );
+                          if (e.key === "Escape") {
+                            store.mentionTarget = null;
+                            return;
+                          }
+                          if (candidates.length > 0) {
+                            if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                              e.preventDefault();
+                              const step = e.key === "ArrowDown" ? 1 : -1;
+                              store.mentionIndex =
+                                (store.mentionIndex +
+                                  step +
+                                  candidates.length) %
+                                candidates.length;
+                              return;
+                            }
+                            if (
+                              (e.key === "Enter" && !e.metaKey && !e.ctrlKey) ||
+                              e.key === "Tab"
+                            ) {
+                              e.preventDefault();
+                              const item = candidates[store.mentionIndex];
+                              if (item) {
+                                const applied = applyMention(
+                                  store.replyDrafts[comment.id] ?? "",
+                                  item.name,
+                                  el.selectionStart,
+                                );
+                                store.replyDrafts[comment.id] = applied.text;
+                                store.mentionTarget = null;
+                                restoreMentionCaret(comment.id, applied.caret);
+                              }
+                              return;
+                            }
+                          }
+                        }
+                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                          void addReply(
+                            comment.id,
+                            store.replyDrafts[comment.id] ?? "",
+                          );
+                        }
+                      }}
+                      onBlur$={(e) => {
+                        if (
+                          store.mentionTarget === comment.id &&
+                          blurLeavesMentionUi(e)
+                        ) {
+                          store.mentionTarget = null;
+                        }
+                      }}
+                      placeholder="Annotate… (@ to tag an editor)"
+                      class="w-full px-2 py-1.5 text-xs bg-[var(--color-paper-soft)] border border-[var(--color-paper-3)] focus:outline-none focus:border-[var(--color-writer-note)]"
+                      style={commentEditorStyle("reply")}
+                      rows={5}
+                    />
+                    {store.mentionTarget === comment.id && (
+                      <MentionDropdown
+                        id={mentionListId(comment.id)}
+                        items={mentionables}
+                        query={store.mentionQuery}
+                        activeIndex={store.mentionIndex}
+                        size="sm"
+                        onSelect$={$((item: Mentionable) => {
+                          const draft = store.replyDrafts[comment.id] ?? "";
+                          const el = document.getElementById(
+                            mentionInputId(comment.id),
+                          ) as HTMLTextAreaElement | null;
+                          const applied = applyMention(
+                            draft,
+                            item.name,
+                            el?.selectionStart ?? draft.length,
+                          );
+                          store.replyDrafts[comment.id] = applied.text;
+                          store.mentionTarget = null;
+                          restoreMentionCaret(comment.id, applied.caret);
+                        })}
+                      />
+                    )}
+                  </div>
+                  <div class="flex gap-3">
+                    <button
+                      onClick$={() =>
+                        addReply(
+                          comment.id,
+                          store.replyDrafts[comment.id] ?? "",
+                        )
+                      }
+                      class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-vermilion)] hover:text-[var(--color-vermilion-2)]"
+                      style="font-family: var(--font-typewriter);"
+                    >
+                      File reply
+                    </button>
+                    <button
+                      onClick$={() => {
+                        store.replyingTo = null;
+                        store.replyDrafts[comment.id] = "";
+                      }}
+                      class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)]"
+                      style="font-family: var(--font-typewriter);"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div class="mt-2 flex gap-3">
+                  <button
+                    onClick$={() => (store.replyingTo = comment.id)}
+                    class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-vermilion)]"
+                    style="font-family: var(--font-typewriter);"
+                  >
+                    + Annotate
+                  </button>
+                  <button
+                    onClick$={() => {
+                      store.askPersonaFor = comment.id;
+                      store.askPersonaId = store.personas[0]?.id ?? null;
+                      store.askError = null;
+                    }}
+                    class="text-[11px] tracking-[0.18em] uppercase text-[var(--color-ink-muted)] hover:text-[var(--color-accent)]"
+                    style="font-family: var(--font-typewriter);"
+                  >
+                    ✎ Ask an editor
+                  </button>
+                </div>
+              )}
             </div>
-          ))}
-        </div>
+          );
+        })}
+
+        {resolved.length > 0 && (
+          <div class="px-4 pt-5 pb-2">
+            <p class="dept-label">Struck</p>
+          </div>
+        )}
+        {resolved.map((comment) => (
+          <div
+            key={comment.id}
+            data-comment-id={comment.id}
+            class="px-4 py-3 mx-3 mb-2 bg-[var(--color-paper)] border border-[var(--color-paper-3)] opacity-55"
+            style="border-radius: 2px;"
+          >
+            <div class="flex items-start justify-between">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-baseline gap-2 mb-1">
+                  <span
+                    class="text-xs text-[var(--color-ink)]"
+                    style="font-family: var(--font-display); font-weight: 600;"
+                  >
+                    {comment.author}
+                  </span>
+                  <span
+                    class="text-[10px] tracking-[0.15em] uppercase text-[var(--color-ink-muted)]"
+                    style="font-family: var(--font-typewriter);"
+                  >
+                    {getTimeAgo(comment.updatedAt ?? comment.createdAt)}
+                  </span>
+                </div>
+                {comment.anchor && (
+                  <p
+                    class="text-xs italic text-[var(--color-ink-light)] mb-1 border-l border-[var(--color-writer-note)] pl-2"
+                    style="font-family: var(--font-serif);"
+                  >
+                    « {truncate(comment.anchor, 120)} »
+                  </p>
+                )}
+                <p
+                  class="text-sm text-[var(--color-ink-light)] line-through decoration-[var(--color-ink-muted)] decoration-1"
+                  style="font-family: var(--font-serif);"
+                >
+                  {comment.text}
+                </p>
+              </div>
+              <div class="flex items-center gap-1 ml-2 flex-shrink-0">
+                <button
+                  onClick$={() => resolveComment(comment.id)}
+                  class="icon-btn text-sm hover:text-[var(--color-accent-green)]"
+                  aria-label="Restore note"
+                  title="Restore"
+                >
+                  ↩
+                </button>
+                <button
+                  onClick$={() => deleteComment(comment.id)}
+                  class="icon-btn text-sm hover:text-[var(--color-vermilion)]"
+                  aria-label="Erase note"
+                  title="Erase"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-    );
-  },
-);
+    </div>
+  );
+});
 
 function getTimeAgo(timestamp: number): string {
   const seconds = Math.floor((Date.now() - timestamp) / 1000);

@@ -201,6 +201,64 @@ test("Words changes one use in context and Place preserves marked text with one 
   await expect.poll(() => manuscript(page).innerHTML()).toBe(original);
 });
 
+test("checked candidate refresh preserves the chosen pane and unfinished wording", async ({
+  page,
+}) => {
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let requests = 0;
+  await page.route(/harper_wasm.*\.wasm/, async (route) => {
+    requests++;
+    await held;
+    await route.continue();
+  });
+  try {
+    await seed(page);
+    const original = await manuscript(page).innerHTML();
+    const originalText = await draftText(page);
+    await openBench(page);
+    await bench(page)
+      .getByRole("button", { name: "Words", exact: true })
+      .click();
+    await bench(page)
+      .getByRole("button", { name: "quiet", exact: true })
+      .click();
+    await bench(page)
+      .locator(".in-flow-choice")
+      .filter({ hasText: "no sound" })
+      .click();
+    const chosen = INSTRUMENT_SENTENCE.replace("quiet", "silent");
+    await expect(bench(page).locator("textarea")).toHaveValue(chosen);
+    await expect.poll(() => requests).toBeGreaterThan(0);
+    release();
+    // A real Harper check updates the spec; no candidate or model response is stubbed.
+    await expect(benchHost(page)).toContainText("Wordings checked locally.");
+    await expect(
+      bench(page).getByRole("button", { name: "Words", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(bench(page).locator("textarea")).toHaveValue(chosen);
+    await bench(page).locator("textarea").hover();
+    await expect.poll(() => draftText(page)).toBe(originalText);
+    await bench(page)
+      .getByRole("button", { name: "Use this wording", exact: true })
+      .click();
+    await expect(manuscript(page)).toContainText(chosen);
+    await undo(page);
+    await expect.poll(() => manuscript(page).innerHTML()).toBe(original);
+    await openBench(page);
+    await expect(bench(page).locator("textarea")).toHaveValue(
+      INSTRUMENT_SENTENCE,
+    );
+    await expect(
+      bench(page).getByRole("button", { name: "Rewrite", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+  } finally {
+    release();
+  }
+});
+
 test("Threads uses real spans, removes a repeat, undoes and closes with Escape", async ({
   page,
 }, info) => {

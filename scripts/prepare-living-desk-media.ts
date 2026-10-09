@@ -139,8 +139,12 @@ await writeFile(
 );
 const manifest = {
   capturedAt: new Date().toISOString(),
-  sourceRevision: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
-  sourceHadLocalChanges: execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim().length > 0,
+  sourceRevision: execFileSync("git", ["rev-parse", "HEAD"], {
+    encoding: "utf8",
+  }).trim(),
+  sourceHadLocalChanges:
+    execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }).trim()
+      .length > 0,
   sample: "Fictional flood memoir from e2e/fixtures/living-desk.ts",
   models: "None. Actual local rules, editor transactions and undo.",
   verification:

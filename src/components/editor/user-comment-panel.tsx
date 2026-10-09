@@ -1,6 +1,8 @@
 import { component$, type PropFunction } from "@qwik.dev/core";
 import { renderMarkdown } from "../../utils/markdown";
+import { CommentBody } from "../comments/comment-body";
 import { SpeakButton } from "../ui/speak-button";
+import { PersonaMasthead } from "../personas/persona-portrait";
 import type { UserCommentPopover } from "./editor-state";
 
 interface UserCommentPanelProps {
@@ -132,8 +134,9 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
               data-speech-id={`user-comment-${comment.id}`}
               class="comment-markdown text-[0.95rem] leading-6 text-[var(--color-ink)]"
               style="font-family: var(--font-serif);"
-              dangerouslySetInnerHTML={renderMarkdown(comment.text)}
-            />
+            >
+              <CommentBody text={comment.text} />
+            </div>
 
             {comment.replies.length > 0 && (
               <div
@@ -142,22 +145,22 @@ export const UserCommentPanel = component$<UserCommentPanelProps>((props) => {
               >
                 {comment.replies.map((reply) => (
                   <div key={reply.id} class="text-[0.85rem]">
-                    <p
-                      class="text-[0.6rem] tracking-[0.16em] uppercase"
-                      style={{
-                        fontFamily: "var(--font-typewriter)",
-                        color:
-                          reply.authorKind === "persona" && reply.color
-                            ? reply.color
-                            : "var(--color-ink-muted)",
-                      }}
-                    >
-                      {reply.author}
-                      {reply.authorKind === "persona" && (
-                        <span class="ml-1.5 opacity-70">editor</span>
-                      )}{" "}
-                      · {timeAgo(reply.createdAt)}
-                    </p>
+                    {reply.authorKind === "persona" ? (
+                      <PersonaMasthead
+                        personaId={reply.personaId}
+                        name={reply.author}
+                        label={timeAgo(reply.createdAt)}
+                        size={56}
+                        class="mb-1.5"
+                      />
+                    ) : (
+                      <p
+                        class="text-[0.6rem] tracking-[0.16em] uppercase text-[var(--color-ink-muted)]"
+                        style="font-family: var(--font-typewriter);"
+                      >
+                        {reply.author} · {timeAgo(reply.createdAt)}
+                      </p>
+                    )}
                     <div
                       class="comment-markdown mt-0.5 text-[var(--color-ink-light)] leading-5"
                       style={{

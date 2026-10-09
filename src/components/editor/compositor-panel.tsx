@@ -1,4 +1,9 @@
-import { component$, useSignal, useVisibleTask$, type PropFunction } from "@qwik.dev/core";
+import {
+  component$,
+  useSignal,
+  useVisibleTask$,
+  type PropFunction,
+} from "@qwik.dev/core";
 import type { LayoutSettings } from "../../types";
 import {
   MARGIN_RANGE,
@@ -31,7 +36,13 @@ import { MANUSCRIPT_READING_ID } from "./manuscript-panel";
 import { SyncDot } from "./sync-indicator";
 import { openLiveVoice } from "../../utils/live-voice-workspace";
 import { openInstrumentDock } from "../../utils/instrument-dock";
-import { LIVING_DESK_EVENT, LIVING_DESK_TOGGLE_EVENT, livingDeskController, livingDeskSnapshot, type LivingDeskSnapshot } from "../../utils/living-desk-contract";
+import {
+  LIVING_DESK_EVENT,
+  LIVING_DESK_TOGGLE_EVENT,
+  livingDeskController,
+  livingDeskSnapshot,
+  type LivingDeskSnapshot,
+} from "../../utils/living-desk-contract";
 
 interface CompositorPanelProps {
   store: EditorPanelState;
@@ -64,18 +75,22 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
   const deskOpen = useSignal(false);
   // The outline and whole-piece desk share the left slot.
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track, cleanup }) => {
-    const outlineOpen = track(() => store.showOutline);
-    if (outlineOpen) livingDeskController()?.setOpen(false);
-    const update = (next: LivingDeskSnapshot) => {
-      deskOpen.value = next.open;
-      if (next.open) store.showOutline = false;
-    };
-    update(livingDeskSnapshot());
-    const onDesk = (event: Event) => update((event as CustomEvent<LivingDeskSnapshot>).detail);
-    window.addEventListener(LIVING_DESK_EVENT, onDesk);
-    cleanup(() => window.removeEventListener(LIVING_DESK_EVENT, onDesk));
-  }, { strategy: "document-ready" });
+  useVisibleTask$(
+    ({ track, cleanup }) => {
+      const outlineOpen = track(() => store.showOutline);
+      if (outlineOpen) livingDeskController()?.setOpen(false);
+      const update = (next: LivingDeskSnapshot) => {
+        deskOpen.value = next.open;
+        if (next.open) store.showOutline = false;
+      };
+      update(livingDeskSnapshot());
+      const onDesk = (event: Event) =>
+        update((event as CustomEvent<LivingDeskSnapshot>).detail);
+      window.addEventListener(LIVING_DESK_EVENT, onDesk);
+      cleanup(() => window.removeEventListener(LIVING_DESK_EVENT, onDesk));
+    },
+    { strategy: "document-ready" },
+  );
   const runCommand = props.onCommand$;
   const applyHighlight = props.onHighlight$;
   const applyTextColor = props.onTextColor$;
@@ -885,13 +900,30 @@ export const CompositorPanel = component$<CompositorPanelProps>((props) => {
             role="group"
             aria-label="Proofing"
           >
-            <button type="button" title="Whole-piece findings and score" aria-label="The piece"
-              aria-pressed={deskOpen.value} data-living-desk-toggle preventdefault:mousedown
-              onClick$={() => window.dispatchEvent(new CustomEvent(LIVING_DESK_TOGGLE_EVENT))}
-              class="tool-btn">
+            <button
+              type="button"
+              title="Whole-piece findings and score"
+              aria-label="The piece"
+              aria-pressed={deskOpen.value}
+              data-living-desk-toggle
+              preventdefault:mousedown
+              onClick$={() =>
+                window.dispatchEvent(new CustomEvent(LIVING_DESK_TOGGLE_EVENT))
+              }
+              class="tool-btn"
+            >
               <span class="compositor-tool-label">The piece</span>
             </button>
-            <button type="button" title="Saved writing and research tasks" aria-label="Task desk" preventdefault:mousedown onClick$={() => openInstrumentDock("tasks")} class="tool-btn"><span class="compositor-tool-label">Task desk</span></button>
+            <button
+              type="button"
+              title="Saved writing and research tasks"
+              aria-label="Task desk"
+              preventdefault:mousedown
+              onClick$={() => openInstrumentDock("tasks")}
+              class="tool-btn"
+            >
+              <span class="compositor-tool-label">Task desk</span>
+            </button>
             <button
               title="Find and replace (⌘F / ⌘H)"
               aria-label="Find and replace"

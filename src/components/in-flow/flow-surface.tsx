@@ -57,6 +57,7 @@ import {
   type OpenMarginThreadDetail,
 } from "../../utils/margin-surface";
 import { Icon } from "../ui/icon";
+import { PersonaMasthead } from "../personas/persona-portrait";
 
 const ROOM_WIDTH = 268;
 const ARCHIVE_WIDTH = 212;
@@ -724,15 +725,26 @@ export const FlowSurface = component$<{ zen: boolean; readOnly?: boolean }>(
           onFocusIn$={() => hover(item.id)}
           onFocusOut$={() => hover(null)}
         >
-          <header class="flow-card__head">
-            <span class="flow-card__kicker">
-              {item.kind === "persona-note" && item.byline
-                ? item.byline
-                : KIND_LABELS[item.kind]}
-              {item.kind === "echo" && item.folioName
-                ? ` · ${item.folioName}`
-                : ""}
-            </span>
+          <header
+            class={[
+              "flow-card__head",
+              { "persona-critique-head": item.kind === "persona-note" },
+            ]}
+          >
+            {item.kind === "persona-note" ? (
+              <PersonaMasthead
+                personaId={item.data?.personaId}
+                name={item.byline}
+                size={56}
+              />
+            ) : (
+              <span class="flow-card__kicker">
+                {KIND_LABELS[item.kind]}
+                {item.kind === "echo" && item.folioName
+                  ? ` · ${item.folioName}`
+                  : ""}
+              </span>
+            )}
             <button
               type="button"
               class="flow-card__close"

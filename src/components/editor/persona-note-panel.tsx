@@ -1,6 +1,7 @@
 import { component$, type PropFunction } from "@qwik.dev/core";
 import { renderMarkdown } from "../../utils/markdown";
 import { SpeakButton } from "../ui/speak-button";
+import { PersonaMasthead } from "../personas/persona-portrait";
 import type { NotePopover } from "./editor-state";
 import { openLiveVoice } from "../../utils/live-voice-workspace";
 
@@ -54,18 +55,8 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
         onClose$();
       }}
     >
-      <div class="manuscript-comment-card__head">
-        <div class="min-w-0">
-          <p class="manuscript-comment-card__author">{note.author}</p>
-          {note.label && (
-            <p
-              class="manuscript-comment-card__label"
-              style={{ color: note.color }}
-            >
-              {note.label}
-            </p>
-          )}
-        </div>
+      <div class="manuscript-comment-card__head persona-critique-head">
+        <PersonaMasthead name={note.author} label={note.label} size={56} />
         <div class="flex items-center gap-1.5 flex-shrink-0">
           <button
             type="button"
@@ -122,6 +113,7 @@ export const PersonaNotePanel = component$<PersonaNotePanelProps>((props) => {
               ) : (
                 <PersonaThreadReply
                   key={reply.id}
+                  personaId={reply.personaId}
                   author={reply.author}
                   text={reply.text}
                   color={note.color}
@@ -231,6 +223,7 @@ const WriterThreadReply = component$<{ text: string }>(({ text }) => (
 ));
 
 const PersonaThreadReply = component$<{
+  personaId?: string;
   author: string;
   text: string;
   color: string;
@@ -241,10 +234,11 @@ const PersonaThreadReply = component$<{
 ));
 
 const PersonaReplyBubble = component$<{
+  personaId?: string;
   author: string;
   text: string;
   color: string;
-}>(({ author, text, color }) => (
+}>(({ personaId, author, text, color }) => (
   <div
     class="max-w-[85%] px-3 py-2 border text-[0.85rem] leading-5 text-[var(--color-ink)]"
     style={{
@@ -254,16 +248,13 @@ const PersonaReplyBubble = component$<{
       fontFamily: "var(--font-serif)",
     }}
   >
-    <p
-      class="text-[0.6rem] tracking-[0.14em] uppercase mb-1"
-      style={{
-        fontFamily: "var(--font-typewriter)",
-        color: "var(--color-paper)",
-        opacity: "0.9",
-      }}
-    >
-      {author}
-    </p>
+    <PersonaMasthead
+      personaId={personaId}
+      name={author}
+      size={56}
+      onColor
+      class="mb-2"
+    />
     <div
       class="comment-markdown comment-markdown-on-color whitespace-pre-wrap"
       style={{ color: "var(--color-paper)" }}

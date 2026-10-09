@@ -5,7 +5,10 @@ import {
 import { v } from "convex/values";
 import { mutation, query, type QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
-import { charterExceptionValidator, validateCharterException } from "./lib/charterExceptionValidator";
+import {
+  charterExceptionValidator,
+  validateCharterException,
+} from "./lib/charterExceptionValidator";
 
 const dossier = v.object({
   workingTitle: v.optional(v.string()),

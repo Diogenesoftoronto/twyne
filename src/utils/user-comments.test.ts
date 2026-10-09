@@ -19,9 +19,11 @@ const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
 };
 
 const files: { path: string; data: Uint8Array }[] = [];
+let pendingRead: Promise<void> | null = null;
 
 mock.module("./lix", () => ({
   readFileAsJson: async <T>(path: string): Promise<T | null> => {
+    if (pendingRead) await pendingRead;
     const row = files.find((r) => r.path === path);
     if (!row) return null;
     return JSON.parse(new TextDecoder().decode(row.data)) as T;
@@ -45,6 +47,7 @@ const {
 
 afterEach(() => {
   files.length = 0;
+  pendingRead = null;
 });
 
 afterAll(() => {
@@ -52,6 +55,91 @@ afterAll(() => {
 });
 
 describe("user-comments persistence", () => {
+  test("a late model reply is discarded when the account changes during the storage read", async () => {
+    await upsertUserComment({
+      id: "c-guard",
+      folioId: "f-guard",
+      text: "The current invitation",
+      author: "You",
+      resolved: false,
+      createdAt: 1,
+      updatedAt: 1,
+      replies: [],
+    });
+    let account = "first";
+    let resume!: () => void;
+    pendingRead = new Promise<void>((resolve) => {
+      resume = resolve;
+    });
+    const write = appendUserCommentReply(
+      "c-guard",
+      {
+        id: "r-late",
+        author: "Editor",
+        authorKind: "persona",
+        text: "Earlier account response",
+        createdAt: 2,
+      },
+      (comment) => account === "first" && comment?.folioId === "f-guard",
+    );
+    account = "second";
+    pendingRead = null;
+    resume();
+    await write;
+    expect((await loadUserComments())[0].replies).toEqual([]);
+  });
+
+  test("a guarded model reply never recreates a deleted parent as a placeholder", async () => {
+    const all = await appendUserCommentReply(
+      "deleted-thread",
+      {
+        id: "r-deleted",
+        author: "Editor",
+        authorKind: "persona",
+        text: "Late response",
+        createdAt: 2,
+      },
+      (comment) => !!comment,
+    );
+    expect(all).toEqual([]);
+    expect(files).toEqual([]);
+  });
+
+  test("a guarded model reply rejects a revised invitation and accepts its exact current snapshot", async () => {
+    await upsertUserComment({
+      id: "c-revised",
+      folioId: "f-guard",
+      text: "Revised question",
+      author: "You",
+      resolved: false,
+      createdAt: 1,
+      updatedAt: 1,
+      replies: [],
+    });
+    const reply = {
+      id: "r-current",
+      author: "Editor",
+      authorKind: "persona" as const,
+      text: "Current answer",
+      createdAt: 2,
+    };
+    await appendUserCommentReply(
+      "c-revised",
+      reply,
+      (comment) => comment?.text === "Earlier question",
+    );
+    expect((await loadUserComments())[0].replies).toEqual([]);
+    await appendUserCommentReply(
+      "c-revised",
+      reply,
+      (comment) =>
+        comment?.folioId === "f-guard" && comment.text === "Revised question",
+    );
+    expect((await loadUserComments())[0].replies.map((r) => r.id)).toEqual([
+      "r-current",
+    ]);
+  });
+
   test("appends a reply to an existing comment", async () => {
     await upsertUserComment({
       id: "c-1",

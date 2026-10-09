@@ -10,6 +10,7 @@ import {
 } from "@qwik.dev/core";
 import { Link } from "@qwik.dev/router";
 import { Icon } from "../ui/icon";
+import { PersonaMasthead } from "../personas/persona-portrait";
 import { useConvexClient } from "../../utils/convex-context";
 import { api } from "../../../convex/_generated/api";
 import { SPINE_CRITERIA, type ProjectBrief } from "../../types";
@@ -1611,13 +1612,13 @@ function JudgeCard({ judge }: { judge: JudgeResult }) {
       {/* Portrait in the gutter, name against the left margin, the mark
         stamped against the right — the same masthead the room's notes
         use, so a verdict and a note read as the same kind of object. */}
-      <div class="desk-card__head">
-        {persona?.icon && (
-          <span class="desk-card__mark" aria-hidden="true">
-            {persona.icon}
-          </span>
-        )}
-        <p class="desk-card__name">{persona?.name ?? judge.personaId}</p>
+      <div class="desk-card__head persona-critique-head">
+        <PersonaMasthead
+          personaId={judge.personaId}
+          name={persona?.name ?? judge.personaId}
+          role={persona?.role}
+          size={56}
+        />
         <span
           class="desk-card__stamp desk-card__stamp--quiet tabular-nums"
           style={{ color: scoreColor, fontSize: "0.8125rem" }}
@@ -1625,11 +1626,6 @@ function JudgeCard({ judge }: { judge: JudgeResult }) {
           {judge.score}
           <span class="text-[var(--color-ink-muted)]">/10</span>
         </span>
-        {persona?.role && (
-          <div class="desk-card__byline" style={{ color }}>
-            {persona.role}
-          </div>
-        )}
       </div>
       <div
         class="desk-card__body comment-markdown"
