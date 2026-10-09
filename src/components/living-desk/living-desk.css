@@ -1,0 +1,823 @@
+/*
+ * The living desk: panel, cards, spine, and the decoration classes the engine
+ * emits inside ProseMirror. Tokens only; see docs/living-desk-design.md.
+ */
+
+:root {
+  --ld-wash-rose: var(--color-highlight-rose);
+  --ld-wash-sky: var(--color-highlight-sky);
+  --ld-wash-mint: var(--color-highlight-mint);
+  --ld-lens-stance: var(--color-vermilion);
+  --ld-lens-naming: var(--color-mustard);
+  --ld-lens-style: var(--color-text-periwinkle, var(--color-periwinkle));
+  --ld-lens-presence: var(--color-cobalt);
+  --ld-readable-muted: color-mix(
+    in srgb,
+    var(--color-ink-muted) 65%,
+    var(--color-ink)
+  );
+  --ld-readable-green: color-mix(
+    in srgb,
+    var(--color-accent-green) 80%,
+    var(--color-ink)
+  );
+  --ld-lens-naming: color-mix(
+    in srgb,
+    var(--color-mustard) 65%,
+    var(--color-ink)
+  );
+  --ld-entity: var(--color-cobalt);
+}
+
+/* The pale highlight tokens do not follow nightpress; mix from the accents. */
+[data-theme="nightpress"] {
+  --ld-wash-rose: color-mix(in srgb, var(--color-vermilion) 24%, transparent);
+  --ld-wash-sky: color-mix(in srgb, var(--color-cobalt) 26%, transparent);
+  --ld-wash-mint: color-mix(
+    in srgb,
+    var(--color-accent-green) 24%,
+    transparent
+  );
+  --ld-lens-style: var(--color-periwinkle);
+  --ld-readable-green: var(--color-accent-green);
+  --ld-lens-naming: var(--color-mustard);
+}
+
+/* ── Manuscript decorations ─────────────────────────────── */
+
+.ld-occ {
+  border-radius: 1px;
+}
+
+/* Stance */
+.ld-occ[data-ld-lens="stance"].ld-occ--flagged {
+  background: var(--ld-wash-rose);
+  text-decoration: underline solid var(--color-vermilion);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.ld-occ[data-ld-lens="stance"][data-ld-label="singular"].ld-occ--context {
+  color: var(--color-cobalt);
+  font-weight: 600;
+}
+
+/* Naming */
+.ld-occ[data-ld-lens="naming"].ld-occ--flagged {
+  text-decoration: underline wavy var(--ld-lens-naming);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.ld-occ[data-ld-lens="naming"].ld-occ--context {
+  background: var(--ld-wash-sky);
+}
+
+/* Style */
+.ld-occ[data-ld-lens="style"].ld-occ--flagged {
+  text-decoration: underline dotted var(--ld-lens-style);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+/* Presence: a per-entity wash at 35%. The slot is optional; cobalt otherwise. */
+.ld-occ[data-ld-lens="presence"] {
+  background: color-mix(in srgb, var(--ld-entity) 35%, transparent);
+  text-decoration: underline solid
+    color-mix(in srgb, var(--ld-entity) 65%, var(--color-ink));
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.ld-occ[data-ld-lens="presence"][data-ld-label] {
+  --ld-entity: var(--ld-entity-color, var(--color-cobalt));
+}
+[data-ld-entity="1"] {
+  --ld-entity: var(--color-sage);
+}
+[data-ld-entity="2"] {
+  --ld-entity: var(--color-periwinkle);
+}
+[data-ld-entity="3"] {
+  --ld-entity: var(--color-mustard);
+}
+[data-ld-entity="4"] {
+  --ld-entity: var(--color-blush);
+}
+
+/* The finding being worked on */
+.ld-occ--focused.ld-occ--flagged {
+  outline: 1px solid color-mix(in srgb, currentColor 40%, transparent);
+  outline-offset: 1px;
+}
+
+/* Preview: the original reads struck through, the ghost follows it. */
+.ld-occ--previewing {
+  text-decoration: line-through;
+  text-decoration-color: var(--color-accent-red);
+  text-decoration-thickness: 1.5px;
+  color: var(--color-ink-muted);
+}
+.ld-ghost {
+  font-style: italic;
+  color: var(--ld-readable-green);
+  border-left: 1px dashed var(--ld-readable-green);
+  padding-left: 0.2em;
+  margin-left: 0.15em;
+  pointer-events: none;
+  user-select: none;
+}
+
+.ld-flash {
+  animation: ld-flash 1.2s ease-out both;
+}
+@keyframes ld-flash {
+  from {
+    background: var(--ld-wash-mint);
+  }
+  to {
+    background: transparent;
+  }
+}
+
+/* Dim only while a finding is focused; lifts the moment typing starts. */
+.ProseMirror[data-ld-focus] > * {
+  color: var(--color-ink-light);
+}
+[data-ld-focus] .ld-occ {
+  color: var(--color-ink);
+}
+[data-ld-focus]
+  .ld-occ[data-ld-lens="stance"][data-ld-label="singular"].ld-occ--context {
+  color: var(--color-cobalt);
+}
+[data-ld-focus] .ld-occ--previewing {
+  color: var(--color-ink-muted);
+}
+
+/* ── Panel ──────────────────────────────────────────────── */
+
+.ld-panel {
+  position: fixed;
+  z-index: var(--z-dropdown);
+  top: var(--ld-panel-top, 5rem);
+  bottom: 4rem;
+  left: 1rem;
+  width: 20rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.85rem 0.85rem 1rem;
+  overflow-y: auto;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: 0.875rem/1.5 var(--font-serif);
+  box-shadow:
+    0 1px 0 var(--color-paper-3),
+    0 8px 24px -16px rgb(0 0 0 / 0.35);
+}
+.ld-panel[hidden] {
+  display: none;
+}
+@media (min-width: 74rem) {
+  .manuscript-scroller[data-living-desk-open] {
+    padding-inline-start: 22rem;
+  }
+  html[data-flow] .manuscript-scroller[data-living-desk-open] {
+    padding-inline-start: 0;
+  }
+}
+@media (max-width: 73.99rem) {
+  .ld-panel {
+    top: auto;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    width: auto;
+    max-height: 55dvh;
+  }
+}
+
+.ld-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.ld-panel__head .dept-label {
+  margin: 0;
+  flex: 1;
+}
+.ld-close {
+  border: 0;
+  background: none;
+  color: var(--ld-readable-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.ld-close:hover {
+  color: var(--color-vermilion);
+}
+
+.ld-quiet {
+  margin: 0;
+  font: italic 0.75rem var(--font-serif);
+  color: var(--ld-readable-muted);
+}
+.ld-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.ld-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.ld-chip {
+  display: inline-block;
+  padding: 0 0.45rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 99px;
+  font: 0.6875rem/1.4 var(--font-sans);
+  color: var(--color-ink-light);
+  white-space: nowrap;
+}
+
+button.ld-lens,
+button.ld-btn,
+button.ld-link,
+button.ld-inline {
+  font-family: var(--font-sans);
+  cursor: pointer;
+}
+.ld-panel button:disabled,
+.ld-spine button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+.ld-panel button:focus-visible,
+.ld-spine button:focus-visible {
+  outline: 2px solid var(--color-vermilion);
+  outline-offset: 2px;
+}
+
+/* Score */
+.ld-score {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper-2);
+}
+.ld-score__top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.ld-score__num {
+  min-width: 3.4rem;
+  font: 600 2rem/1 var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+.ld-score__approx {
+  margin-right: 0.15rem;
+  font-size: 1.1rem;
+  color: var(--ld-readable-muted);
+}
+.ld-score__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.ld-score__letter {
+  margin: 0;
+  font: 0.75rem var(--font-typewriter);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ld-score__letter span {
+  color: var(--ld-readable-muted);
+}
+.ld-delta {
+  position: absolute;
+  right: 0;
+  top: -0.4rem;
+  padding: 0 0.5rem;
+  border-radius: 99px;
+  font: 0.6875rem/1.5 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-paper);
+  animation: ld-delta 2.8s ease both;
+  pointer-events: none;
+}
+.ld-delta--up {
+  background: var(--color-accent-green);
+  color: var(--color-paper);
+}
+.ld-delta--down {
+  background: var(--color-accent-amber);
+  color: var(--color-ink);
+}
+@keyframes ld-delta {
+  0% {
+    opacity: 0;
+  }
+  7% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.ld-link {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 0.75rem;
+  color: var(--color-cobalt);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ld-crits {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.ld-crit {
+  position: relative;
+  display: grid;
+  grid-template-columns: 6.5rem 1fr 1.75rem;
+  gap: 0.5rem;
+  align-items: center;
+}
+.ld-crit__label {
+  font: 0.75rem/1.1 var(--font-sans);
+  display: flex;
+  flex-direction: column;
+}
+.ld-crit__label em {
+  font-style: normal;
+  font-size: 0.625rem;
+  color: var(--ld-readable-muted);
+}
+.ld-crit__track {
+  height: 4px;
+  background: var(--color-paper-3);
+  overflow: hidden;
+}
+.ld-crit__fill {
+  display: block;
+  height: 100%;
+  background: var(--color-ink-muted);
+}
+.ld-crit__fill.is-animated {
+  transition:
+    width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background-color 0.4s;
+}
+.ld-crit__fill.is-up {
+  background: var(--color-accent-green);
+}
+.ld-crit__fill.is-down {
+  background: var(--color-accent-amber);
+}
+.ld-crit__value {
+  text-align: right;
+  font: 0.75rem var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Lenses */
+.ld-lenses {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+.ld-lenses .dept-label {
+  margin-right: 0.25rem;
+}
+.ld-lens {
+  padding: 0.1rem 0.6rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--color-ink);
+  font-size: 0.75rem;
+}
+.ld-lens[aria-pressed="true"] {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-paper);
+}
+
+/* Cards */
+.ld-cards {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.ld-card {
+  --ld-rule: var(--color-ink-muted);
+  border: 1px solid var(--color-paper-3);
+  border-left: 3px solid var(--ld-rule);
+  border-radius: 2px;
+  background: var(--color-paper);
+}
+.ld-card--stance {
+  --ld-rule: var(--color-vermilion);
+}
+.ld-card--naming {
+  --ld-rule: var(--color-mustard);
+}
+.ld-card--style {
+  --ld-rule: var(--ld-lens-style);
+}
+.ld-card--presence {
+  --ld-rule: var(--color-cobalt);
+}
+.ld-card.is-done {
+  opacity: 0.6;
+}
+.ld-card.is-open {
+  border-color: var(--color-ink-muted);
+  border-left-color: var(--ld-rule);
+}
+.ld-panel .ld-cards {
+  background: transparent;
+}
+.ld-card__head {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.1rem 0.5rem;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ld-card__kicker {
+  align-self: center;
+}
+.ld-card__impact {
+  font: 0.75rem var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  color: var(--ld-readable-green);
+  text-align: right;
+  white-space: nowrap;
+}
+.ld-card__title {
+  grid-column: 1 / -1;
+  font: 600 0.9375rem/1.3 var(--font-display);
+}
+.ld-card__metric {
+  grid-column: 1 / -1;
+  font: italic 0.8125rem var(--font-serif);
+  color: var(--color-ink-light);
+}
+.ld-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0 0.7rem 0.7rem;
+}
+
+.ld-occrow {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper-2);
+}
+.ld-occrow.is-context {
+  border-style: dashed;
+}
+.ld-occrow.is-previewing {
+  border-color: var(--color-accent-green);
+}
+.ld-occrow__text {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink);
+  font: 0.875rem/1.5 var(--font-serif);
+  text-align: left;
+  cursor: pointer;
+}
+.ld-occrow__para {
+  margin-right: 0.35rem;
+  font: 0.6875rem var(--font-typewriter);
+  color: var(--color-ink-muted);
+}
+.ld-occrow del {
+  color: color-mix(in srgb, var(--color-accent-red) 35%, var(--color-ink));
+  opacity: 0.7;
+}
+.ld-occrow ins {
+  color: var(--ld-readable-green);
+  background: var(--ld-wash-mint);
+  text-decoration: none;
+}
+.ld-occrow mark {
+  background: var(--ld-wash-rose);
+  color: inherit;
+}
+.ld-occrow__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+.ld-occrow__fix {
+  margin-left: auto;
+}
+.ld-note {
+  margin: 0;
+  font: italic 0.8125rem var(--font-serif);
+  color: var(--color-ink-light);
+}
+.ld-note--inline {
+  font-size: 0.75rem;
+}
+.ld-fine {
+  margin: 0;
+  font: 0.75rem/1.5 var(--font-serif);
+  color: var(--color-ink-light);
+}
+.ld-inline {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.ld-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.ld-btn {
+  padding: 0.15rem 0.6rem;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 0.75rem;
+}
+.ld-btn:hover:not(:disabled) {
+  border-color: var(--color-ink-muted);
+}
+.ld-btn--primary {
+  background: var(--color-ink);
+  border-color: var(--color-ink);
+  color: var(--color-paper);
+}
+.ld-empty {
+  margin: 0;
+  font: italic 0.875rem/1.5 var(--font-serif);
+  color: var(--color-ink-light);
+}
+
+/* Counts make absence and presence readable without colour. */
+.ld-grid-scroll {
+  overflow-x: auto;
+}
+.ld-grid {
+  width: 100%;
+  border-spacing: 4px;
+  font: 0.75rem var(--font-sans);
+}
+.ld-grid th {
+  text-align: left;
+  font-weight: 400;
+}
+.ld-grid thead th {
+  color: var(--ld-readable-muted);
+  font-size: 0.6875rem;
+}
+.ld-grid td {
+  min-width: 1.5rem;
+  text-align: center;
+}
+.ld-cell {
+  display: block;
+  color: var(--color-ink-light);
+  line-height: 1.5;
+  border: 1px solid var(--color-paper-3);
+  border-radius: 1px;
+}
+.ld-cell.is-on {
+  background: color-mix(in srgb, var(--ld-entity) 35%, transparent);
+  color: var(--color-ink);
+}
+
+/* ── Spine ──────────────────────────────────────────────── */
+
+.ld-spine {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 6px;
+  transition: width 0.15s ease;
+}
+.ld-spine[hidden] {
+  display: none;
+}
+.ld-spine:hover,
+.ld-spine:focus-within {
+  width: 12px;
+}
+.ld-spine__track {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-ink-muted) 14%, transparent);
+}
+.ld-spine__rule {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-ink-muted);
+  opacity: 0.6;
+}
+.ld-spine__tick {
+  position: absolute;
+  left: 1px;
+  right: 1px;
+  height: 3px;
+  padding: 0;
+  border: 0;
+  border-radius: 1px;
+  background: var(--color-ink-muted);
+  cursor: pointer;
+}
+.ld-spine__tick--stance {
+  background: var(--color-vermilion);
+}
+.ld-spine__tick--naming {
+  background: var(--ld-lens-naming);
+}
+.ld-spine__tick--style {
+  background: var(--ld-lens-style);
+}
+.ld-spine__tick--presence {
+  background: var(--color-cobalt);
+}
+.ld-spine__tick.is-faint {
+  opacity: 0.35;
+}
+.ld-spine__tick.is-context {
+  opacity: 0.45;
+}
+.ld-spine__cap {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  padding: 0 0.25rem;
+  transform: translateX(-100%);
+  border: 1px solid var(--color-paper-3);
+  border-radius: 2px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font: 0.6875rem/1.5 var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+.ld-spine__cap[aria-pressed="true"] {
+  border-color: var(--color-ink);
+}
+
+html[data-flow] .ld-spine,
+html[data-flow] .ld-panel {
+  display: none;
+}
+
+/* ── Themes ─────────────────────────────────────────────── */
+
+[data-theme="nightpress"] .ld-occ[data-ld-lens="stance"].ld-occ--flagged {
+  text-decoration-color: var(--color-vermilion);
+}
+[data-theme="nightpress"] .ld-occrow ins {
+  color: var(--color-accent-green);
+}
+
+/* ── Reduced motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .ld-occ,
+  .ld-spine,
+  .ld-crit__fill.is-animated {
+    transition: none;
+  }
+  .ld-flash {
+    animation: none;
+    background: transparent;
+  }
+  /* The delta pill stays, static, for the same duration. */
+  .ld-delta {
+    animation: ld-delta-static 2.8s step-end both;
+  }
+}
+
+.ld-panel .dept-label {
+  color: var(--ld-readable-muted);
+}
+.ld-panel button:focus-visible,
+.ld-panel summary:focus-visible,
+.ld-spine__cap:focus-visible {
+  outline: 2px solid var(--color-cobalt);
+  outline-offset: 2px;
+}
+.ld-panel button:active:not(:disabled) {
+  filter: brightness(0.92);
+}
+.ld-card__head:hover:not(:disabled) .ld-card__title {
+  color: var(--color-cobalt);
+}
+.ld-review-message {
+  margin: 0;
+  color: var(--color-ink-light);
+  font: 0.75rem/1.4 var(--font-sans);
+}
+.ld-criteria-disclosure summary,
+.ld-context-disclosure summary {
+  cursor: pointer;
+  font: 0.75rem/1.5 var(--font-sans);
+  color: var(--color-ink-light);
+}
+.ld-criteria-disclosure summary span {
+  font-size: 0.625rem;
+  color: var(--ld-readable-muted);
+}
+.ld-criteria-disclosure[open] .ld-crits {
+  margin-top: 0.75rem;
+}
+.ld-context-disclosure[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.ld-compact-change {
+  position: relative;
+  display: grid;
+  grid-template-columns: 6.5rem 1fr 1.75rem;
+  align-items: center;
+  gap: 0.5rem;
+  font: 0.75rem var(--font-sans);
+}
+.ld-compact-change em {
+  display: block;
+  font-style: normal;
+  font-size: 0.625rem;
+  color: var(--ld-readable-muted);
+}
+.ld-delta--compact {
+  top: -0.3rem;
+  right: 1.75rem;
+}
+.ld-delta.is-static {
+  animation: none;
+}
+.ld-panel[data-ld-typing] .ld-crit__fill {
+  transition: none;
+}
+.ld-panel[data-ld-typing] .ld-delta {
+  animation: none;
+  visibility: hidden;
+}
+@keyframes ld-delta-static {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

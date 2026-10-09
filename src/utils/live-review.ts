@@ -91,6 +91,7 @@ let snapshot: LiveReviewSnapshot = {
   result: null,
 };
 export const liveReviewSnapshot = () => snapshot;
+export const LIVE_REVIEW_REQUEST_EVENT = "twyne:live-review-request";
 export const liveReviewKey = (folioId: string) => `live-review:${folioId}`;
 
 function publish(next: LiveReviewSnapshot) {
@@ -107,6 +108,7 @@ export function startLiveReview(
   let generation = 0;
   let running = false;
   let pending = false;
+  let requested = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let lastStarted = 0;
   let failures = 0;
@@ -136,12 +138,13 @@ export function startLiveReview(
       setStatus("waiting", "Waiting for a pause in writing…");
       timer = setTimeout(
         () => void run(),
-        Math.max(2500, lastStarted + 30_000 - Date.now()),
+        requested ? 2500 : Math.max(2500, lastStarted + 30_000 - Date.now()),
       );
     }
   };
   const run = async () => {
     if (stopped || running) return;
+    requested = false;
     pending = false;
     if (document.hidden) return;
     if (navigator.onLine === false) {
@@ -501,6 +504,12 @@ export function startLiveReview(
     if (snapshot.status === "current")
       setStatus("waiting", "Draft changed. Review will update after saving.");
   };
+  const onRequest = (event: Event) => {
+    const detail = (event as CustomEvent<{ folioId?: string }>).detail;
+    if (detail?.folioId && detail.folioId !== folioId) return;
+    requested = true;
+    schedule();
+  };
   const onResume = () => {
     if (!document.hidden) schedule();
   };
@@ -516,6 +525,7 @@ export function startLiveReview(
   ];
   events.forEach((event) => window.addEventListener(event, onSave));
   window.addEventListener("twyne:content", onContent);
+  window.addEventListener(LIVE_REVIEW_REQUEST_EVENT, onRequest);
   window.addEventListener("online", onResume);
   document.addEventListener("visibilitychange", onResume);
   schedule();
@@ -525,6 +535,7 @@ export function startLiveReview(
     clearTimeout(timer);
     events.forEach((event) => window.removeEventListener(event, onSave));
     window.removeEventListener("twyne:content", onContent);
+    window.removeEventListener(LIVE_REVIEW_REQUEST_EVENT, onRequest);
     window.removeEventListener("online", onResume);
     document.removeEventListener("visibilitychange", onResume);
   };

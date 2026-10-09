@@ -156,6 +156,7 @@ import { MarkAnchorWidgets } from "./extensions/mark-anchor-widgets";
 import { QuickReview, startQuickReview } from "./extensions/quick-review";
 import { InFlowAnchor, startInFlowTools } from "./extensions/struggle-tracker";
 import { startFlowConductor } from "./extensions/flow-conductor";
+import { LivingDeskDecorations, startLivingDesk } from "./extensions/living-desk";
 import { PageBreakNode } from "./extensions/page-break-node";
 import { RawTypst, RawTypstInline } from "./extensions/raw-typst";
 import { TypstWorkspace } from "./typst-workspace";
@@ -886,6 +887,7 @@ export const TwyneEditor = component$(
             MarkAnchorWidgets,
             QuickReview,
             InFlowAnchor,
+            LivingDeskDecorations,
             Indent,
             FindReplace,
             SlashCommand,
@@ -935,6 +937,10 @@ export const TwyneEditor = component$(
         });
 
         if (activeFolioId && !readOnly) {
+          cleanup(startLivingDesk(editor, {
+            getClient: () => clientSig.value,
+            folioId: activeFolioId,
+          }));
           cleanup(
             startQuickReview(
               editor,

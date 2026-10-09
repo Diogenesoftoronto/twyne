@@ -6,8 +6,8 @@ real application view. Numbered controls change the image and instruction;
 **Read all the steps** opens the full written sequence. A full-size image link
 keeps small controls inspectable on narrow screens.
 
-The manual contains 17 visual sequences with 60 illustrated steps, five original
-editor portraits, and seven contextual films. The films complement the single,
+The manual contains 18 visual sequences with 65 illustrated steps, five original
+editor portraits, and eight contextual films. The films complement the single,
 locale-aware introduction already available at the end of the guide.
 
 Films appear near the beginning of relevant chapters as optional **Watch** rows.
@@ -22,6 +22,7 @@ They introduce the room’s ideas or show a recorded path through the app. The
 | `src/routes/docs/guide-editorial-room.ts`   | Cast management, rubric, margin threads and bibliography.              |
 | `src/routes/docs/guide-your-work.ts`        | Account, narration, Live, source/proof, folios, providers and privacy. |
 | `src/routes/docs/guide-manuscript-craft.ts` | Outline/search, tables/images, page layout, notes and equations.       |
+| `src/routes/docs/guide-living-desk.ts` | The piece, local patterns, previews, undo, exceptions and presence. |
 | `src/routes/docs/manual-editors.tsx`        | Illustrated cast profiles, prompts and source-backed example lines.    |
 
 `manual-guide-types.ts` defines the common data contract. The route owns chapter
@@ -89,3 +90,7 @@ Nightpress, with keyboard navigation and in print. Check every image and step,
 native playback, caption loading, single-player behavior and byte-range seeking.
 Keep the browser recording and result with the captures. Browser fixtures and
 real authenticated provider checks remain separate evidence.
+
+The [living desk visual review](living-desk-visual-review.md) adds repeatable
+interaction and screenshot checks, saves passing videos and traces, and rechecks
+the public manual after deployment. Its footage and stills use a fictional draft.

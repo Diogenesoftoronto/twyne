@@ -50,6 +50,8 @@ feature is deployed or that its provider integration has been exercised.
 
 - [The illustrated manual](manual-visuals.md): component captures, walkthroughs,
   cast portraits and accessible reading/playback.
+- [Living desk visual review](living-desk-visual-review.md): repeatable visual
+  checks, retained demo footage and public-manual verification.
 - [Illuminated initials](illuminated-initials-artwork.md)
 - [Social preview artwork](social-preview-artwork.md) and [options](social-preview-options.md)
 - [Sunburst stamps](assets/sunburst-stamps.md)
