@@ -4,13 +4,21 @@ import { makeFunctionReference } from "convex/server";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import schema from "./schema";
 
-const provider = vi.hoisted(() => ({ issue: vi.fn(), request: vi.fn() }));
-vi.mock("./lib/notorganic", () => ({
-  issueNotOrganicAccessToken: provider.issue,
-  providerJsonRequest: provider.request,
-  notOrganicIssuer: () => "https://api.notorganic.info",
-}));
-const modules = import.meta.glob("./**/*.ts");
+const supportsViteModules = typeof import.meta.glob === "function";
+// Convex loads this provider through the lazy module glob, after setup.
+// doMock keeps Bun's skipped discovery outside Vitest-only mocking APIs.
+const provider = supportsViteModules
+  ? { issue: vi.fn(), request: vi.fn() }
+  : ({} as never);
+if (supportsViteModules) {
+  vi.doMock("./lib/notorganic", () => ({
+    issueNotOrganicAccessToken: provider.issue,
+    providerJsonRequest: provider.request,
+    notOrganicIssuer: () => "https://api.notorganic.info",
+  }));
+}
+const modules = supportsViteModules ? import.meta.glob("./**/*.ts") : {};
+const describeConvex = supportsViteModules ? describe : describe.skip;
 const sources = makeFunctionReference<"action", Record<string, never>, unknown>(
   "knowledge:sources",
 );
@@ -52,7 +60,7 @@ async function setup(verified = true) {
 afterEach(() => {
   vi.clearAllMocks();
 });
-describe("trusted Twyne account knowledge actions", () => {
+describeConvex("trusted Twyne account knowledge actions", () => {
   test("anonymous and unverified links cannot obtain provider credentials", async () => {
     const { t, writer } = await setup(false);
     await expect(t.action(sources, {})).rejects.toThrow("Sign in");

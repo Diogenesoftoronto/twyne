@@ -76,7 +76,8 @@ export default defineConfig((): UserConfig => {
     //     : undefined,
 
     server: {
-      ...(process.env.TWYNE_VISUAL_RUN === "1" ? { hmr: false as const, watch: null } : {}),
+      // Freeze file watching for recordings, but retain dependency reloads on cold start.
+      ...(process.env.TWYNE_VISUAL_RUN === "1" ? { watch: null } : {}),
       headers: {
         // Don't cache the server response in dev mode
         "Cache-Control": "public, max-age=0",

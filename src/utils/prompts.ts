@@ -10,17 +10,13 @@
  * literal so a forgotten rename shows up as `{goal}` in the prompt
  * instead of silently dropping the line.
  *
- * Three runtime contexts hit this file and each must work:
- *   1. Vite-bundled browser code (`src/utils/ai-client.ts`): `import.meta.glob`
- *      is inlined at build time, so this module exports a fully resolved
- *      `prompts` map.
- *   2. Convex backend (`convex/agentPrompts.ts`): the same `import.meta.glob`
- *      is resolved by Convex's Vite-based bundler the same way. No `"use node"`
- *      needed; the strings come in as constants.
- *   3. bun:test (`:test` files): `import.meta.glob` is undefined. The fallback
- *      below reads `.md` files from the repo's `prompts/` directory using
- *      `node:fs`, so unit tests can render and assert against the same text.
+ * The checked-in catalog packages the same templates for browser builds,
+ * Convex's esbuild bundler, and Bun. `bun run prompts:compile` regenerates
+ * it from Markdown; `prompts:check` rejects stale generated content.
+ * Vite development uses a direct glob so Markdown edits still hot reload.
  */
+
+import { promptCatalog } from "../generated/prompt-catalog";
 
 export interface PromptFrontmatter {
   /** Author-supplied short description for prompt-learning notes. */
@@ -112,9 +108,8 @@ const cache = new Map<string, LoadedPrompt>();
 
 /**
  * Resolve a basename (e.g. `"persona-system"`) or a path-with-extension
- * (e.g. `"blocks/writer-profile"`) to the loaded prompt. Falls back to
- * reading from disk when running under bun:test, so the same template
- * is the source of truth in every environment.
+ * (e.g. `"blocks/writer-profile"`) to the loaded prompt. Missing or empty
+ * templates fail before a caller can send an empty prompt to a provider.
  */
 function load(name: string): LoadedPrompt {
   const cached = cache.get(name);
@@ -137,69 +132,32 @@ function load(name: string): LoadedPrompt {
     }
   }
 
-  if (!raw && typeof process !== "undefined" && process.versions?.node) {
-    // bun:test fallback: read from the filesystem. The repo root is two
-    // directories above this file (`src/utils/prompts.ts` → ../../).
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const fs = require("node:fs") as typeof import("node:fs");
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const path = require("node:path") as typeof import("node:path");
-      const here = path.dirname(new URL(import.meta.url).pathname);
-      const candidates = [
-        path.resolve(here, "..", "..", "prompts", `${name}.md`),
-        path.resolve(here, "..", "..", "prompts", name),
-      ];
-      for (const candidate of candidates) {
-        if (fs.existsSync(candidate)) {
-          raw = fs.readFileSync(candidate, "utf8");
-          break;
-        }
-      }
-    } catch {
-      /* node unavailable — e.g. a vanilla browser without the Vite stub. */
-    }
-  }
-
   const loaded = splitFrontmatter(raw);
+  if (!loaded.body.trim()) {
+    throw new Error(`Missing or empty prompt template: ${name}`);
+  }
   cache.set(name, loaded);
   return loaded;
 }
 
 /**
- * Inlined by Vite (and Convex's bundler) at build time into a record of
- * absolute paths → raw string bodies. The shape is `{ [path]: string }`.
- * Wrapped in `any` here because Vite injects the type at build via
- * `/// <reference types="vite/client" />` and the runtime glob result is
- * not in scope for `tsc` without that ambient reference.
+ * Only Vite transforms glob calls. Do not guard on the runtime existence
+ * of `import.meta.glob`: Vite erases the call, not such a guard. Other
+ * runtimes always use the bundled catalog and need no filesystem access.
  */
 const rawModules = ((): Record<string, RawModule> => {
-  // Vite + Convex bundler: inline the markdown files as raw strings.
-  // `eager: true` returns the modules up-front, not as lazy imports.
-  // `query: "?raw"` resolves to a string body, no markdown processing.
-  // We cannot reach for `as` here in a way that compiles under both Vite
-  // and the Convex esbuild pre-pass; treat the result as a string map.
-  const fn = (import.meta as unknown as { glob?: unknown }).glob;
-  if (typeof fn === "function") {
-    const loaded = (
-      import.meta as unknown as {
-        glob: (
-          pattern: string,
-          opts: { query: string; eager: boolean; import: string },
-        ) => Record<string, unknown>;
-      }
-    ).glob("/prompts/**/*.md", {
-      query: "?raw",
-      eager: true,
-      import: "default",
-    });
-    const out: Record<string, RawModule> = {};
-    for (const [k, v] of Object.entries(loaded)) {
-      out[k] = (v ?? undefined) as RawModule;
+  try {
+    if (import.meta.env?.DEV) {
+      return import.meta.glob<string>("/prompts/**/*.md", {
+        query: "?raw",
+        eager: true,
+        import: "default",
+      });
     }
-    return out;
+  } catch {
+    // Bun and Convex do not supply Vite's compile-time import.meta helpers.
   }
-  return {};
+  return promptCatalog;
 })();
 
 /**
@@ -320,9 +278,8 @@ export const promptNames = {
   attachmentDocExcerpt: "blocks/attachment-doc-excerpt",
   attachmentDocOmitted: "blocks/attachment-doc-omitted",
   clientInterviewSystem: "blocks/client-interview-system",
-  clientInterviewRefineAppendix: "blocks/client-interview-refine-appendix",
-  clientInterviewManuscriptAppendix:
-    "blocks/client-interview-manuscript-appendix",
+  clientInterviewRefineAppendix: "blocks/refine-appendix",
+  clientInterviewManuscriptAppendix: "blocks/manuscript-appendix",
   refineAppendix: "blocks/refine-appendix",
   manuscriptAppendix: "blocks/manuscript-appendix",
   researchExtractExisting: "blocks/research-extract-existing",

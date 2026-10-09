@@ -261,11 +261,20 @@ export const AuthProvider = component$(() => {
   // Account connections use only the client with an installed Convex identity.
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(({ track, cleanup }) => {
-    const account = track(() => authState.value.convexAuthenticated ? authState.value.user?.id ?? null : null);
+    const account = track(() =>
+      authState.value.convexAuthenticated
+        ? (authState.value.user?.id ?? null)
+        : null,
+    );
     const client = track(() => convexClient.value);
-    setAccountKnowledgeContext(account ? client ?? null : null, account);
+    setAccountKnowledgeContext(account ? (client ?? null) : null, account);
     cleanup(() => setAccountKnowledgeContext(null, null));
   });
 
-  return <><AccountToolReview /><Slot /></>;
+  return (
+    <>
+      <AccountToolReview />
+      <Slot />
+    </>
+  );
 });

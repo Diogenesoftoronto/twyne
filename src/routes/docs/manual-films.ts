@@ -17,8 +17,10 @@ export const MANUAL_FILMS: Record<string, ManualFilm> = {
     id: "living-desk",
     title: "The piece · Follow a pattern, try a revision",
     duration: "20 sec",
-    description: "Inspect a shift in voice, try and undo a fix, then follow a name across the sections.",
-    transcript: "A fictional flood memoir is open beside The piece. The writer opens a finding about editorial ‘we’, previews ‘I’ on the page, then applies one change. The draft and consistency measure update. Undo restores the original. The writer keeps two similar names distinct and opens the presence table to follow a recurring name across sections. The demonstration uses real local checks without a model request.",
+    description:
+      "Inspect a shift in voice, try and undo a fix, then follow a name across the sections.",
+    transcript:
+      "A fictional flood memoir is open beside The piece. The writer opens a finding about editorial ‘we’, previews ‘I’ on the page, then applies one change. The draft and consistency measure update. Undo restores the original. The writer keeps two similar names distinct and opens the presence table to follow a recurring name across sections. The demonstration uses real local checks without a model request.",
     width: 1440,
     height: 900,
     credit: "Silent walkthrough · Fictional manuscript · Local rules",

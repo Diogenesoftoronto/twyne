@@ -19,7 +19,11 @@ import {
 const sentence = "We made a decision to leave in order to find a quiet room.";
 const content = `<p>The map remained. <strong>${sentence}</strong> We followed the river.</p>`;
 const pause = () => new Promise<void>((resolve) => setTimeout(resolve, 30));
-async function bench(run: Parameters<typeof withEditor>[1], html = content) {
+async function bench(
+  run: Parameters<typeof withEditor>[1],
+  html = content,
+  onAskRoom?: Parameters<typeof startInFlowTools>[1]["onAskRoom"],
+) {
   const spies = [
     spyOn(grammar, "checkGrammar").mockResolvedValue([]),
     spyOn(idb, "loadAiSettingsFromIdb").mockResolvedValue(null),
@@ -46,6 +50,7 @@ async function bench(run: Parameters<typeof withEditor>[1], html = content) {
           folioId: "sentence-fixture",
           brief: null,
           getClient: () => null,
+          onAskRoom,
         });
         try {
           await pause();
@@ -65,6 +70,92 @@ async function bench(run: Parameters<typeof withEditor>[1], html = content) {
     spies.forEach((spy) => spy.mockRestore());
   }
 }
+test("room handoff keeps the exact originating tool and refuses stale sentence requests", async () => {
+  const calls: { text: string; from: number; to: number }[] = [];
+  const request = {
+    personaId: "editor",
+    personaName: "M. Le Stylo",
+    body: "Review this unapplied wording.",
+  };
+  await bench(
+    async ({ editor }) => {
+      const active = inFlowSnapshot().active!;
+      expect(
+        (await inFlowController()!.askRoom(request, "another-tool")).ok,
+      ).toBe(false);
+      expect(calls).toHaveLength(0);
+      expect((await inFlowController()!.askRoom(request, active.id)).ok).toBe(
+        true,
+      );
+      expect(calls).toEqual([
+        { text: sentence, from: active.sentenceFrom!, to: active.sentenceTo! },
+      ]);
+      expect(editor.getHTML()).toBe(content);
+      inFlowController()!.openKind("sentence-lab", sentence);
+      await pause();
+      const reopened = inFlowSnapshot().active!;
+      editor.view.dispatch(
+        editor.state.tr.insertText("new ", reopened.sentenceFrom),
+      );
+      expect((await inFlowController()!.askRoom(request, reopened.id)).ok).toBe(
+        false,
+      );
+      expect(calls).toHaveLength(1);
+    },
+    content,
+    async (_request, anchor) => {
+      calls.push({ text: anchor.text, from: anchor.from, to: anchor.to });
+      return { ok: true };
+    },
+  );
+});
+
+test("Threads room handoff validates both passages and the originating index", async () => {
+  const repeated = "The ledger held every name we remembered.";
+  let calls = 0;
+  const request = {
+    personaId: "reader",
+    personaName: "Le Lecteur",
+    body: "Does this recurrence help?",
+  };
+  await bench(
+    async ({ editor }) => {
+      threadInstrumentController()!.open(repeated);
+      await pause();
+      const current = threadInstrumentSnapshot();
+      const pair = current.threads.find(
+        (item) => item.hypothesis === "exact-wording",
+      )!;
+      expect(
+        (
+          await threadInstrumentController()!.askRoom(
+            request,
+            pair.id,
+            "old-index",
+          )
+        ).ok,
+      ).toBe(false);
+      editor.view.dispatch(
+        editor.state.tr.insertText("new ", pair.second.from),
+      );
+      expect(
+        (
+          await threadInstrumentController()!.askRoom(
+            request,
+            pair.id,
+            current.index.fingerprint,
+          )
+        ).ok,
+      ).toBe(false);
+      expect(calls).toBe(0);
+    },
+    `<p>${repeated} This was our trace. ${repeated}</p>`,
+    async () => {
+      calls++;
+      return { ok: true };
+    },
+  );
+});
 test("complete offline candidates, in-manuscript ghost, checked rewrite and undo", async () => {
   await bench(async ({ editor }) => {
     const active = inFlowSnapshot().active!;

@@ -79,11 +79,20 @@ import { openInstrumentDock } from "../../utils/instrument-dock";
 import {
   instrumentPassage,
   locateInstrumentSpan,
+  instrumentRoomAnchorMatches,
+  type InstrumentRoomAnchor,
 } from "../../utils/instrument-source";
+import type {
+  InstrumentRoomRequest,
+  InstrumentRoomResult,
+} from "../../utils/instrument-room";
 import { buildEntityInstrumentIndex } from "../../utils/entity-instrument";
 import { segmentDocument } from "../../utils/living-desk/segment";
 import { livingDeskController } from "../../utils/living-desk-contract";
-import { threadInstrumentController, threadInstrumentSnapshot } from "../../utils/thread-instrument";
+import {
+  threadInstrumentController,
+  threadInstrumentSnapshot,
+} from "../../utils/thread-instrument";
 import { inFlowController } from "./extensions/struggle-tracker";
 import { researchSelection } from "../../utils/background-research";
 
@@ -577,6 +586,302 @@ export const TwyneEditor = component$(
       cleanup(() => document.removeEventListener("mousedown", onDoc));
     });
 
+    // Qwik must capture these QRLs before the editor setup task is extracted.
+    /**
+     * Open the user-comment popover for a given mark. Loads the body,
+     * replies, and resolve state from Lix (Convex will catch up on
+     * the next sync). The popover position is anchored to the mark's
+     * bounding rect, with a small offset to keep it readable.
+     */
+    const openUserCommentPopover = $(
+      async (commentId: string, markEl: HTMLElement) => {
+        const token = ++threadRequest.value;
+        const rect = markEl.getBoundingClientRect();
+        const pageRect = markEl
+          .closest<HTMLElement>(".page-canvas")
+          ?.getBoundingClientRect();
+        const geom = computeMarginCardGeometry({
+          vw: window.innerWidth,
+          vh: window.innerHeight,
+          rect: {
+            left: rect.left,
+            top: rect.top,
+            bottom: rect.bottom,
+          },
+          page: pageRect
+            ? { left: pageRect.left, right: pageRect.right }
+            : { left: rect.left, right: rect.right },
+        });
+        const itemId = commentItemId(commentId);
+        const slot = await marginSurface()?.reveal(itemId, rect.top);
+        const place = slot
+          ? { ...slotPlacement(slot), margin: itemId }
+          : { x: geom.x, top: geom.top, bottom: geom.bottom, maxH: geom.maxH };
+        const all = await loadUserComments();
+        if (token !== threadRequest.value || !markEl.isConnected) return;
+        store.notePopover = null;
+        store.suggestionPopover = null;
+        store.selectionAction = null;
+        const c = all.find(
+          (x) => x.id === commentId && x.folioId === store.activeFolioId,
+        );
+        if (!c) {
+          // The mark exists but the body didn't sync. Show a placeholder
+          // so the writer can resolve or delete it; the next addComment
+          // round-trip will populate the body.
+          store.userCommentPopover = {
+            mode: "thread",
+            visible: true,
+            id: commentId,
+            author: "You",
+            text: "(comment body not yet synced)",
+            quote: markEl.textContent ?? "",
+            createdAt: Date.now(),
+            ...place,
+            from: null,
+            to: null,
+            resolved: false,
+            replies: [],
+            draft: threadDrafts[itemId] ?? "",
+          };
+          return;
+        }
+        store.userCommentPopover = {
+          mode: "thread",
+          visible: true,
+          id: c.id,
+          author: c.author,
+          text: c.text,
+          quote: c.anchor ?? markEl.textContent ?? "",
+          createdAt: c.createdAt,
+          ...place,
+          from: null,
+          to: null,
+          resolved: c.resolved,
+          replies: c.replies,
+          draft: threadDrafts[itemId] ?? "",
+        };
+      },
+    );
+
+    /** Persist the captured comment locally and sync only to the same account. */
+    const persistNewComment = $(
+      async (
+        commentId: string,
+        text: string,
+        anchor: string,
+        folioId: string,
+        expectedAccount?: string | null,
+      ) => {
+        const account = auth.value.user?.id ?? null;
+        if (expectedAccount !== undefined && expectedAccount !== account)
+          return false;
+        try {
+          await upsertUserComment({
+            id: commentId,
+            folioId,
+            text,
+            author: "You",
+            anchor,
+            resolved: false,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            replies: [],
+          });
+          // A local write already in progress belongs to its captured folio.
+          // Never sync that write using a different account after an await.
+          if ((auth.value.user?.id ?? null) !== account) return true;
+          const client = clientSig.value;
+          if (client && folioId && hasAuthenticatedConvexIdentity(auth.value)) {
+            try {
+              await client.mutation(api.userComments.addComment, {
+                commentId,
+                folioId,
+                text,
+                author: "You",
+                anchor,
+              });
+            } catch (err) {
+              reportCommentSyncError("add-comment", err);
+            }
+          }
+          // The Marginalia panel lives in a sibling component and watches
+          // this event to know when to refetch. Fire it once the local
+          // write is committed so the writer's new note shows up there
+          // without a manual reload.
+          window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
+          return true;
+        } catch (err) {
+          console.warn("[twyne:editor] persistNewComment failed:", err);
+          return false;
+        }
+      },
+    );
+
+    /** Create one anchored marginal note from a preserved text range. */
+    const createSelectionComment = $(
+      async (
+        body: string,
+        range: { from: number; to: number },
+        openPopover: boolean,
+        notifyMentions = true,
+        expected?: {
+          anchor: InstrumentRoomAnchor;
+          accountId: string | null;
+          editor: Editor;
+        },
+      ): Promise<string | null> => {
+        const editor = store.editor;
+        if (
+          !editor ||
+          range.from >= range.to ||
+          range.to > editor.state.doc.content.size
+        ) {
+          return null;
+        }
+        // A QRL can load asynchronously after the caller checked its source.
+        // Validate again inside this function, immediately before marking text.
+        if (
+          expected &&
+          (readOnly ||
+            editor !== expected.editor ||
+            editor.isDestroyed ||
+            !editor.isEditable ||
+            (auth.value.user?.id ?? null) !== expected.accountId ||
+            range.from !== expected.anchor.from ||
+            range.to !== expected.anchor.to ||
+            !instrumentRoomAnchorMatches(
+              editor.state.doc,
+              store.activeFolioId ?? "",
+              expected.anchor,
+            ))
+        )
+          return null;
+        const folioId = store.activeFolioId || "";
+        const anchor = editor.state.doc.textBetween(range.from, range.to, " ");
+        if (!anchor.trim()) return null;
+
+        const commentId = crypto.randomUUID();
+        editor
+          .chain()
+          .focus()
+          .setTextSelection(range)
+          .setMark("commentMark", {
+            id: commentId,
+            author: "You",
+            color: "var(--color-writer-note)",
+          })
+          .run();
+
+        const persisted = await persistNewComment(
+          commentId,
+          body,
+          anchor,
+          folioId,
+          expected?.accountId,
+        );
+        if (!persisted) return null;
+
+        if (notifyMentions)
+          window.dispatchEvent(
+            new CustomEvent("twyne:user-comment-mentions", {
+              detail: { commentId, text: body },
+            }),
+          );
+
+        if (openPopover) {
+          requestAnimationFrame(() => {
+            const markEl = document.querySelector(
+              `.twyne-comment-mark[data-comment-id="${commentId}"]`,
+            ) as HTMLElement | null;
+            if (markEl) void openUserCommentPopover(commentId, markEl);
+          });
+        }
+        return commentId;
+      },
+    );
+
+    /** Instruments keep a source snapshot after the ordinary selection closes. */
+    const askInstrumentRoom = $(
+      async (
+        request: InstrumentRoomRequest,
+        anchor: InstrumentRoomAnchor,
+      ): Promise<InstrumentRoomResult> => {
+        const editor = store.editor;
+        const account = auth.value.user?.id ?? null;
+        const fresh = () =>
+          !!editor &&
+          !editor.isDestroyed &&
+          editor.isEditable &&
+          !readOnly &&
+          store.editor === editor &&
+          (auth.value.user?.id ?? null) === account &&
+          instrumentRoomAnchorMatches(
+            editor.state.doc,
+            store.activeFolioId ?? "",
+            anchor,
+          );
+        if (!fresh() || !request.body.trim() || request.body.length > 32_000)
+          return {
+            ok: false,
+            message:
+              "The source changed. Reopen the instrument before inviting an editor.",
+          };
+        const { loadPersonasFromIdb } = await import("../../utils/idb");
+        const { PERSONAS } = await import("../../utils/personas");
+        const cast = await loadPersonasFromIdb();
+        const persona = (cast?.length ? cast : PERSONAS).find(
+          (item) => item.id === request.personaId,
+        );
+        if (!fresh() || !persona || persona.name !== request.personaName)
+          return {
+            ok: false,
+            message: "The room or source changed. Invite an editor again.",
+          };
+        // The request quotes tool context. Any @name inside that evidence is data,
+        // not another invitation through the ordinary mention dispatcher.
+        const commentId = await createSelectionComment(
+          request.body,
+          anchor,
+          true,
+          false,
+          { anchor, accountId: account, editor: editor! },
+        );
+        if (!commentId)
+          return {
+            ok: false,
+            message: "The margin request could not be saved.",
+          };
+        if (!fresh())
+          return {
+            ok: false,
+            message:
+              "The question was saved with its earlier passage. No editor was called after the context changed.",
+          };
+        store.selectionAction = null;
+        await onEditorialContext$?.("comments");
+        if (!fresh())
+          return {
+            ok: false,
+            message:
+              "The question was saved. Reopen its margin thread to invite an editor.",
+          };
+        window.dispatchEvent(
+          new CustomEvent("twyne:ask-persona-on-comment", {
+            detail: {
+              commentId,
+              personaId: persona.id,
+              personaName: persona.name,
+            },
+          }),
+        );
+        return {
+          ok: true,
+          message: `The request for ${persona.name} is saved in the margin.`,
+        };
+      },
+    );
+
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(({ cleanup }) => {
       import("@tiptap/core").then(async ({ Editor }) => {
@@ -982,6 +1287,8 @@ export const TwyneEditor = component$(
               folioId: activeFolioId,
               brief: brief ?? null,
               openPanel: (panel) => void onEditorialContext$?.(panel),
+              onAskRoom: (request, anchor) =>
+                askInstrumentRoom(request, anchor),
             }),
           );
           cleanup(
@@ -2433,83 +2740,6 @@ export const TwyneEditor = component$(
       store.suggestionPopover = null;
     });
 
-    /**
-     * Open the user-comment popover for a given mark. Loads the body,
-     * replies, and resolve state from Lix (Convex will catch up on
-     * the next sync). The popover position is anchored to the mark's
-     * bounding rect, with a small offset to keep it readable.
-     */
-    const openUserCommentPopover = $(
-      async (commentId: string, markEl: HTMLElement) => {
-        const token = ++threadRequest.value;
-        const rect = markEl.getBoundingClientRect();
-        const pageRect = markEl
-          .closest<HTMLElement>(".page-canvas")
-          ?.getBoundingClientRect();
-        const geom = computeMarginCardGeometry({
-          vw: window.innerWidth,
-          vh: window.innerHeight,
-          rect: {
-            left: rect.left,
-            top: rect.top,
-            bottom: rect.bottom,
-          },
-          page: pageRect
-            ? { left: pageRect.left, right: pageRect.right }
-            : { left: rect.left, right: rect.right },
-        });
-        const itemId = commentItemId(commentId);
-        const slot = await marginSurface()?.reveal(itemId, rect.top);
-        const place = slot
-          ? { ...slotPlacement(slot), margin: itemId }
-          : { x: geom.x, top: geom.top, bottom: geom.bottom, maxH: geom.maxH };
-        const all = await loadUserComments();
-        if (token !== threadRequest.value || !markEl.isConnected) return;
-        store.notePopover = null;
-        store.suggestionPopover = null;
-        store.selectionAction = null;
-        const c = all.find(
-          (x) => x.id === commentId && x.folioId === store.activeFolioId,
-        );
-        if (!c) {
-          // The mark exists but the body didn't sync. Show a placeholder
-          // so the writer can resolve or delete it; the next addComment
-          // round-trip will populate the body.
-          store.userCommentPopover = {
-            mode: "thread",
-            visible: true,
-            id: commentId,
-            author: "You",
-            text: "(comment body not yet synced)",
-            quote: markEl.textContent ?? "",
-            createdAt: Date.now(),
-            ...place,
-            from: null,
-            to: null,
-            resolved: false,
-            replies: [],
-            draft: threadDrafts[itemId] ?? "",
-          };
-          return;
-        }
-        store.userCommentPopover = {
-          mode: "thread",
-          visible: true,
-          id: c.id,
-          author: c.author,
-          text: c.text,
-          quote: c.anchor ?? markEl.textContent ?? "",
-          createdAt: c.createdAt,
-          ...place,
-          from: null,
-          to: null,
-          resolved: c.resolved,
-          replies: c.replies,
-          draft: threadDrafts[itemId] ?? "",
-        };
-      },
-    );
-
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(({ cleanup }) => {
       const onOpen = (event: Event) => {
@@ -2873,109 +3103,6 @@ export const TwyneEditor = component$(
         );
       });
     });
-
-    /** Fire-and-forget: persist a new comment to Lix + Convex. */
-    const persistNewComment = $(
-      async (
-        commentId: string,
-        text: string,
-        anchor: string,
-        folioId: string,
-      ) => {
-        try {
-          await upsertUserComment({
-            id: commentId,
-            folioId,
-            text,
-            author: "You",
-            anchor,
-            resolved: false,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            replies: [],
-          });
-          const client = clientSig.value;
-          if (client && folioId && hasAuthenticatedConvexIdentity(auth.value)) {
-            try {
-              await client.mutation(api.userComments.addComment, {
-                commentId,
-                folioId,
-                text,
-                author: "You",
-                anchor,
-              });
-            } catch (err) {
-              reportCommentSyncError("add-comment", err);
-            }
-          }
-          // The Marginalia panel lives in a sibling component and watches
-          // this event to know when to refetch. Fire it once the local
-          // write is committed so the writer's new note shows up there
-          // without a manual reload.
-          window.dispatchEvent(new CustomEvent("twyne:user-comments-changed"));
-          return true;
-        } catch (err) {
-          console.warn("[twyne:editor] persistNewComment failed:", err);
-          return false;
-        }
-      },
-    );
-
-    /** Create one anchored marginal note from a preserved text range. */
-    const createSelectionComment = $(
-      async (
-        body: string,
-        range: { from: number; to: number },
-        openPopover: boolean,
-      ): Promise<string | null> => {
-        const editor = store.editor;
-        if (
-          !editor ||
-          range.from >= range.to ||
-          range.to > editor.state.doc.content.size
-        ) {
-          return null;
-        }
-        const anchor = editor.state.doc.textBetween(range.from, range.to, " ");
-        if (!anchor.trim()) return null;
-
-        const commentId = crypto.randomUUID();
-        editor
-          .chain()
-          .focus()
-          .setTextSelection(range)
-          .setMark("commentMark", {
-            id: commentId,
-            author: "You",
-            color: "var(--color-writer-note)",
-          })
-          .run();
-
-        const persisted = await persistNewComment(
-          commentId,
-          body,
-          anchor,
-          store.activeFolioId || "",
-        );
-        if (!persisted) return null;
-
-        window.dispatchEvent(
-          new CustomEvent("twyne:user-comment-mentions", {
-            detail: { commentId, text: body },
-          }),
-        );
-
-        if (openPopover) {
-          requestAnimationFrame(() => {
-            const markEl = document.querySelector(
-              `.twyne-comment-mark[data-comment-id="${commentId}"]`,
-            ) as HTMLElement | null;
-            if (markEl) void openUserCommentPopover(commentId, markEl);
-          });
-        }
-        return commentId;
-      },
-    );
 
     /** Open the writer's note beside the selected passage without filing it. */
     const openWriterMarginComposer = $(
@@ -3995,6 +4122,41 @@ export const TwyneEditor = component$(
             folioId={store.activeFolioId}
             selectedText={store.selectionAction?.text}
             disabled={readOnly}
+            onAskRoom$={async (request, passage) => {
+              const editor = store.editor;
+              if (!editor || !store.activeFolioId)
+                return {
+                  ok: false,
+                  message: "The manuscript is no longer available.",
+                };
+              const range = locateInstrumentSpan(
+                editor.state.doc,
+                store.activeFolioId,
+                passage,
+                {
+                  id: "room-passage",
+                  start: 0,
+                  end: passage.text.length,
+                  sourceOffset: passage.sourceOffset,
+                  text: passage.text,
+                },
+              );
+              if (!range)
+                return {
+                  ok: false,
+                  message:
+                    "This passage changed. Select it again before inviting an editor.",
+                };
+              return askInstrumentRoom(request, {
+                folioId: store.activeFolioId,
+                ...range,
+                text: editor.state.doc.textBetween(
+                  range.from,
+                  range.to,
+                  "\n\n",
+                ),
+              });
+            }}
             onEntities$={() =>
               store.editor
                 ? buildEntityInstrumentIndex(

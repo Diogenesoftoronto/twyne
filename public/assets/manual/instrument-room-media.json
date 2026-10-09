@@ -1,0 +1,22 @@
+{
+  "provenance": "Actual application screenshots with fictional manuscript and simulated model transports. Final visual gate incomplete; release without retesting requested by maintainer.",
+  "processing": "Lossless WebP encoding only; no crop or UI alteration.",
+  "assets": [
+    {
+      "source": "artifacts/qa-recordings/instruments-release/final-persona-visual/results/instrument-room.e2e.ts-Sen-d7eec-ove-an-unchanged-manuscript-chromium/desktop-room-invitation.png",
+      "sourceSha256": "df33586a3a82b762c0977412f09b7f05cf534144165e6b1097dbd007e2720d5a",
+      "output": "instrument-room-invitation-v1.webp",
+      "outputSha256": "5c11ff92f249ac5af5efac937c685f81acd3d3f20db9c1af6626f645868306a6",
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "source": "artifacts/qa-recordings/instruments-release/final-persona-visual/results/instrument-room.e2e.ts-Sen-d7eec-ove-an-unchanged-manuscript-chromium/test-failed-1.png",
+      "sourceSha256": "69fe091d2b8cd88283c87bd6a7be9f93d383dbe0ad4ed7fbbf5898f4473873a0",
+      "output": "instrument-room-reply-v1.webp",
+      "outputSha256": "0d8b010770d3ef47789827303874c55330bd84da8726e5d4e32d371ee3676e1b",
+      "width": 1440,
+      "height": 900
+    }
+  ]
+}

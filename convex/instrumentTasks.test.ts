@@ -11,14 +11,20 @@ import type {
   InstrumentTaskRequest,
   InstrumentTaskResult,
 } from "../src/utils/instrument-tasks-model";
-const provider = vi.hoisted(() => ({ issue: vi.fn(), request: vi.fn() }));
-vi.mock("./lib/notorganic", () => ({
-  issueNotOrganicAccessToken: provider.issue,
-  providerJsonRequest: provider.request,
-  notOrganicIssuer: () => "https://api.notorganic.info",
-  notOrganicEnabled: () => true,
-}));
 const supportsViteModules = typeof import.meta.glob === "function";
+// Convex loads this provider through the lazy module glob, after setup.
+// doMock keeps Bun's skipped discovery outside Vitest-only mocking APIs.
+const provider = supportsViteModules
+  ? { issue: vi.fn(), request: vi.fn() }
+  : ({} as never);
+if (supportsViteModules) {
+  vi.doMock("./lib/notorganic", () => ({
+    issueNotOrganicAccessToken: provider.issue,
+    providerJsonRequest: provider.request,
+    notOrganicIssuer: () => "https://api.notorganic.info",
+    notOrganicEnabled: () => true,
+  }));
+}
 const modules = supportsViteModules ? import.meta.glob("./**/*.ts") : {};
 const describeConvex = supportsViteModules ? describe : describe.skip;
 type Lease = { taskId: Id<"instrumentTasks">; leaseToken: string };

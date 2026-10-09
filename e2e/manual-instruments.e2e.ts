@@ -16,46 +16,60 @@ for (const viewport of [
     );
     const chapter = page.locator("#writing-instruments");
     await expect(
-      chapter.getByRole("heading", { name: "Writing instruments", exact: true }),
+      chapter.getByRole("heading", {
+        name: "Writing instruments",
+        exact: true,
+      }),
     ).toBeVisible();
-    const guide = chapter.locator(".manual-walkthrough");
-    const steps = guide.locator(".manual-walkthrough-steps button");
-    await expect(steps).toHaveCount(2);
-    for (let i = 0; i < 2; i++) {
-      await steps.nth(i).click();
-      await expect(steps.nth(i)).toHaveAttribute("aria-pressed", "true");
-      await expect(guide.locator(".manual-step-position")).toHaveText(
-        `Step ${i + 1} of 2`,
+    for (const guideId of ["scene-bench", "instrument-room"]) {
+      const guide = chapter.locator(
+        `[aria-labelledby="${guideId}-guide-title"]`,
       );
-      await expect
-        .poll(() =>
-          guide
-            .locator("img")
-            .evaluate(
-              (img: HTMLImageElement) =>
-                img.complete &&
-                img.naturalWidth > 300 &&
-                img.naturalHeight > 200,
-            ),
-        )
-        .toBe(true);
-      await expect(guide.locator("img")).toHaveAttribute("alt", /.+/);
-      const path = info.outputPath(`manual-${viewport.name}-step-${i + 1}.png`);
-      await guide.screenshot({ path, animations: "disabled" });
-      await info.attach(`Step ${i + 1}`, { path, contentType: "image/png" });
+      const steps = guide.locator(".manual-walkthrough-steps button");
+      await expect(steps).toHaveCount(2);
+      for (let i = 0; i < 2; i++) {
+        await steps.nth(i).click();
+        await expect(steps.nth(i)).toHaveAttribute("aria-pressed", "true");
+        await expect(guide.locator(".manual-step-position")).toHaveText(
+          `Step ${i + 1} of 2`,
+        );
+        await expect
+          .poll(() =>
+            guide
+              .locator("img")
+              .evaluate(
+                (img: HTMLImageElement) =>
+                  img.complete &&
+                  img.naturalWidth > 300 &&
+                  img.naturalHeight > 200,
+              ),
+          )
+          .toBe(true);
+        await expect(guide.locator("img")).toHaveAttribute("alt", /.+/);
+        const path = info.outputPath(
+          `manual-${guideId}-${viewport.name}-step-${i + 1}.png`,
+        );
+        await guide.screenshot({ path, animations: "disabled" });
+        await info.attach(`Step ${i + 1}`, { path, contentType: "image/png" });
+      }
+      await steps.first().click();
+      await expect(guide).toHaveScreenshot(
+        guideId === "scene-bench"
+          ? `manual-${viewport.name}.png`
+          : `manual-room-${viewport.name}.png`,
+      );
+      await guide.getByText("Read all the steps", { exact: true }).click();
+      await expect(guide.locator(".manual-written-steps li")).toHaveCount(2);
+      expect(
+        await page.evaluate(
+          () => document.documentElement.scrollWidth <= innerWidth,
+        ),
+      ).toBe(true);
+      await page.emulateMedia({ media: "print" });
+      await expect(guide.locator(".manual-print-steps")).toBeVisible();
+      await expect(steps.first()).toBeHidden();
+      await page.emulateMedia({ media: "screen" });
     }
-    await steps.first().click();
-    await expect(guide).toHaveScreenshot(`manual-${viewport.name}.png`);
-    await guide.getByText("Read all the steps", { exact: true }).click();
-    await expect(guide.locator(".manual-written-steps li")).toHaveCount(2);
-    expect(
-      await page.evaluate(
-        () => document.documentElement.scrollWidth <= innerWidth,
-      ),
-    ).toBe(true);
-    await page.emulateMedia({ media: "print" });
-    await expect(guide.locator(".manual-print-steps")).toBeVisible();
-    await expect(steps.first()).toBeHidden();
   });
 }
 

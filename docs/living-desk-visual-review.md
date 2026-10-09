@@ -61,7 +61,7 @@ writer's design review, not a claim that the writer has approved them.
    manifest. A clean recording can also provide `living-desk.mp4`, its poster and
    descriptive WebVTT captions under `public/assets/manual/`.
    `scripts/prepare-living-desk-media.ts <passing-walkthrough-directory>
-   <passing-demo-directory>` prepares the five lossless stills, a continuous
+<passing-demo-directory>` prepares the five lossless stills, a continuous
    clip after loading finishes, poster, captions and source/hash manifest. It
    leaves the full source recordings in place and refuses failed test runs.
 4. Update the written instructions when controls or behavior change. Inspect the

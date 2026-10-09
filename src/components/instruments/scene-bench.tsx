@@ -34,6 +34,11 @@ import { useSpeechPlayer } from "../../utils/use-speech-player";
 import { InstrumentArt, InstrumentRule } from "./instrument-art";
 import { InstrumentMotion, InstrumentMotionPart } from "./instrument-motion";
 import styles from "./scene-bench.css?inline";
+import { InstrumentRoom } from "./instrument-room";
+import type {
+  InstrumentRoomRequest,
+  InstrumentRoomResult,
+} from "../../utils/instrument-room";
 
 export interface SceneProviderCapability {
   available: boolean;
@@ -55,6 +60,12 @@ export interface SceneBenchProps {
   narration?: SceneProviderCapability;
   /** Delegate to startSceneNarration(passage, { client, signedIn }). */
   onRead$?: QRL<(passage: ScenePassage) => Promise<void>>;
+  onAskRoom$?: QRL<
+    (
+      request: InstrumentRoomRequest,
+      passage: ScenePassage,
+    ) => Promise<InstrumentRoomResult>
+  >;
 }
 
 function canRequest(capability: SceneProviderCapability | undefined): boolean {
@@ -596,6 +607,37 @@ export const SceneBench = component$<SceneBenchProps>((props) => {
               </div>
             )}
           </section>
+          {props.onAskRoom$ && (
+            <InstrumentRoom
+              context={{
+                instrument: "scene",
+                key: JSON.stringify([
+                  current.key,
+                  ui.dimension,
+                  ui.draft,
+                  proposals,
+                ]),
+                source: props.passage.text,
+                question: `What does this scene already achieve through ${ui.dimension}, and what one concrete change is worth trying? Keep source evidence separate from the writer's proposed additions.`,
+                proposal: [
+                  ...proposals
+                    .filter((idea) => idea.dimension === ui.dimension)
+                    .map((idea) => idea.text),
+                  ui.draft.trim(),
+                ]
+                  .filter(Boolean)
+                  .join("\n"),
+                detail: `Scene lens: ${ui.dimension}. Ideas are unapplied proposals, not events or details already in the manuscript.`,
+              }}
+              onAsk$={async (request) =>
+                (await props.onAskRoom$?.(request, { ...props.passage })) ?? {
+                  ok: false,
+                  message:
+                    "This scene is not attached to a manuscript conversation.",
+                }
+              }
+            />
+          )}
         </>
       )}
     </InstrumentMotion>

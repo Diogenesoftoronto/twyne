@@ -11,6 +11,7 @@ import {
   type ThreadInstrumentSnapshot,
 } from "../../utils/thread-instrument";
 import { InstrumentArt } from "../instruments/instrument-art";
+import { InstrumentRoom } from "../instruments/instrument-room";
 import { localWritingStatus } from "../../utils/local-writing-models";
 import { localPackId } from "../../utils/local-writing-manifest";
 import { onModelDownload } from "../../utils/models-cache";
@@ -254,6 +255,30 @@ export const ThreadsInstrument = component$<{
                 Repetition can be deliberate. Removing an occurrence is one undo
                 step.
               </p>
+            )}
+            {!fixture && !readOnly && (
+              <InstrumentRoom
+                disabled={view.stale}
+                context={{
+                  instrument: "threads",
+                  key: `${view.index.fingerprint}:${thread.id}`,
+                  source: `First passage (sentence ${thread.first.ordinal}):\n${thread.first.text}\n\nSecond passage (sentence ${thread.second.ordinal}):\n${thread.second.text}`,
+                  question:
+                    "Does this connection serve the reader as recurrence, contradiction, or setup and payoff, or is it coincidence? Suggest one concrete revision only if it would help.",
+                  detail: `The instrument's ${thread.source} observation is ${thread.observation}. Relation status: ${thread.state}. This observation is evidence to review, not a persona's endorsement.`,
+                }}
+                onAsk$={async (request) =>
+                  (await threadInstrumentController()?.askRoom(
+                    request,
+                    thread.id,
+                    view.index.fingerprint,
+                  )) ?? {
+                    ok: false,
+                    message:
+                      "Reopen Threads to invite an editor about this pair.",
+                  }
+                }
+              />
             )}
           </li>
         ))}

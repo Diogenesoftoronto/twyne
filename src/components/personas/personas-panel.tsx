@@ -33,6 +33,7 @@ import type {
 import { DEFAULT_ROOM_SETTINGS } from "../../types";
 import { loadDraftText } from "../../utils/anti-tabula-rasa";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
+import { PersonaMasthead } from "./persona-portrait";
 import { toAgentPersona } from "../../../convex/agentPrompts";
 import { loadPersonasFromIdb } from "../../utils/idb";
 import {
@@ -2343,14 +2344,13 @@ export const PersonasPanel = component$(
                 >
                   {/* The same masthead the filed note will get, so the card
                     does not rearrange itself the moment it lands. */}
-                  <div class="desk-card__head">
-                    <span
-                      class="desk-card__mark portrait-icon"
-                      style={{ ["--frame-color" as never]: persona.color }}
-                    >
-                      {persona.icon}
-                    </span>
-                    <p class="desk-card__name">{persona.name}</p>
+                  <div class="desk-card__head persona-critique-head">
+                    <PersonaMasthead
+                      personaId={persona.id}
+                      name={persona.name}
+                      role={persona.role}
+                      size={56}
+                    />
                     <span class="desk-card__stamp">
                       {store.streamingNotes[persona.id].activePart ===
                       "reasoning"
@@ -2480,16 +2480,13 @@ export const PersonasPanel = component$(
                     {/* Masthead: portrait in the gutter, the editor's name
                       against the left margin, what kind of note it is
                       stamped against the right one. */}
-                    <div class="desk-card__head">
-                      <span
-                        class="desk-card__mark portrait-icon"
-                        style={{ ["--frame-color" as never]: personaColor }}
-                      >
-                        {persona?.icon}
-                      </span>
-                      <p class="desk-card__name" title={feedback.personaName}>
-                        {feedback.personaName}
-                      </p>
+                    <div class="desk-card__head persona-critique-head">
+                      <PersonaMasthead
+                        personaId={feedback.personaId}
+                        name={feedback.personaName}
+                        role={persona?.role}
+                        size={56}
+                      />
                       <span class="desk-card__stamp">
                         {isPassing ? "in passing" : typeLabel(feedback.type)}
                       </span>
@@ -2595,12 +2592,27 @@ export const PersonasPanel = component$(
                             class={`reply-bubble ${r.authorKind === "persona" ? "is-persona" : ""}`}
                             style={{ ["--reply-color" as never]: personaColor }}
                           >
-                            <div class="reply-meta">
-                              <strong style={{ color: personaColor }}>
-                                {r.author}
-                              </strong>
-                              <span>· {timeAgo(r.timestamp)}</span>
-                            </div>
+                            {r.authorKind === "persona" ? (
+                              <PersonaMasthead
+                                personaId={r.personaId}
+                                name={r.author}
+                                role={
+                                  store.personas.find(
+                                    (p) => p.id === r.personaId,
+                                  )?.role
+                                }
+                                label={timeAgo(r.timestamp)}
+                                size={56}
+                                class="mb-1.5"
+                              />
+                            ) : (
+                              <div class="reply-meta">
+                                <strong style={{ color: personaColor }}>
+                                  {r.author}
+                                </strong>
+                                <span>· {timeAgo(r.timestamp)}</span>
+                              </div>
+                            )}
                             <div
                               class="comment-markdown mt-0.5"
                               dangerouslySetInnerHTML={renderMarkdown(r.text)}
@@ -2617,12 +2629,14 @@ export const PersonasPanel = component$(
                                 ["--reply-color" as never]: personaColor,
                               }}
                             >
-                              <div class="reply-meta">
-                                <strong style={{ color: personaColor }}>
-                                  {feedback.personaName}
-                                </strong>
-                                <span>· writing…</span>
-                              </div>
+                              <PersonaMasthead
+                                personaId={feedback.personaId}
+                                name={feedback.personaName}
+                                role={persona?.role}
+                                label="writing…"
+                                size={56}
+                                class="mb-1.5"
+                              />
                               {/* The reply as it is written. The pulse is only
                               for the gap before the first words arrive. */}
                               {(
@@ -2947,22 +2961,31 @@ export const PersonasPanel = component$(
                         class="scroll-mt-24 pl-3"
                         style={{ borderLeft: `3px solid ${memo.personaColor}` }}
                       >
-                        <div class="flex items-center justify-between gap-2">
-                          <button
-                            onClick$={() => toggleMemoCollapsed(memo.personaId)}
-                            class="flex items-center gap-1.5 text-[11px] tracking-[0.15em] uppercase"
-                            style={{
-                              fontFamily: "var(--font-typewriter)",
-                              color: memo.personaColor,
-                            }}
-                            aria-expanded={!collapsed}
-                          >
-                            <span class="inline-block w-3">
-                              {collapsed ? "▸" : "▾"}
-                            </span>
-                            {memo.personaName}
-                          </button>
+                        <div class="persona-critique-head">
+                          <PersonaMasthead
+                            personaId={memo.personaId}
+                            name={memo.personaName}
+                            role={
+                              store.personas.find(
+                                (p) => p.id === memo.personaId,
+                              )?.role
+                            }
+                          />
                           <div class="flex items-center gap-2">
+                            <button
+                              onClick$={() =>
+                                toggleMemoCollapsed(memo.personaId)
+                              }
+                              class="flex items-center gap-1.5 text-[11px] tracking-[0.1em] uppercase text-[var(--color-ink-muted)]"
+                              style="font-family: var(--font-typewriter);"
+                              aria-expanded={!collapsed}
+                              aria-label={`${collapsed ? "Expand" : "Collapse"} ${memo.personaName}'s analysis`}
+                            >
+                              <span aria-hidden="true">
+                                {collapsed ? "▸" : "▾"}
+                              </span>
+                              {collapsed ? "Show" : "Hide"}
+                            </button>
                             <SpeakButton
                               compact
                               id={`analysis-memo-${memo.personaId}`}

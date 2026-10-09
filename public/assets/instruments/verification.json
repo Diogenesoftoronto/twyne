@@ -7,10 +7,7 @@
     "instruments-meaningful-motion--interactive"
   ],
   "imagesLoaded": 4,
-  "themesInspected": [
-    "editorial",
-    "nightpress"
-  ],
+  "themesInspected": ["editorial", "nightpress"],
   "viewports": [
     {
       "width": 1200,

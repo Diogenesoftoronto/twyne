@@ -4220,7 +4220,9 @@ export default component$(() => {
               </div>
             </section>
 
-            <section class="folio p-5"><AccountKnowledge /></section>
+            <section class="folio p-5">
+              <AccountKnowledge />
+            </section>
 
             {/* ── MCP servers ── */}
             <section class="folio p-5">

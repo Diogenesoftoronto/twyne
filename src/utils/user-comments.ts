@@ -159,9 +159,12 @@ export async function upsertUserComment(
 export async function appendUserCommentReply(
   commentId: string,
   reply: UserCommentReply,
+  /** Optional late-result guard, evaluated against storage after its async read. */
+  canAppend?: (comment: UserComment | undefined) => boolean,
 ): Promise<UserComment[]> {
   const all = await loadUserComments();
   const idx = all.findIndex((x) => x.id === commentId);
+  if (canAppend && !canAppend(idx < 0 ? undefined : all[idx])) return all;
   const now = Date.now();
   if (idx < 0) {
     // The parent comment hasn't been persisted yet — usually because the

@@ -1,7 +1,35 @@
 import { describe, expect, test } from "bun:test";
-import { getPrompt, prompt, promptFrontmatter, renderPrompt } from "./prompts";
+import { readFileSync } from "node:fs";
+import {
+  promptCatalogPath,
+  renderPromptCatalog,
+} from "../../scripts/compile-prompts";
+import { promptCatalog } from "../generated/prompt-catalog";
+import {
+  getPrompt,
+  prompt,
+  promptFrontmatter,
+  promptNames,
+  renderPrompt,
+} from "./prompts";
 
-describe("prompts loader (bun fallback)", () => {
+describe("bundled prompts loader", () => {
+  test("ships exactly the canonical Markdown in every runtime", () => {
+    expect(readFileSync(promptCatalogPath, "utf8")).toBe(renderPromptCatalog());
+    for (const name of Object.keys(promptCatalog)) {
+      expect(getPrompt(name).body.trim().length).toBeGreaterThan(0);
+    }
+    for (const name of Object.values(promptNames)) {
+      expect(getPrompt(name).body.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  test("rejects missing templates before an empty provider request", () => {
+    expect(() => prompt("missing-template-test")).toThrow(
+      "Missing or empty prompt template: missing-template-test",
+    );
+  });
+
   test("renders a no-var file verbatim", () => {
     const out = prompt("synthesis-system");
     expect(out).toContain("Managing Editor of");

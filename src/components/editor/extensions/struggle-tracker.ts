@@ -97,6 +97,14 @@ import {
   threadInstrumentSnapshot,
   verifyThreadPairs,
 } from "../../../utils/thread-instrument";
+import type {
+  InstrumentRoomRequest,
+  InstrumentRoomResult,
+} from "../../../utils/instrument-room";
+import {
+  instrumentRoomAnchorMatches,
+  type InstrumentRoomAnchor,
+} from "../../../utils/instrument-source";
 
 const key = new PluginKey<DecorationSet>("inFlowAnchor");
 
@@ -137,6 +145,10 @@ function publish(next: InFlowSnapshot) {
 }
 
 export interface InFlowController {
+  askRoom(
+    request: InstrumentRoomRequest,
+    toolId: string,
+  ): Promise<InstrumentRoomResult>;
   applyVariant(text: string): Promise<boolean>;
   previewVariant(text: string | null): void;
   moveSentence(slotId: string): boolean;
@@ -196,6 +208,10 @@ export function startInFlowTools(
     folioId: string;
     brief: ProjectBrief | null;
     openPanel?: (panel: "citations") => void;
+    onAskRoom?: (
+      request: InstrumentRoomRequest,
+      anchor: InstrumentRoomAnchor,
+    ) => Promise<InstrumentRoomResult>;
   },
 ): () => void {
   const { folioId, brief } = options;
@@ -964,6 +980,8 @@ export function startInFlowTools(
           /* Local candidates remain useful without judgement. */
         }
       }
+      if (!stillThis() || active?.spec.elements.tool.type !== "SentenceLab")
+        return;
       result.spec = toolSpec({
         ...element,
         props: {
@@ -997,6 +1015,43 @@ export function startInFlowTools(
   };
 
   controller = {
+    async askRoom(request, toolId) {
+      const element = active?.spec.elements.tool;
+      if (
+        stopped ||
+        !active ||
+        active.id !== toolId ||
+        editor.isDestroyed ||
+        !editor.isEditable ||
+        element?.type !== "SentenceLab" ||
+        element.props.stale ||
+        active.sentenceFrom === undefined ||
+        active.sentenceTo === undefined
+      )
+        return {
+          ok: false,
+          message:
+            "That sentence changed. Reopen the bench before inviting an editor.",
+        };
+      const anchor: InstrumentRoomAnchor = {
+        folioId,
+        from: active.sentenceFrom,
+        to: active.sentenceTo,
+        text: element.props.sentence,
+      };
+      if (!instrumentRoomAnchorMatches(editor.state.doc, folioId, anchor))
+        return {
+          ok: false,
+          message:
+            "That sentence changed. Reopen the bench before inviting an editor.",
+        };
+      const result = (await options.onAskRoom?.(request, anchor)) ?? {
+        ok: false,
+        message: "The manuscript is not available for this conversation.",
+      };
+      if (result.ok && active?.id === toolId) setActive(null);
+      return result;
+    },
     async applyVariant(text) {
       if (
         !active ||
@@ -1501,6 +1556,55 @@ export function startInFlowTools(
     return buildSpanIndex(blocks, ledger.entries);
   };
   bindThreadInstrument({
+    async askRoom(request, threadId, fingerprint) {
+      const current = threadInstrumentSnapshot();
+      const thread = current.threads.find((item) => item.id === threadId);
+      if (
+        stopped ||
+        editor.isDestroyed ||
+        !editor.isEditable ||
+        !current.open ||
+        current.stale ||
+        current.index.fingerprint !== fingerprint ||
+        !thread
+      )
+        return {
+          ok: false,
+          message:
+            "These passages changed. Reopen Threads before inviting an editor.",
+        };
+      const anchor: InstrumentRoomAnchor = {
+        folioId,
+        from: thread.first.from,
+        to: thread.first.to,
+        text: thread.first.text,
+        related: [
+          {
+            from: thread.second.from,
+            to: thread.second.to,
+            text: thread.second.text,
+          },
+        ],
+      };
+      if (!instrumentRoomAnchorMatches(editor.state.doc, folioId, anchor))
+        return {
+          ok: false,
+          message:
+            "These passages changed. Reopen Threads before inviting an editor.",
+        };
+      const result = (await options.onAskRoom?.(request, anchor)) ?? {
+        ok: false,
+        message: "The manuscript is not available for this conversation.",
+      };
+      if (
+        result.ok &&
+        threadInstrumentSnapshot().index.fingerprint === fingerprint
+      ) {
+        previewThread = null;
+        publishThreadInstrument(EMPTY_THREAD_SNAPSHOT);
+      }
+      return result;
+    },
     async suggestWithEmbeddings() {
       const initial = threadInstrumentSnapshot();
       const focus = initial.focusId && spanById(initial.index, initial.focusId);
