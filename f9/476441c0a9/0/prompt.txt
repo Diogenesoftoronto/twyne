@@ -1,0 +1,17 @@
+[audit.md](audit.md) There is a major issue when it comes to the usefulness of various components when writing locally especially if i don't have model access. 1. cards appear that don't give me real abilities to improve my writing, the sentence lab is a good idea, the execution is a bit poor. if i have rewritten a sentence a bunch giving me just somem of the partial writing isn't helpful. what would be helpful is complete sentence rewrites, optional rephasings. Take lessons from grammarly here alternative words to be used. The power of a sentence lab would be cool. Sentence labs can even be about positioning. Maybe I have moved this sentence around in my writing and I am looking for a better place to put it. The cards as a whole in terms of the implementation are half baked and the power of AI also seems only partially used. Systemone models can do so much important things in twyne. I want information to appear whenever it would help the writer improve their piece. Now codex with astra on ultra came up with some ideas I want you to use that to critique and think differently about what you could improve here. Think about if i was writing things what is a good way to represent tools that would be useful. think of all the differrent types of ai models that exist that could help you with this, image gen that can help visualize a seen, music gen that might help you hear and listen to it, audio and voice that can help you design it. video that might animate it. embedding models that might help you do really cool grammar checks.  Jev can select and highlight or connect spans together in interesting ways for futher discussion or add great contextual options when doing a selection or different actions.
+
+---
+
+https://rich-input.netlify.app/ is a really cool thing to think about what other rich fields could exist and leverage a systemone?
+
+---
+
+dodn't stay lightning focused on the sentence level there far more options to look at in hierarchy connections between characters and modifications to the piece for example you could be mixing royal we and I as subject and the piece and identifying that is important. otherr things across the document in novel ways as well, i want cards to help wiith all t hese different leves. li want t interactive or ways t hat a user can get a sense of what is improtant the score as theh fix and channge things, essentially some of theh power the panels have made visible whehrre it matters and allowing them to expand and see their document react to the changes. a liveing appplicaiton
+
+---
+
+get to implementing and use codex with gpt 6.1 on high on fast as the backend hook up implement and sonnet as frontend at low.
+
+---
+
+do some design guidance as well to make sure things turn out feel the best
