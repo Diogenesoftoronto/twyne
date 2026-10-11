@@ -1,0 +1,54 @@
+continue
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A4573b2eb-2d5b-4c69-8747-b44e93e9494c%3Adelegate-task%3Aliving-desk-engine-phase1-r1 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A4573b2eb-2d5b-4c69-8747-b44e93e9494c%3Adelegate-task%3Aliving-desk-engine-phase1-r1 to read the result.
+
+---
+
+the docs page should be updated with the updated components once complete.
+
+---
+
+video recordings are great to have for commercials, demos and videos online so savingn some of t hese in tests is a greata idea for that and havingn visual tests that i can check over and we can recheck and deploy to the docs end to end
+
+---
+
+okay we also need the othehr phases too. i think using subagents is a good idea as well.
+
+---
+
+i also want evals on this and benchmarks somethingn reproducible in some way thaht we can flag and test an agent exploring this and doing this is really  important. instrumentns  thata work with our knowledge base takeing  advantagge of certain texts or doing rersearch tasks make sense that way we can hahve thesetasks and geet feedback even after we close the tab, the agents wee still doing work that can help improve your writing.
+
+---
+
+beautiful animations and art that make the instruments appear more visually engaging are also important. think of creative way to leverage image generation to do this. if you have a personal illustrator and animator for different parts and reusable components and textures.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A499f3cbc-4d1d-4797-b4a7-4cbd4cd768d2%3Adelegate-task%3Ainstrument-illustration-motion-r1-20261009 reached a terminal state. Use task_status with taskId node:delegated-task:command%3Amcp%3A499f3cbc-4d1d-4797-b4a7-4cbd4cd768d2%3Adelegate-task%3Ainstrument-illustration-motion-r1-20261009 to read the result.
+
+---
+
+For the live background-research check, is there a signed-in test account and a non-sensitive knowledge resource you want me to use? I can finish the release and docs checks while this remains unverified.
+Keep live-account proof pending
+
+---
+
+making good use of the persona images would be nice. i would love to make things seem more human and personal by giving them a talking head image above their critique helping a reader distinguish who is who not just with colour coding but by face.
+
+---
+
+if we think about it this way there are a bunch of ways that the room of editors can naturally show up in the instruments that we have that make sense and having those interactions furtherr gives the editor something to go with that makes uiiut feel like t hey have a real team along with them
+
+---
+
+some way for personas to weigh in on some tools
+
+---
+
+jev can select which persona might have something helpful to say with an instrument.
+
+---
+
+i think we can just skip this last check and go straight to push to main with a new release. don't bother retesting. create the new release
