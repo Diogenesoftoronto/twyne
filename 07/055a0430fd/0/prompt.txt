@@ -1,0 +1,92 @@
+Act as the implementation sub-agent for this task.
+
+You are implementing the ENGINE for Twyne's "living desk", Phase 1. Repo: /home/diogenes/Projects/apps/twyne (Qwik + Tiptap/ProseMirror + Convex, bun). A separate agent is building the INTERFACE in parallel in the same checkout, so respect the file ownership below exactly.
+
+## Read first
+1. `src/utils/living-desk-contract.ts`: the ONLY contract between you and the interface. Implement it faithfully. Do NOT change its exported types or names. If you truly need a change, keep it additive (optional fields only) and list it in your final report.
+2. `docs/living-desk-design.md`: the design spec. The "Manuscript decorations" section defines the classes and attributes you must emit. The "Copy" section defines the wording for titles, metrics and notes, which you produce.
+3. `docs/writing-instruments.md`: sections "Levels", "Consistency ledgers", "The living score".
+4. Patterns to copy: `src/components/editor/extensions/struggle-tracker.ts` (module-level snapshot + controller + publish via window CustomEvent, ProseMirror decoration plugin `InFlowAnchor`, the `ask` helper with `systemOneWait/spendSystemOne/backOffSystemOne` from `src/utils/system-one-budget.ts`), `src/utils/system-one.ts` (choice/noul builders, isChoice), `src/utils/judgement-client.ts` (`askJudgement`), `src/utils/rubric.ts` (`scoreStaticFeatures`), `src/utils/live-review.ts` (`liveReviewSnapshot`, event `twyne:live-review`), `src/utils/passage-triage.ts` (batching Jev questions).
+5. Repo rules: CLAUDE.md / AGENTS.md. Do not touch `convex/`.
+
+## Files you own (create/edit only these)
+- NEW `src/utils/living-desk/` (pure, DOM-free, unit-tested analysis modules)
+- NEW `src/components/editor/extensions/living-desk.ts` (Tiptap extension + `startLivingDesk`)
+- `src/components/editor/twyne-editor.tsx`: ONLY (a) register your decoration extension where the other editor extensions (e.g. `InFlowAnchor`) are registered and (b) add `cleanup(startLivingDesk(editor, {...}))` inside the existing `if (activeFolioId && !readOnly) {` block next to `startFlowConductor`. Nothing else in that file.
+- `src/utils/live-review.ts`: ONLY to add a listener for a new window event `twyne:live-review-request` that schedules a review promptly (bypassing the 30 s spacing, still respecting its other gates). Add that event name as an exported const in `living-desk-contract.ts` (additive) or in live-review.ts.
+- Tests next to your modules (`*.test.ts`).
+The interface agent owns `src/components/living-desk/**`, `src/components/editor/manuscript-panel.tsx`, compositor/toolbar files and all CSS. Do not edit those. Do not write CSS; just emit the documented classes.
+
+## What to build
+
+### Pure analysis (src/utils/living-desk/)
+Input: a lightweight segment model of the doc. Build it in a `segment.ts` that walks a ProseMirror `Node` into blocks `{kind: paragraph|heading|quote|code|other, text, pos (doc position of the block's content start), paragraph number, section index}` plus `sections: SectionInfo[]` split at headings (text before the first heading = "Opening"). Provide an offset→doc-position mapper that handles inline non-text nodes (see `posAtOffset` in struggle-tracker.ts). Keep the analysis functions taking plain data so they are testable without an editor. Skip quote/code blocks and text inside quotation marks ("…", “…”) for stance.
+
+1. `stance.ts`: the I/we ledger.
+   - Find first-person singular (I, me, my, mine, myself) and plural (we, us, our, ours, ourselves, let's) outside quotes/blockquotes/code.
+   - The finding exists only when the piece is mainly singular: at least 3 singular and singular ≥ 60% of first-person tokens, and at least one plural.
+   - Rule labels: inclusive ("as we'll see", "as we have seen", "let us/let's" + verb, "we can see"); group ("we" + a plural noun such as kids, children, students, villagers, "we both", "we all", "my family and I… we"); editorial ("we would argue", "we argue", "we contend", "we believe", "we must admit", "we think", "in our view", "our view", "our argument", "our thesis", "we have shown", "we will show"). Everything else is `unclassified` (shown, not flagged).
+   - With Jev (when available): batch one Choice per unclassified-or-rule-labelled plural occurrence with options exactly ["the author alone (an editorial or royal we)", "the author and the reader together", "a group the author belongs to", "a character or quoted speaker", "people in general"]. State: the sentence, the previous sentence, and the counts of singular vs plural. At most 24 questions per request, cached by sentence text. Flag only when P(author alone) ≥ 0.6. Record the probability and a short note ("the author alone"). Jev overrides rule labels.
+   - Deterministic fix per flagged occurrence, case preserved: we→I, us→me, our→my, ours→mine, ourselves→myself. Agreement with the immediately following verb: are→am, were→was, 're→'m, 've/'d/'ll stay, "we were"→"I was", "we are"→"I am". The occurrence span covers the pronoun plus the agreeing verb when that changes. Test all of this.
+   - Finding id `stance`, lens `stance`, level `piece`, criterion `consistency`, title "Editorial “we” in an “I” essay", metric like `3 editorial “we” · 41 “I”`. Include context occurrences (flagged:false) for inclusive and group cases with a note.
+2. `naming.ts`: capitalised name tokens and multi-word names not at sentence start. Group spelling variants: Damerau-Levenshtein ≤1 for length ≥5, ≤2 for length ≥8, same first letter, and the canonical form appears ≥2× as often. Exclude a stoplist of common capitalised words. One finding per group, id `naming:<canonical lowercased>`, lens `naming`, level `piece`, criterion `consistency`, fix = the canonical spelling. Title like `Hollins is spelled two ways`; metric `“Hollins” ×14 · “Hollis” ×1 in ¶6`.
+3. `style-sheet.ts`: majority-rule consistency. One finding per rule that has a minority, fix = convert to the majority form:
+   - serial comma
+   - US/UK spelling pairs (a table of ~40 pairs, e.g. color/colour, center/centre, -ize/-ise, gray/grey, toward/towards)
+   - spelled-out vs digit numbers below 10 (exclude dates, times, measurements, decimals)
+   - spaced vs closed em dash
+   - curly vs straight quotes
+   Lens `style`, level `piece`, criterion `consistency`, provenance `rule`, ids `style:<rule>`.
+4. `presence.ts`: entities = canonical names with ≥2 mentions. Build counts per section into `PresenceRow[]`. A finding when the doc has ≥3 sections and an entity present in ≥2 sections is absent from ≥1 section between appearances: id `presence:<name>`, lens `presence`, level `section`, criterion `structure`, impact null, actions ["jump"], occurrences = the last mention before the gap and the first after (flagged:false). Title e.g. `Mara Okafor drops out of §II` (use the section titles if short, otherwise §n).
+5. `score.ts`: the live score.
+   - Rule criteria from `scoreStaticFeatures(plainText)`: evidence, pacing, vocabulary, integrity, paragraphShape, structure. Use the labels from rubric.ts where they exist. scope `paragraph`, source `rule`.
+   - Plus a `consistency` criterion = 10 − penalties: 0.3 per flagged stance occurrence, 0.4 per naming variant occurrence, 0.1 per style minority occurrence, capped total penalty 6.
+   - Review criteria from `liveReviewSnapshot().review?.rubric?.judgementGrade` (scope piece, source review), updated on the `twyne:live-review` event.
+   - Confirmed grade = the review's grade on a 0–10 scale (read rubric-grade.ts / types to convert correctly) plus the letter.
+   - Estimate = confirmed + Σ w_k·(rule_k_now − rule_k_at_confirm) using normalised rule weights (reuse FEATURE_WEIGHTS where possible; give consistency a weight comparable to vocabulary). Without a confirmed read, estimate = the weighted mean of rule criteria. Clamp 0–10. Do not show an estimate under ~150 words: null.
+   - `impact` per finding = weight(criterion) × (consistency if that finding were resolved − consistency now), computed by recomputing the penalty without it. `effort` = flagged count.
+   - Sort findings: open by impact desc, null-impact after open, then improving, resolved, deliberate.
+   - `delta` per criterion = value − value at confirm.
+   - `lastChange` set after a fix: criterion with the largest change, its delta, and source `¶<n>`.
+
+### Editor extension (src/components/editor/extensions/living-desk.ts)
+- `LivingDeskDecorations` Tiptap Extension: a plugin holding a DecorationSet set via meta and mapped through transactions. Emit inline decorations with classes `ld-occ`, `ld-occ--flagged|--context`, `ld-occ--focused`, `ld-occ--previewing` and attributes `data-ld-lens`, `data-ld-label`, `data-ld-id`. Emit a widget `.ld-ghost` after a previewed span containing the replacement text, and `.ld-flash` inline decorations for ~1.2 s after a fix. Only decorate occurrences of the active lens (or the focused finding's lens). Set `data-ld-lens` / `data-ld-focus` attributes on `editor.view.dom` while a lens or focus is active. Remove `data-ld-focus` on the first keydown in the editor.
+- `startLivingDesk(editor, { getClient, folioId })` returns cleanup:
+  - Recompute rule analyses on doc change, debounced 400 ms, and immediately after a fix.
+  - Skip transactions from y-sync / `addToHistory:false` for counting edits, like flow-conductor does.
+  - Cap analysis cost (measure; it must not add typing latency: run off the keystroke path, consider requestIdleCallback, bail above ~80k chars to sections near the cursor if needed).
+  - Run the Jev stance classification ≥2 s after the last edit for new unclassified sentences, via `askJudgement(getClient(), …)`. Do NOT require a Convex client before calling: askJudgement handles the endpoint transport itself. Respect the shared budget, and set `judgement` to `offline` when unavailable and `reading` while in flight.
+  - Persist deliberate finding ids per folio (localStorage key `living-desk-deliberate:<folioId>`).
+  - Persist open state under `LIVING_DESK_OPEN_KEY`. Listen for `LIVING_DESK_TOGGLE_EVENT` (detail.open optional).
+  - Register the controller via `registerLivingDeskController` and publish via `publishLivingDesk`.
+- Controller semantics:
+  - applyFix verifies the doc text at [from,to] equals `occurrence.text`. If not, re-find it within the same paragraph; otherwise return false and mark that finding stale-safe. Apply as ONE undoable transaction, flash it, and republish within the same frame so the interface sees count + score change < 300 ms.
+  - applyAll applies every flagged fix of a finding in ONE transaction, from the end backwards.
+  - Undo must naturally restore counts (recompute on doc change).
+  - jumpTo selects and scrolls into view.
+  - spineFraction(pos) = (coordsAtPos(pos).top − dom top) / dom scrollHeight, null on failure.
+  - confirm dispatches `twyne:live-review-request` with `{folioId}`.
+
+## Quality bar
+- Unit tests (bun) for: segmentation + offset mapping (including inline atoms); stance rules, agreement fixes and quote exclusion; Jev answer mapping with a fake `ask`; naming (Hollins ×3 / Hollis ×1 → one finding, a correct fix); each style-sheet rule; presence gap; score estimate/impact math; and an editor-level test that applyFix changes the text, lowers the count, and undo restores it (see `src/components/editor/test-harness.ts` and existing extension tests for how they build a headless editor).
+- Run: `bun test --conditions=production --preload ./tests/qwik-test-preload.ts src/utils/living-desk src/components/editor/extensions/living-desk` (run `bun run i18n:prepare` first if needed), plus `bunx tsc --noEmit -p tsconfig.json` (or `bun run build.types`) and `bunx eslint` on your files. Fix everything you introduced. Report any pre-existing failures separately without fixing unrelated code.
+- The worktree has many unrelated uncommitted changes from the user. Never revert, stash, reset, or reformat files you don't own. Do not commit. Do not run Convex deploys.
+
+## Final report
+List the files created/changed, what each analysis detects, test results with commands, measured recompute time on a ~5k-word doc, any contract additions, and known gaps (e.g. Charter integration for Deliberate is out of scope; say where it would hook in).
+
+---
+
+Parent integration review is active; I am not editing your owned files while you finish. Two correctness issues to address before handoff: (1) Stance cache keys currently use sentence+offset but classification also depends on previous sentence and document singular/plural counts. Same sentence can move or appear after different context; use context-aware keys to avoid applying stale/group-to-editorial results. Include a regression for two identical 'we' sentences with different preceding context and changed context on recompute. (2) Deliberate persists only counts, so replacing an old occurrence with new drift at same count stays silently deliberate, while adding one occurrence re-flags all old ones. Persist accepted occurrence/context signatures (not only count), suppress accepted spans and flag only new drift; include reload regression. Check confirmed baseline edits=0 does not falsely say confirmed when loaded review is stale. Keep within current ownership. I started Vite at localhost:5173 for parent browser checks; do not stop it.
+
+---
+
+Two more directly observed analysis bugs: naming.ts comment promises sentence-initial names count when also seen elsewhere, but code skips them unconditionally. Do a candidate-discovery then occurrence-collection pass so established names at sentence/paragraph starts count for spelling and presence (otherwise 'Mara left...' across whole sections falsely appears absent). Regression please. Style SPELLING_PAIRS check/cheque is unsafe ('check the door' must not become 'cheque the door'); program/programme, license/licence and meter/metre also depend on sense/POS. Remove context-dependent pairs from mechanical fixes unless disambiguated, and exclude 'one of', 'one another', 'no one' from number formatting. Report >80k char limit clearly via additive optional snapshot status field so UI can show paused/limited analysis instead of 'nothing needs you'; coordinate naming of field in final, I will connect UI.
+
+---
+
+Browser stance card revealed metric says 32 “I” but singular counter includes me/my/mine/myself and heading numeral 'I. Before the flood'. Please skip heading blocks for stance (numeric section marker isn't a pronoun) and label actual singular count accurately, e.g. 31 singular pronouns, or separate literal I count. User needs trustworthy observations.
+
+---
+
+.
