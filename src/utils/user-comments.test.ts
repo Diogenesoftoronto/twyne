@@ -1,5 +1,7 @@
 import { afterAll, afterEach, describe, expect, mock, test } from "bun:test";
 import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
+// @ts-expect-error — jsdom ships JS only; no @types/jsdom is installed.
+import { JSDOM } from "jsdom";
 
 /**
  * Writer comments live in the Lix file `/user-comments.json` and survive
@@ -7,16 +9,27 @@ import { lockBrowserGlobalsForTestFile } from "./test-browser-globals-lock";
  * exercised end-to-end without a browser.
  */
 
-// Minimal browser global so the local-first guards (`typeof window`)
-// inside user-comments.ts pass and writes actually fire.
+// Browser globals agree while local-first persistence runs, then restore the
+// prior environment before another file imports authentication dependencies.
 const releaseBrowserGlobalsLock = await lockBrowserGlobalsForTestFile();
-(globalThis as { window?: unknown }).window = {
-  localStorage: {
-    getItem: () => null,
-    setItem: () => {},
-    removeItem: () => {},
-  },
+const browserGlobalNames = ["window", "localStorage"] as const;
+const previousBrowserGlobals = new Map(
+  browserGlobalNames.map((name) => [
+    name,
+    Object.getOwnPropertyDescriptor(globalThis, name),
+  ]),
+);
+const dom = new JSDOM("", { url: "https://twyne.test/" });
+const browserGlobals = {
+  window: dom.window,
+  localStorage: dom.window.localStorage,
 };
+for (const name of browserGlobalNames)
+  Object.defineProperty(globalThis, name, {
+    configurable: true,
+    writable: true,
+    value: browserGlobals[name],
+  });
 
 const files: { path: string; data: Uint8Array }[] = [];
 let pendingRead: Promise<void> | null = null;
@@ -53,8 +66,17 @@ afterEach(() => {
 });
 
 afterAll(() => {
-  mock.module("./lix", () => originalLix);
-  releaseBrowserGlobalsLock();
+  try {
+    mock.module("./lix", () => originalLix);
+  } finally {
+    for (const name of browserGlobalNames) {
+      const descriptor = previousBrowserGlobals.get(name);
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else Reflect.deleteProperty(globalThis, name);
+    }
+    dom.window.close();
+    releaseBrowserGlobalsLock();
+  }
 });
 
 describe("user-comments persistence", () => {

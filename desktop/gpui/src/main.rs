@@ -171,10 +171,14 @@ fn run() -> Result<()> {
             let value = arguments
                 .next()
                 .context("--capture-size needs WIDTHxHEIGHT")?;
-            let (width, height) = twyne_desktop::launch_arguments::parse_capture_size(&value)?;
+            let size = twyne_desktop::launch_arguments::parse_capture_size(&value)?;
             #[cfg(feature = "ui-tests")]
             {
-                capture_size = Some((width, height));
+                capture_size = Some(size);
+            }
+            #[cfg(not(feature = "ui-tests"))]
+            {
+                let _ = size;
             }
         } else if cfg!(feature = "ui-tests") && argument == "--capture-geometry-watch" {
             #[cfg(feature = "ui-tests")]
