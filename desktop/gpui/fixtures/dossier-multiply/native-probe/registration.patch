@@ -1,0 +1,16 @@
+--- a/desktop/gpui/Cargo.toml
++++ b/desktop/gpui/Cargo.toml
+@@ -57,8 +57,13 @@
+ name = "twyne-wayland-clipboard-probe"
+ path = "fixtures/wayland-clipboard/native-probe.rs"
+ required-features = ["desktop"]
+ 
++[[example]]
++name = "twyne-dossier-multiply-probe"
++path = "fixtures/dossier-multiply/native-probe/main.rs"
++required-features = ["ui-tests"]
++
+ [[test]]
+ name = "native-audio-contract"
+ path = "fixtures/native-audio/synthetic_loopback.rs"
+ required-features = ["native-audio"]

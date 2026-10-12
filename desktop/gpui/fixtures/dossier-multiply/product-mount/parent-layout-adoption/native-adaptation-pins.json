@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "status": "Unapplied independent post-mount observation/driver adaptation",
+  "baseSha256": {
+    "desktop/gpui/src/app.rs": "9ffb3f6003c910a8bfbf6647c4ad79510c4e4bff06a3063ff72f07d3873e695e",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/check-native.py": "522cf0ec2cebb8bda75c855f35a5b0eb6ab3b447d6f54f1370c8cd2dc6b30b32"
+  },
+  "proposedSha256": {
+    "desktop/gpui/src/app.rs": "f39eadba8ab26edc91857485dd118a227570b4f090dfb8379955934a78f56e5f",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/check-native.py": "0ee80a96811ee62f6d2e8e646460ccf4cca81661ba19c12ee623878f54792cba"
+  },
+  "noSharedWrites": true,
+  "realOrdinaryFontGateStillNine": true,
+  "driverOrNativeExecuted": false
+}

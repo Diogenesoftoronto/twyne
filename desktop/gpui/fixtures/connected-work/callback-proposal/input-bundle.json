@@ -1,0 +1,8 @@
+{
+  "desktop/gpui/src/native_accounts/auth.rs": {
+    "sha256": "64832c09a8a543c5fce0a1190eaebd86aae5cbe13ceefb38f2906da2a6a4d583"
+  },
+  "desktop/gpui/Cargo.toml": {
+    "sha256": "72400ce488eb644e1aeca961548cbfe3fa068fda2be5ba020dc249205d1318b8"
+  }
+}

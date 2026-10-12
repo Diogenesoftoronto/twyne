@@ -1,0 +1,235 @@
+{
+  "scope": "original anonymous Manager; actual fonts loaded; no data edits/provider/account/sync calls",
+  "url": "http://localhost:5180/personas/",
+  "viewport": {
+    "width": 1280,
+    "height": 860
+  },
+  "glyphs": [
+    {
+      "label": "♠Mlle. Sceptique",
+      "glyph": "♠",
+      "rect": {
+        "x": 233,
+        "y": 277,
+        "width": 8.5,
+        "height": 24
+      },
+      "nameRect": {
+        "x": 233,
+        "y": 277,
+        "width": 160,
+        "height": 24
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "fontStyle": "normal",
+      "lineHeight": "24px",
+      "color": "rgb(193, 39, 45)",
+      "fontFeatureSettings": "\"kern\", \"liga\", \"onum\"",
+      "platformFonts": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "♥Sœur Encourageante",
+      "glyph": "♥",
+      "rect": {
+        "x": 233,
+        "y": 326,
+        "width": 9.5,
+        "height": 24
+      },
+      "nameRect": {
+        "x": 233,
+        "y": 326,
+        "width": 192.9375,
+        "height": 24
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "fontStyle": "normal",
+      "lineHeight": "24px",
+      "color": "rgb(138, 154, 91)",
+      "fontFeatureSettings": "\"kern\", \"liga\", \"onum\"",
+      "platformFonts": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "♦Professeur Athenæum",
+      "glyph": "♦",
+      "rect": {
+        "x": 233,
+        "y": 375,
+        "width": 8.171875,
+        "height": 24
+      },
+      "nameRect": {
+        "x": 233,
+        "y": 375,
+        "width": 201.84375,
+        "height": 24
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "fontStyle": "normal",
+      "lineHeight": "24px",
+      "color": "rgb(92, 107, 192)",
+      "fontFeatureSettings": "\"kern\", \"liga\", \"onum\"",
+      "platformFonts": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "✦M. Le Stylo",
+      "glyph": "✦",
+      "rect": {
+        "x": 233,
+        "y": 424,
+        "width": 9.609375,
+        "height": 24
+      },
+      "nameRect": {
+        "x": 233,
+        "y": 424,
+        "width": 160,
+        "height": 24
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "fontStyle": "normal",
+      "lineHeight": "24px",
+      "color": "rgb(212, 160, 23)",
+      "fontFeatureSettings": "\"kern\", \"liga\", \"onum\"",
+      "platformFonts": [
+        {
+          "familyName": "Adwaita Mono",
+          "postScriptName": "Adwaita-Mono",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "♣Le Lecteur",
+      "glyph": "♣",
+      "rect": {
+        "x": 233,
+        "y": 473,
+        "width": 10.5,
+        "height": 24
+      },
+      "nameRect": {
+        "x": 233,
+        "y": 473,
+        "width": 160,
+        "height": 24
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "16px",
+      "fontWeight": "600",
+      "fontStyle": "normal",
+      "lineHeight": "24px",
+      "color": "rgb(44, 74, 124)",
+      "fontFeatureSettings": "\"kern\", \"liga\", \"onum\"",
+      "platformFonts": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    }
+  ],
+  "styles": {
+    "intro": {
+      "text": "Hire, edit, and tune the editorial board. Each editor's voice drives the notes they file.",
+      "rect": {
+        "x": 216,
+        "y": 97,
+        "width": 480.3125,
+        "height": 40
+      },
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontSize": "14px",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "letterSpacing": "normal",
+      "lineHeight": "20px",
+      "padding": "0px",
+      "radius": "0px"
+    },
+    "assistanceExplanation": {
+      "text": "The room-wide ceiling lives in the right-rail Cast panel. Here you can override individual editors — useful if you want one editor filing notes only while another rewrites freely.",
+      "rect": {
+        "x": 233,
+        "y": 223,
+        "width": 814,
+        "height": 32
+      },
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontSize": "12px",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "letterSpacing": "normal",
+      "lineHeight": "16px",
+      "padding": "0px",
+      "radius": "0px"
+    },
+    "pill": {
+      "text": "comments",
+      "rect": {
+        "x": 405,
+        "y": 277.796875,
+        "width": 80.296875,
+        "height": 22.390625
+      },
+      "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+      "fontSize": "10.4px",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "letterSpacing": "1.04px",
+      "lineHeight": "15.6px",
+      "padding": "2.4px 8.8px",
+      "radius": "999px"
+    },
+    "department": {
+      "text": "Tunable Assistance",
+      "rect": {
+        "x": 233,
+        "y": 178,
+        "width": 814,
+        "height": 15
+      },
+      "fontFamily": "\"Special Elite\", \"Courier New\", monospace",
+      "fontSize": "10px",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "letterSpacing": "3.2px",
+      "lineHeight": "15px",
+      "padding": "0px",
+      "radius": "0px"
+    }
+  }
+}

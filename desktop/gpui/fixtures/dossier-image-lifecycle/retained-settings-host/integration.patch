@@ -1,0 +1,13 @@
+diff --git a/desktop/gpui/src/app.rs b/desktop/gpui/src/app.rs
+--- a/desktop/gpui/src/app.rs
++++ b/desktop/gpui/src/app.rs
+@@ -60,6 +60,9 @@
+ mod clipboard_coordinator;
+ #[cfg(all(test, feature = "ui-tests"))]
+ mod dossier_filing_tests;
++#[cfg(all(test, feature = "ui-tests", any(target_os = "linux", target_os = "freebsd")))]
++#[path = "../fixtures/dossier-image-lifecycle/retained-settings-host/host_tests.rs"]
++mod dossier_retained_settings_host;
+ mod editor_drag_coordinator;
+ mod flow_coordinator;
+ mod house_coordinator;

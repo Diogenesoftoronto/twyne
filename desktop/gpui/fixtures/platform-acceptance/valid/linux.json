@@ -1,0 +1,175 @@
+{
+  "contract": {
+    "schemaVersion": 2,
+    "platform": "linux",
+    "appId": "love.twyne.gpui",
+    "helpers": [
+      {
+        "id": "desktop",
+        "targetName": "twyne-desktop",
+        "required": true
+      },
+      {
+        "id": "document",
+        "targetName": "twyne-document",
+        "windowsExtension": ".exe",
+        "required": true
+      },
+      {
+        "id": "math-write",
+        "targetName": "twyne-math-write",
+        "windowsExtension": ".exe",
+        "required": true
+      }
+    ],
+    "keyAliases": [
+      {
+        "action": "save",
+        "aliases": ["ctrl-s"]
+      },
+      {
+        "action": "undo",
+        "aliases": ["ctrl-z"]
+      },
+      {
+        "action": "redo",
+        "aliases": ["ctrl-shift-z", "ctrl-y"]
+      },
+      {
+        "action": "quit",
+        "aliases": ["ctrl-q"]
+      }
+    ],
+    "fileAssociations": [
+      {
+        "extension": "typ",
+        "mime": "application/x-typst"
+      },
+      {
+        "extension": "json",
+        "mime": "application/json"
+      },
+      {
+        "extension": "twyne",
+        "mime": "application/json"
+      },
+      {
+        "extension": "html",
+        "mime": "text/html"
+      },
+      {
+        "extension": "htm",
+        "mime": "text/html"
+      },
+      {
+        "extension": "md",
+        "mime": "text/markdown"
+      },
+      {
+        "extension": "markdown",
+        "mime": "text/markdown"
+      },
+      {
+        "extension": "txt",
+        "mime": "text/plain"
+      }
+    ],
+    "urlSchemes": [],
+    "microphone": {
+      "required": false,
+      "usageKeys": ["NSMicrophoneUsageDescription"]
+    }
+  },
+  "manifest": {
+    "schemaVersion": 2,
+    "platform": "linux",
+    "appId": "love.twyne.gpui",
+    "executables": [
+      {
+        "id": "desktop",
+        "targetName": "twyne-desktop",
+        "required": true,
+        "path": "twyne-desktop"
+      },
+      {
+        "id": "document",
+        "targetName": "twyne-document",
+        "required": true,
+        "path": "twyne-document"
+      },
+      {
+        "id": "math-write",
+        "targetName": "twyne-math-write",
+        "required": true,
+        "path": "twyne-math-write"
+      }
+    ],
+    "files": [
+      {
+        "path": "share/applications/love.twyne.gpui.desktop",
+        "kind": "metadata"
+      },
+      {
+        "path": "twyne-desktop",
+        "kind": "executable"
+      },
+      {
+        "path": "twyne-document",
+        "kind": "executable"
+      },
+      {
+        "path": "twyne-math-write",
+        "kind": "executable"
+      }
+    ],
+    "layout": "flat-executables-and-metadata",
+    "bundleStatus": "not-assembled"
+  },
+  "build": {
+    "platform": "linux",
+    "producedExecutables": [
+      "twyne-desktop",
+      "twyne-document",
+      "twyne-math-write"
+    ],
+    "keyBindings": [
+      {
+        "action": "save",
+        "keystrokes": ["ctrl-s"]
+      },
+      {
+        "action": "undo",
+        "keystrokes": ["ctrl-z"]
+      },
+      {
+        "action": "redo",
+        "keystrokes": ["ctrl-shift-z", "ctrl-y"]
+      },
+      {
+        "action": "quit",
+        "keystrokes": ["ctrl-q"]
+      }
+    ],
+    "startup": {
+      "handlesFileArguments": true,
+      "handlesUrlScheme": false,
+      "extensionTokens": [
+        "twyne",
+        "json",
+        "typ",
+        "html",
+        "htm",
+        "md",
+        "markdown",
+        "txt"
+      ]
+    },
+    "microphone": {
+      "realAdapterPresent": false,
+      "usageDescriptionKeys": []
+    },
+    "kind": "synthetic-fixture"
+  },
+  "scope": "synthetic-input-consistency",
+  "_note": "Authored synthetic declarations only; no actual build, running keys, OS registration or hardware receipt."
+}

@@ -1,0 +1,66 @@
+{
+  "source": "src/assets/typst/dmsans-DMSans-opsz-wght.ttf",
+  "sourceSha256": "8cd08d97e89c24d0aa92edd2f0f4c8ee6195eee9b7c9f154865a58b02f0c1c0d",
+  "sourceVersion": "4.004",
+  "file": "fonts/TwyneButtonSans-SemiBold.ttf",
+  "sha256": "a0af3a7af16a37eb1fbebd7b42d2c4c22e85e9e172183a0ad1277730a1190c29",
+  "bytes": 57068,
+  "family": "Twyne Button Sans",
+  "style": "SemiBold",
+  "axes": {
+    "opsz": 12,
+    "wght": 600
+  },
+  "sourceEvidence": "assets/button-font-evidence/web-metrics.json: original Google response at12px600 auto matches explicit opsz12",
+  "tool": {
+    "package": "fontTools",
+    "version": "4.61.1"
+  },
+  "method": "instantiateVariableFont, optimize=True, unchanged original timestamps, deterministic SFNT order; explicit internal UI family",
+  "license": "SIL Open Font License 1.1",
+  "licenseSource": "src/assets/typst/dmsans-OFL.txt",
+  "licenseSha256": "9af36190332437f5ecd09974de43c1f7c77a310a996cdd8ceb25628b458840e1",
+  "defaultSansAndSourceAndTypstUnchanged": true,
+  "testGlyphs": {
+    "S": {
+      "glyphId": 87,
+      "advanceUnits": 600
+    },
+    "a": {
+      "glyphId": 126,
+      "advanceUnits": 577
+    },
+    "v": {
+      "glyphId": 235,
+      "advanceUnits": 562
+    },
+    "e": {
+      "glyphId": 148,
+      "advanceUnits": 591
+    },
+    " ": {
+      "glyphId": 321,
+      "advanceUnits": 246
+    },
+    "n": {
+      "glyphId": 190,
+      "advanceUnits": 607
+    },
+    "o": {
+      "glyphId": 196,
+      "advanceUnits": 607
+    },
+    "t": {
+      "glyphId": 220,
+      "advanceUnits": 428
+    },
+    "W": {
+      "glyphId": 109,
+      "advanceUnits": 1005
+    },
+    "m": {
+      "glyphId": 189,
+      "advanceUnits": 923
+    }
+  }
+}

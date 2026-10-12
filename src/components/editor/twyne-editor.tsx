@@ -150,6 +150,7 @@ import {
   collectCommentMarkIdsFromHtml,
   reconcileCommentAnchors,
 } from "../../utils/reconcile-comments";
+import { reconcileCurrentCommentAnchors } from "../../utils/comment-reconciliation";
 import { bindNetworkStatusEvents } from "../../utils/convex-sync";
 import { applyDocumentMeta } from "../../utils/document";
 import { CommentMark, removeCommentMarkById } from "./extensions/comment-mark";
@@ -954,7 +955,7 @@ export const TwyneEditor = component$(
           const html = e.getHTML();
 
           applyDocumentMeta(store.meta, text);
-          reconcileCommentsDebounced(html);
+          reconcileCommentsDebounced();
           mirrorDraft(html);
 
           const citations = detectCitations(text);
@@ -1091,20 +1092,65 @@ export const TwyneEditor = component$(
         // subject, so remove it too rather than leaving unreachable ghosts
         // in Marginalia. Debouncing avoids walking the document per keypress.
         let reconcileTimer: ReturnType<typeof setTimeout> | null = null;
-        const reconcileCommentsDebounced = (html: string) => {
+        let reconcileGeneration = 0;
+        const reconcileCommentsDebounced = () => {
           if (reconcileTimer) clearTimeout(reconcileTimer);
+          const generation = ++reconcileGeneration;
+          const folioId = store.activeFolioId;
+          const account = auth.value.user?.id ?? null;
           reconcileTimer = setTimeout(() => {
+            reconcileTimer = null;
             void (async () => {
-              const markIds = collectCommentMarkIdsFromHtml(html);
-              const threads = (await loadUserComments()).filter(
-                (thread) => thread.folioId === store.activeFolioId,
-              );
-              const result = reconcileCommentAnchors(threads, markIds);
+              const current = () =>
+                !!folioId &&
+                generation === reconcileGeneration &&
+                store.activeFolioId === folioId &&
+                (auth.value.user?.id ?? null) === account &&
+                store.editor === editor &&
+                !editor.isDestroyed &&
+                editor.isEditable;
+              if (!current() || !folioId) return;
+              // The typing snapshot may predate a fresh invitation. Read the
+              // actual marks after storage returns, before identifying ghosts.
+              const markIds = () =>
+                collectCommentMarkIdsFromHtml(editor.getHTML());
+              let result = await reconcileCurrentCommentAnchors({
+                folioId,
+                loadThreads: loadUserComments,
+                isCurrent: current,
+                currentMarkIds: markIds,
+              });
+              if (!result) return;
               if (result.ghost.length > 0) {
-                const deletedIds = result.ghost.map((thread) => thread.id);
-                await deleteUserComments(deletedIds);
+                const candidates = result.ghost.map((thread) => thread.id);
+                let deletionMarks: Set<string> | null = null;
+                const retained = await deleteUserComments(
+                  candidates,
+                  (thread) => {
+                    if (!current() || thread.folioId !== folioId) return false;
+                    // deleteUserComments has another async read. An undo or a
+                    // new mark during that read must still preserve the body.
+                    deletionMarks ??= new Set(markIds());
+                    return !deletionMarks.has(thread.id);
+                  },
+                );
+                if (!current()) return;
+                const retainedIds = new Set(
+                  retained.map((thread) => thread.id),
+                );
+                const deletedIds = candidates.filter(
+                  (id) => !retainedIds.has(id),
+                );
+                result = reconcileCommentAnchors(
+                  retained.filter((thread) => thread.folioId === folioId),
+                  markIds(),
+                );
                 const client = clientSig.value;
-                if (client && hasAuthenticatedConvexIdentity(auth.value)) {
+                if (
+                  deletedIds.length &&
+                  client &&
+                  hasAuthenticatedConvexIdentity(auth.value)
+                ) {
                   await Promise.all(
                     deletedIds.map(async (commentId) => {
                       try {
@@ -1117,16 +1163,19 @@ export const TwyneEditor = component$(
                     }),
                   );
                 }
+                if (!current()) return;
                 if (
                   store.userCommentPopover?.id &&
                   deletedIds.includes(store.userCommentPopover.id)
                 ) {
                   store.userCommentPopover = null;
                 }
-                window.dispatchEvent(
-                  new CustomEvent("twyne:user-comments-changed"),
-                );
+                if (deletedIds.length)
+                  window.dispatchEvent(
+                    new CustomEvent("twyne:user-comments-changed"),
+                  );
               }
+              if (!current()) return;
               window.dispatchEvent(
                 new CustomEvent("twyne:comments-reconciled", {
                   detail: result,

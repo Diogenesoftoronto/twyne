@@ -1,0 +1,35 @@
+{
+  "scope": "Unmodified upstream GPUI SVG tests compile-time resources only; no product registration or UI font change",
+  "revision": "1a28cff4b409169bac058bca40dfbfeb7621d19b",
+  "verifiedGitTreeBlobHashes": true,
+  "files": [
+    {
+      "path": "desktop/gpui/assets/fonts/ibm-plex-sans/IBMPlexSans-Regular.ttf",
+      "upstreamUrl": "https://raw.githubusercontent.com/zed-industries/zed/1a28cff4b409169bac058bca40dfbfeb7621d19b/assets/fonts/ibm-plex-sans/IBMPlexSans-Regular.ttf",
+      "gitBlobSha1": "bd6817d5202895da5ac4fad88de3da71e652881a",
+      "sha256": "975dcda37d80f038dcd143c22e33ca2d97a0cc5a929aace1c749153b0fe1afa5",
+      "bytes": 200500
+    },
+    {
+      "path": "desktop/gpui/assets/fonts/lilex/Lilex-Regular.ttf",
+      "upstreamUrl": "https://raw.githubusercontent.com/zed-industries/zed/1a28cff4b409169bac058bca40dfbfeb7621d19b/assets/fonts/lilex/Lilex-Regular.ttf",
+      "gitBlobSha1": "cb98a69b0ffb1976805bf5af3047307fe2422b1d",
+      "sha256": "8a467ad5a1941dc7c9cebaee34e3ed9364a73b48393034e363e4b528bd711d04",
+      "bytes": 194308
+    },
+    {
+      "path": "desktop/gpui/assets/fonts/ibm-plex-sans/license.txt",
+      "upstreamUrl": "https://raw.githubusercontent.com/zed-industries/zed/1a28cff4b409169bac058bca40dfbfeb7621d19b/assets/fonts/ibm-plex-sans/license.txt",
+      "gitBlobSha1": "f72f76504cd73cf2c00b140b2743c138320597b6",
+      "sha256": "91c25c350d3cac39da2736d74f7ba37ef648f5237a4e330a240615bc8d8c4360",
+      "bytes": 4360
+    },
+    {
+      "path": "desktop/gpui/assets/fonts/lilex/OFL.txt",
+      "upstreamUrl": "https://raw.githubusercontent.com/zed-industries/zed/1a28cff4b409169bac058bca40dfbfeb7621d19b/assets/fonts/lilex/OFL.txt",
+      "gitBlobSha1": "156240bc907aa14571afb18b4b1bde62d3ea33e0",
+      "sha256": "a356708a399e3f54b937ec7d9b722c26dabba21365b60f95c56eb7ebca0dee40",
+      "bytes": 4382
+    }
+  ]
+}

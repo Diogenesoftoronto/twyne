@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "rootIntegrated": true,
+  "executedDeterministicTests": true,
+  "tests": {
+    "passed": 13,
+    "failed": 0,
+    "ignored": 0
+  },
+  "log": "desktop/gpui/target/verification/dossier-image-lifecycle-tests-frame-vector-reviewed.log",
+  "logSha256": "9e6b45d27fef74e9b128d8a4abf524441b4ecc53c26d8350c76b822bab6aa0b6",
+  "sourceHashes": {
+    "desktop/gpui/src/lib.rs": "bc2164426d0eeef4833745894022381b741d4d8f26125178214d261c3b12b892",
+    "desktop/gpui/src/app.rs": "9d5a26d84408c1a2a113934963ae6b524da3ba82f7632b772ca43d301ade134b",
+    "desktop/gpui/src/dossier_view.rs": "f63ae1e867a961237b12241e84b5ea0e364f71a0b408ca3985491f7f258adddb",
+    "desktop/gpui/src/dossier_image_lifecycle.rs": "0e98b8d1bc1f3b977cfd9dcb8e83c2fb94fe30df1668ecb52f5c66621e44d775",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/lifecycle_tests.rs": "973aaa4e5622199db66722ac8994e01c5e94d8f8f35e3483b313df7b798f4353",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/integration.patch": "dabb586c87801bbfc3697f0033b030086fc40e470dbe39d1a12e3988553b8913"
+  },
+  "rootRepairs": [
+    "RenderImage::new receives Vec<Frame> in three authored test images"
+  ],
+  "boundaries": [
+    "Actual lease/epoch model tests only; manually constructed receipts do not prove real GPUI frame ordering or GPU completion",
+    "Actual native image-key retirement/product marker placement/theme/route/close proof pending",
+    "The earlier uncompiled worker proposal is retained as provenance; integration patch is now applied"
+  ]
+}

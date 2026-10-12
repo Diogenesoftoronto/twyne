@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linecap="round">
+    <ellipse cx="90" cy="58" rx="77" ry="44" stroke-width="3.5" stroke-dasharray="102 5 46 4"/>
+    <path d="M31 95c31 8 87 9 119-2M41 101c26 7 72 8 100 0" stroke-width="2.5"/>
+  </g>
+  <text x="90" y="72" fill="#000" font-family="Georgia,serif" font-size="56" font-style="italic" font-weight="700" text-anchor="middle">C−</text>
+  <text x="90" y="91" fill="#000" font-family="monospace" font-size="8" font-weight="700" letter-spacing="4" text-anchor="middle">THIN</text>
+</svg>

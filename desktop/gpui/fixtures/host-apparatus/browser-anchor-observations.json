@@ -1,0 +1,284 @@
+{
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+  "locale": {
+    "locale": "en-US",
+    "calendar": "gregory",
+    "numberingSystem": "latn",
+    "timeZone": "America/Toronto",
+    "year": "numeric",
+    "month": "numeric",
+    "day": "numeric"
+  },
+  "surface": "about:blank",
+  "documentHtmlUnchanged": true,
+  "rows": [
+    {
+      "name": "marked text keeps contiguous positions",
+      "quote": "A calm",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "A"
+            },
+            {
+              "offset": 1,
+              "text": "   calm"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": {
+          "from": 0,
+          "to": 8
+        }
+      }
+    },
+    {
+      "name": "literal regex punctuation",
+      "quote": "a+b? [x].",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "prefix a+b? [x]. suffix"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": {
+          "from": 7,
+          "to": 16
+        }
+      }
+    },
+    {
+      "name": "JS whitespace including NBSP and BOM",
+      "quote": "A calm",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "A ﻿\tcalm"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": {
+          "from": 0,
+          "to": 8
+        }
+      }
+    },
+    {
+      "name": "atom gap is retained while text concatenates",
+      "quote": "leftright",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "left"
+            },
+            {
+              "offset": 5,
+              "text": "right"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": {
+          "from": 0,
+          "to": 10
+        }
+      }
+    },
+    {
+      "name": "atom does not invent query whitespace",
+      "quote": "left right",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "left"
+            },
+            {
+              "offset": 5,
+              "text": "right"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": null
+      }
+    },
+    {
+      "name": "first matched block wins",
+      "quote": "needle",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "first needle"
+            }
+          ]
+        },
+        {
+          "position": 12,
+          "children": [
+            {
+              "offset": 0,
+              "text": "needle"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": {
+          "from": 6,
+          "to": 12
+        }
+      }
+    },
+    {
+      "name": "case is exact",
+      "quote": "Needle",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "needle"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": null
+      }
+    },
+    {
+      "name": "no cross paragraph match",
+      "quote": "first second",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "first"
+            }
+          ]
+        },
+        {
+          "position": 5,
+          "children": [
+            {
+              "offset": 0,
+              "text": "second"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": null
+      }
+    },
+    {
+      "name": "emoji and combining sequence stay UTF16",
+      "quote": "café target",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "🌿 café target"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": {
+          "from": 3,
+          "to": 15
+        }
+      }
+    },
+    {
+      "name": "whitespace-only query has no range",
+      "quote": "  ﻿\t",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "some text"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": null
+      }
+    },
+    {
+      "name": "empty query has no range",
+      "quote": "",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "some text"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": null
+      }
+    },
+    {
+      "name": "URL lookup remains case sensitive",
+      "quote": "https://example.com/Paper",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "See HTTPS://example.com/Paper"
+            }
+          ]
+        }
+      ],
+      "expected": {
+        "range": null
+      }
+    }
+  ],
+  "source": "Unmodified original findTextRange extracted from twyne-editor.tsx; positional text-block adapter is authored fixture data.",
+  "originalEditorPresent": false,
+  "bundleSha256": "b0aad9b893280642a722d51b64ac73b0904659c6240098af17d73f23f1c34ad9",
+  "capturedAt": "2026-10-04T19:11:32.730Z"
+}

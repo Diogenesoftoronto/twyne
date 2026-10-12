@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "registered": true,
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --lib dossier_paper::tests",
+  "log": "desktop/gpui/target/verification/dossier-paper-tests.log",
+  "passed": 5,
+  "failed": 0,
+  "ignored": 0,
+  "elapsedTestSeconds": 0.33,
+  "nativeRasterPrepared": true,
+  "limits": [
+    "Seven Source-derived background layers and native prepared image contract only.",
+    "Source descendant multiply remains unsupported and unpainted.",
+    "No real-window pixel or blur comparison from this Rust gate.",
+    "Shared Dossier view hash has advanced since this paper-only gate; source module is unchanged."
+  ],
+  "hashes": {
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/lib.rs": "5e853d0b7858a61fc2f0b9f029a0c476fb03e07c6d4a9fc61568441cec39055e",
+    "desktop/gpui/src/theme.rs": "2d04ffd22eb01a4f7f6c45e3dd64424e9a5a4e6c91860f01079923de2722320e",
+    "desktop/gpui/src/dossier_view.rs": "cd4955109ec054421e85453c6eb0ae3f2172292018e6d3fd2a1a1ed7eca0cff0",
+    "desktop/gpui/fixtures/dossier-paper/source.json": "9e3709a99f4b62b455b6baf55331efebc6d4e0f47235e59b80e2e973dc2927bc"
+  }
+}

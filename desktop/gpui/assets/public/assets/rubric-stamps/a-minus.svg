@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linecap="round">
+    <path d="M18 73C9 43 39 17 86 14c51-4 82 18 80 49-2 29-31 47-75 48-28 1-51-7-65-21" stroke-width="4"/>
+    <path d="M25 69C20 43 46 24 88 22c43-2 69 16 69 41 0 24-25 39-66 40" stroke-width="1.6" stroke-dasharray="38 4 18 3"/>
+  </g>
+  <text x="91" y="76" fill="#000" font-family="Georgia,serif" font-size="57" font-style="italic" font-weight="700" text-anchor="middle">A−</text>
+  <text x="91" y="103" fill="#000" font-family="monospace" font-size="8" font-weight="700" letter-spacing="3.3" text-anchor="middle">STRONG</text>
+</svg>

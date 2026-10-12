@@ -1,0 +1,11 @@
+{
+  "node_modules/prosemirror-transform/src/map.ts": {
+    "sha256": "2e59df00bf5e2444774a15c3e50ce55dc318161cd59b4cad287f4179d8f12fda"
+  },
+  "node_modules/prosemirror-transform/package.json": {
+    "sha256": "852df48473b416d840a30889fb1a9b9535b00ab6e3518b175abcddba8d87c24b"
+  },
+  "desktop/gpui/fixtures/gen-ui/step-map-proposal/code.rs": {
+    "sha256": "b6e93d3696fed0855d21d6947d88cada7ce3e0b83c3e223002a64ada82d7a749"
+  }
+}

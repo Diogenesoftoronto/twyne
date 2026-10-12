@@ -1,0 +1,19 @@
+{
+  "duration": 6,
+  "assertions": [
+    {
+      "kind": "appearsBy",
+      "selector": "#branding",
+      "bySec": 0.1
+    },
+    {
+      "kind": "staysInFrame",
+      "selector": "#branding"
+    },
+    {
+      "kind": "keepsMoving",
+      "withinSelector": "#photograph",
+      "maxStaticSec": 2
+    }
+  ]
+}

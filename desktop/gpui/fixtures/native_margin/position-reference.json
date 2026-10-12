@@ -1,0 +1,1396 @@
+{
+  "source": "src/components/editor/popover-positioning.ts",
+  "sourceSha256": "295bf7a9d747ff3a3b6e85b6b048cd017972bc3789b09cb2946f761b0b67324d",
+  "cases": [
+    {
+      "name": "desk-beginning-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 928,
+        "top": 209,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "desk-beginning-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 928,
+        "top": 209,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "desk-middle-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 420,
+          "bottom": 441
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 928,
+        "top": null,
+        "bottom": 288,
+        "maxH": 404,
+        "placement": "above"
+      }
+    },
+    {
+      "name": "desk-middle-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 420,
+          "bottom": 441
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 928,
+        "top": 449,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "desk-end-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 798,
+          "bottom": 819
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 928,
+        "top": null,
+        "bottom": 70,
+        "maxH": 520,
+        "placement": "above"
+      }
+    },
+    {
+      "name": "desk-end-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 798,
+          "bottom": 819
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 928,
+        "top": null,
+        "bottom": 70,
+        "maxH": 360,
+        "placement": "above"
+      }
+    },
+    {
+      "name": "desk-offscreen-before-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "desk-offscreen-before-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 928,
+        "top": 176,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "desk-offscreen-after-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 880,
+          "bottom": 901
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "desk-offscreen-after-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 292,
+          "top": 880,
+          "bottom": 901
+        },
+        "page": {
+          "left": 256,
+          "right": 1024
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 928,
+        "top": null,
+        "bottom": 49,
+        "maxH": 360,
+        "placement": "above"
+      }
+    },
+    {
+      "name": "board-beginning-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 805,
+        "top": 180,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "board-beginning-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 805,
+        "top": 180,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "board-middle-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 420,
+          "bottom": 441
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 805,
+        "top": 299,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "board-middle-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 420,
+          "bottom": 441
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 805,
+        "top": 420,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "board-end-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 798,
+          "bottom": 819
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 805,
+        "top": 299,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "board-end-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 798,
+          "bottom": 819
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 805,
+        "top": 459,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "board-offscreen-before-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "board-offscreen-before-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 805,
+        "top": 168,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "board-offscreen-after-idle",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 880,
+          "bottom": 901
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "board-offscreen-after-held",
+      "input": {
+        "vw": 1280,
+        "vh": 860,
+        "rect": {
+          "left": 61,
+          "top": 880,
+          "bottom": 901
+        },
+        "page": {
+          "left": 25,
+          "right": 793
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 827
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 805,
+        "top": 459,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "wide-beginning-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 1356,
+        "top": 180,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "wide-beginning-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 1356,
+        "top": 180,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "wide-middle-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 530,
+          "bottom": 551
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 1356,
+        "top": 519,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "wide-middle-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 530,
+          "bottom": 551
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 1356,
+        "top": 530,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "wide-end-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 1018,
+          "bottom": 1039
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 1356,
+        "top": 519,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "wide-end-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 1018,
+          "bottom": 1039
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 1356,
+        "top": 679,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "wide-offscreen-before-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "wide-offscreen-before-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 1356,
+        "top": 168,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "wide-offscreen-after-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 1100,
+          "bottom": 1121
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "wide-offscreen-after-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 612,
+          "top": 1100,
+          "bottom": 1121
+        },
+        "page": {
+          "left": 576,
+          "right": 1344
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 1356,
+        "top": 679,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "right-page-beginning-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 648,
+        "top": 180,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "right-page-beginning-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 648,
+        "top": 180,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "right-page-middle-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 530,
+          "bottom": 551
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 648,
+        "top": 519,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "right-page-middle-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 530,
+          "bottom": 551
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 648,
+        "top": 530,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "right-page-end-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 1018,
+          "bottom": 1039
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 648,
+        "top": 519,
+        "bottom": null,
+        "maxH": 520,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "right-page-end-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 1018,
+          "bottom": 1039
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 648,
+        "top": 679,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "right-page-offscreen-before-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "right-page-offscreen-before-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 648,
+        "top": 168,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "right-page-offscreen-after-idle",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 1100,
+          "bottom": 1121
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "right-page-offscreen-after-held",
+      "input": {
+        "vw": 1920,
+        "vh": 1080,
+        "rect": {
+          "left": 1036,
+          "top": 1100,
+          "bottom": 1121
+        },
+        "page": {
+          "left": 1000,
+          "right": 1768
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 1047
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 648,
+        "top": 679,
+        "bottom": null,
+        "maxH": 360,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "narrow-beginning-idle",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 408,
+        "top": 176,
+        "bottom": null,
+        "maxH": 303,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "narrow-beginning-held",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 180,
+          "bottom": 201
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 408,
+        "top": 176,
+        "bottom": null,
+        "maxH": 303,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "narrow-middle-idle",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 250,
+          "bottom": 271
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 408,
+        "top": null,
+        "bottom": 118,
+        "maxH": 234,
+        "placement": "above"
+      }
+    },
+    {
+      "name": "narrow-middle-held",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 250,
+          "bottom": 271
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 408,
+        "top": null,
+        "bottom": 118,
+        "maxH": 234,
+        "placement": "above"
+      }
+    },
+    {
+      "name": "narrow-end-idle",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 458,
+          "bottom": 479
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": {
+        "x": 408,
+        "top": null,
+        "bottom": 41,
+        "maxH": 311,
+        "placement": "above"
+      }
+    },
+    {
+      "name": "narrow-end-held",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 458,
+          "bottom": 479
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 408,
+        "top": null,
+        "bottom": 41,
+        "maxH": 311,
+        "placement": "above"
+      }
+    },
+    {
+      "name": "narrow-offscreen-before-idle",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "narrow-offscreen-before-held",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 50,
+          "bottom": 72
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 408,
+        "top": 168,
+        "bottom": null,
+        "maxH": 311,
+        "placement": "below"
+      }
+    },
+    {
+      "name": "narrow-offscreen-after-idle",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 540,
+          "bottom": 561
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 520,
+        "keepOpen": false
+      },
+      "expected": null
+    },
+    {
+      "name": "narrow-offscreen-after-held",
+      "input": {
+        "vw": 760,
+        "vh": 520,
+        "rect": {
+          "left": 52,
+          "top": 540,
+          "bottom": 561
+        },
+        "page": {
+          "left": 16,
+          "right": 744
+        },
+        "viewport": {
+          "top": 160,
+          "bottom": 487
+        },
+        "idealH": 360,
+        "keepOpen": true
+      },
+      "expected": {
+        "x": 408,
+        "top": null,
+        "bottom": 41,
+        "maxH": 311,
+        "placement": "above"
+      }
+    }
+  ]
+}

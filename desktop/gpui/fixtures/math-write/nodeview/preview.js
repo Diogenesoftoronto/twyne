@@ -1,0 +1,30 @@
+const fs=require("node:fs");
+const dir="/home/diogenes/Projects/twyne/desktop/gpui/fixtures/math-write/nodeview";
+const profile=new URL(state.page.url()).searchParams.get("profile");
+const viewport=state.page.viewportSize();
+const width=viewport.width;
+if(!state.nodeviewMetric)throw new Error("Run baseline capture first.");
+const start=await state.page.evaluate(()=>window.nodeviewFixture.data());
+const rows=[];
+for(const row of start.rows){
+  const section=state.page.locator(`[data-case="${row.id}"]`);
+  console.log(await snapshot({page:state.page,locator:section}));
+  await section.locator(".twyne-math").click();
+  console.log(await getLatestLogs({page:state.page,sinceLastCall:true}));
+  console.log(await snapshot({page:state.page,locator:section}));
+  const field=section.getByRole("textbox",{name:`${row.display==="block"?"Block":"Inline"} LaTeX source`,exact:true});
+  await field.waitFor({state:"visible"});
+  if(!["invalid","empty"].includes(row.id))await section.locator(".twyne-math-source-preview-output .katex").waitFor({state:"visible"});
+  const canonical=await state.page.evaluate(()=>window.nodeviewFixture.data());
+  if(canonical.rows.find(value=>value.id===row.id).html!==row.html)throw new Error("Opening preview changed canonical source.");
+  const prefix=`[data-case="${row.id}"]`;
+  rows.push({id:row.id,value:await field.inputValue(),html:row.html,snapshot:await snapshot({page:state.page,locator:section,showDiffSinceLastCall:false}),geometry:await Promise.all([" .twyne-math-source-editor"," .twyne-math-source-input"," .twyne-math-source-preview"," .twyne-math-source-preview-output"," .twyne-math-source-preview .katex"," .twyne-math-source-preview .katex-strut"," .twyne-math-source-preview .katex-sizing"," .twyne-math-source-preview .mord.mathnormal"," .twyne-math-source-save"," .twyne-math-source-cancel"].map(suffix=>state.nodeviewMetric(prefix+suffix)))});
+  await section.screenshot({path:`${dir}/${profile}-preview-${row.id}-${width}.png`,scale:"css"});
+  await section.getByRole("button",{name:"Cancel",exact:true}).click();
+  console.log(await getLatestLogs({page:state.page,sinceLastCall:true}));
+  console.log(await snapshot({page:state.page,locator:section}));
+  const after=await state.page.evaluate(()=>window.nodeviewFixture.data());
+  if(after.rows.find(value=>value.id===row.id).html!==row.html)throw new Error("Cancel changed canonical source.");
+}
+fs.writeFileSync(`${dir}/${profile}-previews${width===1280?"":`-${width}`}.json`,JSON.stringify({profile,viewport,rows,final:await state.page.evaluate(()=>window.nodeviewFixture.data()),logs:await getLatestLogs({page:state.page,sinceLastCall:true})},null,2)+"\n");
+console.log({profile,previews:rows.length,canonicalPreserved:true});

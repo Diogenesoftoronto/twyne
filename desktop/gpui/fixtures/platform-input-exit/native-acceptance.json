@@ -1,0 +1,99 @@
+{
+  "backend": "actual main binary X11 + owned Xvfb/software Vulkan, XTEST input",
+  "providerAndUserDisplayActivity": false,
+  "cases": [
+    {
+      "case": "textarea-quit",
+      "backend": "X11",
+      "display": "fresh owned Xvfb",
+      "binarySha256": "4f3877dd8b285946ae3e3f1f5f56765bda761366fea6ece7eb1a8788cecec5b4",
+      "exit": "Ctrl-Q",
+      "checks": [
+        "Owned native window is actually activated",
+        "Real focused native input contains the final typed character without blurring",
+        "Actual requested close exits zero with leak detection enabled",
+        "Exact unblurred draft reaches disk and canonical manuscript bytes stay unchanged"
+      ],
+      "exitCode": 0,
+      "artifacts": "/tmp/twyne-platform-input-exit-patched/textarea-quit",
+      "windowActive": true,
+      "observedInputRole": "MultilineTextInput",
+      "observedFinalInputSha256": "72fafb50983aa6d2522b93ce70e0a81d27d34b96a10f68062d43742f078cd22c",
+      "durableDraftSha256": "72fafb50983aa6d2522b93ce70e0a81d27d34b96a10f68062d43742f078cd22c",
+      "inputEndsWith": "input exit!",
+      "canonicalBeforeSha256": "0e7090e2686a3bea388ba11561923a31dd91229c84e3c49343fc52a42dbe58b0",
+      "canonicalAfterSha256": "0e7090e2686a3bea388ba11561923a31dd91229c84e3c49343fc52a42dbe58b0"
+    },
+    {
+      "case": "textarea-close",
+      "backend": "X11",
+      "display": "fresh owned Xvfb",
+      "binarySha256": "4f3877dd8b285946ae3e3f1f5f56765bda761366fea6ece7eb1a8788cecec5b4",
+      "exit": "WM_DELETE_WINDOW",
+      "checks": [
+        "Owned native window is actually activated",
+        "Real focused native input contains the final typed character without blurring",
+        "Actual requested close exits zero with leak detection enabled",
+        "Exact unblurred draft reaches disk and canonical manuscript bytes stay unchanged"
+      ],
+      "exitCode": 0,
+      "artifacts": "/tmp/twyne-platform-input-exit-patched/textarea-close",
+      "windowActive": true,
+      "observedInputRole": "MultilineTextInput",
+      "observedFinalInputSha256": "72fafb50983aa6d2522b93ce70e0a81d27d34b96a10f68062d43742f078cd22c",
+      "durableDraftSha256": "72fafb50983aa6d2522b93ce70e0a81d27d34b96a10f68062d43742f078cd22c",
+      "inputEndsWith": "input exit!",
+      "canonicalBeforeSha256": "4b5d43d0c121cf5f87cadb161e6c67ce850fcecdde0624872dc7f64931d44f1f",
+      "canonicalAfterSha256": "4b5d43d0c121cf5f87cadb161e6c67ce850fcecdde0624872dc7f64931d44f1f"
+    },
+    {
+      "case": "source-quit",
+      "backend": "X11",
+      "display": "fresh owned Xvfb",
+      "binarySha256": "4f3877dd8b285946ae3e3f1f5f56765bda761366fea6ece7eb1a8788cecec5b4",
+      "exit": "Ctrl-Q",
+      "checks": [
+        "Owned native window is actually activated",
+        "Real focused native input contains the final typed character without blurring",
+        "Actual requested close exits zero with leak detection enabled",
+        "Exact unblurred draft reaches disk and canonical manuscript bytes stay unchanged"
+      ],
+      "exitCode": 0,
+      "artifacts": "/tmp/twyne-platform-input-exit-patched/source-quit",
+      "windowActive": true,
+      "observedInputRole": "MultilineTextInput",
+      "observedFinalInputSha256": "aac4420c7b2dfdbc20511cabd099875918a44e0dac1741dbb50b04584486e568",
+      "durableDraftSha256": "aac4420c7b2dfdbc20511cabd099875918a44e0dac1741dbb50b04584486e568",
+      "inputEndsWith": "// final input!",
+      "canonicalBeforeSha256": "991dd82aab87c0c717a7d722eaf2e323189dff54bfd406f7d19a19a003e8457e",
+      "canonicalAfterSha256": "991dd82aab87c0c717a7d722eaf2e323189dff54bfd406f7d19a19a003e8457e"
+    },
+    {
+      "case": "source-close",
+      "backend": "X11",
+      "display": "fresh owned Xvfb",
+      "binarySha256": "4f3877dd8b285946ae3e3f1f5f56765bda761366fea6ece7eb1a8788cecec5b4",
+      "exit": "WM_DELETE_WINDOW",
+      "checks": [
+        "Owned native window is actually activated",
+        "Real focused native input contains the final typed character without blurring",
+        "Actual requested close exits zero with leak detection enabled",
+        "Exact unblurred draft reaches disk and canonical manuscript bytes stay unchanged"
+      ],
+      "exitCode": 0,
+      "artifacts": "/tmp/twyne-platform-input-exit-patched/source-close",
+      "windowActive": true,
+      "observedInputRole": "MultilineTextInput",
+      "observedFinalInputSha256": "aac4420c7b2dfdbc20511cabd099875918a44e0dac1741dbb50b04584486e568",
+      "durableDraftSha256": "aac4420c7b2dfdbc20511cabd099875918a44e0dac1741dbb50b04584486e568",
+      "inputEndsWith": "// final input!",
+      "canonicalBeforeSha256": "69490c74b3996870bb9dfa80ccdd5487e43faf5757972fa850de7e0b6d9690c9",
+      "canonicalAfterSha256": "69490c74b3996870bb9dfa80ccdd5487e43faf5757972fa850de7e0b6d9690c9"
+    }
+  ],
+  "boundaries": [
+    "Wayland/other OS not exercised",
+    "failed DestroyWindow injection not exercised",
+    "active IME composition and multi-window dialogs not exercised"
+  ]
+}

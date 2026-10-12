@@ -1,0 +1,78 @@
+{
+  "reasoningTags": [
+    {
+      "input": "<think>considering phrasing</think>Hello world!",
+      "stripped": "Hello world!",
+      "hasTags": true
+    },
+    {
+      "input": "<think>evaluating<think/>Final response text",
+      "stripped": "Final response text",
+      "hasTags": true
+    },
+    {
+      "input": "Beginning of answer<think>unclosed thought",
+      "stripped": "Beginning of answer",
+      "hasTags": true
+    }
+  ],
+  "partialTags": [
+    {
+      "input": "Hello world <th",
+      "trimmed": "Hello world"
+    },
+    {
+      "input": "Prose text <think",
+      "trimmed": "Prose text"
+    },
+    {
+      "input": "Prose text <thinking",
+      "trimmed": "Prose text"
+    },
+    {
+      "input": "Done text <",
+      "trimmed": "Done text"
+    },
+    {
+      "input": "Ordinary text <5 is less than 6",
+      "trimmed": "Ordinary text <5 is less than 6"
+    }
+  ],
+  "judgeOutputs": [
+    {
+      "input": "```json\n{\"score\": 8, \"rationale\": \"Strong thematic cohesion.\"}\n```",
+      "expected": {
+        "score": 8,
+        "rationale": "Strong thematic cohesion."
+      }
+    },
+    {
+      "input": "Score: 9\nRationale: Excellent evidence and grounding.",
+      "expected": {
+        "score": 9,
+        "rationale": "The draft does part of the work and leaves the rest to the writer."
+      }
+    }
+  ],
+  "researchTargets": {
+    "input": "[\n          {\"kind\": \"quote\", \"anchor\": \"To be or not to be\", \"query\": \"Hamlet soliloquy source\"},\n          {\"kind\": \"statistic\", \"anchor\": \"73% of writers\", \"query\": \"writer survey percentage 73\"}\n        ]",
+    "parsed": [
+      {
+        "id": "k-0-jpr9p9",
+        "kind": "quote",
+        "anchor": "To be or not to be",
+        "reason": "Needs a verifiable source",
+        "query": "Hamlet soliloquy source",
+        "importance": 3
+      },
+      {
+        "id": "k-1-1ne2tbb",
+        "kind": "statistic",
+        "anchor": "73% of writers",
+        "reason": "Needs a verifiable source",
+        "query": "writer survey percentage 73",
+        "importance": 3
+      }
+    ]
+  }
+}

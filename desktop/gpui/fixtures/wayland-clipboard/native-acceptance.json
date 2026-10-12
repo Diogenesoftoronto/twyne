@@ -1,0 +1,274 @@
+{
+  "kind": "private Sway actual clipboard acceptance",
+  "runtimeIntegrated": true,
+  "actualCompositor": true,
+  "nativeRuntimeTested": true,
+  "root": "/tmp/twyne-owned-wayland-lz1xrf3l",
+  "checks": [
+    {
+      "name": "private compositor",
+      "passed": true,
+      "detail": {
+        "root": "/tmp/twyne-owned-wayland-lz1xrf3l",
+        "outputs": [
+          {
+            "id": 3,
+            "type": "output",
+            "orientation": "none",
+            "percent": 1.0,
+            "urgent": false,
+            "marks": [],
+            "layout": "output",
+            "border": "none",
+            "current_border_width": 0,
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 1280,
+              "height": 860
+            },
+            "deco_rect": {
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "height": 0
+            },
+            "window_rect": {
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "height": 0
+            },
+            "geometry": {
+              "x": 0,
+              "y": 0,
+              "width": 0,
+              "height": 0
+            },
+            "name": "HEADLESS-1",
+            "window": null,
+            "nodes": [],
+            "floating_nodes": [],
+            "focus": [
+              4
+            ],
+            "fullscreen_mode": 0,
+            "sticky": false,
+            "floating": null,
+            "scratchpad_state": null,
+            "primary": false,
+            "make": "Unknown",
+            "model": "Unknown",
+            "serial": "Unknown",
+            "modes": [],
+            "features": {
+              "adaptive_sync": false,
+              "hdr": false
+            },
+            "non_desktop": false,
+            "active": true,
+            "dpms": true,
+            "power": true,
+            "scale": 1.0,
+            "scale_filter": "nearest",
+            "transform": "normal",
+            "adaptive_sync_status": "disabled",
+            "current_workspace": "1",
+            "current_mode": {
+              "width": 1280,
+              "height": 860,
+              "refresh": 0
+            },
+            "max_render_time": 0,
+            "allow_tearing": false,
+            "hdr": false,
+            "focused": true,
+            "subpixel_hinting": "unknown"
+          }
+        ],
+        "inputs": [
+          {
+            "identifier": "0:0:wlr_virtual_keyboard_v1",
+            "name": "wlr_virtual_keyboard_v1",
+            "type": "keyboard",
+            "repeat_delay": 600,
+            "repeat_rate": 25,
+            "xkb_layout_names": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "external HTML through owned Sway",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "missing input serial rejects publication",
+      "passed": true,
+      "detail": "Wayland clipboard copy needs a focused application surface"
+    },
+    {
+      "name": "rejected copy retains foreign clipboard",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "native copy offers real HTML/text/envelope",
+      "passed": true,
+      "detail": {
+        "pending": false,
+        "input_serial": 18,
+        "generation": 1,
+        "flushed_request": true
+      }
+    },
+    {
+      "name": "keyboard focus alone triggers no clipboard action",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "two native processes preserve exact rich envelope",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "rich payload preserves data-comment-id",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "rich payload preserves data-future-math",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "rich payload preserves data-endnote-text",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "rich payload preserves data-typst-source",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "rich payload preserves data-image-src",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "focus return cannot reuse old press serial",
+      "passed": true,
+      "detail": "Wayland clipboard copy needs a real keyboard or pointer press serial"
+    },
+    {
+      "name": "focus-loss Cut refusal preserves text and history",
+      "passed": true,
+      "detail": "Wayland clipboard copy needs a real keyboard or pointer press serial"
+    },
+    {
+      "name": "foreign HTML uses actual advertised representation",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "large UTF8 transfer stays literal with exact CRLF bytes",
+      "passed": true,
+      "detail": {
+        "bytes": 1120000
+      }
+    },
+    {
+      "name": "recognized malformed envelope rejects before import",
+      "passed": true,
+      "detail": "The inline clipboard fragment contains a block container"
+    },
+    {
+      "name": "real native paste preflights original converter",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "one native Undo restores exact document",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "one native Redo restores exact rich insertion",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "actual editor Copy reaches external consumer",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "native Cut waits for publication and has one Undo",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stale owner paste cannot mutate live document",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stale typing paste cannot mutate live document",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stale selection paste cannot mutate live document",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stale read-only paste cannot mutate live document",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stale replace-editor paste cannot mutate live document",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "stale blur paste cannot mutate live document",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "normal native shutdown preserves unrelated clipboard",
+      "passed": true,
+      "detail": null
+    }
+  ],
+  "remaining": [
+    "other compositors/devices",
+    "primary-selection unchanged path not independently exercised",
+    "actual malicious slow/oversized compositor source (pipe limits tested separately)"
+  ],
+  "binarySha256": "1c34acf4ed11bdd4029753cb06b56ead919824d25471f1e51251a3a7be048147",
+  "keymapRegression": {
+    "keyboardModifiersBeforeAnyKeymap": true,
+    "initialEvents": [
+      "[22:40:51.915119] wl_keyboard#92.enter(26, wl_surface#23, array[0])",
+      "[22:40:51.915128] wl_keyboard#92.modifiers(27, 0, 0, 0, 0)",
+      "[22:40:52.190538] wl_keyboard#92.keymap(0, fd 15, 0)",
+      "[22:40:52.190586] wl_keyboard#92.modifiers(28, 0, 0, 0, 0)",
+      "[22:40:52.190602] wl_keyboard#92.keymap(1, fd 28, 1434)"
+    ],
+    "laterXkbMapAndRealKeyEvents": true,
+    "noKeymapTransitionObserved": true,
+    "noStartupClipboardAction": true
+  },
+  "completedAt": "2026-10-04T22:42:25Z",
+  "backendRepairs": [
+    "Skip modifiers/key decoding until actual XKB keymap exists",
+    "Clear stale XKB/compose/repeat/derived modifiers on NoKeymap without changing independent text-input-v3 composition",
+    "Synchronous focused-input-handler release before deferred Wayland window cleanup"
+  ]
+}

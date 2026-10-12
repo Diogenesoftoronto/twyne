@@ -1,0 +1,958 @@
+{
+  "browser": "154.0.8037.57",
+  "blockedNetworkRequests": 0,
+  "source": "original global.css, Lora-Regular, and installed Tiptap long-word fixture",
+  "fonts": [
+    {
+      "fonts": [
+        {
+          "familyName": "Lora",
+          "postScriptName": "Lora-Regular",
+          "isCustomFont": true,
+          "glyphCount": 103
+        }
+      ]
+    },
+    {
+      "fonts": [
+        {
+          "familyName": "Lora",
+          "postScriptName": "Lora-Regular",
+          "isCustomFont": true,
+          "glyphCount": 323
+        }
+      ]
+    },
+    {
+      "fonts": [
+        {
+          "familyName": "Lora",
+          "postScriptName": "Lora-Regular",
+          "isCustomFont": true,
+          "glyphCount": 132
+        }
+      ]
+    },
+    {
+      "fonts": [
+        {
+          "familyName": "Noto Color Emoji",
+          "postScriptName": "NotoColorEmoji",
+          "isCustomFont": false,
+          "glyphCount": 40
+        },
+        {
+          "familyName": "Lora",
+          "postScriptName": "Lora-Regular",
+          "isCustomFont": true,
+          "glyphCount": 12
+        }
+      ]
+    },
+    {
+      "fonts": [
+        {
+          "familyName": "Droid Sans Fallback",
+          "postScriptName": "DroidSansFallback",
+          "isCustomFont": false,
+          "glyphCount": 100
+        },
+        {
+          "familyName": "Lora",
+          "postScriptName": "Lora-Regular",
+          "isCustomFont": true,
+          "glyphCount": 12
+        }
+      ]
+    }
+  ],
+  "styles": [
+    {
+      "text": "Prefix xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx tail.",
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontWeight": "400",
+      "fontSize": "18px",
+      "lineHeight": "32.4px",
+      "fontStyle": "normal",
+      "fontSynthesis": "weight style small-caps",
+      "bounds": {
+        "left": 40,
+        "top": 40,
+        "width": 600,
+        "height": 97.171875
+      },
+      "cjkGlyphs": []
+    },
+    {
+      "text": "Prefix https://twyne.example/longpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpath?query=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv tail.",
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontWeight": "400",
+      "fontSize": "18px",
+      "lineHeight": "32.4px",
+      "fontStyle": "normal",
+      "fontSynthesis": "weight style small-caps",
+      "bounds": {
+        "left": 40,
+        "top": 145.265625,
+        "width": 600,
+        "height": 226.734375
+      },
+      "cjkGlyphs": []
+    },
+    {
+      "text": "Prefix éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé tail.",
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontWeight": "400",
+      "fontSize": "18px",
+      "lineHeight": "32.4px",
+      "fontStyle": "normal",
+      "fontSynthesis": "weight style small-caps",
+      "bounds": {
+        "left": 40,
+        "top": 380.09375,
+        "width": 600,
+        "height": 97.171875
+      },
+      "cjkGlyphs": []
+    },
+    {
+      "text": "Prefix 👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻 tail.",
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontWeight": "400",
+      "fontSize": "18px",
+      "lineHeight": "32.4px",
+      "fontStyle": "normal",
+      "fontSynthesis": "weight style small-caps",
+      "bounds": {
+        "left": 40,
+        "top": 485.359375,
+        "width": 600,
+        "height": 64.78125
+      },
+      "cjkGlyphs": []
+    },
+    {
+      "text": "Prefix 東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京 tail.",
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontWeight": "400",
+      "fontSize": "18px",
+      "lineHeight": "32.4px",
+      "fontStyle": "normal",
+      "fontSynthesis": "weight style small-caps",
+      "bounds": {
+        "left": 40,
+        "top": 558.234375,
+        "width": 600,
+        "height": 129.5625
+      },
+      "cjkGlyphs": [
+        {
+          "character": "東",
+          "sourceUtf16": 7,
+          "left": 94.015625,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 8,
+          "left": 112.21875,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 9,
+          "left": 130.421875,
+          "top": 562.234375,
+          "width": 18.234375,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 10,
+          "left": 148.640625,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 11,
+          "left": 166.84375,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 12,
+          "left": 185.046875,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 13,
+          "left": 203.25,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 14,
+          "left": 221.453125,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 15,
+          "left": 239.65625,
+          "top": 562.234375,
+          "width": 18.234375,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 16,
+          "left": 257.875,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 17,
+          "left": 276.078125,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 18,
+          "left": 294.28125,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 19,
+          "left": 312.484375,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 20,
+          "left": 330.6875,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 21,
+          "left": 348.890625,
+          "top": 562.234375,
+          "width": 18.234375,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 22,
+          "left": 367.109375,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 23,
+          "left": 385.3125,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 24,
+          "left": 403.515625,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 25,
+          "left": 421.71875,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 26,
+          "left": 439.921875,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 27,
+          "left": 458.125,
+          "top": 562.234375,
+          "width": 18.234375,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 28,
+          "left": 476.34375,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 29,
+          "left": 494.546875,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 30,
+          "left": 512.75,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 31,
+          "left": 530.953125,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 32,
+          "left": 549.15625,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 33,
+          "left": 567.359375,
+          "top": 562.234375,
+          "width": 18.234375,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 34,
+          "left": 585.578125,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 35,
+          "left": 603.78125,
+          "top": 562.234375,
+          "width": 18.21875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 36,
+          "left": 621.984375,
+          "top": 562.234375,
+          "width": 18.015625,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 37,
+          "left": 40,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 38,
+          "left": 58.1875,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 39,
+          "left": 76.375,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 40,
+          "left": 94.5625,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 41,
+          "left": 112.75,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 42,
+          "left": 130.9375,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 43,
+          "left": 149.125,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 44,
+          "left": 167.3125,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 45,
+          "left": 185.5,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 46,
+          "left": 203.6875,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 47,
+          "left": 221.875,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 48,
+          "left": 240.0625,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 49,
+          "left": 258.25,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 50,
+          "left": 276.4375,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 51,
+          "left": 294.625,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 52,
+          "left": 312.8125,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 53,
+          "left": 331,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 54,
+          "left": 349.1875,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 55,
+          "left": 367.375,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 56,
+          "left": 385.5625,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 57,
+          "left": 403.75,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 58,
+          "left": 421.9375,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 59,
+          "left": 440.125,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 60,
+          "left": 458.3125,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 61,
+          "left": 476.5,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 62,
+          "left": 494.6875,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 63,
+          "left": 512.875,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 64,
+          "left": 531.0625,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 65,
+          "left": 549.25,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 66,
+          "left": 567.4375,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 67,
+          "left": 585.625,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 68,
+          "left": 603.8125,
+          "top": 594.625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 69,
+          "left": 622,
+          "top": 594.625,
+          "width": 18,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 70,
+          "left": 40,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 71,
+          "left": 58.1875,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 72,
+          "left": 76.375,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 73,
+          "left": 94.5625,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 74,
+          "left": 112.75,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 75,
+          "left": 130.9375,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 76,
+          "left": 149.125,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 77,
+          "left": 167.3125,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 78,
+          "left": 185.5,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 79,
+          "left": 203.6875,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 80,
+          "left": 221.875,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 81,
+          "left": 240.0625,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 82,
+          "left": 258.25,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 83,
+          "left": 276.4375,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 84,
+          "left": 294.625,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 85,
+          "left": 312.8125,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 86,
+          "left": 331,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 87,
+          "left": 349.1875,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 88,
+          "left": 367.375,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 89,
+          "left": 385.5625,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 90,
+          "left": 403.75,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 91,
+          "left": 421.9375,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 92,
+          "left": 440.125,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 93,
+          "left": 458.3125,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 94,
+          "left": 476.5,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 95,
+          "left": 494.6875,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 96,
+          "left": 512.875,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 97,
+          "left": 531.0625,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 98,
+          "left": 549.25,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 99,
+          "left": 567.4375,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 100,
+          "left": 585.625,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 101,
+          "left": 603.8125,
+          "top": 627.015625,
+          "width": 18.1875,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 102,
+          "left": 622,
+          "top": 627.015625,
+          "width": 18,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 103,
+          "left": 40,
+          "top": 659.40625,
+          "width": 18,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 104,
+          "left": 58,
+          "top": 659.40625,
+          "width": 18,
+          "height": 23
+        },
+        {
+          "character": "東",
+          "sourceUtf16": 105,
+          "left": 76,
+          "top": 659.40625,
+          "width": 18,
+          "height": 23
+        },
+        {
+          "character": "京",
+          "sourceUtf16": 106,
+          "left": 94,
+          "top": 659.40625,
+          "width": 18,
+          "height": 23
+        }
+      ]
+    }
+  ],
+  "screenshotBounds": {
+    "x": 40,
+    "y": 40,
+    "width": 600,
+    "height": 647.796875
+  }
+}

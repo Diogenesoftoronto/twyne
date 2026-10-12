@@ -1,0 +1,10 @@
+{
+  "status": "parent_reviewed_pending_oracle_and_host_verification",
+  "model": "sakana/fugu-max",
+  "corrections": [
+    "Math.round avoids addition-rounding at the representable value immediately below a half integer.",
+    "Remove needless borrows of already borrowed trimmed slices."
+  ],
+  "proposalSha256": "b099e415e14f6c9725301f07875605f30d71b9e69843b0843fcf86a5a3ce2e24",
+  "acceptedPath": "desktop/gpui/src/gen_ui/saved.rs"
+}

@@ -1,0 +1,35 @@
+{
+  "provenance": "Original Tiptap/EndnoteNode command chain in isolated JSDOM; no browser, bibliography or user manuscript modified.",
+  "cases": [
+    {
+      "name": "code block target",
+      "before": "<pre><code>Supporting code passage.</code></pre>",
+      "range": {
+        "from": 1,
+        "to": 25
+      },
+      "marksBefore": null,
+      "inserted": true,
+      "error": null,
+      "after": "<pre><code>Supporting code passage.</code></pre><p><sup data-endnote-text=\"Source edge note\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Source edge note\"></sup></p>",
+      "marksAfter": null,
+      "afterTyping": "<pre><code>Supporting code passage.</code></pre><p><sup data-endnote-text=\"Source edge note\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Source edge note\"></sup>X</p>"
+    },
+    {
+      "name": "stored bold at same target caret",
+      "before": "<p>Supporting passage.</p>",
+      "range": {
+        "from": 1,
+        "to": 20
+      },
+      "marksBefore": [
+        "bold"
+      ],
+      "inserted": true,
+      "error": null,
+      "after": "<p>Supporting passage.<sup data-endnote-text=\"Source edge note\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Source edge note\"></sup></p>",
+      "marksAfter": null,
+      "afterTyping": "<p>Supporting passage.<sup data-endnote-text=\"Source edge note\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"Source edge note\"></sup>X</p>"
+    }
+  ]
+}

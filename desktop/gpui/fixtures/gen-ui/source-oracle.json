@@ -1,0 +1,2766 @@
+{
+  "source": "src/components/in-flow/catalog.ts",
+  "validations": [
+    {
+      "id": "sentence",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "reader",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": []
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "rhythm",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 3
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 3
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "claim",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "A source",
+                  "filled": false
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "A source",
+                  "filled": false
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "unknown-component",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "Iframe",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "empty-sentence",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "empty-attempt",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [
+                ""
+              ],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [
+                ""
+              ],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "empty-variant",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": [
+                ""
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "seven-attempts",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [
+                "x",
+                "x",
+                "x",
+                "x",
+                "x",
+                "x",
+                "x"
+              ],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "four-variants",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": [
+                "x",
+                "x",
+                "x",
+                "x"
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "unicode-sentence-boundary",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "unicode-sentence-overflow",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "unknown-props",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": [],
+              "extra": {
+                "kept": true
+              }
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": [],
+              "extra": {
+                "kept": true
+              }
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapper-metadata",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": [],
+            "extra": true
+          }
+        },
+        "extra": true
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "other-root",
+      "input": {
+        "root": "other",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "other",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "empty-root",
+      "input": {
+        "root": "",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "numeric-root",
+      "input": {
+        "root": 3,
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "missing-children",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            }
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "numeric-child",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": [
+              3
+            ]
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "unresolved-child",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": [
+              "absent"
+            ]
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": [
+              "absent"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "extra-loose-element",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          },
+          "other": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": false
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          },
+          "other": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": false
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "extra-invalid-element",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          },
+          "other": {
+            "type": "Iframe",
+            "props": {},
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "extra-null-props",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          },
+          "other": {
+            "type": "ClaimCheck",
+            "props": null,
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "rhythm-empty",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "rhythm-forty",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "rhythm-forty-one",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                },
+                {
+                  "text": "",
+                  "words": 0
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "rhythm-negative",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": -1
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "rhythm-fractional",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 1.25
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "rhythm-no-cross-field-rule",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 3
+                }
+              ],
+              "targetMin": 80,
+              "targetMax": 2
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 3
+                }
+              ],
+              "targetMin": 80,
+              "targetMax": 2
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "rhythm-huge-integral",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 1e+100
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "rhythm-safe-integer-boundary",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 9007199254740991
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 9007199254740991
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "rhythm-unsafe-integer",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 9007199254740992
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "claim-empty-slots",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "claim-five-slots",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "claim-six-slots",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                },
+                {
+                  "label": "x",
+                  "filled": true
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "claim-unicode-label",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                  "filled": false
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                  "filled": false
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "claim-unicode-label-overflow",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+                  "filled": false
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "claim-filled-type",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "A source",
+                  "filled": "false"
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "reader-unicode-angle",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+              "questions": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+              "questions": []
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "reader-unicode-angle-overflow",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀",
+              "questions": []
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "reader-question-short",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": [
+                "no"
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "reader-question-unicode",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": [
+                "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": [
+                "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+              ]
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "reader-question-unicode-overflow",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": [
+                "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    },
+    {
+      "id": "reader-four-questions",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": [
+                "one",
+                "two",
+                "three",
+                "four"
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": [
+                "one",
+                "two",
+                "three",
+                "four"
+              ]
+            },
+            "children": []
+          }
+        }
+      }
+    },
+    {
+      "id": "reader-five-questions",
+      "input": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": [
+                "one",
+                "two",
+                "three",
+                "four",
+                "five"
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "expected": null
+    }
+  ],
+  "streams": [
+    {
+      "id": "unicode-cumulative",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Café 😀"
+        },
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Café 😀 reads.\"}\n"
+        },
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Café 😀 reads.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Café 😀 reads."
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Café 😀 reads."
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "finish-once",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"A final variant.\"}"
+        },
+        {
+          "finish": true
+        },
+        {
+          "finish": true
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "A final variant."
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "A final variant."
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "allowlist",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "prose\n```json\n{\"op\":\"replace\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"No.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/sentence\",\"value\":\"No.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":3}\n{invalid}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Kept.\"}\n"
+        },
+        {
+          "finish": true
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Kept."
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Kept."
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "cap",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 2,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"One.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Two.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Three.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Four.\"}\n"
+        },
+        {
+          "finish": true
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "One.",
+                  "Two."
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "One.",
+                  "Two."
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "zero-cap",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 0,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"One.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Two.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Three.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Four.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "invalid-candidate-persists",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"\"}\n"
+        },
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Good.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "invalid-after-cap",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 1,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Good.\"}\n"
+        },
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Good.\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Good."
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Good."
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "feff-trim",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "﻿{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Good.\"}﻿\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Good."
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "u0085-is-not-js-whitespace",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Ignored.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "crlf",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Good.\"}\r\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Good."
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "reader-append-only",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/questions/-\",\"value\":\"Why does this matter?\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Ignored.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "Why does this matter?"
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "reader-invalid-poisons",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ReaderQuestions",
+            "props": {
+              "angle": "",
+              "questions": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/questions/-\",\"value\":\"no\"}\n{\"op\":\"add\",\"path\":\"/elements/tool/props/questions/-\",\"value\":\"Why does this matter?\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "rhythm-no-stream",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [
+                {
+                  "text": "A sentence.",
+                  "words": 3
+                }
+              ],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Ignored.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A sentence.",
+                    "words": 3
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "claim-no-stream",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "ClaimCheck",
+            "props": {
+              "claim": "A claim.",
+              "slots": [
+                {
+                  "label": "A source",
+                  "filled": false
+                }
+              ]
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Ignored.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "A claim.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "normalization-after-update",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": [],
+              "extra": true
+            },
+            "children": [],
+            "extra": true
+          }
+        },
+        "extra": true
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": ""
+        },
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Good.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [],
+                "extra": true
+              },
+              "children": [],
+              "extra": true
+            }
+          },
+          "extra": true
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Good."
+                ],
+                "extra": true
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "shorter-cumulative-snapshot",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "It decided nothing.",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Café 😀 reads.\"}\n"
+        },
+        {
+          "text": "{\"op\":\"add"
+        },
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Café 😀 reads.\"}\n"
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Café 😀 reads."
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Café 😀 reads."
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "It decided nothing.",
+                "attempts": [],
+                "variants": [
+                  "Café 😀 reads."
+                ]
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "long-writer-seed-still-visible",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "SentenceLab",
+            "props": {
+              "sentence": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              "attempts": [],
+              "variants": []
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": ""
+        },
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"A model suggestion.\"}\n"
+        },
+        {
+          "finish": true
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "empty-deterministic-rhythm",
+      "seed": {
+        "root": "tool",
+        "elements": {
+          "tool": {
+            "type": "RhythmStrip",
+            "props": {
+              "sentences": [],
+              "targetMin": 8,
+              "targetMax": 28
+            },
+            "children": []
+          }
+        }
+      },
+      "max": 3,
+      "steps": [
+        {
+          "text": "{\"op\":\"add\",\"path\":\"/elements/tool/props/variants/-\",\"value\":\"Ignored.\"}\n"
+        },
+        {
+          "finish": true
+        }
+      ],
+      "expected": [
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

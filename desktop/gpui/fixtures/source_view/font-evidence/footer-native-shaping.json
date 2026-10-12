@@ -1,0 +1,231 @@
+{
+  "system": "actual Linux Cosmic/Swash text system",
+  "browserEvidence": "fixtures/source_view/font-evidence/footer-select-sizing-probe.json",
+  "rows": [
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "Pages",
+      "widthPx": 29.798999786376953,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(0)",
+          "glyphs": [
+            80,
+            126,
+            161,
+            148,
+            214
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "1 page",
+      "widthPx": 31.405000686645508,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(0)",
+          "glyphs": [
+            291,
+            336,
+            207,
+            126,
+            161,
+            148
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "Page 1 of 1",
+      "widthPx": 50.18199920654297,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(0)",
+          "glyphs": [
+            80,
+            126,
+            161,
+            148,
+            336,
+            291,
+            336,
+            196,
+            160,
+            336,
+            291
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "Pages ⌄",
+      "widthPx": 39.347557067871094,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(0)",
+          "glyphs": [
+            80,
+            126,
+            161,
+            148,
+            214,
+            336
+          ]
+        },
+        {
+          "fontId": "FontId(4)",
+          "glyphs": [
+            2258
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "79 words",
+      "widthPx": 46.41999816894531,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(0)",
+          "glyphs": [
+            297,
+            299,
+            336,
+            236,
+            196,
+            210,
+            144,
+            214
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Twyne Source Label",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "Pages",
+      "widthPx": 30.018999099731445,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(5)",
+          "glyphs": [
+            80,
+            126,
+            161,
+            148,
+            214
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Twyne Source Label",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "1 page",
+      "widthPx": 31.735000610351562,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(5)",
+          "glyphs": [
+            291,
+            321,
+            207,
+            126,
+            161,
+            148
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Twyne Source Label",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "Page 1 of 1",
+      "widthPx": 50.99599838256836,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(5)",
+          "glyphs": [
+            80,
+            126,
+            161,
+            148,
+            321,
+            291,
+            321,
+            196,
+            160,
+            321,
+            291
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Twyne Source Label",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "Pages ⌄",
+      "widthPx": 39.58955764770508,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(5)",
+          "glyphs": [
+            80,
+            126,
+            161,
+            148,
+            214,
+            321
+          ]
+        },
+        {
+          "fontId": "FontId(4)",
+          "glyphs": [
+            2258
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Twyne Source Label",
+      "weight": 400,
+      "fontSizePx": 11.0,
+      "source": "79 words",
+      "widthPx": 46.772003173828125,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(5)",
+          "glyphs": [
+            297,
+            299,
+            321,
+            236,
+            196,
+            210,
+            144,
+            214
+          ]
+        }
+      ]
+    }
+  ],
+  "boundary": "direct native label shaping; Root native dropdown is a separate control"
+}

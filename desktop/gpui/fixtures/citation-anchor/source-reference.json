@@ -1,0 +1,545 @@
+{
+  "provenance": "Exact extracted Source findTextRange on actual ProseMirror documents, and actual EndnoteNode.setFootnote in isolated JSDOM. No browser, provider, user manuscript, or bibliography changed.",
+  "editorSourceSha256": "f6ba675eedac4056a55c030d9e248a1f0b61435585c45cd4b429b777401f3921",
+  "cases": [
+    {
+      "name": "marks emoji combining and first match",
+      "html": "<p>Before <strong>support 🦊 <em>é</em></strong> after.</p><p>support 🦊 é again.</p>",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "Before "
+            },
+            {
+              "offset": 7,
+              "text": "support 🦊 "
+            },
+            {
+              "offset": 18,
+              "text": "é"
+            },
+            {
+              "offset": 20,
+              "text": " after."
+            }
+          ]
+        },
+        {
+          "position": 27,
+          "children": [
+            {
+              "offset": 0,
+              "text": "support 🦊 é again."
+            }
+          ]
+        }
+      ],
+      "lengthUtf16": 49,
+      "matches": [
+        {
+          "quote": " support 🦊 é ",
+          "originalPmRange": {
+            "from": 8,
+            "to": 21
+          },
+          "nativeUtf16Range": {
+            "from": 7,
+            "to": 20
+          }
+        },
+        {
+          "quote": "support",
+          "originalPmRange": {
+            "from": 8,
+            "to": 15
+          },
+          "nativeUtf16Range": {
+            "from": 7,
+            "to": 14
+          }
+        },
+        {
+          "quote": "SUPPORT",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "é",
+          "originalPmRange": {
+            "from": 19,
+            "to": 21
+          },
+          "nativeUtf16Range": {
+            "from": 18,
+            "to": 20
+          }
+        },
+        {
+          "quote": "after. support",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        }
+      ],
+      "footnote": {
+        "quote": " support 🦊 é ",
+        "text": "A & \"B\" — 東京 🦊",
+        "html": "<p>Before <strong>support 🦊 <em>é</em></strong><sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup> after.</p><p>support 🦊 é again.</p>",
+        "from": 7,
+        "to": 20
+      }
+    },
+    {
+      "name": "JS whitespace and regex literals",
+      "html": "<p>Prelude 🦊 A&nbsp;﻿<strong>B</strong> then a.*[b](c)?+${x}|^\\z.</p>",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "Prelude 🦊 A ﻿"
+            },
+            {
+              "offset": 14,
+              "text": "B"
+            },
+            {
+              "offset": 15,
+              "text": " then a.*[b](c)?+${x}|^\\z."
+            }
+          ]
+        }
+      ],
+      "lengthUtf16": 42,
+      "matches": [
+        {
+          "quote": "A B",
+          "originalPmRange": {
+            "from": 12,
+            "to": 16
+          },
+          "nativeUtf16Range": {
+            "from": 11,
+            "to": 15
+          }
+        },
+        {
+          "quote": " A\t B﻿",
+          "originalPmRange": {
+            "from": 12,
+            "to": 16
+          },
+          "nativeUtf16Range": {
+            "from": 11,
+            "to": 15
+          }
+        },
+        {
+          "quote": "a.*[b](c)?+${x}|^\\z",
+          "originalPmRange": {
+            "from": 22,
+            "to": 41
+          },
+          "nativeUtf16Range": {
+            "from": 21,
+            "to": 40
+          }
+        },
+        {
+          "quote": "a.*[b](c)?+${x}|^\\Z",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": " ﻿\t ",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        }
+      ],
+      "footnote": {
+        "quote": "A B",
+        "text": "A & \"B\" — 東京 🦊",
+        "html": "<p>Prelude 🦊 A&nbsp;﻿<strong>B</strong><sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup> then a.*[b](c)?+${x}|^\\z.</p>",
+        "from": 11,
+        "to": 15
+      }
+    },
+    {
+      "name": "comment mark ends before unmarked footnote",
+      "html": "<p><span data-comment-id=\"writer-1\" data-comment-author=\"Writer\" data-comment-color=\"#722f37\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, rgb(114, 47, 55) 18%, transparent); border-bottom: 2px solid rgb(114, 47, 55); cursor: text;\">A </span><strong><span data-comment-id=\"writer-1\" data-comment-author=\"Writer\" data-comment-color=\"#722f37\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, rgb(114, 47, 55) 18%, transparent); border-bottom: 2px solid rgb(114, 47, 55); cursor: text;\">supporting passage</span></strong> remains.</p>",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "A "
+            },
+            {
+              "offset": 2,
+              "text": "supporting passage"
+            },
+            {
+              "offset": 20,
+              "text": " remains."
+            }
+          ]
+        }
+      ],
+      "lengthUtf16": 30,
+      "matches": [
+        {
+          "quote": "A supporting passage",
+          "originalPmRange": {
+            "from": 1,
+            "to": 21
+          },
+          "nativeUtf16Range": {
+            "from": 0,
+            "to": 20
+          }
+        },
+        {
+          "quote": "supporting passage",
+          "originalPmRange": {
+            "from": 3,
+            "to": 21
+          },
+          "nativeUtf16Range": {
+            "from": 2,
+            "to": 20
+          }
+        },
+        {
+          "quote": "remains.",
+          "originalPmRange": {
+            "from": 22,
+            "to": 30
+          },
+          "nativeUtf16Range": {
+            "from": 21,
+            "to": 29
+          }
+        }
+      ],
+      "footnote": {
+        "quote": "A supporting passage",
+        "text": "A & \"B\" — 東京 🦊",
+        "html": "<p><span data-comment-id=\"writer-1\" data-comment-author=\"Writer\" data-comment-color=\"#722f37\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, rgb(114, 47, 55) 18%, transparent); border-bottom: 2px solid rgb(114, 47, 55); cursor: text;\">A </span><strong><span data-comment-id=\"writer-1\" data-comment-author=\"Writer\" data-comment-color=\"#722f37\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, rgb(114, 47, 55) 18%, transparent); border-bottom: 2px solid rgb(114, 47, 55); cursor: text;\">supporting passage</span></strong><sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup> remains.</p>",
+        "from": 0,
+        "to": 20
+      }
+    },
+    {
+      "name": "omitted inline atom and hard-break gaps",
+      "html": "<p>alpha<sup data-endnote-text=\"hidden-note-payload\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"hidden-note-payload\"></sup><br><span data-typst-source=\"hidden-source-payload\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">hidden-source-payload</span><em>beta</em> tail.</p>",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "alpha"
+            },
+            {
+              "offset": 8,
+              "text": "beta"
+            },
+            {
+              "offset": 12,
+              "text": " tail."
+            }
+          ]
+        }
+      ],
+      "lengthUtf16": 19,
+      "matches": [
+        {
+          "quote": "alphabeta",
+          "originalPmRange": {
+            "from": 1,
+            "to": 13
+          },
+          "nativeUtf16Range": {
+            "from": 0,
+            "to": 12
+          }
+        },
+        {
+          "quote": "alpha beta",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "beta",
+          "originalPmRange": {
+            "from": 9,
+            "to": 13
+          },
+          "nativeUtf16Range": {
+            "from": 8,
+            "to": 12
+          }
+        },
+        {
+          "quote": "hidden-note-payload",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "hidden-source-payload",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        }
+      ],
+      "footnote": {
+        "quote": "alphabeta",
+        "text": "A & \"B\" — 東京 🦊",
+        "html": "<p>alpha<sup data-endnote-text=\"hidden-note-payload\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"hidden-note-payload\"></sup><br><span data-typst-source=\"hidden-source-payload\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">hidden-source-payload</span><em>beta</em><sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup> tail.</p>",
+        "from": 0,
+        "to": 12
+      }
+    },
+    {
+      "name": "no cross-paragraph and case sensitive",
+      "html": "<p>alpha</p><p>beta</p><p>Case matters</p>",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "alpha"
+            }
+          ]
+        },
+        {
+          "position": 5,
+          "children": [
+            {
+              "offset": 0,
+              "text": "beta"
+            }
+          ]
+        },
+        {
+          "position": 10,
+          "children": [
+            {
+              "offset": 0,
+              "text": "Case matters"
+            }
+          ]
+        }
+      ],
+      "lengthUtf16": 24,
+      "matches": [
+        {
+          "quote": "alpha beta",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "alphabeta",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "Case matters",
+          "originalPmRange": {
+            "from": 14,
+            "to": 26
+          },
+          "nativeUtf16Range": {
+            "from": 11,
+            "to": 23
+          }
+        },
+        {
+          "quote": "case matters",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        }
+      ],
+      "footnote": {
+        "quote": "Case matters",
+        "text": "A & \"B\" — 東京 🦊",
+        "html": "<p>alpha</p><p>beta</p><p>Case matters<sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup></p>",
+        "from": 11,
+        "to": 23
+      }
+    },
+    {
+      "name": "container order and nested cell",
+      "html": "<h2>Earlier heading</h2><blockquote><p>First repeated phrase.</p></blockquote><ul><li><p>First repeated phrase.</p><ul><li><p>Nested 🦊 cell.</p></li></ul></li></ul><table data-table-alignment=\"left\" style=\"min-width: 80px; margin-left: 0px; margin-right: auto;\"><colgroup><col style=\"min-width: 40px;\"><col style=\"min-width: 40px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\"><p>Table 🦊 only.</p></td><td colspan=\"1\" rowspan=\"1\"><p>Other cell.</p></td></tr></tbody></table>",
+      "blocks": [
+        {
+          "position": -1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "Earlier heading"
+            }
+          ]
+        },
+        {
+          "position": 15,
+          "children": [
+            {
+              "offset": 0,
+              "text": "First repeated phrase."
+            }
+          ]
+        },
+        {
+          "position": 38,
+          "children": [
+            {
+              "offset": 0,
+              "text": "First repeated phrase."
+            }
+          ]
+        },
+        {
+          "position": 61,
+          "children": [
+            {
+              "offset": 0,
+              "text": "Nested 🦊 cell."
+            }
+          ]
+        },
+        {
+          "position": 77,
+          "children": [
+            {
+              "offset": 0,
+              "text": "Table 🦊 only."
+            }
+          ]
+        },
+        {
+          "position": 92,
+          "children": [
+            {
+              "offset": 0,
+              "text": "Other cell."
+            }
+          ]
+        }
+      ],
+      "lengthUtf16": 105,
+      "matches": [
+        {
+          "quote": "First repeated",
+          "originalPmRange": {
+            "from": 19,
+            "to": 33
+          },
+          "nativeUtf16Range": {
+            "from": 16,
+            "to": 30
+          }
+        },
+        {
+          "quote": "Nested 🦊 cell.",
+          "originalPmRange": {
+            "from": 72,
+            "to": 87
+          },
+          "nativeUtf16Range": {
+            "from": 62,
+            "to": 77
+          }
+        },
+        {
+          "quote": "Table 🦊 only.",
+          "originalPmRange": {
+            "from": 96,
+            "to": 110
+          },
+          "nativeUtf16Range": {
+            "from": 78,
+            "to": 92
+          }
+        },
+        {
+          "quote": "only. Other",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "Earlier heading First",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        }
+      ],
+      "footnote": {
+        "quote": "First repeated",
+        "text": "A & \"B\" — 東京 🦊",
+        "html": "<h2>Earlier heading</h2><blockquote><p>First repeated<sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup> phrase.</p></blockquote><ul><li><p>First repeated phrase.</p><ul><li><p>Nested 🦊 cell.</p></li></ul></li></ul><table data-table-alignment=\"left\" style=\"min-width: 80px; margin-left: 0px; margin-right: auto;\"><colgroup><col style=\"min-width: 40px;\"><col style=\"min-width: 40px;\"></colgroup><tbody><tr><td colspan=\"1\" rowspan=\"1\"><p>Table 🦊 only.</p></td><td colspan=\"1\" rowspan=\"1\"><p>Other cell.</p></td></tr></tbody></table><p></p>",
+        "from": 16,
+        "to": 30
+      }
+    },
+    {
+      "name": "block atoms omit caption and source",
+      "html": "<figure src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==\" alt=\"hidden-alt\" caption=\"hidden-caption\" alignment=\"center\" width=\"100\" offline=\"false\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-upload-status=\"ready\" data-alt-text=\"hidden-alt\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid; page-break-inside: avoid;\"><img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==\" alt=\"hidden-alt\" style=\"display: block; width: 100%; height: auto;\"><figcaption>hidden-caption</figcaption></figure><div data-typst-source=\"hidden-block-source\" data-type=\"raw-typst\" class=\"twyne-raw-typst\" title=\"Edit this Typst block in source view\" contenteditable=\"false\"><pre>hidden-block-source</pre></div><p>Visible supporting passage.</p>",
+      "blocks": [
+        {
+          "position": 1,
+          "children": [
+            {
+              "offset": 0,
+              "text": "Visible supporting passage."
+            }
+          ]
+        }
+      ],
+      "lengthUtf16": 30,
+      "matches": [
+        {
+          "quote": "hidden-alt",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "hidden-caption",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "hidden-block-source",
+          "originalPmRange": null,
+          "nativeUtf16Range": null
+        },
+        {
+          "quote": "Visible supporting passage.",
+          "originalPmRange": {
+            "from": 3,
+            "to": 30
+          },
+          "nativeUtf16Range": {
+            "from": 2,
+            "to": 29
+          }
+        }
+      ],
+      "footnote": {
+        "quote": "Visible supporting passage.",
+        "text": "A & \"B\" — 東京 🦊",
+        "html": "<figure src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==\" alt=\"hidden-alt\" caption=\"hidden-caption\" alignment=\"center\" width=\"100\" offline=\"false\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-upload-status=\"ready\" data-alt-text=\"hidden-alt\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid; page-break-inside: avoid;\"><img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScLbtAAAAABJRU5ErkJggg==\" alt=\"hidden-alt\" style=\"display: block; width: 100%; height: auto;\"><figcaption>hidden-caption</figcaption></figure><div data-typst-source=\"hidden-block-source\" data-type=\"raw-typst\" class=\"twyne-raw-typst\" title=\"Edit this Typst block in source view\" contenteditable=\"false\"><pre>hidden-block-source</pre></div><p>Visible supporting passage.<sup data-endnote-text=\"A &amp; &quot;B&quot; — 東京 🦊\" data-type=\"footnote\" class=\"twyne-endnote\" title=\"A &amp; &quot;B&quot; — 東京 🦊\"></sup></p>",
+        "from": 2,
+        "to": 29
+      }
+    }
+  ]
+}

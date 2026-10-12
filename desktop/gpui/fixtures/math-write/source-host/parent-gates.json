@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --lib editor::view::math_source::tests",
+  "result": {
+    "passed": 14,
+    "failed": 0,
+    "ignored": 0
+  },
+  "log": "desktop/gpui/target/verification/math-source-host-tests-reviewed.log",
+  "hashes": {
+    "desktop/gpui/src/editor/view.rs": "1c28c171b352067067d4e48526388d2043a555076995de32fae405a304a027b1",
+    "desktop/gpui/src/editor/view_math_source.rs": "635f48f44f30f48d6eae81fef4f0bf4da6a73eeb6c1cb826ebf4ea422b1a47b5",
+    "desktop/gpui/src/editor/math_source_editor.rs": "6cee7f944402b135ce21a778d14e2c71476f615be78a1fc84c47217c108e4ed9",
+    "desktop/gpui/fixtures/math-write/source-host/host_tests.rs": "d28332061a5b582c66e0e872f5ca43be6a2ed2f718c59b1864d7d6e28c8e0fb3"
+  },
+  "reviewedRepairs": [
+    "Pinned GPUI CursorStyle::PointingHand",
+    "Corrected test Window binding",
+    "Retained Kit field undo isolation does not assume Source browser history grouping"
+  ],
+  "boundaries": [
+    "Mounted GPUI tests only",
+    "Fixture preflight validates native HTML limits, not the canonical converter",
+    "Application context/preflight not yet mounted",
+    "No X11, Wayland, OS IME, renderer or durable-save proof"
+  ]
+}

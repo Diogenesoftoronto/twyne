@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "unapplied_uncompiled_unexecuted",
+  "sharedInputs": [
+    {
+      "path": "desktop/gpui/src/dossier_paper.rs",
+      "sha256": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+      "proposedSha256": "f5c353c33bf83173ead109baf38c968b0f02bff601bfcee21e9763186f4420ba"
+    },
+    {
+      "path": "desktop/gpui/src/dossier_multiply.rs",
+      "sha256": "fee08f1898d6068f91de577d6284fdd2760e827bcab8d1f7f9cc027a7780a439",
+      "proposedSha256": "a21ca257a24b5d14d13b184ce7e1b0172d3aa4366a3577a9adb2b5a7aee33de8"
+    },
+    {
+      "path": "desktop/gpui/src/dossier_view.rs",
+      "sha256": "12e65aed2cf2b21700cde7e0dc4a0aa8d87a8afbf6beeb75c6292802d3df8ff8",
+      "proposedSha256": "190a5d037bed247082db9f82d4ceb6d23e9a22a779fa2d9e79e033b5c1d047f6"
+    },
+    {
+      "path": "desktop/gpui/src/capture_geometry.rs",
+      "sha256": "68782108b019bb6d68d4f9320305f979073ab7ba04dc9d7e2f334d119721237c",
+      "proposedSha256": "3e3a0764c1c0fd54e7025e97cbf56304ce76ea88bb540287f24c94f8a8db7285"
+    }
+  ]
+}

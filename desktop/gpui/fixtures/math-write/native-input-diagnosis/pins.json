@@ -1,0 +1,51 @@
+{
+  "inspectedCurrentFiles": {
+    "desktop/gpui/src/capture_geometry.rs": "fbb77c371762dc50bc357440441666f8daa9cb91ec061cf1a5a4b99580916300",
+    "desktop/gpui/src/editor/math_source_editor.rs": "6cee7f944402b135ce21a778d14e2c71476f615be78a1fc84c47217c108e4ed9",
+    "desktop/gpui/src/editor/view_math_source.rs": "5edb0412eee1c5cf023182ab2dd2e5570994624220e9a10acee4d011b001bb0d",
+    "desktop/gpui/src/editor/view_drag.rs": "fe03589cd082e984de990181014f09d845240d36a875c6fd855cd91721bd8c86",
+    "desktop/gpui/src/editor/view.rs": "1ea88d3aa7cedb72db26f0013c4d4ac64ed2d46a100a99451bda175bf867784f",
+    "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc",
+    "desktop/gpui/vendor/gpui-pre/src/view.rs": "11eeda4ac05a0b03b22df9ffd58fc08ce1f6b0ef57af6cd8e7679d06f4601d94",
+    "desktop/gpui/vendor/gpui-base/src/test_support.rs": "b8dc971a7b1f48401d811e678ae23fb6103194d19bfed55ddb34b07c5f561709",
+    "desktop/gpui/vendor/gpui-base/src/input/base/element.rs": "f9ceaaf38e7d6bb0a90d43c79d92a7773399ca33b7fbf09e6515c7f6c46b6a4c",
+    "desktop/gpui/vendor/gpui-base/src/input/base/state.rs": "5d120dfc5af48721eccc318797cebcf01dca7ad3be1c6734930d5b448ef20678",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/x11/client.rs": "b6ae928c15ca84eb1cf728bb3cb6545803466482424e9b2aad064404f0edd0be",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/x11/window.rs": "ceab15df2c676ef586491e67aee1e22b70616789e456f66606102dfccd4b4fb8",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/platform.rs": "53716640ae3537282d704cf02bdf4930e0e0373f6bca1810ca4bb548e67d8d9c",
+    "src/components/editor/extensions/math.ts": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+    "src/components/editor/math/math-source-editor.ts": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+    "desktop/gpui/fixtures/dossier-native/check-native.py": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27",
+    "desktop/gpui/fixtures/math-write/native-host/check-native.py": "565ca5ec17e42d2f5a0b917cba319d336af0ff896206054fac5a275b1e5b2d3f"
+  },
+  "retainedFailureFiles": {
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/acceptance.json": "a6e702467cb4ead20d2f0008f7acd9f3fe2a779d77215ab8061782e8c5223567",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/failure.txt": "971e96fb832d63741aeb1829e2fbcc7d08ce5a9c2b7c866b39bd45effdcea83d",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/app-1.log": "d58b45a195bb913fc559e6ff4248ff7fbaeffd4851c3a089fe2987189e850057",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/failure-geometry.json": "a796d0a9e06ae19e630df1095af540e3ef64b463d853405a3fc889aa4e8083ea",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/failure.png": "4df5f77b02d3b443bab4ae9695d4149142091bd147e5aaaa042ddfaf04e58523",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/failure-manuscript.json": "d92e6e3f3c29402a0ef950b1e1884c4c4f42404eea4f1e7df9af09e67267fc1f",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/failure-projection.html": "06cd842deccf3a7b88d0c5aaab401c50595fa3c65fb56bb8e411ff1eeca29656",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/failure-source.typ": "b1893ad992aa6fd7e9f59a61aab357a2d33343356dec7c77b0f490b95ee8d874",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/actual-clicks.json": "f8d190add3bee72a98780d92d39d6d490a47449683a6c22a9b67f43e13cecba4",
+    "desktop/gpui/target/verification/math-inline-native-workflow-f379dceab0/authored-input-contract.json": "0288ddebdaa4dfeb2a5d84d276c6b887c0495583e953771adf5748fb9cd590a1"
+  },
+  "immutableBuildReceipt": {
+    "path": "desktop/gpui/target/verification/math-inline-stamp-reviewed-6vvh7hsn/build-receipt.json",
+    "sha256": "de4276f13b25e0847945f885db4eb638765e76f4092e2d8fa4ef2d206e93ff54",
+    "binarySha256": "eb9140901ef286468573d7036e1c7e6bc799705348511b0f0a3efcbfd26f90b1",
+    "helperSha256": "cc8144ceeb96cb519f026414aa332f35d54b33e5fb640d0c1076d85b3a39c9de",
+    "currentPinnedFileMatches": {
+      "desktop/gpui/src/editor/view.rs": false,
+      "desktop/gpui/src/editor/view_math_source.rs": false,
+      "desktop/gpui/src/editor/math_source_flow.rs": true
+    },
+    "importantUnpinnedFiles": [
+      "desktop/gpui/src/editor/math_source_editor.rs",
+      "desktop/gpui/src/editor/view_drag.rs",
+      "Base input/core/Linux files"
+    ]
+  },
+  "boundary": "Current inspected source hashes are not a claim all were pinned in the failed binary"
+}

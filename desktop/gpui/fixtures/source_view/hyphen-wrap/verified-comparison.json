@@ -1,0 +1,366 @@
+{
+  "browser": "154.0.8037.57",
+  "networkRequests": 0,
+  "compatMode": "CSS1Compat",
+  "asciiRowsVerified": 126,
+  "sourceAndHistoryUnchanged": true,
+  "plainCssMatchesOriginalCodeMirror": true,
+  "nativeRenderer": "Actual GPUI WGPU headless with real Linux text system and Source-only original Mono",
+  "boundary": "Only printable-ASCII Source rows opt in. Unsupported rows retain upstream behavior and reported differences; glyph raster parity is not asserted.",
+  "cases": [
+    {
+      "width": 1280.0,
+      "asciiVerified": 21,
+      "fallbackMatches": 7,
+      "fallbackCount": 7
+    },
+    {
+      "width": 640.0,
+      "asciiVerified": 21,
+      "fallbackMatches": 7,
+      "fallbackCount": 7
+    },
+    {
+      "width": 320.0,
+      "asciiVerified": 21,
+      "fallbackMatches": 4,
+      "fallbackCount": 7
+    },
+    {
+      "width": 200.0,
+      "asciiVerified": 21,
+      "fallbackMatches": 1,
+      "fallbackCount": 7
+    },
+    {
+      "width": 160.0,
+      "asciiVerified": 21,
+      "fallbackMatches": 1,
+      "fallbackCount": 7
+    },
+    {
+      "width": 130.0,
+      "asciiVerified": 21,
+      "fallbackMatches": 1,
+      "fallbackCount": 7
+    }
+  ],
+  "fallbackGaps": [
+    {
+      "width": 320.0,
+      "id": "combining-hyphen",
+      "browser": [
+        "Cafe\u0301-opening-concrete-after-",
+        "midnight"
+      ],
+      "native": [
+        "Cafe\u0301-opening-concrete-after-midn",
+        "ight"
+      ]
+    },
+    {
+      "width": 320.0,
+      "id": "cjk-hyphen",
+      "browser": [
+        "\u6771\u4eac-opening-concrete-after-",
+        "midnight"
+      ],
+      "native": [
+        "\u6771",
+        "\u4eac-opening-concrete-after-midnigh",
+        "t"
+      ]
+    },
+    {
+      "width": 320.0,
+      "id": "tab-control",
+      "browser": [
+        "\topening-concrete-after-",
+        "midnight"
+      ],
+      "native": [
+        "\topening-concrete-after-midni",
+        "ght"
+      ]
+    },
+    {
+      "width": 200.0,
+      "id": "unicode-hyphen",
+      "browser": [
+        "opening\u2010concrete\u2010",
+        "after\u2010midnight"
+      ],
+      "native": [
+        "opening\u2010concrete",
+        "\u2010after\u2010midnight"
+      ]
+    },
+    {
+      "width": 200.0,
+      "id": "en-dash",
+      "browser": [
+        "opening\u2013concrete\u2013",
+        "after\u2013midnight"
+      ],
+      "native": [
+        "opening\u2013concrete",
+        "\u2013after\u2013midnight"
+      ]
+    },
+    {
+      "width": 200.0,
+      "id": "em-dash",
+      "browser": [
+        "opening\u2014concrete\u2014",
+        "after\u2014midnight"
+      ],
+      "native": [
+        "opening\u2014concrete",
+        "\u2014after\u2014midnight"
+      ]
+    },
+    {
+      "width": 200.0,
+      "id": "combining-hyphen",
+      "browser": [
+        "Cafe\u0301-opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "native": [
+        "Cafe\u0301-opening-conc",
+        "rete-after-midnig",
+        "ht"
+      ]
+    },
+    {
+      "width": 200.0,
+      "id": "cjk-hyphen",
+      "browser": [
+        "\u6771\u4eac-opening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "native": [
+        "\u6771",
+        "\u4eac-opening-concre",
+        "te-after-midnight"
+      ]
+    },
+    {
+      "width": 200.0,
+      "id": "tab-control",
+      "browser": [
+        "\topening-",
+        "concrete-after-",
+        "midnight"
+      ],
+      "native": [
+        "\topening-concr",
+        "ete-after-midnigh",
+        "t"
+      ]
+    },
+    {
+      "width": 160.0,
+      "id": "unicode-hyphen",
+      "browser": [
+        "opening\u2010",
+        "concrete\u2010",
+        "after\u2010",
+        "midnight"
+      ],
+      "native": [
+        "opening",
+        "\u2010concrete",
+        "\u2010after",
+        "\u2010midnight"
+      ]
+    },
+    {
+      "width": 160.0,
+      "id": "en-dash",
+      "browser": [
+        "opening\u2013",
+        "concrete\u2013",
+        "after\u2013",
+        "midnight"
+      ],
+      "native": [
+        "opening",
+        "\u2013concrete",
+        "\u2013after",
+        "\u2013midnight"
+      ]
+    },
+    {
+      "width": 160.0,
+      "id": "em-dash",
+      "browser": [
+        "opening\u2014",
+        "concrete\u2014",
+        "after\u2014",
+        "midnight"
+      ],
+      "native": [
+        "opening",
+        "\u2014concrete",
+        "\u2014after",
+        "\u2014midnight"
+      ]
+    },
+    {
+      "width": 160.0,
+      "id": "combining-hyphen",
+      "browser": [
+        "Cafe\u0301-",
+        "opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "native": [
+        "Cafe\u0301-opening",
+        "-concrete-af",
+        "ter-midnight"
+      ]
+    },
+    {
+      "width": 160.0,
+      "id": "cjk-hyphen",
+      "browser": [
+        "\u6771\u4eac-opening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "native": [
+        "\u6771",
+        "\u4eac-opening-c",
+        "oncrete-afte",
+        "r-midnight"
+      ]
+    },
+    {
+      "width": 160.0,
+      "id": "tab-control",
+      "browser": [
+        "\topening-",
+        "concrete-",
+        "after-",
+        "midnight"
+      ],
+      "native": [
+        "\topening-",
+        "concrete-aft",
+        "er-midnight"
+      ]
+    },
+    {
+      "width": 130.0,
+      "id": "unicode-hyphen",
+      "browser": [
+        "opening\u2010",
+        "concrete",
+        "\u2010after\u2010",
+        "midnight"
+      ],
+      "native": [
+        "opening",
+        "\u2010concret",
+        "e\u2010after",
+        "\u2010midnigh",
+        "t"
+      ]
+    },
+    {
+      "width": 130.0,
+      "id": "en-dash",
+      "browser": [
+        "opening\u2013",
+        "concrete",
+        "\u2013after\u2013",
+        "midnight"
+      ],
+      "native": [
+        "opening",
+        "\u2013concret",
+        "e\u2013after",
+        "\u2013midnigh",
+        "t"
+      ]
+    },
+    {
+      "width": 130.0,
+      "id": "em-dash",
+      "browser": [
+        "opening\u2014",
+        "concrete",
+        "\u2014after\u2014",
+        "midnight"
+      ],
+      "native": [
+        "opening",
+        "\u2014concret",
+        "e\u2014after",
+        "\u2014midnigh",
+        "t"
+      ]
+    },
+    {
+      "width": 130.0,
+      "id": "combining-hyphen",
+      "browser": [
+        "Cafe\u0301-",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "native": [
+        "Cafe\u0301-ope",
+        "ning-con",
+        "crete-af",
+        "ter-midn",
+        "ight"
+      ]
+    },
+    {
+      "width": 130.0,
+      "id": "cjk-hyphen",
+      "browser": [
+        "\u6771\u4eac-",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "native": [
+        "\u6771",
+        "\u4eac-openi",
+        "ng-concr",
+        "ete-afte",
+        "r-midnig",
+        "ht"
+      ]
+    },
+    {
+      "width": 130.0,
+      "id": "tab-control",
+      "browser": [
+        "\t",
+        "opening-",
+        "concrete",
+        "-after-",
+        "midnight"
+      ],
+      "native": [
+        "\topen",
+        "ing-conc",
+        "rete-aft",
+        "er-midni",
+        "ght"
+      ]
+    }
+  ]
+}

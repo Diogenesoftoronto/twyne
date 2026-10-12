@@ -1,0 +1,87 @@
+[
+ {
+  "text": "Here.",
+  "start": 0.5,
+  "end": 0.84
+ },
+ {
+  "text": "This",
+  "start": 1.6,
+  "end": 1.84
+ },
+ {
+  "text": "line.",
+  "start": 1.92,
+  "end": 2.34
+ },
+ {
+  "text": "This",
+  "start": 3.02,
+  "end": 3.2
+ },
+ {
+  "text": "is",
+  "start": 3.28,
+  "end": 3.38
+ },
+ {
+  "text": "the",
+  "start": 3.42,
+  "end": 3.52
+ },
+ {
+  "text": "one",
+  "start": 3.62,
+  "end": 3.76
+ },
+ {
+  "text": "with",
+  "start": 3.8,
+  "end": 3.9
+ },
+ {
+  "text": "a",
+  "start": 3.96,
+  "end": 4.04
+ },
+ {
+  "text": "pulse.",
+  "start": 4.12,
+  "end": 4.54
+ },
+ {
+  "text": "Everything",
+  "start": 5.24,
+  "end": 5.7
+ },
+ {
+  "text": "else",
+  "start": 5.76,
+  "end": 5.98
+ },
+ {
+  "text": "should",
+  "start": 6.02,
+  "end": 6.2
+ },
+ {
+  "text": "be",
+  "start": 6.24,
+  "end": 6.38
+ },
+ {
+  "text": "jealous",
+  "start": 6.48,
+  "end": 6.82
+ },
+ {
+  "text": "of",
+  "start": 6.88,
+  "end": 6.96
+ },
+ {
+  "text": "it.",
+  "start": 7.02,
+  "end": 7.24
+ }
+]

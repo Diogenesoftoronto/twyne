@@ -1,0 +1,23 @@
+diff --git a/desktop/gpui/src/editor/mod.rs b/desktop/gpui/src/editor/mod.rs
+--- a/desktop/gpui/src/editor/mod.rs
++++ b/desktop/gpui/src/editor/mod.rs
+@@ -38,5 +38,8 @@
+ #[cfg(feature = "desktop")]
+ pub mod view;
+ 
++#[cfg(feature = "desktop")]
++pub mod math_source_editor;
++
+ #[cfg(test)]
+ mod tests;
+diff --git a/desktop/gpui/src/editor/view.rs b/desktop/gpui/src/editor/view.rs
+--- a/desktop/gpui/src/editor/view.rs
++++ b/desktop/gpui/src/editor/view.rs
+@@ -114,6 +114,7 @@
+     }
+     cx.set_global(BindingsInstalled);
+     notes::init(cx);
++    super::math_source_editor::init(cx);
+     cx.bind_keys([
+         KeyBinding::new("escape", CancelBlockDrag, Some("TwyneBlockHandle")),
+         KeyBinding::new("backspace", Backspace, Some(EDITOR_KEY_CONTEXT)),

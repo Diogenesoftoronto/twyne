@@ -1,0 +1,5 @@
+Original File disclosure glyph U+25BE: Noto Sans Math3.000.
+2026-10-04: Package byte-identical current browser fallback and official
+SIL OFL1.1 notice. No font derivation or outline/advance edits.
+Use only for File arrow; default Sans, source attributes and Typst stay unchanged.
+Original requested600 fallback synthesis has a separate Chrome raster boundary.

@@ -1,0 +1,6 @@
+{
+  "status": "No response; not adopted",
+  "reason": "Provider job ended at the 900-second timeout",
+  "nativeImplementationOwner": "coordinator",
+  "ownedCrushChildrenAfterTimeout": []
+}

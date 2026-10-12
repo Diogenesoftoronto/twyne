@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "status": "HANDOFF",
+  "frozen": true,
+  "scope": "offline native account protocol, validation and durable state foundation",
+  "ownedPaths": [
+    "desktop/gpui/src/native_accounts/**",
+    "desktop/gpui/fixtures/account-sync/**"
+  ],
+  "runtimeIntegration": "Root applied desktop-gated library export; guarded Store/Source and connected UI remain unintegrated",
+  "manifestChanges": "none; existing desktop-enabled base64/sha2 and existing serde/json/fs2/tempfile/uuid/anyhow",
+  "connectedAuthAvailable": false,
+  "authenticationProof": "not implemented; request/receipt consistency checks and constructed leases are not authenticated identity",
+  "callbackRequirements": [
+    "exact origin approved by Twyne trustedOrigins",
+    "exact origin approved as product Twyne in Not Organic public-client catalog",
+    "exact /auth/notorganic/ callback with native listener/router not implemented",
+    "unconfigured loopback currently maps to Keating; no Twyne custom-scheme exception"
+  ],
+  "implemented": [
+    "Source-shaped PKCE S256 request with caller-supplied CSPRNG entropy",
+    "one-shot origin/path/state/expiry/duplicate/error callback consistency checks",
+    "issued/refreshed/session subject consistency and exact canonical account key",
+    "account/current-lease operation guards",
+    "original pushAll section/diff/removal/omitted-empty and revision CAS request contract",
+    "ACK-only baseline and newer-intent retention across an in-flight push",
+    "unknown-outcome and explicit conflict state with staged remote application receipt",
+    "three-way preservation with deletion/edit and pending-Source conflicts",
+    "remote string ID to native UUID mapping and local projection metadata retention",
+    "account-specific bounded atomic journal, exact byte/value/generation CAS, OS lock and backup recovery"
+  ],
+  "executedChecks": {
+    "sourceFixtureGeneration": "PASS",
+    "sourceFixtureCheckOnly": "PASS",
+    "originalPureFunctionsExecuted": 8,
+    "originalDefinitionsSelected": 9,
+    "wireDiffCases": 8,
+    "callbackCases": 9,
+    "safeReturnCases": 6,
+    "syntheticPkceRequest": "captured from unchanged Source function",
+    "rustfmtOwnedFiles": "PASS",
+    "unappliedIntegrationPatchCheck": "PASS",
+    "networkCalls": 0,
+    "accountCredentialAccess": 0,
+    "rootAllTargetStrictClippy": "PASS"
+  },
+  "preparedRustTests": {
+    "count": 26,
+    "status": "PASS: Root ran26 native tests; see integration-gates.json",
+    "includes": [
+      "Source-backed auth and wire fixtures",
+      "wrong-account and old-lease receipts",
+      "edit-during-push and unknown outcomes",
+      "divergence, deletion/edit and pending Source",
+      "restart, remote ID mapping and original source/projection metadata",
+      "separate account partitions",
+      "real temporary-file byte CAS and simultaneous separate-handle writers",
+      "backup recovery, unknown envelope fields and future-version refusal",
+      "blocked regular-file path I/O failure and retry",
+      "exact full expected local save acknowledgement"
+    ]
+  },
+  "limits": {
+    "journalBytes": 67108864,
+    "sectionRows": 100000,
+    "sourceUtf16Units": 5000000,
+    "changedContentJsonAdmissionBytes": 950000,
+    "cloudBudgetMeaning": "conservative native preflight below existing Convex 1 MB/document constraint; not server encoding proof"
+  },
+  "remaining": [
+    "protected Better Auth cookie/session vault",
+    "registered native browser/callback lifecycle and real code redemption",
+    "Convex JWT authenticity/accepted auth plus authenticated transport",
+    "explicit account-library association and real guarded Store/Source two-phase application",
+    "startup/online/close retry coordinator and durable truthful UI acknowledgements",
+    "backend direct-setter revision coverage, idempotency, oversized-content and pull pagination decisions",
+    "live account, callback, multi-device/offline/service-limit and platform proof"
+  ],
+  "separateLanesUntouched": [
+    "native collaboration roles/presence/sharing/publication",
+    "all existing Source/editor/font/platform/runtime files",
+    "provider and credential operations"
+  ],
+  "rootReviewAt": "2026-10-05T01:04:03.716719+00:00"
+}

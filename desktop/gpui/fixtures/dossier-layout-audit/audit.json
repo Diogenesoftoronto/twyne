@@ -1,0 +1,1147 @@
+{
+  "schema": 1,
+  "status": "Read-only audit, no proposed runtime patch applied",
+  "boundary": {
+    "performed": [
+      "Read current declarations and retained receipts",
+      "View/decode existing screenshots",
+      "Derived arithmetic"
+    ],
+    "notPerformed": [
+      "Native/browser execution",
+      "Cargo/Devenv",
+      "Network",
+      "Current assembled runtime pixel parity",
+      "Device/DPR runs"
+    ],
+    "sourceDpr": "Not recorded in retained Source geometry or screenshot",
+    "nativeDpr": "Not recorded in retained geometry; do not infer from PNG size",
+    "themeLayoutObserved": [
+      "Editorial retained1280x860 title/Audience"
+    ],
+    "themeLayoutUnobserved": [
+      "Nightpress",
+      "Broadsheet",
+      "Foolscap"
+    ],
+    "paperThemeRasters": "Standalone Librsvg projections; not full-form layout proof"
+  },
+  "sourceHashesAtAudit": {
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "src/components/onboarding/dossier-folio.tsx": "77c1fb9bce10345add264b57c4389c9b7a90d629ddd652b0ef8ef0a0cbb8a281",
+    "src/components/onboarding/dossier-top-bar.tsx": "ca2f2f14ef7abdb58b116268ae1c0524ca5ac5957bc2fe63b9f646aa43cd6492",
+    "src/components/onboarding/anti-tabula-rasa.tsx": "bd8162f3e0ca95ebdb8e4b817f3b1cc92099e7a1c0f489d9215d7ae9d4a4706c",
+    "src/components/brief/dossier-preview.tsx": "8388ee9fd9d16ceed1445eb55a32c2ffb4edf94189988d740c4b252084b5bf0e",
+    "desktop/gpui/src/dossier_view.rs": "f63ae1e867a961237b12241e84b5ea0e364f71a0b408ca3985491f7f258adddb",
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3",
+    "desktop/gpui/src/theme.rs": "2d04ffd22eb01a4f7f6c45e3dd64424e9a5a4e6c91860f01079923de2722320e",
+    "desktop/gpui/src/chrome.rs": "4f4f3612b575e41b4982fe4cd21cf9c9c2a05e621ad771c7874b4714fc325e7d",
+    "desktop/gpui/assets/palette.rs": "54eef26060107945c7f5effe27f2a0e7edd54a133e896b5a2932798b35f2ce38",
+    "desktop/gpui/vendor/gpui-pre/src/style.rs": "b4a0e838fc7050cef25f71aae623cf86010c2ec361600479d24ce1aaff91bdc1"
+  },
+  "retainedArtifactHashes": {
+    "desktop/gpui/target/verification/source-dossier-1280.png": "4c55e0e54c2216af8fa27d27a04fd3582467f1f72a9272ee192c5090e5433d65",
+    "desktop/gpui/target/verification/source-dossier-audience-1280.png": "5e8302efb5101b264b3a92b57265c9a770cb40beac14d591e1ef40c190f43bc1",
+    "desktop/gpui/target/verification/source-dossier-boxes.json": "d3e93f4d642e697978f981efe1798011b565a048a331cb9b0c1e07893f1a40ed",
+    "desktop/gpui/target/verification/source-dossier-audience-textarea.json": "a5f2521dd24d561044ebcb89c6467fbc07d76b5c0a283e70da716af13f10faee",
+    "desktop/gpui/target/verification/dossier-paper-reviewed-haitx1l7/title-focused.png": "dfa1332b402d642b8becd00c8c6d6780fe6330d49d6e00492dc05c127ecc5a6a",
+    "desktop/gpui/target/verification/dossier-paper-reviewed-haitx1l7/title-focused-geometry.json": "1ae064fa6fc595bedf446cff9e2ca97625545251b824207f84b914f684864d1f",
+    "desktop/gpui/target/verification/dossier-paper-reviewed-haitx1l7/audience-focused.png": "53ea98694b49d303222b3faba02aaa1c20fc4fc4d18480e94b2efcd4a4dd9983",
+    "desktop/gpui/target/verification/dossier-paper-reviewed-haitx1l7/audience-focused-geometry.json": "2f882fb4aae347c101f83cab58e8b62b9d82215d65edd92d4e297dbfb2eab414",
+    "desktop/gpui/target/verification/dossier-paper-reviewed-haitx1l7/build-receipt.json": "b08e1d0b1165826bcc4748ab6614d7abea42d8553a7407a0592659ce7d66cbf8",
+    "desktop/gpui/target/verification/dossier-stamp-workflow-6a5b32e702/roman-3-geometry.json": "967849c88ae2855cc0cf64cfff1ac47a5c85aec0e5dab61ebf962db274840767",
+    "desktop/gpui/target/verification/dossier-stamp-workflow-6a5b32e702/live-geometry-1.json": "4af0d08fe9c06d0f5125f64275b931bdc4a9245649538b3150e1e6f47eac19ac",
+    "desktop/gpui/fixtures/dossier-native/parent-gates-stamp-reviewed.json": "064c73becfe9adbfd2c5378ea8eaa5d165aab3d65885d791c6ab41829e04d0e9",
+    "desktop/gpui/fixtures/dossier-paper/raster/receipt.json": "b3cf3f5b3d32c18744d283faf9da3f51ef40c51d0115ff4dfc6705c8f71e08af"
+  },
+  "originalUsedGeometry": {
+    ".dossier-folio-frame > div:first-child button:first-of-type": {
+      "quad": [
+        1082.125,
+        23,
+        1132.03125,
+        23,
+        1132.03125,
+        41.390625,
+        1082.125,
+        41.390625
+      ],
+      "rect": {
+        "x": 1082.125,
+        "y": 23,
+        "width": 49.90625,
+        "height": 18.390625
+      },
+      "roundedOffsetSize": [
+        50,
+        18
+      ],
+      "styles": {
+        "font-family": "\"Special Elite\", \"Courier New\", monospace",
+        "font-size": "9.6px",
+        "font-weight": "400",
+        "background-color": "rgb(193, 39, 45)",
+        "letter-spacing": "1.728px",
+        "line-height": "14.4px",
+        "margin-bottom": "0px",
+        "margin-top": "0px",
+        "text-transform": "none",
+        "transform": "none"
+      }
+    },
+    ".dossier-folio-frame > div:first-child button:nth-of-type(2)": {
+      "quad": [
+        1136.03125,
+        23,
+        1243,
+        23,
+        1243,
+        41.390625,
+        1136.03125,
+        41.390625
+      ],
+      "rect": {
+        "x": 1136.03125,
+        "y": 23,
+        "width": 106.96875,
+        "height": 18.390625
+      },
+      "roundedOffsetSize": [
+        107,
+        18
+      ],
+      "styles": {
+        "font-family": "\"Special Elite\", \"Courier New\", monospace",
+        "font-size": "9.6px",
+        "font-weight": "400",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "letter-spacing": "1.728px",
+        "line-height": "14.4px",
+        "margin-bottom": "0px",
+        "margin-top": "0px",
+        "text-transform": "none",
+        "transform": "none"
+      }
+    },
+    ".stamp": {
+      "quad": [
+        499.0028076171875,
+        76.38768768310547,
+        612.2068481445312,
+        70.45491790771484,
+        613.3565673828125,
+        92.39356231689453,
+        500.1525573730469,
+        98.32633209228516
+      ],
+      "rect": {
+        "x": 499.0028076171875,
+        "y": 70.45491790771484,
+        "width": 114.353759765625,
+        "height": 27.871414184570312
+      },
+      "roundedOffsetSize": [
+        113,
+        22
+      ],
+      "styles": {
+        "font-family": "\"Special Elite\", \"Courier New\", monospace",
+        "font-size": "8.8px",
+        "font-weight": "400",
+        "background-color": "color(srgb 0.756863 0.152941 0.176471 / 0.04)",
+        "letter-spacing": "1.936px",
+        "line-height": "13.2px",
+        "margin-bottom": "0px",
+        "margin-top": "0px",
+        "text-transform": "uppercase",
+        "transform": "matrix(0.99863, -0.052336, 0.052336, 0.99863, 0, 0)"
+      }
+    },
+    "#atr-question": {
+      "quad": [
+        693.15625,
+        368,
+        1059.625,
+        368,
+        1059.625,
+        396,
+        693.15625,
+        396
+      ],
+      "rect": {
+        "x": 693.15625,
+        "y": 368,
+        "width": 366.46875,
+        "height": 28
+      },
+      "roundedOffsetSize": [
+        366,
+        28
+      ],
+      "styles": {
+        "font-family": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+        "font-size": "22.4px",
+        "font-weight": "600",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "letter-spacing": "normal",
+        "line-height": "28px",
+        "margin-bottom": "0px",
+        "margin-top": "0px",
+        "text-transform": "none",
+        "transform": "none"
+      }
+    },
+    "#atr-hint": {
+      "quad": [
+        701.859375,
+        402,
+        1238.984375,
+        402,
+        1238.984375,
+        426,
+        701.859375,
+        426
+      ],
+      "rect": {
+        "x": 701.859375,
+        "y": 402,
+        "width": 537.125,
+        "height": 24
+      },
+      "roundedOffsetSize": [
+        537,
+        24
+      ],
+      "styles": {
+        "font-family": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+        "font-size": "13.6px",
+        "font-weight": "400",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "letter-spacing": "normal",
+        "line-height": "24px",
+        "margin-bottom": "0px",
+        "margin-top": "6px",
+        "text-transform": "none",
+        "transform": "none"
+      }
+    },
+    ".folio-column.flex-1": {
+      "quad": [
+        633.859375,
+        84.390625,
+        1258.984375,
+        84.390625,
+        1258.984375,
+        785.609375,
+        633.859375,
+        785.609375
+      ],
+      "rect": {
+        "x": 633.859375,
+        "y": 84.390625,
+        "width": 625.125,
+        "height": 701.21875
+      },
+      "roundedOffsetSize": [
+        625,
+        701
+      ],
+      "styles": {
+        "font-family": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "font-size": "16px",
+        "font-weight": "400",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "letter-spacing": "normal",
+        "line-height": "24px",
+        "margin-bottom": "0px",
+        "margin-top": "0px",
+        "text-transform": "none",
+        "transform": "none"
+      }
+    },
+    ".folio-column .my-auto": {
+      "quad": [
+        653.859375,
+        356,
+        1238.984375,
+        356,
+        1238.984375,
+        488,
+        653.859375,
+        488
+      ],
+      "rect": {
+        "x": 653.859375,
+        "y": 356,
+        "width": 585.125,
+        "height": 132
+      },
+      "roundedOffsetSize": [
+        585,
+        132
+      ],
+      "styles": {
+        "font-family": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "font-size": "16px",
+        "font-weight": "400",
+        "background-color": "rgba(0, 0, 0, 0)",
+        "letter-spacing": "normal",
+        "line-height": "24px",
+        "margin-bottom": "235.609px",
+        "margin-top": "235.609px",
+        "text-transform": "none",
+        "transform": "none"
+      }
+    },
+    ".folio-column dl button:first-child": {
+      "quad": [
+        41,
+        116.390625,
+        323.921875,
+        116.390625,
+        323.921875,
+        161.984375,
+        41,
+        161.984375
+      ],
+      "rect": {
+        "x": 41,
+        "y": 116.390625,
+        "width": 282.921875,
+        "height": 45.59375
+      },
+      "roundedOffsetSize": [
+        283,
+        46
+      ],
+      "styles": {
+        "font-family": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "font-size": "16px",
+        "font-weight": "400",
+        "background-color": "rgb(244, 236, 216)",
+        "letter-spacing": "normal",
+        "line-height": "24px",
+        "margin-bottom": "0px",
+        "margin-top": "0px",
+        "text-transform": "none",
+        "transform": "none"
+      }
+    },
+    ".folio-column dl button:nth-child(3)": {
+      "quad": [
+        41,
+        167.984375,
+        323.921875,
+        167.984375,
+        323.921875,
+        229.984375,
+        41,
+        229.984375
+      ],
+      "rect": {
+        "x": 41,
+        "y": 167.984375,
+        "width": 282.921875,
+        "height": 62.0
+      },
+      "roundedOffsetSize": [
+        283,
+        62
+      ],
+      "styles": {
+        "font-family": "\"DM Sans\", Inter, system-ui, sans-serif",
+        "font-size": "16px",
+        "font-weight": "400",
+        "background-color": "rgb(250, 243, 223)",
+        "letter-spacing": "normal",
+        "line-height": "24px",
+        "margin-bottom": "0px",
+        "margin-top": "0px",
+        "text-transform": "none",
+        "transform": "none"
+      }
+    }
+  },
+  "originalAudience": {
+    "url": "http://127.0.0.1:5180/dossier/create/",
+    "box": {
+      "border": [
+        653.859375,
+        405.5,
+        1238.984375,
+        405.5,
+        1238.984375,
+        543.5,
+        653.859375,
+        543.5
+      ],
+      "content": [
+        670.859375,
+        418.5,
+        1221.984375,
+        418.5,
+        1221.984375,
+        530.5,
+        670.859375,
+        530.5
+      ],
+      "height": 138,
+      "margin": [
+        653.859375,
+        405.5,
+        1238.984375,
+        405.5,
+        1238.984375,
+        543.5,
+        653.859375,
+        543.5
+      ],
+      "padding": [
+        654.859375,
+        406.5,
+        1237.984375,
+        406.5,
+        1237.984375,
+        542.5,
+        654.859375,
+        542.5
+      ],
+      "width": 585
+    },
+    "styles": {
+      "font-size": "16px",
+      "border-bottom-width": "1px",
+      "border-top-width": "1px",
+      "height": "138px",
+      "line-height": "28px",
+      "padding-bottom": "12px",
+      "padding-left": "16px",
+      "padding-right": "16px",
+      "padding-top": "12px"
+    }
+  },
+  "nativeTitle": {
+    "path": "desktop/gpui/target/verification/dossier-paper-reviewed-haitx1l7/title-focused-geometry.json",
+    "viewport": {
+      "width": 1280.0,
+      "height": 860.0
+    },
+    "nodes": {
+      "Name(\"dossier-back\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 799.0,
+          "width": 78.0,
+          "height": 32.0
+        },
+        "visible": true,
+        "label": "\u2190 Back"
+      },
+      "Name(\"dossier-question-leaf\")": {
+        "rect": {
+          "x": 634.0,
+          "y": 84.0,
+          "width": 625.0,
+          "height": 702.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "Name(\"dossier-question\")": {
+        "rect": {
+          "x": 694.0,
+          "y": 369.0,
+          "width": 368.0,
+          "height": 28.0
+        },
+        "visible": true,
+        "label": "What are we calling it, for now?"
+      },
+      "Name(\"dossier-left-leaf\")": {
+        "rect": {
+          "x": 21.0,
+          "y": 48.0,
+          "width": 613.0,
+          "height": 795.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "Name(\"dossier-active-question\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 357.0,
+          "width": 585.0,
+          "height": 132.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "NamedInteger(\"dossier-preview-field\", 2)": {
+        "rect": {
+          "x": 41.0,
+          "y": 167.0,
+          "width": 283.0,
+          "height": 61.0
+        },
+        "visible": true,
+        "label": "Edit Audience"
+      },
+      "NamedInteger(\"dossier-preview-field\", 0)": {
+        "rect": {
+          "x": 41.0,
+          "y": 116.0,
+          "width": 283.0,
+          "height": 45.0
+        },
+        "visible": true,
+        "label": "Edit Working title"
+      },
+      "Name(\"dossier-question-sheet\")": {
+        "rect": {
+          "x": 634.0,
+          "y": 84.0,
+          "width": 625.0,
+          "height": 702.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "Name(\"dossier-ghost-below\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 750.0,
+          "width": 585.0,
+          "height": 20.0
+        },
+        "visible": true,
+        "label": "\u2193 II. What kind of piece is this?"
+      }
+    }
+  },
+  "nativeAudience": {
+    "path": "desktop/gpui/target/verification/dossier-paper-reviewed-haitx1l7/audience-focused-geometry.json",
+    "viewport": {
+      "width": 1280.0,
+      "height": 860.0
+    },
+    "nodes": {
+      "Name(\"dossier-back\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 799.0,
+          "width": 78.0,
+          "height": 32.0
+        },
+        "visible": true,
+        "label": "\u2190 Back"
+      },
+      "Name(\"dossier-question-leaf\")": {
+        "rect": {
+          "x": 634.0,
+          "y": 84.0,
+          "width": 625.0,
+          "height": 702.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "Name(\"dossier-question\")": {
+        "rect": {
+          "x": 727.0,
+          "y": 335.0,
+          "width": 183.0,
+          "height": 28.0
+        },
+        "visible": true,
+        "label": "Who is this for?"
+      },
+      "Name(\"dossier-left-leaf\")": {
+        "rect": {
+          "x": 21.0,
+          "y": 48.0,
+          "width": 613.0,
+          "height": 795.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "Name(\"dossier-active-question\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 323.0,
+          "width": 585.0,
+          "height": 224.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "NamedInteger(\"dossier-preview-field\", 2)": {
+        "rect": {
+          "x": 41.0,
+          "y": 167.0,
+          "width": 283.0,
+          "height": 61.0
+        },
+        "visible": true,
+        "label": "Edit Audience"
+      },
+      "NamedInteger(\"dossier-preview-field\", 0)": {
+        "rect": {
+          "x": 41.0,
+          "y": 116.0,
+          "width": 283.0,
+          "height": 45.0
+        },
+        "visible": true,
+        "label": "Edit Working title"
+      },
+      "Name(\"dossier-question-sheet\")": {
+        "rect": {
+          "x": 634.0,
+          "y": 84.0,
+          "width": 625.0,
+          "height": 702.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "Name(\"dossier-ghost-below\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 750.0,
+          "width": 585.0,
+          "height": 20.0
+        },
+        "visible": true,
+        "label": "\u2193 IV. What should the piece accomplish?"
+      }
+    }
+  },
+  "nativeIntermediateAudience": {
+    "path": "desktop/gpui/target/verification/dossier-stamp-workflow-6a5b32e702/roman-3-geometry.json",
+    "viewport": {
+      "width": 1280.0,
+      "height": 860.0
+    },
+    "nodes": {
+      "Name(\"dossier-question-sheet\")": {
+        "rect": {
+          "x": 634.0,
+          "y": 84.0,
+          "width": 625.0,
+          "height": 702.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "Name(\"dossier-ghost-below\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 974.0,
+          "width": 585.0,
+          "height": 20.0
+        },
+        "visible": false,
+        "label": "\u2193 IV. What should the piece accomplish?"
+      },
+      "Name(\"dossier-active-question\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 435.0,
+          "width": 585.0,
+          "height": 224.0
+        },
+        "visible": true,
+        "label": null
+      }
+    }
+  },
+  "nativeSettledAudience": {
+    "path": "desktop/gpui/target/verification/dossier-stamp-workflow-6a5b32e702/live-geometry-1.json",
+    "viewport": {
+      "width": 1280.0,
+      "height": 860.0
+    },
+    "nodes": {
+      "Name(\"dossier-ghost-below\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 750.0,
+          "width": 585.0,
+          "height": 20.0
+        },
+        "visible": true,
+        "label": "\u2193 IV. What should the piece accomplish?"
+      },
+      "Name(\"dossier-question-sheet\")": {
+        "rect": {
+          "x": 634.0,
+          "y": 84.0,
+          "width": 625.0,
+          "height": 702.0
+        },
+        "visible": true,
+        "label": null
+      },
+      "Name(\"dossier-active-question\")": {
+        "rect": {
+          "x": 654.0,
+          "y": 323.0,
+          "width": 585.0,
+          "height": 224.0
+        },
+        "visible": true,
+        "label": null
+      }
+    }
+  },
+  "nativePaperBuild": {
+    "binarySha256": "7c2b9858ff2440625e055781419f4fbe33657cb4dadb17667c5cd49ba627f9ee",
+    "sources": {
+      "desktop/gpui/src/dossier_view.rs": "17b3a2b124c63c6e3d8fd426af2be27c26be7f0bf67211a4e0ae2bf95916d522",
+      "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+      "desktop/gpui/src/theme.rs": "2d04ffd22eb01a4f7f6c45e3dd64424e9a5a4e6c91860f01079923de2722320e",
+      "desktop/gpui/src/lib.rs": "5e853d0b7858a61fc2f0b9f029a0c476fb03e07c6d4a9fc61568441cec39055e",
+      "desktop/gpui/src/app.rs": "6a28744af3e10c5ba225a9a774003b74ceb4278b9969fed32b0b0a9d94a163d5",
+      "desktop/gpui/src/editor/math_source_editor.rs": "6cee7f944402b135ce21a778d14e2c71476f615be78a1fc84c47217c108e4ed9",
+      "desktop/gpui/fixtures/dossier-native/check-native.py": "100abc2ec5c29593e6c95889c20fc6559654ec77a014d7867a7e5378cb79be44"
+    },
+    "scope": "current immutable binary, actual isolated X11 Dossier pixels and keyboard; durable filing checked separately"
+  },
+  "nativeStampWorkflow": {
+    "status": "pass",
+    "run": "2026-10-05T06:10:57.069966+00:00",
+    "output": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-stamp-workflow-6a5b32e702",
+    "acceptance": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-stamp-workflow-6a5b32e702/acceptance.json",
+    "acceptanceSha256": "c72f327c30f2bd4a669a85de80f2dfbbd95614b0f13ef4728c525f57bd2ed484",
+    "checks": [
+      "Actual imported copy preserves nonempty authored source, formatting, #let and exact whitespace",
+      "Unblurred final title survives actual Escape Cancel in exact create-scope recovery without filing",
+      "Actual local helper projects nonempty HTML through Write/Save while retaining authored source/body",
+      "Actual Create reopen restores the exact native input from the same recovery identity",
+      "All ten actual roman controls navigate the original questions and retain unblurred multiline recovery",
+      "Actual Send to press durably files Create and clears only its recovery; nonempty source/body/HTML stay exact",
+      "Same-base Refine Cancel/reopen restores actual pending title/goal and preserves the saved manuscript",
+      "Actual Refine filing updates brief metadata while canonical source/body/projected HTML/import bytes stay exact",
+      "Actual focused Ctrl-Q exits zero without entity leaks and durably retains the final unblurred textarea",
+      "Fresh actual process restores exact scoped draft and filed metadata with the same nonempty canonical manuscript",
+      "Second real Cancel/Ctrl-Q exits cleanly without altering the saved manuscript"
+    ],
+    "binarySha256": "eb9140901ef286468573d7036e1c7e6bc799705348511b0f0a3efcbfd26f90b1",
+    "helperSha256": "cc8144ceeb96cb519f026414aa332f35d54b33e5fb640d0c1076d85b3a39c9de",
+    "driverSha256": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27",
+    "testedBuildSourceHashes": {
+      "desktop/gpui/Cargo.toml": "d2fbf2769766b2a4758ef37c387fe8e146a25031f0448161def5e9fc3ba304eb",
+      "desktop/gpui/Cargo.lock": "0276cac861d2dde4235eaacad27917e826abfd3af2922a432f17e0c204fed7da",
+      "desktop/gpui/src/lib.rs": "65cb337bdd30c9ea7e481492ae98567517258a6db303ce9d2ca8a4352488c792",
+      "desktop/gpui/src/main.rs": "37f247da470fd19cdbd2450c9165f2239269b2be667320672a63d0b146a2c0e0",
+      "desktop/gpui/src/app.rs": "f5e49f1d4ee936b333c9bf52b4b7119d2468b1e9f2f84c3b88360dfe9e550ea9",
+      "desktop/gpui/src/app/math_source_coordinator.rs": "9a2b11a7b64828bb8fa4c6eed8ba3e41fea01eaf57fddba3ce50079dd8cceb2f",
+      "desktop/gpui/src/editor/view.rs": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14",
+      "desktop/gpui/src/editor/view_math_source.rs": "139eca38cf52aab6d729e4e10fe8d5f79cd30cb8a61d995a5c6e498d54fe6674",
+      "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373",
+      "desktop/gpui/src/editor/paragraph_flow.rs": "7c9ad7eae6e70970c7110949c59e8757dcbddf1d8e96ab51f53c4435526ec7e9",
+      "desktop/gpui/src/editor/view_comments.rs": "5f761d277fb68776b0d15afbc1a2e554a925fbb5b56edc1bf46212e4e0ccc911",
+      "desktop/gpui/src/editor/view_notes.rs": "c602ab7c392e7b3cf5b9fe03e779df52e51176ae30fe67245a196d7ed738208b",
+      "desktop/gpui/src/editor/view_pagination.rs": "0ad825e9b686f6ae1cdd99d41d950e2cad60cd0cb977814251800dc92487ab0f",
+      "desktop/gpui/src/editor/view_tests.rs": "27f6962097d7e6656700d919abb4ab61dde0bb8f01df840b27bffb0becb4f74c",
+      "desktop/gpui/src/dossier_view.rs": "45537aaf8ab2ebd3c258a21ad6b0c482b0131c0fc525fdbec2408e0e256bf8aa",
+      "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+      "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3",
+      "desktop/gpui/fixtures/dossier-stamp/outlines.json": "89df759aee3a8ccaeca831b79aa2580ace14bdb7679123d39e1db6acaecbd062"
+    },
+    "boundaries": [
+      "Actual isolated X11/XTEST workflow with integrated original-font rotated stamp and application equation coordinator/inline host",
+      "Eleven Create/Refine/recovery/filing and two clean process exits passed",
+      "This exact binary precedes the newly vendored multiply API and renderer lifecycle fix",
+      "No native/browser pixel parity, GPU multiply, provider/account, Proof/PDF or current Wayland claim"
+    ]
+  },
+  "declaredFrameCalculations": [
+    {
+      "viewport": [
+        320,
+        860
+      ],
+      "source": {
+        "x": 12.0,
+        "y": 12,
+        "width": 296,
+        "height": 836
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 280,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        620,
+        860
+      ],
+      "source": {
+        "x": 12.0,
+        "y": 12,
+        "width": 596,
+        "height": 836
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 580,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        639,
+        860
+      ],
+      "source": {
+        "x": 12.0,
+        "y": 12,
+        "width": 615,
+        "height": 836
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 599,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        640,
+        860
+      ],
+      "source": {
+        "x": 20.0,
+        "y": 16,
+        "width": 600,
+        "height": 828
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 600,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        1023,
+        860
+      ],
+      "source": {
+        "x": 20.0,
+        "y": 16,
+        "width": 983,
+        "height": 828
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 983,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        1024,
+        860
+      ],
+      "source": {
+        "x": 20.0,
+        "y": 16,
+        "width": 984,
+        "height": 828
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 984,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        1280,
+        860
+      ],
+      "source": {
+        "x": 20.0,
+        "y": 16,
+        "width": 1240,
+        "height": 828
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 1240,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        1472,
+        860
+      ],
+      "source": {
+        "x": 20.0,
+        "y": 16,
+        "width": 1432,
+        "height": 828
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 1432,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        1473,
+        860
+      ],
+      "source": {
+        "x": 20.5,
+        "y": 16,
+        "width": 1432,
+        "height": 828
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 1433,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    },
+    {
+      "viewport": [
+        1600,
+        860
+      ],
+      "source": {
+        "x": 84.0,
+        "y": 16,
+        "width": 1432,
+        "height": 828
+      },
+      "native": {
+        "x": 20,
+        "y": 16,
+        "width": 1560,
+        "height": 828
+      },
+      "proof": "CSS/native declaration-derived"
+    }
+  ],
+  "declaredBreakpointPolicies": {
+    "sourcePreviewColumns": "1 below640;2 at/above640",
+    "nativePreviewColumns": "Always2",
+    "sourceLeaves": "Auto grid rows below1024;1fr/1.02fr columns at/above1024",
+    "nativeLeaves": "Flex column/left height220 below1024;ratio columns at/above1024",
+    "sourceSurfaceCaption": "Hidden below640",
+    "nativeSurfaceCaption": "Always present",
+    "sourceNarrowRowUsedHeights": "Unobserved; cannot substitute a fixed or50/50 split"
+  },
+  "paperBudgetCalculations": [
+    {
+      "css": [
+        1280,
+        860
+      ],
+      "dpr": 1,
+      "raster": [
+        1280,
+        860
+      ],
+      "pixels": 1100800,
+      "acceptedByInspectedNativeContract": true,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    },
+    {
+      "css": [
+        1280,
+        860
+      ],
+      "dpr": 2,
+      "raster": [
+        2560,
+        1720
+      ],
+      "pixels": 4403200,
+      "acceptedByInspectedNativeContract": true,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    },
+    {
+      "css": [
+        1280,
+        860
+      ],
+      "dpr": 3,
+      "raster": [
+        3840,
+        2580
+      ],
+      "pixels": 9907200,
+      "acceptedByInspectedNativeContract": false,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    },
+    {
+      "css": [
+        1920,
+        1080
+      ],
+      "dpr": 2,
+      "raster": [
+        3840,
+        2160
+      ],
+      "pixels": 8294400,
+      "acceptedByInspectedNativeContract": true,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    },
+    {
+      "css": [
+        2560,
+        1440
+      ],
+      "dpr": 1,
+      "raster": [
+        2560,
+        1440
+      ],
+      "pixels": 3686400,
+      "acceptedByInspectedNativeContract": true,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    },
+    {
+      "css": [
+        2560,
+        1440
+      ],
+      "dpr": 2,
+      "raster": [
+        5120,
+        2880
+      ],
+      "pixels": 14745600,
+      "acceptedByInspectedNativeContract": false,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    },
+    {
+      "css": [
+        3840,
+        2160
+      ],
+      "dpr": 1,
+      "raster": [
+        3840,
+        2160
+      ],
+      "pixels": 8294400,
+      "acceptedByInspectedNativeContract": true,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    },
+    {
+      "css": [
+        3840,
+        2160
+      ],
+      "dpr": 1.25,
+      "raster": [
+        4800,
+        2700
+      ],
+      "pixels": 12960000,
+      "acceptedByInspectedNativeContract": false,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    },
+    {
+      "css": [
+        5120,
+        1440
+      ],
+      "dpr": 1,
+      "raster": [
+        5120,
+        1440
+      ],
+      "pixels": 7372800,
+      "acceptedByInspectedNativeContract": false,
+      "proof": "Arithmetic only; no DPR/device/native run"
+    }
+  ],
+  "existingPixelSamples": [
+    {
+      "path": "desktop/gpui/target/verification/source-dossier-1280.png",
+      "physicalPngSize": [
+        1280,
+        860
+      ],
+      "samples": {
+        "400,30": [
+          240,
+          230,
+          207
+        ],
+        "700,805": [
+          243,
+          234,
+          213
+        ],
+        "1120,810": [
+          240,
+          230,
+          209
+        ]
+      }
+    },
+    {
+      "path": "desktop/gpui/target/verification/dossier-paper-reviewed-haitx1l7/title-focused.png",
+      "physicalPngSize": [
+        1280,
+        860
+      ],
+      "samples": {
+        "400,30": [
+          238,
+          228,
+          205
+        ],
+        "700,805": [
+          250,
+          243,
+          223
+        ],
+        "1120,810": [
+          235,
+          225,
+          201
+        ]
+      }
+    }
+  ],
+  "sampleMeaning": {
+    "400,30": "Empty inset header; original paper-soft vs native paper under70%paper-2",
+    "1120,810": "Empty right footer; original50%paper-2 vs native opaque paper-2",
+    "700,805": "Inside disabled Back; includes control background/opacity, not blank footer",
+    "limits": "Different historical renderer checkpoints, no global pixel parity metric"
+  }
+}

@@ -1,0 +1,408 @@
+{
+  "objective": "Full Twyne GPUI port with original behavior, styling and assets; offline writing first",
+  "createdAt": "2026-10-04T22:54:15Z",
+  "externalRoot": "/tmp/twyne-gpui-parallel-20261004",
+  "nodes": [
+    {
+      "id": "ai_runtime",
+      "role": "worker",
+      "cli": "opencode",
+      "model": "sakana/fugu-max",
+      "ownership": [
+        "desktop/gpui/src/native_ai/**",
+        "desktop/gpui/fixtures/native-ai/**"
+      ],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/ai_runtime/progress.json",
+      "dependencies": [],
+      "acceptance": "Concrete Source-backed implementation/verifier, meaningful owned fixtures, handoff and unapplied shared integration patch; live device/provider/release proof separate",
+      "priorAttempt": "Gemini terminated exit135 before verifiedhandoff",
+      "status": "incomplete",
+      "integrationNotes": "length termination with no repairs; narrowed to ai_stream"
+    },
+    {
+      "id": "audio",
+      "role": "worker",
+      "cli": "agy",
+      "model": "gemini-3.8-flash-high",
+      "ownership": [
+        "desktop/gpui/src/native_audio/**",
+        "desktop/gpui/fixtures/native-audio/**"
+      ],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/audio/progress.json",
+      "dependencies": [],
+      "acceptance": "Concrete Source-backed implementation/verifier, meaningful owned fixtures, handoff and unapplied shared integration patch; live device/provider/release proof separate",
+      "status": "integrated_foundation",
+      "integrationNotes": "Optional actual Cargo18 PASS, Source6/109; Parent repaired boxed error and strict library Clippy passed; real devices/providers/UI pending."
+    },
+    {
+      "id": "collaboration",
+      "role": "worker",
+      "cli": "agy",
+      "model": "gemini-3.8-flash-high",
+      "ownership": [
+        "desktop/gpui/src/native_collaboration/**",
+        "desktop/gpui/fixtures/native-collaboration/**"
+      ],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/collaboration/progress.json",
+      "dependencies": [],
+      "acceptance": "Concrete Source-backed implementation/verifier, meaningful owned fixtures, handoff and unapplied shared integration patch; live device/provider/release proof separate",
+      "status": "integrated_foundation",
+      "integrationNotes": "reviewed offline foundation exported; Source8/42 and native9 pass; strictClippy pass; connected product/UI pending"
+    },
+    {
+      "id": "dossier_conversation",
+      "role": "worker",
+      "cli": "crush",
+      "model": "sakana/fugu-max",
+      "ownership": [
+        "desktop/gpui/src/dossier_conversation/**",
+        "desktop/gpui/fixtures/dossier-conversation/**"
+      ],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/dossier_conversation/progress.json",
+      "dependencies": [],
+      "acceptance": "Concrete Source-backed implementation/verifier, meaningful owned fixtures, handoff and unapplied shared integration patch; live device/provider/release proof separate",
+      "priorAttempt": "Gemini terminated exit135 before verifiedhandoff",
+      "status": "integrated_foundation",
+      "integrationNotes": "Native Source review finished; desktop module registered, 58 Dossier-family tests including 10 new lifecycle checks pass; conversation remains unmounted and providers unavailable."
+    },
+    {
+      "id": "packaging",
+      "role": "worker",
+      "cli": "crush",
+      "model": "sakana/fugu-max",
+      "ownership": [
+        "desktop/gpui/packaging/**",
+        "desktop/gpui/fixtures/distribution/**"
+      ],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/packaging/progress.json",
+      "dependencies": [],
+      "acceptance": "Concrete Source-backed implementation/verifier, meaningful owned fixtures, handoff and unapplied shared integration patch; live device/provider/release proof separate",
+      "credentialSource": "Skate secret loaded into worker environment only",
+      "status": "reviewed",
+      "integrationNotes": "Safe staging repaired;65fixture checks and actual47-file/3-executable integrity stage; current-source release/runtime pending"
+    },
+    {
+      "id": "platform_audit",
+      "role": "worker",
+      "cli": "opencode",
+      "model": "sakana/fugu-max",
+      "ownership": ["desktop/gpui/fixtures/platform-acceptance/**"],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/platform_audit/progress.json",
+      "dependencies": [],
+      "acceptance": "Concrete Source-backed implementation/verifier, meaningful owned fixtures, handoff and unapplied shared integration patch; live device/provider/release proof separate",
+      "credentialSource": "Skate secret loaded into worker environment only",
+      "status": "stopped",
+      "integrationNotes": "80+ steps, no requested files; narrowed to platform_contract"
+    },
+    {
+      "id": "account_sync",
+      "role": "worker",
+      "agent": "/root/native_assets",
+      "ownership": [
+        "desktop/gpui/src/native_accounts/**",
+        "desktop/gpui/fixtures/account-sync/**"
+      ],
+      "dependencies": [],
+      "acceptance": "Exact callback/token/CAS/account-switch contracts and durable scoped outbox/conflict implementation with Source-backed checks",
+      "status": "integrated_foundation",
+      "integrationNotes": "offline foundation exported; Source captured contracts and native26 pass; strictClippy pass; auth/account Store/UI integration pending"
+    },
+    {
+      "id": "pagination",
+      "role": "worker",
+      "agent": "/root/rich_document",
+      "ownership": [
+        "desktop/gpui/src/editor/pagination.rs",
+        "desktop/gpui/src/editor/view_pagination.rs",
+        "desktop/gpui/fixtures/pagination/**"
+      ],
+      "dependencies": [],
+      "acceptance": "Corrected float carry and bounded cyclic fallback plus reviewed unapplied shared seams",
+      "status": "integrated_foundation",
+      "integrationNotes": "pure4/mounted8/host3/strictClippy pass; continuous native16 and actual paginated X11/input8 pass; current route registration and full visual parity pending"
+    },
+    {
+      "id": "math_mermaid_css",
+      "role": "verifier",
+      "agent": "/root/workspace_exchange",
+      "ownership": ["desktop/gpui/fixtures/math-write/**"],
+      "dependencies": [],
+      "acceptance": "Actual default/legacy Mermaid CSS comparison without Source changes",
+      "status": "frozen",
+      "integrationNotes": "actual four-case Mermaid identity scoped recommendation; Source proposal unapplied; native math10 pass"
+    },
+    {
+      "id": "ai_stream",
+      "role": "worker",
+      "cli": "opencode",
+      "model": "sakana/fugu-max",
+      "reasoning": "high",
+      "ownership": [
+        "desktop/gpui/src/native_ai/stream_accumulator.rs",
+        "desktop/gpui/fixtures/native-ai/stream-contract/**"
+      ],
+      "supersedes": "ai_runtime",
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/ai_stream/progress.json",
+      "dependencies": [],
+      "status": "incomplete",
+      "acceptance": "Bounded identified repairs with executed Source fixtures; Root review and integration required",
+      "integrationNotes": "OpenCode length termination, no edits; Root repaired Rust and narrowed fixture-only work to stream_vectors"
+    },
+    {
+      "id": "platform_contract",
+      "role": "worker",
+      "cli": "opencode",
+      "model": "sakana/fugu-max",
+      "reasoning": "high",
+      "ownership": ["desktop/gpui/fixtures/platform-acceptance/**"],
+      "supersedes": "platform_audit",
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/platform_contract/progress.json",
+      "dependencies": [],
+      "status": "reviewed",
+      "acceptance": "Bounded identified repairs with executed Source fixtures; Root review and integration required",
+      "integrationNotes": "Native reviewed synthetic consistency23/80; actual platform/runtime gates remain separate"
+    },
+    {
+      "id": "dossier_repairs",
+      "role": "worker",
+      "cli": "crush",
+      "model": "sakana/fugu-max",
+      "reasoning": "provider default",
+      "ownership": [
+        "desktop/gpui/src/dossier_conversation/**",
+        "desktop/gpui/fixtures/dossier-conversation/**"
+      ],
+      "supersedes": "dossier_conversation",
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/dossier_repairs/progress.json",
+      "dependencies": [],
+      "status": "integrated_foundation",
+      "acceptance": "Bounded identified repairs with executed Source fixtures; Root review and integration required",
+      "integrationNotes": "Sakana draft reviewed/repaired by native agent, Parent compiled desktop view and executed family 58 PASS; generation transport and complete conversation UI pending."
+    },
+    {
+      "id": "stream_vectors",
+      "role": "worker",
+      "cli": "crush",
+      "model": "sakana/fugu-max",
+      "ownership": ["desktop/gpui/fixtures/native-ai/stream-contract/**"],
+      "supersedes": "ai_stream",
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/stream_vectors/progress.json",
+      "status": "integrated_foundation",
+      "integrationNotes": "Root repaired prefix deltas; Source10/240, native4 and included Cargo16 pass",
+      "dependencies": [],
+      "acceptance": "Actual unchanged Source outputs compared to native Rust"
+    },
+    {
+      "id": "ai_runtime_review",
+      "role": "reviewer",
+      "agent": "/root/rich_document",
+      "ownership": [
+        "desktop/gpui/src/native_ai/{provider_types,request,contract_extractors,loopback_transport,coordinator,litert_lifecycle,mod}.rs",
+        "desktop/gpui/fixtures/native-ai/runtime-review/**"
+      ],
+      "status": "integrated_foundation",
+      "dependencies": [],
+      "integrationNotes": "Reviewed offline export; corrected Parent Cargo16 pass; live dispatch unavailable and unmounted",
+      "acceptance": "Reviewed executed Source contracts and truthful unavailable live capability, with no shared runtime edits"
+    },
+    {
+      "id": "packaging_review",
+      "role": "reviewer",
+      "agent": "/root/native_assets",
+      "ownership": [
+        "desktop/gpui/packaging/**",
+        "desktop/gpui/fixtures/distribution/**",
+        "desktop/gpui/fixtures/platform-acceptance/**"
+      ],
+      "status": "frozen",
+      "dependencies": [],
+      "integrationNotes": "Packaging and platform repaired; Parent now owns integration",
+      "acceptance": "Reviewed executed Source contracts and truthful unavailable live capability, with no shared runtime edits"
+    },
+    {
+      "id": "audio_review",
+      "role": "reviewer",
+      "agent": "/root/workspace_exchange",
+      "ownership": [
+        "desktop/gpui/src/native_audio/**",
+        "desktop/gpui/fixtures/native-audio/**"
+      ],
+      "status": "frozen",
+      "dependencies": [],
+      "integrationNotes": "Source6/109 and Parent Cargo18 pass; optional unmounted foundation",
+      "acceptance": "Reviewed executed Source contracts and truthful unavailable live capability, with no shared runtime edits"
+    },
+    {
+      "id": "integration",
+      "role": "coordinator",
+      "agent": "/root",
+      "ownership": [
+        "shared existing native files and manifests",
+        "all Cargo/Devenv schedule"
+      ],
+      "dependencies": [
+        "ai_runtime",
+        "audio",
+        "collaboration",
+        "dossier_conversation",
+        "packaging",
+        "platform_audit",
+        "account_sync",
+        "pagination",
+        "math_mermaid_css",
+        "ai_stream",
+        "platform_contract",
+        "dossier_repairs",
+        "stream_vectors",
+        "ai_runtime_review",
+        "packaging_review",
+        "audio_review",
+        "distribution_ci",
+        "launch_arguments",
+        "launch_capture_size",
+        "math_current_css",
+        "math_editor_adoption_review",
+        "math_source_transaction",
+        "dossier_manual_host"
+      ],
+      "acceptance": "Scoped review, no lost dirty work, appropriate tests/current builds, private native and Source comparisons; actual auth/provider/audio/release proof remains required"
+    },
+    {
+      "id": "dossier_host_review",
+      "role": "reviewer",
+      "agent": "/root/rich_document",
+      "ownership": [
+        "desktop/gpui/src/dossier_conversation/**",
+        "desktop/gpui/fixtures/dossier-conversation/**",
+        "desktop/gpui/fixtures/dossier-host-review/**"
+      ],
+      "dependencies": ["dossier_repairs"],
+      "status": "integrated_foundation",
+      "acceptance": "Executed Source lifecycle and filing contracts, reviewed session repairs, unapplied host proposal; Parent owns shared app",
+      "integrationNotes": "Source8/56, full owned Bun14/94; Parent native family58 and manual mounted host8 PASS. Full conversation host/providers remain pending."
+    },
+    {
+      "id": "math_nodeview",
+      "role": "verifier",
+      "agent": "/root/workspace_exchange",
+      "ownership": ["desktop/gpui/fixtures/math-write/nodeview/**"],
+      "dependencies": ["math_mermaid_css"],
+      "status": "reviewed",
+      "acceptance": "Actual original Tiptap NodeViews, published versus scoped candidate CSS, real editing and canonical serialization, no Source mutations",
+      "integrationNotes": "Frozen actual NodeView/font/CSS/action receipt; Root Bun9/1035 PASS and visual inspection, Source unchanged."
+    },
+    {
+      "id": "port_docs",
+      "role": "worker",
+      "agent": "/root/native_assets",
+      "ownership": ["desktop/gpui/README.md", "desktop/gpui/PORT_PLAN.md"],
+      "dependencies": [],
+      "status": "frozen",
+      "acceptance": "Current proof boundaries and usable RTK commands; no fabricated aggregate/parity/CI claims",
+      "integrationNotes": "README and PORT_PLAN proof boundaries refreshed; Parent updating new gate receipts."
+    },
+    {
+      "id": "distribution_ci",
+      "role": "worker",
+      "cli": "crush",
+      "model": "sakana/fugu-max",
+      "ownership": ["desktop/gpui/fixtures/distribution-ci/**"],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/distribution_ci/progress.json",
+      "status": "integrated_foundation",
+      "dependencies": ["packaging_review"],
+      "acceptance": "Review exact pinned bootstrap and rehearsal before parent workflow adoption; real CI/OS runtime separate",
+      "integrationNotes": "Reviewed RTK bootstrap and exact staged-tree workflow applied; Root post-apply40/162 PASS, no hosted CI or real archive execution."
+    },
+    {
+      "id": "launch_arguments",
+      "role": "worker",
+      "cli": "crush",
+      "model": "sakana/fugu-max",
+      "ownership": [
+        "desktop/gpui/src/launch_arguments.rs",
+        "desktop/gpui/fixtures/launch-arguments/**"
+      ],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/launch_arguments/progress.json",
+      "status": "incomplete",
+      "dependencies": [],
+      "acceptance": "Concrete parser/fixtures reviewed before adoption",
+      "integrationNotes": "Terminal exit0 but no requested files; narrowed to launch_capture_size."
+    },
+    {
+      "id": "launch_capture_size",
+      "role": "worker",
+      "cli": "crush",
+      "model": "sakana/fugu-max",
+      "ownership": [
+        "desktop/gpui/src/launch_arguments.rs",
+        "desktop/gpui/fixtures/launch-arguments/**"
+      ],
+      "receipt": "/tmp/twyne-gpui-parallel-20261004/launch_capture_size/progress.json",
+      "status": "integrated_foundation",
+      "dependencies": [],
+      "supersedes": "launch_arguments",
+      "acceptance": "Tiny dependency-free parser matching original lossy/error precedence and actual direct Rust tests; Parent owns adoption.",
+      "integrationNotes": "Sakana tiny draft reviewed; preserved ParseIntError chain; Parent20 direct Rust and9 actual UI-binary CLI PASS; broader parser unchanged."
+    },
+    {
+      "id": "math_current_css",
+      "role": "worker",
+      "agent": "/root/workspace_exchange",
+      "ownership": [
+        "desktop/gpui/tools/math-write.ts",
+        "desktop/gpui/src/math_write.rs",
+        "desktop/gpui/fixtures/math-write/current-css/**"
+      ],
+      "status": "running",
+      "dependencies": ["math_nodeview"],
+      "acceptance": "Actual original-font glyph/baseline geometry for additive current-CSS diagnostic; unsupported flow refused; old profiles stable."
+    },
+    {
+      "id": "math_editor_adoption_review",
+      "role": "reviewer",
+      "agent": "/root/rich_document",
+      "ownership": [
+        "desktop/gpui/fixtures/math-write/editor-adoption-review/**"
+      ],
+      "status": "frozen",
+      "dependencies": ["math_nodeview"],
+      "acceptance": "Read-only concrete renderer/geometry/interaction contract with explicit future gates."
+    },
+    {
+      "id": "math_source_transaction",
+      "role": "worker",
+      "agent": "/root/rich_document",
+      "ownership": [
+        "desktop/gpui/src/editor/command.rs",
+        "desktop/gpui/src/editor/transaction.rs",
+        "desktop/gpui/fixtures/math-write/edit-source/**"
+      ],
+      "status": "running",
+      "dependencies": ["math_editor_adoption_review"],
+      "acceptance": "Exact raw guarded atom update, retained attrs/marks, undo neutrality for rejection; Parent Cargo and exhaustive integration."
+    },
+    {
+      "id": "dossier_manual_host",
+      "role": "coordinator",
+      "agent": "/root",
+      "ownership": [
+        "desktop/gpui/src/app.rs",
+        "desktop/gpui/src/dossier.rs",
+        "desktop/gpui/src/dossier_view.rs",
+        "desktop/gpui/src/app/dossier_filing_tests.rs"
+      ],
+      "status": "integrated_foundation",
+      "dependencies": ["dossier_host_review"],
+      "acceptance": "Qualified current host/folio/token/revision before actual save/ACK; retired disk writes and imports cannot mutate reopened draft.",
+      "integrationNotes": "Native family58 and mounted host8 PASS after Root retirement/import fixes; fresh actual OS input/binary proof pending."
+    }
+  ],
+  "rules": [
+    "Exclusive NEW-file worker write sets",
+    "No Source/manifests/runtime/exports changes from workers; unapplied patches only",
+    "Single parent Cargo/Devenv owner",
+    "No provider/account/publish/deploy/user-display/audio operations",
+    "Do not equate foundation/unit/fixture checks with full integration or parity"
+  ],
+  "updatedAt": "2026-10-05T02:24:52.944560+00:00"
+}

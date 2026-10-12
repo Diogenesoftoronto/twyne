@@ -1,0 +1,205 @@
+// Proposed addition to math_write.rs. Not a standalone crate or compiled test.
+// This fixture is the source of integration.patch's appended diagnostic API.
+
+/// Geometry for the current-CSS diagnostic's natural inline font span.
+/// It does not describe the Source NodeView wrapper or paragraph flow.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MathWriteDiagnosticSpan {
+    pub advance_px: f32,
+    pub ascent_px: f32,
+    pub descent_px: f32,
+    pub paint_width_px: f32,
+    pub paint_height_px: f32,
+    pub paint_offset_x_px: f32,
+    pub paint_offset_y_px: f32,
+    pub paint_baseline_px: f32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MathWriteDiagnosticRect {
+    pub x_px: f32,
+    pub y_px: f32,
+    pub width_px: f32,
+    pub height_px: f32,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct MathWriteDiagnosticPlacement {
+    pub logical: MathWriteDiagnosticRect,
+    pub paint: MathWriteDiagnosticRect,
+    pub baseline_y_px: f32,
+}
+
+impl MathWriteDiagnosticSpan {
+    /// `origin_x_px` is the natural span's left and `baseline_y_px` is its
+    /// font baseline. Neither is an outer NodeView origin or baseline.
+    /// Signed paint offsets never enlarge the one-scalar logical advance.
+    pub fn place_at_baseline(
+        &self,
+        origin_x_px: f32,
+        baseline_y_px: f32,
+    ) -> Result<MathWriteDiagnosticPlacement, MathWriteError> {
+        let dimensions = [
+            self.advance_px,
+            self.ascent_px,
+            self.descent_px,
+            self.paint_width_px,
+            self.paint_height_px,
+            self.paint_baseline_px,
+        ];
+        if dimensions
+            .iter()
+            .any(|value| !value.is_finite() || !(0.0..=MAX_DIMENSION_PX).contains(value))
+            || self.advance_px <= 0.0
+            || self.paint_width_px <= 0.0
+            || self.paint_height_px <= 0.0
+            || self.ascent_px + self.descent_px <= 0.0
+            || self.ascent_px + self.descent_px > MAX_DIMENSION_PX
+            || !self.paint_offset_x_px.is_finite()
+            || !self.paint_offset_y_px.is_finite()
+            || !(-MAX_DIMENSION_PX..=0.0).contains(&self.paint_offset_x_px)
+            || !(-MAX_DIMENSION_PX..=0.0).contains(&self.paint_offset_y_px)
+            || self.paint_baseline_px > self.paint_height_px
+            || (self.paint_baseline_px + self.paint_offset_y_px - self.ascent_px).abs() > 0.001
+            || self.paint_width_px + self.paint_offset_x_px + 0.001 < self.advance_px
+            || self.paint_height_px + self.paint_offset_y_px + 0.001
+                < self.ascent_px + self.descent_px
+            || !origin_x_px.is_finite()
+            || !baseline_y_px.is_finite()
+        {
+            return Err(MathWriteError::new(
+                MathWriteErrorKind::InvalidResponse,
+                "Invalid current-CSS diagnostic placement geometry.",
+            ));
+        }
+        let logical = MathWriteDiagnosticRect {
+            x_px: origin_x_px,
+            y_px: baseline_y_px - self.ascent_px,
+            width_px: self.advance_px,
+            height_px: self.ascent_px + self.descent_px,
+        };
+        let paint = MathWriteDiagnosticRect {
+            x_px: logical.x_px + self.paint_offset_x_px,
+            y_px: logical.y_px + self.paint_offset_y_px,
+            width_px: self.paint_width_px,
+            height_px: self.paint_height_px,
+        };
+        if [logical.y_px, paint.x_px, paint.y_px]
+            .iter()
+            .any(|value| !value.is_finite())
+        {
+            return Err(MathWriteError::new(
+                MathWriteErrorKind::InvalidResponse,
+                "Current-CSS diagnostic placement overflow.",
+            ));
+        }
+        Ok(MathWriteDiagnosticPlacement {
+            logical,
+            paint,
+            baseline_y_px,
+        })
+    }
+}
+
+impl MathWriteOutput {
+    /// Inspect an already-validated current-CSS inline fragment without
+    /// allocating an Image or promoting diagnostic fidelity to Source Write.
+    /// The host still owns immutable font/helper provenance and all wrapper,
+    /// paragraph, display, DPR, raster, clipping, and lifecycle admission.
+    pub fn current_css_diagnostic_span(
+        &self,
+    ) -> Result<Option<MathWriteDiagnosticSpan>, MathWriteError> {
+        self.validate(&MathWriteRequest {
+            owner: Uuid::nil(),
+            request_id: Uuid::nil(),
+            generation: 0,
+            source: self.source.clone(),
+            display: self.display,
+            profile: self.profile,
+            font_size_px: self.font_size_px,
+            color: self.color,
+            width_px: self.width_px,
+        })?;
+        if self.profile != MathWriteProfile::CurrentSourceCssDiagnostic {
+            return Ok(None);
+        }
+        let Some(vector) = &self.vector else {
+            return Ok(None);
+        };
+        // The existing validation admits this vector only with the exact
+        // diagnostic fidelity, inline scope, CSS hash and Linux layout model.
+        Ok(Some(MathWriteDiagnosticSpan {
+            advance_px: vector.width_px,
+            ascent_px: vector.ascent_px,
+            descent_px: vector.descent_px,
+            paint_width_px: vector.paint_width_px,
+            paint_height_px: vector.paint_height_px,
+            paint_offset_x_px: vector.paint_offset_x_px,
+            paint_offset_y_px: vector.paint_offset_y_px,
+            paint_baseline_px: vector.paint_baseline_px,
+        }))
+    }
+}
+
+#[cfg(test)]
+mod current_adoption_contract_tests {
+    use super::*;
+
+    fn current_outputs() -> Vec<MathWriteOutput> {
+        serde_json::from_str(include_str!("../fixtures/math-write/current-css/results.json"))
+            .unwrap()
+    }
+
+    #[test]
+    fn diagnostic_span_places_signed_paint_without_changing_logical_advance() {
+        let outputs = current_outputs();
+        let mut admitted = 0;
+        for output in outputs {
+            let Some(span) = output.current_css_diagnostic_span().unwrap() else {
+                continue;
+            };
+            admitted += 1;
+            let placed = span.place_at_baseline(103.25, 301.5).unwrap();
+            assert_eq!(placed.logical.width_px, output.vector.as_ref().unwrap().width_px);
+            assert_eq!(placed.logical.height_px, span.ascent_px + span.descent_px);
+            assert!(placed.paint.y_px <= placed.logical.y_px);
+            assert!((placed.paint.y_px + span.paint_baseline_px - placed.baseline_y_px).abs() < 0.001);
+        }
+        assert_eq!(admitted, 11);
+    }
+
+    #[test]
+    fn real_fraction_rejects_image_frame_as_font_box_and_invalid_placement() {
+        let outputs = current_outputs();
+        let span = outputs[1].current_css_diagnostic_span().unwrap().unwrap();
+        let placed = span.place_at_baseline(228.640625, 321.484375).unwrap();
+        assert_eq!(placed.logical.height_px, 26.0);
+        assert_eq!(placed.logical.y_px, 301.484375);
+        assert_ne!(span.paint_height_px, placed.logical.height_px);
+        assert_ne!(span.paint_baseline_px, span.ascent_px);
+        assert!(span.place_at_baseline(f32::NAN, 0.0).is_err());
+        let changed = MathWriteDiagnosticSpan {
+            paint_offset_y_px: 1.0,
+            ..span
+        };
+        assert!(changed.place_at_baseline(0.0, 20.0).is_err());
+    }
+
+    #[test]
+    fn engine_default_source_and_display_do_not_enter_current_css_span() {
+        for raw in [
+            include_str!("../fixtures/math-write/current-source-results.json"),
+            include_str!("../fixtures/math-write/diagnostic-results.json"),
+        ] {
+            let outputs: Vec<MathWriteOutput> = serde_json::from_str(raw).unwrap();
+            for output in outputs {
+                assert!(output.current_css_diagnostic_span().unwrap().is_none());
+            }
+        }
+        let outputs = current_outputs();
+        assert!(outputs[4].current_css_diagnostic_span().unwrap().is_none());
+        let mut drift = outputs[1].clone();
+        drift.source_css_sha256 = "0".repeat(64);
+        assert!(drift.current_css_diagnostic_span().is_err());
+    }
+}

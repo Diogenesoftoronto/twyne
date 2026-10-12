@@ -1,0 +1,550 @@
+{
+  "url": "http://localhost:5180/apparatus/",
+  "scope": "original/path/folio:café",
+  "dimensions": {
+    "width": 620,
+    "height": 860
+  },
+  "documentBytes": 1077,
+  "sourceFixture": "visual-native.json",
+  "fonts": [
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "DM Sans",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Fraunces",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Libre Baskerville",
+      "status": "loaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "italic"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "500",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Lora",
+      "status": "unloaded",
+      "weight": "600",
+      "style": "normal"
+    },
+    {
+      "family": "Special Elite",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "Special Elite",
+      "status": "loaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_AMS",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Caligraphic",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Caligraphic",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Fraktur",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Fraktur",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Main",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Main",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_Main",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_Main",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Math",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_Math",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "status": "unloaded",
+      "weight": "700",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "italic"
+    },
+    {
+      "family": "KaTeX_SansSerif",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Script",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Size1",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Size2",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Size3",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Size4",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    },
+    {
+      "family": "KaTeX_Typewriter",
+      "status": "unloaded",
+      "weight": "400",
+      "style": "normal"
+    }
+  ],
+  "selected": {
+    "h1": {
+      "fonts": [
+        {
+          "familyName": "Libre Baskerville",
+          "postScriptName": "LibreBaskerville-Regular",
+          "isCustomFont": true,
+          "glyphCount": 13
+        }
+      ]
+    },
+    ".row p": {
+      "fonts": [
+        {
+          "familyName": "Libre Baskerville",
+          "postScriptName": "LibreBaskerville-Regular",
+          "isCustomFont": true,
+          "glyphCount": 26
+        }
+      ]
+    },
+    ".row p:nth-child(2)": {
+      "fonts": [
+        {
+          "familyName": "Noto Sans Mono",
+          "postScriptName": "NotoSansMono-Regular",
+          "isCustomFont": false,
+          "glyphCount": 25
+        }
+      ]
+    },
+    ".style-toggle button": {
+      "fonts": [
+        {
+          "familyName": "Special Elite",
+          "postScriptName": "SpecialElite-Regular",
+          "isCustomFont": true,
+          "glyphCount": 3
+        }
+      ]
+    }
+  },
+  "layout": {
+    "h1": "Element: h1.⚡️e66tcs-3\nBox: x=24 y=51 w=466 h=42\nChildren: 0  Text length: 13\nScroll Y: size=42 client=42 overflowing=false top=0\nScroll X: size=466 client=466 overflowing=false left=0\nStyles: font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=28px font-weight=700 font-style=normal line-height=42px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=465.75px grid-template-columns=none",
+    "h2": "Element: h2.⚡️e66tcs-3\nBox: x=24 y=260 w=572 h=24\nChildren: 0  Text length: 19\nScroll Y: size=24 client=24 overflowing=false top=0\nScroll X: size=572 client=572 overflowing=false left=0\nStyles: font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=16px font-weight=600 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px 0px 8px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=572px grid-template-columns=none",
+    ".btn-paper": "Element: a.btn-paper\nBox: x=490 y=59 w=106 h=51\nChildren: 0  Text length: 14\nScroll Y: size=49 client=49 overflowing=false top=0\nScroll X: size=104 client=104 overflowing=false left=0\nStyles: font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=12px font-weight=600 font-style=normal line-height=17.1429px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=7.2px 14.4px margin=0px gap=normal border-radius=2px border-top-width=1px border-left-width=1px border-bottom-width=1px background-color=rgb(250, 243, 223) color=rgb(31, 27, 22) opacity=1 width=106.25px grid-template-columns=none",
+    ".grid": "Element: div.⚡️e66tcs-3\nBox: x=24 y=260 w=572 h=488\nChildren: 2  Text length: 462\nScroll Y: size=488 client=488 overflowing=false top=0\nScroll X: size=572 client=572 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=24px border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=572px grid-template-columns=572px",
+    ".grid > section": "Element: section.⚡️e66tcs-3\nBox: x=24 y=260 w=572 h=186\nChildren: 2  Text length: 224\nScroll Y: size=186 client=186 overflowing=false top=0\nScroll X: size=572 client=572 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=572px grid-template-columns=none",
+    ".grid > section:nth-child(2)": "Element: section.⚡️e66tcs-3\nBox: x=24 y=470 w=572 h=278\nChildren: 4  Text length: 238\nScroll Y: size=278 client=278 overflowing=false top=0\nScroll X: size=572 client=572 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=572px grid-template-columns=none",
+    ".style-toggle": "Element: div.⚡️e66tcs-3\nBox: x=372 y=470 w=158 h=25\nChildren: 3  Text length: 13\nScroll Y: size=23 client=23 overflowing=false top=0\nScroll X: size=156 client=156 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=hidden text-overflow=clip padding=0px margin=0px gap=normal border-radius=2px border-top-width=1px border-left-width=1px border-bottom-width=1px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=158.188px grid-template-columns=none",
+    ".style-toggle button": "Element: button.⚡️e66tcs-3\nBox: x=373 y=471 w=43 h=23\nChildren: 0  Text length: 3\nScroll Y: size=23 client=23 overflowing=false top=0\nScroll X: size=43 client=43 overflowing=false left=0\nStyles: font-family=\"Special Elite\", \"Courier New\", monospace font-size=11.2px font-weight=400 font-style=normal line-height=16.8px letter-spacing=1.12px white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=3.2px 9.6px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgb(250, 243, 223) color=rgb(74, 63, 51) opacity=1 width=43.25px grid-template-columns=none\nAria: aria-pressed=false",
+    ".card": "Element: section.⚡️e66tcs-3\nBox: x=24 y=161 w=572 h=75\nChildren: 1  Text length: 124\nScroll Y: size=73 client=73 overflowing=false top=0\nScroll X: size=570 client=570 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=16px margin=0px 0px 24px gap=normal border-radius=4px border-top-width=1px border-left-width=1px border-bottom-width=1px background-color=rgb(244, 236, 216) color=rgb(31, 27, 22) opacity=1 width=572px grid-template-columns=none",
+    ".row": "Element: div.⚡️e66tcs-3\nBox: x=25 y=293 w=570 h=152\nChildren: 2  Text length: 205\nScroll Y: size=152 client=152 overflowing=false top=0\nScroll X: size=570 client=570 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=13.6px 16px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgb(250, 243, 223) color=rgb(31, 27, 22) opacity=1 width=570px grid-template-columns=none",
+    ".row p": "Element: p.⚡️e66tcs-3\nBox: x=41 y=307 w=211 h=20\nChildren: 0  Text length: 26\nScroll Y: size=20 client=20 overflowing=false top=0\nScroll X: size=211 client=211 overflowing=false left=0\nStyles: font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=14px font-weight=600 font-style=normal line-height=20px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(31, 27, 22) opacity=1 width=211.266px grid-template-columns=none",
+    ".row p:nth-child(2)": "Element: p.⚡️e66tcs-3\nBox: x=41 y=331 w=538 h=16\nChildren: 0  Text length: 25\nScroll Y: size=16 client=16 overflowing=false top=0\nScroll X: size=538 client=538 overflowing=false left=0\nStyles: font-family=\"JetBrains Mono\", \"Fira Code\", monospace font-size=10.4px font-weight=400 font-style=normal line-height=15.6px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=break-all overflow=visible text-overflow=clip padding=0px margin=2px 0px 0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(138, 126, 108) opacity=1 width=538px grid-template-columns=none",
+    ".row p:nth-child(3)": "Element: p.⚡️e66tcs-3\nBox: x=41 y=352 w=538 h=20\nChildren: 0  Text length: 75\nScroll Y: size=20 client=20 overflowing=false top=0\nScroll X: size=538 client=538 overflowing=false left=0\nStyles: font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=12px font-weight=400 font-style=normal line-height=20px letter-spacing=normal white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=0px margin=6px 0px 0px gap=normal border-radius=0px border-top-width=0px border-left-width=0px border-bottom-width=0px background-color=rgba(0, 0, 0, 0) color=rgb(74, 63, 51) opacity=1 width=538px grid-template-columns=none",
+    ".agent-pill": "Element: span.⚡️e66tcs-3\nBox: x=260 y=307 w=50 h=20\nChildren: 0  Text length: 5\nScroll Y: size=18 client=18 overflowing=false top=0\nScroll X: size=48 client=48 overflowing=false left=0\nStyles: font-family=\"Special Elite\", \"Courier New\", monospace font-size=9.6px font-weight=400 font-style=normal line-height=14.4px letter-spacing=0.96px white-space=normal overflow-wrap=normal word-break=normal overflow=visible text-overflow=clip padding=1.6px 7.2px margin=0px gap=normal border-radius=2px border-top-width=1px border-left-width=1px border-bottom-width=1px background-color=rgba(0, 0, 0, 0) color=rgb(212, 160, 23) opacity=1 width=50.2188px grid-template-columns=none"
+  }
+}

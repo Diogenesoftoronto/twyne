@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "sourceSha256": {
+    "desktop/gpui/src/dossier_image_lifecycle.rs": "0e98b8d1bc1f3b977cfd9dcb8e83c2fb94fe30df1668ecb52f5c66621e44d775",
+    "desktop/gpui/src/app.rs": "9d5a26d84408c1a2a113934963ae6b524da3ba82f7632b772ca43d301ade134b",
+    "desktop/gpui/src/capture_geometry.rs": "fbb77c371762dc50bc357440441666f8daa9cb91ec061cf1a5a4b99580916300"
+  }
+}

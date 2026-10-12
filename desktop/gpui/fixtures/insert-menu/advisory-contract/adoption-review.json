@@ -1,0 +1,7 @@
+{
+  "reviewer": "root",
+  "scope": "Source detection, registry grouping, keyboard and styles checked directly against Source files; actual Bun catalog output is the production fixture.",
+  "catalogCount": 17,
+  "nativeAddition": "insert.link",
+  "workerProductCodeAdopted": false
+}

@@ -1,0 +1,51 @@
+{
+  "status": "read-only source input snapshot; Root resume/capability changes may supersede only affected hashes",
+  "initialInputFiles": {
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "src/components/onboarding/dossier-folio.tsx": "77c1fb9bce10345add264b57c4389c9b7a90d629ddd652b0ef8ef0a0cbb8a281",
+    "src/components/onboarding/anti-tabula-rasa.tsx": "bd8162f3e0ca95ebdb8e4b817f3b1cc92099e7a1c0f489d9215d7ae9d4a4706c",
+    "desktop/gpui/src/dossier_multiply.rs": "fee08f1898d6068f91de577d6284fdd2760e827bcab8d1f7f9cc027a7780a439",
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/dossier_view.rs": "b9a27db900b6624055a3cd1b293bab93bfd1c2c26f37847ffebf366d281ba274",
+    "desktop/gpui/src/dossier_image_lifecycle.rs": "0e98b8d1bc1f3b977cfd9dcb8e83c2fb94fe30df1668ecb52f5c66621e44d775",
+    "desktop/gpui/src/theme.rs": "2d04ffd22eb01a4f7f6c45e3dd64424e9a5a4e6c91860f01079923de2722320e",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc",
+    "desktop/gpui/vendor/gpui-pre/src/platform.rs": "9de7e0b0f29c51b149263b9bc9b4061bfbe41849e296b75df9cf259d9bbbdc4c",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs": "b85936eb838df536b8c6a90b44714fc75560f92f1acbe4eea7574c3d304d86b4"
+  },
+  "cssBlocks": {
+    ".paper-sheet": "87212b07026e139b98eee9d13f9b3e363b6ace39383e63775c3af2bbfc4417a1",
+    ".paper-foxed::after": "43538cf7cf54783547f0b07e1520bc64e04975d93ceb09864024998795f54d8c",
+    ".dossier-filed-confirmation": "d78dd988563c15c2537cbb6c69487816f936aa330f8a020562be4154c1ee32ef",
+    ".folio-shift": "95eb5b94c80a2899fb8e26b43e6ac46d4df9f2c7534f84c5768de62601db5ee8",
+    ".dossier-folio-frame[data-filing-state=\"filing\"]": "f8954052856df9c9b7c2b7fb767c1f21ecc5744bab67d1a39fe082e8f966cb0f"
+  },
+  "executions": "No Cargo/Devenv/native/browser/network; filesystem reads and fixture construction only",
+  "productPatch": {
+    "target": "desktop/gpui/src/dossier_view.rs",
+    "stableResumeInputSha256": "b9a27db900b6624055a3cd1b293bab93bfd1c2c26f37847ffebf366d281ba274",
+    "proposedSha256": "1b66604d51e520ad46c6737ac631e8e7b502f230199933152cb37c29f3787c26",
+    "initialDossierHashHistorical": false,
+    "rootResumePreserved": true,
+    "bothRollbackPathsIncludeFoxing": true,
+    "noSharedFileWritten": true,
+    "gitApplyCheck": "not run; Parent owns"
+  },
+  "testsPatch": {
+    "base": "after integration.patch",
+    "proposedWithTestRegistrationSha256": "7c7e3731a6b1697b4c65f3455ed664f17e4e43a39893f797e866dee9f5a1fa9d",
+    "ownedTestFile": "product_mount_tests.rs",
+    "authoredTests": 5,
+    "executed": false
+  },
+  "staticChecks": {
+    "exactInputHunksReconstructedInMemory": true,
+    "sourceCssHashesStillCurrent": true,
+    "groupAbsentFromNormalImageApis": true,
+    "ordinaryFrameBeforeFinalOverlay": true,
+    "rollbackFoxingPointerAndReceiptPaths": true,
+    "optionalGroupIncludedInLeaseSet": true,
+    "rootResumeMethodPreserved": true,
+    "noActualApplyCompileTest": true
+  }
+}

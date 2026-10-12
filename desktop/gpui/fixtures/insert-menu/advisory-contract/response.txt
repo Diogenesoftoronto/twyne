@@ -1,0 +1,333 @@
+{
+  "sourceFiles": [
+    "src/utils/editor-commands.ts",
+    "src/components/editor/extensions/slash-command.ts",
+    "src/utils/slash-command-filter.ts",
+    "src/components/editor/slash-command-menu.tsx"
+  ],
+  "commands": [
+    {
+      "id": "paragraph.heading-1",
+      "label": "Heading 1",
+      "description": "Turn the current block into a top-level heading.",
+      "commandGroup": "structure",
+      "group": "Structure",
+      "order": 10,
+      "searchTerms": ["title", "h1"],
+      "keywords": ["h1", "title"],
+      "availability": "editable"
+    },
+    {
+      "id": "paragraph.heading-2",
+      "label": "Heading 2",
+      "description": "Turn the current block into a second-level heading.",
+      "commandGroup": "structure",
+      "group": "Structure",
+      "order": 20,
+      "searchTerms": ["subtitle", "h2"],
+      "keywords": ["h2", "subtitle"],
+      "availability": "editable"
+    },
+    {
+      "id": "paragraph.heading-3",
+      "label": "Heading 3",
+      "description": "Turn the current block into a third-level heading.",
+      "commandGroup": "structure",
+      "group": "Structure",
+      "order": 30,
+      "searchTerms": ["subheading", "h3"],
+      "keywords": ["h3", "subheading"],
+      "availability": "editable"
+    },
+    {
+      "id": "paragraph.bullet-list",
+      "label": "Bullet list",
+      "description": "Start or toggle a bulleted list.",
+      "commandGroup": "paragraph",
+      "group": "Write",
+      "order": 30,
+      "searchTerms": ["unordered list", "bullets"],
+      "keywords": ["unordered", "bullets"],
+      "availability": "editable"
+    },
+    {
+      "id": "paragraph.numbered-list",
+      "label": "Numbered list",
+      "description": "Start or toggle a numbered list.",
+      "commandGroup": "paragraph",
+      "group": "Write",
+      "order": 40,
+      "searchTerms": ["ordered list", "numbers"],
+      "keywords": ["ordered", "numbers"],
+      "availability": "editable"
+    },
+    {
+      "id": "paragraph.task-list",
+      "label": "Checklist",
+      "description": "Start or toggle a checklist.",
+      "commandGroup": "paragraph",
+      "group": "Write",
+      "order": 50,
+      "searchTerms": ["task list", "todo", "checkbox"],
+      "keywords": ["tasks", "todo"],
+      "availability": "editable"
+    },
+    {
+      "id": "paragraph.blockquote",
+      "label": "Pull quote",
+      "description": "Set the current block as a quotation.",
+      "commandGroup": "paragraph",
+      "group": "Write",
+      "order": 60,
+      "searchTerms": ["blockquote", "quote"],
+      "keywords": ["blockquote", "quote"],
+      "availability": "editable"
+    },
+    {
+      "id": "paragraph.code-block",
+      "label": "Code block",
+      "description": "Set the current block as preformatted code.",
+      "commandGroup": "paragraph",
+      "group": "Write",
+      "order": 70,
+      "searchTerms": ["preformatted", "source"],
+      "keywords": ["source", "pre"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.horizontal-rule",
+      "label": "Section break",
+      "description": "Insert an ornamental section divider.",
+      "commandGroup": "insert",
+      "group": "Structure",
+      "order": 50,
+      "searchTerms": ["horizontal rule", "divider", "hr"],
+      "keywords": ["rule", "divider"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.page-break",
+      "label": "Page break",
+      "description": "Begin the following content on a new page.",
+      "commandGroup": "insert",
+      "group": "Structure",
+      "order": 60,
+      "searchTerms": ["new page", "pagination"],
+      "keywords": ["new page"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.image",
+      "label": "Image",
+      "description": "Insert a plate from a file or URL.",
+      "commandGroup": "insert",
+      "group": "Insert",
+      "order": 10,
+      "searchTerms": ["picture", "photo", "plate", "media"],
+      "keywords": ["picture", "plate"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.table",
+      "label": "Table",
+      "description": "Insert a table into the manuscript.",
+      "commandGroup": "insert",
+      "group": "Insert",
+      "order": 20,
+      "searchTerms": ["grid", "tabular", "rows", "columns"],
+      "keywords": ["grid", "tabular"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.mermaid",
+      "label": "Mermaid diagram",
+      "description": "Insert a diagram from Mermaid source.",
+      "commandGroup": "insert",
+      "group": "Insert",
+      "order": 30,
+      "searchTerms": ["chart", "flowchart", "graph"],
+      "keywords": ["chart", "graph"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.math-inline",
+      "label": "Inline equation",
+      "description": "Insert a LaTeX equation within a paragraph.",
+      "commandGroup": "insert",
+      "group": "Insert",
+      "order": 40,
+      "searchTerms": ["math", "latex", "formula"],
+      "keywords": ["math", "latex", "formula"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.math-block",
+      "label": "Equation block",
+      "description": "Insert a display LaTeX equation.",
+      "commandGroup": "insert",
+      "group": "Insert",
+      "order": 50,
+      "searchTerms": ["math", "latex", "formula", "display"],
+      "keywords": ["math", "latex", "display"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.endnote",
+      "label": "Endnote",
+      "description": "Insert a note collected at the end of the manuscript.",
+      "commandGroup": "insert",
+      "group": "Insert",
+      "order": 60,
+      "searchTerms": ["note", "citation"],
+      "keywords": ["note", "reference"],
+      "availability": "editable"
+    },
+    {
+      "id": "insert.footnote",
+      "label": "Footnote",
+      "description": "Insert a note attached to the current page.",
+      "commandGroup": "insert",
+      "group": "Insert",
+      "order": 70,
+      "searchTerms": ["note", "citation"],
+      "keywords": ["note", "reference"],
+      "availability": "editable"
+    },
+    {
+      "id": "review.comment",
+      "label": "Add comment",
+      "description": "Attach a writer comment to the selected text.",
+      "commandGroup": "review",
+      "group": "Review",
+      "order": 10,
+      "searchTerms": ["annotation", "marginalia", "note"],
+      "keywords": ["annotation", "note"],
+      "availability": "selection"
+    },
+    {
+      "id": "table.delete-row",
+      "label": "Delete row",
+      "description": "Delete the table row containing the active cell.",
+      "commandGroup": "table",
+      "group": "Structure",
+      "order": 60,
+      "searchTerms": ["table", "row", "delete", "remove"],
+      "keywords": ["remove", "drop", "table"],
+      "availability": "table"
+    },
+    {
+      "id": "table.delete-column",
+      "label": "Delete column",
+      "description": "Delete the table column containing the active cell.",
+      "commandGroup": "table",
+      "group": "Structure",
+      "order": 61,
+      "searchTerms": ["table", "column", "delete", "remove"],
+      "keywords": ["remove", "drop", "table"],
+      "availability": "table"
+    },
+    {
+      "id": "table.delete-table",
+      "label": "Delete table",
+      "description": "Remove the whole table from the manuscript.",
+      "commandGroup": "table",
+      "group": "Structure",
+      "order": 62,
+      "searchTerms": ["table", "delete", "remove", "destroy"],
+      "keywords": ["remove", "drop", "get rid of"],
+      "availability": "table"
+    }
+  ],
+  "linkReport": {
+    "linkSlashVisible": false,
+    "linkPresentInSource": false,
+    "finding": "No command with id, label, or description referencing Link exists anywhere in EDITOR_COMMANDS. Link is absent from the Source catalogue entirely, not merely hidden from the slash surface, so no slash row, toolbar row, or shortcut entry can be derived for it."
+  },
+  "triggerRules": {
+    "regexLiteral": "/(?:^|\\s)\\/([^\\s/]*)$/",
+    "regexSource": "(?:^|\\s)\\/([^\\s/]*)$",
+    "evaluatedAgainst": "$from.parent.textBetween(0, $from.parentOffset, undefined, \"\\0\")",
+    "leafTextPlaceholder": "\\0",
+    "anchor": "Match must begin at the start of the textblock text or immediately after whitespace.",
+    "queryCapture": "Capture group 1 is the query; may be empty.",
+    "queryCharset": "Any character except whitespace and forward slash.",
+    "exclusions": [
+      "Selection is not empty -> state is CLOSED (slash never opens over a range).",
+      "$from.parent.isTextblock is false -> state is CLOSED.",
+      "No regex match before the cursor -> state is CLOSED.",
+      "Query contains whitespace or '/' -> no match, state is CLOSED.",
+      "Transaction carries meta { close: true } on slashCommandPluginKey -> state forced to CLOSED.",
+      "Transaction is neither docChanged nor selectionSet -> previous state is retained unchanged."
+    ],
+    "stateShape": {
+      "open": "boolean",
+      "query": "string",
+      "from": "$from.start() + slashOffset (index of the slash character)",
+      "to": "selection.from"
+    },
+    "removalSemantics": "removeSlashCommandQuery deletes exactly [from, to] (the '/query' span) and sets close meta; it does not touch the retained cursor position used by the chosen command."
+  },
+  "keyboardRules": [
+    {
+      "key": "Escape",
+      "scope": "extension:slash-command (addKeyboardShortcuts)",
+      "condition": "slashCommandPluginKey state is open",
+      "action": "closeSlashCommand()"
+    },
+    {
+      "key": "Escape",
+      "scope": "menu:window keydown, capture phase",
+      "condition": "menu open",
+      "action": "event.preventDefault(); onClose$()"
+    },
+    {
+      "key": "ArrowDown",
+      "scope": "menu:window keydown, capture phase",
+      "condition": "menu open and resolved candidates length > 0",
+      "action": "event.preventDefault(); moveSlashSelection(candidates, selected, 1) with wraparound modulo length"
+    },
+    {
+      "key": "ArrowUp",
+      "scope": "menu:window keydown, capture phase",
+      "condition": "menu open and resolved candidates length > 0",
+      "action": "event.preventDefault(); moveSlashSelection(candidates, selected, -1) with wraparound modulo length"
+    },
+    {
+      "key": "Enter",
+      "scope": "menu:window keydown, capture phase",
+      "condition": "menu open, candidates length > 0, and event.isComposing is false",
+      "action": "event.preventDefault(); resolve selection against freshly recomputed candidates; onSelect$(selected.command.id)"
+    }
+  ],
+  "visualMetrics": {
+    "menuWidth": "w-72 = 18rem = 288px",
+    "menuMaxHeight": "max-h-80 = 20rem = 320px",
+    "menuOverflow": "overflow-hidden on container; overflow-y-auto on the inner result list",
+    "zIndex": "var(--z-dropdown)",
+    "borderRadius": "2px",
+    "positioning": "fixed at supplied left/top viewport coordinates",
+    "role": "listbox",
+    "ariaLabel": "Insert command",
+    "headerText": "Insert {query ? '“'+query+'”' : 'a block'}",
+    "emptyStateText": "No commands match.",
+    "rowOptionId": "slash-command-{id with every char not in [a-zA-Z0-9_-] replaced by '-'}",
+    "groupHeaderRule": "Rendered when index === 0 or previous candidate's slash group differs from the current one."
+  },
+  "trickyCases": [
+    {
+      "case": "review.comment is declared slash-visible but is unreachable in the slash menu.",
+      "detail": "Its surfaces include 'slash' and its slash group is 'Review' (order 10), yet its availability is 'selection', which requires context.hasSelection === true. The slash plugin only opens when selection.empty is true (stateAtCursor returns CLOSED for a non-empty selection), so hasSelection is always false while the menu is up. Under the default filter (includeUnavailable falsy) the command is always filtered out, and the 'Review' group header never renders.",
+      "evidence": "editor-commands.ts availability 'selection'; slash-command.ts stateAtCursor 'if (!selection.empty) return CLOSED;'"
+    },
+    {
+      "case": "Duplicate sort keys within the Structure group.",
+      "detail": "insert.page-break and table.delete-row both declare slash group 'Structure' with order 60. getSlashCommands sorts by group then order only, so the tie is broken by Array.prototype.sort stability, i.e. registry insertion order, placing Page break before Delete row. Any reordering of EDITOR_COMMANDS silently changes menu order for this pair.",
+      "evidence": "editor-commands.ts insert.page-break slash.order 60; table.delete-row slash.order 60"
+    },
+    {
+      "case": "Slash group is not the editor command group, and menu groups render in alphabetical, not declared, order.",
+      "detail": "table.delete-row/column/table carry commandGroup 'table' but slash group 'Structure'; getSlashCommands orders groups via localeCompare, yielding Insert, Review, Structure, Write. Consequently Write commands sort after Structure despite being declared with lower orders, and the delete commands appear under Structure alongside headings and page breaks rather than under Insert.",
+      "evidence": "editor-commands.ts table.delete-* slash.group 'Structure'; getSlashCommands sort on slash.group localeCompare"
+    }
+  ]
+}

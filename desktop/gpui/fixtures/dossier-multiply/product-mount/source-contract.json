@@ -1,0 +1,89 @@
+{
+  "source": "src/global.css .paper-foxed::after; actual DossierFolio main uses both paper classes",
+  "layer": {
+    "position": "absolute",
+    "insetCssPx": 0,
+    "pointerEvents": "none",
+    "groupOpacity": 0.7,
+    "mixBlendMode": "multiply",
+    "zIndex": "auto",
+    "backgroundFirstListedIsTopmost": true,
+    "spots": [
+      {
+        "xPercent": 12,
+        "yPercent": 18,
+        "colorPercent": 18,
+        "solidRadiusCssPx": 1.2,
+        "transparentRadiusCssPx": 2.5
+      },
+      {
+        "xPercent": 88,
+        "yPercent": 32,
+        "colorPercent": 16,
+        "solidRadiusCssPx": 0.9,
+        "transparentRadiusCssPx": 2
+      },
+      {
+        "xPercent": 24,
+        "yPercent": 78,
+        "colorPercent": 14,
+        "solidRadiusCssPx": 1.4,
+        "transparentRadiusCssPx": 2.8
+      },
+      {
+        "xPercent": 76,
+        "yPercent": 88,
+        "colorPercent": 18,
+        "solidRadiusCssPx": 1,
+        "transparentRadiusCssPx": 2.2
+      },
+      {
+        "xPercent": 50,
+        "yPercent": 50,
+        "colorPercent": 12,
+        "solidRadiusCssPx": 0.8,
+        "transparentRadiusCssPx": 2
+      }
+    ]
+  },
+  "dom": {
+    "sourceFile": "src/components/onboarding/dossier-folio.tsx",
+    "rootTag": "main",
+    "classes": "flex h-[100dvh] min-h-0 flex-col overflow-hidden paper-sheet paper-foxed",
+    "children": [
+      "props.overlays",
+      "padded full-size frame wrapper"
+    ],
+    "ordinaryNativeMountOrder": [
+      "opaque paper root/background/shadows",
+      "live Dossier frame and descendants",
+      "foxing multiply canvas"
+    ],
+    "positiveZSourceExceptions": [
+      "fixed sending/error overlays at z-index60",
+      "dossier-filed-confirmation at z-index10"
+    ],
+    "nativeBound": "Current native ordinary frame/inline status content precedes foxing. This does not certify Source positive-z transient overlays or animations."
+  },
+  "preparation": {
+    "groupSvgOpacity": 1,
+    "sourceGroupOpacityAtGpu": 0.7,
+    "raster": "existing DossierMultiply::prepare, unmodified; all spots composited in one premultiplied BGRA image",
+    "boundaries": [
+      "constructor",
+      "theme observer while mounted",
+      "viewport/DPR bounds observer",
+      "explicit resume from Settings with a new lease",
+      "explicit test DPR preparation"
+    ],
+    "forbidden": [
+      "render",
+      "paint",
+      "input change"
+    ],
+    "optionalImageSlot": 10,
+    "broadsheetFoxingBase": "transparent",
+    "broadsheetGroupImage": null
+  },
+  "proofLimits": "Source selectors/values/order inspected. No fresh browser, Source radial raster equivalence, compiled product patch or native product GPU proof."
+}

@@ -1,0 +1,144 @@
+{
+  "viewport": {
+    "width": 1280,
+    "height": 860
+  },
+  "target": "ee1a4fcc-a91b-4be9-8063-116e211e4496",
+  "nodes": {
+    "surface": {
+      "rect": {
+        "x": 257,
+        "y": 174.59375,
+        "width": 768,
+        "height": 678
+      },
+      "styles": "Element: div.flow-surface\nBox: x=257 y=175 w=768 h=678\nChildren: 3  Text length: 138\nScroll Y: size=678 client=678 overflowing=false top=0\nScroll X: size=768 client=768 overflowing=false left=0\nStyles: display=block position=absolute font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal padding=0px margin=0px gap=normal border-width=0px opacity=1\nVisibility: pointer-events=none"
+    },
+    "canvas": {
+      "rect": {
+        "x": 257,
+        "y": 174.59375,
+        "width": 768,
+        "height": 678
+      },
+      "styles": "Element: div.mx-auto\nBox: x=257 y=175 w=768 h=678\nChildren: 4  Text length: 550\nScroll Y: size=678 client=678 overflowing=false top=0\nScroll X: size=768 client=768 overflowing=false left=0\nStyles: display=block position=relative font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal padding=16px 32px margin=0px gap=normal border-width=0px opacity=1"
+    },
+    "scroller": {
+      "rect": {
+        "x": 2,
+        "y": 149,
+        "width": 1278,
+        "height": 678
+      },
+      "styles": "Element: div.manuscript-scroller\nBox: x=2 y=149 w=1278 h=678\nChildren: 2  Text length: 550\nScroll Y: size=704 client=678 overflowing=true top=0\nScroll X: size=1278 client=1278 overflowing=false left=0\nStyles: display=block position=static font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal padding=0px margin=0px gap=normal border-width=0px opacity=1"
+    },
+    "editor": {
+      "rect": {
+        "x": 289,
+        "y": 190.59375,
+        "width": 704,
+        "height": 516
+      },
+      "styles": "Element: div.tiptap\nBox: x=289 y=191 w=704 h=516\nChildren: 7  Text length: 412\nScroll Y: size=516 client=516 overflowing=false top=0\nScroll X: size=704 client=704 overflowing=false left=0\nStyles: display=block position=relative font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=18px font-weight=400 font-style=normal line-height=32.4px letter-spacing=normal white-space=break-spaces padding=0px margin=0px gap=normal 24px border-width=0px opacity=1"
+    },
+    "dock": {
+      "rect": {
+        "x": 964,
+        "y": 635.640625,
+        "width": 300,
+        "height": 179.359375
+      },
+      "styles": "Element: div.flow-dock\nBox: x=964 y=636 w=300 h=179\nChildren: 1  Text length: 138\nScroll Y: size=179 client=179 overflowing=false top=0\nScroll X: size=300 client=300 overflowing=false left=0\nStyles: display=block position=fixed font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 font-style=normal line-height=24px letter-spacing=normal white-space=normal padding=0px margin=0px gap=normal border-width=0px opacity=1"
+    },
+    "card": {
+      "rect": {
+        "x": 964,
+        "y": 635.640625,
+        "width": 300,
+        "height": 179.359375
+      },
+      "styles": "Element: article.flow-card\nBox: x=964 y=636 w=300 h=179\nChildren: 4  Text length: 138\nScroll Y: size=175 client=175 overflowing=false top=0\nScroll X: size=298 client=298 overflowing=false left=0\nStyles: display=flex position=relative font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=13.44px font-weight=400 font-style=normal line-height=20.16px letter-spacing=normal white-space=normal padding=10.4px 12px 9.6px margin=0px gap=7.2px border-width=3px 1px 1px opacity=1"
+    },
+    "head": {
+      "rect": {
+        "x": 977,
+        "y": 649.03125,
+        "width": 274,
+        "height": 18.90625
+      },
+      "styles": "Element: header.flow-card__head\nBox: x=977 y=649 w=274 h=19\nChildren: 2  Text length: 11\nScroll Y: size=19 client=19 overflowing=false top=0\nScroll X: size=274 client=274 overflowing=false left=0\nStyles: display=flex position=static font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=13.44px font-weight=400 font-style=normal line-height=20.16px letter-spacing=normal white-space=normal padding=0px margin=0px gap=8px border-width=0px opacity=1"
+    },
+    "kicker": {
+      "rect": {
+        "x": 977,
+        "y": 656.03125,
+        "width": 72.0625,
+        "height": 11.90625
+      },
+      "styles": "Element: span.flow-card__kicker\nBox: x=977 y=656 w=72 h=12\nChildren: 0  Text length: 11\nScroll Y: size=12 client=12 overflowing=false top=0\nScroll X: size=72 client=72 overflowing=false left=0\nStyles: display=block position=static font-family=\"Special Elite\", \"Courier New\", monospace font-size=9.92px font-weight=400 font-style=normal line-height=11.904px letter-spacing=0.7936px white-space=normal padding=0px margin=0px gap=normal border-width=0px opacity=1"
+    },
+    "close": {
+      "rect": {
+        "x": 1237,
+        "y": 649.03125,
+        "width": 14,
+        "height": 18.796875
+      },
+      "styles": "Element: button.flow-card__close\nBox: x=1237 y=649 w=14 h=19\nChildren: 1  Text length: 0\nScroll Y: size=19 client=19 overflowing=false top=0\nScroll X: size=14 client=14 overflowing=false left=0\nStyles: display=block position=static font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=11.2px font-weight=400 font-style=normal line-height=16.8px letter-spacing=normal white-space=normal padding=0px margin=0px gap=normal border-width=0px opacity=0\nVisibility: opacity=0"
+    },
+    "body": {
+      "rect": {
+        "x": 977,
+        "y": 675.125,
+        "width": 274,
+        "height": 62.203125
+      },
+      "styles": "Element: button.flow-card__body\nBox: x=977 y=675 w=274 h=62\nChildren: 2  Text length: 83\nScroll Y: size=62 client=62 overflowing=false top=0\nScroll X: size=274 client=274 overflowing=false left=0\nStyles: display=flex position=static font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=13.44px font-weight=400 font-style=normal line-height=20.16px letter-spacing=normal white-space=normal padding=0px margin=0px gap=4px border-width=0px opacity=1"
+    },
+    "title": {
+      "rect": {
+        "x": 977,
+        "y": 675.125,
+        "width": 274,
+        "height": 17.890625
+      },
+      "styles": "Element: strong.flow-card__title\nBox: x=977 y=675 w=274 h=18\nChildren: 0  Text length: 3\nScroll Y: size=18 client=18 overflowing=false top=0\nScroll X: size=274 client=274 overflowing=false left=0\nStyles: display=block position=static font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=13.76px font-weight=700 font-style=normal line-height=17.888px letter-spacing=normal white-space=normal padding=0px margin=0px gap=normal border-width=0px opacity=1"
+    },
+    "text": {
+      "rect": {
+        "x": 977,
+        "y": 697.015625,
+        "width": 274,
+        "height": 40.3125
+      },
+      "styles": "Element: span.flow-card__text\nBox: x=977 y=697 w=274 h=40\nChildren: 0  Text length: 80\nScroll Y: size=40 client=40 overflowing=false top=0\nScroll X: size=274 client=274 overflowing=false left=0\nStyles: display=block position=static font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=13.44px font-weight=400 font-style=normal line-height=20.16px letter-spacing=normal white-space=normal padding=0px margin=0px gap=normal border-width=0px opacity=1"
+    },
+    "reply": {
+      "rect": {
+        "x": 977,
+        "y": 744.515625,
+        "width": 274,
+        "height": 39.8125
+      },
+      "styles": "Element: p.flow-card__reply\nBox: x=977 y=745 w=274 h=40\nChildren: 1  Text length: 37\nScroll Y: size=40 client=40 overflowing=false top=0\nScroll X: size=273 client=273 overflowing=false left=0\nStyles: display=block position=static font-family=Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif font-size=13.44px font-weight=400 font-style=italic line-height=20.16px letter-spacing=normal white-space=normal padding=7.2px 0px 0px 9.6px margin=0px gap=normal border-width=0px 0px 0px 1px opacity=1"
+    },
+    "replyBy": {
+      "rect": {
+        "x": 987.59375,
+        "y": 751.703125,
+        "width": 263.40625,
+        "height": 12.46875
+      },
+      "styles": "Element: span.flow-card__reply-by\nBox: x=988 y=752 w=263 h=12\nChildren: 0  Text length: 3\nScroll Y: size=12 client=12 overflowing=false top=0\nScroll X: size=263 client=263 overflowing=false left=0\nStyles: display=block position=static font-family=\"Special Elite\", \"Courier New\", monospace font-size=9.6px font-weight=400 font-style=normal line-height=12.48px letter-spacing=0.768px white-space=normal padding=0px margin=0px gap=normal border-width=0px opacity=1"
+    },
+    "foot": {
+      "rect": {
+        "x": 977,
+        "y": 791.515625,
+        "width": 274,
+        "height": 12.890625
+      },
+      "styles": "Element: footer.flow-card__foot\nBox: x=977 y=792 w=274 h=13\nChildren: 1  Text length: 7\nScroll Y: size=13 client=13 overflowing=false top=0\nScroll X: size=274 client=274 overflowing=false left=0\nStyles: display=flex position=static font-family=\"Special Elite\", \"Courier New\", monospace font-size=9.92px font-weight=400 font-style=normal line-height=12.896px letter-spacing=normal white-space=normal padding=0px margin=0px gap=8px border-width=0px opacity=1"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "provenance": "Root assembled renderer, notes, context/focus and inline-clipboard correction. Library gate completed 2026-10-04 21:59 UTC; the application gate was rerun after the queued saved-revision correction and completed 2026-10-04 22:13 UTC. New pagination, Wayland and KaTeX modules remain isolated and unintegrated.",
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests -- --test-threads=1",
+  "library": {
+    "passed": 393,
+    "failed": 0,
+    "ignored": 8,
+    "durationSeconds": 107.67,
+    "completedAt": "2026-10-04T21:59:00Z"
+  },
+  "application": {
+    "passed": 83,
+    "failed": 0,
+    "ignored": 0,
+    "durationSeconds": 188.98,
+    "completedAt": "2026-10-04T22:13:00Z",
+    "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests --bin twyne-desktop -- --test-threads=1",
+    "sourceLog": "/tmp/twyne-gpui-saved-note-coordinators.log"
+  },
+  "docTests": 0,
+  "boundaries": [
+    "GPUI test-platform mounted actions and actual-platform font checks included.",
+    "Eight explicit GPU/font diagnostics remain ignored.",
+    "This receipt is not actual X11/Wayland, installer, provider, account or full visual parity proof."
+  ],
+  "sourceLog": "/tmp/twyne-gpui-assembled-tests.log",
+  "clippy": {
+    "passed": true,
+    "allTargets": true,
+    "features": [
+      "ui-tests"
+    ],
+    "warningsDenied": true,
+    "durationSeconds": 5.3,
+    "sourceLog": "/tmp/twyne-gpui-saved-note-clippy.log",
+    "completedAt": "2026-10-04T22:14:00Z"
+  },
+  "uiBuild": {
+    "passed": true,
+    "durationSeconds": 7.18,
+    "sourceLog": "/tmp/twyne-gpui-saved-note-ui-build.log",
+    "completedAt": "2026-10-04T22:14:00Z"
+  }
+}

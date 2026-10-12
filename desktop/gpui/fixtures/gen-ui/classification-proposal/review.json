@@ -1,0 +1,19 @@
+{
+  "provider": "sakana",
+  "model": "fugu-max",
+  "status": "coordinator-corrected and integrated; executed Source oracle passes",
+  "production": "src/gen_ui/classification.rs",
+  "sourceCases": 150,
+  "fallbackCases": 4,
+  "coordinatorCorrections": [
+    "Removed the wrong tentative-result expectation for a negative probability.",
+    "Matched JavaScript UTF16 clipping in exact compact JSON, including escaped trailing high surrogates.",
+    "Matched Source truthiness, number coercions, parseInt claim behavior, missing confidence and extra answer fields.",
+    "Kept claim/support parsing independent of kind selection and duplicated slot labels last-write-wins.",
+    "Preserved __proto__ object-assignment behavior for boolean slot answers."
+  ],
+  "proofLimit": "Original fakeAsk boundary only; these are not TypeSafe API wire requests or live provider proof.",
+  "verificationReceipt": "target/verification/genui-ui-65f5c0d33c83/receipt.json",
+  "productionSha256": "528668ee31a41a0898f83874db12ce8126fc33e6f816ca6574bf8cf439ad0d6a",
+  "oracleSha256": "8104602d18c0c44686bc16bbc88bd388ba8ba62f6e7748545307f79887a3945c"
+}

@@ -1,0 +1,47 @@
+{
+  "serializer": "src/utils/typst/serialize.ts",
+  "pageSetup": "src/utils/typst/theme.ts",
+  "assets": [
+    {
+      "path": "/twyne-decoration/initial-a.png",
+      "url": "/assets/illuminated-initials/a.avif"
+    },
+    {
+      "path": "/twyne-decoration/frame-illuminated-nw.png",
+      "url": "/assets/page-borders/slices/illuminated-nw.avif"
+    },
+    {
+      "path": "/twyne-decoration/frame-illuminated-n.png",
+      "url": "/assets/page-borders/slices/illuminated-n.avif"
+    },
+    {
+      "path": "/twyne-decoration/frame-illuminated-ne.png",
+      "url": "/assets/page-borders/slices/illuminated-ne.avif"
+    },
+    {
+      "path": "/twyne-decoration/frame-illuminated-w.png",
+      "url": "/assets/page-borders/slices/illuminated-w.avif"
+    },
+    {
+      "path": "/twyne-decoration/frame-illuminated-e.png",
+      "url": "/assets/page-borders/slices/illuminated-e.avif"
+    },
+    {
+      "path": "/twyne-decoration/frame-illuminated-sw.png",
+      "url": "/assets/page-borders/slices/illuminated-sw.avif"
+    },
+    {
+      "path": "/twyne-decoration/frame-illuminated-s.png",
+      "url": "/assets/page-borders/slices/illuminated-s.avif"
+    },
+    {
+      "path": "/twyne-decoration/frame-illuminated-se.png",
+      "url": "/assets/page-borders/slices/illuminated-se.avif"
+    }
+  ],
+  "additionalFeatures": [
+    "native Typst math",
+    "original griffin SVG",
+    "original font samples"
+  ]
+}

@@ -1,0 +1,319 @@
+{
+  "system": "Actual Linux Cosmic/Swash platform text system",
+  "family": "Twyne Source",
+  "version": "2.014",
+  "distinctSelectedFaces": true,
+  "sourceGlyphIdsAndAdvancesUnchanged": true,
+  "text": "// Source: Café = #text(\"m\")",
+  "shapedWidth13px": 218.40000915527344,
+  "faces": [
+    {
+      "style": "Regular",
+      "weight": 400,
+      "fontId": "FontId(2)",
+      "glyphs": [
+        {
+          "character": "/",
+          "glyphId": 18,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": " ",
+          "glyphId": 3,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "S",
+          "glyphId": 54,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "o",
+          "glyphId": 82,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "u",
+          "glyphId": 88,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "r",
+          "glyphId": 85,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "c",
+          "glyphId": 70,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "e",
+          "glyphId": 72,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": ":",
+          "glyphId": 29,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "C",
+          "glyphId": 38,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "a",
+          "glyphId": 68,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "f",
+          "glyphId": 73,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "é",
+          "glyphId": 170,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "=",
+          "glyphId": 32,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "#",
+          "glyphId": 6,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "m",
+          "glyphId": 80,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "(",
+          "glyphId": 11,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": ")",
+          "glyphId": 12,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "›",
+          "glyphId": 531,
+          "advanceUnits": 600.0
+        }
+      ]
+    },
+    {
+      "style": "SemiBold",
+      "weight": 600,
+      "fontId": "FontId(3)",
+      "glyphs": [
+        {
+          "character": "/",
+          "glyphId": 18,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": " ",
+          "glyphId": 3,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "S",
+          "glyphId": 54,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "o",
+          "glyphId": 82,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "u",
+          "glyphId": 88,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "r",
+          "glyphId": 85,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "c",
+          "glyphId": 70,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "e",
+          "glyphId": 72,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": ":",
+          "glyphId": 29,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "C",
+          "glyphId": 38,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "a",
+          "glyphId": 68,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "f",
+          "glyphId": 73,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "é",
+          "glyphId": 170,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "=",
+          "glyphId": 32,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "#",
+          "glyphId": 6,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "m",
+          "glyphId": 80,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "(",
+          "glyphId": 11,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": ")",
+          "glyphId": 12,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "›",
+          "glyphId": 531,
+          "advanceUnits": 600.0
+        }
+      ]
+    },
+    {
+      "style": "Oblique",
+      "weight": 400,
+      "fontId": "FontId(4)",
+      "glyphs": [
+        {
+          "character": "/",
+          "glyphId": 18,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": " ",
+          "glyphId": 3,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "S",
+          "glyphId": 54,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "o",
+          "glyphId": 82,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "u",
+          "glyphId": 88,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "r",
+          "glyphId": 85,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "c",
+          "glyphId": 70,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "e",
+          "glyphId": 72,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": ":",
+          "glyphId": 29,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "C",
+          "glyphId": 38,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "a",
+          "glyphId": 68,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "f",
+          "glyphId": 73,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "é",
+          "glyphId": 170,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "=",
+          "glyphId": 32,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "#",
+          "glyphId": 6,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "m",
+          "glyphId": 80,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "(",
+          "glyphId": 11,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": ")",
+          "glyphId": 12,
+          "advanceUnits": 600.0
+        },
+        {
+          "character": "›",
+          "glyphId": 531,
+          "advanceUnits": 600.0
+        }
+      ]
+    }
+  ],
+  "rasterBoundary": "Oblique source-derived outlines use quarter shear; Chromium's actual synthetic raster remains a separate pixel check",
+  "fallbackBoundaries": "Droid CJK/kana explicit; Hangul/emoji remain platform-dependent"
+}

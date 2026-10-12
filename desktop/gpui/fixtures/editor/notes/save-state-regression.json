@@ -1,0 +1,29 @@
+{
+  "test": "app::note_coordinator::tests::saved_unblurred_note_stays_clean_after_queued_changes_but_new_edits_are_dirty",
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests --bin twyne-desktop app::note_coordinator::tests::saved_unblurred_note_stays_clean_after_queued_changes_but_new_edits_are_dirty -- --exact --test-threads=1",
+  "before": {
+    "result": "failed",
+    "assertion": "An accepted note must stay saved"
+  },
+  "after": {
+    "result": "passed",
+    "durationSeconds": 2.9
+  },
+  "cause": "Save accepted the live note revision before its queued Changed event reached the host, which then marked the saved document dirty again.",
+  "correction": "The current rich editor's Changed event is ignored when its revision is already included in the last accepted save.",
+  "checks": [
+    "The saved Unicode note stays clean after queued subscriptions settle.",
+    "No redundant autosave remains scheduled.",
+    "The accepted document revision and durable bytes remain unchanged.",
+    "The footer reports Saved locally and the retained note input stays focused.",
+    "A newer rich edit still advances the document revision and schedules save."
+  ],
+  "boundary": "Mounted GPUI test-platform proof; actual X11 acceptance is recorded separately.",
+  "actualX11": {
+    "passed": true,
+    "receipt": "../../host-apparatus/native-acceptance.json",
+    "inputFocused": true,
+    "footer": "Saved locally",
+    "savedFooterPixelsMatch": true
+  }
+}

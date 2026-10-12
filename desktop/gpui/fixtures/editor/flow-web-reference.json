@@ -1,0 +1,227 @@
+{
+  "browser": "154.0.8037.57",
+  "blockedNetworkRequests": 0,
+  "cases": [
+    {
+      "name": "same-length-emoji",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 2,
+      "deleted": 2,
+      "html": "<p>A🚀中</p>"
+    },
+    {
+      "name": "same-length-undo",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 2,
+      "deleted": 2,
+      "html": "<p>A🦊中</p>"
+    },
+    {
+      "name": "same-length-redo",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 2,
+      "deleted": 2,
+      "html": "<p>A🚀中</p>"
+    },
+    {
+      "name": "caret",
+      "documentChanged": false,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 0,
+      "html": "<p>A🚀中</p>"
+    },
+    {
+      "name": "format",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 0,
+      "html": "<p>A<strong>🚀中</strong></p>"
+    },
+    {
+      "name": "format-undo",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 0,
+      "html": "<p>A🚀中</p>"
+    },
+    {
+      "name": "ime-first-candidate",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 1,
+      "deleted": 0,
+      "html": "<p>A🦊に中</p>"
+    },
+    {
+      "name": "ime-replace-candidate",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 2,
+      "deleted": 1,
+      "html": "<p>A🦊日本中</p>"
+    },
+    {
+      "name": "ime-group-undo",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 1,
+      "deleted": 3,
+      "html": "<p>A🦊中</p>"
+    },
+    {
+      "name": "ime-group-redo",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 3,
+      "deleted": 1,
+      "html": "<p>A🦊日本中</p>"
+    },
+    {
+      "name": "paragraph-enter",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 2,
+      "deleted": 0,
+      "html": "<p>A🦊</p><p>B</p>"
+    },
+    {
+      "name": "paragraph-join",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 2,
+      "html": "<p>A🦊B</p>"
+    },
+    {
+      "name": "list-enter",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 4,
+      "deleted": 0,
+      "html": "<ul><li><p>A🦊</p></li><li><p>B</p></li></ul><p></p>"
+    },
+    {
+      "name": "list-join",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 2,
+      "html": "<ul><li><p>A🦊</p><p>B</p></li></ul><p></p>"
+    },
+    {
+      "name": "list-backspace",
+      "documentChanged": false,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 0,
+      "html": "<ul><li><p>A🦊</p></li><li><p>B</p></li></ul><p></p>"
+    },
+    {
+      "name": "list-backspace",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 4,
+      "html": "<ul><li><p>A🦊B</p></li></ul><p></p>"
+    },
+    {
+      "name": "code-enter",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 1,
+      "deleted": 0,
+      "html": "<pre><code>A\nB</code></pre><p></p>"
+    },
+    {
+      "name": "code-delete-newline",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 1,
+      "html": "<pre><code>AB</code></pre><p></p>"
+    },
+    {
+      "name": "unfocused-programmatic-replace",
+      "documentChanged": true,
+      "focused": false,
+      "inserted": 1,
+      "deleted": 1,
+      "html": "<p>XB</p>"
+    },
+    {
+      "name": "inline-rich-paste",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 3,
+      "deleted": 1,
+      "html": "<p><em>🦊</em><sup data-endnote-text=\"Source preserved\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Source preserved\"></sup>Y</p>"
+    },
+    {
+      "name": "inline-rich-paste-undo",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 1,
+      "deleted": 3,
+      "html": "<p>XY</p>"
+    },
+    {
+      "name": "open-paragraph-paste",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 7,
+      "deleted": 0,
+      "html": "<p>X<em>🦊</em><sup data-endnote-text=\"Source preserved\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Source preserved\"></sup></p><p>日本Y</p>"
+    },
+    {
+      "name": "open-paragraph-paste-undo",
+      "documentChanged": true,
+      "focused": true,
+      "inserted": 0,
+      "deleted": 7,
+      "html": "<p>XY</p>"
+    }
+  ],
+  "boundaryHtml": "<h1>Title!</h1><p>A<br>B<sup data-endnote-text=\"hidden words\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"hidden words\"></sup><span data-type=\"inline-math\" data-latex=\"hidden words\" data-math-display=\"inline\" aria-label=\"Inline equation: hidden words\" class=\"twyne-math twyne-math-inline\">hidden words</span><span data-typst-source=\"hidden words\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">hidden words</span>C&nbsp;D—E</p><figure src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lN1UvAAAAABJRU5ErkJggg==\" alt=\"hidden words\" caption=\"\" alignment=\"center\" width=\"100\" offline=\"false\" uploadstatus=\"ready\" data-type=\"image\" data-image-align=\"center\" data-image-width=\"100\" data-upload-status=\"ready\" data-alt-text=\"hidden words\" style=\"width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; break-inside: avoid;\"><img src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lN1UvAAAAABJRU5ErkJggg==\" alt=\"hidden words\" style=\"display: block; width: 100%; height: auto;\"></figure><div data-typst-source=\"hidden words\" data-type=\"raw-typst\" class=\"twyne-raw-typst\" title=\"Edit this Typst block in source view\" contenteditable=\"false\"><pre>hidden words</pre></div><div data-type=\"block-math\" data-latex=\"hidden words\" data-math-display=\"block\" aria-label=\"Block equation: hidden words\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid;\">hidden words</div><p></p><blockquote><p>F</p></blockquote><pre><code>G\nH I</code></pre><p></p>",
+  "boundaryText": "Title! ABC D—E  F G\nH I ",
+  "boundaryWords": 6,
+  "atomLeafText": {
+    "hardBreak": {
+      "leafText": "undefined",
+      "toText": "function"
+    },
+    "endnote": {
+      "leafText": "undefined",
+      "toText": "undefined"
+    },
+    "image": {
+      "leafText": "undefined",
+      "toText": "function"
+    },
+    "inlineMath": {
+      "leafText": "undefined",
+      "toText": "function"
+    },
+    "blockMath": {
+      "leafText": "undefined",
+      "toText": "function"
+    },
+    "mermaidDiagram": {
+      "leafText": "undefined",
+      "toText": "undefined"
+    },
+    "rawTypst": {
+      "leafText": "undefined",
+      "toText": "undefined"
+    },
+    "rawTypstInline": {
+      "leafText": "undefined",
+      "toText": "undefined"
+    }
+  }
+}

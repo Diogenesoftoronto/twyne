@@ -1,0 +1,15 @@
+{
+  "status": "reviewed and integrated; executed Source oracle passes",
+  "runtimeAlgorithm": "Insertion-ordered queue, inclusive expiry, max of shared window/backoff/zero matches Source",
+  "coordinatorCorrections": [
+    "Use usize for queue length threshold",
+    "Removed unexecuted proposal tests with wrong expected waits: underfilled window, backward clock, pruned/refilled queue, and backoff versus full window"
+  ],
+  "proofLimit": "Pure shared budget semantics only; runtime transport callers still require integration.",
+  "production": "src/gen_ui/budget.rs",
+  "sourceTimelines": 15,
+  "sourceFrames": 852,
+  "verificationReceipt": "target/verification/genui-ui-65f5c0d33c83/receipt.json",
+  "productionSha256": "371ea8498f2be0d11c2c4159f8e9fbb73a2d0ae54917ecf630ac4aaefaf966e7",
+  "oracleSha256": "c4d2859bb1b54021f59c8b1aa3259a199163e3bcd241fe306d34aef423ed5610"
+}

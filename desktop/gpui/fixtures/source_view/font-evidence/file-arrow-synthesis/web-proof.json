@@ -1,0 +1,207 @@
+{
+  "browser": "154.0.8037.57",
+  "compatMode": "CSS1Compat",
+  "requests": 0,
+  "originalResponse": "https://fonts.gstatic.com/s/dmsans/v17/rP2Hp2ywxg089UriCZOIHQ.woff2",
+  "originalResponseSha256": "ca72d2bcea8f4daa783dbdfa2d9b46068c3ce38168e05918fb867aa453b4f890",
+  "rows": [
+    {
+      "id": "original-fallback600",
+      "family": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "weight": 600,
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Math",
+            "postScriptName": "NotoSansMath-Regular",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "geometry": {
+        "bounds": {
+          "x": 8,
+          "y": 8,
+          "width": 5.546875,
+          "height": 16,
+          "top": 8,
+          "right": 13.546875,
+          "bottom": 24,
+          "left": 8
+        },
+        "synthesis": "weight style small-caps"
+      }
+    },
+    {
+      "id": "original-fallback600-no-synthesis",
+      "family": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "weight": 600,
+      "synthesis": "none",
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Math",
+            "postScriptName": "NotoSansMath-Regular",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "geometry": {
+        "bounds": {
+          "x": 8,
+          "y": 40,
+          "width": 5.546875,
+          "height": 16,
+          "top": 40,
+          "right": 13.546875,
+          "bottom": 56,
+          "left": 8
+        },
+        "synthesis": "none"
+      }
+    },
+    {
+      "id": "math400",
+      "family": "\"Noto Sans Math\"",
+      "weight": 400,
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Math",
+            "postScriptName": "NotoSansMath-Regular",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "geometry": {
+        "bounds": {
+          "x": 8,
+          "y": 72,
+          "width": 5.546875,
+          "height": 16,
+          "top": 72,
+          "right": 13.546875,
+          "bottom": 88,
+          "left": 8
+        },
+        "synthesis": "weight style small-caps"
+      }
+    },
+    {
+      "id": "math500",
+      "family": "\"Noto Sans Math\"",
+      "weight": 500,
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Math",
+            "postScriptName": "NotoSansMath-Regular",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "geometry": {
+        "bounds": {
+          "x": 8,
+          "y": 104,
+          "width": 5.546875,
+          "height": 16,
+          "top": 104,
+          "right": 13.546875,
+          "bottom": 120,
+          "left": 8
+        },
+        "synthesis": "weight style small-caps"
+      }
+    },
+    {
+      "id": "math600",
+      "family": "\"Noto Sans Math\"",
+      "weight": 600,
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Math",
+            "postScriptName": "NotoSansMath-Regular",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "geometry": {
+        "bounds": {
+          "x": 8,
+          "y": 136,
+          "width": 5.546875,
+          "height": 16,
+          "top": 136,
+          "right": 13.546875,
+          "bottom": 152,
+          "left": 8
+        },
+        "synthesis": "weight style small-caps"
+      }
+    },
+    {
+      "id": "math700",
+      "family": "\"Noto Sans Math\"",
+      "weight": 700,
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Math",
+            "postScriptName": "NotoSansMath-Regular",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "geometry": {
+        "bounds": {
+          "x": 8,
+          "y": 168,
+          "width": 5.546875,
+          "height": 16,
+          "top": 168,
+          "right": 13.546875,
+          "bottom": 184,
+          "left": 8
+        },
+        "synthesis": "weight style small-caps"
+      }
+    },
+    {
+      "id": "math600-no-synthesis",
+      "family": "\"Noto Sans Math\"",
+      "weight": 600,
+      "synthesis": "none",
+      "fonts": {
+        "fonts": [
+          {
+            "familyName": "Noto Sans Math",
+            "postScriptName": "NotoSansMath-Regular",
+            "isCustomFont": false,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "geometry": {
+        "bounds": {
+          "x": 8,
+          "y": 200,
+          "width": 5.546875,
+          "height": 16,
+          "top": 200,
+          "right": 13.546875,
+          "bottom": 216,
+          "left": 8
+        },
+        "synthesis": "none"
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "status": "FROZEN_AUTHORED_PROBE_NOT_EXECUTED",
+  "frozenUtc": "2026-10-05T06:32:25.078565+00:00",
+  "ownership": "Only NEW desktop/gpui/fixtures/math-write/source-inline-geometry/** was written.",
+  "artifactHashes": {
+    "README.md": "98f2a0a95312ade65af0bedba60d70432bdf183fe5082c22aec78430c3f826d1",
+    "action.js": "82dfea261a3434fac5a10571076dc54721e5ddf2988f121446754cc09ef60538",
+    "cases.json": "4d3334dc4c37922db8750d83a20fcca195bd7c587d7886669f2f8d9dcaf14079",
+    "client.ts": "a8c61d83b5dcb6a33f583624914e448a4ae08259d32def0458aa089e940b2beb",
+    "close.js": "f7c65a95690218566ef5088406f4adf24986a2de07a91b529a11086ada4ba937",
+    "fixture-server.ts": "e997a23fc2eb325ba22d6248556321560eb645b3ba5a972df6695a58edb0cdec",
+    "integration.patch": "bfdfa6b9201a1b289f8aa8f9171518eac8a7f0f44cf14c7687b3f2e84d92c12c",
+    "observe.js": "e962aec7f943b034b49eefd4f915d91cdf7fdcc9c07750fdc5c173c9813d88dd",
+    "open.js": "08abdc499d3b3ba53cb0173c7a3e09c574326bc78c1542656b11a1421ec96195",
+    "serve.ts": "8726263301275ea9e56e609cbf5ef6963ace38f856cd6d44af1ab0ee4f091e0f",
+    "source-evidence.json": "9aada6b2dcd9c930f2f69edf9f66ad7820d0de4f91fd753a109ea1db4bedea24"
+  },
+  "validated": [
+    "Bun.Transpiler syntax only for all7 JS/TS files; no imports or Source code executed.",
+    "cases/source-evidence JSON parsed.",
+    "Static Unicode/corpus bounds, actual module imports and no-evaluation/action restrictions inspected.",
+    "git apply --check integration.patch PASS; patch remains unapplied."
+  ],
+  "sourceEvidence": "source-evidence.json records current text-only Source/style/provenance hashes; it is not browser results.",
+  "parentExecution": {
+    "serverEntry": "serve.ts (127.0.0.1:5199) or reviewed optional Root server patch at5196",
+    "browserFiles": [
+      "open.js",
+      "observe.js",
+      "action.js",
+      "observe.js",
+      "close.js"
+    ],
+    "scenarios": 6,
+    "cases": 3,
+    "matchedControl": "Unmodified same-content no-marker editor; optional intrinsic contexts explicitly excluded from admission.",
+    "apiBoundaries": [
+      "Actual Source imports and published original stylesheet/font replay.",
+      "Authored fixture reporter uses installed Editor.view.coordsAtPos/toJSON/getHTML.",
+      "Parent uses snapshot/getCDPSession/DOM+CSS+DOMSnapshot, with no DOM evaluate."
+    ]
+  },
+  "uncompiledOrUnexecuted": [
+    "Bun browser bundle/server preparation and installed TypeScript/module APIs.",
+    "Playwriter context/new-page/CDP methods and fresh-frame/preview waits.",
+    "Actual Source form/closed-wrapper widths, flex baseline, min/max/intrinsic and overflow.",
+    "Marker neutrality, Source caret/text-box evidence and DPR screenshots."
+  ],
+  "remainingProofLimits": [
+    "No Source/native/runtime/server/browser state edited or operated.",
+    "No Cargo/Devenv/rustc/browser/display/provider/network execution or installation.",
+    "No full product route/extension-stack, Source renderer geometry certification or native pixel parity.",
+    "No inferred TeX/fragment baseline, guessed scalar/grapheme offsets, recertified CurrentSource diagnostic or regoldened evidence.",
+    "Empty/invalid previews, manual textarea resize, untested OS/browser/font contexts remain outside this six-case corpus."
+  ],
+  "integrationPatch": "Unapplied; optional independent fixture preparation/route only. Existing original root fixture remains unchanged."
+}

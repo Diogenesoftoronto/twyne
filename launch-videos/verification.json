@@ -1,0 +1,144 @@
+{
+  "framework": "HyperFrames 0.8.78",
+  "verification": "Composition browser checks plus sampled frames from encoded MP4s, full FFmpeg decode, dimensions, duration, frame rate and measured audio loudness. No listening review claimed.",
+  "films": [
+    {
+      "id": "01-the-room",
+      "file": "renders/01-the-room.mp4",
+      "durationSeconds": 60,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "audio": true,
+      "fullDecodePassed": true,
+      "sampledExportFramesReviewed": true,
+      "integratedLufs": -15.5,
+      "truePeakDbfs": -1.3,
+      "compositionCheck": {
+        "status": "not rerun in this turn; existing completed export retained"
+      },
+      "bytes": 63777776,
+      "sha256": "7687a20448a4f774cf6efd7817672b45870cac7796aa89fb0894c24c23d17051"
+    },
+    {
+      "id": "02-roll-call",
+      "file": "renders/02-roll-call.mp4",
+      "durationSeconds": 46,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "audio": true,
+      "fullDecodePassed": true,
+      "sampledExportFramesReviewed": true,
+      "integratedLufs": -15.1,
+      "truePeakDbfs": -1.4,
+      "compositionCheck": {
+        "status": "not rerun in this turn; existing completed export retained"
+      },
+      "bytes": 51595941,
+      "sha256": "5fe0762d630a5f314f293727cff24397551e3125c273e2ac9a860bce60cc415f"
+    },
+    {
+      "id": "03-edited",
+      "file": "renders/03-edited.mp4",
+      "durationSeconds": 46,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "audio": true,
+      "fullDecodePassed": true,
+      "sampledExportFramesReviewed": true,
+      "integratedLufs": -15.8,
+      "truePeakDbfs": -1.5,
+      "compositionCheck": {
+        "passed": true,
+        "errors": 0,
+        "warnings": [
+          "nested_structure_needs_subcomposition",
+          "nested_structure_needs_subcomposition",
+          "nested_structure_needs_subcomposition"
+        ],
+        "contrastChecksPassed": 333
+      },
+      "bytes": 7207737,
+      "sha256": "797ece4d994d6d0ae5fb1ba6b03e8ff2065a340c2a32ef6e7ac64054a4dc69d9"
+    },
+    {
+      "id": "04-newsreel",
+      "file": "renders/04-newsreel.mp4",
+      "durationSeconds": 34,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "audio": true,
+      "fullDecodePassed": true,
+      "sampledExportFramesReviewed": true,
+      "integratedLufs": -13.0,
+      "truePeakDbfs": -1.2,
+      "compositionCheck": {
+        "passed": true,
+        "errors": 0,
+        "warnings": [
+          "timeline_track_too_dense",
+          "nested_structure_needs_subcomposition",
+          "nested_structure_needs_subcomposition",
+          "nested_structure_needs_subcomposition",
+          "nested_structure_needs_subcomposition",
+          "nested_structure_needs_subcomposition"
+        ],
+        "contrastChecksPassed": 33
+      },
+      "render": "beginframe capture, hardware GPU, 2 workers; ANGLE GL workaround; 65 seconds",
+      "bytes": 14043128,
+      "sha256": "8024e6d907fd54a1aa678caed4c4e4b37ea4c4c013f312f58ed88271db1459be"
+    },
+    {
+      "id": "05-the-strike",
+      "file": "renders/05-the-strike.mp4",
+      "durationSeconds": 15,
+      "width": 1080,
+      "height": 1920,
+      "fps": 30,
+      "audio": true,
+      "fullDecodePassed": true,
+      "sampledExportFramesReviewed": true,
+      "integratedLufs": -18.9,
+      "truePeakDbfs": -1.4,
+      "compositionCheck": {
+        "passed": true,
+        "errors": 0,
+        "warnings": [
+          "nested_structure_needs_subcomposition",
+          "nested_structure_needs_subcomposition",
+          "nested_structure_needs_subcomposition"
+        ],
+        "contrastChecksPassed": 43
+      },
+      "bytes": 7592801,
+      "sha256": "e888c2051c34dd1e9ba82884d9b5980926ad240ceded0e0ee69c58cb552e79b4"
+    },
+    {
+      "id": "06-sting",
+      "file": "renders/06-sting.mp4",
+      "durationSeconds": 6,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30,
+      "audio": true,
+      "fullDecodePassed": true,
+      "sampledExportFramesReviewed": true,
+      "integratedLufs": -18.8,
+      "truePeakDbfs": -4.5,
+      "compositionCheck": {
+        "passed": true,
+        "errors": 0,
+        "warnings": [
+          "nested_structure_needs_subcomposition"
+        ],
+        "contrastChecksPassed": 27
+      },
+      "bytes": 1163628,
+      "sha256": "90357d9d43895b9fa75c369c8af2ca11095f42d0dd4f03ef096b91e0c035ffc7"
+    }
+  ]
+}

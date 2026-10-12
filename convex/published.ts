@@ -12,6 +12,7 @@
 
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { ownedHandles } from "./profiles";
 
 /* ── Slug generation ──────────────────────────────────────────── */
 
@@ -109,10 +110,8 @@ export const publish = mutation({
     // Look up the owner's claimed handle so reader URLs use the first-class
     // /<handle>/<slug> shape; null when the writer hasn't claimed one yet
     // (the /p/[slug] legacy path still serves the piece).
-    const handleRow = await ctx.db
-      .query("handles")
-      .withIndex("by_userId", (q) => q.eq("userId", ownerId))
-      .unique();
+    const aliases = await ownedHandles(ctx, ownerId);
+    const handleRow = aliases[0];
     const ownerHandle = handleRow?.handle ?? undefined;
 
     const now = Date.now();
@@ -148,7 +147,11 @@ export const publish = mutation({
         title: cleanTitle,
         authorName: args.authorName ?? existing.authorName,
         briefSummary: args.briefSummary ?? existing.briefSummary,
-        ownerHandle: ownerHandle ?? existing.ownerHandle,
+        ownerHandle: aliases.some(
+          (alias) => alias.handle === existing.ownerHandle,
+        )
+          ? existing.ownerHandle
+          : (ownerHandle ?? existing.ownerHandle),
         content: cleanContent,
         // The kind can move on re-publish (admin decides what
         // a given folio is today).

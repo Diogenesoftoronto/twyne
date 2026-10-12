@@ -1,0 +1,21 @@
+{
+  "status": "frozen read-only diagnosis",
+  "ownedFiles": {
+    "README.md": "39baa91ad493b7b962a761325a8528746221c932858dd1bcdc814efea24444cf",
+    "drag-focus-guard.patch": "71c7981e21a306093289f722bb4cf5a7f28d5bd71fc2cdad7e1bfad1fff0d0a7",
+    "driver-observation.patch": "be298b8581be4cf5d7754e33174ffb3886ac66183a2731bd4f2f118b8ec6c52a",
+    "evidence.json": "8628f66af1c5a364a3d1e4e2dde115e297913e1d9864065706b4c1ded8a8933a",
+    "pins.json": "7ec069b2d7081b52637399245bda3606df0068f79a4311b85ee1ac109ca3380f"
+  },
+  "firstAppendRootCause": "unresolved; no claimed caret fix",
+  "proposals": "driver observations/readiness and independent exact-focus drag guard; both unapplied",
+  "performed": [
+    "source and retained JSON/image inspection",
+    "filesystem-only receipt generation"
+  ],
+  "notPerformed": [
+    "patch application/check",
+    "syntax/format/test execution",
+    "Cargo/Devenv/rustc/native/browser/server/network/provider execution"
+  ]
+}

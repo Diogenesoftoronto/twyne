@@ -155,7 +155,7 @@ async function assertSavedReply(
   expect(headBox).not.toBeNull();
   expect(replyBox).not.toBeNull();
   expect(headBox!.y + headBox!.height).toBeLessThanOrEqual(replyBox!.y + 1);
-  return { saved, masthead };
+  return { saved, masthead, thread };
 }
 async function assertKnownPortrait(masthead: Locator) {
   const portrait = masthead.locator('[data-persona-portrait="editor"]');
@@ -240,17 +240,15 @@ test("Sentence room selects a real editor and saves the exact unapplied comparis
   await invitation
     .getByRole("button", { name: "Ask the room", exact: true })
     .click();
-  const { saved, masthead } = await assertSavedReply(page, INSTRUMENT_SENTENCE);
-  const storedInvitation = page
-    .locator(`[data-comment-id="${saved.id}"]:visible`)
-    .filter({ has: masthead })
-    .first()
-    .locator("details")
-    .filter({
-      has: page
-        .locator("summary")
-        .filter({ hasText: /^Passage and invitation details$/ }),
-    });
+  const { saved, masthead, thread } = await assertSavedReply(
+    page,
+    INSTRUMENT_SENTENCE,
+  );
+  const storedInvitation = thread.locator("details").filter({
+    has: page
+      .locator("summary")
+      .filter({ hasText: /^Passage and invitation details$/ }),
+  });
   await expect(storedInvitation).toHaveCount(1);
   await expect(storedInvitation).toHaveJSProperty("open", false);
   expect(transport.judgements).toHaveLength(1);

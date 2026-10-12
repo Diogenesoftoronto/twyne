@@ -1,0 +1,137 @@
+{
+  "source": "Prefix 東京 tail.",
+  "font": "Lora18 regular + explicit original Droid Sans Fallback",
+  "glyphs": [
+    {
+      "sourceByte": 0,
+      "fontId": "FontId(2)",
+      "glyphId": 125,
+      "position": {
+        "x": 0.0,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 1,
+      "fontId": "FontId(2)",
+      "glyphId": 313,
+      "position": {
+        "x": 10.907999992370605,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 2,
+      "fontId": "FontId(2)",
+      "glyphId": 218,
+      "position": {
+        "x": 18.576000213623047,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 3,
+      "fontId": "FontId(2)",
+      "glyphId": 369,
+      "position": {
+        "x": 28.332000732421875,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 5,
+      "fontId": "FontId(2)",
+      "glyphId": 356,
+      "position": {
+        "x": 39.54600143432617,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 6,
+      "fontId": "FontId(2)",
+      "glyphId": 653,
+      "position": {
+        "x": 49.08599853515625,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 7,
+      "fontId": "FontId(0)",
+      "glyphId": 13577,
+      "position": {
+        "x": 53.81999969482422,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 10,
+      "fontId": "FontId(0)",
+      "glyphId": 7236,
+      "position": {
+        "x": 71.81999969482422,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 13,
+      "fontId": "FontId(2)",
+      "glyphId": 653,
+      "position": {
+        "x": 89.81999969482422,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 14,
+      "fontId": "FontId(2)",
+      "glyphId": 325,
+      "position": {
+        "x": 94.55400085449219,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 15,
+      "fontId": "FontId(2)",
+      "glyphId": 183,
+      "position": {
+        "x": 101.52000427246094,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 16,
+      "fontId": "FontId(2)",
+      "glyphId": 251,
+      "position": {
+        "x": 110.8080062866211,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 17,
+      "fontId": "FontId(2)",
+      "glyphId": 271,
+      "position": {
+        "x": 115.86600494384766,
+        "y": 0.0
+      }
+    },
+    {
+      "sourceByte": 18,
+      "fontId": "FontId(2)",
+      "glyphId": 660,
+      "position": {
+        "x": 120.76200866699219,
+        "y": 0.0
+      }
+    }
+  ],
+  "fallbackFirstPrimaryRejected": true,
+  "primaryRejectionLeavesFallbackAvailable": true,
+  "latinAdvancesAndGlyphsUnchanged": true,
+  "sourceUnchanged": true,
+  "fallbackChainArcReused": true
+}

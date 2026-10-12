@@ -1,0 +1,147 @@
+{
+  "scope": "Isolated Tiptap fixture; actual unmodified Source math NodeViews and source-editor, current published CSS and original local assets. No app route/storage/provider/native raster acceptance.",
+  "versions": {
+    "tiptap": "3.22.4",
+    "katex": "0.18.1",
+    "globalVendor": "0.16.47",
+    "scopedCandidate": "0.18.1"
+  },
+  "sourceHashes": {
+    "src/root.tsx": "782141e806ce60765944cfbe70a9d8c497e8b37b1b09c5e8a46e971c4a99839b",
+    "src/components/editor/extensions/math.ts": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+    "src/components/editor/math/math-source-editor.ts": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+    "src/components/editor/math/math-renderer.ts": "0babc59d53aaf2ae9d3e23cf7dc7b2a98243e9d6682fecf622eda1eaddb02472",
+    "src/components/editor/math/math.css": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+    "src/components/editor/math/katex.min.css": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "dist/assets/CxHd3gM_-style.css": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+    "node_modules/katex/dist/katex.min.css": "0fb711c9c74cb1718661933948b653fbc09a627da5dde8926b4d10585370993e"
+  },
+  "stylesheet": {
+    "file": "CxHd3gM_-style.css",
+    "originalHash": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+    "overlayHash": "3e2e88735f142f96355d12cd0eaaad13e740a62ba7df77800852ec0a7d40f9c8",
+    "overlayFontFaces": 0,
+    "retainedVendorFaces": 20,
+    "scopes": [
+      ".twyne-math",
+      ".twyne-math-source-preview"
+    ]
+  },
+  "originalFonts": {
+    "/assets/BQhdFMY1-KaTeX_AMS-Regular.woff2": "0cdd387c9590a1a9f9794560022dbb59654a7d86f187aa0c81495ad42d3a7308",
+    "/assets/DMm9YOAa-KaTeX_AMS-Regular.woff": "30da91e84c893f875e252689faebdc590b2871145e8adc7f9a9d4dbd8ce0b251",
+    "/assets/DRggAlZN-KaTeX_AMS-Regular.ttf": "68534840bcfdd2bffb6f0e8deb48684dd01e7f04ea2813267577afb906de1d13",
+    "/assets/Dq_IR9rO-KaTeX_Caligraphic-Bold.woff2": "de7701e42cf1f4cf0b766c03fb27977207eee2f4fd5d76fa82188406da43ea4c",
+    "/assets/BEiXGLvX-KaTeX_Caligraphic-Bold.woff": "1ae6bd7475590e97e7f145a89e09ccde322f7a6bc0b91607b1c8b8ee28290fed",
+    "/assets/ATXxdsX0-KaTeX_Caligraphic-Bold.ttf": "07d8e303ce4fc12b4bb54f1004170dd190a1f3db45d400fe68060df3e0897268",
+    "/assets/Di6jR-x--KaTeX_Caligraphic-Regular.woff2": "5d53e70ad607c2352162dec9e0923fb54ecdafaccbf604cd8dcf7d00facb989b",
+    "/assets/CTRA-rTL-KaTeX_Caligraphic-Regular.woff": "3398dd02302557a793f2863f88e02d96ce10df2abffa07c8e9fa90775116e65c",
+    "/assets/wX97UBjC-KaTeX_Caligraphic-Regular.ttf": "ed0b74372feefcbb9c0666b2e210da37b7e49fa7fbbf3eeb11db5f693dacfbb7",
+    "/assets/CL6g_b3V-KaTeX_Fraktur-Bold.woff2": "74444efd593c005e3f4573b44524704c0af0a937fe911cca9e94068d0d140d3f",
+    "/assets/BsDP51OF-KaTeX_Fraktur-Bold.woff": "9be7ceb88004ab8ad124082246fbfcca4091e36385d4ec6ed1df67375dad50fb",
+    "/assets/BdnERNNW-KaTeX_Fraktur-Bold.ttf": "9163df9c7122432e6495b4229fa9071cf9ae86a758ae5efc4924ec2e1a6dbce1",
+    "/assets/CTYiF6lA-KaTeX_Fraktur-Regular.woff2": "51814d270d06ff0255dba0799994fa4d8c84d11f09951d47595f4abb1f3602dc",
+    "/assets/Dxdc4cR9-KaTeX_Fraktur-Regular.woff": "5e28753be717dac97f559f49bc10be9cf3c124ddcabda6659d11cb68febc6463",
+    "/assets/CB_wures-KaTeX_Fraktur-Regular.ttf": "1e6f9579e90e2cac37f8f60a597c436e075c114385652b7cbeb0dec0421291b3",
+    "/assets/Cx986IdX-KaTeX_Main-Bold.woff2": "0f60d1b897938ec918c8ce073092411baf9438f6739465693ff18b0f9d20b021",
+    "/assets/Jm3AIy58-KaTeX_Main-Bold.woff": "c76c5d696297d51b9cb1639c7da4334f0e7dec81b42b11213b5e25ef671bb822",
+    "/assets/waoOVXN0-KaTeX_Main-Bold.ttf": "138ac28d1663b3037e9c5f52371fa5c63d8324f4a38d22cd573e6ea3a3fd0cf8",
+    "/assets/DxDJ3AOS-KaTeX_Main-BoldItalic.woff2": "99cd42a3c072d918f2f44984a807cf7aa16e13545fd0875fc07c6c65f99e715b",
+    "/assets/SpSLRI95-KaTeX_Main-BoldItalic.woff": "a6f7ec0d846ac7ad975adb8959c37ed49b94acbc4ae436db9ce9e20287e4a64c",
+    "/assets/DzxPMmG6-KaTeX_Main-BoldItalic.ttf": "70ee1f64a20f2048c21940ef46d0144fd215baa953ca69afd1e31e98544f708f",
+    "/assets/NWA7e6Wa-KaTeX_Main-Italic.woff2": "97479ca6cce906abc961ecac96faa5f9ca2e61b8e7670d475826bcdee9a7c267",
+    "/assets/BMLOBm91-KaTeX_Main-Italic.woff": "f1d6ef86f3b11a528bd5185199bd2443ecb2b0dead96d88674b5a2c12be24bdf",
+    "/assets/3WenGoN9-KaTeX_Main-Italic.ttf": "0d85ae7cc30f23790a7f1a58c4a112fdca8aae769b6ba11429af1d98b1b6cb3a",
+    "/assets/B22Nviop-KaTeX_Main-Regular.woff2": "c2342cd8b869e01752a9321dc17213fc40d4d04c79688c1d43f2cf316abd7866",
+    "/assets/Dr94JaBh-KaTeX_Main-Regular.woff": "c6368d87e8a1a3a5d337623d83d8dc4b868f242a9ad476237d6f8d1e0f168cdc",
+    "/assets/ypZvNtVU-KaTeX_Main-Regular.ttf": "d0332f52868370fd83ae7fa46470f90c8f2eab2fcf12bc4f88080b340c95a830",
+    "/assets/CZnvNsCZ-KaTeX_Math-BoldItalic.woff2": "dc47344dbb6cb5b655c8460d561f4df5f501b90c804ad3c6cec65fe322351ab1",
+    "/assets/iY-2wyZ7-KaTeX_Math-BoldItalic.woff": "850c0af5c2238497febaf5e461d880bf458c341f42f4f330f1b1ab5698b1998e",
+    "/assets/B3XSjfu4-KaTeX_Math-BoldItalic.ttf": "f9377ab0271cda59af24bcffbd46a4d0c8a3572ffafdbb38de2ad5ea7b0d5ee5",
+    "/assets/t53AETM--KaTeX_Math-Italic.woff2": "7af58c5ec8f132a2ddde9027c6d7814decce4d3b822a11192a42a20e2e973264",
+    "/assets/DA0__PXp-KaTeX_Math-Italic.woff": "8a8d244581371912b8f3f5a23e2437cb2a59cd9bcaebb0346e722c05737a2571",
+    "/assets/flOr_0UB-KaTeX_Math-Italic.ttf": "08ce98e51b04d58945a301e639e02b6998af29fdfd61a7b8afdd07bbfc479d4a",
+    "/assets/D1sUS0GD-KaTeX_SansSerif-Bold.woff2": "e99ae51144bf1232efcc1bfe5add36262c6866b0faab24fa75740e1b98577a62",
+    "/assets/DbIhKOiC-KaTeX_SansSerif-Bold.woff": "ece03cfd83e22c212cdef66feb8442d25a083beb988db3f1883f3f9738d750ba",
+    "/assets/CFMepnvq-KaTeX_SansSerif-Bold.ttf": "1ece03f79f95277d57dc7f6b435a74e1379b0d46104a8530286b60ff49369ea0",
+    "/assets/C3H0VqGB-KaTeX_SansSerif-Italic.woff2": "00b26ac825e2095056396e0553b8ac26d3f8ad158c3826e28b4c45b385c4714a",
+    "/assets/DN2j7dab-KaTeX_SansSerif-Italic.woff": "91ee67500cc0129aa0ace3ac5c61ff1692102f0f31d02b69347fba35dcb75bf2",
+    "/assets/YYjJ1zSn-KaTeX_SansSerif-Italic.ttf": "3931dd81faed86ba021bb2bbdc36f5bed9a38d6b4f4077aca59b265aa1b02083",
+    "/assets/DDBCnlJ7-KaTeX_SansSerif-Regular.woff2": "68e8c73ef42afd3ccec58bf0fba302cce448938e7fc020a5e31f8a952eee1342",
+    "/assets/CS6fqUqJ-KaTeX_SansSerif-Regular.woff": "11e4dc8a6471ff6d6ee561d53d10fde8f7489e798257ff449c5d37c197435605",
+    "/assets/BNo7hRIc-KaTeX_SansSerif-Regular.ttf": "f36ea897e19f4a2e571d1e900e4e3710e438deb05a842486045ba0a3e616a4ad",
+    "/assets/D3wIWfF6-KaTeX_Script-Regular.woff2": "036d4e95149b69ff9bcc0cd55771efeb25ffa3947293e69acd78d5ac328c684b",
+    "/assets/D5yQViql-KaTeX_Script-Regular.woff": "d96cdf2b3bdd4d64a8fd5f74a4c467f123a8a73931cd435889f08ffaf9bf947a",
+    "/assets/C5JkGWo--KaTeX_Script-Regular.ttf": "1c67f068fea8bb09bf099c088b1cf64bd27516a6e07f4684344873564bb66a67",
+    "/assets/mCD8mA8B-KaTeX_Size1-Regular.woff2": "6b47c40166b6dbe21a5dfca7718413f2147fd2399be1ba605d8ad39cedf25dfe",
+    "/assets/C195tn64-KaTeX_Size1-Regular.woff": "c943cc986384f59e86bea5fd7dc50a9c4dfe567a7c05eb40d6790720dead97c9",
+    "/assets/Dbsnue_I-KaTeX_Size1-Regular.ttf": "95b6d2f1a50173bfedb8c63e1d1c99b10427d0a4df4201cb44513b226951a22b",
+    "/assets/Dy4dx90m-KaTeX_Size2-Regular.woff2": "d04c54219f9eaec6d4d4fd42dfb28785975a4794d6b2fc71e566b9cd6db842dd",
+    "/assets/oD1tc_U0-KaTeX_Size2-Regular.woff": "2014c523c3210bcc166648c4d4cc57f05b747df07a24277bf71c51e67dc79e3d",
+    "/assets/B7gKUWhC-KaTeX_Size2-Regular.ttf": "a6b2099fb555c60e3a0db3a08842ebf1d732c6eb4e4bf44913613bed4fc4e39b",
+    "/assets/CTq5MqoE-KaTeX_Size3-Regular.woff": "6ab6b62e9b62dae2c00dd90f791bd10950be0ecc3490d7d6045f51c2e8fe0949",
+    "/assets/DgpXs0kz-KaTeX_Size3-Regular.ttf": "500e04d54f0d51666332c9d2089aa803be22aa878eca539e59fa53c6e522b082",
+    "/assets/Dl5lxZxV-KaTeX_Size4-Regular.woff2": "a4af7d414440a1c1790825cfb700cf9cf43b0f2c4b04f0ebc523011ad9853ec0",
+    "/assets/BF-4gkZK-KaTeX_Size4-Regular.woff": "99f9c6750b489c9462bf04900bd3f939df9b829339daaaaa99ef5495cdddea58",
+    "/assets/DWFBv043-KaTeX_Size4-Regular.ttf": "c647367d1dd4e162468717d020e1fc0f1dc5c26ebfdffbe55261713bf88c5877",
+    "/assets/CO6r4hn1-KaTeX_Typewriter-Regular.woff2": "71d517d67827787cfabdf186914cc3358eda539e37931941f2b2fd4a21f68c0b",
+    "/assets/C0xS9mPB-KaTeX_Typewriter-Regular.woff": "e14fed02b1aba7ce9f5afd5844b5d0321b22351febc720e0de8b8723527609f7",
+    "/assets/D3Ib7_Hf-KaTeX_Typewriter-Regular.ttf": "f01f3e87d9c6a61c0c081ceb577abd864eb00a612f7ac1620dd6915fad2ef5aa"
+  },
+  "bodyFontReplay": {
+    "provenance": "Byte-exact prior authorized Source Chrome font responses; reused locally, no network calls. Source root.tsx Google CSS retained. Only previously captured faces needed by this ASCII/Café/math fixture are replayed; unused unavailable ranges/families are omitted.",
+    "originalCssUrl": "https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Special+Elite&display=swap",
+    "originalCssSha256": "b5c5990a16e7103cc145f332a58b3e4fb0e34b19ff0a2e3f0c7d8b69062b78d5",
+    "localCssSha256": "5c246196d8cbfd3f37845f4539c07d5dc0d9a763c6097e441ec398df18b0de56",
+    "keptFaces": 16,
+    "files": [
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/librebaskerville/v24/kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SjNNluc.woff2",
+        "file": "kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SjNNluc.woff2",
+        "sha256": "efb7e5f4376a557314f5bb9f5197ef837d86c0ab38e1a50a0ff5c60c3400c629",
+        "bytes": 21564
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/specialelite/v20/XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+        "file": "XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+        "sha256": "770493d84cbb753cd0573d0f014550583138f40469d137e310d239593a1949d8",
+        "bytes": 53296
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/dmsans/v17/rP2Hp2ywxg089UriCZOIHQ.woff2",
+        "file": "rP2Hp2ywxg089UriCZOIHQ.woff2",
+        "sha256": "ca72d2bcea8f4daa783dbdfa2d9b46068c3ce38168e05918fb867aa453b4f890",
+        "bytes": 62724
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/librebaskerville/v24/kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2",
+        "file": "kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2",
+        "sha256": "22219fb90e3b9bd28debd1825fe8d9a0154a0e31f8b3fa601ac1a0a5aa5e6d1b",
+        "bytes": 33872
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIhMX1D_JOuMw_LIftL.woff2",
+        "file": "0QIhMX1D_JOuMw_LIftL.woff2",
+        "sha256": "d824d807d4d832d12c87932d0b8ec1314dcfd502157a56dee6bb04cf8a3768ae",
+        "bytes": 40772
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuMwr7Iw.woff2",
+        "file": "0QIvMX1D_JOuMwr7Iw.woff2",
+        "sha256": "ddb8c66035104e233fc024669183aad3738b6daa16deee2ebb1241bd0f98ace1",
+        "bytes": 37788
+      },
+      {
+        "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuM3b7I-NP.woff2",
+        "file": "0QIvMX1D_JOuM3b7I-NP.woff2",
+        "sha256": "a8c4cb778ab6202d22bdea2ccc8d7e7caf802cfe0a7ce37df7b212f82341468f",
+        "bytes": 29240
+      }
+    ]
+  },
+  "bundleHashes": {
+    "client.js": "eb4262fd18077d6ff4a9474de3aafd46fd005bbf57ca40b3ee5671f27014ad0a",
+    "chunk-d2e7jwnm.js": "31d0ee6f5e7a4e7a88fd85e77889292cb56cc17e53da679a3450cae88128bc76",
+    "client.css": "48057dbe1f8aef9bfd5c113d6f9bb8c614358e8868b69e7f4667c98c67de61ea"
+  }
+}

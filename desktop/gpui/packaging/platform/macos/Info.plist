@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<!-- Scaffold only: not installed in a runnable .app. A release assembler must
+     substitute concrete versions/minimum OS, convert AppIcon.png to ICNS and
+     place the application plus sibling helpers in Contents/MacOS. No native
+     URL callback adapter is implemented, so this template registers no scheme. -->
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
+  <key>CFBundleDisplayName</key>
+  <string>Twyne</string>
+  <key>CFBundleExecutable</key>
+  <string>twyne-desktop</string>
+  <key>CFBundleIdentifier</key>
+  <string>love.twyne.gpui</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleName</key>
+  <string>Twyne</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>@PRODUCT_VERSION@</string>
+  <key>CFBundleVersion</key>
+  <string>@BUILD_NUMBER@</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon.icns</string>
+  <key>LSMinimumSystemVersion</key>
+  <string>@VERIFIED_MINIMUM_MACOS@</string>
+  <key>NSHighResolutionCapable</key>
+  <true/>
+  <key>NSPrincipalClass</key>
+  <string>NSApplication</string>
+  <key>LSApplicationCategoryType</key>
+  <string>public.app-category.productivity</string>
+  <key>CFBundleDocumentTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleTypeName</key>
+      <string>Typst source</string>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>LSItemContentTypes</key>
+      <array>
+        <string>public.plain-text</string>
+      </array>
+      <key>CFBundleTypeExtensions</key>
+      <array>
+        <string>typ</string>
+      </array>
+    </dict>
+    <dict>
+      <key>CFBundleTypeName</key>
+      <string>Twyne document</string>
+      <key>CFBundleTypeRole</key>
+      <string>Editor</string>
+      <key>LSItemContentTypes</key>
+      <array>
+        <string>public.json</string>
+      </array>
+      <key>CFBundleTypeExtensions</key>
+      <array>
+        <string>twyne</string>
+      </array>
+    </dict>
+  </array>
+</dict>
+</plist>

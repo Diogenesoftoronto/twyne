@@ -1,0 +1,563 @@
+{
+  "generatedBy": "Executed src/types, page-ornaments, pagination-geometry, page-furniture-editor and parsed src/global.css",
+  "css": {
+    "rulerHeight": 21.6,
+    "rulerGap": 4,
+    "plainInset": 10,
+    "largeInset": 24,
+    "compactInset": 10,
+    "largeFrame": 48,
+    "compactFrame": 32,
+    "largeClearance": 80,
+    "smallClearance": 44
+  },
+  "continuous": [
+    {
+      "name": "current continuous default",
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "plain",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem"
+      },
+      "available": 984,
+      "viewport": 1280,
+      "zen": false,
+      "expected": {
+        "width": 768,
+        "padding": {
+          "left": 32,
+          "right": 32,
+          "top": 16,
+          "bottom": 16
+        },
+        "guides": {
+          "left": 32,
+          "right": 32,
+          "top": 16,
+          "bottom": 16
+        },
+        "border": "plain",
+        "inset": 10,
+        "frame": 1,
+        "rulerSpace": 25.6
+      }
+    },
+    {
+      "name": "legacy coarse margins",
+      "layout": {
+        "width": "narrow",
+        "margin": "tight",
+        "runningHeader": false,
+        "pageNumbers": true
+      },
+      "available": 984,
+      "viewport": 1280,
+      "zen": false,
+      "expected": {
+        "width": 576,
+        "padding": {
+          "left": 24,
+          "right": 24,
+          "top": 40,
+          "bottom": 64
+        },
+        "guides": {
+          "left": 24,
+          "right": 24,
+          "top": 40,
+          "bottom": 64
+        },
+        "border": "plain",
+        "inset": 10,
+        "frame": 1,
+        "rulerSpace": 25.6
+      }
+    },
+    {
+      "name": "legacy independent sides",
+      "layout": {
+        "width": "wide",
+        "margin": "roomy",
+        "marginX": 1.75,
+        "marginLeft": 2.25,
+        "runningHeader": true,
+        "pageNumbers": false
+      },
+      "available": 1100,
+      "viewport": 1500,
+      "zen": false,
+      "expected": {
+        "width": 992,
+        "padding": {
+          "left": 36,
+          "right": 28,
+          "top": 80,
+          "bottom": 80
+        },
+        "guides": {
+          "left": 36,
+          "right": 28,
+          "top": 80,
+          "bottom": 80
+        },
+        "border": "plain",
+        "inset": 10,
+        "frame": 1,
+        "rulerSpace": 25.6
+      }
+    },
+    {
+      "name": "ornate frame and clearance",
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "botanical",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem"
+      },
+      "available": 984,
+      "viewport": 1280,
+      "zen": false,
+      "expected": {
+        "width": 768,
+        "padding": {
+          "left": 80,
+          "right": 80,
+          "top": 80,
+          "bottom": 80
+        },
+        "guides": {
+          "left": 32,
+          "right": 32,
+          "top": 16,
+          "bottom": 16
+        },
+        "border": "botanical",
+        "inset": 24,
+        "frame": 48,
+        "rulerSpace": 25.6
+      }
+    },
+    {
+      "name": "compact canvas, desktop viewport",
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "engraved",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem"
+      },
+      "available": 480,
+      "viewport": 1280,
+      "zen": false,
+      "expected": {
+        "width": 480,
+        "padding": {
+          "left": 80,
+          "right": 80,
+          "top": 80,
+          "bottom": 80
+        },
+        "guides": {
+          "left": 32,
+          "right": 32,
+          "top": 16,
+          "bottom": 16
+        },
+        "border": "engraved",
+        "inset": 10,
+        "frame": 32,
+        "rulerSpace": 25.6
+      }
+    },
+    {
+      "name": "mobile ornament clearance",
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "illuminated",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem"
+      },
+      "available": 480,
+      "viewport": 639,
+      "zen": false,
+      "expected": {
+        "width": 480,
+        "padding": {
+          "left": 44,
+          "right": 44,
+          "top": 44,
+          "bottom": 44
+        },
+        "guides": {
+          "left": 32,
+          "right": 32,
+          "top": 16,
+          "bottom": 16
+        },
+        "border": "illuminated",
+        "inset": 10,
+        "frame": 32,
+        "rulerSpace": 0
+      }
+    },
+    {
+      "name": "zen uses full desk",
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "botanical",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem"
+      },
+      "available": 984,
+      "viewport": 1280,
+      "zen": true,
+      "expected": {
+        "width": 952,
+        "padding": {
+          "left": 38.4,
+          "right": 38.4,
+          "top": 20,
+          "bottom": 48
+        },
+        "guides": {
+          "left": 32,
+          "right": 32,
+          "top": 16,
+          "bottom": 16
+        },
+        "border": "none",
+        "inset": 10,
+        "frame": 1,
+        "rulerSpace": 0
+      }
+    },
+    {
+      "name": "zen maximum width",
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "plain",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem"
+      },
+      "available": 2400,
+      "viewport": 2400,
+      "zen": true,
+      "expected": {
+        "width": 1184,
+        "padding": {
+          "left": 48,
+          "right": 48,
+          "top": 20,
+          "bottom": 48
+        },
+        "guides": {
+          "left": 32,
+          "right": 32,
+          "top": 16,
+          "bottom": 16
+        },
+        "border": "none",
+        "inset": 10,
+        "frame": 1,
+        "rulerSpace": 0
+      }
+    },
+    {
+      "name": "mobile zen",
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "plain",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem"
+      },
+      "available": 600,
+      "viewport": 639,
+      "zen": true,
+      "expected": {
+        "width": 600,
+        "padding": {
+          "left": 16,
+          "right": 16,
+          "top": 12,
+          "bottom": 48
+        },
+        "guides": {
+          "left": 32,
+          "right": 32,
+          "top": 16,
+          "bottom": 16
+        },
+        "border": "none",
+        "inset": 10,
+        "frame": 1,
+        "rulerSpace": 0
+      }
+    }
+  ],
+  "physical": [
+    {
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "botanical",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "letter",
+        "orientation": "portrait",
+        "marginUnit": "rem",
+        "pagination": "paginated"
+      },
+      "width": 816,
+      "height": 1056,
+      "tiles": {
+        "horizontal": 12,
+        "vertical": 7
+      },
+      "geometry": {
+        "pageH": 1056,
+        "pageW": 816,
+        "gap": 24,
+        "marginTop": 16,
+        "marginBottom": 16,
+        "marginLeft": 32,
+        "marginRight": 32,
+        "contentH": 1024,
+        "contentW": 752
+      }
+    },
+    {
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "botanical",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "a4",
+        "orientation": "landscape",
+        "marginUnit": "rem",
+        "pagination": "paginated"
+      },
+      "width": 1122.5184,
+      "height": 793.6992,
+      "tiles": {
+        "horizontal": 17,
+        "vertical": 5
+      },
+      "geometry": {
+        "pageH": 793.6992,
+        "pageW": 1122.5184,
+        "gap": 24,
+        "marginTop": 16,
+        "marginBottom": 16,
+        "marginLeft": 32,
+        "marginRight": 32,
+        "contentH": 761.6992,
+        "contentW": 1058.5184
+      }
+    },
+    {
+      "layout": {
+        "width": "normal",
+        "margin": "normal",
+        "marginX": 2,
+        "marginLeft": 2,
+        "marginRight": 2,
+        "marginTop": 1,
+        "marginBottom": 1,
+        "runningHeader": false,
+        "pageNumbers": true,
+        "showMarginGuides": false,
+        "openingInitial": {
+          "mode": "illuminated",
+          "collection": "botanical",
+          "size": "medium"
+        },
+        "pageBorder": "botanical",
+        "columns": 1,
+        "columnGap": 1.5,
+        "paper": "legal",
+        "orientation": "portrait",
+        "marginUnit": "rem",
+        "pagination": "paginated"
+      },
+      "width": 816,
+      "height": 1344,
+      "tiles": {
+        "horizontal": 12,
+        "vertical": 9
+      },
+      "geometry": {
+        "pageH": 1344,
+        "pageW": 816,
+        "gap": 24,
+        "marginTop": 16,
+        "marginBottom": 16,
+        "marginLeft": 32,
+        "marginRight": 32,
+        "contentH": 1312,
+        "contentW": 752
+      }
+    }
+  ],
+  "furniture": [
+    {
+      "fallback": "Untitled",
+      "displayed": "Untitled"
+    },
+    {
+      "custom": " \t\n ",
+      "fallback": "A title",
+      "displayed": "A title"
+    },
+    {
+      "custom": "  Café — a running head  ",
+      "fallback": "Untitled",
+      "displayed": "  Café — a running head  "
+    }
+  ]
+}

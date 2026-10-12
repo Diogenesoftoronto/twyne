@@ -2,6 +2,7 @@
 **/.DS_Store
 .dagger/sdk
 build-output
+artifacts
 *.
 .vscode/settings.json
 .history
@@ -44,3 +45,10 @@ server
 
 # Standalone video compositions have their own validation pipeline.
 launch-videos/
+social-preview-video/
+
+# Native fixtures and vendor inputs retain exact bytes for parity checks.
+desktop/gpui/fixtures/
+desktop/gpui/vendor/
+desktop/gpui/assets/
+desktop/gpui/tools/*.generated.ts

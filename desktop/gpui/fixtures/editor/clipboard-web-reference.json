@@ -1,0 +1,52 @@
+{
+  "browser": "154.0.8037.57",
+  "blockedNetworkRequests": 0,
+  "cases": [
+    {
+      "name": "inline-rich",
+      "input": "<p>A<strong><span data-comment-id=\"comment-1\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">🦊é</span></strong><span data-type=\"inline-math\" data-latex=\"E=mc^2\" data-math-display=\"inline\" aria-label=\"Inline equation: E=mc^2\" class=\"twyne-math twyne-math-inline\">E=mc^2</span><sup data-endnote-text=\"Authored note\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Authored note\"></sup><span data-typst-source=\"#keep[原稿]\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">#keep[原稿]</span>Z</p>",
+      "html": "<p data-pm-slice=\"1 1 []\"><strong><span data-comment-id=\"comment-1\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">🦊é</span></strong><span data-type=\"inline-math\" data-latex=\"E=mc^2\" data-math-display=\"inline\" aria-label=\"Inline equation: E=mc^2\" class=\"twyne-math twyne-math-inline\">E=mc^2</span><sup data-endnote-text=\"Authored note\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Authored note\"></sup><span data-typst-source=\"#keep[原稿]\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">#keep[原稿]</span></p>",
+      "text": "🦊é",
+      "openStart": 1,
+      "openEnd": 1,
+      "pasted": "<p>Left<strong><span data-comment-id=\"comment-1\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">🦊é</span></strong><span data-type=\"inline-math\" data-latex=\"E=mc^2\" data-math-display=\"inline\" aria-label=\"Inline equation: E=mc^2\" class=\"twyne-math twyne-math-inline\">E=mc^2</span><sup data-endnote-text=\"Authored note\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Authored note\"></sup><span data-typst-source=\"#keep[原稿]\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">#keep[原稿]</span>Right</p>"
+    },
+    {
+      "name": "complete-paragraph",
+      "input": "<p>A<strong><span data-comment-id=\"comment-1\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">🦊é</span></strong><span data-type=\"inline-math\" data-latex=\"E=mc^2\" data-math-display=\"inline\" aria-label=\"Inline equation: E=mc^2\" class=\"twyne-math twyne-math-inline\">E=mc^2</span><sup data-endnote-text=\"Authored note\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Authored note\"></sup><span data-typst-source=\"#keep[原稿]\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">#keep[原稿]</span>Z</p>",
+      "html": "<p data-pm-slice=\"0 0 []\">A<strong><span data-comment-id=\"comment-1\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">🦊é</span></strong><span data-type=\"inline-math\" data-latex=\"E=mc^2\" data-math-display=\"inline\" aria-label=\"Inline equation: E=mc^2\" class=\"twyne-math twyne-math-inline\">E=mc^2</span><sup data-endnote-text=\"Authored note\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Authored note\"></sup><span data-typst-source=\"#keep[原稿]\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">#keep[原稿]</span>Z</p>",
+      "text": "A🦊éZ",
+      "openStart": 0,
+      "openEnd": 0,
+      "pasted": "<p>Left</p><p>A<strong><span data-comment-id=\"comment-1\" data-comment-author=\"You\" data-comment-color=\"var(--color-writer-note)\" class=\"twyne-comment-mark\" style=\"background: color-mix(in srgb, var(--color-writer-note) 18%, transparent); border-bottom: 2px solid var(--color-writer-note); cursor: text;\">🦊é</span></strong><span data-type=\"inline-math\" data-latex=\"E=mc^2\" data-math-display=\"inline\" aria-label=\"Inline equation: E=mc^2\" class=\"twyne-math twyne-math-inline\">E=mc^2</span><sup data-endnote-text=\"Authored note\" data-type=\"endnote\" class=\"twyne-endnote\" title=\"Authored note\"></sup><span data-typst-source=\"#keep[原稿]\" data-type=\"raw-typst-inline\" class=\"twyne-raw-typst-inline\" title=\"Edit this Typst expression in source view\" contenteditable=\"false\">#keep[原稿]</span>Z</p><p>Right</p>"
+    },
+    {
+      "name": "open-paragraphs",
+      "input": "<p>One<strong>Bold</strong></p><h2>Two <em>End</em></h2>",
+      "html": "<p data-pm-slice=\"1 1 []\">e<strong>Bold</strong></p><h2>Two</h2>",
+      "text": "eBold\n\nTwo",
+      "openStart": 1,
+      "openEnd": 1,
+      "pasted": "<p>Lefte<strong>Bold</strong></p><h2>TwoRight</h2><p></p>"
+    },
+    {
+      "name": "deep-list-context",
+      "input": "<ul><li><p>One</p></li></ul>",
+      "html": "<p data-pm-slice=\"1 1 [&quot;bulletList&quot;,{},&quot;listItem&quot;,{}]\">n</p>",
+      "text": "n",
+      "openStart": 3,
+      "openEnd": 3,
+      "pasted": "<p>LeftnRight</p>"
+    },
+    {
+      "name": "complete-list",
+      "input": "<ul><li><p>One</p></li></ul>",
+      "html": "<ul data-pm-slice=\"0 0 []\"><li><p>One</p></li></ul>",
+      "text": "One",
+      "openStart": 0,
+      "openEnd": 0,
+      "pasted": "<p>Left</p><ul><li><p>One</p></li></ul><p>Right</p>"
+    }
+  ],
+  "plainPasted": "<p>LeftA</p><p>B</p><p>CRight</p>"
+}

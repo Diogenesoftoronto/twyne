@@ -1,0 +1,232 @@
+{
+  "backend": "X11",
+  "html": "<p>Prefix xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx tail.</p><p>Prefix https://twyne.example/longpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpath?query=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv tail.</p><p>Prefix éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé tail.</p><p>Prefix 👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻 tail.</p><p>Prefix 東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京 tail.</p>",
+  "paragraphs": [
+    {
+      "source": "Prefix xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx tail.",
+      "lineTexts": [
+        "Prefix ",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx tail."
+      ],
+      "lines": [
+        {
+          "text": "Prefix ",
+          "top": 40.0,
+          "right": 640.0,
+          "range": [
+            0,
+            7
+          ]
+        },
+        {
+          "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+          "top": 72.4000015258789,
+          "right": 631.47998046875,
+          "range": [
+            7,
+            69
+          ]
+        },
+        {
+          "text": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx tail.",
+          "top": 104.80000305175781,
+          "right": 352.02996826171875,
+          "range": [
+            69,
+            104
+          ]
+        }
+      ],
+      "width": 600,
+      "right": 640
+    },
+    {
+      "source": "Prefix https://twyne.example/longpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpath?query=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv tail.",
+      "lineTexts": [
+        "Prefix https://twyne.example/",
+        "longpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathl",
+        "ongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathl",
+        "ongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpath?",
+        "query=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+        "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv tail."
+      ],
+      "lines": [
+        {
+          "text": "Prefix https://twyne.example/",
+          "top": 146.0,
+          "right": 639.9999389648438,
+          "range": [
+            0,
+            29
+          ]
+        },
+        {
+          "text": "longpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathl",
+          "top": 178.39999389648438,
+          "right": 637.31201171875,
+          "range": [
+            29,
+            94
+          ]
+        },
+        {
+          "text": "ongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpathl",
+          "top": 210.8000030517578,
+          "right": 632.416015625,
+          "range": [
+            94,
+            158
+          ]
+        },
+        {
+          "text": "ongpathlongpathlongpathlongpathlongpathlongpathlongpathlongpath?",
+          "top": 243.20001220703125,
+          "right": 636.052001953125,
+          "range": [
+            158,
+            222
+          ]
+        },
+        {
+          "text": "query=vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv",
+          "top": 275.6000061035156,
+          "right": 638.3197631835938,
+          "range": [
+            222,
+            285
+          ]
+        },
+        {
+          "text": "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv tail.",
+          "top": 308.0,
+          "right": 388.01190185546875,
+          "range": [
+            285,
+            324
+          ]
+        }
+      ],
+      "width": 600,
+      "right": 640
+    },
+    {
+      "source": "Prefix éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé tail.",
+      "lineTexts": [
+        "Prefix ",
+        "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+        "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééé tail."
+      ],
+      "lines": [
+        {
+          "text": "Prefix ",
+          "top": 349.0,
+          "right": 640.0,
+          "range": [
+            0,
+            7
+          ]
+        },
+        {
+          "text": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé",
+          "top": 381.3999938964844,
+          "right": 639.3825073242188,
+          "range": [
+            7,
+            131
+          ]
+        },
+        {
+          "text": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééé tail.",
+          "top": 413.79998779296875,
+          "right": 636.0884399414062,
+          "range": [
+            131,
+            253
+          ]
+        }
+      ],
+      "width": 600,
+      "right": 640
+    },
+    {
+      "source": "Prefix 👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻 tail.",
+      "lineTexts": [
+        "Prefix 👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻",
+        "👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻 tail."
+      ],
+      "lines": [
+        {
+          "text": "Prefix 👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻",
+          "top": 455.0,
+          "right": 640.0,
+          "range": [
+            0,
+            103
+          ]
+        },
+        {
+          "text": "👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻👩🏽‍💻 tail.",
+          "top": 487.3999938964844,
+          "right": 433.9637756347656,
+          "range": [
+            103,
+            173
+          ]
+        }
+      ],
+      "width": 600,
+      "right": 640
+    },
+    {
+      "source": "Prefix 東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京 tail.",
+      "lineTexts": [
+        "Prefix 東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京",
+        "東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東",
+        "京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京",
+        "東京東京 tail."
+      ],
+      "lines": [
+        {
+          "text": "Prefix 東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京",
+          "top": 528.0,
+          "right": 640.0,
+          "range": [
+            0,
+            37
+          ]
+        },
+        {
+          "text": "東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東",
+          "top": 560.4000244140625,
+          "right": 634.0,
+          "range": [
+            37,
+            70
+          ]
+        },
+        {
+          "text": "京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京東京",
+          "top": 592.7999877929688,
+          "right": 634.0,
+          "range": [
+            70,
+            103
+          ]
+        },
+        {
+          "text": "東京東京 tail.",
+          "top": 625.2000122070312,
+          "right": 147.3699951171875,
+          "range": [
+            103,
+            113
+          ]
+        }
+      ],
+      "width": 600,
+      "right": 640
+    }
+  ],
+  "comments": []
+}

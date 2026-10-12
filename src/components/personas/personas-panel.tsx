@@ -33,7 +33,8 @@ import type {
 import { DEFAULT_ROOM_SETTINGS } from "../../types";
 import { loadDraftText } from "../../utils/anti-tabula-rasa";
 import { PERSONAS as DEFAULT_PERSONAS } from "../../utils/personas";
-import { PersonaMasthead } from "./persona-portrait";
+import { PersonaMasthead, PersonaPortrait } from "./persona-portrait";
+import { openLiveVoice } from "../../utils/live-voice-workspace";
 import { toAgentPersona } from "../../../convex/agentPrompts";
 import { loadPersonasFromIdb } from "../../utils/idb";
 import {
@@ -452,18 +453,26 @@ export const PersonasPanel = component$(
         0 10px 20px -12px rgba(31,27,22,0.45);
     }
 
-    .cast-icon {
-      display: inline-flex;
+    /* The cast as a row of faces, overlapping like a table seen side-on;
+       each lifts forward when pointed at, and opens a conversation. */
+    .cast-faces {
+      display: flex;
       align-items: center;
-      justify-content: center;
-      width: 1.35rem;
-      height: 1.35rem;
-      border: 1px solid var(--frame-color, var(--color-paper-3));
-      border-radius: 999px;
-      color: var(--frame-color, var(--color-ink));
-      background: var(--color-paper-soft);
-      font-size: 0.7rem;
+      padding-left: 0.3rem;
     }
+    .cast-faces > li + li { margin-left: -0.45rem; }
+    .cast-face {
+      display: block;
+      border-radius: 50%;
+      transition: transform 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+    .cast-face:hover,
+    .cast-face:focus-visible {
+      position: relative;
+      z-index: 1;
+      transform: translateY(-2px) scale(1.18);
+    }
+    .cast-face:focus-visible { outline: 2px solid var(--color-vermilion); outline-offset: 2px; }
 
     .convene-btn {
       width: 100%;
@@ -1988,20 +1997,26 @@ export const PersonasPanel = component$(
                     Cast
                   </span>
                   <ul
-                    class="flex items-center gap-1"
+                    class="cast-faces"
                     aria-label={`Current cast, ${store.personas.length} editors`}
                   >
                     {store.personas.map((persona) => (
                       <li key={persona.id}>
-                        <span
-                          class="cast-icon"
-                          style={{ ["--frame-color" as never]: persona.color }}
-                          role="img"
-                          aria-label={`${persona.role}, ${persona.name}`}
-                          title={`${persona.role}: ${persona.name}`}
+                        <button
+                          type="button"
+                          class="cast-face"
+                          aria-label={`Talk with ${persona.name}, ${persona.role}`}
+                          title={`${persona.name} · ${persona.role} — talk it through`}
+                          onClick$={() => openLiveVoice(persona.name)}
                         >
-                          {persona.icon}
-                        </span>
+                          <PersonaPortrait
+                            personaId={persona.id}
+                            name={persona.name}
+                            color={persona.color}
+                            imageUrl={persona.imageUrl}
+                            size={30}
+                          />
+                        </button>
                       </li>
                     ))}
                   </ul>
@@ -2359,6 +2374,8 @@ export const PersonasPanel = component$(
                   <div class="desk-card__head persona-critique-head">
                     <PersonaMasthead
                       personaId={persona.id}
+                      color={persona.color}
+                      imageUrl={persona.imageUrl}
                       name={persona.name}
                       role={persona.role}
                       size={56}

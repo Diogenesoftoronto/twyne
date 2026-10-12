@@ -1,0 +1,274 @@
+{
+  "reference": "original pure retained-room explainer arithmetic executed in Chrome; authored fixtures, no provider activity or result persistence",
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+  "rows": [
+    {
+      "name": "low-score penalties",
+      "judges": [
+        {
+          "personaId": "devil",
+          "score": 2.5,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        },
+        {
+          "personaId": "scholar",
+          "score": 3.5,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        },
+        {
+          "personaId": "reader",
+          "score": 9,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        }
+      ],
+      "staticScore": {
+        "features": {
+          "wordCount": 500,
+          "paragraphCount": 1,
+          "sentenceCount": 1,
+          "avgSentenceLength": 500,
+          "sentenceLengthStdDev": 0,
+          "citationCount": 0,
+          "citationDensity": 0,
+          "avgWordLength": 4,
+          "uniqueWordsRatio": 0.009090909090909144,
+          "shortParagraphRatio": 0,
+          "longParagraphRatio": 1,
+          "duplicateParagraphRatio": 0,
+          "fillerWordRatio": 0,
+          "vagueWordRatio": 0,
+          "unsupportedUniversalClaimCount": 0
+        },
+        "perFeature": {
+          "length": 6.5,
+          "structure": 3,
+          "pacing": 1.0813258341494365,
+          "evidence": 1,
+          "vocabulary": 2,
+          "paragraphShape": 5,
+          "integrity": 10
+        },
+        "total": 4.1621988751224155,
+        "feedback": [
+          "Few claims are backed up: 0 references found.",
+          "Sentence lengths don't vary much (about 500 words each). Mix short sentences with long ones.",
+          "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+          "Some paragraphs run long. Split them where the subject changes or the reader needs a breath.",
+          "The same words come back often. Find the ones you lean on and vary or cut them."
+        ]
+      },
+      "brief": {
+        "answers": {
+          "audience": "A curious reader",
+          "goal": "Make the case"
+        }
+      },
+      "targetFit": 10,
+      "expected": {
+        "judgeMean": 4.2,
+        "minJudge": 2.5,
+        "staticTotal": 4.1621988751224155,
+        "effectiveStatic": 4.16,
+        "rawMean": 5
+      }
+    },
+    {
+      "name": "off-brief cap keeps fixed weights",
+      "judges": [
+        {
+          "personaId": "devil",
+          "score": 2.5,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        },
+        {
+          "personaId": "scholar",
+          "score": 3.5,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        },
+        {
+          "personaId": "reader",
+          "score": 9,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        }
+      ],
+      "staticScore": {
+        "features": {
+          "wordCount": 500,
+          "paragraphCount": 1,
+          "sentenceCount": 1,
+          "avgSentenceLength": 500,
+          "sentenceLengthStdDev": 0,
+          "citationCount": 0,
+          "citationDensity": 0,
+          "avgWordLength": 4,
+          "uniqueWordsRatio": 0.009090909090909144,
+          "shortParagraphRatio": 0,
+          "longParagraphRatio": 1,
+          "duplicateParagraphRatio": 0,
+          "fillerWordRatio": 0,
+          "vagueWordRatio": 0,
+          "unsupportedUniversalClaimCount": 0
+        },
+        "perFeature": {
+          "length": 6.5,
+          "structure": 3,
+          "pacing": 1.0813258341494365,
+          "evidence": 1,
+          "vocabulary": 2,
+          "paragraphShape": 5,
+          "integrity": 10
+        },
+        "total": 4.1621988751224155,
+        "feedback": [
+          "Few claims are backed up: 0 references found.",
+          "Sentence lengths don't vary much (about 500 words each). Mix short sentences with long ones.",
+          "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+          "Some paragraphs run long. Split them where the subject changes or the reader needs a breath.",
+          "The same words come back often. Find the ones you lean on and vary or cut them."
+        ]
+      },
+      "brief": {
+        "answers": {
+          "audience": "A curious reader",
+          "goal": "Make the case"
+        }
+      },
+      "targetFit": 0,
+      "expected": {
+        "judgeMean": 4.2,
+        "minJudge": 2.5,
+        "staticTotal": 4.1621988751224155,
+        "effectiveStatic": 3,
+        "rawMean": 5
+      }
+    },
+    {
+      "name": "absent target fit",
+      "judges": [
+        {
+          "personaId": "devil",
+          "score": 2.5,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        },
+        {
+          "personaId": "scholar",
+          "score": 3.5,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        },
+        {
+          "personaId": "reader",
+          "score": 9,
+          "rationale": "Authored fixture",
+          "provider": "fixture"
+        }
+      ],
+      "staticScore": {
+        "features": {
+          "wordCount": 500,
+          "paragraphCount": 1,
+          "sentenceCount": 1,
+          "avgSentenceLength": 500,
+          "sentenceLengthStdDev": 0,
+          "citationCount": 0,
+          "citationDensity": 0,
+          "avgWordLength": 4,
+          "uniqueWordsRatio": 0.009090909090909144,
+          "shortParagraphRatio": 0,
+          "longParagraphRatio": 1,
+          "duplicateParagraphRatio": 0,
+          "fillerWordRatio": 0,
+          "vagueWordRatio": 0,
+          "unsupportedUniversalClaimCount": 0
+        },
+        "perFeature": {
+          "length": 6.5,
+          "structure": 3,
+          "pacing": 1.0813258341494365,
+          "evidence": 1,
+          "vocabulary": 2,
+          "paragraphShape": 5,
+          "integrity": 10
+        },
+        "total": 4.1621988751224155,
+        "feedback": [
+          "Few claims are backed up: 0 references found.",
+          "Sentence lengths don't vary much (about 500 words each). Mix short sentences with long ones.",
+          "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+          "Some paragraphs run long. Split them where the subject changes or the reader needs a breath.",
+          "The same words come back often. Find the ones you lean on and vary or cut them."
+        ]
+      },
+      "brief": {
+        "answers": {
+          "audience": "A curious reader",
+          "goal": "Make the case"
+        }
+      },
+      "targetFit": null,
+      "expected": {
+        "judgeMean": 4.2,
+        "minJudge": 2.5,
+        "staticTotal": 4.1621988751224155,
+        "effectiveStatic": 4.16,
+        "rawMean": 5
+      }
+    },
+    {
+      "name": "legacy empty room",
+      "judges": [],
+      "staticScore": {
+        "features": {
+          "wordCount": 500,
+          "paragraphCount": 1,
+          "sentenceCount": 1,
+          "avgSentenceLength": 500,
+          "sentenceLengthStdDev": 0,
+          "citationCount": 0,
+          "citationDensity": 0,
+          "avgWordLength": 4,
+          "uniqueWordsRatio": 0.009090909090909144,
+          "shortParagraphRatio": 0,
+          "longParagraphRatio": 1,
+          "duplicateParagraphRatio": 0,
+          "fillerWordRatio": 0,
+          "vagueWordRatio": 0,
+          "unsupportedUniversalClaimCount": 0
+        },
+        "perFeature": {
+          "length": 6.5,
+          "structure": 3,
+          "pacing": 1.0813258341494365,
+          "evidence": 1,
+          "vocabulary": 2,
+          "paragraphShape": 5,
+          "integrity": 10
+        },
+        "total": 4.1621988751224155,
+        "feedback": [
+          "Few claims are backed up: 0 references found.",
+          "Sentence lengths don't vary much (about 500 words each). Mix short sentences with long ones.",
+          "Only 1 paragraph. Give it a beginning, a turn and an ending.",
+          "Some paragraphs run long. Split them where the subject changes or the reader needs a breath.",
+          "The same words come back often. Find the ones you lean on and vary or cut them."
+        ]
+      },
+      "brief": null,
+      "targetFit": 10,
+      "expected": {
+        "judgeMean": 5,
+        "minJudge": 5,
+        "staticTotal": 4.1621988751224155,
+        "effectiveStatic": 4.16,
+        "rawMean": 0
+      }
+    }
+  ]
+}

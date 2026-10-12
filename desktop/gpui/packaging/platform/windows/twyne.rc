@@ -1,0 +1,32 @@
+// Uncompiled Windows resource scaffold. Substitute release/build versions
+// and compile/embed this resource before claiming application metadata.
+// twyne.ico is the original public/favicon.ico, staged byte-for-byte.
+1 VERSIONINFO
+FILEVERSION @FILE_VERSION_QUAD@
+PRODUCTVERSION @PRODUCT_VERSION_QUAD@
+FILEFLAGSMASK 0x3fL
+FILEFLAGS 0x0L
+FILEOS 0x40004L
+FILETYPE 0x1L
+FILESUBTYPE 0x0L
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904b0"
+    BEGIN
+      VALUE "CompanyName", "Twyne\0"
+      VALUE "FileDescription", "Twyne native writing room\0"
+      VALUE "FileVersion", "@FILE_VERSION@\0"
+      VALUE "InternalName", "twyne-desktop\0"
+      VALUE "OriginalFilename", "twyne-desktop.exe\0"
+      VALUE "ProductName", "Twyne\0"
+      VALUE "ProductVersion", "@PRODUCT_VERSION@\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END
+
+IDI_APP ICON "twyne.ico"

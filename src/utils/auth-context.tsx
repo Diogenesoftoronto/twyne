@@ -1,3 +1,4 @@
+import { PublicDeskSync } from "../components/desk/public-desk";
 import { AccountToolReview } from "../components/knowledge/account-tool-review";
 import {
   component$,
@@ -274,6 +275,7 @@ export const AuthProvider = component$(() => {
   return (
     <>
       <AccountToolReview />
+      <PublicDeskSync />
       <Slot />
     </>
   );

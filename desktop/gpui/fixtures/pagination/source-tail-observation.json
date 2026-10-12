@@ -1,0 +1,52 @@
+{
+  "boundary": "Isolated original global.css + source paginate over actual DOM offsetHeight. This manually activates the declared page class; current full editor has no registered Pagination extension. Not a full-route browser pagination proof.",
+  "browser": "154.0.8037.57",
+  "attemptedNetworkRequests": 0,
+  "geometry": {
+    "pageH": 1056,
+    "pageW": 816,
+    "gap": 24,
+    "marginTop": 16,
+    "marginBottom": 16,
+    "marginLeft": 32,
+    "marginRight": 32,
+    "contentH": 1024,
+    "contentW": 752
+  },
+  "observed": {
+    "editor": {
+      "top": 16,
+      "bottom": 1040,
+      "width": 752,
+      "height": 1024
+    },
+    "editorMinHeight": "1024px",
+    "paragraph": {
+      "top": 16,
+      "bottom": 48.390625,
+      "width": 752,
+      "height": 32.390625
+    },
+    "paragraphOffsetHeight": 32,
+    "marginTop": 0,
+    "marginBottom": 8.1,
+    "tail": {
+      "top": 1080,
+      "bottom": 1165,
+      "width": 752,
+      "height": 85
+    },
+    "tailOffsetHeight": 85,
+    "tailMarginTop": "40px",
+    "canvas": {
+      "top": 0,
+      "bottom": 1181,
+      "width": 816,
+      "height": 1181
+    }
+  },
+  "result": {
+    "breaks": [],
+    "pageCount": 1
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "status": "frozen unapplied capability proposal; Parent owns application and execution",
+  "frozenAtUtc": "2026-10-05T07:05:49.269021+00:00",
+  "filesSha256": {
+    "README.md": "cde4a3cee718d8c6c7127f0c92e75ea5b01c2384025f09df9aa4349f625b83ee",
+    "format_policy_tests.rs": "284061fa90f4b611d25ca67e08065a908a5e23ea641368219f2d00589d363375",
+    "integration.patch": "aba48e838a3c2b1bfc2478490876d1d43e22134c15b25d71c3a568b3ddb61632",
+    "pins.json": "7f4e75418e3ed0144cb8eb982f550388f56e73cc8f2a782c9f7522cee57a8a65",
+    "tests.patch": "4ea27a27033cee1a3171b82e35fae261ddb817730fb4f964f10e121a9c1680b4",
+    "vectors.json": "95737122d44b7f6111e2a7e9bd7940beafab4b2f4080b5792f9b7ef30c195d7e",
+    "window_admission_tests.rs": "b2ac8b56f291456b4b67fa47f934bc56368ee676cbf4af331e4d74b67f903c39"
+  },
+  "productionPatchFileCount": 6,
+  "authoredTestCount": 3,
+  "policyFormatVectorCount": 64,
+  "admissionExpectationCount": 8,
+  "staticReceipt": {
+    "patchHunksReconstructedInMemory": true,
+    "rootContainsOverrideRetained": true,
+    "testSnippetsMatchAppendPatch": true,
+    "nonAtlasVendorInputsStillPinned": true,
+    "sharedFilesWrittenByThisLane": false
+  },
+  "currentVendorInputHashes": {
+    "desktop/gpui/vendor/gpui-pre/src/platform.rs": "9de7e0b0f29c51b149263b9bc9b4061bfbe41849e296b75df9cf259d9bbbdc4c",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs": "b85936eb838df536b8c6a90b44714fc75560f92f1acbe4eea7574c3d304d86b4",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_renderer.rs": "8902431999319e8d9fa7688a0bd54113836344f6e01226c35ee61878b0d55c02",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/x11/window.rs": "ceab15df2c676ef586491e67aee1e22b70616789e456f66606102dfccd4b4fb8",
+    "desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland/window.rs": "ca16191b42f35c4776d427a858491723ab144de6d4acfbbb323992d20841b897"
+  },
+  "atlasBaselineHistorical": true,
+  "executions": {
+    "gitApplyCheck": false,
+    "rustfmt": false,
+    "cargo": false,
+    "rustc": false,
+    "tests": false,
+    "nativeGpu": false,
+    "browser": false,
+    "network": false
+  },
+  "limits": "Format/pipeline capability only. No GPU, recovery, unsupported-surface, raw pixel, presentation or Source radial equivalence proof."
+}

@@ -1,0 +1,726 @@
+{
+  "source": "src/global.css and src/utils/theme.ts applyTheme",
+  "cssSha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+  "viewport": {
+    "width": 440,
+    "height": 390
+  },
+  "deviceScaleFactor": 2,
+  "blockedNetworkRequests": 0,
+  "cases": [
+    {
+      "id": "editorial",
+      "preference": {
+        "preset": "editorial"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#1f1b16",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "editorial",
+        "chosen": "editorial",
+        "backgroundColor": "rgb(244, 236, 216)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0.121569 0.105882 0.0862745 / 0.025) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0.121569 0.105882 0.0862745 / 0.02) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0.121569 0.105882 0.0862745 / 0.015) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.025)",
+            "rgb": 2038550,
+            "alpha": 0.025
+          },
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.02)",
+            "rgb": 2038550,
+            "alpha": 0.02
+          },
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.015)",
+            "rgb": 2038550,
+            "alpha": 0.015
+          }
+        ]
+      }
+    },
+    {
+      "id": "foolscap",
+      "preference": {
+        "preset": "foolscap"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#eef0f1",
+        "paper-2": "#e3e6e8",
+        "paper-3": "#c9ced2",
+        "paper-soft": "#f7f8f9",
+        "ink": "#1c2024",
+        "ink-light": "#3f464d",
+        "ink-muted": "#69727a",
+        "vermilion": "#9b4a52"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "foolscap",
+        "chosen": "foolscap",
+        "backgroundColor": "rgb(238, 240, 241)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0.109804 0.12549 0.141176 / 0.025) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0.109804 0.12549 0.141176 / 0.02) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0.109804 0.12549 0.141176 / 0.015) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0.109804 0.12549 0.141176 / 0.025)",
+            "rgb": 1843236,
+            "alpha": 0.025
+          },
+          {
+            "color": "color(srgb 0.109804 0.12549 0.141176 / 0.02)",
+            "rgb": 1843236,
+            "alpha": 0.02
+          },
+          {
+            "color": "color(srgb 0.109804 0.12549 0.141176 / 0.015)",
+            "rgb": 1843236,
+            "alpha": 0.015
+          }
+        ]
+      }
+    },
+    {
+      "id": "broadsheet",
+      "preference": {
+        "preset": "broadsheet"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#ffffff",
+        "paper-2": "#f4f4f4",
+        "paper-3": "#c4c4c4",
+        "paper-soft": "#fafafa",
+        "ink": "#111111",
+        "ink-light": "#333333",
+        "ink-muted": "#5c5c5c",
+        "vermilion": "#b3121a"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "broadsheet",
+        "chosen": "broadsheet",
+        "backgroundColor": "rgb(255, 255, 255)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "rgba(0, 0, 0, 0)",
+            "rgb": 0,
+            "alpha": 0
+          },
+          {
+            "color": "rgba(0, 0, 0, 0)",
+            "rgb": 0,
+            "alpha": 0
+          },
+          {
+            "color": "rgba(0, 0, 0, 0)",
+            "rgb": 0,
+            "alpha": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "nightpress",
+      "preference": {
+        "preset": "nightpress"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#191714",
+        "paper-2": "#211e1a",
+        "paper-3": "#3b3630",
+        "paper-soft": "#252119",
+        "ink": "#ece4d4",
+        "ink-light": "#c4bbab",
+        "ink-muted": "#8e8577",
+        "vermilion": "#e2686c"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "nightpress",
+        "chosen": "nightpress",
+        "backgroundColor": "rgb(25, 23, 20)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0 0 0 / 0.18) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0 0 0 / 0.14) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0 0 0 / 0.1) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0 0 0 / 0.18)",
+            "rgb": 0,
+            "alpha": 0.18
+          },
+          {
+            "color": "color(srgb 0 0 0 / 0.14)",
+            "rgb": 0,
+            "alpha": 0.14
+          },
+          {
+            "color": "color(srgb 0 0 0 / 0.1)",
+            "rgb": 0,
+            "alpha": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "id": "system-light",
+      "preference": {
+        "preset": "system"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#1f1b16",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "editorial",
+        "chosen": "system",
+        "backgroundColor": "rgb(244, 236, 216)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0.121569 0.105882 0.0862745 / 0.025) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0.121569 0.105882 0.0862745 / 0.02) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0.121569 0.105882 0.0862745 / 0.015) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.025)",
+            "rgb": 2038550,
+            "alpha": 0.025
+          },
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.02)",
+            "rgb": 2038550,
+            "alpha": 0.02
+          },
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.015)",
+            "rgb": 2038550,
+            "alpha": 0.015
+          }
+        ]
+      }
+    },
+    {
+      "id": "system-dark",
+      "preference": {
+        "preset": "system"
+      },
+      "prefersDark": true,
+      "tokens": {
+        "paper": "#191714",
+        "paper-2": "#211e1a",
+        "paper-3": "#3b3630",
+        "paper-soft": "#252119",
+        "ink": "#ece4d4",
+        "ink-light": "#c4bbab",
+        "ink-muted": "#8e8577",
+        "vermilion": "#e2686c"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "nightpress",
+        "chosen": "system",
+        "backgroundColor": "rgb(25, 23, 20)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0 0 0 / 0.18) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0 0 0 / 0.14) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0 0 0 / 0.1) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0 0 0 / 0.18)",
+            "rgb": 0,
+            "alpha": 0.18
+          },
+          {
+            "color": "color(srgb 0 0 0 / 0.14)",
+            "rgb": 0,
+            "alpha": 0.14
+          },
+          {
+            "color": "color(srgb 0 0 0 / 0.1)",
+            "rgb": 0,
+            "alpha": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "id": "editorial-custom",
+      "preference": {
+        "preset": "editorial",
+        "custom": {
+          "ink": "#592c7d",
+          "paper": "#ede2f0"
+        }
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#ede2f0",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#592c7d",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "editorial",
+        "chosen": "editorial",
+        "backgroundColor": "rgb(237, 226, 240)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0.34902 0.172549 0.490196 / 0.025) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0.34902 0.172549 0.490196 / 0.02) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0.34902 0.172549 0.490196 / 0.015) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0.34902 0.172549 0.490196 / 0.025)",
+            "rgb": 5844093,
+            "alpha": 0.025
+          },
+          {
+            "color": "color(srgb 0.34902 0.172549 0.490196 / 0.02)",
+            "rgb": 5844093,
+            "alpha": 0.02
+          },
+          {
+            "color": "color(srgb 0.34902 0.172549 0.490196 / 0.015)",
+            "rgb": 5844093,
+            "alpha": 0.015
+          }
+        ]
+      }
+    },
+    {
+      "id": "nightpress-custom",
+      "preference": {
+        "preset": "nightpress",
+        "custom": {
+          "ink": "#04ba8f",
+          "paper": "#48434c"
+        }
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#48434c",
+        "paper-2": "#211e1a",
+        "paper-3": "#3b3630",
+        "paper-soft": "#252119",
+        "ink": "#04ba8f",
+        "ink-light": "#c4bbab",
+        "ink-muted": "#8e8577",
+        "vermilion": "#e2686c"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "nightpress",
+        "chosen": "nightpress",
+        "backgroundColor": "rgb(72, 67, 76)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0 0 0 / 0.18) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0 0 0 / 0.14) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0 0 0 / 0.1) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0 0 0 / 0.18)",
+            "rgb": 0,
+            "alpha": 0.18
+          },
+          {
+            "color": "color(srgb 0 0 0 / 0.14)",
+            "rgb": 0,
+            "alpha": 0.14
+          },
+          {
+            "color": "color(srgb 0 0 0 / 0.1)",
+            "rgb": 0,
+            "alpha": 0.1
+          }
+        ]
+      }
+    },
+    {
+      "id": "broadsheet-custom",
+      "preference": {
+        "preset": "broadsheet",
+        "custom": {
+          "ink": "#04ba8f",
+          "paper": "#aab3cc"
+        }
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#aab3cc",
+        "paper-2": "#f4f4f4",
+        "paper-3": "#c4c4c4",
+        "paper-soft": "#fafafa",
+        "ink": "#04ba8f",
+        "ink-light": "#333333",
+        "ink-muted": "#5c5c5c",
+        "vermilion": "#b3121a"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "broadsheet",
+        "chosen": "broadsheet",
+        "backgroundColor": "rgb(170, 179, 204)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "rgba(0, 0, 0, 0)",
+            "rgb": 0,
+            "alpha": 0
+          },
+          {
+            "color": "rgba(0, 0, 0, 0)",
+            "rgb": 0,
+            "alpha": 0
+          },
+          {
+            "color": "rgba(0, 0, 0, 0)",
+            "rgb": 0,
+            "alpha": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "foolscap-custom",
+      "preference": {
+        "preset": "foolscap",
+        "custom": {
+          "ink": "#ffffff",
+          "paper": "#020304"
+        }
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#020304",
+        "paper-2": "#e3e6e8",
+        "paper-3": "#c9ced2",
+        "paper-soft": "#f7f8f9",
+        "ink": "#ffffff",
+        "ink-light": "#3f464d",
+        "ink-muted": "#69727a",
+        "vermilion": "#9b4a52"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "foolscap",
+        "chosen": "foolscap",
+        "backgroundColor": "rgb(2, 3, 4)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 1 1 1 / 0.025) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 1 1 1 / 0.02) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 1 1 1 / 0.015) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 1 1 1 / 0.025)",
+            "rgb": 16777215,
+            "alpha": 0.025
+          },
+          {
+            "color": "color(srgb 1 1 1 / 0.02)",
+            "rgb": 16777215,
+            "alpha": 0.02
+          },
+          {
+            "color": "color(srgb 1 1 1 / 0.015)",
+            "rgb": 16777215,
+            "alpha": 0.015
+          }
+        ]
+      }
+    },
+    {
+      "id": "normalized",
+      "preference": {
+        "preset": "editorial",
+        "custom": {
+          "ink": "#aabbcc",
+          "vermilion": "#1155cc"
+        }
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#aabbcc",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#1155cc"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "editorial",
+        "chosen": "editorial",
+        "backgroundColor": "rgb(244, 236, 216)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0.666667 0.733333 0.8 / 0.025) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0.666667 0.733333 0.8 / 0.02) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0.666667 0.733333 0.8 / 0.015) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0.666667 0.733333 0.8 / 0.025)",
+            "rgb": 11189196,
+            "alpha": 0.025
+          },
+          {
+            "color": "color(srgb 0.666667 0.733333 0.8 / 0.02)",
+            "rgb": 11189196,
+            "alpha": 0.02
+          },
+          {
+            "color": "color(srgb 0.666667 0.733333 0.8 / 0.015)",
+            "rgb": 11189196,
+            "alpha": 0.015
+          }
+        ]
+      }
+    },
+    {
+      "id": "editorial-clipped",
+      "preference": {
+        "preset": "editorial"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#1f1b16",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "clip": {
+        "x": 20,
+        "y": 30,
+        "width": 370,
+        "height": 330
+      },
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "result": {
+        "resolved": "editorial",
+        "chosen": "editorial",
+        "backgroundColor": "rgb(244, 236, 216)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0.121569 0.105882 0.0862745 / 0.025) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0.121569 0.105882 0.0862745 / 0.02) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0.121569 0.105882 0.0862745 / 0.015) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": 0
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.025)",
+            "rgb": 2038550,
+            "alpha": 0.025
+          },
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.02)",
+            "rgb": 2038550,
+            "alpha": 0.02
+          },
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.015)",
+            "rgb": 2038550,
+            "alpha": 0.015
+          }
+        ]
+      }
+    },
+    {
+      "id": "editorial-scrolled",
+      "preference": {
+        "preset": "editorial"
+      },
+      "prefersDark": false,
+      "tokens": {
+        "paper": "#f4ecd8",
+        "paper-2": "#ebe1c9",
+        "paper-3": "#ddd0b1",
+        "paper-soft": "#faf3df",
+        "ink": "#1f1b16",
+        "ink-light": "#4a3f33",
+        "ink-muted": "#8a7e6c",
+        "vermilion": "#c1272d"
+      },
+      "clip": null,
+      "anchor": {
+        "x": 0,
+        "y": -27
+      },
+      "result": {
+        "resolved": "editorial",
+        "chosen": "editorial",
+        "backgroundColor": "rgb(244, 236, 216)",
+        "backgroundImage": "radial-gradient(circle at 25% 35%, color(srgb 0.121569 0.105882 0.0862745 / 0.025) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 75% 65%, color(srgb 0.121569 0.105882 0.0862745 / 0.02) 0px, rgba(0, 0, 0, 0) 1px), radial-gradient(circle at 45% 85%, color(srgb 0.121569 0.105882 0.0862745 / 0.015) 0px, rgba(0, 0, 0, 0) 1px)",
+        "backgroundSize": "7px 7px, 11px 11px, 13px 13px",
+        "backgroundPosition": "0% 0%, 0% 0%, 0% 0%",
+        "backgroundRepeat": "repeat, repeat, repeat",
+        "opacity": "1",
+        "bodyOrigin": {
+          "x": 0,
+          "y": -27
+        },
+        "grain": [
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.025)",
+            "rgb": 2038550,
+            "alpha": 0.025
+          },
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.02)",
+            "rgb": 2038550,
+            "alpha": 0.02
+          },
+          {
+            "color": "color(srgb 0.121569 0.105882 0.0862745 / 0.015)",
+            "rgb": 2038550,
+            "alpha": 0.015
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "revision": "1a28cff4b409169bac058bca40dfbfeb7621d19b",
+  "url": "https://raw.githubusercontent.com/zed-industries/zed/1a28cff4b409169bac058bca40dfbfeb7621d19b/assets/fonts/lilex/Lilex-Bold.ttf",
+  "githubContentsUrl": "https://api.github.com/repos/zed-industries/zed/contents/assets/fonts/lilex/Lilex-Bold.ttf?ref=1a28cff4b409169bac058bca40dfbfeb7621d19b",
+  "path": "desktop/gpui/assets/fonts/lilex/Lilex-Bold.ttf",
+  "gitBlob": "45930ee30b81a78e964c3ff494e05ea45147ed9b",
+  "sha256": "3369214e2ecddb45ae5024b11d45dd637e99e9d2127ab729817d41d72b8a9c68",
+  "bytes": 192992,
+  "scope": "Pinned upstream WGPU test font only; no product font registration change."
+}

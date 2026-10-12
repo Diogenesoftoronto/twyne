@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "sourceInspectedOnly": true,
+  "runtimePatchApplied": false,
+  "sourceMathGeometryChanged": false,
+  "currentSourceAdmission": false,
+  "pointers": {
+    "originalSetterAndCompletion": "src/editor/view.rs::set_atom_renderer/start_atom_jobs",
+    "requestMetadata": "src/inline_proof.rs::AtomRenderRequest.key/AtomRenderResult.matches",
+    "sharedImmutableRenderer": "src/inline_proof.rs::InlineProofRenderer.state/cached/render",
+    "actualOwnerBoundary": "src/editor/view_math_source.rs::set_math_source_context",
+    "applicationMountFolioVisit": "src/app/math_source_coordinator.rs::install_math_source_context/retire_math_source_visit/sync_math_source_presence",
+    "newActualCompletionHook": "src/editor/atom_renderer_lifecycle.rs::finish_atom_batch"
+  },
+  "inspectedCurrentSha256": {
+    "desktop/gpui/src/editor/view.rs": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14",
+    "desktop/gpui/src/editor/view_math_source.rs": "139eca38cf52aab6d729e4e10fe8d5f79cd30cb8a61d995a5c6e498d54fe6674",
+    "desktop/gpui/src/app/math_source_coordinator.rs": "9a2b11a7b64828bb8fa4c6eed8ba3e41fea01eaf57fddba3ce50079dd8cceb2f",
+    "desktop/gpui/src/inline_proof.rs": "5d3650ae4f3bc4c3a084792e0be697f243afbb5f7d7f527129240bd9252821f7",
+    "desktop/gpui/fixtures/math-write/current-adoption/CONTRACT.md": "725f9ffab70aa42980a5784f5a96bd622fa7f1764f25348a5e518122542a9850"
+  },
+  "liveness": [
+    "renderer epoch",
+    "owner epoch",
+    "batch sequence",
+    "presentation generation",
+    "read-only value",
+    "live weak entity",
+    "exact raw source/result key",
+    "expected block/atom shared storage",
+    "guarded node path",
+    "current one-scalar source offset"
+  ],
+  "scopeChanges": [
+    "each explicit renderer setter, including same clone",
+    "each view-level document replacement",
+    "actual read-only value transition",
+    "actual MathSourceHostContext folio/visit/context replacement or clear"
+  ],
+  "unchanged": [
+    "immutable renderer cache reusable by fresh qualified request",
+    "same read-only value",
+    "same actual MathSourceHostContext",
+    "unchanged target after later unrelated prose edit",
+    "all original renderer/fidelity/font/admission policies"
+  ],
+  "truthfulLimits": [
+    "authored tests uncompiled/unrun",
+    "constructed completion receipts do not prove async timing or OS input",
+    "synchronous render cannot be interrupted and may finish old immutable cache",
+    "same-instance semaphore Busy behavior and existing queue/map retention unchanged",
+    "no CurrentSource math adoption"
+  ]
+}

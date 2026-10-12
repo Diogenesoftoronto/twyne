@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "files": [
+    {
+      "path": "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-pre-0.3.7/src/window.rs",
+      "sha256": "f8b04c37c6c18cc78b3ddd80844e5aa225e7ebafa689df5d04d1493fd45e61dc",
+      "ranges": [
+        {
+          "startLine": 1856,
+          "endLine": 1863,
+          "text": "        platform_window.on_resize(Box::new({\n            let mut cx = cx.to_async();\n            move |_, _| {\n                handle\n                    .update(&mut cx, |_, window, cx| window.bounds_changed(cx))\n                    .log_err();\n            }\n        }));\n"
+        },
+        {
+          "startLine": 2683,
+          "endLine": 2694,
+          "text": "    pub fn bounds_changed(&mut self, cx: &mut App) {\n        self.scale_factor = self.platform_window.scale_factor();\n        self.viewport_size = self.platform_window.content_size();\n        self.display_id = self.platform_window.display().map(|display| display.id());\n        self.mouse_position = self.platform_window.mouse_position();\n\n        self.refresh();\n\n        self.bounds_observers\n            .clone()\n            .retain(&(), |callback| callback(self, cx));\n    }\n"
+        },
+        {
+          "startLine": 2930,
+          "endLine": 2935,
+          "text": "    #[cfg(any(test, feature = \"test-support\"))]\n    pub fn set_scale_factor(&mut self, scale_factor: f32) {\n        self.scale_factor = scale_factor;\n        self.refresh();\n    }\n\n"
+        }
+      ]
+    },
+    {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/vendor/gpui-pre-linux/src/linux/wayland/window.rs",
+      "sha256": "ca16191b42f35c4776d427a858491723ab144de6d4acfbbb323992d20841b897",
+      "ranges": [
+        {
+          "startLine": 1472,
+          "endLine": 1509,
+          "text": "        }\n        bounds\n    }\n\n    pub fn set_size_and_scale(&self, size: Option<Size<Pixels>>, scale: Option<f32>) {\n        let (size, scale) = {\n            let mut state = self.state.borrow_mut();\n            if size.is_none_or(|size| size == state.bounds.size)\n                && scale.is_none_or(|scale| scale == state.scale)\n            {\n                return;\n            }\n            if let Some(size) = size {\n                state.bounds.size = size;\n            }\n            if let Some(scale) = scale {\n                state.scale = scale;\n            }\n            let device_bounds = state.bounds.to_device_pixels(state.scale);\n            state.renderer.update_drawable_size(device_bounds.size);\n            (state.bounds.size, state.scale)\n        };\n\n        let callback = self.callbacks.borrow_mut().resize.take();\n        if let Some(mut fun) = callback {\n            fun(size, scale);\n            self.callbacks.borrow_mut().resize = Some(fun);\n        }\n\n        {\n            let state = self.state.borrow();\n            if let Some(viewport) = &state.viewport {\n                viewport\n                    .set_destination(f32::from(size.width) as i32, f32::from(size.height) as i32);\n            }\n        }\n    }\n\n"
+        },
+        {
+          "startLine": 1510,
+          "endLine": 1516,
+          "text": "    pub fn resize(&self, size: Size<Pixels>) {\n        self.set_size_and_scale(Some(size), None);\n    }\n\n    pub fn rescale(&self, scale: f32) {\n        self.set_size_and_scale(None, Some(scale));\n    }\n"
+        }
+      ]
+    }
+  ],
+  "boundsObserver": "Platform on_resize -> GPUI bounds_changed -> refresh viewport+scale -> notify observe_window_bounds",
+  "waylandScaleOnly": "rescale -> set_size_and_scale(None,Some(scale)) -> resize callback even without CSS size change",
+  "manualTestOverride": "set_scale_factor only refreshes; public proposed prepare_paper must be called explicitly",
+  "proof": "Read-only Source/API inspection; no monitor/device/browser/Cargo test"
+}

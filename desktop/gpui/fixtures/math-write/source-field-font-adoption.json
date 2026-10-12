@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "status": "ACTUAL_SOURCE_SELECTED_FAMILY_ADOPTED",
+  "scope": "Raw native math textarea font-family only",
+  "sourceInspection": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/source-inline-geometry-wide-ordinary-0ec4d283-e4db-4c7b-a1f1-470e8aa43f77/field-shadow-open-markers-markers.json",
+    "sha256": "593003b358b28d28f32046f914de0e60269bd24c7b5b0d697e2ebc3e762d9c26",
+    "textareaBackendNodeId": 4357,
+    "actualValueNode": 4365,
+    "actualValue": "x+1",
+    "selectedFonts": [
+      {
+        "familyName": "Noto Sans Mono",
+        "glyphCount": 3,
+        "isCustomFont": false,
+        "postScriptName": "NotoSansMono-Regular"
+      }
+    ],
+    "size": "14px",
+    "weight": "400",
+    "style": "normal",
+    "lineHeight": "19.6px",
+    "outerTextareaSelectedFonts": {
+      "fonts": []
+    }
+  },
+  "nativeDeclaration": {
+    "family": "Noto Sans Mono",
+    "sizePx": 14,
+    "weight": "normal",
+    "lineHeightFactor": 1.4,
+    "files": {
+      "desktop/gpui/src/theme.rs": "ce3eea0bc31c01d41c49c7c44bd11db6dc931cc7d437e92f86ea02a2e7f0977c",
+      "desktop/gpui/src/editor/math_source_editor.rs": "d524bf0b99007980975e666d58f6c42c79f11066916fa9d537f47eec5dc20fba"
+    }
+  },
+  "alreadyBundledFont": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/source/NotoSansMono-Regular.ttf",
+    "sha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+    "registration": "theme::register_fonts source/NotoSansMono-Regular.ttf"
+  },
+  "nativeWorkflow": {
+    "pointer": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/math-current-layout-multiply-font-native-pointer.json",
+    "sha256": "c69c2f87c6e3d02d730d3ba783faa6009d0f117d3edba97869502736514d06f7",
+    "checks": 10,
+    "binary": {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/current-layout-multiply-math-build-b33c0c5da035/twyne-desktop",
+      "sha256": "721d799dc6404af5666d38093fad57081b7603a1fb3cce9a0155f8af02450c59"
+    }
+  },
+  "limits": [
+    "Selected Source family/postscript and current native declaration; browser font-file byte equality is not established",
+    "No native glyph/caret baseline or Source pixel-parity claim",
+    "Source actual padding is8px; native declaration remains4px horizontal plus Kit control internals, pending actual content-bounds comparison",
+    "Other mono surfaces are unchanged"
+  ]
+}

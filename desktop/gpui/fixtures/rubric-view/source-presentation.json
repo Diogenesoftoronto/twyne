@@ -1,0 +1,119 @@
+{
+  "provenance": "Executed original TypeScript presentation helpers. Retained DTOs are synthetic fixture data; no grading or provider call.",
+  "scope": "original/path/folio:café",
+  "initialWriterScore": 58,
+  "typedTwoThenIncrease": 2.25,
+  "editedWriterScore": 67,
+  "fullReportAfterEdit": 63,
+  "stamps": [
+    {
+      "grade": "A+",
+      "asset": "/assets/rubric-stamps/sunburst-a-plus.png",
+      "tier": "a"
+    },
+    {
+      "grade": "A",
+      "asset": "/assets/rubric-stamps/sunburst-a.png",
+      "tier": "a"
+    },
+    {
+      "grade": "A-",
+      "asset": "/assets/rubric-stamps/sunburst-a-minus.png",
+      "tier": "a"
+    },
+    {
+      "grade": "B+",
+      "asset": "/assets/rubric-stamps/sunburst-b-plus.png",
+      "tier": "b"
+    },
+    {
+      "grade": "B",
+      "asset": "/assets/rubric-stamps/sunburst-b.png",
+      "tier": "b"
+    },
+    {
+      "grade": "B-",
+      "asset": "/assets/rubric-stamps/sunburst-b-minus.png",
+      "tier": "b"
+    },
+    {
+      "grade": "C+",
+      "asset": "/assets/rubric-stamps/sunburst-c-plus.png",
+      "tier": "c"
+    },
+    {
+      "grade": "C",
+      "asset": "/assets/rubric-stamps/sunburst-c.png",
+      "tier": "c"
+    },
+    {
+      "grade": "C-",
+      "asset": "/assets/rubric-stamps/sunburst-c-minus.png",
+      "tier": "c"
+    },
+    {
+      "grade": "D+",
+      "asset": "/assets/rubric-stamps/sunburst-d-plus.png",
+      "tier": "revise"
+    },
+    {
+      "grade": "D",
+      "asset": "/assets/rubric-stamps/sunburst-d.png",
+      "tier": "revise"
+    },
+    {
+      "grade": "D-",
+      "asset": "/assets/rubric-stamps/sunburst-d-minus.png",
+      "tier": "revise"
+    },
+    {
+      "grade": "F",
+      "asset": "/assets/rubric-stamps/sunburst-f.png",
+      "tier": "revise"
+    },
+    {
+      "grade": "?",
+      "asset": "/assets/rubric-stamps/f.svg",
+      "tier": "revise"
+    }
+  ],
+  "summary": "Retained synthetic Galley result; this is fixture data, not a provider reading.",
+  "passages": [
+    {
+      "id": "nothing-first",
+      "kind": "nothing",
+      "priority": 100
+    },
+    {
+      "id": "first-same-quote",
+      "kind": "question",
+      "priority": 0.1
+    },
+    {
+      "id": "second-same-quote",
+      "kind": "evidence",
+      "priority": 0.9
+    },
+    {
+      "id": "third",
+      "kind": "advice",
+      "priority": 0.2
+    },
+    {
+      "id": "fourth",
+      "kind": "cut",
+      "priority": 0.3
+    },
+    {
+      "id": "fifth-not-shown",
+      "kind": "question",
+      "priority": 99
+    }
+  ],
+  "visiblePassageIds": [
+    "first-same-quote",
+    "second-same-quote",
+    "third",
+    "fourth"
+  ]
+}

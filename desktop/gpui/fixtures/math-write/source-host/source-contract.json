@@ -1,0 +1,79 @@
+{
+  "scope": "Read-only Source references plus executed AST-extracted pure callback guards; no native host or browser execution from this lane",
+  "sourceHashes": {
+    "src/components/editor/extensions/math.ts": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+    "src/components/editor/math/math-source-editor.ts": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+    "src/components/editor/math/math.css": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+    "desktop/gpui/src/editor/command.rs": "491041e888100dd1a7ad5b5bcaf0ea142aacd95ddf54a042d6009d763a9d7aed",
+    "desktop/gpui/src/editor/transaction.rs": "febebe935421e391bc4949cacdf5d3bc2591cc3bda7373fef256cae38b1e2e22",
+    "desktop/gpui/src/editor/math_source_editor.rs": "319451d69ed42fc41f0d25749f50e41c714824f7fdcea372e6e0bb50f95f960a",
+    "desktop/gpui/fixtures/math-write/native-source-form/browser-default-keys.json": "668d3c447d3c446f69bbba4302a0eef8a7e732024bc0046ea4fa2e2c73975085",
+    "desktop/gpui/fixtures/math-write/native-source-form/sakana-key-decisions.json": "695d3c745b78e2ce799e42b02d69830f2d2c042d7e007d53b8053ad2b4c90267"
+  },
+  "sourcePointers": [
+    {
+      "file": "src/components/editor/extensions/math.ts",
+      "lines": "69-108",
+      "contract": "Same inline/block node owns hidden renderer and retained form; editable-only opening/end focus"
+    },
+    {
+      "file": "src/components/editor/extensions/math.ts",
+      "lines": "152-179",
+      "contract": "Click/Enter/F2 select the actual math node, ignore source form controls"
+    },
+    {
+      "file": "src/components/editor/extensions/math.ts",
+      "lines": "187-225",
+      "contract": "Node update/deselection/destroy close and destroy source form"
+    },
+    {
+      "file": "src/components/editor/math/math-source-editor.ts",
+      "lines": "21-43",
+      "contract": "Get current numeric position/node type, preserve attrs, commit raw source through actual transaction/focus pipeline"
+    },
+    {
+      "file": "src/components/editor/math/math-source-editor.ts",
+      "lines": "55-93",
+      "contract": "Retained textarea/label/preview/actions with inline2/block3 rows"
+    },
+    {
+      "file": "src/components/editor/math/math-source-editor.ts",
+      "lines": "152-204",
+      "contract": "Escape/Cancel select original node/focus; successful explicit submit closes; current input.value is authoritative"
+    },
+    {
+      "file": "src/components/editor/math/math-source-editor.ts",
+      "lines": "212-232",
+      "contract": "Focus at field end; destroy cancels preview and handlers"
+    },
+    {
+      "file": "src/components/editor/math/math.css",
+      "lines": "1-20,61-174,176-188",
+      "contract": "Source inline/block in-flow geometry, system Canvas form styles, selected outline"
+    },
+    {
+      "file": "desktop/gpui/src/editor/transaction.rs",
+      "lines": "426-474",
+      "contract": "Existing native persistent expected-node UpdateMathSource, opaque shell preservation, exact raw portable attrs/text and selection mapping"
+    }
+  ],
+  "additionalNativeGuards": [
+    "editor entity",
+    "exact folio and visit generation",
+    "captured rich revision",
+    "same persistent node/path/scalar offset",
+    "one-scalar node selection",
+    "editable and no active rich IME at opening",
+    "actual form UUID/lifecycle and request UUID",
+    "fresh unblurred rope including queued Change",
+    "same preflight capability for current opening scope"
+  ],
+  "executedLocalGate": {
+    "command": "rtk proxy bun test desktop/gpui/fixtures/math-write/source-host/source-contract.test.ts",
+    "passed": 5,
+    "failed": 0,
+    "assertions": 116,
+    "proof": "Original private updateSource/keydown functions extracted by TypeScript AST and executed with local chain/event spies. No DOM/browser/native/provider operations."
+  },
+  "sourceBrowserDefaults": "Parent-owned native-source-form/browser-default-keys.json remains authoritative; pure keydown guards do not simulate default newline editing."
+}

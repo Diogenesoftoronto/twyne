@@ -1,0 +1,23 @@
+{
+  "status": "coordinator-corrected and integrated; executed Source oracle passes",
+  "rootReview": [
+    "Triple-stride corrections match the source indexing structure.",
+    "Retained u64 recover token contract does not enforce its domain at the constructor or map API; not full JS numeric parity.",
+    "Claim that invalid touches token can panic is inaccurate: touches only compares the token index.",
+    "Proposed offset(i64::MIN) can overflow; needs checked arithmetic or documented range."
+  ],
+  "nextGate": "Execute actual ProseMirror StepMap oracle, then adapt safely before integration.",
+  "production": "src/gen_ui/step_map.rs",
+  "productionSha256": "4a98d191593ccb93415f32f28ab8084bc4df503d5c4f3710034afde0672f8e23",
+  "sourceCases": 112,
+  "sourceFrames": 9476,
+  "verificationReceipt": "target/verification/genui-ui-65f5c0d33c83/receipt.json",
+  "oracleSha256": "e677c0e263d6a16e75d72d17dcdc95756ed48df12963065cbfff144f3745df5f",
+  "coordinatorCorrections": [
+    "Replaced u64 recovery tokens with opaque IEEE-754 tokens to reproduce Source rounding rather than restrict recovery offsets.",
+    "Checked valid native coordinate domains, sorted/nonoverlapping ranges, and signed offset arithmetic.",
+    "Preserved Source empty-map inversion behavior.",
+    "Return None for Source NaN recovery instead of admitting invalid native positions."
+  ],
+  "proofLimit": "Valid nonnegative safe-integer coordinate StepMap primitives. Native ordered transaction mapping and Mapping mirror pipelines remain pending."
+}

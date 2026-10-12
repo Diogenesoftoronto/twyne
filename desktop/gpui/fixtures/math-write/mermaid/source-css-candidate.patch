@@ -1,0 +1,235 @@
+--- a/src/components/editor/math/katex.min.css
++++ b/src/components/editor/math/katex.min.css
+@@ -1160,3 +1160,232 @@
+ .twyne-math {
+   counter-reset: katexEqnNo mmlEqnNo;
+ }
++:is(.twyne-math,.twyne-math-source-preview) .katex{font:normal 1.21em KaTeX_Main,Times New Roman,serif;line-height:1.2;position:relative;text-indent:0;text-rendering:auto}
++:is(.twyne-math,.twyne-math-source-preview) .katex *{-ms-high-contrast-adjust:none!important;border-color:currentColor}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-version:after{content:"0.18.1"}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-mathml{border:0;-webkit-clip-path:inset(50%);clip-path:inset(50%);height:1px;overflow:hidden;padding:0;position:absolute;width:1px}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-html>.katex-newline{display:block}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-base{position:relative;white-space:nowrap;width:-webkit-min-content;width:-moz-min-content;width:min-content}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-base,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-strut{display:inline-block}
++:is(.twyne-math,.twyne-math-source-preview) .katex .textbf{font-weight:700}
++:is(.twyne-math,.twyne-math-source-preview) .katex .textit{font-style:italic}
++:is(.twyne-math,.twyne-math-source-preview) .katex .textrm{font-family:KaTeX_Main}
++:is(.twyne-math,.twyne-math-source-preview) .katex .textsf{font-family:KaTeX_SansSerif}
++:is(.twyne-math,.twyne-math-source-preview) .katex .texttt{font-family:KaTeX_Typewriter}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathnormal{font-family:KaTeX_Math;font-style:italic}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathit{font-family:KaTeX_Main;font-style:italic}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathrm{font-style:normal}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathbf{font-family:KaTeX_Main;font-weight:700}
++:is(.twyne-math,.twyne-math-source-preview) .katex .boldsymbol{font-family:KaTeX_Math;font-style:italic;font-weight:700}
++:is(.twyne-math,.twyne-math-source-preview) .katex .amsrm,:is(.twyne-math,.twyne-math-source-preview) .katex .mathbb,:is(.twyne-math,.twyne-math-source-preview) .katex .textbb{font-family:KaTeX_AMS}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathcal{font-family:KaTeX_Caligraphic}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathfrak,:is(.twyne-math,.twyne-math-source-preview) .katex .textfrak{font-family:KaTeX_Fraktur}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathboldfrak,:is(.twyne-math,.twyne-math-source-preview) .katex .textboldfrak{font-family:KaTeX_Fraktur;font-weight:700}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathtt{font-family:KaTeX_Typewriter}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathscr,:is(.twyne-math,.twyne-math-source-preview) .katex .textscr{font-family:KaTeX_Script}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathsf,:is(.twyne-math,.twyne-math-source-preview) .katex .textsf{font-family:KaTeX_SansSerif}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathboldsf,:is(.twyne-math,.twyne-math-source-preview) .katex .textboldsf{font-family:KaTeX_SansSerif;font-weight:700}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mathitsf,:is(.twyne-math,.twyne-math-source-preview) .katex .mathsfit,:is(.twyne-math,.twyne-math-source-preview) .katex .textitsf{font-family:KaTeX_SansSerif;font-style:italic}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mainrm{font-family:KaTeX_Main;font-style:normal}
++:is(.twyne-math,.twyne-math-source-preview) .katex .vlist-t{border-collapse:collapse;display:inline-table;table-layout:fixed}
++:is(.twyne-math,.twyne-math-source-preview) .katex .vlist-r{display:table-row}
++:is(.twyne-math,.twyne-math-source-preview) .katex .vlist{display:table-cell;position:relative;vertical-align:bottom}
++:is(.twyne-math,.twyne-math-source-preview) .katex .vlist>span{display:block;height:0;position:relative}
++:is(.twyne-math,.twyne-math-source-preview) .katex .vlist>span>span{display:inline-block}
++:is(.twyne-math,.twyne-math-source-preview) .katex .vlist>span>.pstrut{overflow:hidden;width:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex .vlist-t2{margin-right:-2px}
++:is(.twyne-math,.twyne-math-source-preview) .katex .vlist-s{display:table-cell;font-size:1px;min-width:2px;vertical-align:bottom;width:2px}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-vbox{align-items:baseline;display:inline-flex;flex-direction:column}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-thinbox{display:inline-flex;flex-direction:row;max-width:0;width:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex .msupsub{text-align:left}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mfrac>span>span{text-align:center}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mfrac .frac-line{border-bottom-style:solid;display:inline-block;width:100%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-hdashline,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-hline,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-overline .overline-line,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-rule,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-underline .underline-line,:is(.twyne-math,.twyne-math-source-preview) .katex .mfrac .frac-line{min-height:1px}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mspace{display:inline-block}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-smash{display:inline;line-height:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex .clap,:is(.twyne-math,.twyne-math-source-preview) .katex .llap,:is(.twyne-math,.twyne-math-source-preview) .katex .rlap{position:relative;width:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex .clap>.katex-inner,:is(.twyne-math,.twyne-math-source-preview) .katex .llap>.katex-inner,:is(.twyne-math,.twyne-math-source-preview) .katex .rlap>.katex-inner{position:absolute}
++:is(.twyne-math,.twyne-math-source-preview) .katex .clap>.katex-fix,:is(.twyne-math,.twyne-math-source-preview) .katex .llap>.katex-fix,:is(.twyne-math,.twyne-math-source-preview) .katex .rlap>.katex-fix{display:inline-block}
++:is(.twyne-math,.twyne-math-source-preview) .katex .llap>.katex-inner{right:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex .clap>.katex-inner,:is(.twyne-math,.twyne-math-source-preview) .katex .rlap>.katex-inner{left:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex .clap>.katex-inner>span{margin-left:-50%;margin-right:50%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-rule{border:0 solid;display:inline-block;position:relative}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-hline,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-overline .overline-line,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-underline .underline-line{border-bottom-style:solid;display:inline-block;width:100%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-hdashline{border-bottom-style:dashed;display:inline-block;width:100%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .sqrt>.katex-root{margin-left:.2777777778em;margin-right:-.5555555556em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size1{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size2{font-size:1.2em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size3{font-size:1.4em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size4{font-size:1.6em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size5{font-size:1.8em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size6{font-size:2em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size7{font-size:2.4em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size8{font-size:2.88em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size9{font-size:3.456em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size10{font-size:4.148em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size1.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size1.size11{font-size:4.976em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size1{font-size:.8333333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size2{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size3{font-size:1.1666666667em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size4{font-size:1.3333333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size5{font-size:1.5em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size6{font-size:1.6666666667em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size7{font-size:2em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size8{font-size:2.4em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size9{font-size:2.88em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size10{font-size:3.4566666667em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size2.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size2.size11{font-size:4.1466666667em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size1{font-size:.7142857143em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size2{font-size:.8571428571em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size3{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size4{font-size:1.1428571429em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size5{font-size:1.2857142857em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size6{font-size:1.4285714286em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size7{font-size:1.7142857143em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size8{font-size:2.0571428571em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size9{font-size:2.4685714286em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size10{font-size:2.9628571429em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size3.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size3.size11{font-size:3.5542857143em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size1{font-size:.625em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size2{font-size:.75em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size3{font-size:.875em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size4{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size5{font-size:1.125em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size6{font-size:1.25em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size7{font-size:1.5em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size8{font-size:1.8em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size9{font-size:2.16em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size10{font-size:2.5925em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size4.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size4.size11{font-size:3.11em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size1{font-size:.5555555556em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size2{font-size:.6666666667em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size3{font-size:.7777777778em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size4{font-size:.8888888889em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size5{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size6{font-size:1.1111111111em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size7{font-size:1.3333333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size8{font-size:1.6em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size9{font-size:1.92em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size10{font-size:2.3044444444em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size5.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size5.size11{font-size:2.7644444444em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size1{font-size:.5em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size2{font-size:.6em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size3{font-size:.7em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size4{font-size:.8em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size5{font-size:.9em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size6{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size7{font-size:1.2em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size8{font-size:1.44em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size9{font-size:1.728em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size10{font-size:2.074em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size6.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size6.size11{font-size:2.488em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size1{font-size:.4166666667em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size2{font-size:.5em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size3{font-size:.5833333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size4{font-size:.6666666667em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size5{font-size:.75em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size6{font-size:.8333333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size7{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size8{font-size:1.2em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size9{font-size:1.44em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size10{font-size:1.7283333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size7.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size7.size11{font-size:2.0733333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size1{font-size:.3472222222em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size2{font-size:.4166666667em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size3{font-size:.4861111111em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size4{font-size:.5555555556em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size5{font-size:.625em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size6{font-size:.6944444444em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size7{font-size:.8333333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size8{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size9{font-size:1.2em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size10{font-size:1.4402777778em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size8.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size8.size11{font-size:1.7277777778em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size1{font-size:.2893518519em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size2{font-size:.3472222222em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size3{font-size:.4050925926em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size4{font-size:.462962963em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size5{font-size:.5208333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size6{font-size:.5787037037em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size7{font-size:.6944444444em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size8{font-size:.8333333333em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size9{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size10{font-size:1.2002314815em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size9.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size9.size11{font-size:1.4398148148em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size1{font-size:.2410800386em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size2{font-size:.2892960463em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size3{font-size:.337512054em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size4{font-size:.3857280617em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size5{font-size:.4339440694em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size6{font-size:.4821600771em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size7{font-size:.5785920926em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size8{font-size:.6943105111em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size9{font-size:.8331726133em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size10{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size10.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size10.size11{font-size:1.1996142719em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size1,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size1{font-size:.2009646302em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size2,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size2{font-size:.2411575563em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size3,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size3{font-size:.2813504823em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size4,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size4{font-size:.3215434084em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size5,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size5{font-size:.3617363344em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size6,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size6{font-size:.4019292605em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size7,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size7{font-size:.4823151125em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size8,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size8{font-size:.578778135em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size9,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size9{font-size:.6945337621em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size10,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size10{font-size:.8336012862em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fontsize-ensurer.reset-size11.size11,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sizing.reset-size11.size11{font-size:1em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .delimsizing.size1{font-family:KaTeX_Size1}
++:is(.twyne-math,.twyne-math-source-preview) .katex .delimsizing.size2{font-family:KaTeX_Size2}
++:is(.twyne-math,.twyne-math-source-preview) .katex .delimsizing.size3{font-family:KaTeX_Size3}
++:is(.twyne-math,.twyne-math-source-preview) .katex .delimsizing.size4{font-family:KaTeX_Size4}
++:is(.twyne-math,.twyne-math-source-preview) .katex .delimsizing.mult .delim-size1>span{font-family:KaTeX_Size1}
++:is(.twyne-math,.twyne-math-source-preview) .katex .delimsizing.mult .delim-size4>span{font-family:KaTeX_Size4}
++:is(.twyne-math,.twyne-math-source-preview) .katex .nulldelimiter{display:inline-block;width:.12em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .delimcenter,:is(.twyne-math,.twyne-math-source-preview) .katex .op-symbol{position:relative}
++:is(.twyne-math,.twyne-math-source-preview) .katex .op-symbol.small-op{font-family:KaTeX_Size1}
++:is(.twyne-math,.twyne-math-source-preview) .katex .op-symbol.large-op{font-family:KaTeX_Size2}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-accent>.vlist-t,:is(.twyne-math,.twyne-math-source-preview) .katex .op-limits>.vlist-t{text-align:center}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-accent .accent-body{position:relative}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-accent .accent-body:not(.accent-full){width:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-overlay{display:block}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mtable .vertical-separator{display:inline-block;min-width:1px}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mtable .arraycolsep{display:inline-block}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mtable .col-align-c>.vlist-t{text-align:center}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mtable .col-align-l>.vlist-t{text-align:left}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mtable .col-align-r>.vlist-t{text-align:right}
++:is(.twyne-math,.twyne-math-source-preview) .katex .svg-align{text-align:left}
++:is(.twyne-math,.twyne-math-source-preview) .katex svg{fill:currentColor;stroke:currentColor;display:block;height:inherit;position:absolute;width:100%}
++:is(.twyne-math,.twyne-math-source-preview) .katex svg path{stroke:none}
++:is(.twyne-math,.twyne-math-source-preview) .katex svg{fill-rule:nonzero;fill-opacity:1;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1}
++:is(.twyne-math,.twyne-math-source-preview) .katex img{border-style:none;max-height:none;max-width:none;min-height:0;min-width:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-stretchy{display:block;overflow:hidden;position:relative;width:100%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-stretchy:after,:is(.twyne-math,.twyne-math-source-preview) .katex .katex-stretchy:before{content:""}
++:is(.twyne-math,.twyne-math-source-preview) .katex .hide-tail{overflow:hidden;position:relative;width:100%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .halfarrow-left{left:0;overflow:hidden;position:absolute;width:50.2%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .halfarrow-right{overflow:hidden;position:absolute;right:0;width:50.2%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .brace-left{left:0;overflow:hidden;position:absolute;width:25.1%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .brace-center{left:25%;overflow:hidden;position:absolute;width:50%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .brace-right{overflow:hidden;position:absolute;right:0;width:25.1%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .x-arrow-pad{padding:0 .5em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .cd-arrow-pad{padding:0 .55556em 0 .27778em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mover,:is(.twyne-math,.twyne-math-source-preview) .katex .munder,:is(.twyne-math,.twyne-math-source-preview) .katex .x-arrow{text-align:center}
++:is(.twyne-math,.twyne-math-source-preview) .katex .boxpad{padding:0 .3em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .fbox,:is(.twyne-math,.twyne-math-source-preview) .katex .fcolorbox{border:.04em solid;box-sizing:border-box}
++:is(.twyne-math,.twyne-math-source-preview) .katex .cancel-pad{padding:0 .2em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .cancel-lap{margin-left:-.2em;margin-right:-.2em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .katex-sout{border-bottom-style:solid;border-bottom-width:.08em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .angl{border-right:.049em solid;border-top:.049em solid;box-sizing:border-box;margin-right:.03889em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .anglpad{padding:0 .03889em}
++:is(.twyne-math,.twyne-math-source-preview) .katex .eqn-num:before{content:"(" counter(katexEqnNo) ")";counter-increment:katexEqnNo}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mml-eqn-num:before{content:"(" counter(mmlEqnNo) ")";counter-increment:mmlEqnNo}
++:is(.twyne-math,.twyne-math-source-preview) .katex .mtr-glue{width:50%}
++:is(.twyne-math,.twyne-math-source-preview) .katex .cd-vert-arrow{display:inline-block;position:relative}
++:is(.twyne-math,.twyne-math-source-preview) .katex .cd-label-left{display:inline-block;position:absolute;right:calc(50% + .3em);text-align:left}
++:is(.twyne-math,.twyne-math-source-preview) .katex .cd-label-right{display:inline-block;left:calc(50% + .3em);position:absolute;text-align:right}
++:is(.twyne-math,.twyne-math-source-preview) .katex-display{display:block;margin:1em 0;text-align:center}
++:is(.twyne-math,.twyne-math-source-preview) .katex-display>.katex{display:block;text-align:center;white-space:nowrap}
++:is(.twyne-math,.twyne-math-source-preview) .katex-display>.katex>.katex-html{display:block;position:relative}
++:is(.twyne-math,.twyne-math-source-preview) .katex-display>.katex>.katex-html>.katex-tag{position:absolute;right:0}
++:is(.twyne-math,.twyne-math-source-preview) .katex-display.leqno>.katex>.katex-html>.katex-tag{left:0;right:auto}
++:is(.twyne-math,.twyne-math-source-preview) .katex-display.fleqn>.katex{padding-left:2em;text-align:left}
++:is(.twyne-math,.twyne-math-source-preview) body{counter-reset:katexEqnNo mmlEqnNo}

@@ -1,0 +1,8 @@
+{
+  "originalTestSha256": "28e7ac5ef3ad7dbfd93da8776639d4d596a492a58d76cb3a332fdb7d177e72a1",
+  "parentTestSha256": "16dd06e405ebd06bfc9e3c47cc96bcdbc931da2bae190933c0d18e2afe425add",
+  "change": "Import AppContext for actual TestAppContext::update_window calls; assertions unchanged.",
+  "priorCompilerLog": "desktop/gpui/target/verification/dossier-retained-settings-host-tests.log",
+  "workerFrozenArtifactsUnchanged": true,
+  "appliedFormattedHostTestsSha256": "c808e0b1e9764626fd48adeabaa6bc27beb27d757c3611d10e119e9f833964a3"
+}

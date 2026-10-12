@@ -1,0 +1,292 @@
+{
+  "recorded_at": "2026-10-04",
+  "status": "scoped fractional flow delivery passed; final assembled app gate remains coordinator-owned",
+  "fixture": "desktop/gpui/fixtures/marginalia/browser-manuscript.html",
+  "fixture_sha256": "d2cb4e4732965dda5e3fbb01c28e95e08f0a2d0abee6e06b71c96f5e379c40d6",
+  "native_metrics_policy": "retain fractional native metrics without CSS quantization or baseline offsets",
+  "width_policy": "one final measured logical-width frame retained through prepaint/paint/input/drag; native wrapper differs only by <=1 device-pixel absolute-edge snap; no post-layout reflow",
+  "native_reports": [
+    {
+      "width_px": 704,
+      "backend": "X11",
+      "html_unchanged": true,
+      "native_capture": "desktop/gpui/fixtures/editor/fractional-text-flow-native-704.png",
+      "native_capture_sha256": "e8e4c6723717dafae2fea6769fbd8548d3b05a8955729d66db50ffb7858cb166",
+      "original_chrome_dictionary_available": false,
+      "original_app_break_provenance": "workspace_exchange session 4 original-font DOM/range probe and coordinator retained original-font screenshots; remem-/ber wide split and narrow opening rows",
+      "blocks": [
+        {
+          "source": "The notebook",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 88.0,
+            "width": 704.0,
+            "height": 66.4000015258789
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 88,
+            "width": 704,
+            "height": 66.390625,
+            "top": 88,
+            "right": 744,
+            "bottom": 154.390625,
+            "left": 40
+          },
+          "native_rows": [
+            "The notebook"
+          ],
+          "top_difference_px": 0.0,
+          "height_difference_px": 0.00937652587890625
+        },
+        {
+          "source": "The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 172.39999389648438,
+            "width": 704.0,
+            "height": 97.20001220703125
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 172.390625,
+            "width": 704,
+            "height": 97.171875,
+            "top": 172.390625,
+            "right": 744,
+            "bottom": 269.5625,
+            "left": 40
+          },
+          "native_rows": [
+            "The notebook was small enough to carry in a coat pocket. By ",
+            "November, its corners had softened and the cover had begun to remem",
+            "ber the shape of a hand."
+          ],
+          "top_difference_px": 0.009368896484375,
+          "height_difference_px": 0.02813720703125
+        },
+        {
+          "source": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 277.70001220703125,
+            "width": 704.0,
+            "height": 64.79998779296875
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 277.65625,
+            "width": 704,
+            "height": 64.78125,
+            "top": 277.65625,
+            "right": 744,
+            "bottom": 342.4375,
+            "left": 40
+          },
+          "native_rows": [
+            "Most pages held ordinary things: the name of a book, a sentence overheard on the ",
+            "train, the hours of a shop she kept arriving at after it had closed."
+          ],
+          "top_difference_px": 0.04376220703125,
+          "height_difference_px": 0.01873779296875
+        },
+        {
+          "source": "A note for the next draft",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 378.5,
+            "width": 704.0,
+            "height": 30.0
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 378.4375,
+            "width": 704,
+            "height": 30,
+            "top": 378.4375,
+            "right": 744,
+            "bottom": 408.4375,
+            "left": 40
+          },
+          "native_rows": [
+            "A note for the next draft"
+          ],
+          "top_difference_px": 0.0625,
+          "height_difference_px": 0.0
+        },
+        {
+          "source": "Keep the opening concrete. Let the change in the room carry the ending.",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 418.1000061035156,
+            "width": 704.0,
+            "height": 32.399993896484375
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 418.03125,
+            "width": 704,
+            "height": 32.390625,
+            "top": 418.03125,
+            "right": 744,
+            "bottom": 450.421875,
+            "left": 40
+          },
+          "native_rows": [
+            "Keep the opening concrete. Let the change in the room carry the ending."
+          ],
+          "top_difference_px": 0.068756103515625,
+          "height_difference_px": 0.009368896484375
+        }
+      ]
+    },
+    {
+      "width_px": 554,
+      "backend": "X11",
+      "html_unchanged": true,
+      "native_capture": "desktop/gpui/fixtures/editor/fractional-text-flow-native-554.png",
+      "native_capture_sha256": "738b151349b13f643f8f1894424752f9dc6f0d4225e4088313403efa065a39e3",
+      "original_chrome_dictionary_available": false,
+      "original_app_break_provenance": "workspace_exchange session 4 original-font DOM/range probe and coordinator retained original-font screenshots; remem-/ber wide split and narrow opening rows",
+      "blocks": [
+        {
+          "source": "The notebook",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 88.0,
+            "width": 554.0,
+            "height": 66.4000015258789
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 88,
+            "width": 554,
+            "height": 66.390625,
+            "top": 88,
+            "right": 594,
+            "bottom": 154.390625,
+            "left": 40
+          },
+          "native_rows": [
+            "The notebook"
+          ],
+          "top_difference_px": 0.0,
+          "height_difference_px": 0.00937652587890625
+        },
+        {
+          "source": "The notebook was small enough to carry in a coat pocket. By November, its corners had softened and the cover had begun to remember the shape of a hand.",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 172.39999389648438,
+            "width": 554.0,
+            "height": 129.60000610351562
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 172.390625,
+            "width": 554,
+            "height": 129.5625,
+            "top": 172.390625,
+            "right": 594,
+            "bottom": 301.953125,
+            "left": 40
+          },
+          "native_rows": [
+            "The notebook was small enough to carry in a coat ",
+            "pocket. By November, its corners had softened and ",
+            "the cover had begun to remember the shape of a ",
+            "hand."
+          ],
+          "top_difference_px": 0.009368896484375,
+          "height_difference_px": 0.037506103515625
+        },
+        {
+          "source": "Most pages held ordinary things: the name of a book, a sentence overheard on the train, the hours of a shop she kept arriving at after it had closed.",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 310.1000061035156,
+            "width": 554.0,
+            "height": 97.20001220703125
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 310.046875,
+            "width": 554,
+            "height": 97.171875,
+            "top": 310.046875,
+            "right": 594,
+            "bottom": 407.21875,
+            "left": 40
+          },
+          "native_rows": [
+            "Most pages held ordinary things: the name of a book, a sentence ",
+            "overheard on the train, the hours of a shop she kept arriving at af",
+            "ter it had closed."
+          ],
+          "top_difference_px": 0.053131103515625,
+          "height_difference_px": 0.02813720703125
+        },
+        {
+          "source": "A note for the next draft",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 443.3000183105469,
+            "width": 554.0,
+            "height": 30.0
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 443.21875,
+            "width": 554,
+            "height": 30,
+            "top": 443.21875,
+            "right": 594,
+            "bottom": 473.21875,
+            "left": 40
+          },
+          "native_rows": [
+            "A note for the next draft"
+          ],
+          "top_difference_px": 0.081268310546875,
+          "height_difference_px": 0.0
+        },
+        {
+          "source": "Keep the opening concrete. Let the change in the room carry the ending.",
+          "native_bounds": {
+            "x": 40.0,
+            "y": 482.9000244140625,
+            "width": 554.0,
+            "height": 64.79998779296875
+          },
+          "original_chrome_bounds": {
+            "x": 40,
+            "y": 482.8125,
+            "width": 554,
+            "height": 64.78125,
+            "top": 482.8125,
+            "right": 594,
+            "bottom": 547.59375,
+            "left": 40
+          },
+          "native_rows": [
+            "Keep the opening concrete. Let the change in the room carry the ",
+            "ending."
+          ],
+          "top_difference_px": 0.0875244140625,
+          "height_difference_px": 0.01873779296875
+        }
+      ]
+    }
+  ],
+  "gate_results": {
+    "editor_view_suite": "35 PASS / 0 FAIL, 4.41s; includes 4 flow gates and all existing rich-view tests",
+    "existing_discretionary_cache_identity": "PASS, assertion unchanged",
+    "fractional_wrap_threshold_extent": "PASS, correct logical-width two-row layout and exact 1138px scroll extent; pre-fix mismatch was 1138px extent for one-row paint requiring 490px",
+    "scoped_rustfmt": "PASS",
+    "ui_library_strict_clippy": "PASS",
+    "desktop_probe_strict_clippy": "PASS",
+    "isolated_actual_x11_notebook": "704 and 554px source rows/bounds/unchanged HTML PASS after logical-width fix",
+    "isolated_actual_x11_drag": "9 PASS after logical-width fix; each driver owns a new Xvfb display",
+    "coordinator_pre_width_remedy_library_suite": "317 PASS, 0 FAIL, 8 explicit ignored probes; does not substitute for final assembled rerun"
+  }
+}

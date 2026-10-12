@@ -1,0 +1,41 @@
+{
+  "scope": "actual owned Linux Chrome Source prior-material default editing",
+  "url": "http://127.0.0.1:5180/dossier/create/",
+  "sourceSha256": "a87f81b992f801155c5f26cbd70f0abcd8639c48548daf5ad71be81d8c908b49",
+  "observed": [
+    {
+      "key": "Control+Enter",
+      "raw": "x",
+      "section": "IX"
+    },
+    {
+      "key": "Control+Shift+Enter",
+      "raw": "x",
+      "section": "IX"
+    },
+    {
+      "key": "Meta+Enter",
+      "raw": "x",
+      "section": "IX"
+    },
+    {
+      "key": "Meta+Shift+Enter",
+      "raw": "x",
+      "section": "IX"
+    }
+  ],
+  "textarea": {
+    "rows": 8,
+    "borderBoxHeight": 250,
+    "borderBoxWidth": 575,
+    "lineHeight": 28,
+    "verticalPadding": 12,
+    "borderWidth": 1
+  },
+  "method": "Actual focus/fill/press in the owned Source browser; prior key results recovered from live Playwriter session1 state.dossierPriorDefaults. Prior box measured through CDP.",
+  "boundaries": [
+    "Original Source browser behavior; no native/default IME equivalence claim",
+    "575px prior box width differs from 585px audience box and is not resolved by this receipt",
+    "No authentication/provider workflow claim"
+  ]
+}

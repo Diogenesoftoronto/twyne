@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "status": "frozen-authored-unapplied-uncompiled-unexecuted",
+  "ownership": "NEW fixtures/dossier-image-lifecycle/native-proof/** only",
+  "artifactSha256": {
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/README.md": "a6362c132004ccbd6ea43f8b4743265fcc4982831beaeab24f9ea01cfa936183",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/build-patch.py": "b498e6c97f17976d022069460a6aa14ef8be895f2f99986945bddf1360cfcfa1",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/check-native.py": "522cf0ec2cebb8bda75c855f35a5b0eb6ab3b447d6f54f1370c8cd2dc6b30b32",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/diagnostic_hooks.rs": "00c7167a5383a5ab7efee09bfa6a7e70f2708876153dd038f0e4283f592dc758",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/freeze.py": "9de9676e9bfbccabe13fc1b3de084cdab1972d95ef12d027f65ff50056998424",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/integration.patch": "58e8db1631ffa91ca2062f8f1c5a9825171425a7d45b7037e44b256298ba1907",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/patch-base.json": "51f53c21a435fb95287b373a33a9bef736201a7a0277257e4cdface31ac07bb1",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/retained.typ": "8a9cc13b4f2c084a54759e9a4a4699e246224363aec8a8af0c99957c2a6a6479",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/source-pins.json": "ebb0b14307629d8944533075580a71a155620d81be874b62aee9c33e4ed8cc0d"
+  },
+  "workerChecks": {
+    "pythonAstSyntax": true,
+    "ownedRustSyntaxFormattingOnly": true,
+    "unappliedPatchApplyCheck": true,
+    "rustTypecheck": false,
+    "cargoDevenv": false,
+    "nativeDriverExecuted": false
+  },
+  "parentModelReceipt": "desktop/gpui/fixtures/dossier-image-lifecycle/parent-gates.json",
+  "parentModelProofIsIndependent": true,
+  "pending": [
+    "Parent patch review/application/typecheck",
+    "actual isolated native driver",
+    "retained-Dossier Settings mounted gate"
+  ]
+}

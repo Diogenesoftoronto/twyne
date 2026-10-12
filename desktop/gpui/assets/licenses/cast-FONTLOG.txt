@@ -1,0 +1,9 @@
+Original Cast glyph controls, source symbols ♠ ♥ ♦ ✦ ♣.
+2026-10-04: Package exact current original-app browser fallback faces:
+Liberation Sans2.1.5 and Adwaita Mono32.4.0 are byte-identical TTF copies.
+Inter4.001 Regular is TTC face0 extracted with FontTools4.61.1, preserving
+every original table byte except required standalone head.checkSumAdjustment.
+No glyph, outline, advance, hint, weight, name or source-symbol modification.
+Original OFL/copyright notices accompany all three faces.
+Use only the cached Cast fallback after DM Sans400. No global fallback,
+Source, canonical document attribute or Typst fontbook change.

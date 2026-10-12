@@ -1,0 +1,196 @@
+--- a/desktop/gpui/src/editor/view.rs
++++ b/desktop/gpui/src/editor/view.rs
+@@ -43,6 +43,8 @@
+ mod hyphenation;
+ #[path = "images.rs"]
+ mod images;
++#[path = "atom_renderer_lifecycle.rs"]
++mod atom_lifecycle;
+ #[path = "view_math_source.rs"]
+ mod math_source;
+ pub use math_source::{MathSourceHostContext, MathSourcePreflight};
+@@ -302,11 +304,12 @@
+     error: Option<EditorError>,
+     atom_renderer: Option<InlineProofRenderer>,
+     atom_task: Option<Task<()>>,
+-    atom_pending: HashMap<AtomRenderKey, AtomRenderRequest>,
++    atom_pending: HashMap<AtomRenderKey, atom_lifecycle::PendingAtom>,
+     atom_inflight: HashSet<AtomRenderKey>,
+     atom_ready: HashMap<AtomRenderKey, Result<AtomRenderImage, AtomRenderError>>,
+     atom_generation: u64,
+     atom_revision: u64,
++    atom_lifecycle: atom_lifecycle::AtomRendererLifecycle,
+     #[cfg(target_os = "linux")]
+     external_clipboard: Option<external_clipboard::ExternalClipboard>,
+     #[cfg(target_os = "linux")]
+@@ -359,6 +362,7 @@
+             atom_ready: HashMap::new(),
+             atom_generation: 0,
+             atom_revision: 0,
++            atom_lifecycle: atom_lifecycle::AtomRendererLifecycle::default(),
+             #[cfg(target_os = "linux")]
+             external_clipboard: None,
+             #[cfg(target_os = "linux")]
+@@ -529,14 +533,11 @@
+         self.clear_comment_hover(cx);
+         self.marked_range = None;
+         self.error = None;
+-        self.atom_task = None;
+-        self.atom_pending.clear();
+-        self.atom_inflight.clear();
+-        self.atom_ready.clear();
+-        self.atom_generation = self.atom_generation.wrapping_add(1);
++        self.retire_atom_owner(cx);
+         cx.notify();
+     }
+     pub fn set_read_only(&mut self, read_only: bool, cx: &mut Context<Self>) {
++        let atom_scope_changed = self.is_read_only() != read_only;
+         self.clear_comment_hover(cx);
+         self.cancel_drag(cx);
+         #[cfg(target_os = "linux")]
+@@ -547,6 +548,9 @@
+         self.editor.end_history_group();
+         self.marked_range = None;
+         self.editor.set_read_only(read_only);
++        if atom_scope_changed {
++            self.retire_atom_owner(cx);
++        }
+         self.sync_math_source_read_only(cx);
+         cx.notify();
+     }
+@@ -1328,104 +1332,7 @@
+         source
+     }
+ 
+-    pub fn set_atom_renderer(&mut self, renderer: InlineProofRenderer, cx: &mut Context<Self>) {
+-        self.atom_renderer = Some(renderer);
+-        self.atom_ready.clear();
+-        self.atom_revision = self.atom_revision.wrapping_add(1);
+-        cx.notify();
+-    }
+-
+-    fn enqueue_atoms(
+-        &mut self,
+-        requests: Vec<AtomRenderRequest>,
+-        window: &mut Window,
+-        cx: &mut Context<Self>,
+-    ) {
+-        for request in requests {
+-            if request.generation != self.atom_generation {
+-                continue;
+-            }
+-            if let Ok(key) = request.key()
+-                && !self.atom_ready.contains_key(&key)
+-                && !self.atom_inflight.contains(&key)
+-            {
+-                self.atom_pending.entry(key).or_insert(request);
+-            }
+-        }
+-        self.start_atom_jobs(window, cx);
+-    }
+-
+-    fn start_atom_jobs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+-        if self.atom_task.is_some() || self.atom_pending.is_empty() {
+-            return;
+-        }
+-        let keys = self
+-            .atom_pending
+-            .keys()
+-            .take(2)
+-            .cloned()
+-            .collect::<Vec<_>>();
+-        let requests = keys
+-            .iter()
+-            .filter_map(|key| self.atom_pending.remove(key))
+-            .collect::<Vec<_>>();
+-        self.atom_inflight.extend(keys);
+-        let renderer = self.atom_renderer.clone();
+-        let generation = self.atom_generation;
+-        self.atom_task = Some(cx.spawn_in(window, async move |this, cx| {
+-            let (renderer, results) = cx
+-                .background_executor()
+-                .spawn(async move {
+-                    let renderer = renderer
+-                        .map(Ok)
+-                        .unwrap_or_else(InlineProofRenderer::discover);
+-                    match renderer {
+-                        Ok(renderer) => {
+-                            let results = requests
+-                                .into_iter()
+-                                .map(|request| {
+-                                    let result = renderer.render(request.clone());
+-                                    (request.key().ok(), result.result)
+-                                })
+-                                .collect::<Vec<_>>();
+-                            (Some(renderer), results)
+-                        }
+-                        Err(error) => (
+-                            None,
+-                            requests
+-                                .into_iter()
+-                                .map(|request| {
+-                                    (
+-                                        request.key().ok(),
+-                                        Err(AtomRenderError::new(
+-                                            AtomErrorKind::RendererUnavailable,
+-                                            format!("{error:#}"),
+-                                        )),
+-                                    )
+-                                })
+-                                .collect::<Vec<_>>(),
+-                        ),
+-                    }
+-                })
+-                .await;
+-            let _ = this.update_in(cx, |this, window, cx| {
+-                if this.atom_generation != generation {
+-                    return;
+-                }
+-                this.atom_renderer = renderer;
+-                for (key, result) in results {
+-                    if let Some(key) = key {
+-                        this.atom_inflight.remove(&key);
+-                        this.atom_ready.insert(key, result);
+-                    }
+-                }
+-                this.atom_task = None;
+-                this.atom_revision = this.atom_revision.wrapping_add(1);
+-                this.start_atom_jobs(window, cx);
+-                cx.notify();
+-            });
+-        }));
+-    }
++
+ }
+ 
+ impl EntityInputHandler for RichEditorView {
+@@ -2116,10 +2023,15 @@
+             },
+         );
+         let requests = layout.atom_requests.clone();
+-        if !requests.is_empty() {
++        if !requests.is_empty()
++            && let Some(scope) = self.view.read(cx).atom_request_ticket()
++        {
+             let view = self.view.downgrade();
++            let block = self.block.clone();
+             window.defer(cx, move |window, cx| {
+-                let _ = view.update(cx, |view, cx| view.enqueue_atoms(requests, window, cx));
++                let _ = view.update(cx, |view, cx| {
++                    view.enqueue_atoms(block, scope, requests, window, cx)
++                });
+             });
+         }
+         let images = layout
+--- a/desktop/gpui/src/editor/view_math_source.rs
++++ b/desktop/gpui/src/editor/view_math_source.rs
+@@ -165,6 +165,9 @@
+             _ => false,
+         };
+         if !unchanged {
++            // This is the application's actual folio/visit/context boundary.
++            // Retire closed-atom jobs independently of form submission state.
++            self.retire_atom_owner(cx);
+             self.retire_math_source(cx);
+             self.math_source.focus.borrow_mut().clear();
+         }

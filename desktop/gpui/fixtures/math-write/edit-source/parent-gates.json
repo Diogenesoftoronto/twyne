@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-10-05T03:04:47.502216+00:00",
+  "status": "pass",
+  "scope": "Parent actual compiled core math source command; original Source keyboard/native form/renderer adoption separate",
+  "rustGate": {
+    "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --lib editor::transaction::math_source_tests",
+    "log": "/tmp/twyne-gpui-math-source-parent-tests.log",
+    "passed": 8,
+    "failed": 0,
+    "ignored": 0,
+    "durationSeconds": 0.42
+  },
+  "reviewedSourceGate": {
+    "tests": 3,
+    "assertions": 161,
+    "cases": 9,
+    "execution": "worker ran actual Source MathExtensions and history in JSDOM"
+  },
+  "files": {
+    "src/editor/command.rs": "491041e888100dd1a7ad5b5bcaf0ea142aacd95ddf54a042d6009d763a9d7aed",
+    "src/editor/transaction.rs": "febebe935421e391bc4949cacdf5d3bc2591cc3bda7373fef256cae38b1e2e22",
+    "fixtures/math-write/edit-source/source-reference.json": "4a533cdac61d706f75a09c68c81b49a5915f41f2298025812dcde27d33ad8e61"
+  },
+  "limitations": [
+    "math source view is unregistered and unmounted",
+    "no native keyboard/preview/geometry proof",
+    "CurrentSource renderer still refuses rather than promotes diagnostic parity"
+  ]
+}

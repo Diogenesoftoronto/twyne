@@ -1,0 +1,21 @@
+{
+  "backend": "X11",
+  "display": "new owned Xvfb, terminated",
+  "input": "separate-process XTEST",
+  "binarySha256": "be489cbd5e16862cb4458cba4b9ff637df20b86487e964082f1115854101d7c9",
+  "checks": [
+    "Owned X11 window is actually activated before input",
+    "Actual Match paper layout control selects pagination without treating the backup catalog as an active folio or changing the manuscript",
+    "Actual font-backed editor accepts two 816 by 1056 sheets with the original 24px gap and one collected note tail",
+    "Actual caret travels to the later sheet and Ctrl-S files typed prose without changing manual break, note or page settings",
+    "Focused Undo and Redo restore the exact durable manuscript across physical page geometry",
+    "A separate X11 clipboard client reads selected text from both physical pages",
+    "Actual 620px window resize retains 816px physical sheet width and both 1056px pages without mutating authored content",
+    "Clean Ctrl-Q retains the accepted paginated manuscript"
+  ],
+  "boundary": "Synthetic authored export with original bundled fonts; actual native pages/input/clipboard/history/save/resize. Current Source route does not register its pagination extension; full original route and raster parity are not established. No provider/account or device activity.",
+  "completedAt": "2026-10-05T00:48:46.816709+00:00",
+  "outputDirectory": "/tmp/twyne-native-pagination-physical-input",
+  "driverSha256": "b338c0b637412741136105fcba77ec8b1a870d679ebf8b24725a4342f0922643",
+  "sourceGeometrySha256": "bef7e3a639f4cedcde6096d9fe018764dae5cdf601b81b8b02b1c395b7c3969c"
+}

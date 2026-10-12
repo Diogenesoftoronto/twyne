@@ -1,0 +1,118 @@
+{
+  "url": "http://localhost:5180/personas/",
+  "viewport": {
+    "width": 620,
+    "height": 860
+  },
+  "scope": "anonymous offline original app, unedited default roster, provider/account/sync traffic blocked",
+  "header": {
+    "text": "TwyneRoom of EditorsHire, edit, and tune the editorial board. Each editor's voice drives the notes they file.+ New editorReset defaults← Back to desk",
+    "rect": {
+      "x": 24,
+      "y": 32,
+      "width": 572,
+      "height": 105
+    },
+    "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+    "fontSize": "16px",
+    "fontWeight": "400",
+    "letterSpacing": "normal",
+    "lineHeight": "24px",
+    "padding": "0px",
+    "flex": "0 1 auto",
+    "whiteSpace": "normal"
+  },
+  "children": [
+    {
+      "text": "TwyneRoom of EditorsHire, edit, and tune the editorial board. Each editor's voice drives the notes they file.",
+      "rect": {
+        "x": 24,
+        "y": 32,
+        "width": 308.1875,
+        "height": 105
+      },
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "letterSpacing": "normal",
+      "lineHeight": "24px",
+      "padding": "0px",
+      "flex": "0 1 auto",
+      "whiteSpace": "normal"
+    },
+    {
+      "text": "+ New editorReset defaults← Back to desk",
+      "rect": {
+        "x": 332.1875,
+        "y": 42.03125,
+        "width": 263.8125,
+        "height": 84.9375
+      },
+      "fontFamily": "Lora, \"Crimson Pro\", Georgia, \"Times New Roman\", serif",
+      "fontSize": "16px",
+      "fontWeight": "400",
+      "letterSpacing": "normal",
+      "lineHeight": "24px",
+      "padding": "0px",
+      "flex": "0 1 auto",
+      "whiteSpace": "normal"
+    }
+  ],
+  "actions": [
+    {
+      "text": "+ New editor",
+      "rect": {
+        "x": 332.1875,
+        "y": 58.703125,
+        "width": 96.75,
+        "height": 51.59375
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "11.2px",
+      "fontWeight": "400",
+      "letterSpacing": "2.016px",
+      "lineHeight": "16px",
+      "padding": "8.8px 16px",
+      "flex": "0 1 auto",
+      "whiteSpace": "normal"
+    },
+    {
+      "text": "Reset defaults",
+      "rect": {
+        "x": 440.9375,
+        "y": 59.171875,
+        "width": 81.28125,
+        "height": 50.65625
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "letterSpacing": "normal",
+      "lineHeight": "17.1429px",
+      "padding": "7.2px 14.4px",
+      "flex": "0 1 auto",
+      "whiteSpace": "normal"
+    },
+    {
+      "text": "← Back to desk",
+      "rect": {
+        "x": 534.21875,
+        "y": 42.03125,
+        "width": 61.78125,
+        "height": 84.9375
+      },
+      "fontFamily": "\"Libre Baskerville\", \"Playfair Display\", Georgia, serif",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "letterSpacing": "normal",
+      "lineHeight": "17.1429px",
+      "padding": "7.2px 14.4px",
+      "flex": "0 1 auto",
+      "whiteSpace": "normal"
+    }
+  ],
+  "newEditorWordSpaceRangeWidth": 0,
+  "newEditorGlyphSpaceWidth": 3.2108306884765625,
+  "newEditorTrackedSpaceWidth": 5.2268306884765625,
+  "spaceMeasurement": "Original loaded Libre Baskerville normal 11.2px Canvas glyph advance plus actual computed 2.016px tracking; DOM range at the wrapped trailing space collapses to zero."
+}

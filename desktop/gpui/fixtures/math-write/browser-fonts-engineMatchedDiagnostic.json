@@ -1,0 +1,989 @@
+{
+  "profile": "engineMatchedDiagnostic",
+  "provenance": "Actual Chrome selected fonts and strut box/style observations on task-owned original module fixture; no application metadata or manuscript changes",
+  "fonts": [
+    {
+      "label": "main",
+      "selector": "[data-math-case=\"ordinary\"] .katex-html .mbin",
+      "fonts": [
+        {
+          "familyName": "KaTeX_Main",
+          "postScriptName": "KaTeX_Main-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "mathItalic",
+      "selector": "[data-math-case=\"ordinary\"] .katex-html .mathnormal",
+      "fonts": [
+        {
+          "familyName": "KaTeX_Math",
+          "postScriptName": "KaTeX_Math-Italic",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "size2",
+      "selector": "[data-math-case=\"integral\"] .katex-html .op-symbol",
+      "fonts": [
+        {
+          "familyName": "KaTeX_Size2",
+          "postScriptName": "KaTeX_Size2-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "ams",
+      "selector": "[data-math-case=\"font-roster\"] .katex-html .mathbb",
+      "fonts": [
+        {
+          "familyName": "KaTeX_AMS",
+          "postScriptName": "KaTeX_AMS-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "caligraphic",
+      "selector": "[data-math-case=\"font-roster\"] .katex-html .mathcal",
+      "fonts": [
+        {
+          "familyName": "KaTeX_Caligraphic",
+          "postScriptName": "KaTeX_Caligraphic-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "fraktur",
+      "selector": "[data-math-case=\"font-roster\"] .katex-html .mathfrak",
+      "fonts": [
+        {
+          "familyName": "KaTeX_Fraktur",
+          "postScriptName": "KaTeX_Fraktur-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "typewriter",
+      "selector": "[data-math-case=\"font-roster\"] .katex-html .mathtt",
+      "fonts": [
+        {
+          "familyName": "KaTeX_Typewriter",
+          "postScriptName": "KaTeX_Typewriter-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "label": "sans",
+      "selector": "[data-math-case=\"font-roster\"] .katex-html .mathsf",
+      "fonts": [
+        {
+          "familyName": "KaTeX_SansSerif",
+          "postScriptName": "KaTeX_SansSerif-Regular",
+          "isCustomFont": true,
+          "glyphCount": 1
+        }
+      ]
+    }
+  ],
+  "geometry": [
+    {
+      "id": "ordinary",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "14.5156px",
+            "vertical-align": "-1.81427px"
+          },
+          "borderQuad": [
+            16,
+            81.703125,
+            16,
+            81.703125,
+            16,
+            96.21875,
+            16,
+            96.21875
+          ],
+          "width": 0,
+          "height": 15
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "13.6094px",
+            "vertical-align": "-4.23403px"
+          },
+          "borderQuad": [
+            55.046875,
+            85.015625,
+            55.046875,
+            85.015625,
+            55.046875,
+            98.625,
+            55.046875,
+            98.625
+          ],
+          "width": 0,
+          "height": 14
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "14.0312px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            95.53125,
+            80.375,
+            95.53125,
+            80.375,
+            95.53125,
+            94.40625,
+            95.53125,
+            94.40625
+          ],
+          "width": 0,
+          "height": 14
+        }
+      ]
+    },
+    {
+      "id": "fraction",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "27.9375px",
+            "vertical-align": "-8.78387px"
+          },
+          "borderQuad": [
+            16,
+            156.0625,
+            16,
+            156.0625,
+            16,
+            184,
+            16,
+            184
+          ],
+          "width": 0,
+          "height": 28
+        }
+      ]
+    },
+    {
+      "id": "nested-fractions",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "52.2969px",
+            "vertical-align": "-23.5246px"
+          },
+          "borderQuad": [
+            287.671875,
+            280.03125,
+            287.671875,
+            280.03125,
+            287.671875,
+            332.328125,
+            287.671875,
+            332.328125
+          ],
+          "width": 0,
+          "height": 52
+        }
+      ]
+    },
+    {
+      "id": "radical",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "22.6406px",
+            "vertical-align": "-2.75735px"
+          },
+          "borderQuad": [
+            16,
+            412.84375,
+            16,
+            412.84375,
+            16,
+            435.484375,
+            16,
+            435.484375
+          ],
+          "width": 0,
+          "height": 23
+        }
+      ]
+    },
+    {
+      "id": "indexed-radical",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "22.6406px",
+            "vertical-align": "-3.25393px"
+          },
+          "borderQuad": [
+            16,
+            494.15625,
+            16,
+            494.15625,
+            16,
+            516.796875,
+            16,
+            516.796875
+          ],
+          "width": 0,
+          "height": 23
+        }
+      ]
+    },
+    {
+      "id": "scripts",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "24.625px",
+            "vertical-align": "-6.03088px"
+          },
+          "borderQuad": [
+            16,
+            575.75,
+            16,
+            575.75,
+            16,
+            600.375,
+            16,
+            600.375
+          ],
+          "width": 0,
+          "height": 25
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "16.7969px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            84.765625,
+            577.5625,
+            84.765625,
+            577.5625,
+            84.765625,
+            594.359375,
+            84.765625,
+            594.359375
+          ],
+          "width": 0,
+          "height": 17
+        }
+      ]
+    },
+    {
+      "id": "sum-limits",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "63.7812px",
+            "vertical-align": "-27.8283px"
+          },
+          "borderQuad": [
+            290.359375,
+            699.171875,
+            290.359375,
+            699.171875,
+            290.359375,
+            762.953125,
+            290.359375,
+            762.953125
+          ],
+          "width": 0,
+          "height": 64
+        }
+      ]
+    },
+    {
+      "id": "integral",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "53.9219px",
+            "vertical-align": "-19.8612px"
+          },
+          "borderQuad": [
+            274.65625,
+            887.359375,
+            274.65625,
+            887.359375,
+            274.65625,
+            941.28125,
+            274.65625,
+            941.28125
+          ],
+          "width": 0,
+          "height": 54
+        }
+      ]
+    },
+    {
+      "id": "delimiters",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "26.125px",
+            "vertical-align": "-7.623px"
+          },
+          "borderQuad": [
+            16,
+            1023.171875,
+            16,
+            1023.171875,
+            16,
+            1049.296875,
+            16,
+            1049.296875
+          ],
+          "width": 0,
+          "height": 26
+        }
+      ]
+    },
+    {
+      "id": "large-delimiters",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "54.0312px",
+            "vertical-align": "-22.4552px"
+          },
+          "borderQuad": [
+            290.421875,
+            1146.5,
+            290.421875,
+            1146.5,
+            290.421875,
+            1200.53125,
+            290.421875,
+            1200.53125
+          ],
+          "width": 0,
+          "height": 54
+        }
+      ]
+    },
+    {
+      "id": "matrix",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "52.2656px",
+            "vertical-align": "-20.691px"
+          },
+          "borderQuad": [
+            278.203125,
+            1324.9375,
+            278.203125,
+            1324.9375,
+            278.203125,
+            1377.203125,
+            278.203125,
+            1377.203125
+          ],
+          "width": 0,
+          "height": 52
+        }
+      ]
+    },
+    {
+      "id": "array-alignment",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "52.2656px",
+            "vertical-align": "-20.691px"
+          },
+          "borderQuad": [
+            258.796875,
+            1501.609375,
+            258.796875,
+            1501.609375,
+            258.796875,
+            1553.875,
+            258.796875,
+            1553.875
+          ],
+          "width": 0,
+          "height": 52
+        }
+      ]
+    },
+    {
+      "id": "text",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "19.3594px",
+            "vertical-align": "-4.23403px"
+          },
+          "borderQuad": [
+            16,
+            1639.140625,
+            16,
+            1639.140625,
+            16,
+            1658.5,
+            16,
+            1658.5
+          ],
+          "width": 0,
+          "height": 19
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "14.875px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            195.703125,
+            1639.40625,
+            195.703125,
+            1639.40625,
+            195.703125,
+            1654.28125,
+            195.703125,
+            1654.28125
+          ],
+          "width": 0,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "id": "unicode-accent",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "16.9375px",
+            "vertical-align": "-1.81427px"
+          },
+          "borderQuad": [
+            16,
+            1719.96875,
+            16,
+            1719.96875,
+            16,
+            1736.90625,
+            16,
+            1736.90625
+          ],
+          "width": 0,
+          "height": 17
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "14.5156px",
+            "vertical-align": "-1.81427px"
+          },
+          "borderQuad": [
+            85.53125,
+            1722.390625,
+            85.53125,
+            1722.390625,
+            85.53125,
+            1736.90625,
+            85.53125,
+            1736.90625
+          ],
+          "width": 0,
+          "height": 15
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "14.875px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            126.140625,
+            1720.21875,
+            126.140625,
+            1720.21875,
+            126.140625,
+            1735.09375,
+            126.140625,
+            1735.09375
+          ],
+          "width": 0,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "id": "font-roster",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "16.8125px",
+            "vertical-align": "-1.81427px"
+          },
+          "borderQuad": [
+            16,
+            1800.90625,
+            16,
+            1800.90625,
+            16,
+            1817.71875,
+            16,
+            1817.71875
+          ],
+          "width": 0,
+          "height": 17
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "16.6875px",
+            "vertical-align": "-1.81427px"
+          },
+          "borderQuad": [
+            58.3125,
+            1801.03125,
+            58.3125,
+            1801.03125,
+            58.3125,
+            1817.71875,
+            58.3125,
+            1817.71875
+          ],
+          "width": 0,
+          "height": 17
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "16.8125px",
+            "vertical-align": "-4.1186px"
+          },
+          "borderQuad": [
+            102.71875,
+            1803.203125,
+            102.71875,
+            1803.203125,
+            102.71875,
+            1820.015625,
+            102.71875,
+            1820.015625
+          ],
+          "width": 0,
+          "height": 17
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "14.5156px",
+            "vertical-align": "-1.81427px"
+          },
+          "borderQuad": [
+            140.296875,
+            1803.203125,
+            140.296875,
+            1803.203125,
+            140.296875,
+            1817.71875,
+            140.296875,
+            1817.71875
+          ],
+          "width": 0,
+          "height": 15
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "15.1094px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            178.328125,
+            1800.796875,
+            178.328125,
+            1800.796875,
+            178.328125,
+            1815.90625,
+            178.328125,
+            1815.90625
+          ],
+          "width": 0,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "id": "text-ligature",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "15.1094px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            16,
+            1881.609375,
+            16,
+            1881.609375,
+            16,
+            1896.71875,
+            16,
+            1896.71875
+          ],
+          "width": 0,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "id": "overline",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "21.2812px",
+            "vertical-align": "-4.23403px"
+          },
+          "borderQuad": [
+            16,
+            1960.46875,
+            16,
+            1960.46875,
+            16,
+            1981.75,
+            16,
+            1981.75
+          ],
+          "width": 0,
+          "height": 21
+        }
+      ]
+    },
+    {
+      "id": "accent",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "16.9375px",
+            "vertical-align": "-1.81427px"
+          },
+          "borderQuad": [
+            16,
+            2043.21875,
+            16,
+            2043.21875,
+            16,
+            2060.15625,
+            16,
+            2060.15625
+          ],
+          "width": 0,
+          "height": 17
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "15.5469px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            55.046875,
+            2042.796875,
+            55.046875,
+            2042.796875,
+            55.046875,
+            2058.34375,
+            55.046875,
+            2058.34375
+          ],
+          "width": 0,
+          "height": 16
+        }
+      ]
+    },
+    {
+      "id": "spacing",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "15.1094px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            16,
+            2124.046875,
+            16,
+            2124.046875,
+            16,
+            2139.15625,
+            16,
+            2139.15625
+          ],
+          "width": 0,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "id": "color",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "14.5156px",
+            "vertical-align": "-1.81427px"
+          },
+          "borderQuad": [
+            16,
+            2207.265625,
+            16,
+            2207.265625,
+            16,
+            2221.78125,
+            16,
+            2221.78125
+          ],
+          "width": 0,
+          "height": 15
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "13.6094px",
+            "vertical-align": "-4.23403px"
+          },
+          "borderQuad": [
+            55.046875,
+            2210.578125,
+            55.046875,
+            2210.578125,
+            55.046875,
+            2224.1875,
+            55.046875,
+            2224.1875
+          ],
+          "width": 0,
+          "height": 14
+        }
+      ]
+    },
+    {
+      "id": "unsupported-lap",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "13.6094px",
+            "vertical-align": "-4.23403px"
+          },
+          "borderQuad": [
+            16,
+            2291.390625,
+            16,
+            2291.390625,
+            16,
+            2305,
+            16,
+            2305
+          ],
+          "width": 0,
+          "height": 14
+        }
+      ]
+    },
+    {
+      "id": "unsupported-tag",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "9.375px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            289.53125,
+            2416.21875,
+            289.53125,
+            2416.21875,
+            289.53125,
+            2425.59375,
+            289.53125,
+            2425.59375
+          ],
+          "width": 0,
+          "height": 9
+        },
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "13.6094px",
+            "vertical-align": "-4.23403px"
+          },
+          "borderQuad": [
+            331.015625,
+            2416.203125,
+            331.015625,
+            2416.203125,
+            331.015625,
+            2429.8125,
+            331.015625,
+            2429.8125
+          ],
+          "width": 0,
+          "height": 14
+        }
+      ]
+    },
+    {
+      "id": "unsupported-unicode-fallback",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "14.875px",
+            "vertical-align": "baseline"
+          },
+          "borderQuad": [
+            16,
+            2519.25,
+            16,
+            2519.25,
+            16,
+            2534.125,
+            16,
+            2534.125
+          ],
+          "width": 0,
+          "height": 15
+        }
+      ]
+    },
+    {
+      "id": "untrusted-link",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "21.7656px",
+            "vertical-align": "-5.445px"
+          },
+          "borderQuad": [
+            16,
+            2598.609375,
+            16,
+            2598.609375,
+            16,
+            2620.375,
+            16,
+            2620.375
+          ],
+          "width": 0,
+          "height": 22
+        }
+      ]
+    },
+    {
+      "id": "untrusted-image",
+      "struts": [
+        {
+          "styles": {
+            "font-size": "21.78px",
+            "display": "inline-block",
+            "height": "21.7656px",
+            "vertical-align": "-5.445px"
+          },
+          "borderQuad": [
+            16,
+            2679.421875,
+            16,
+            2679.421875,
+            16,
+            2701.1875,
+            16,
+            2701.1875
+          ],
+          "width": 0,
+          "height": 22
+        }
+      ]
+    }
+  ]
+}

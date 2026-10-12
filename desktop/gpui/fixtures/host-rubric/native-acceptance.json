@@ -1,0 +1,18 @@
+{
+  "display": "new isolated Xvfb, terminated",
+  "backend": "X11",
+  "input": "separate-process XTEST",
+  "fixture": "explicit retained test metadata; no provider activity",
+  "checks": [
+    "Owned X11 window is actually activated before text input",
+    "Actual Rubric Board opens retained data with provider grading disabled",
+    "Final typed weight is durable before Galley opens; saved grades/history/passages and canonical bytes stay exact",
+    "Actual Galley Back returns to the same scoped Rubric Board",
+    "Actual backup-write obstruction retains accepted bytes and blocks departure with the held criteria candidate",
+    "Actual Retry files the exact held toggle without replacing cached editorial artifacts",
+    "Explicit custom Add files one local rule while preserving original spine and saved judgment",
+    "Actual custom Remove removes only its local rule",
+    "Route capture preserves unsubmitted custom fields without filing a criterion",
+    "Actual Ctrl-Q captures the final unblurred weight, leaves custom form unfiled and exits cleanly with exact manuscript/artifacts"
+  ]
+}

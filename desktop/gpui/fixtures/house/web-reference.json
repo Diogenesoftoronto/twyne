@@ -1,0 +1,4185 @@
+{
+  "base": {
+    "house": {
+      "name": "The Lantern",
+      "dossier": {
+        "tone": "Clear",
+        "audience": "Curious neighbours"
+      },
+      "updatedAt": 900
+    },
+    "collections": [
+      {
+        "id": "web/collection:letters",
+        "name": "Letters",
+        "description": "A monthly letter",
+        "folioIds": ["web/folio:café", "not-imported:folio"],
+        "dossier": {
+          "tone": "Personal",
+          "constraints": "One primary source"
+        },
+        "createdAt": 20,
+        "updatedAt": 800,
+        "futureCollection": {
+          "binding": "thread"
+        }
+      },
+      {
+        "id": "collection:essays",
+        "name": "Essays",
+        "description": "",
+        "folioIds": ["folio:second"],
+        "dossier": {},
+        "createdAt": 30,
+        "updatedAt": 850
+      }
+    ],
+    "charter": [
+      {
+        "id": "charter:house",
+        "scope": "house",
+        "ownerRef": "house",
+        "text": "Cite a primary source",
+        "severity": "must",
+        "kind": "citation",
+        "order": 0,
+        "updatedAt": 80
+      },
+      {
+        "id": "charter:letters",
+        "scope": "collection",
+        "ownerRef": "web/collection:letters",
+        "text": "Open on a scene",
+        "severity": "prefer",
+        "kind": "style",
+        "order": 0.5,
+        "updatedAt": 81,
+        "futureArticle": {
+          "reviewed": false
+        }
+      }
+    ],
+    "ledger": []
+  },
+  "operations": [
+    {
+      "method": "setHouseName",
+      "args": [" ﻿The Lantern Press﻿ "],
+      "now": 1000,
+      "before": {
+        "house": {
+          "name": "The Lantern",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours"
+          },
+          "updatedAt": 900
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": []
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours"
+          },
+          "updatedAt": 1000
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "setHouseField",
+      "args": ["goal", " Make the reader notice "],
+      "now": 1001,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours"
+          },
+          "updatedAt": 1000
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1001
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "setHouseField",
+      "args": ["goal", "Make the reader notice"],
+      "now": 1002,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1001
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1001
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "updateCollection",
+      "args": [
+        "web/collection:letters",
+        {
+          "name": " Correspondence ",
+          "description": " Notes from this street ",
+          "field": {
+            "name": "tone",
+            "value": " Familiar "
+          }
+        }
+      ],
+      "now": 1003,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1001
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1003
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1003,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "setFolioCollection",
+      "args": ["web/folio:café", "collection:essays"],
+      "now": 1004,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1003
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1003,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1004
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second", "web/folio:café"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1004
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "setFolioCollection",
+      "args": ["folio:second", null],
+      "now": 1005,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1004
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second", "web/folio:café"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1004
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1005
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "createCollection",
+      "args": [" Field notes ", ["web/folio:café"]],
+      "now": 1006,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1005
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1006
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "nativeId": "web-generated-8"
+    },
+    {
+      "method": "upsertCharterItem",
+      "args": [
+        {
+          "id": "charter:letters",
+          "scope": "collection",
+          "ownerRef": "web/collection:letters",
+          "text": " Start with a scene ",
+          "severity": "must",
+          "kind": "style",
+          "order": 0.5,
+          "updatedAt": 81,
+          "futureArticle": {
+            "reviewed": false
+          }
+        }
+      ],
+      "now": 1007,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1006
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1007
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Start with a scene",
+            "severity": "must",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 1007,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "upsertCharterItem",
+      "args": [
+        {
+          "id": "charter:new",
+          "scope": "folio",
+          "ownerRef": "web/folio:café",
+          "text": " Stay under 1,200 words ",
+          "severity": "prefer",
+          "kind": "length"
+        }
+      ],
+      "now": 1008,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1007
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Start with a scene",
+            "severity": "must",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 1007,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1008
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Start with a scene",
+            "severity": "must",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 1007,
+            "futureArticle": {
+              "reviewed": false
+            }
+          },
+          {
+            "id": "charter:new",
+            "scope": "folio",
+            "ownerRef": "web/folio:café",
+            "text": "Stay under 1,200 words",
+            "severity": "prefer",
+            "kind": "length",
+            "order": 0,
+            "updatedAt": 1008
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-11",
+            "at": 1008,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "field": "prefer",
+            "to": "Stay under 1,200 words",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "removeCharterItem",
+      "args": ["charter:new"],
+      "now": 1009,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1008
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Start with a scene",
+            "severity": "must",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 1007,
+            "futureArticle": {
+              "reviewed": false
+            }
+          },
+          {
+            "id": "charter:new",
+            "scope": "folio",
+            "ownerRef": "web/folio:café",
+            "text": "Stay under 1,200 words",
+            "severity": "prefer",
+            "kind": "length",
+            "order": 0,
+            "updatedAt": 1008
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-11",
+            "at": 1008,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "field": "prefer",
+            "to": "Stay under 1,200 words",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1009
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Start with a scene",
+            "severity": "must",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 1007,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-12",
+            "at": 1009,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "from": "Stay under 1,200 words",
+            "source": "charter",
+            "reason": "Standard withdrawn"
+          },
+          {
+            "id": "web-generated-11",
+            "at": 1008,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "field": "prefer",
+            "to": "Stay under 1,200 words",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "removeCharterItem",
+      "args": ["absent:article"],
+      "now": 1010,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1009
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Start with a scene",
+            "severity": "must",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 1007,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-12",
+            "at": 1009,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "from": "Stay under 1,200 words",
+            "source": "charter",
+            "reason": "Standard withdrawn"
+          },
+          {
+            "id": "web-generated-11",
+            "at": 1008,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "field": "prefer",
+            "to": "Stay under 1,200 words",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1009
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Start with a scene",
+            "severity": "must",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 1007,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-12",
+            "at": 1009,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "from": "Stay under 1,200 words",
+            "source": "charter",
+            "reason": "Standard withdrawn"
+          },
+          {
+            "id": "web-generated-11",
+            "at": 1008,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "field": "prefer",
+            "to": "Stay under 1,200 words",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    },
+    {
+      "method": "deleteCollection",
+      "args": ["web/collection:letters"],
+      "now": 1011,
+      "before": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1009
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Correspondence",
+            "description": "Notes from this street",
+            "folioIds": ["not-imported:folio"],
+            "dossier": {
+              "tone": "Familiar",
+              "constraints": "One primary source"
+            },
+            "createdAt": 20,
+            "updatedAt": 1004,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Start with a scene",
+            "severity": "must",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 1007,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-12",
+            "at": 1009,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "from": "Stay under 1,200 words",
+            "source": "charter",
+            "reason": "Standard withdrawn"
+          },
+          {
+            "id": "web-generated-11",
+            "at": 1008,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "field": "prefer",
+            "to": "Stay under 1,200 words",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      },
+      "after": {
+        "house": {
+          "name": "The Lantern Press",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "goal": "Make the reader notice"
+          },
+          "updatedAt": 1011
+        },
+        "collections": [
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": [],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 1005
+          },
+          {
+            "id": "web-generated-8",
+            "name": "Field notes",
+            "description": "",
+            "folioIds": ["web/folio:café"],
+            "dossier": {},
+            "createdAt": 1006,
+            "updatedAt": 1006
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          }
+        ],
+        "ledger": [
+          {
+            "id": "web-generated-13",
+            "at": 1011,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "from": "Correspondence",
+            "source": "collection",
+            "reason": "Collection dissolved; its folios are now loose"
+          },
+          {
+            "id": "web-generated-12",
+            "at": 1009,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "from": "Stay under 1,200 words",
+            "source": "charter",
+            "reason": "Standard withdrawn"
+          },
+          {
+            "id": "web-generated-11",
+            "at": 1008,
+            "layer": "charter",
+            "ownerRef": "web/folio:café",
+            "field": "prefer",
+            "to": "Stay under 1,200 words",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-10",
+            "at": 1007,
+            "layer": "charter",
+            "ownerRef": "web/collection:letters",
+            "field": "must",
+            "from": "Open on a scene",
+            "to": "Start with a scene",
+            "source": "charter"
+          },
+          {
+            "id": "web-generated-9",
+            "at": 1006,
+            "layer": "collection",
+            "ownerRef": "web-generated-8",
+            "to": "Field notes",
+            "source": "collection",
+            "reason": "Collection founded"
+          },
+          {
+            "id": "web-generated-7",
+            "at": 1005,
+            "layer": "folio",
+            "ownerRef": "folio:second",
+            "field": "collection",
+            "from": "Essays",
+            "to": "Loose folios",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-6",
+            "at": 1004,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "collection",
+            "from": "Correspondence",
+            "to": "Essays",
+            "source": "collection",
+            "reason": "Collection membership changed"
+          },
+          {
+            "id": "web-generated-3",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "name",
+            "from": "Letters",
+            "to": "Correspondence",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-4",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "description",
+            "from": "A monthly letter",
+            "to": "Notes from this street",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-5",
+            "at": 1003,
+            "layer": "collection",
+            "ownerRef": "web/collection:letters",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "collection"
+          },
+          {
+            "id": "web-generated-2",
+            "at": 1001,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "goal",
+            "from": "",
+            "to": "Make the reader notice",
+            "source": "house"
+          },
+          {
+            "id": "web-generated-1",
+            "at": 1000,
+            "layer": "house",
+            "ownerRef": "house",
+            "field": "name",
+            "from": "The Lantern",
+            "to": "The Lantern Press",
+            "source": "house"
+          }
+        ]
+      }
+    }
+  ],
+  "contexts": [
+    {
+      "name": "nearest dossier and filed amendment",
+      "state": {
+        "house": {
+          "name": "The Lantern",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "format": "Newsletter",
+            "workingTitle": "Does not inherit"
+          },
+          "updatedAt": 900
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source",
+              "audience": "Neighbours"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "ledger:amendment",
+            "at": 879,
+            "layer": "amendment",
+            "ownerRef": "web/folio:café",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "amendment"
+          }
+        ]
+      },
+      "brief": {
+        "answers": {
+          "workingTitle": "A light on the corner",
+          "format": "Essay",
+          "audience": "Everyone",
+          "goal": "Show how the street changed",
+          "tone": "Familiar",
+          "constraints": "",
+          "successSignal": "The reader visits"
+        },
+        "attachments": [
+          {
+            "id": "reference:web/1",
+            "kind": "document",
+            "title": "Original notes",
+            "text": "Line one\r\nLine two\r\n",
+            "why": "A primary source",
+            "addedAt": 51,
+            "futureReference": {
+              "provenance": "scan"
+            }
+          }
+        ],
+        "probes": [],
+        "completedAt": 100,
+        "updatedAt": 880
+      },
+      "standIns": {},
+      "stack": {
+        "folioId": "web/folio:café",
+        "house": {
+          "name": "The Lantern",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "format": "Newsletter",
+            "workingTitle": "Does not inherit"
+          },
+          "updatedAt": 900
+        },
+        "collection": {
+          "id": "web/collection:letters",
+          "name": "Letters",
+          "description": "A monthly letter",
+          "folioIds": ["web/folio:café", "not-imported:folio"],
+          "dossier": {
+            "tone": "Personal",
+            "constraints": "One primary source",
+            "audience": "Neighbours"
+          },
+          "createdAt": 20,
+          "updatedAt": 800,
+          "futureCollection": {
+            "binding": "thread"
+          }
+        },
+        "fields": {
+          "workingTitle": {
+            "field": "workingTitle",
+            "value": "A light on the corner",
+            "layer": "folio",
+            "shadowed": []
+          },
+          "format": {
+            "field": "format",
+            "value": "Essay",
+            "layer": "folio",
+            "shadowed": [
+              {
+                "layer": "house",
+                "value": "Newsletter"
+              }
+            ]
+          },
+          "audience": {
+            "field": "audience",
+            "value": "Everyone",
+            "layer": "folio",
+            "shadowed": [
+              {
+                "layer": "collection",
+                "value": "Neighbours"
+              },
+              {
+                "layer": "house",
+                "value": "Curious neighbours"
+              }
+            ]
+          },
+          "goal": {
+            "field": "goal",
+            "value": "Show how the street changed",
+            "layer": "folio",
+            "shadowed": []
+          },
+          "tone": {
+            "field": "tone",
+            "value": "Familiar",
+            "layer": "amendment",
+            "shadowed": [
+              {
+                "layer": "collection",
+                "value": "Personal"
+              },
+              {
+                "layer": "house",
+                "value": "Clear"
+              }
+            ]
+          },
+          "constraints": {
+            "field": "constraints",
+            "value": "One primary source",
+            "layer": "collection",
+            "shadowed": []
+          },
+          "successSignal": {
+            "field": "successSignal",
+            "value": "The reader visits",
+            "layer": "folio",
+            "shadowed": []
+          }
+        },
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80,
+            "inherited": true
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            },
+            "inherited": true
+          }
+        ],
+        "attachments": [
+          {
+            "id": "reference:web/1",
+            "kind": "document",
+            "title": "Original notes",
+            "text": "Line one\r\nLine two\r\n",
+            "why": "A primary source",
+            "addedAt": 51,
+            "futureReference": {
+              "provenance": "scan"
+            }
+          }
+        ],
+        "amendments": [
+          {
+            "id": "ledger:amendment",
+            "at": 879,
+            "layer": "amendment",
+            "ownerRef": "web/folio:café",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "amendment"
+          }
+        ]
+      },
+      "models": {
+        "text": "Working title: A light on the corner\nForm: Essay\nReader: Everyone\nAim: Show how the street changed\nTone: Familiar\nConstraints: One primary source\nSuccess looks like: The reader visits\nCharter:\n- Must: Cite a primary source\n- Prefer: Open on a scene",
+        "layers": [
+          {
+            "layer": "folio",
+            "chars": 132,
+            "tokens": 33
+          },
+          {
+            "layer": "amendment",
+            "chars": 14,
+            "tokens": 4
+          },
+          {
+            "layer": "collection",
+            "chars": 31,
+            "tokens": 8
+          },
+          {
+            "layer": "charter",
+            "chars": 54,
+            "tokens": 14
+          }
+        ]
+      }
+    },
+    {
+      "name": "interview stand-ins yield to inherited defaults",
+      "state": {
+        "house": {
+          "name": "The Lantern",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "format": "Newsletter",
+            "workingTitle": "Does not inherit"
+          },
+          "updatedAt": 900
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source",
+              "audience": "Neighbours"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "ledger:amendment",
+            "at": 879,
+            "layer": "amendment",
+            "ownerRef": "web/folio:café",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "amendment"
+          }
+        ]
+      },
+      "brief": {
+        "answers": {
+          "workingTitle": "A light on the corner",
+          "format": "Essay",
+          "audience": "Everyone",
+          "goal": "Show how the street changed",
+          "tone": "Familiar",
+          "constraints": "",
+          "successSignal": "The reader visits"
+        },
+        "attachments": [
+          {
+            "id": "reference:web/1",
+            "kind": "document",
+            "title": "Original notes",
+            "text": "Line one\r\nLine two\r\n",
+            "why": "A primary source",
+            "addedAt": 51,
+            "futureReference": {
+              "provenance": "scan"
+            }
+          }
+        ],
+        "probes": [],
+        "completedAt": 100,
+        "updatedAt": 880
+      },
+      "standIns": {
+        "format": "Essay",
+        "audience": "Everyone",
+        "tone": "Familiar"
+      },
+      "stack": {
+        "folioId": "web/folio:café",
+        "house": {
+          "name": "The Lantern",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "format": "Newsletter",
+            "workingTitle": "Does not inherit"
+          },
+          "updatedAt": 900
+        },
+        "collection": {
+          "id": "web/collection:letters",
+          "name": "Letters",
+          "description": "A monthly letter",
+          "folioIds": ["web/folio:café", "not-imported:folio"],
+          "dossier": {
+            "tone": "Personal",
+            "constraints": "One primary source",
+            "audience": "Neighbours"
+          },
+          "createdAt": 20,
+          "updatedAt": 800,
+          "futureCollection": {
+            "binding": "thread"
+          }
+        },
+        "fields": {
+          "workingTitle": {
+            "field": "workingTitle",
+            "value": "A light on the corner",
+            "layer": "folio",
+            "shadowed": []
+          },
+          "format": {
+            "field": "format",
+            "value": "Newsletter",
+            "layer": "house",
+            "shadowed": []
+          },
+          "audience": {
+            "field": "audience",
+            "value": "Neighbours",
+            "layer": "collection",
+            "shadowed": [
+              {
+                "layer": "house",
+                "value": "Curious neighbours"
+              }
+            ]
+          },
+          "goal": {
+            "field": "goal",
+            "value": "Show how the street changed",
+            "layer": "folio",
+            "shadowed": []
+          },
+          "tone": {
+            "field": "tone",
+            "value": "Personal",
+            "layer": "collection",
+            "shadowed": [
+              {
+                "layer": "house",
+                "value": "Clear"
+              }
+            ]
+          },
+          "constraints": {
+            "field": "constraints",
+            "value": "One primary source",
+            "layer": "collection",
+            "shadowed": []
+          },
+          "successSignal": {
+            "field": "successSignal",
+            "value": "The reader visits",
+            "layer": "folio",
+            "shadowed": []
+          }
+        },
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80,
+            "inherited": true
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            },
+            "inherited": true
+          }
+        ],
+        "attachments": [
+          {
+            "id": "reference:web/1",
+            "kind": "document",
+            "title": "Original notes",
+            "text": "Line one\r\nLine two\r\n",
+            "why": "A primary source",
+            "addedAt": 51,
+            "futureReference": {
+              "provenance": "scan"
+            }
+          }
+        ],
+        "amendments": [
+          {
+            "id": "ledger:amendment",
+            "at": 879,
+            "layer": "amendment",
+            "ownerRef": "web/folio:café",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "amendment"
+          }
+        ]
+      },
+      "models": {
+        "text": "Working title: A light on the corner\nForm: Newsletter\nReader: Neighbours\nAim: Show how the street changed\nTone: Personal\nConstraints: One primary source\nSuccess looks like: The reader visits\nCharter:\n- Must: Cite a primary source\n- Prefer: Open on a scene",
+        "layers": [
+          {
+            "layer": "folio",
+            "chars": 105,
+            "tokens": 27
+          },
+          {
+            "layer": "house",
+            "chars": 16,
+            "tokens": 4
+          },
+          {
+            "layer": "collection",
+            "chars": 63,
+            "tokens": 16
+          },
+          {
+            "layer": "charter",
+            "chars": 54,
+            "tokens": 14
+          }
+        ]
+      }
+    },
+    {
+      "name": "latest manual change removes amendment attribution",
+      "state": {
+        "house": {
+          "name": "The Lantern",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "format": "Newsletter",
+            "workingTitle": "Does not inherit"
+          },
+          "updatedAt": 900
+        },
+        "collections": [
+          {
+            "id": "web/collection:letters",
+            "name": "Letters",
+            "description": "A monthly letter",
+            "folioIds": ["web/folio:café", "not-imported:folio"],
+            "dossier": {
+              "tone": "Personal",
+              "constraints": "One primary source",
+              "audience": "Neighbours"
+            },
+            "createdAt": 20,
+            "updatedAt": 800,
+            "futureCollection": {
+              "binding": "thread"
+            }
+          },
+          {
+            "id": "collection:essays",
+            "name": "Essays",
+            "description": "",
+            "folioIds": ["folio:second"],
+            "dossier": {},
+            "createdAt": 30,
+            "updatedAt": 850
+          }
+        ],
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            }
+          }
+        ],
+        "ledger": [
+          {
+            "id": "ledger:manual",
+            "at": 880,
+            "layer": "folio",
+            "ownerRef": "web/folio:café",
+            "field": "tone",
+            "from": "Familiar",
+            "to": "Familiar",
+            "source": "manual"
+          },
+          {
+            "id": "ledger:amendment",
+            "at": 879,
+            "layer": "amendment",
+            "ownerRef": "web/folio:café",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "amendment"
+          }
+        ]
+      },
+      "brief": {
+        "answers": {
+          "workingTitle": "A light on the corner",
+          "format": "Essay",
+          "audience": "Everyone",
+          "goal": "Show how the street changed",
+          "tone": "Familiar",
+          "constraints": "",
+          "successSignal": "The reader visits"
+        },
+        "attachments": [
+          {
+            "id": "reference:web/1",
+            "kind": "document",
+            "title": "Original notes",
+            "text": "Line one\r\nLine two\r\n",
+            "why": "A primary source",
+            "addedAt": 51,
+            "futureReference": {
+              "provenance": "scan"
+            }
+          }
+        ],
+        "probes": [],
+        "completedAt": 100,
+        "updatedAt": 880
+      },
+      "standIns": {},
+      "stack": {
+        "folioId": "web/folio:café",
+        "house": {
+          "name": "The Lantern",
+          "dossier": {
+            "tone": "Clear",
+            "audience": "Curious neighbours",
+            "format": "Newsletter",
+            "workingTitle": "Does not inherit"
+          },
+          "updatedAt": 900
+        },
+        "collection": {
+          "id": "web/collection:letters",
+          "name": "Letters",
+          "description": "A monthly letter",
+          "folioIds": ["web/folio:café", "not-imported:folio"],
+          "dossier": {
+            "tone": "Personal",
+            "constraints": "One primary source",
+            "audience": "Neighbours"
+          },
+          "createdAt": 20,
+          "updatedAt": 800,
+          "futureCollection": {
+            "binding": "thread"
+          }
+        },
+        "fields": {
+          "workingTitle": {
+            "field": "workingTitle",
+            "value": "A light on the corner",
+            "layer": "folio",
+            "shadowed": []
+          },
+          "format": {
+            "field": "format",
+            "value": "Essay",
+            "layer": "folio",
+            "shadowed": [
+              {
+                "layer": "house",
+                "value": "Newsletter"
+              }
+            ]
+          },
+          "audience": {
+            "field": "audience",
+            "value": "Everyone",
+            "layer": "folio",
+            "shadowed": [
+              {
+                "layer": "collection",
+                "value": "Neighbours"
+              },
+              {
+                "layer": "house",
+                "value": "Curious neighbours"
+              }
+            ]
+          },
+          "goal": {
+            "field": "goal",
+            "value": "Show how the street changed",
+            "layer": "folio",
+            "shadowed": []
+          },
+          "tone": {
+            "field": "tone",
+            "value": "Familiar",
+            "layer": "folio",
+            "shadowed": [
+              {
+                "layer": "collection",
+                "value": "Personal"
+              },
+              {
+                "layer": "house",
+                "value": "Clear"
+              }
+            ]
+          },
+          "constraints": {
+            "field": "constraints",
+            "value": "One primary source",
+            "layer": "collection",
+            "shadowed": []
+          },
+          "successSignal": {
+            "field": "successSignal",
+            "value": "The reader visits",
+            "layer": "folio",
+            "shadowed": []
+          }
+        },
+        "charter": [
+          {
+            "id": "charter:house",
+            "scope": "house",
+            "ownerRef": "house",
+            "text": "Cite a primary source",
+            "severity": "must",
+            "kind": "citation",
+            "order": 0,
+            "updatedAt": 80,
+            "inherited": true
+          },
+          {
+            "id": "charter:letters",
+            "scope": "collection",
+            "ownerRef": "web/collection:letters",
+            "text": "Open on a scene",
+            "severity": "prefer",
+            "kind": "style",
+            "order": 0.5,
+            "updatedAt": 81,
+            "futureArticle": {
+              "reviewed": false
+            },
+            "inherited": true
+          }
+        ],
+        "attachments": [
+          {
+            "id": "reference:web/1",
+            "kind": "document",
+            "title": "Original notes",
+            "text": "Line one\r\nLine two\r\n",
+            "why": "A primary source",
+            "addedAt": 51,
+            "futureReference": {
+              "provenance": "scan"
+            }
+          }
+        ],
+        "amendments": [
+          {
+            "id": "ledger:amendment",
+            "at": 879,
+            "layer": "amendment",
+            "ownerRef": "web/folio:café",
+            "field": "tone",
+            "from": "Personal",
+            "to": "Familiar",
+            "source": "amendment"
+          }
+        ]
+      },
+      "models": {
+        "text": "Working title: A light on the corner\nForm: Essay\nReader: Everyone\nAim: Show how the street changed\nTone: Familiar\nConstraints: One primary source\nSuccess looks like: The reader visits\nCharter:\n- Must: Cite a primary source\n- Prefer: Open on a scene",
+        "layers": [
+          {
+            "layer": "folio",
+            "chars": 146,
+            "tokens": 37
+          },
+          {
+            "layer": "collection",
+            "chars": 31,
+            "tokens": 8
+          },
+          {
+            "layer": "charter",
+            "chars": 54,
+            "tokens": 14
+          }
+        ]
+      }
+    }
+  ]
+}

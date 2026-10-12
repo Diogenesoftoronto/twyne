@@ -112,7 +112,13 @@ test("offline runner writes not-run quality evidence and makes no requests even 
     expect(report.mode).toBe("offline-corpus-validation");
     expect(report.results.every((row) => row.modelRun === null)).toBe(true);
     expect(report.corpusSha256).toHaveLength(64);
-    expect(report.revision).not.toBeNull();
+    // Dagger deliberately omits .git; source hashes still identify its input.
+    expect(
+      report.revision === null || /^[a-f0-9]{40}$/.test(report.revision),
+    ).toBe(true);
+    expect(Object.values(report.sourceSha256)).toHaveLength(3);
+    for (const hash of Object.values(report.sourceSha256))
+      expect(hash).toMatch(/^[a-f0-9]{64}$/);
     expect(readFileSync(join(output, "report.md"), "utf8")).toContain(
       "semantic quality, model distributions and latency were not measured",
     );

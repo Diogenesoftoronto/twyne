@@ -1,0 +1,15 @@
+--- a/desktop/gpui/src/dossier_view.rs
++++ b/desktop/gpui/src/dossier_view.rs
+@@ -3325,4 +3325,12 @@
+             "/fixtures/dossier-layout-correction/mounted_tests.rs"
+         ));
+     }
+ }
++
++#[cfg(all(
++    test,
++    feature = "ui-tests",
++    any(target_os = "linux", target_os = "freebsd")
++))]
++#[path = "../fixtures/dossier-multiply/product-mount/parent-layout-adoption/product_mount_tests.rs"]
++mod product_multiply_mount_tests;

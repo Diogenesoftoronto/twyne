@@ -1,0 +1,27 @@
+{
+  "kind": "Pinned source reconstruction / Python AST / unapplied git checks only",
+  "baseSha256": "b4d8118d95810e47347265955e0989c0e93159977f9c37ada4d964e30c07a27a",
+  "proposedSha256": "d675276396d4f004bc662d8fb276eea757be898e6765c7f401c9e919e3bea447",
+  "productionGitApplyCheck": {
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "testsGitApplyCheckOnOwnedProposedTree": {
+    "exitCode": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "preservedResponsiveRendererExceptFinalOverlay": true,
+  "rootLayoutCorrectionChildPreserved": true,
+  "rollbackPaths": 2,
+  "authoredMountedTests": 6,
+  "pythonAstFiles": [
+    "build_rebase.py",
+    "check_rebase.py"
+  ],
+  "sharedFilesWrittenOrPatchApplied": false,
+  "rustParsedCompiledOrMountedTestsExecuted": false,
+  "gpuNativeBrowserCargoDevenvExecuted": false,
+  "nativeStampProofUnchanged": "Separate real native gate must still require all eight real stamp variants"
+}

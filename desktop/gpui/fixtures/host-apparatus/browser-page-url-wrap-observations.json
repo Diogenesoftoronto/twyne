@@ -1,0 +1,261 @@
+{
+  "provenance": "Authored ASCII URLs in an owned blank Chrome150 page with exact bundled Noto Sans Mono2.014, using the original full-page URL computed CSS; no application editor, storage or network requests.",
+  "originalStyleObservations": "../apparatus-view/browser-page-1280.json and browser-page-620.json",
+  "fontFile": "/home/diogenes/Projects/twyne/desktop/gpui/assets/fonts/source/NotoSansMono-Regular.ttf",
+  "fontSha256": "65b5e2b2c4a1fba9ae8be1f026cb35b03dcb8886d9b2a4147054fde12f7e767d",
+  "css": {
+    "fontSize": 10.4,
+    "lineHeight": 15.6,
+    "letterSpacing": 0,
+    "whiteSpace": "normal",
+    "overflowWrap": "normal",
+    "wordBreak": "break-all"
+  },
+  "rows": [
+    {
+      "label": "https://EXAMPLE.org/report/?old=1#retained",
+      "width": 40,
+      "height": 124.75,
+      "lines": [
+        "http",
+        "s://EX",
+        "AMPLE.",
+        "org/re",
+        "port/?",
+        "old=1#",
+        "retain",
+        "ed"
+      ]
+    },
+    {
+      "label": "https://EXAMPLE.org/report/?old=1#retained",
+      "width": 80,
+      "height": 62.375,
+      "lines": [
+        "https://EXAM",
+        "PLE.org/repo",
+        "rt/?old=1#re",
+        "tained"
+      ]
+    },
+    {
+      "label": "https://EXAMPLE.org/report/?old=1#retained",
+      "width": 160,
+      "height": 31.1875,
+      "lines": [
+        "https://EXAMPLE.org/repor",
+        "t/?old=1#retained"
+      ]
+    },
+    {
+      "label": "https://EXAMPLE.org/report/?old=1#retained",
+      "width": 280,
+      "height": 15.59375,
+      "lines": [
+        "https://EXAMPLE.org/report/?old=1#retained"
+      ]
+    },
+    {
+      "label": "https://EXAMPLE.org/report/?old=1#retained",
+      "width": 420,
+      "height": 15.59375,
+      "lines": [
+        "https://EXAMPLE.org/report/?old=1#retained"
+      ]
+    },
+    {
+      "label": "https://example.net/claim",
+      "width": 40,
+      "height": 77.96875,
+      "lines": [
+        "http",
+        "s://ex",
+        "ample.",
+        "net/cl",
+        "aim"
+      ]
+    },
+    {
+      "label": "https://example.net/claim",
+      "width": 80,
+      "height": 46.78125,
+      "lines": [
+        "https://exam",
+        "ple.net/clai",
+        "m"
+      ]
+    },
+    {
+      "label": "https://example.net/claim",
+      "width": 160,
+      "height": 15.59375,
+      "lines": [
+        "https://example.net/claim"
+      ]
+    },
+    {
+      "label": "https://example.net/claim",
+      "width": 280,
+      "height": 15.59375,
+      "lines": [
+        "https://example.net/claim"
+      ]
+    },
+    {
+      "label": "https://example.net/claim",
+      "width": 420,
+      "height": 15.59375,
+      "lines": [
+        "https://example.net/claim"
+      ]
+    },
+    {
+      "label": "https://example.org/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?query=abcdef",
+      "width": 40,
+      "height": 421.03125,
+      "lines": [
+        "http",
+        "s://ex",
+        "ample.",
+        "org/ab",
+        "cdefgh",
+        "ijklmn",
+        "opqrst",
+        "uvwxyz",
+        "ABCDEF",
+        "GHIJKL",
+        "MNOPQR",
+        "STUVWX",
+        "YZ0123",
+        "456789",
+        "abcdef",
+        "ghijkl",
+        "mnopqr",
+        "stuvwx",
+        "yzABCD",
+        "EFGHIJ",
+        "KLMNOP",
+        "QRSTUV",
+        "WXYZ01",
+        "234567",
+        "89?que",
+        "ry=abc",
+        "def"
+      ]
+    },
+    {
+      "label": "https://example.org/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?query=abcdef",
+      "width": 80,
+      "height": 218.3125,
+      "lines": [
+        "https://exam",
+        "ple.org/abcd",
+        "efghijklmnop",
+        "qrstuvwxyzAB",
+        "CDEFGHIJKLMN",
+        "OPQRSTUVWXYZ",
+        "0123456789ab",
+        "cdefghijklmn",
+        "opqrstuvwxyz",
+        "ABCDEFGHIJKL",
+        "MNOPQRSTUVWX",
+        "YZ012345678",
+        "9?query=abcd",
+        "ef"
+      ]
+    },
+    {
+      "label": "https://example.org/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?query=abcdef",
+      "width": 160,
+      "height": 109.15625,
+      "lines": [
+        "https://example.org/abcde",
+        "fghijklmnopqrstuvwxyzABCD",
+        "EFGHIJKLMNOPQRSTUVWXYZ012",
+        "3456789abcdefghijklmnopqr",
+        "stuvwxyzABCDEFGHIJKLMNOPQ",
+        "RSTUVWXYZ0123456789?query",
+        "=abcdef"
+      ]
+    },
+    {
+      "label": "https://example.org/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?query=abcdef",
+      "width": 280,
+      "height": 62.375,
+      "lines": [
+        "https://example.org/abcdefghijklmnopqrstuvwx",
+        "yzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdef",
+        "ghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWX",
+        "YZ0123456789?query=abcdef"
+      ]
+    },
+    {
+      "label": "https://example.org/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789?query=abcdef",
+      "width": 420,
+      "height": 46.78125,
+      "lines": [
+        "https://example.org/abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTU",
+        "VWXYZ0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+        "0123456789?query=abcdef"
+      ]
+    },
+    {
+      "label": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+      "width": 40,
+      "height": 171.53125,
+      "lines": [
+        "abcdef",
+        "ghijkl",
+        "mnopqr",
+        "stuvwx",
+        "yzABCD",
+        "EFGHIJ",
+        "KLMNOP",
+        "QRSTUV",
+        "WXYZ01",
+        "234567",
+        "89"
+      ]
+    },
+    {
+      "label": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+      "width": 80,
+      "height": 93.5625,
+      "lines": [
+        "abcdefghijkl",
+        "mnopqrstuvwx",
+        "yzABCDEFGHIJ",
+        "KLMNOPQRSTUV",
+        "WXYZ01234567",
+        "89"
+      ]
+    },
+    {
+      "label": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+      "width": 160,
+      "height": 46.78125,
+      "lines": [
+        "abcdefghijklmnopqrstuvwxy",
+        "zABCDEFGHIJKLMNOPQRSTUVWX",
+        "YZ0123456789"
+      ]
+    },
+    {
+      "label": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+      "width": 280,
+      "height": 31.1875,
+      "lines": [
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQR",
+        "STUVWXYZ0123456789"
+      ]
+    },
+    {
+      "label": "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+      "width": 420,
+      "height": 15.59375,
+      "lines": [
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+      ]
+    }
+  ]
+}

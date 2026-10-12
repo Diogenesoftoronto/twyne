@@ -1,0 +1,396 @@
+{
+  "schema": 1,
+  "source": {
+    "path": "src/global.css",
+    "sha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2"
+  },
+  "rules": [
+    {
+      "selector": ".paper-sheet",
+      "startLine": 3525,
+      "endLine": 3575,
+      "raw": ".paper-sheet {\n  position: relative;\n  background-color: var(--color-paper);\n  background-image:\n    radial-gradient(\n      circle at 18% 22%,\n      color-mix(in srgb, var(--foxing-base) 6%, transparent) 0,\n      transparent 38%\n    ),\n    radial-gradient(\n      circle at 82% 78%,\n      color-mix(in srgb, var(--foxing-base) 5%, transparent) 0,\n      transparent 42%\n    ),\n    radial-gradient(\n      circle at 50% 50%,\n      color-mix(in srgb, var(--color-paper-soft) 60%, transparent) 0,\n      transparent 60%\n    ),\n    repeating-linear-gradient(\n      135deg,\n      color-mix(in srgb, var(--color-ink) 1.8%, transparent) 0 2px,\n      transparent 2px 6px\n    ),\n    radial-gradient(\n      circle at 30% 40%,\n      color-mix(in srgb, var(--color-ink) 4%, transparent) 0 1px,\n      transparent 1.4px\n    ),\n    radial-gradient(\n      circle at 70% 60%,\n      color-mix(in srgb, var(--color-ink) 3.5%, transparent) 0 1px,\n      transparent 1.4px\n    ),\n    radial-gradient(\n      circle at 15% 85%,\n      color-mix(in srgb, var(--color-ink) 3%, transparent) 0 1px,\n      transparent 1.4px\n    );\n  background-size:\n    auto,\n    auto,\n    auto,\n    auto,\n    5px 5px,\n    7px 7px,\n    9px 9px;\n  box-shadow:\n    inset 0 0 60px color-mix(in srgb, var(--foxing-base) 8%, transparent),\n    inset 0 0 0 1px color-mix(in srgb, var(--shade) 4%, transparent);\n}\n",
+      "sha256": "87212b07026e139b98eee9d13f9b3e363b6ace39383e63775c3af2bbfc4417a1",
+      "declarations": {
+        "position": "relative",
+        "background-color": "var(--color-paper)",
+        "background-image": "radial-gradient(\n      circle at 18% 22%,\n      color-mix(in srgb, var(--foxing-base) 6%, transparent) 0,\n      transparent 38%\n    ),\n    radial-gradient(\n      circle at 82% 78%,\n      color-mix(in srgb, var(--foxing-base) 5%, transparent) 0,\n      transparent 42%\n    ),\n    radial-gradient(\n      circle at 50% 50%,\n      color-mix(in srgb, var(--color-paper-soft) 60%, transparent) 0,\n      transparent 60%\n    ),\n    repeating-linear-gradient(\n      135deg,\n      color-mix(in srgb, var(--color-ink) 1.8%, transparent) 0 2px,\n      transparent 2px 6px\n    ),\n    radial-gradient(\n      circle at 30% 40%,\n      color-mix(in srgb, var(--color-ink) 4%, transparent) 0 1px,\n      transparent 1.4px\n    ),\n    radial-gradient(\n      circle at 70% 60%,\n      color-mix(in srgb, var(--color-ink) 3.5%, transparent) 0 1px,\n      transparent 1.4px\n    ),\n    radial-gradient(\n      circle at 15% 85%,\n      color-mix(in srgb, var(--color-ink) 3%, transparent) 0 1px,\n      transparent 1.4px\n    )",
+        "background-size": "auto,\n    auto,\n    auto,\n    auto,\n    5px 5px,\n    7px 7px,\n    9px 9px",
+        "box-shadow": "inset 0 0 60px color-mix(in srgb, var(--foxing-base) 8%, transparent),\n    inset 0 0 0 1px color-mix(in srgb, var(--shade) 4%, transparent)"
+      }
+    },
+    {
+      "selector": ".paper-foxed::after",
+      "startLine": 3576,
+      "endLine": 3609,
+      "raw": ".paper-foxed::after {\n  content: \"\";\n  position: absolute;\n  inset: 0;\n  pointer-events: none;\n  background-image:\n    radial-gradient(\n      circle at 12% 18%,\n      color-mix(in srgb, var(--foxing-base) 18%, transparent) 0 1.2px,\n      transparent 2.5px\n    ),\n    radial-gradient(\n      circle at 88% 32%,\n      color-mix(in srgb, var(--foxing-base) 16%, transparent) 0 0.9px,\n      transparent 2px\n    ),\n    radial-gradient(\n      circle at 24% 78%,\n      color-mix(in srgb, var(--foxing-base) 14%, transparent) 0 1.4px,\n      transparent 2.8px\n    ),\n    radial-gradient(\n      circle at 76% 88%,\n      color-mix(in srgb, var(--foxing-base) 18%, transparent) 0 1px,\n      transparent 2.2px\n    ),\n    radial-gradient(\n      circle at 50% 50%,\n      color-mix(in srgb, var(--foxing-base) 12%, transparent) 0 0.8px,\n      transparent 2px\n    );\n  opacity: 0.7;\n  mix-blend-mode: multiply;\n}\n",
+      "sha256": "43538cf7cf54783547f0b07e1520bc64e04975d93ceb09864024998795f54d8c",
+      "declarations": {
+        "content": "\"\"",
+        "position": "absolute",
+        "inset": "0",
+        "pointer-events": "none",
+        "background-image": "radial-gradient(\n      circle at 12% 18%,\n      color-mix(in srgb, var(--foxing-base) 18%, transparent) 0 1.2px,\n      transparent 2.5px\n    ),\n    radial-gradient(\n      circle at 88% 32%,\n      color-mix(in srgb, var(--foxing-base) 16%, transparent) 0 0.9px,\n      transparent 2px\n    ),\n    radial-gradient(\n      circle at 24% 78%,\n      color-mix(in srgb, var(--foxing-base) 14%, transparent) 0 1.4px,\n      transparent 2.8px\n    ),\n    radial-gradient(\n      circle at 76% 88%,\n      color-mix(in srgb, var(--foxing-base) 18%, transparent) 0 1px,\n      transparent 2.2px\n    ),\n    radial-gradient(\n      circle at 50% 50%,\n      color-mix(in srgb, var(--foxing-base) 12%, transparent) 0 0.8px,\n      transparent 2px\n    )",
+        "opacity": "0.7",
+        "mix-blend-mode": "multiply"
+      }
+    }
+  ],
+  "backgrounds": [
+    {
+      "raw": "radial-gradient(\n      circle at 18% 22%,\n      color-mix(in srgb, var(--foxing-base) 6%, transparent) 0,\n      transparent 38%\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.18,
+        0.22
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--foxing-base",
+        "alpha": 0.06,
+        "stops": [
+          "0"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "38%"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 82% 78%,\n      color-mix(in srgb, var(--foxing-base) 5%, transparent) 0,\n      transparent 42%\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.82,
+        0.78
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--foxing-base",
+        "alpha": 0.05,
+        "stops": [
+          "0"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "42%"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 50% 50%,\n      color-mix(in srgb, var(--color-paper-soft) 60%, transparent) 0,\n      transparent 60%\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.5,
+        0.5
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--color-paper-soft",
+        "alpha": 0.6,
+        "stops": [
+          "0"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "60%"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    },
+    {
+      "raw": "repeating-linear-gradient(\n      135deg,\n      color-mix(in srgb, var(--color-ink) 1.8%, transparent) 0 2px,\n      transparent 2px 6px\n    )",
+      "kind": "repeating-linear-gradient",
+      "center": null,
+      "angle": 135,
+      "colored": {
+        "token": "--color-ink",
+        "alpha": 0.018000000000000002,
+        "stops": [
+          "0",
+          "2px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "2px",
+          "6px"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 30% 40%,\n      color-mix(in srgb, var(--color-ink) 4%, transparent) 0 1px,\n      transparent 1.4px\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.3,
+        0.4
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--color-ink",
+        "alpha": 0.04,
+        "stops": [
+          "0",
+          "1px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "1.4px"
+        ]
+      },
+      "size": "5px 5px",
+      "tile": [
+        5,
+        5
+      ]
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 70% 60%,\n      color-mix(in srgb, var(--color-ink) 3.5%, transparent) 0 1px,\n      transparent 1.4px\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.7,
+        0.6
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--color-ink",
+        "alpha": 0.035,
+        "stops": [
+          "0",
+          "1px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "1.4px"
+        ]
+      },
+      "size": "7px 7px",
+      "tile": [
+        7,
+        7
+      ]
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 15% 85%,\n      color-mix(in srgb, var(--color-ink) 3%, transparent) 0 1px,\n      transparent 1.4px\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.15,
+        0.85
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--color-ink",
+        "alpha": 0.03,
+        "stops": [
+          "0",
+          "1px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "1.4px"
+        ]
+      },
+      "size": "9px 9px",
+      "tile": [
+        9,
+        9
+      ]
+    }
+  ],
+  "shadows": [
+    "inset 0 0 60px color-mix(in srgb, var(--foxing-base) 8%, transparent)",
+    "inset 0 0 0 1px color-mix(in srgb, var(--shade) 4%, transparent)"
+  ],
+  "foxing": [
+    {
+      "raw": "radial-gradient(\n      circle at 12% 18%,\n      color-mix(in srgb, var(--foxing-base) 18%, transparent) 0 1.2px,\n      transparent 2.5px\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.12,
+        0.18
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--foxing-base",
+        "alpha": 0.18,
+        "stops": [
+          "0",
+          "1.2px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "2.5px"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 88% 32%,\n      color-mix(in srgb, var(--foxing-base) 16%, transparent) 0 0.9px,\n      transparent 2px\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.88,
+        0.32
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--foxing-base",
+        "alpha": 0.16,
+        "stops": [
+          "0",
+          "0.9px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "2px"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 24% 78%,\n      color-mix(in srgb, var(--foxing-base) 14%, transparent) 0 1.4px,\n      transparent 2.8px\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.24,
+        0.78
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--foxing-base",
+        "alpha": 0.14,
+        "stops": [
+          "0",
+          "1.4px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "2.8px"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 76% 88%,\n      color-mix(in srgb, var(--foxing-base) 18%, transparent) 0 1px,\n      transparent 2.2px\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.76,
+        0.88
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--foxing-base",
+        "alpha": 0.18,
+        "stops": [
+          "0",
+          "1px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "2.2px"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    },
+    {
+      "raw": "radial-gradient(\n      circle at 50% 50%,\n      color-mix(in srgb, var(--foxing-base) 12%, transparent) 0 0.8px,\n      transparent 2px\n    )",
+      "kind": "radial-gradient",
+      "center": [
+        0.5,
+        0.5
+      ],
+      "angle": null,
+      "colored": {
+        "token": "--foxing-base",
+        "alpha": 0.12,
+        "stops": [
+          "0",
+          "0.8px"
+        ]
+      },
+      "transparent": {
+        "token": null,
+        "alpha": 0,
+        "stops": [
+          "2px"
+        ]
+      },
+      "size": "auto",
+      "tile": null
+    }
+  ],
+  "groupOpacity": 0.7,
+  "blend": "multiply",
+  "presets": {
+    "editorial": {
+      "--color-paper": "#f4ecd8",
+      "--color-paper-soft": "#faf3df",
+      "--color-ink": "#1f1b16",
+      "--foxing-base": "#7a5426",
+      "--shade": "#1f1b16"
+    },
+    "foolscap": {
+      "--color-paper": "#eef0f1",
+      "--color-paper-soft": "#f7f8f9",
+      "--color-ink": "#1c2024",
+      "--foxing-base": "#6b727a",
+      "--shade": "#1c2024"
+    },
+    "broadsheet": {
+      "--color-paper": "#ffffff",
+      "--color-paper-soft": "#fafafa",
+      "--color-ink": "#111111",
+      "--foxing-base": "transparent",
+      "--shade": "#111111"
+    },
+    "nightpress": {
+      "--color-paper": "#191714",
+      "--color-paper-soft": "#252119",
+      "--color-ink": "#ece4d4",
+      "--foxing-base": "#c99a5b",
+      "--shade": "#000000"
+    }
+  },
+  "proof": "Exact retained Source layer extraction; no browser/native raster parity claim"
+}

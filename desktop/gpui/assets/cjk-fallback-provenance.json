@@ -1,0 +1,33 @@
+{
+  "source": "Android Open Source Project via Fedora google-droid-sans-fonts",
+  "distributionPackage": "google-droid-sans-fonts-20200215-22.fc42.noarch",
+  "sourceRpm": "google-droid-fonts-20200215-22.fc42.src.rpm",
+  "upstream": "https://android.googlesource.com/",
+  "license": "Apache-2.0",
+  "fontFamily": "Droid Sans Fallback",
+  "postScriptName": "DroidSansFallback",
+  "style": "Regular",
+  "fontVersion": "1.00",
+  "browserEvidence": {
+    "browser": "Chrome 154.0.8037.57",
+    "method": "CSS.getPlatformFontsForNode on original zero-network writing fixture",
+    "primaryFace": "Lora-Regular",
+    "fallbackFace": "DroidSansFallback",
+    "fallbackGlyphCount": 100,
+    "weight": 400,
+    "sizePx": 18,
+    "networkRequests": 0,
+    "sourceFixture": "desktop/gpui/fixtures/editor/capture-long-word-web.ts"
+  },
+  "glyphIds": {
+    "東": 13577,
+    "京": 7236
+  },
+  "originalFontPath": "/usr/share/fonts/google-droid-sans-fonts/DroidSansFallbackFull.ttf",
+  "originalNoticePath": "/usr/share/licenses/google-droid-sans-fonts/NOTICE",
+  "originalBytesRetained": true,
+  "files": {
+    "fonts/DroidSansFallbackFull.ttf": "2392015530438bafc48edfc4aee6d9de2387f627a6134d8ab3dfcc99d21c8240",
+    "licenses/droid-sans-fallback-NOTICE.txt": "38751245389e1e23f73e6f5384b5cbe7fa972cc4410c5adc9c04b082a0b9561a"
+  }
+}

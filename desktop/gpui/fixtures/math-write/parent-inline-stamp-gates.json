@@ -1,0 +1,64 @@
+{
+  "status": "passed",
+  "features": [
+    "ui-tests",
+    "native-audio"
+  ],
+  "suites": [
+    {
+      "scope": "library",
+      "passed": 563,
+      "failed": 0,
+      "ignored": 8,
+      "log": "desktop/gpui/target/verification/math-inline-stamp-all-targets-reviewed.log"
+    },
+    {
+      "scope": "application",
+      "passed": 97,
+      "failed": 0,
+      "ignored": 0,
+      "log": "desktop/gpui/target/verification/math-inline-stamp-app-tests-reviewed.log"
+    },
+    {
+      "scope": "native-audio-contract",
+      "passed": 18,
+      "failed": 0,
+      "ignored": 0,
+      "log": "desktop/gpui/target/verification/math-inline-stamp-audio-contract-reviewed.log"
+    }
+  ],
+  "totals": {
+    "passed": 678,
+    "failed": 0,
+    "ignored": 8
+  },
+  "clippy": {
+    "allTargets": true,
+    "denyWarnings": true,
+    "status": "passed",
+    "log": "desktop/gpui/target/verification/math-inline-stamp-clippy-reviewed.log"
+  },
+  "sourceHashes": {
+    "desktop/gpui/Cargo.toml": "d2fbf2769766b2a4758ef37c387fe8e146a25031f0448161def5e9fc3ba304eb",
+    "desktop/gpui/Cargo.lock": "0276cac861d2dde4235eaacad27917e826abfd3af2922a432f17e0c204fed7da",
+    "desktop/gpui/src/lib.rs": "65cb337bdd30c9ea7e481492ae98567517258a6db303ce9d2ca8a4352488c792",
+    "desktop/gpui/src/app.rs": "f5e49f1d4ee936b333c9bf52b4b7119d2468b1e9f2f84c3b88360dfe9e550ea9",
+    "desktop/gpui/src/app/math_source_coordinator.rs": "9a2b11a7b64828bb8fa4c6eed8ba3e41fea01eaf57fddba3ce50079dd8cceb2f",
+    "desktop/gpui/src/editor/view.rs": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14",
+    "desktop/gpui/src/editor/view_math_source.rs": "139eca38cf52aab6d729e4e10fe8d5f79cd30cb8a61d995a5c6e498d54fe6674",
+    "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373",
+    "desktop/gpui/src/editor/view_tests.rs": "27f6962097d7e6656700d919abb4ab61dde0bb8f01df840b27bffb0becb4f74c",
+    "desktop/gpui/src/dossier_view.rs": "45537aaf8ab2ebd3c258a21ad6b0c482b0131c0fc525fdbec2408e0e256bf8aa",
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3"
+  },
+  "reviewedRepairs": [
+    "Equation activation requires actual installed source context; pointer down retains whole-block drag.",
+    "Legacy draft-switch test cancels the actual New folio Dossier route before using its library."
+  ],
+  "boundaries": [
+    "Executed local Rust/GPUI gates; ignored GPU checks stay unproved",
+    "Native keyboard/persistence and pixel gates are separate",
+    "No complete parity, provider/account/audio-device, CI, release or clean installation proof"
+  ]
+}

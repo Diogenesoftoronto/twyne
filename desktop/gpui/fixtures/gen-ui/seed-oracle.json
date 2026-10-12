@@ -1,0 +1,3587 @@
+{
+  "cases": [
+    {
+      "id": "0-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "First is long. A is B.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "First is long.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "First is long.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "0-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "First is long. A is B.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "First is long.",
+                    "words": 3
+                  },
+                  {
+                    "text": "A is B.",
+                    "words": 3
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "First is long.",
+                    "words": 3
+                  },
+                  {
+                    "text": "A is B.",
+                    "words": 3
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "0-claim-check",
+      "kind": "claim-check",
+      "passage": "First is long. A is B.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "First is long.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "First is long.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "0-reader-questions",
+      "kind": "reader-questions",
+      "passage": "First is long. A is B.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "1-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "A.”Next?",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "A.”",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "A.”",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "1-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "A.”Next?",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A.”",
+                    "words": 1
+                  },
+                  {
+                    "text": "Next?",
+                    "words": 1
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A.”",
+                    "words": 1
+                  },
+                  {
+                    "text": "Next?",
+                    "words": 1
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "1-claim-check",
+      "kind": "claim-check",
+      "passage": "A.”Next?",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "A.”",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "A.”",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "1-reader-questions",
+      "kind": "reader-questions",
+      "passage": "A.”Next?",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "2-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "A.   ? Next.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "A.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "A.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "2-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "A.   ? Next.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A.",
+                    "words": 1
+                  },
+                  {
+                    "text": "?",
+                    "words": 1
+                  },
+                  {
+                    "text": "Next.",
+                    "words": 1
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A.",
+                    "words": 1
+                  },
+                  {
+                    "text": "?",
+                    "words": 1
+                  },
+                  {
+                    "text": "Next.",
+                    "words": 1
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "2-claim-check",
+      "kind": "claim-check",
+      "passage": "A.   ? Next.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "A.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "A.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "2-reader-questions",
+      "kind": "reader-questions",
+      "passage": "A.   ? Next.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "3-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "﻿😀 Hi. Next.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "😀 Hi.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "😀 Hi.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "3-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "﻿😀 Hi. Next.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "😀 Hi.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Next.",
+                    "words": 1
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "😀 Hi.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Next.",
+                    "words": 1
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "3-claim-check",
+      "kind": "claim-check",
+      "passage": "﻿😀 Hi. Next.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "😀 Hi.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "😀 Hi.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "3-reader-questions",
+      "kind": "reader-questions",
+      "passage": "﻿😀 Hi. Next.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "4-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "...",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "...",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "...",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "4-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "...",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "4-claim-check",
+      "kind": "claim-check",
+      "passage": "...",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "...",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "...",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "4-reader-questions",
+      "kind": "reader-questions",
+      "passage": "...",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "5-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "  ",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "5-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "  ",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "5-claim-check",
+      "kind": "claim-check",
+      "passage": "  ",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "5-reader-questions",
+      "kind": "reader-questions",
+      "passage": "  ",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "6-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "May be so? It always is. Never again.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "May be so?",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "May be so?",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "6-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "May be so? It always is. Never again.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "May be so?",
+                    "words": 3
+                  },
+                  {
+                    "text": "It always is.",
+                    "words": 3
+                  },
+                  {
+                    "text": "Never again.",
+                    "words": 2
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "May be so?",
+                    "words": 3
+                  },
+                  {
+                    "text": "It always is.",
+                    "words": 3
+                  },
+                  {
+                    "text": "Never again.",
+                    "words": 2
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "6-claim-check",
+      "kind": "claim-check",
+      "passage": "May be so? It always is. Never again.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "It always is.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "It always is.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "6-reader-questions",
+      "kind": "reader-questions",
+      "passage": "May be so? It always is. Never again.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "7-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "Perhaps. No one shows why.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "No one shows why.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "No one shows why.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "7-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "Perhaps. No one shows why.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "Perhaps.",
+                    "words": 1
+                  },
+                  {
+                    "text": "No one shows why.",
+                    "words": 4
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "Perhaps.",
+                    "words": 1
+                  },
+                  {
+                    "text": "No one shows why.",
+                    "words": 4
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "7-claim-check",
+      "kind": "claim-check",
+      "passage": "Perhaps. No one shows why.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "No one shows why.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "No one shows why.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "7-reader-questions",
+      "kind": "reader-questions",
+      "passage": "Perhaps. No one shows why.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "8-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "éISé there. Its issue remains.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "Its issue remains.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "Its issue remains.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "8-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "éISé there. Its issue remains.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "éISé there.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Its issue remains.",
+                    "words": 3
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "éISé there.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Its issue remains.",
+                    "words": 3
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "8-claim-check",
+      "kind": "claim-check",
+      "passage": "éISé there. Its issue remains.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "éISé there.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "éISé there.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "8-reader-questions",
+      "kind": "reader-questions",
+      "passage": "éISé there. Its issue remains.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "9-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "A.[” Last?\"] More…",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "[” Last?\"]",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "[” Last?\"]",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "9-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "A.[” Last?\"] More…",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A.",
+                    "words": 1
+                  },
+                  {
+                    "text": "[” Last?\"]",
+                    "words": 2
+                  },
+                  {
+                    "text": "More…",
+                    "words": 1
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A.",
+                    "words": 1
+                  },
+                  {
+                    "text": "[” Last?\"]",
+                    "words": 2
+                  },
+                  {
+                    "text": "More…",
+                    "words": 1
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "9-claim-check",
+      "kind": "claim-check",
+      "passage": "A.[” Last?\"] More…",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "A.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "A.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "9-reader-questions",
+      "kind": "reader-questions",
+      "passage": "A.[” Last?\"] More…",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "10-sentence-lab",
+      "kind": "sentence-lab",
+      "passage": "Sentence 0. Sentence 1. Sentence 2. Sentence 3. Sentence 4. Sentence 5. Sentence 6. Sentence 7. Sentence 8. Sentence 9. Sentence 10. Sentence 11. Sentence 12. Sentence 13. Sentence 14. Sentence 15. Sentence 16. Sentence 17. Sentence 18. Sentence 19. Sentence 20. Sentence 21. Sentence 22. Sentence 23. Sentence 24. Sentence 25. Sentence 26. Sentence 27. Sentence 28. Sentence 29. Sentence 30. Sentence 31. Sentence 32. Sentence 33. Sentence 34. Sentence 35. Sentence 36. Sentence 37. Sentence 38. Sentence 39. Sentence 40. Sentence 41. Sentence 42. Sentence 43. Sentence 44.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "Sentence 0.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "Sentence 0.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "10-rhythm-strip",
+      "kind": "rhythm-strip",
+      "passage": "Sentence 0. Sentence 1. Sentence 2. Sentence 3. Sentence 4. Sentence 5. Sentence 6. Sentence 7. Sentence 8. Sentence 9. Sentence 10. Sentence 11. Sentence 12. Sentence 13. Sentence 14. Sentence 15. Sentence 16. Sentence 17. Sentence 18. Sentence 19. Sentence 20. Sentence 21. Sentence 22. Sentence 23. Sentence 24. Sentence 25. Sentence 26. Sentence 27. Sentence 28. Sentence 29. Sentence 30. Sentence 31. Sentence 32. Sentence 33. Sentence 34. Sentence 35. Sentence 36. Sentence 37. Sentence 38. Sentence 39. Sentence 40. Sentence 41. Sentence 42. Sentence 43. Sentence 44.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "Sentence 0.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 1.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 2.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 3.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 4.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 5.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 6.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 7.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 8.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 9.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 10.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 11.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 12.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 13.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 14.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 15.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 16.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 17.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 18.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 19.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 20.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 21.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 22.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 23.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 24.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 25.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 26.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 27.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 28.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 29.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 30.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 31.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 32.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 33.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 34.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 35.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 36.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 37.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 38.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 39.",
+                    "words": 2
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "Sentence 0.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 1.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 2.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 3.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 4.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 5.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 6.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 7.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 8.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 9.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 10.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 11.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 12.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 13.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 14.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 15.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 16.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 17.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 18.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 19.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 20.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 21.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 22.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 23.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 24.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 25.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 26.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 27.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 28.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 29.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 30.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 31.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 32.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 33.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 34.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 35.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 36.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 37.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 38.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Sentence 39.",
+                    "words": 2
+                  }
+                ],
+                "targetMin": 8,
+                "targetMax": 28
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "10-claim-check",
+      "kind": "claim-check",
+      "passage": "Sentence 0. Sentence 1. Sentence 2. Sentence 3. Sentence 4. Sentence 5. Sentence 6. Sentence 7. Sentence 8. Sentence 9. Sentence 10. Sentence 11. Sentence 12. Sentence 13. Sentence 14. Sentence 15. Sentence 16. Sentence 17. Sentence 18. Sentence 19. Sentence 20. Sentence 21. Sentence 22. Sentence 23. Sentence 24. Sentence 25. Sentence 26. Sentence 27. Sentence 28. Sentence 29. Sentence 30. Sentence 31. Sentence 32. Sentence 33. Sentence 34. Sentence 35. Sentence 36. Sentence 37. Sentence 38. Sentence 39. Sentence 40. Sentence 41. Sentence 42. Sentence 43. Sentence 44.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "Sentence 0.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "Sentence 0.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "10-reader-questions",
+      "kind": "reader-questions",
+      "passage": "Sentence 0. Sentence 1. Sentence 2. Sentence 3. Sentence 4. Sentence 5. Sentence 6. Sentence 7. Sentence 8. Sentence 9. Sentence 10. Sentence 11. Sentence 12. Sentence 13. Sentence 14. Sentence 15. Sentence 16. Sentence 17. Sentence 18. Sentence 19. Sentence 20. Sentence 21. Sentence 22. Sentence 23. Sentence 24. Sentence 25. Sentence 26. Sentence 27. Sentence 28. Sentence 29. Sentence 30. Sentence 31. Sentence 32. Sentence 33. Sentence 34. Sentence 35. Sentence 36. Sentence 37. Sentence 38. Sentence 39. Sentence 40. Sentence 41. Sentence 42. Sentence 43. Sentence 44.",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "sentence-index--3",
+      "kind": "sentence-lab",
+      "passage": "First. A longer second sentence.",
+      "options": {
+        "sentenceIndex": -3
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "First.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "First.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "sentence-index-0",
+      "kind": "sentence-lab",
+      "passage": "First. A longer second sentence.",
+      "options": {
+        "sentenceIndex": 0
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "First.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "First.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "sentence-index-1",
+      "kind": "sentence-lab",
+      "passage": "First. A longer second sentence.",
+      "options": {
+        "sentenceIndex": 1
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "A longer second sentence.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "A longer second sentence.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "sentence-index-99",
+      "kind": "sentence-lab",
+      "passage": "First. A longer second sentence.",
+      "options": {
+        "sentenceIndex": 99
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "A longer second sentence.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "A longer second sentence.",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "claim-index--3",
+      "kind": "claim-check",
+      "passage": "First. It must be true.",
+      "options": {
+        "classification": {
+          "claimIndex": -3
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "First. It must be true.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "First. It must be true.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "claim-index-0",
+      "kind": "claim-check",
+      "passage": "First. It must be true.",
+      "options": {
+        "classification": {
+          "claimIndex": 0
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "First.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "First.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "claim-index-1",
+      "kind": "claim-check",
+      "passage": "First. It must be true.",
+      "options": {
+        "classification": {
+          "claimIndex": 1
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "It must be true.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "It must be true.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "claim-index-99",
+      "kind": "claim-check",
+      "passage": "First. It must be true.",
+      "options": {
+        "classification": {
+          "claimIndex": 99
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "First. It must be true.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "First. It must be true.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "attempts-last-five",
+      "kind": "sentence-lab",
+      "passage": "Current sentence.",
+      "options": {
+        "sentenceIndex": 0,
+        "activity": {
+          "attempts": {
+            "0": [
+              "old1",
+              "old2",
+              "Current sentence.",
+              "old3",
+              "old4",
+              "old5",
+              "old6"
+            ]
+          }
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "Current sentence.",
+                "attempts": [
+                  "old2",
+                  "old3",
+                  "old4",
+                  "old5",
+                  "old6"
+                ],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "Current sentence.",
+                "attempts": [
+                  "old2",
+                  "old3",
+                  "old4",
+                  "old5",
+                  "old6"
+                ],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    },
+    {
+      "id": "custom-band",
+      "kind": "rhythm-strip",
+      "passage": "A sentence. Another sentence.",
+      "options": {
+        "config": {
+          "targetMin": 30,
+          "targetMax": 20
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A sentence.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Another sentence.",
+                    "words": 2
+                  }
+                ],
+                "targetMin": 30,
+                "targetMax": 31
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A sentence.",
+                    "words": 2
+                  },
+                  {
+                    "text": "Another sentence.",
+                    "words": 2
+                  }
+                ],
+                "targetMin": 30,
+                "targetMax": 31
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "fractional-band",
+      "kind": "rhythm-strip",
+      "passage": "A sentence.",
+      "options": {
+        "config": {
+          "targetMin": 8.5,
+          "targetMax": 28.25
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A sentence.",
+                    "words": 2
+                  }
+                ],
+                "targetMin": 8.5,
+                "targetMax": 28.25
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "RhythmStrip",
+              "props": {
+                "sentences": [
+                  {
+                    "text": "A sentence.",
+                    "words": 2
+                  }
+                ],
+                "targetMin": 8.5,
+                "targetMax": 28.25
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "custom-slots",
+      "kind": "claim-check",
+      "passage": "The sky is blue.",
+      "options": {
+        "config": {
+          "slots": [
+            "Other support"
+          ]
+        },
+        "classification": {
+          "filled": {
+            "Other support": true
+          }
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "The sky is blue.",
+                "slots": [
+                  {
+                    "label": "Other support",
+                    "filled": true
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "The sky is blue.",
+                "slots": [
+                  {
+                    "label": "Other support",
+                    "filled": true
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "empty-slots-default",
+      "kind": "claim-check",
+      "passage": "The sky is blue.",
+      "options": {
+        "config": {
+          "slots": []
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "The sky is blue.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ClaimCheck",
+              "props": {
+                "claim": "The sky is blue.",
+                "slots": [
+                  {
+                    "label": "A source",
+                    "filled": false
+                  },
+                  {
+                    "label": "An example",
+                    "filled": false
+                  },
+                  {
+                    "label": "A number",
+                    "filled": false
+                  }
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": null
+      }
+    },
+    {
+      "id": "reader-angle",
+      "kind": "reader-questions",
+      "passage": "A paragraph.",
+      "options": {
+        "config": {
+          "angle": "a skeptical reader"
+        }
+      },
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "a skeptical reader",
+                "questions": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "ReaderQuestions",
+              "props": {
+                "angle": "a skeptical reader",
+                "questions": [
+                  "What does this let me understand that I couldn't before?",
+                  "Who says so, and why should I trust them?",
+                  "What does that look like in practice?"
+                ]
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "General questions — connect a model in Settings for ones about this passage."
+      }
+    },
+    {
+      "id": "long-seed-not-truncated",
+      "kind": "sentence-lab",
+      "passage": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "options": {},
+      "expected": {
+        "seed": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "filled": {
+          "root": "tool",
+          "elements": {
+            "tool": {
+              "type": "SentenceLab",
+              "props": {
+                "sentence": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+                "attempts": [],
+                "variants": []
+              },
+              "children": []
+            }
+          }
+        },
+        "notice": "Your own attempts only — connect a model in Settings for fresh variants."
+      }
+    }
+  ],
+  "sentences": [
+    {
+      "text": "First is long. A is B.",
+      "spans": [
+        {
+          "text": "First is long.",
+          "from": 0,
+          "to": 14
+        },
+        {
+          "text": "A is B.",
+          "from": 15,
+          "to": 22
+        }
+      ],
+      "words": 6
+    },
+    {
+      "text": "A.”Next?",
+      "spans": [
+        {
+          "text": "A.”",
+          "from": 0,
+          "to": 3
+        },
+        {
+          "text": "Next?",
+          "from": 3,
+          "to": 8
+        }
+      ],
+      "words": 1
+    },
+    {
+      "text": "A.   ? Next.",
+      "spans": [
+        {
+          "text": "A.",
+          "from": 0,
+          "to": 2
+        },
+        {
+          "text": "?",
+          "from": 5,
+          "to": 6
+        },
+        {
+          "text": "Next.",
+          "from": 7,
+          "to": 12
+        }
+      ],
+      "words": 3
+    },
+    {
+      "text": "﻿😀 Hi. Next.",
+      "spans": [
+        {
+          "text": "😀 Hi.",
+          "from": 1,
+          "to": 7
+        },
+        {
+          "text": "Next.",
+          "from": 8,
+          "to": 14
+        }
+      ],
+      "words": 3
+    },
+    {
+      "text": "...",
+      "spans": [],
+      "words": 1
+    },
+    {
+      "text": "  ",
+      "spans": [],
+      "words": 0
+    },
+    {
+      "text": "May be so? It always is. Never again.",
+      "spans": [
+        {
+          "text": "May be so?",
+          "from": 0,
+          "to": 10
+        },
+        {
+          "text": "It always is.",
+          "from": 11,
+          "to": 24
+        },
+        {
+          "text": "Never again.",
+          "from": 25,
+          "to": 37
+        }
+      ],
+      "words": 8
+    },
+    {
+      "text": "Perhaps. No one shows why.",
+      "spans": [
+        {
+          "text": "Perhaps.",
+          "from": 0,
+          "to": 8
+        },
+        {
+          "text": "No one shows why.",
+          "from": 9,
+          "to": 26
+        }
+      ],
+      "words": 5
+    },
+    {
+      "text": "éISé there. Its issue remains.",
+      "spans": [
+        {
+          "text": "éISé there.",
+          "from": 0,
+          "to": 11
+        },
+        {
+          "text": "Its issue remains.",
+          "from": 12,
+          "to": 30
+        }
+      ],
+      "words": 5
+    },
+    {
+      "text": "A.[” Last?\"] More…",
+      "spans": [
+        {
+          "text": "A.",
+          "from": 0,
+          "to": 2
+        },
+        {
+          "text": "[” Last?\"]",
+          "from": 2,
+          "to": 12
+        },
+        {
+          "text": "More…",
+          "from": 13,
+          "to": 18
+        }
+      ],
+      "words": 3
+    },
+    {
+      "text": "Sentence 0. Sentence 1. Sentence 2. Sentence 3. Sentence 4. Sentence 5. Sentence 6. Sentence 7. Sentence 8. Sentence 9. Sentence 10. Sentence 11. Sentence 12. Sentence 13. Sentence 14. Sentence 15. Sentence 16. Sentence 17. Sentence 18. Sentence 19. Sentence 20. Sentence 21. Sentence 22. Sentence 23. Sentence 24. Sentence 25. Sentence 26. Sentence 27. Sentence 28. Sentence 29. Sentence 30. Sentence 31. Sentence 32. Sentence 33. Sentence 34. Sentence 35. Sentence 36. Sentence 37. Sentence 38. Sentence 39. Sentence 40. Sentence 41. Sentence 42. Sentence 43. Sentence 44.",
+      "spans": [
+        {
+          "text": "Sentence 0.",
+          "from": 0,
+          "to": 11
+        },
+        {
+          "text": "Sentence 1.",
+          "from": 12,
+          "to": 23
+        },
+        {
+          "text": "Sentence 2.",
+          "from": 24,
+          "to": 35
+        },
+        {
+          "text": "Sentence 3.",
+          "from": 36,
+          "to": 47
+        },
+        {
+          "text": "Sentence 4.",
+          "from": 48,
+          "to": 59
+        },
+        {
+          "text": "Sentence 5.",
+          "from": 60,
+          "to": 71
+        },
+        {
+          "text": "Sentence 6.",
+          "from": 72,
+          "to": 83
+        },
+        {
+          "text": "Sentence 7.",
+          "from": 84,
+          "to": 95
+        },
+        {
+          "text": "Sentence 8.",
+          "from": 96,
+          "to": 107
+        },
+        {
+          "text": "Sentence 9.",
+          "from": 108,
+          "to": 119
+        },
+        {
+          "text": "Sentence 10.",
+          "from": 120,
+          "to": 132
+        },
+        {
+          "text": "Sentence 11.",
+          "from": 133,
+          "to": 145
+        },
+        {
+          "text": "Sentence 12.",
+          "from": 146,
+          "to": 158
+        },
+        {
+          "text": "Sentence 13.",
+          "from": 159,
+          "to": 171
+        },
+        {
+          "text": "Sentence 14.",
+          "from": 172,
+          "to": 184
+        },
+        {
+          "text": "Sentence 15.",
+          "from": 185,
+          "to": 197
+        },
+        {
+          "text": "Sentence 16.",
+          "from": 198,
+          "to": 210
+        },
+        {
+          "text": "Sentence 17.",
+          "from": 211,
+          "to": 223
+        },
+        {
+          "text": "Sentence 18.",
+          "from": 224,
+          "to": 236
+        },
+        {
+          "text": "Sentence 19.",
+          "from": 237,
+          "to": 249
+        },
+        {
+          "text": "Sentence 20.",
+          "from": 250,
+          "to": 262
+        },
+        {
+          "text": "Sentence 21.",
+          "from": 263,
+          "to": 275
+        },
+        {
+          "text": "Sentence 22.",
+          "from": 276,
+          "to": 288
+        },
+        {
+          "text": "Sentence 23.",
+          "from": 289,
+          "to": 301
+        },
+        {
+          "text": "Sentence 24.",
+          "from": 302,
+          "to": 314
+        },
+        {
+          "text": "Sentence 25.",
+          "from": 315,
+          "to": 327
+        },
+        {
+          "text": "Sentence 26.",
+          "from": 328,
+          "to": 340
+        },
+        {
+          "text": "Sentence 27.",
+          "from": 341,
+          "to": 353
+        },
+        {
+          "text": "Sentence 28.",
+          "from": 354,
+          "to": 366
+        },
+        {
+          "text": "Sentence 29.",
+          "from": 367,
+          "to": 379
+        },
+        {
+          "text": "Sentence 30.",
+          "from": 380,
+          "to": 392
+        },
+        {
+          "text": "Sentence 31.",
+          "from": 393,
+          "to": 405
+        },
+        {
+          "text": "Sentence 32.",
+          "from": 406,
+          "to": 418
+        },
+        {
+          "text": "Sentence 33.",
+          "from": 419,
+          "to": 431
+        },
+        {
+          "text": "Sentence 34.",
+          "from": 432,
+          "to": 444
+        },
+        {
+          "text": "Sentence 35.",
+          "from": 445,
+          "to": 457
+        },
+        {
+          "text": "Sentence 36.",
+          "from": 458,
+          "to": 470
+        },
+        {
+          "text": "Sentence 37.",
+          "from": 471,
+          "to": 483
+        },
+        {
+          "text": "Sentence 38.",
+          "from": 484,
+          "to": 496
+        },
+        {
+          "text": "Sentence 39.",
+          "from": 497,
+          "to": 509
+        },
+        {
+          "text": "Sentence 40.",
+          "from": 510,
+          "to": 522
+        },
+        {
+          "text": "Sentence 41.",
+          "from": 523,
+          "to": 535
+        },
+        {
+          "text": "Sentence 42.",
+          "from": 536,
+          "to": 548
+        },
+        {
+          "text": "Sentence 43.",
+          "from": 549,
+          "to": 561
+        },
+        {
+          "text": "Sentence 44.",
+          "from": 562,
+          "to": 574
+        }
+      ],
+      "words": 90
+    }
+  ]
+}

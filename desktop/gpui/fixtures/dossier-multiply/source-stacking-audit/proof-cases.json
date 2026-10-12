@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "status": "PENDING_PARENT_ACTUAL_PROOF",
+  "executedByThisAudit": false,
+  "requiredContext": ["surface", "actual filing state", "motion preference", "animation time since state/mount", "theme", "viewport", "DPR", "ancestor transform/isolation/opacity", "visible overlay mechanism", "active route-view-transition or browser top layer"],
+  "cases": [
+    {
+      "id": "idle-leaf-held-transform",
+      "observe": "Form and conversational surfaces after >260ms, ordinary and reduced motion; record computed right-leaf transform plus an overlapping live-text/foxing patch.",
+      "question": "Does normal leaf fill retain its independent context while reduced motion removes it? Do not infer frame-wide stacking from leaf identity transform.",
+      "notEstablishedBy": "authored native multiply probe"
+    },
+    {
+      "id": "filing-static-scale-reduced-motion",
+      "observe": "Actual pending save with frame data-filing-state=filing under both preferences; record frame transform and any Sending/error overlap.",
+      "question": "Does Source retain scale(.998) under reduced motion, and which external form overlays remain above foxing? Do not fabricate an in-flight native success."
+    },
+    {
+      "id": "filed-normal-held-parent-context",
+      "observe": "Actual successful Source save; sample filed at ~200ms and after 420 ms but before 780 ms, including computed frame transform and confirmation/foxing overlap.",
+      "question": "Is Source confirmation still contained by the held identity-transform frame and multiplied by main foxing? Preserve actual 780ms lifetime; do not substitute an idle screenshot."
+    },
+    {
+      "id": "filed-reduced-parent-context",
+      "observe": "Actual successful save with reduced motion; record frame transform:none versus confirmation z10 and paper rotation, then the same overlapping patch.",
+      "question": "Does confirmation participate above auto-level foxing when the frame animation is absent? Additional ancestor contexts/top-layer UI must be recorded, not assumed away."
+    },
+    {
+      "id": "outside-frame-form-errors",
+      "observe": "Actual Sending, submission error and recovery error separately, plus conversational inline error when supported.",
+      "question": "Do fixed z60 overlays outside frame differ from unpositioned recovery error and conversational status? No synthetic provider/network activity or conflated errors."
+    },
+    {
+      "id": "native-root-and-deferred-overlap",
+      "observe": "Actual mounted Dossier with a supported real popup, component tooltip or root notification overlapping a known foxing patch. If no product control exposes it, label an isolated parent fixture distinctly.",
+      "question": "Do later root/deferred layers remain untinted by the already-painted Dossier foxing? Record exact mechanism, priority/mask and real visibility rather than treating empty layer infrastructure as active output."
+    },
+    {
+      "id": "native-core-late-stage",
+      "observe": "A separately identified actual core tooltip, prompt or drag overlap, one mechanism at a time; preserve prompt > drag > tooltip selection in recording.",
+      "question": "Does the late Window branch paint after deferred/ordinary foxing? An isolated overlay test is not a product feature claim."
+    },
+    {
+      "id": "application-filed-dwell",
+      "observe": "Current native actual durable filing and immediate next scene, separately from a deliberately held standalone Filed view.",
+      "question": "Does production ever show Source's absolute wash/stamp for 780 ms? Current code removes it immediately; do not reclassify standalone status visibility as this missing behavior."
+    },
+    {
+      "id": "theme-and-device-admission",
+      "observe": "Repeat selected proven state/overlap cases only at supported actual DPR/viewport/theme, including transparent foxing Broadsheet and an explicit unsupported/misaligned native refusal when a parent probe is authorized.",
+      "question": "Are absence/refusal and overlay order distinguished from compositing success? Native opaque-backdrop admission and zero artwork are not a general transparent-window blend proof."
+    }
+  ],
+  "outOfScope": ["global z-index redesign", "new animation/provider behavior", "math source", "performance benchmarking", "GPU atlas or asynchronous retirement proof", "all-OS equivalence"]
+}

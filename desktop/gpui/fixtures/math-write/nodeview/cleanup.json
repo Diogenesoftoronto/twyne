@@ -1,0 +1,13 @@
+{
+  "closedOwnedFixtureTab": true,
+  "ownedSession": 5,
+  "lastUrl": "http://127.0.0.1:5196/?profile=candidate",
+  "originalAppSessionOperated": false,
+  "sharedBrowserRestartedOrClosed": false,
+  "externalRequests": 0,
+  "sourceCssApplied": false,
+  "cargoOrDevenv": false,
+  "receiptBoundary": "Only the owned localhost fixture tab and exact owned Bun server PID were closed/stopped. No app/session4 tab was selected/read or changed; shared browser/session was not closed or restarted.",
+  "ownedServerStopped": true,
+  "serverExitCode": 143
+}

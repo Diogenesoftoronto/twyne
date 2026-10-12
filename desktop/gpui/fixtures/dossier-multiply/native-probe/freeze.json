@@ -1,0 +1,83 @@
+{
+  "schema": 1,
+  "status": "frozen-authored-uncompiled-unexecuted",
+  "owned_root": "desktop/gpui/fixtures/dossier-multiply/native-probe",
+  "files": {
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/README.md": {
+      "bytes": 11445,
+      "sha256": "1d44628587c217f593922a482ae6f8c96152ac5a477581203793c4fd86831f3d"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/check_pixels.py": {
+      "bytes": 9373,
+      "sha256": "20648ec9cc2cfdc4710a25d6bf8473b1f238efe489ac849bf47d2eb99e29602d"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/main.rs": {
+      "bytes": 25826,
+      "sha256": "c4edbef6495b9435913939d8c5bf3d30a8715029b4327d32e3ef28fafe781f24"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/pins.json": {
+      "bytes": 5715,
+      "sha256": "e6c22e5c20be64dda4c21fce4a16ea2b0a287fdf49a020da07a6ef2cd4d1f07a"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/registration.patch": {
+      "bytes": 486,
+      "sha256": "ac4f2dd26fdb3b8f800513bd3fce41e562d596879494b3c3593bc17b6ab8b827"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/run_native.py": {
+      "bytes": 11421,
+      "sha256": "cb573e120d78e34f21f5b15ed134556945b991190a8a86ae1a2c73e33858ba11"
+    },
+    "desktop/gpui/fixtures/dossier-multiply/native-probe/strong-group.svg": {
+      "bytes": 238,
+      "sha256": "fd54a2737e575e7120f4720cbe471d64950d5e2be116491d7e0c4a0d88aa6476"
+    }
+  },
+  "performed": [
+    "read-only pinned API inspection",
+    "owned fixture authoring",
+    "filesystem hash receipts"
+  ],
+  "not_performed": [
+    "git apply --check",
+    "registration apply",
+    "rustfmt",
+    "Rust compile",
+    "Python compile/test",
+    "Cargo",
+    "Devenv",
+    "shader compile",
+    "GPU/native execution",
+    "browser",
+    "provider",
+    "network",
+    "Source/shared/vendor edits"
+  ],
+  "authored_cases_not_run": [
+    "baseline",
+    "multiply",
+    "normal-alpha",
+    "per-layer",
+    "beneath"
+  ],
+  "declared_region_count": 279,
+  "declared_samples_at_dpr1": 4464,
+  "pixel_contract": {
+    "nonidentity_channel_tolerance": 2,
+    "identity_channel_tolerance": 0,
+    "wrong_mode_minimum_bad_pixels": 8,
+    "wrong_mode_minimum_channel_error": 8,
+    "live_black_glyph_pixels_required": true
+  },
+  "limits": [
+    "private Linux X11 runner; actual APIs are patched Linux/FreeBSD WGPU",
+    "opaque backdrop and ancestor opacity 1",
+    "non-sRGB BGRA8/RGBA8 UNORM target/atlas only",
+    "single-frame premultiplied group; one-to-one device extent; integral origin/mask",
+    ".5..4 actual DPR with integral 4*DPR and 2*DPR clip edges",
+    "RGB capture cannot measure destination alpha",
+    "atlas adjacency unknown; per-entry release only, no total GPU memory or fence proof",
+    "default driver executes DPR1; same-size actual DPR callback unexecuted",
+    "Chromium-versus-resvg Source radial raster unproved",
+    "no product multiply mount or Dossier parity claim"
+  ]
+}

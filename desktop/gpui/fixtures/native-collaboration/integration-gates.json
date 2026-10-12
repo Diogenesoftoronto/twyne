@@ -1,0 +1,27 @@
+{
+  "recordedAt": "2026-10-05T01:04:03.716719+00:00",
+  "scope": "integrated library export and offline foundation checks; no mounted connected product UI or authenticated network proof",
+  "rust": {
+    "status": "pass",
+    "tests": 9,
+    "failed": 0,
+    "log": "/tmp/twyne-gpui-collaboration-first-gate.log"
+  },
+  "clippy": {
+    "status": "pass",
+    "scope": "locked offline all targets with ui-tests, warnings denied",
+    "log": "/tmp/twyne-gpui-accounts-collaboration-clippy.log",
+    "seconds": 16.14
+  },
+  "files": {
+    "src/native_collaboration/error.rs": "b4dc29fa1895c43ff1a8e4cac320af89a318e951aa2c0844ee83c2b695d1799e",
+    "src/native_collaboration/identity.rs": "5d724dd50a31efe66d591c7268b21f2fa6f4927c1dae7f361671834e724d658c",
+    "src/native_collaboration/mod.rs": "6c8e586f15c13ccd36864873da9ddb202e4755d70c573227bb4dc16a6af6cab2",
+    "src/native_collaboration/presence.rs": "9469dda2f4704619d41d436906a9308247f4e4e2cdde79883f905d8d70ee4f18",
+    "src/native_collaboration/publishing.rs": "cd85bd401a909bf4374a35577a472d2f10690b66bf430daf73e29172b5370c20",
+    "src/native_collaboration/roles.rs": "ce686d715e63158bd9ba43a22159414e0abc20e1ef6a8c504f8f9664c4d8026a",
+    "src/native_collaboration/sharing.rs": "41f6c89a3d265d7e60b0cbfc953e18e9bb046ab2ba5cd1373cc0b84b5c5e16f2",
+    "src/native_collaboration/transport.rs": "a092f8337925b5eeab7e432e1ebf407a390fa448ed5210c94c2caefe96890d78"
+  },
+  "sharedExport": "c26e37d13030a14a8838290b96fbd2c5e6e96fc62bfcb7721040d5ce5f1a0dd5"
+}

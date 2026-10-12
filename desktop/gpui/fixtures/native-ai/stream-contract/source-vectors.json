@@ -1,0 +1,2316 @@
+{
+  "generator": "desktop/gpui/fixtures/native-ai/stream-contract/generate.ts",
+  "sourceSha256": {
+    "src/utils/generation-stream.ts": "000a846f48fae1bb3310e09c83617b349b7696bbc320f24fb667db09b3c389d4",
+    "src/utils/reasoning-tags.ts": "7f072f056b0821aeca4c216a0e0432f3748a058833063f09df81f24decc8f338",
+    "src/utils/interview-stream.ts": "3509f3ce104611bd4b916423336c3fb1818b995de5734c69955f3875fe43b617"
+  },
+  "reasoning": [
+    {
+      "name": "empty",
+      "raw": "",
+      "strip": "",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "",
+      "trimPartial": ""
+    },
+    {
+      "name": "plain-space",
+      "raw": "   \t  ",
+      "strip": "",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "",
+      "trimPartial": "   \t  "
+    },
+    {
+      "name": "plain-text",
+      "raw": "just prose, no tags",
+      "strip": "just prose, no tags",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "just prose, no tags",
+      "trimPartial": "just prose, no tags"
+    },
+    {
+      "name": "js-bom-nbsp-nel",
+      "raw": "﻿ x ",
+      "strip": "x",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "x",
+      "trimPartial": "﻿ x "
+    },
+    {
+      "name": "unicode-text",
+      "raw": "Ünïcödé 漢字 🜂 ﷽",
+      "strip": "Ünïcödé 漢字 🜂 ﷽",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "Ünïcödé 漢字 🜂 ﷽",
+      "trimPartial": "Ünïcödé 漢字 🜂 ﷽"
+    },
+    {
+      "name": "think-lower",
+      "raw": "a<think>secret</think>b",
+      "strip": "ab",
+      "extract": "secret",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "asecretb",
+      "trimPartial": "a<think>secret</think>b"
+    },
+    {
+      "name": "think-mixed-case",
+      "raw": "a<ThInK>secret</ThInK>b",
+      "strip": "ab",
+      "extract": "secret",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "asecretb",
+      "trimPartial": "a<ThInK>secret</ThInK>b"
+    },
+    {
+      "name": "thinking-tag",
+      "raw": "a<thinking>secret</thinking>b",
+      "strip": "ab",
+      "extract": "secret",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "asecretb",
+      "trimPartial": "a<thinking>secret</thinking>b"
+    },
+    {
+      "name": "think-attributes",
+      "raw": "a<think type=\"x\" id=1>secret</think >b",
+      "strip": "ab",
+      "extract": "secret",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "asecretb",
+      "trimPartial": "a<think type=\"x\" id=1>secret</think >b"
+    },
+    {
+      "name": "think-self-closing",
+      "raw": "a<think/>b",
+      "strip": "ab",
+      "extract": "",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "ab",
+      "trimPartial": "a<think/>b"
+    },
+    {
+      "name": "think-self-closing-space",
+      "raw": "a<think />b",
+      "strip": "ab",
+      "extract": "",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "ab",
+      "trimPartial": "a<think />b"
+    },
+    {
+      "name": "think-stray-close",
+      "raw": "a</think>b",
+      "strip": "ab",
+      "extract": "",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "ab",
+      "trimPartial": "a</think>b"
+    },
+    {
+      "name": "think-42",
+      "raw": "a<think42>b",
+      "strip": "a<think42>b",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "a<think42>b",
+      "trimPartial": "a<think42>b"
+    },
+    {
+      "name": "think-dash-x",
+      "raw": "a<think-x>b",
+      "strip": "a",
+      "extract": "b",
+      "open": true,
+      "hasTags": true,
+      "removeMarkers": "ab",
+      "trimPartial": "a<think-x>b"
+    },
+    {
+      "name": "think-underscore-foo",
+      "raw": "a<think_foo>b",
+      "strip": "a<think_foo>b",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "a<think_foo>b",
+      "trimPartial": "a<think_foo>b"
+    },
+    {
+      "name": "space-before-slash",
+      "raw": "a< think / >secret</ think >b",
+      "strip": "asecretb",
+      "extract": "",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "asecretb",
+      "trimPartial": "a< think / >secret</ think >b"
+    },
+    {
+      "name": "nested-blocks",
+      "raw": "a<think>1<thinking>2</thinking>3</think>b",
+      "strip": "ab",
+      "extract": "123",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "a123b",
+      "trimPartial": "a<think>1<thinking>2</thinking>3</think>b"
+    },
+    {
+      "name": "newline-indent",
+      "raw": "a\n   <think>\n  indented\n   </think>\n\t b",
+      "strip": "a\n\nb",
+      "extract": "indented",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "a\n   \n  indented\n   \n\t b",
+      "trimPartial": "a\n   <think>\n  indented\n   </think>\n\t b"
+    },
+    {
+      "name": "triple-blank",
+      "raw": "a\n\n\n\n\nb",
+      "strip": "a\n\nb",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "a\n\n\n\n\nb",
+      "trimPartial": "a\n\n\n\n\nb"
+    },
+    {
+      "name": "partial-prefixes",
+      "raw": "<\n<t\n<th\n<thi\n<thin\n<think",
+      "strip": "<\n<t\n<th\n<thi\n<thin\n<think",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "<\n<t\n<th\n<thi\n<thin\n<think",
+      "trimPartial": "<\n<t\n<th\n<thi\n<thin"
+    },
+    {
+      "name": "malformed-unclosed",
+      "raw": "a<think>never closed",
+      "strip": "a",
+      "extract": "never closed",
+      "open": true,
+      "hasTags": true,
+      "removeMarkers": "anever closed",
+      "trimPartial": "a<think>never closed"
+    },
+    {
+      "name": "malformed-garbage",
+      "raw": "a<think!!!>x</think###>b",
+      "strip": "ab",
+      "extract": "x",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "axb",
+      "trimPartial": "a<think!!!>x</think###>b"
+    },
+    {
+      "name": "marker-text",
+      "raw": "DOSSIER: {\"a\":1}\nPROBE: q\nSYNTHESIZE: s",
+      "strip": "DOSSIER: {\"a\":1}\nPROBE: q\nSYNTHESIZE: s",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "DOSSIER: {\"a\":1}\nPROBE: q\nSYNTHESIZE: s",
+      "trimPartial": "DOSSIER: {\"a\":1}\nPROBE: q\nSYNTHESIZE: s"
+    },
+    {
+      "name": "partial-marker-prefixes",
+      "raw": "DOS\nDOSS\nDOSSIER:\nPROBE:\nSYNTHESIZE:",
+      "strip": "DOS\nDOSS\nDOSSIER:\nPROBE:\nSYNTHESIZE:",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "DOS\nDOSS\nDOSSIER:\nPROBE:\nSYNTHESIZE:",
+      "trimPartial": "DOS\nDOSS\nDOSSIER:\nPROBE:\nSYNTHESIZE:"
+    },
+    {
+      "name": "mixed-open-nested",
+      "raw": "a<think>b<ThInKiNg>c</thinking>d",
+      "strip": "a",
+      "extract": "bcd",
+      "open": true,
+      "hasTags": true,
+      "removeMarkers": "abcd",
+      "trimPartial": "a<think>b<ThInKiNg>c</thinking>d"
+    },
+    {
+      "name": "boundary-0",
+      "raw": "<",
+      "strip": "<",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "<",
+      "trimPartial": ""
+    },
+    {
+      "name": "boundary-1",
+      "raw": "</",
+      "strip": "</",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "</",
+      "trimPartial": "</"
+    },
+    {
+      "name": "boundary-2",
+      "raw": "</ t",
+      "strip": "</ t",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "</ t",
+      "trimPartial": ""
+    },
+    {
+      "name": "boundary-3",
+      "raw": "<th\n",
+      "strip": "<th",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "<th",
+      "trimPartial": "<th\n"
+    },
+    {
+      "name": "boundary-4",
+      "raw": "  answer<th",
+      "strip": "answer<th",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "answer<th",
+      "trimPartial": "answer"
+    },
+    {
+      "name": "boundary-5",
+      "raw": "< /think>shown",
+      "strip": "< /think>shown",
+      "extract": "",
+      "open": false,
+      "hasTags": false,
+      "removeMarkers": "< /think>shown",
+      "trimPartial": "< /think>shown"
+    },
+    {
+      "name": "boundary-6",
+      "raw": "<thinké>hidden</think>",
+      "strip": "",
+      "extract": "hidden",
+      "open": false,
+      "hasTags": true,
+      "removeMarkers": "hidden",
+      "trimPartial": "<thinké>hidden</think>"
+    }
+  ],
+  "generation": [
+    {
+      "name": "empty-completion",
+      "inputs": [
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "pending",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "error-only",
+      "inputs": [
+        {
+          "type": "error"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "pending",
+          "reasoningStatus": "pending",
+          "status": "error"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "empty-text-delta",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": ""
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "plain-deltas",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "Hel"
+        },
+        {
+          "type": "text-delta",
+          "text": "lo "
+        },
+        {
+          "type": "text-delta",
+          "text": "world"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "Hel",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "Hello",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "Hello world",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "Hello world",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "whitespace-only",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "   \n\t "
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "bom-nbsp-nel",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "﻿ text"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "text",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "text",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "unicode-deltas",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "Ünï"
+        },
+        {
+          "type": "text-delta",
+          "text": "cödé "
+        },
+        {
+          "type": "text-delta",
+          "text": "漢字 🜂"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "Ünï",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "Ünïcödé",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "Ünïcödé 漢字 🜂",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "Ünïcödé 漢字 🜂",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "tagged-reasoning",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "a<think>why</think>b"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "ab",
+          "reasoning": "why",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "ab",
+          "reasoning": "why",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "open-tagged-running",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "a<think>partial"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "a",
+          "reasoning": "partial",
+          "activePart": "reasoning",
+          "textStatus": "running",
+          "reasoningStatus": "running",
+          "status": "running"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "native-only",
+      "inputs": [
+        {
+          "type": "reasoning-start"
+        },
+        {
+          "type": "reasoning-delta",
+          "text": "native "
+        },
+        {
+          "type": "reasoning-delta",
+          "text": "thought"
+        },
+        {
+          "type": "reasoning-end"
+        },
+        {
+          "type": "text-delta",
+          "text": "answer"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "native",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "native thought",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "native thought",
+          "activePart": null,
+          "textStatus": "pending",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "answer",
+          "reasoning": "native thought",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "answer",
+          "reasoning": "native thought",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "native-tagged-dedupe",
+      "inputs": [
+        {
+          "type": "reasoning-delta",
+          "text": "same"
+        },
+        {
+          "type": "reasoning-end"
+        },
+        {
+          "type": "text-delta",
+          "text": " <think>same</think>answer"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "same",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "same",
+          "activePart": null,
+          "textStatus": "pending",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "answer",
+          "reasoning": "same",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "answer",
+          "reasoning": "same",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "native-plus-tagged",
+      "inputs": [
+        {
+          "type": "reasoning-delta",
+          "text": "native"
+        },
+        {
+          "type": "reasoning-end"
+        },
+        {
+          "type": "text-delta",
+          "text": "<thinking>tagged</thinking>answer"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "native",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "native",
+          "activePart": null,
+          "textStatus": "pending",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "answer",
+          "reasoning": "native\n\ntagged",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "answer",
+          "reasoning": "native\n\ntagged",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "reasoning-restart",
+      "inputs": [
+        {
+          "type": "reasoning-start"
+        },
+        {
+          "type": "reasoning-delta",
+          "text": "one"
+        },
+        {
+          "type": "reasoning-end"
+        },
+        {
+          "type": "reasoning-start"
+        },
+        {
+          "type": "reasoning-delta",
+          "text": "two"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "one",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "one",
+          "activePart": null,
+          "textStatus": "pending",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "one",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "onetwo",
+          "activePart": "reasoning",
+          "textStatus": "pending",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "onetwo",
+          "activePart": null,
+          "textStatus": "pending",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "structured-contract-preserved",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "Preamble.\nDOSSIER: {\"a\":1}\nPROBE: q\nSYNTHESIZE: done"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "Preamble.\nDOSSIER: {\"a\":1}\nPROBE: q\nSYNTHESIZE: done",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "Preamble.\nDOSSIER: {\"a\":1}\nPROBE: q\nSYNTHESIZE: done",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "error-after-text",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "partial answer"
+        },
+        {
+          "type": "error"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "partial answer",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "partial answer",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "error"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "finish-after-open-reasoning",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "a<thinking>r"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "a",
+          "reasoning": "r",
+          "activePart": "reasoning",
+          "textStatus": "running",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "a",
+          "reasoning": "r",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "chunk-prefix-think",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "<"
+        },
+        {
+          "type": "text-delta",
+          "text": "t"
+        },
+        {
+          "type": "text-delta",
+          "text": "h"
+        },
+        {
+          "type": "text-delta",
+          "text": "i"
+        },
+        {
+          "type": "text-delta",
+          "text": "n"
+        },
+        {
+          "type": "text-delta",
+          "text": "k"
+        },
+        {
+          "type": "text-delta",
+          "text": ">"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "reasoning",
+          "textStatus": "running",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "chunk-prefix-close-think",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "<"
+        },
+        {
+          "type": "text-delta",
+          "text": "/"
+        },
+        {
+          "type": "text-delta",
+          "text": "t"
+        },
+        {
+          "type": "text-delta",
+          "text": "h"
+        },
+        {
+          "type": "text-delta",
+          "text": "i"
+        },
+        {
+          "type": "text-delta",
+          "text": "n"
+        },
+        {
+          "type": "text-delta",
+          "text": "k"
+        },
+        {
+          "type": "text-delta",
+          "text": ">"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "</",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "chunk-prefix-thinking",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "<"
+        },
+        {
+          "type": "text-delta",
+          "text": "t"
+        },
+        {
+          "type": "text-delta",
+          "text": "h"
+        },
+        {
+          "type": "text-delta",
+          "text": "i"
+        },
+        {
+          "type": "text-delta",
+          "text": "n"
+        },
+        {
+          "type": "text-delta",
+          "text": "k"
+        },
+        {
+          "type": "text-delta",
+          "text": "i"
+        },
+        {
+          "type": "text-delta",
+          "text": "n"
+        },
+        {
+          "type": "text-delta",
+          "text": "g"
+        },
+        {
+          "type": "text-delta",
+          "text": ">"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": "reasoning",
+          "textStatus": "running",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "mixed-case-attributes",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "a<ThInKiNg data-x=\"1\">r</ThInKiNg>b"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "ab",
+          "reasoning": "r",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "ab",
+          "reasoning": "r",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "malformed-tags",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "a<think42><think-x><think_foo>b"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "a<think42>",
+          "reasoning": "<think_foo>b",
+          "activePart": "reasoning",
+          "textStatus": "running",
+          "reasoningStatus": "running",
+          "status": "running"
+        },
+        {
+          "text": "a<think42>",
+          "reasoning": "<think_foo>b",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "space-before-slash",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "a< think / >r</ think >b"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "arb",
+          "reasoning": "",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "pending",
+          "status": "running"
+        },
+        {
+          "text": "arb",
+          "reasoning": "",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "pending",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "newline-indent",
+      "inputs": [
+        {
+          "type": "text-delta",
+          "text": "a\n   <think>\n  in\n   </think>\n\t b"
+        },
+        {
+          "type": "finish"
+        }
+      ],
+      "snapshots": [
+        {
+          "text": "a\n\nb",
+          "reasoning": "in",
+          "activePart": "text",
+          "textStatus": "running",
+          "reasoningStatus": "complete",
+          "status": "running"
+        },
+        {
+          "text": "a\n\nb",
+          "reasoning": "in",
+          "activePart": null,
+          "textStatus": "complete",
+          "reasoningStatus": "complete",
+          "status": "complete"
+        }
+      ],
+      "initial": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    }
+  ],
+  "interview": [
+    {
+      "name": "empty",
+      "raw": "",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "",
+        "reasoning": "",
+        "phase": "reasoning"
+      }
+    },
+    {
+      "name": "whitespace",
+      "raw": "   \n  ",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "",
+        "reasoning": "",
+        "phase": "reasoning"
+      }
+    },
+    {
+      "name": "plain",
+      "raw": "Just an answer.",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Just an answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "structured-dossier",
+      "raw": "Answer.\nDOSSIER: {\"x\":1}\nPROBE: q\nSYNTHESIZE: s",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "structured-probe-only",
+      "raw": "Answer.\nPROBE: q",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "structured-synthesize-only",
+      "raw": "Answer.\nSYNTHESIZE: s",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "partial-marker-dos",
+      "raw": "Answer.\nDOS",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "partial-marker-synth",
+      "raw": "Answer.\nSYNTHE",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "no-newline-marker",
+      "raw": "Answer DOSSIER: x",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer DOSSIER: x",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "tagged-reasoning-hidden",
+      "raw": "<think>why</think>Answer.",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "why",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "native-reasoning",
+      "raw": "Answer.",
+      "nativeReasoning": "native why",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "native why",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "native-tagged-dedupe",
+      "raw": " <think>same</think>Answer.",
+      "nativeReasoning": "same",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "same",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "native-plus-tagged",
+      "raw": "<thinking>tagged</thinking>Answer.",
+      "nativeReasoning": "native",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "native\n\ntagged",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "bom-nbsp-nel",
+      "raw": "﻿ Answer.",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "unicode",
+      "raw": "Ünïcödé 漢字 🜂 answer",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Ünïcödé 漢字 🜂 answer",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "open-block-hides-answer",
+      "raw": "<think>only reasoning",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "",
+        "reasoning": "only reasoning",
+        "phase": "reasoning"
+      }
+    },
+    {
+      "name": "marker-inside-think",
+      "raw": "<think>DOSSIER: x</think>Answer.",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "DOSSIER: x",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "lowercase-marker",
+      "raw": "Answer.\ndossier: x",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "mixed-case-tag",
+      "raw": "<ThInK>r</ThInK>Answer.",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "r",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "attributes",
+      "raw": "<think data-x=\"1\">r</think>Answer.",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "r",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-DOSSIER-0",
+      "raw": "Answer.\n",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-DOSSIER-1",
+      "raw": "Answer.\nD",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-DOSSIER-2",
+      "raw": "Answer.\nDO",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-DOSSIER-3",
+      "raw": "Answer.\nDOS",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-DOSSIER-4",
+      "raw": "Answer.\nDOSS",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-DOSSIER-5",
+      "raw": "Answer.\nDOSSI",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-DOSSIER-6",
+      "raw": "Answer.\nDOSSIE",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-DOSSIER-7",
+      "raw": "Answer.\nDOSSIER",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-PROBE-0",
+      "raw": "Answer.\n",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-PROBE-1",
+      "raw": "Answer.\nP",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-PROBE-2",
+      "raw": "Answer.\nPR",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-PROBE-3",
+      "raw": "Answer.\nPRO",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-PROBE-4",
+      "raw": "Answer.\nPROB",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-PROBE-5",
+      "raw": "Answer.\nPROBE",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-0",
+      "raw": "Answer.\n",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-1",
+      "raw": "Answer.\nS",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-2",
+      "raw": "Answer.\nSY",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-3",
+      "raw": "Answer.\nSYN",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-4",
+      "raw": "Answer.\nSYNT",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-5",
+      "raw": "Answer.\nSYNTH",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-6",
+      "raw": "Answer.\nSYNTHE",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-7",
+      "raw": "Answer.\nSYNTHES",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-8",
+      "raw": "Answer.\nSYNTHESI",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-9",
+      "raw": "Answer.\nSYNTHESIZ",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    },
+    {
+      "name": "prefix-SYNTHESIZE-10",
+      "raw": "Answer.\nSYNTHESIZE",
+      "nativeReasoning": "",
+      "snapshot": {
+        "text": "Answer.",
+        "reasoning": "",
+        "phase": "answer"
+      }
+    }
+  ],
+  "textSnapshots": [
+    {
+      "name": "empty-complete",
+      "text": "",
+      "status": "complete",
+      "snapshot": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "complete"
+      }
+    },
+    {
+      "name": "whitespace-complete",
+      "text": "   ",
+      "status": "complete",
+      "snapshot": {
+        "text": "   ",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "complete",
+        "reasoningStatus": "pending",
+        "status": "complete"
+      }
+    },
+    {
+      "name": "plain-complete",
+      "text": "hello",
+      "status": "complete",
+      "snapshot": {
+        "text": "hello",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "complete",
+        "reasoningStatus": "pending",
+        "status": "complete"
+      }
+    },
+    {
+      "name": "unicode-complete",
+      "text": "Ünïcödé 漢字",
+      "status": "complete",
+      "snapshot": {
+        "text": "Ünïcödé 漢字",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "complete",
+        "reasoningStatus": "pending",
+        "status": "complete"
+      }
+    },
+    {
+      "name": "running-text",
+      "text": "hello",
+      "status": "running",
+      "snapshot": {
+        "text": "hello",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "running",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "running-empty",
+      "text": "",
+      "status": "running",
+      "snapshot": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "error-text",
+      "text": "boom",
+      "status": "error",
+      "snapshot": {
+        "text": "boom",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "complete",
+        "reasoningStatus": "pending",
+        "status": "error"
+      }
+    },
+    {
+      "name": "error-empty",
+      "text": "",
+      "status": "error",
+      "snapshot": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "error"
+      }
+    }
+  ],
+  "snapshotFromRecord": [
+    {
+      "name": "running-reasoning",
+      "row": {
+        "text": "",
+        "reasoning": "thinking",
+        "phase": "reasoning",
+        "status": "running"
+      },
+      "snapshot": {
+        "text": "",
+        "reasoning": "thinking",
+        "activePart": "reasoning",
+        "textStatus": "pending",
+        "reasoningStatus": "running",
+        "status": "running"
+      }
+    },
+    {
+      "name": "running-answer",
+      "row": {
+        "text": "answer",
+        "reasoning": "thinking",
+        "phase": "answer",
+        "status": "running"
+      },
+      "snapshot": {
+        "text": "answer",
+        "reasoning": "thinking",
+        "activePart": "text",
+        "textStatus": "running",
+        "reasoningStatus": "complete",
+        "status": "running"
+      }
+    },
+    {
+      "name": "running-empty",
+      "row": {
+        "text": "",
+        "reasoning": "",
+        "phase": "answer",
+        "status": "running"
+      },
+      "snapshot": {
+        "text": "",
+        "reasoning": "",
+        "activePart": "text",
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "running"
+      }
+    },
+    {
+      "name": "complete-reasoning",
+      "row": {
+        "text": "answer",
+        "reasoning": "thinking",
+        "phase": "reasoning",
+        "status": "complete"
+      },
+      "snapshot": {
+        "text": "answer",
+        "reasoning": "thinking",
+        "activePart": null,
+        "textStatus": "complete",
+        "reasoningStatus": "complete",
+        "status": "complete"
+      }
+    },
+    {
+      "name": "complete-no-reasoning",
+      "row": {
+        "text": "answer",
+        "reasoning": "",
+        "phase": "answer",
+        "status": "complete"
+      },
+      "snapshot": {
+        "text": "answer",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "complete",
+        "reasoningStatus": "pending",
+        "status": "complete"
+      }
+    },
+    {
+      "name": "error-answer",
+      "row": {
+        "text": "partial",
+        "reasoning": "",
+        "phase": "answer",
+        "status": "error"
+      },
+      "snapshot": {
+        "text": "partial",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "complete",
+        "reasoningStatus": "pending",
+        "status": "error"
+      }
+    },
+    {
+      "name": "error-empty",
+      "row": {
+        "text": "",
+        "reasoning": "",
+        "phase": "reasoning",
+        "status": "error"
+      },
+      "snapshot": {
+        "text": "",
+        "reasoning": "",
+        "activePart": null,
+        "textStatus": "pending",
+        "reasoningStatus": "pending",
+        "status": "error"
+      }
+    },
+    {
+      "name": "unicode-persisted",
+      "row": {
+        "text": "Ünïcödé 漢字",
+        "reasoning": "理由",
+        "phase": "answer",
+        "status": "complete"
+      },
+      "snapshot": {
+        "text": "Ünïcödé 漢字",
+        "reasoning": "理由",
+        "activePart": null,
+        "textStatus": "complete",
+        "reasoningStatus": "complete",
+        "status": "complete"
+      }
+    }
+  ]
+}

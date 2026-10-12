@@ -1,0 +1,66 @@
+{
+  "code": "export interface CatalogTool {\n  name: string;\n  title?: unknown;\n  description?: unknown;\n  inputSchema?: unknown;\n}\n\nexport interface AccountSource {\n  id: string;\n  label: string;\n  tools: CatalogTool[];\n  resources_allowed: boolean;\n}\n\nexport const SOURCE_LIMIT = 100;\nexport const TOOL_LIMIT = 128;\nexport const SERIALIZED_LIMIT = 1_048_576;\nexport const ID_LIMIT = 256;\nexport const LABEL_LIMIT = 200;\nexport const TOOL_NAME_LIMIT = 256;\nexport const INPUT_SCHEMA_LIMIT = 65_536;\n\nexport function validateCatalog(raw: unknown): AccountSource[] {\n  const data = (raw as { data?: unknown } | null | undefined)?.data;\n  if (!Array.isArray(data)) throw new Error(\"Invalid sources response\");\n  if (JSON.stringify(data).length > SERIALIZED_LIMIT)\n    throw new Error(\"Source catalog is too large\");\n  if (data.length > SOURCE_LIMIT) throw new Error(\"Source catalog is too large\");\n  const seen = new Set<string>();\n  return data.map((value) => {\n    if (!value || typeof value !== \"object\")\n      throw new Error(\"Invalid source catalog\");\n    const source = value as AccountSource;\n    if (\n      typeof source.id !== \"string\" ||\n      !source.id ||\n      source.id.length > ID_LIMIT ||\n      seen.has(source.id) ||\n      typeof source.label !== \"string\" ||\n      source.label.length > LABEL_LIMIT ||\n      !Array.isArray(source.tools) ||\n      source.tools.length > TOOL_LIMIT ||\n      typeof source.resources_allowed !== \"boolean\"\n    )\n      throw new Error(\"Invalid source catalog\");\n    seen.add(source.id);\n    const toolNames = new Set<string>();\n    for (const tool of source.tools) {\n      if (\n        !tool ||\n        typeof tool.name !== \"string\" ||\n        !tool.name ||\n        tool.name.length > TOOL_NAME_LIMIT ||\n        toolNames.has(tool.name) ||\n        !tool.inputSchema ||\n        typeof tool.inputSchema !== \"object\" ||\n        Array.isArray(tool.inputSchema) ||\n        (tool.inputSchema as { type?: unknown }).type !== \"object\" ||\n        JSON.stringify(tool.inputSchema).length > INPUT_SCHEMA_LIMIT\n      )\n        throw new Error(\"Invalid tool schema\");\n      toolNames.add(tool.name);\n    }\n    return source;\n  });\n}\n\nexport function toolDefinition(tool: CatalogTool): string {\n  return JSON.stringify({\n    name: tool.name,\n    title: tool.title,\n    description: tool.description,\n    inputSchema: tool.inputSchema,\n  });\n}\n",
+  "cases": [
+    {
+      "name": "raw shape gate",
+      "input": "undefined, null, 5, \"x\", {}, {data:null}, {data:{}}, {data:\"[]\"}",
+      "expected": "all throw Error(\"Invalid sources response\"); only Array.isArray(raw?.data) passes, optional chaining matches the source so non-object raw does not TypeError"
+    },
+    {
+      "name": "empty catalog and 100/101 source boundary",
+      "input": "{data: []} and {data: Array(100|101).fill(minimalSource)}",
+      "expected": "empty returns []; 100 valid sources return all 100 by reference; 101 throws \"Source catalog is too large\" from the count branch"
+    },
+    {
+      "name": "serialized-size boundary evaluated before count",
+      "input": "data with JSON.stringify length exactly 1_048_576 vs 1_048_577 (e.g. padding a source, or 101 tiny sources)",
+      "expected": "at the limit it proceeds; over the limit throws \"Source catalog is too large\" before the 100-source check, so size errors win over count errors"
+    },
+    {
+      "name": "source id boundaries and duplicates",
+      "input": "id \"\", 256 chars, 257 chars, and a repeated id",
+      "expected": "\"\", 257 chars and any repeat throw \"Invalid source catalog\"; exactly 256 chars passes"
+    },
+    {
+      "name": "label, tools, resources_allowed",
+      "input": "label \"\" / 200 / 201 chars; tools missing or not an array; resources_allowed \"true\"",
+      "expected": "empty and 200-char labels pass (only id must be non-empty); 201-char label, non-array tools and non-boolean resources_allowed throw \"Invalid source catalog\""
+    },
+    {
+      "name": "tool count boundary",
+      "input": "source.tools with 128 vs 129 distinct valid tools",
+      "expected": "128 passes; 129 throws \"Invalid source catalog\""
+    },
+    {
+      "name": "tool name boundaries and duplicates",
+      "input": "tool name \"\", 256 chars, 257 chars, and two tools sharing a name",
+      "expected": "all throw \"Invalid tool schema\"; exactly 256 chars passes"
+    },
+    {
+      "name": "inputSchema gate",
+      "input": "inputSchema undefined / null / 0 / \"\" / false / \"x\" / [] / {type:\"array\"} / {type:\"object\"} with JSON length 65_536 vs 65_537",
+      "expected": "the first eight throw \"Invalid tool schema\"; {type:\"object\"} at exactly 65_536 passes and 65_537 throws, so falsy, non-object, array and missing-type schemas are all rejected"
+    },
+    {
+      "name": "unchecked title/description and toolDefinition emission",
+      "input": "tool {name:\"t\",title:5,description:null,inputSchema:{type:\"object\"}} vs the same tool with title/description undefined",
+      "expected": "validateCatalog accepts both; toolDefinition emits keys in order name,title,description,inputSchema with 5 and null preserved, while undefined values drop their key entirely"
+    },
+    {
+      "name": "reference identity and first-error ordering",
+      "input": "sources with extra keys and oddly ordered tools; element 3 with a bad tool and element 5 with a bad id",
+      "expected": "returns the caller's own object and tool references (no clone, sort, trim or reorder) with extra keys intact; the earlier element wins, so \"Invalid tool schema\" is thrown rather than the later id error"
+    }
+  ],
+  "limitations": [
+    "Only validateCatalog and toolDefinition are ported; transport (client.action), epoch/catalogRequest generation guards, loading/error snapshot mutation, choice pruning and persistence, review/consent, resources, tool wiring and UI remain with the root.",
+    "JSON.stringify(data) and JSON.stringify(tool.inputSchema) can throw natively for circular or BigInt payloads; the source swallowed that in refreshAccountKnowledge's catch, so the root must map it to its generic \"Account sources are unavailable\" message to keep user-visible behavior identical.",
+    "title and description are typed unknown on purpose because the source rejects only name and inputSchema shape; no extra type rejection is invented, and a root McpToolInfo with title?: string / description?: string remains structurally assignable.",
+    "AccountSource carries exactly the four current fields and no index signature, so unknown metadata keys survive only through reference identity at runtime and are not typed; root interfaces must match if it reads them.",
+    "All limits count UTF-16 code units via String#length and JSON.stringify(...).length, not bytes or code points, matching browser behavior exactly.",
+    "toolDefinition performs no validation; an undefined inputSchema is omitted exactly like undefined title/description, and key order is fixed at name, title, description, inputSchema.",
+    "validateCatalog is synchronous and returns the caller's mutable objects, so later mutation of a returned source or tool is visible to the caller; nothing is normalized, trimmed, sorted or reordered.",
+    "Errors are the four fixed source strings and never echo input; precedence is response shape, serialized size, source count, per-source fields in listed order, then per-tool fields in listed order.",
+    "The exported limit constants are for reuse only; inlining the original numeric literals changes no behavior."
+  ]
+}

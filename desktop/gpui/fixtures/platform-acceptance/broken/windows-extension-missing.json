@@ -1,0 +1,177 @@
+{
+  "_broken": "Windows manifest stages the document helper without its required .exe extension.",
+  "contract": {
+    "schemaVersion": 2,
+    "platform": "windows",
+    "appId": "love.twyne.gpui",
+    "helpers": [
+      {
+        "id": "desktop",
+        "targetName": "twyne-desktop",
+        "windowsExtension": ".exe",
+        "required": true
+      },
+      {
+        "id": "document",
+        "targetName": "twyne-document",
+        "windowsExtension": ".exe",
+        "required": true
+      },
+      {
+        "id": "math-write",
+        "targetName": "twyne-math-write",
+        "windowsExtension": ".exe",
+        "required": true
+      }
+    ],
+    "keyAliases": [
+      {
+        "action": "save",
+        "aliases": ["ctrl-s"]
+      },
+      {
+        "action": "undo",
+        "aliases": ["ctrl-z"]
+      },
+      {
+        "action": "redo",
+        "aliases": ["ctrl-shift-z"]
+      },
+      {
+        "action": "quit",
+        "aliases": ["ctrl-q"]
+      }
+    ],
+    "fileAssociations": [
+      {
+        "extension": "typ",
+        "mime": "application/x-typst"
+      },
+      {
+        "extension": "json",
+        "mime": "application/json"
+      },
+      {
+        "extension": "twyne",
+        "mime": "application/json"
+      },
+      {
+        "extension": "html",
+        "mime": "text/html"
+      },
+      {
+        "extension": "htm",
+        "mime": "text/html"
+      },
+      {
+        "extension": "md",
+        "mime": "text/markdown"
+      },
+      {
+        "extension": "markdown",
+        "mime": "text/markdown"
+      },
+      {
+        "extension": "txt",
+        "mime": "text/plain"
+      }
+    ],
+    "urlSchemes": [],
+    "microphone": {
+      "required": false,
+      "usageKeys": ["NSMicrophoneUsageDescription"]
+    }
+  },
+  "manifest": {
+    "schemaVersion": 2,
+    "platform": "windows",
+    "appId": "love.twyne.gpui",
+    "executables": [
+      {
+        "id": "desktop",
+        "targetName": "twyne-desktop.exe",
+        "required": true,
+        "path": "twyne-desktop.exe"
+      },
+      {
+        "id": "document",
+        "targetName": "twyne-document",
+        "required": true,
+        "path": "twyne-document"
+      },
+      {
+        "id": "math-write",
+        "targetName": "twyne-math-write.exe",
+        "required": true,
+        "path": "twyne-math-write.exe"
+      }
+    ],
+    "files": [
+      {
+        "path": "scaffolds/windows/twyne.manifest.in",
+        "kind": "metadata"
+      },
+      {
+        "path": "twyne-desktop.exe",
+        "kind": "executable"
+      },
+      {
+        "path": "twyne-document",
+        "kind": "executable"
+      },
+      {
+        "path": "twyne-math-write.exe",
+        "kind": "executable"
+      }
+    ],
+    "layout": "flat-executables-and-metadata",
+    "bundleStatus": "not-assembled"
+  },
+  "build": {
+    "platform": "windows",
+    "producedExecutables": [
+      "twyne-desktop.exe",
+      "twyne-document.exe",
+      "twyne-math-write.exe"
+    ],
+    "keyBindings": [
+      {
+        "action": "save",
+        "keystrokes": ["ctrl-s"]
+      },
+      {
+        "action": "undo",
+        "keystrokes": ["ctrl-z"]
+      },
+      {
+        "action": "redo",
+        "keystrokes": ["ctrl-shift-z"]
+      },
+      {
+        "action": "quit",
+        "keystrokes": ["ctrl-q"]
+      }
+    ],
+    "startup": {
+      "handlesFileArguments": true,
+      "handlesUrlScheme": false,
+      "extensionTokens": [
+        "twyne",
+        "json",
+        "typ",
+        "html",
+        "htm",
+        "md",
+        "markdown",
+        "txt"
+      ]
+    },
+    "microphone": {
+      "realAdapterPresent": false,
+      "usageDescriptionKeys": []
+    },
+    "kind": "synthetic-fixture"
+  },
+  "scope": "synthetic-input-consistency",
+  "_note": "Authored synthetic declarations only; no actual build, running keys, OS registration or hardware receipt."
+}

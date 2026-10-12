@@ -1,0 +1,144 @@
+{
+  "renderer": "actual pinned Linux Cosmic/Swash, fresh empty database with only declared bundled bytes",
+  "systemFontsLoaded": false,
+  "helper": "theme::cast_raw_glyph_font()",
+  "requestedPrimary": "Libre Baskerville",
+  "requestedWeight": 600,
+  "sizePx": 16.0,
+  "allFiveOriginalGlyphIdsAndNonzeroMasks": true,
+  "automaticLatinUnchangedAfterRegistration": true,
+  "automaticLatinRequests": [
+    "automatic-sans",
+    "automatic-display",
+    "automatic-body"
+  ],
+  "maxBrowserDomAdvanceDifferencePx": 0.009374618530273438,
+  "rows": [
+    {
+      "text": "♠",
+      "glyphId": 2223,
+      "selectedNativeWeight": 700.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 8.5,
+      "originalBrowserAdvancePx": 8.5,
+      "differencePx": 0.0,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 9 px (device) × 10 px (device) } }",
+        "size": "Size { 9 px (device) × 10 px (device) }",
+        "byteCount": 90,
+        "nonzeroBytes": 57,
+        "maskFnv1a64": "49ea9be45c8bc953"
+      }
+    },
+    {
+      "text": "♥",
+      "glyphId": 2225,
+      "selectedNativeWeight": 700.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 9.5,
+      "originalBrowserAdvancePx": 9.5,
+      "differencePx": 0.0,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 9 px (device) × 10 px (device) } }",
+        "size": "Size { 9 px (device) × 10 px (device) }",
+        "byteCount": 90,
+        "nonzeroBytes": 56,
+        "maskFnv1a64": "9609b89dcc1f9368"
+      }
+    },
+    {
+      "text": "♦",
+      "glyphId": 2226,
+      "selectedNativeWeight": 700.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 8.1640625,
+      "originalBrowserAdvancePx": 8.171875,
+      "differencePx": -0.0078125,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 8 px (device) × 11 px (device) } }",
+        "size": "Size { 8 px (device) × 11 px (device) }",
+        "byteCount": 88,
+        "nonzeroBytes": 51,
+        "maskFnv1a64": "2df631bd3e72bb08"
+      }
+    },
+    {
+      "text": "✦",
+      "glyphId": 6836,
+      "selectedNativeWeight": 400.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 9.600000381469727,
+      "originalBrowserAdvancePx": 9.609375,
+      "differencePx": -0.009374618530273438,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Adwaita Mono",
+          "postScriptName": "Adwaita-Mono",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 10 px (device) × 9 px (device) } }",
+        "size": "Size { 10 px (device) × 9 px (device) }",
+        "byteCount": 90,
+        "nonzeroBytes": 44,
+        "maskFnv1a64": "e01a7955f3b0519e"
+      }
+    },
+    {
+      "text": "♣",
+      "glyphId": 2224,
+      "selectedNativeWeight": 700.0,
+      "selectedNativeStyle": "Normal",
+      "nativeAdvancePx": 10.5,
+      "originalBrowserAdvancePx": 10.5,
+      "differencePx": 0.0,
+      "actualBrowserFaces": [
+        {
+          "familyName": "Liberation Serif",
+          "postScriptName": "LiberationSerif-Bold",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ],
+      "isEmoji": false,
+      "nativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -10 px (device) }, size: Size { 11 px (device) × 10 px (device) } }",
+        "size": "Size { 11 px (device) × 10 px (device) }",
+        "byteCount": 110,
+        "nonzeroBytes": 75,
+        "maskFnv1a64": "f71c4203a82638bb"
+      }
+    }
+  ],
+  "boundary": "Only raw Manager assistance glyphs. Chromium synthesis/hinting/GPU pixels, actual assembled UI, other OS and Lora card headings are separate boundaries; circular badge chain unchanged."
+}

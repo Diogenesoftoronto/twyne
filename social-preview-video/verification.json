@@ -1,0 +1,31 @@
+{
+  "asset": "public/assets/social/twyne-writers-desk-loop-v1.mp4",
+  "url": "http://localhost:8765/twyne-writers-desk-loop-v1.mp4",
+  "hyperframesVersion": "0.8.93",
+  "capture": "beginframe",
+  "gpu": "hardware",
+  "codec": "h264",
+  "pixelFormat": "yuv420p",
+  "width": 1200,
+  "height": 630,
+  "fps": 30,
+  "frames": 180,
+  "durationSeconds": 6,
+  "bytes": 5236114,
+  "audio": false,
+  "fullDecodePassed": true,
+  "httpStatus": 200,
+  "contentType": "video/mp4",
+  "inspectedFrameIndices": [0, 90, 179],
+  "checks": {
+    "report": "check.json",
+    "ok": true,
+    "lintErrors": 0,
+    "lintWarnings": 2,
+    "runtimeErrors": 0,
+    "layoutErrors": 0,
+    "motionErrors": 0,
+    "contrastChecked": 20,
+    "contrastPassed": 20
+  }
+}

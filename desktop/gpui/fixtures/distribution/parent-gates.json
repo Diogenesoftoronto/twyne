@@ -1,0 +1,172 @@
+{
+  "recordedAt": "2026-10-05T01:27:33.060879+00:00",
+  "scope": "Parent built both actual helper executables, staged current available release files and verified integrity; release app predates latest unmounted foundations",
+  "actualStage": {
+    "destination": "/tmp/twyne-gpui-reviewed-stage-20261005-ct47s_j6/linux",
+    "manifestSha256": "697239b62494ed9c9a26faa1f17b30b6e28b4be47fa0fca940ebc3d1e79d2946",
+    "files": 47,
+    "executables": [
+      {
+        "id": "desktop",
+        "targetName": "twyne-desktop",
+        "bytes": 36361824,
+        "mode": 493,
+        "sha256": "2d4aa69c83338d90911636c3bc362b3e663e34ab1e2ae55c8b8a3c88d1698251",
+        "dependencies": {
+          "format": "elf",
+          "libraries": [
+            "libxcb.so.1",
+            "libxkbcommon.so.0",
+            "libxkbcommon-x11.so.0",
+            "libgcc_s.so.1",
+            "libm.so.6",
+            "libc.so.6",
+            "ld-linux-x86-64.so.2"
+          ],
+          "interpreter": "/lib64/ld-linux-x86-64.so.2",
+          "runpaths": [],
+          "architecture": "x86_64"
+        }
+      },
+      {
+        "id": "document",
+        "targetName": "twyne-document",
+        "bytes": 89699808,
+        "mode": 493,
+        "sha256": "cc8144ceeb96cb519f026414aa332f35d54b33e5fb640d0c1076d85b3a39c9de",
+        "dependencies": {
+          "format": "elf",
+          "libraries": [
+            "libc.so.6",
+            "ld-linux-x86-64.so.2",
+            "libpthread.so.0",
+            "libdl.so.2",
+            "libm.so.6"
+          ],
+          "interpreter": "/nix/store/lm3pknxi0ipypy3lxh1wmm8wvvavdwrn-glibc-2.42-84/lib/ld-linux-x86-64.so.2",
+          "runpaths": [],
+          "architecture": "x86_64"
+        }
+      },
+      {
+        "id": "math-write",
+        "targetName": "twyne-math-write",
+        "bytes": 82339296,
+        "mode": 493,
+        "sha256": "ad3c61c1f11587cf7114bd7669da6034d5b7972de20f335bbe66d8cb1b402cd5",
+        "dependencies": {
+          "format": "elf",
+          "libraries": [
+            "libc.so.6",
+            "ld-linux-x86-64.so.2",
+            "libpthread.so.0",
+            "libdl.so.2",
+            "libm.so.6"
+          ],
+          "interpreter": "/nix/store/lm3pknxi0ipypy3lxh1wmm8wvvavdwrn-glibc-2.42-84/lib/ld-linux-x86-64.so.2",
+          "runpaths": [],
+          "architecture": "x86_64"
+        }
+      }
+    ],
+    "scope": "Actual host files staged and integrity checked, binary release app predates latest unmounted foundation exports; no install/runtime/current release source or portability proof",
+    "layout": "flat-executables-and-metadata",
+    "bundleStatus": "not-assembled",
+    "versionMismatch": true
+  },
+  "compiledMath": {
+    "scope": "Actual compiled helper assets and refusals; diagnostic vectors only, no mounted native Write parity",
+    "helperSha256": "ad3c61c1f11587cf7114bd7669da6034d5b7972de20f335bbe66d8cb1b402cd5",
+    "rows": [
+      {
+        "id": "ordinary",
+        "profile": "currentSource",
+        "fidelity": "refused",
+        "issueKinds": ["css-version-mismatch"],
+        "glyphs": 0,
+        "svgBytes": 0,
+        "engineVersion": "0.18.1",
+        "sourceCssVersion": "0.16.47"
+      },
+      {
+        "id": "ordinary",
+        "profile": "engineMatchedDiagnostic",
+        "fidelity": "engineDerivedDiagnostic",
+        "issueKinds": [],
+        "glyphs": 5,
+        "svgBytes": 3583,
+        "engineVersion": "0.18.1",
+        "sourceCssVersion": "0.16.47"
+      },
+      {
+        "id": "fraction",
+        "profile": "currentSource",
+        "fidelity": "refused",
+        "issueKinds": ["css-version-mismatch"],
+        "glyphs": 0,
+        "svgBytes": 0,
+        "engineVersion": "0.18.1",
+        "sourceCssVersion": "0.16.47"
+      },
+      {
+        "id": "fraction",
+        "profile": "engineMatchedDiagnostic",
+        "fidelity": "engineDerivedDiagnostic",
+        "issueKinds": [],
+        "glyphs": 6,
+        "svgBytes": 4052,
+        "engineVersion": "0.18.1",
+        "sourceCssVersion": "0.16.47"
+      },
+      {
+        "id": "radical",
+        "profile": "currentSource",
+        "fidelity": "refused",
+        "issueKinds": ["css-version-mismatch"],
+        "glyphs": 0,
+        "svgBytes": 0,
+        "engineVersion": "0.18.1",
+        "sourceCssVersion": "0.16.47"
+      },
+      {
+        "id": "radical",
+        "profile": "engineMatchedDiagnostic",
+        "fidelity": "engineDerivedDiagnostic",
+        "issueKinds": [],
+        "glyphs": 4,
+        "svgBytes": 2548,
+        "engineVersion": "0.18.1",
+        "sourceCssVersion": "0.16.47"
+      }
+    ]
+  },
+  "semanticHelper": {
+    "status": "pass",
+    "tests": 22,
+    "assertions": 258,
+    "log": "/tmp/twyne-gpui-current-semantic-gate.log",
+    "logSha256": "d5ff03fe1218740c93728d6a598f402180d4a6deb74aec8261fa1ae9443f74ad"
+  },
+  "helperBuild": {
+    "status": "pass",
+    "log": "/tmp/twyne-gpui-current-helper-build.log",
+    "logSha256": "c01cb32c97deda4b737a66fcaf2d9682f95980c2fa45efe7c001dc1640e93efd"
+  },
+  "mandatoryRealBinaryHeaders": {
+    "status": "pass",
+    "tests": 1,
+    "assertions": 7,
+    "scope": "ELF header, architecture and executable-mode validation of actual available host release files; no launch or portability proof"
+  },
+  "integration": {
+    "packageScripts": "Applied only three stage/verify/test entries; other dirty package edits preserved",
+    "ciPatches": "Unapplied; current workflow does not provision RTK"
+  },
+  "remaining": [
+    "Current-source release app build",
+    "Clean-host Linux runtime and helper relocation",
+    "macOS app bundle/signing/runtime",
+    "Windows resources/installer/runtime",
+    "OS associations and updater"
+  ]
+}

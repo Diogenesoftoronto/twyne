@@ -1,0 +1,53 @@
+{
+  "saved": {
+    "html": "<select class=\"editor-page-navigation\" aria-label=\"Go to page\"><option value=\"0\">1 page</option><option value=\"1\">Page 1 of 1</option></select>",
+    "font": {
+      "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "fontSize": "11px",
+      "fontWeight": "400",
+      "fontStyle": "normal",
+      "fontOpticalSizing": "auto",
+      "fontVariationSettings": "normal",
+      "lineHeight": "normal",
+      "letterSpacing": "normal"
+    },
+    "color": "rgb(74, 63, 51)",
+    "background": "rgb(244, 236, 216)"
+  },
+  "rows": [
+    {
+      "id": "pages-painted-auto",
+      "bounds": {
+        "x": 8,
+        "y": 720,
+        "width": 51,
+        "height": 28,
+        "top": 720,
+        "right": 59,
+        "bottom": 748,
+        "left": 8
+      },
+      "color": "rgb(74, 63, 51)",
+      "background": "rgb(244, 236, 216)",
+      "appearance": "auto"
+    },
+    {
+      "id": "pages-painted-none",
+      "bounds": {
+        "x": 59,
+        "y": 720,
+        "width": 51,
+        "height": 28,
+        "top": 720,
+        "right": 110,
+        "bottom": 748,
+        "left": 59
+      },
+      "color": "rgb(74, 63, 51)",
+      "background": "rgb(244, 236, 216)",
+      "appearance": "none"
+    }
+  ],
+  "probeOnly": true,
+  "originalStylesUnchanged": true
+}

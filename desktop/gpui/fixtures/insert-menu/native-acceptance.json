@@ -1,0 +1,306 @@
+{
+  "schemaVersion": 1,
+  "recordedUnix": 1791228278.6622677,
+  "status": "passed_scoped_checks",
+  "scope": "Local title, slash insertion, and writing-room module extraction",
+  "build": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/build.json",
+    "sha256": "a680f52c61147dfcfbc636abd2a6b9ff1842448e2b88640d41ffb289b10abb4c"
+  },
+  "artifacts": {
+    "binary": {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/twyne-desktop",
+      "sha256": "144f3e121dc82af9f247674cc223ea574366d26adcf18129b27a075b9c3d2b34"
+    },
+    "documentHelper": {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/twyne-document",
+      "sha256": "cc8144ceeb96cb519f026414aa332f35d54b33e5fb640d0c1076d85b3a39c9de"
+    }
+  },
+  "sourceHashes": {
+    "desktop/gpui/src/app.rs": "ad1c2e4f6846f1bfdaf3f61dd345c264e8e9c364c5ec256593e8cb1b3c209ce5",
+    "desktop/gpui/src/app/room_layout.rs": "f14448d6882a7b39848572117c72d6f8e94406b52be352d2a52cf7cbb0753e19",
+    "desktop/gpui/src/app/slash_coordinator.rs": "ca1046e1eea8aeebe17ce88de0a231275d020f1be5f340cd23ab17dfbd0f4261",
+    "desktop/gpui/src/app/manuscript_coordinator.rs": "c51b64edc652626cc2943ece19f34fb80bbd38d6ec32c8bfa92b99ff142f53ac",
+    "desktop/gpui/src/editor/view_insert.rs": "9058a9b29e44cef68f7c79be185c2690c40fe2dd73fe48838030f4b3dd36a118",
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "desktop/gpui/src/insert_menu/filter.rs": "b9612c802cfc2e238fa532ba0dd951a94b0956a3dd6a0da6c441dc2c1e2026b3",
+    "desktop/gpui/src/insert_menu/mod.rs": "86ffde7db5d23ebe8f8a64b379817e813102db5b5a21c44c2b66bde6ecc35114",
+    "desktop/gpui/src/insert_menu/catalog.rs": "11fd354c93a30f0a53cbf1d0843574b6c82fb1ebcf271910ef412d07e23f157a",
+    "desktop/gpui/src/insert_menu/context.rs": "629988ce6051bc6e415a26bb4f8640b60681696ac75a329f35205e824355f849",
+    "desktop/gpui/src/insert_menu/parameters.rs": "c30364989ff7c3fcdf75aaaf260f07a337a9005ab543b360098f91334dbeb03d",
+    "desktop/gpui/src/insert_menu/rich.rs": "82433a4f99732db308ac7c34471dcb3ea224455d8727860d629fa065c5684511",
+    "desktop/gpui/src/insert_menu/markdown.rs": "02197732e67dc46a2fa65e94fb41470adbb7275e353e0f6cadde4bc4b7268dca",
+    "desktop/gpui/src/insert_menu/view.rs": "6bfc65ceddf58827ce07e893618fe02154c02578376dd01bc7953e71e925b6f2",
+    "desktop/gpui/src/insert_menu/form.rs": "aeb2a0846215423a111085eed869c9858e9b89c686d8b1520e48385ffb499ce9",
+    "desktop/gpui/src/insert_menu/tests.rs": "2fe221fdd992f3bf200163967f020c1397bc6cd14eba7523d7fe4124751de21d",
+    "desktop/gpui/vendor/gpui-base/src/input/base/state.rs": "d1377b6e66ba18a9464f4b4ebcf817912fe9996184ca3902c71ea955766455c7",
+    "desktop/gpui/vendor/gpui-base/src/input/base/element.rs": "41bef9ee960941834b6c6fbac18eea95a7e23c5702fac5a2a9d0644fcd649c8d",
+    "desktop/gpui/vendor/gpui-base/src/input/editor/display_map/text_wrapper.rs": "cb744ae717d3bc5e765467aa8e6b39e01c50663b640b862026065f49302f9150"
+  },
+  "sourceBrowser": {
+    "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/slash-source-ui-20261005-c/receipt.json",
+    "sha256": "20fbb066cb8a8a466bca4d750376c322d827baf65323ddef5cee9d22eddbe81c"
+  },
+  "checks": [
+    {
+      "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --features ui-tests --bin twyne-desktop --manifest-path desktop/gpui/Cargo.toml",
+      "status": "passed",
+      "passed": 115,
+      "failed": 0,
+      "durationSeconds": 82.39,
+      "evidence": "Observed terminal completion in coordinator session 43140"
+    },
+    {
+      "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --no-default-features --lib --manifest-path desktop/gpui/Cargo.toml insert_menu",
+      "status": "passed",
+      "passed": 8,
+      "evidence": "Observed terminal completion in coordinator session 73324"
+    },
+    {
+      "command": "rtk proxy devenv shell -- rtk proxy cargo clippy --locked --offline --all-targets --features ui-tests --manifest-path desktop/gpui/Cargo.toml -- -D warnings",
+      "status": "passed",
+      "evidence": "Observed terminal completion in coordinator session 70378"
+    },
+    {
+      "command": "rtk proxy bun desktop/gpui/tools/sync-insert-menu.ts --check",
+      "status": "passed",
+      "sourceCommands": 17,
+      "sourceQueries": 21
+    },
+    {
+      "command": "rtk proxy bun desktop/gpui/fixtures/insert-menu/capture-source.ts desktop/gpui/target/verification/slash-source-ui-20261005-c",
+      "status": "passed",
+      "cases": 3,
+      "pageErrors": 0,
+      "evidence": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/slash-source-ui-20261005-c/receipt.json"
+    }
+  ],
+  "nativeCaptures": [
+    {
+      "state": "writing",
+      "image": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/title-long.png",
+        "sha256": "8ffd5235c5ce71c3f349b69188cd65fa87f651bbf40eb70637eaa95b781dbf5d"
+      },
+      "geometry": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/title-long-geometry.json",
+        "sha256": "964a02090f961e85d73e2bbfa125365f1099663c9f0459037f7adb2b5a3877f6"
+      },
+      "fixture": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-fixtures-20261005-b/long-title.twyne",
+        "sha256": "3355ac6bce6b57e3c8b83ff21138cee5b4a8cf53e0029511857682099045adca"
+      },
+      "viewport": {
+        "width": 948.0,
+        "height": 640.0
+      },
+      "scaleFactor": 1.0,
+      "captureReady": true,
+      "observedElements": [
+        {
+          "element": "Name(\"manuscript-title\")",
+          "rect": {
+            "x": 123.0,
+            "y": 165.0,
+            "width": 704.0,
+            "height": 132.0
+          },
+          "role": null
+        },
+        {
+          "element": "Name(\"manuscript-page\")",
+          "rect": {
+            "x": 123.0,
+            "y": 149.0,
+            "width": 704.0,
+            "height": 458.0
+          },
+          "role": null
+        }
+      ]
+    },
+    {
+      "state": "slash",
+      "image": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/slash.png",
+        "sha256": "a6ecc8ff18d5ee6e53992542b287e4efd9009b04b3d40bfcbc3fa6ba0390fa75"
+      },
+      "geometry": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/slash-geometry.json",
+        "sha256": "f8cdf3f046141277c996a4b3a7a2326da41ed830873a203ea2cdb8ee983ecb8d"
+      },
+      "fixture": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-fixtures-20261005-b/slash.twyne",
+        "sha256": "27597fcc2cdd3053e276b77a5c71f15748591b4febb442afaf151c128278f591"
+      },
+      "viewport": {
+        "width": 948.0,
+        "height": 640.0
+      },
+      "scaleFactor": 1.0,
+      "captureReady": true,
+      "observedElements": [
+        {
+          "element": "Name(\"slash-command-menu\")",
+          "rect": {
+            "x": 139.0,
+            "y": 350.0,
+            "width": 288.0,
+            "height": 276.0
+          },
+          "role": "ListBox"
+        },
+        {
+          "element": "Name(\"manuscript-title\")",
+          "rect": {
+            "x": 123.0,
+            "y": 165.0,
+            "width": 704.0,
+            "height": 44.0
+          },
+          "role": null
+        },
+        {
+          "element": "Name(\"manuscript-page\")",
+          "rect": {
+            "x": 123.0,
+            "y": 149.0,
+            "width": 704.0,
+            "height": 458.0
+          },
+          "role": null
+        }
+      ]
+    },
+    {
+      "state": "slash-filtered",
+      "image": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/slash-filtered.png",
+        "sha256": "f8a9dfe40229f72d94005ed02d9813b814bb3d5951ee69030d59827580717a72"
+      },
+      "geometry": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/slash-filtered-geometry.json",
+        "sha256": "7cb774a512f32aa5822f8b19cebaf31b5be7748280e96738f97a93eb53d04c27"
+      },
+      "fixture": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-fixtures-20261005-b/slash-filtered.twyne",
+        "sha256": "6f222f7d3673ecf8b755ab31534a1f023a94065d78410d54fed1295b4900b125"
+      },
+      "viewport": {
+        "width": 948.0,
+        "height": 640.0
+      },
+      "scaleFactor": 1.0,
+      "captureReady": true,
+      "observedElements": [
+        {
+          "element": "Name(\"manuscript-page\")",
+          "rect": {
+            "x": 123.0,
+            "y": 149.0,
+            "width": 704.0,
+            "height": 458.0
+          },
+          "role": null
+        },
+        {
+          "element": "Name(\"manuscript-title\")",
+          "rect": {
+            "x": 123.0,
+            "y": 165.0,
+            "width": 704.0,
+            "height": 44.0
+          },
+          "role": null
+        },
+        {
+          "element": "Name(\"slash-command-menu\")",
+          "rect": {
+            "x": 181.0,
+            "y": 350.0,
+            "width": 288.0,
+            "height": 276.0
+          },
+          "role": "ListBox"
+        }
+      ]
+    },
+    {
+      "state": "slash-form",
+      "image": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/slash-form.png",
+        "sha256": "d3217c36c1cb240a22fd97ffa2e867e9f7cd0e71673680f874136a5b9e142868"
+      },
+      "geometry": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-build-20261005-b/slash-form-geometry.json",
+        "sha256": "9114fd31cec70c0fd29b823294ffef4f1d5909c7b55d07c39811067398b7dfc0"
+      },
+      "fixture": {
+        "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/insert-title-fixtures-20261005-b/slash-form.twyne",
+        "sha256": "6f222f7d3673ecf8b755ab31534a1f023a94065d78410d54fed1295b4900b125"
+      },
+      "viewport": {
+        "width": 948.0,
+        "height": 640.0
+      },
+      "scaleFactor": 1.0,
+      "captureReady": true,
+      "observedElements": [
+        {
+          "element": "Name(\"manuscript-title\")",
+          "rect": {
+            "x": 123.0,
+            "y": 165.0,
+            "width": 704.0,
+            "height": 44.0
+          },
+          "role": null
+        },
+        {
+          "element": "Name(\"slash-insert-form\")",
+          "rect": {
+            "x": 314.0,
+            "y": 80.0,
+            "width": 320.0,
+            "height": 263.0
+          },
+          "role": "Dialog"
+        },
+        {
+          "element": "Name(\"manuscript-page\")",
+          "rect": {
+            "x": 123.0,
+            "y": 149.0,
+            "width": 704.0,
+            "height": 458.0
+          },
+          "role": null
+        }
+      ]
+    }
+  ],
+  "observations": [
+    "Actual native title wraps to three centered 44-pixel rows with visible accents and descenders; its page shares the body scroll.",
+    "Native popup outer width is 288 pixels and command rows are 54 pixels high; this narrow fixture clamps the popup to 276 pixels high.",
+    "The actual native table form opens, and mounted keyboard/control tests verify values, commit, cancellation, undo, and stale document bindings."
+  ],
+  "knownDifferences": [
+    "Native adds Link to the original 17-command subset at the user request.",
+    "Native forms preserve the slash query until commit; Source removes it before opening its parameter dialog.",
+    "Native clamps the popup to the visible window.",
+    "Source shortcut hints and exact parameter-dialog styling still need parity work."
+  ],
+  "boundaries": [
+    "Native captures use synthetic fixtures and isolated libraries at scale 1; they do not access the user preview library.",
+    "The separate normal user preview reuses the existing library and does not receive capture or import arguments.",
+    "Mounted tests use the GPUI test text system; actual native fonts are evidenced separately by GPU captures.",
+    "Browser evidence is the original web editor, not Electrobun-host evidence.",
+    "No authenticated account sync, live AI or knowledge-base request, installation, other-OS or release claim is established."
+  ],
+  "testSources": {
+    "desktop/gpui/src/app/tests.rs": "4758107ed4d57d3c7b7ea8ab81ec8ef0af82169edb07f1e13783e8865eb5400a",
+    "desktop/gpui/src/app/manuscript_tests.rs": "d57c6a58ee3b270f60a9927171099d1d4a52f4c06376fa36a6bd906f2e63a7a8",
+    "desktop/gpui/src/app/slash_tests.rs": "76d1426f20e513b579bc99ccd18d73ff6d42943c44550fb3b88c7485be5d9582"
+  }
+}

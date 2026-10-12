@@ -1,0 +1,65 @@
+{
+  "status": "reviewed_advisory_only",
+  "model": "sakana/fugu-max",
+  "reasoningEffort": "high",
+  "scope": "Four frozen files; host coordination, GPUI Kit bindings and real browser were validated by root separately",
+  "productCodeAdopted": false,
+  "acceptedForReference": [
+    "M1",
+    "M3",
+    "M4",
+    "M5",
+    "M6",
+    "M7",
+    "M8",
+    "M9",
+    "M10",
+    "M11",
+    "M12",
+    "M13",
+    "M18",
+    "M19",
+    "M21"
+  ],
+  "corrections": [
+    {
+      "id": "M2",
+      "review": "The host has an outside-click cancellation handler. The missing scrim/centering is valid, but absence of outside cancellation was inferred from incomplete inputs."
+    },
+    {
+      "id": "M14",
+      "review": "GPUI Kit Enter.secondary is bound to Ctrl/Cmd+Enter, and the form captures it for multiline fields. The claimed absent chord is false."
+    },
+    {
+      "id": "M16",
+      "review": "Each newly mounted note/diagram input starts empty, so selecting 0..0 does not create a visible selection difference."
+    },
+    {
+      "id": "M17",
+      "review": "The coordinator creates a fresh entity on each opening; the claimed stale text on reopening is false."
+    },
+    {
+      "id": "M20",
+      "review": "Original Mermaid parse errors appear in preview. Confirmation only requires nonempty text; invalid syntax is not a confirmation gate."
+    },
+    {
+      "id": "M23",
+      "review": "CSS z-index is not a direct GPUI API contract. Compare actual overlay occlusion and stacking rather than adopting its numeric token."
+    }
+  ],
+  "sourceBrowserEvidence": "desktop/gpui/target/verification/insert-parameters-source-20261005-a/receipt.json",
+  "remaining": "Original note/modal styling, Mermaid live preview and image inline bar are still implementation work; this review does not establish their parity.",
+  "retainedFiles": {
+    "response.txt": "beab039f00b1419564cb0093936e6f13b0cff45ab159abf96b1a4ee991f84835",
+    "prompt.txt": "2ac80c3adfaa886ce6db3f2eadbef9fb828ce9b12ee21f2841e455ac96f3163f",
+    "input-bundle.json": "b9868277b92dff735093cbee6931c76ea71cd42be67097d7561be2fb9127e4d4",
+    "process.json": "f90baf00b92caf023b1a2172738a08f0f313aaf5c79a7089eb04de484fd0875d"
+  },
+  "excluded": [
+    "Agent config",
+    "Agent database",
+    "Agent logs",
+    "Skate credentials",
+    "User library"
+  ]
+}

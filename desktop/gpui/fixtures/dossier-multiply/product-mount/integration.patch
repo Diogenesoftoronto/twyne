@@ -1,0 +1,322 @@
+--- a/desktop/gpui/src/dossier_view.rs
++++ b/desktop/gpui/src/dossier_view.rs
+@@ -10,8 +10,9 @@
+         FIELD_LABELS, FilingState, PriorMaterial, STEPS, StepKind, TemplatePiece,
+         WRITING_FORMAT_SUGGESTIONS,
+     },
+     dossier_image_lifecycle::{DossierImageLease, DossierImageLifecycle},
++    dossier_multiply::DossierMultiply,
+     dossier_paper::{DossierPaper, DossierPaperMetrics},
+     dossier_stamp::DossierStampSet,
+     manuscript::timestamp,
+     theme::{self, DISPLAY_FONT, SANS_FONT, SERIF_FONT, TYPEWRITER_FONT},
+@@ -25,14 +26,14 @@
+     slider::{Slider, SliderEvent, SliderState},
+ };
+ use gpui_kit::prelude::*;
+ use gpui_kit::{
+-    AnyElement, App, Context, Entity, EventEmitter, FocusHandle, Focusable, FontWeight,
+-    IntoElement, KeyBinding, MouseButton, PathPromptOptions, Pixels, Render, Role, SharedString,
+-    Subscription, Task, TestSupportExt, Window, canvas, div, font, linear_color_stop,
++    AnyElement, App, Canvas, ContentMask, Context, Entity, EventEmitter, FocusHandle, Focusable,
++    FontWeight, ImageId, IntoElement, KeyBinding, MouseButton, PathPromptOptions, Pixels, Render, Role, SharedString,
++    Subscription, Task, TestSupportExt, Window, WindowId, canvas, div, font, linear_color_stop,
+     linear_gradient, px, relative, rgb,
+ };
+-use std::{collections::BTreeMap, sync::Arc, time::Duration};
++use std::{cell::Cell, collections::BTreeMap, rc::Rc, sync::Arc, time::Duration};
+ 
+ gpui_kit::actions!(
+     dossier,
+     [
+@@ -111,8 +112,30 @@
+ struct ImportTicket {
+     request: u64,
+     generation: u64,
+     reference: bool,
++}
++
++// A scene recording receipt is deliberately distinct from GPU presentation.
++#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
++pub enum DossierFoxingPaintStatus {
++    #[default]
++    Unprepared,
++    Transparent,
++    Prepared,
++    Recorded,
++    Untracked,
++    UnsupportedBackend,
++    StalePreparation,
++    Clipped,
++    PaintRefused,
++}
++
++#[derive(Clone, Copy, Default)]
++struct DossierFoxingPaintReceipt {
++    window: Option<WindowId>,
++    active_image: Option<ImageId>,
++    status: DossierFoxingPaintStatus,
+ }
+ 
+ pub struct DossierView {
+     pub session: DossierSession,
+@@ -138,8 +161,10 @@
+     start_over_confirm: bool,
+     image_lease: Option<DossierImageLease>,
+     paper: Option<Arc<DossierPaper>>,
+     reviewed_stamps: Option<Arc<DossierStampSet>>,
++    foxing: Option<Arc<DossierMultiply>>,
++    foxing_paint: Rc<Cell<DossierFoxingPaintReceipt>>,
+     question_leaf_height: Pixels,
+     question_height: Option<(usize, Pixels)>,
+     _subscriptions: Vec<Subscription>,
+     probe_subscriptions: Vec<Subscription>,
+@@ -328,8 +353,10 @@
+             start_over_confirm: false,
+             image_lease: None,
+             paper: None,
+             reviewed_stamps: None,
++            foxing: None,
++            foxing_paint: Rc::new(Cell::new(DossierFoxingPaintReceipt::default())),
+             question_leaf_height: px(0.),
+             question_height: None,
+             _subscriptions: subscriptions,
+             probe_subscriptions: Vec::new(),
+@@ -358,8 +385,9 @@
+         );
+         let lease = lifecycle.lease(window, cx)?;
+         lease.replace(&self.prepared_images(), window, cx)?;
+         self.image_lease = Some(lease);
++        self.commit_foxing_receipt(window);
+         Ok(())
+     }
+ 
+     pub fn image_lease(&self) -> Option<&DossierImageLease> {
+@@ -384,13 +412,17 @@
+         }
+         let previous_lease = self.image_lease.take();
+         let previous_paper = self.paper.clone();
+         let previous_stamps = self.reviewed_stamps.clone();
++        let previous_foxing = self.foxing.clone();
++        let previous_foxing_paint = self.foxing_paint.get();
+         self.prepare_paper_candidate(window, cx);
+         if let Err(error) = self.attach_image_lifecycle(lifecycle, window, cx) {
+             self.image_lease = previous_lease;
+             self.paper = previous_paper;
+             self.reviewed_stamps = previous_stamps;
++            self.foxing = previous_foxing;
++            self.foxing_paint.set(previous_foxing_paint);
+             return Err(error);
+         }
+         Ok(())
+     }
+@@ -410,11 +442,152 @@
+                         .clone(),
+                 );
+             }
+         }
+-        // Product multiply is currently unmounted. When integrated, include
+-        // its premultiplied_group() here ONLY as an optional tenth image.
++        // Broadsheet has no group. All other prepared groups are tracked as
++        // the optional tenth image, even if this backend cannot upload them.
++        if let Some(image) = self
++            .foxing
++            .as_ref()
++            .and_then(|foxing| foxing.premultiplied_group())
++        {
++            images.push(image.clone());
++        }
+         images
++    }
++
++    /// Preparation/atlas audit seam. Never mount this premultiplied image with
++    /// ordinary img/paint_image; use the guarded final overlay below.
++    pub fn prepared_multiply(&self) -> Option<&Arc<DossierMultiply>> {
++        self.foxing.as_ref()
++    }
++
++    /// Recorded means a scene primitive was recorded, not presented. A
++    /// retained form whose lease has retired is never an active image consumer.
++    pub fn foxing_paint_status(&self) -> DossierFoxingPaintStatus {
++        if self
++            .foxing
++            .as_ref()
++            .is_some_and(|foxing| !foxing.is_transparent())
++            && self
++                .image_lease
++                .as_ref()
++                .is_none_or(|lease| !lease.is_current())
++        {
++            return DossierFoxingPaintStatus::Untracked;
++        }
++        self.foxing_paint.get().status
++    }
++
++    // Commit only after the accepted image lease replacement/resume succeeds.
++    // An old canvas retains this same cell, so identity protects against its
++    // uploading a retired image or overwriting a newer preparation receipt.
++    fn commit_foxing_receipt(&self, window: &Window) {
++        let (active_image, status) = match self.foxing.as_ref() {
++            Some(foxing) if foxing.is_transparent() => {
++                (None, DossierFoxingPaintStatus::Transparent)
++            }
++            Some(foxing) => (
++                foxing.premultiplied_group().map(|image| image.id),
++                DossierFoxingPaintStatus::Prepared,
++            ),
++            None => (None, DossierFoxingPaintStatus::Unprepared),
++        };
++        self.foxing_paint.set(DossierFoxingPaintReceipt {
++            window: Some(window.window_handle().window_id()),
++            active_image,
++            status,
++        });
++    }
++
++    // Constructor/theme/viewport/DPR/resume boundaries only, independently of
++    // whether the ordinary paper preparation matched its existing cache key.
++    fn prepare_multiply_candidate(
++        &mut self,
++        colors: theme::Palette,
++        metrics: Option<DossierPaperMetrics>,
++    ) {
++        let Some(metrics) = metrics else {
++            self.foxing = None;
++            return;
++        };
++        if self
++            .foxing
++            .as_ref()
++            .is_some_and(|foxing| foxing.matches(colors, metrics))
++        {
++            return;
++        }
++        match DossierMultiply::prepare(colors, metrics) {
++            Ok(foxing) => self.foxing = Some(foxing),
++            Err(error) => {
++                self.foxing = None;
++                eprintln!("Could not prepare Dossier foxing: {error:#}");
++            }
++        }
++    }
++
++    // Paint-only and LAST: no layout, hitbox, focus/accessibility node, text
++    // capture, rasterization, cache lookup or atlas retirement occurs here.
++    fn foxing_overlay(&self) -> Option<Canvas<()>> {
++        let foxing = self.foxing.as_ref()?.clone();
++        let image_id = foxing.premultiplied_group()?.id;
++        let lease = self.image_lease.as_ref()?.clone();
++        if !lease.is_current() {
++            return None;
++        }
++        let receipt = self.foxing_paint.clone();
++        Some(
++            canvas(
++                |_, _, _| (),
++                move |bounds, (), window, cx| {
++                    let current = receipt.get();
++                    if current.window != Some(window.window_handle().window_id())
++                        || !lease.is_current()
++                        || current.active_image != Some(image_id)
++                    {
++                        return;
++                    }
++                    let record = |status| {
++                        receipt.set(DossierFoxingPaintReceipt { status, ..current });
++                    };
++                    let metrics = foxing.metrics();
++                    if f32::from(bounds.size.width).to_bits() != metrics.width().to_bits()
++                        || f32::from(bounds.size.height).to_bits()
++                            != metrics.height().to_bits()
++                        || window.scale_factor().to_bits() != metrics.scale_factor().to_bits()
++                        || !foxing.matches(*theme::palette(cx), metrics)
++                    {
++                        record(DossierFoxingPaintStatus::StalePreparation);
++                        return;
++                    }
++                    if !window.supports_destination_multiply() {
++                        record(DossierFoxingPaintStatus::UnsupportedBackend);
++                        return;
++                    }
++                    let visible = bounds.intersect(&window.content_mask().bounds);
++                    if visible.is_empty() {
++                        record(DossierFoxingPaintStatus::Clipped);
++                        return;
++                    }
++                    let result = window.with_content_mask(
++                        Some(ContentMask { bounds: visible }),
++                        |window| foxing.paint_on_opaque_backdrop(bounds, window, cx),
++                    );
++                    record(if result.is_ok() {
++                        DossierFoxingPaintStatus::Recorded
++                    } else {
++                        // The core's opaque-window, ancestor opacity, mask and
++                        // exact device-grid checks refuse before any upload.
++                        // Refusal leaves ordinary descendants paintable.
++                        DossierFoxingPaintStatus::PaintRefused
++                    });
++                },
++            )
++            .absolute()
++            .inset_0()
++            .size_full(),
++        )
+     }
+ 
+     pub fn prepare_paper(&mut self, window: &Window, cx: &mut Context<Self>) {
+         // A retained unmounted form is not a new consumer on a theme event.
+@@ -426,23 +599,29 @@
+             return;
+         }
+         let previous_paper = self.paper.clone();
+         let previous_stamps = self.reviewed_stamps.clone();
++        let previous_foxing = self.foxing.clone();
++        let previous_foxing_paint = self.foxing_paint.get();
+         self.prepare_paper_candidate(window, cx);
+         if let Some(lease) = &self.image_lease {
+             if let Err(error) = lease.replace(&self.prepared_images(), window, cx) {
+                 // Candidate preparation cannot upload. Preserve the accepted
+                 // pointers/lease on refusal, rather than paint untracked data.
+                 // Existing paint guards refuse a now-stale palette/DPR.
+                 self.paper = previous_paper;
+                 self.reviewed_stamps = previous_stamps;
++                self.foxing = previous_foxing;
++                self.foxing_paint.set(previous_foxing_paint);
+                 self.error = Some(
+                     "The Dossier paper could not be prepared. Your answers remain here.".into(),
+                 );
+                 eprintln!("Could not track Dossier prepared images: {error:#}");
+                 cx.notify();
++                return;
+             }
+         }
++        self.commit_foxing_receipt(window);
+     }
+ 
+     fn prepare_paper_candidate(&mut self, window: &Window, cx: &mut Context<Self>) {
+         self.prepare_reviewed_stamps(window, cx);
+@@ -452,8 +631,9 @@
+             f32::from(viewport.width),
+             f32::from(viewport.height),
+             window.scale_factor(),
+         );
++        self.prepare_multiply_candidate(colors, metrics.as_ref().ok().copied());
+         if metrics.as_ref().is_ok_and(|metrics| {
+             self.paper
+                 .as_ref()
+                 .is_some_and(|paper| paper.matches(colors, *metrics))
+@@ -2464,12 +2644,14 @@
+             }))
+             .on_action(cx.listener(|this, _: &DossierNext, window, cx| this.next(window, cx)))
+             .on_action(cx.listener(|this, _: &DossierCancel, _, cx| this.cancel(cx)))
+             .relative()
++            .overflow_hidden()
+             .when_some(self.paper.clone(), |root, paper| {
+                 root.child(paper.background())
+             })
+             .child(frame)
++            .when_some(self.foxing_overlay(), |root, overlay| root.child(overlay))
+     }
+ }
+ 
+ #[cfg(all(test, feature = "ui-tests"))]

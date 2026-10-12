@@ -1,0 +1,88 @@
+{
+  "usage": "Original Manager assistance raw symbol spans only; Libre Baskerville 16px/24px at 600/normal",
+  "helper": "theme::cast_raw_glyph_font()",
+  "fallbackOrder": [
+    "Liberation Serif",
+    "Adwaita Mono"
+  ],
+  "file": "fonts/LiberationSerif-Bold.ttf",
+  "sha256": "d754ba427cfe0bca54ae052384baa8f842da5bd6550ad4da024ac441e7a7d5ce",
+  "sourceSha256": "d754ba427cfe0bca54ae052384baa8f842da5bd6550ad4da024ac441e7a7d5ce",
+  "bytes": 370096,
+  "source": "/usr/share/fonts/liberation-serif-fonts/LiberationSerif-Bold.ttf",
+  "package": "Fedora liberation-serif-fonts; actual face Version 2.1.5",
+  "family": "Liberation Serif",
+  "postScriptName": "LiberationSerif-Bold",
+  "version": "Version 2.1.5",
+  "copyright": "Digitized data copyright (c) 2010 Google Corporation.\nCopyright (c) 2012 Red Hat, Inc.",
+  "weight": 700,
+  "style": "normal",
+  "unitsPerEm": 2048,
+  "licenseFile": "licenses/cast-raw-liberation-serif-OFL.txt",
+  "licenseSha256": "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b",
+  "licenseSource": "/usr/share/licenses/liberation-serif-fonts/LICENSE",
+  "testGlyphs": {
+    "♠": {
+      "glyphId": 2223,
+      "advanceUnits": 1088
+    },
+    "♥": {
+      "glyphId": 2225,
+      "advanceUnits": 1216
+    },
+    "♦": {
+      "glyphId": 2226,
+      "advanceUnits": 1045
+    },
+    "✦": null,
+    "♣": {
+      "glyphId": 2224,
+      "advanceUnits": 1344
+    }
+  },
+  "originalGlyphs": [
+    {
+      "text": "♠",
+      "family": "Liberation Serif",
+      "glyphId": 2223,
+      "advanceAt16Px": 8.5,
+      "browserDomAdvancePx": 8.5
+    },
+    {
+      "text": "♥",
+      "family": "Liberation Serif",
+      "glyphId": 2225,
+      "advanceAt16Px": 9.5,
+      "browserDomAdvancePx": 9.5
+    },
+    {
+      "text": "♦",
+      "family": "Liberation Serif",
+      "glyphId": 2226,
+      "advanceAt16Px": 8.1640625,
+      "browserDomAdvancePx": 8.171875
+    },
+    {
+      "text": "✦",
+      "family": "Adwaita Mono",
+      "glyphId": 6836,
+      "advanceAt16Px": 9.6,
+      "browserDomAdvancePx": 9.609375
+    },
+    {
+      "text": "♣",
+      "family": "Liberation Serif",
+      "glyphId": 2224,
+      "advanceAt16Px": 10.5,
+      "browserDomAdvancePx": 10.5
+    }
+  ],
+  "reusedFont": {
+    "file": "fonts/AdwaitaMono-Regular.ttf",
+    "sha256": "4d3185765317b011b959ad2f6a404cd1e5d542ed13f120d1e8d1f5c7b9c99562"
+  },
+  "browserEvidence": "fixtures/cast/browser-manager-raw-glyphs.json",
+  "copy": "Byte-identical original TTF; no derivation",
+  "badgeChainSourceDefaultAndTypstUnchanged": true,
+  "rasterBoundary": "Original requested600 selects Bold700 for suits and Regular400 for star. Exact face/glyph/advance and nonzero Linux masks are verified separately from Chromium synthesis/hinting/GPU pixels and other OS rendering."
+}

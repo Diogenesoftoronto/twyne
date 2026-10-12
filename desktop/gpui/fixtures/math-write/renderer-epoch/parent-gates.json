@@ -1,0 +1,22 @@
+{
+  "status": "pass",
+  "run": "2026-10-05T06:10:57.069966+00:00",
+  "patchApplied": true,
+  "patchSha256": "212333b15c544d9dc0a4283587c16bd1907ee4f032cb5268a198fe8b298d50b6",
+  "log": "desktop/gpui/target/verification/math-atom-renderer-lifecycle-tests-reviewed.log",
+  "logSha256": "4b802ad7f96ba1d4b7c05ceb1e7bcf4e7727ac32255b6671954fe673fd37de78",
+  "tests": 12,
+  "testedSourceHashes": {
+    "desktop/gpui/src/editor/atom_renderer_lifecycle.rs": "b4a9cc1de8444001ca53de5f4d472f336ca9b08e5444fd8b2260529885663920",
+    "desktop/gpui/src/editor/view.rs": "1ea88d3aa7cedb72db26f0013c4d4ac64ed2d46a100a99451bda175bf867784f",
+    "desktop/gpui/src/editor/view_math_source.rs": "5edb0412eee1c5cf023182ab2dd2e5570994624220e9a10acee4d011b001bb0d",
+    "desktop/gpui/fixtures/math-write/renderer-epoch/lifecycle_tests.rs": "8837c01c58f208c20b16cc7fc5fc51338eefd702fdc91b43ff699da619256656",
+    "desktop/gpui/Cargo.toml": "636da6736969cd1a16878750c328ce28ab7b9bf7ee34b1093aaa4ed04f9bd986",
+    "desktop/gpui/Cargo.lock": "44f147eca43dddc0f20802a4f0cf05eb36596cf3e6cf86c00ddc15d12c617c83"
+  },
+  "proofLimits": [
+    "Deterministic actual foreground-completion/entity guard tests; no async scheduling/OS input acceptance",
+    "Synchronous compiler work already executing cannot be interrupted",
+    "Current Source geometry and browser/renderer parity remain unadopted"
+  ]
+}

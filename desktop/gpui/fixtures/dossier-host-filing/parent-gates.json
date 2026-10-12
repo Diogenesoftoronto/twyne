@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "scope": "manual Dossier token-qualified host filing; deterministic mounted callbacks and real local durable store",
+  "previousGate": {
+    "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests --bin twyne-desktop app::dossier_filing_tests::",
+    "log": "/tmp/twyne-gpui-dossier-host-corrected-gate.log",
+    "passed": 8,
+    "failed": 0,
+    "filtered": 86,
+    "seconds": 8.8,
+    "logSha256": "36aa908f42cd966c3aaa6287309792ca09e80b9c96099978e991d7c3f3147adb"
+  },
+  "followup": "Writer retirement and import qualification now passed: Dossier library family58 and mounted host8.",
+  "currentFiles": {
+    "desktop/gpui/src/app/dossier_filing_tests.rs": "0959086ed1bcdeb19e90ace46a1a8af99837977a59a32eb11fe5958e4e50031a",
+    "desktop/gpui/src/dossier_view.rs": "45fa2e9de0c9c7d034d0dc308ba6fdd44753fe897cfdf620c9d07f68017ead31",
+    "desktop/gpui/src/app.rs": "ca951e464b6c44e2a7575b9a501027116eb53d5cd5d1e4db0337ab89c338bcee",
+    "desktop/gpui/src/dossier.rs": "3e01062a4c160e377593cdc48e82b5564dcdee14ff43d680b9d2318cb035e893"
+  },
+  "corrections": [
+    "Imported required AppContext trait for host tests.",
+    "Used try_find().is_none() for an absent error element."
+  ],
+  "boundaries": [
+    "Deterministic callback/thread-state tests, not actual OS input or async thread-race acceptance.",
+    "Conversation host/live provider remain unmounted."
+  ],
+  "currentGate": {
+    "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests --bin twyne-desktop app::dossier_filing_tests::",
+    "log": "/tmp/twyne-gpui-dossier-host-retirement-gate.log",
+    "logSha256": "3958d05ee29a78bf57898d4ff3ea5bd162d1883dc8dd9df851fcb51b2f0e4ea1",
+    "passed": 8,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 86,
+    "seconds": 8.81
+  }
+}

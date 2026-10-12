@@ -1,0 +1,6 @@
+Twyne Body: static native UI instances of the original Lora 3.008 variable fonts.
+2026-10-04: Instantiated original wght coordinates 400 and 700 in upright and italic.
+Internal family and face names changed to Twyne Body to respect the Reserved Font Name.
+Original outlines, spacing, features and hinting follow deterministic variable instancing; no glyph redesign.
+The original copyright, RFN declaration and SIL OFL 1.1 remain in the accompanying license.
+Original source variable files and the existing Typst static font book remain unchanged.

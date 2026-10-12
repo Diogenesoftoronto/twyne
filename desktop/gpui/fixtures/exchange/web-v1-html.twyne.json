@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "exportedAt": "2025-01-01T00:00:00.000Z",
+  "title": "Legacy HTML manuscript",
+  "brief": {
+    "answers": {
+      "workingTitle": "Field and form",
+      "format": "Essay",
+      "audience": "Writers who keep notebooks",
+      "goal": "Make the ordinary visible",
+      "tone": "Attentive and direct",
+      "constraints": "Keep the source, marks, and uncertainty",
+      "successSignal": "The reader notices one small thing"
+    },
+    "attachments": [
+      {
+        "id": "attachment-document",
+        "kind": "document",
+        "title": "A clipped field note",
+        "text": "First line\r\nSecond line — Å",
+        "why": "A detail the draft should preserve",
+        "addedAt": 1791072000000
+      },
+      {
+        "id": "attachment-link",
+        "kind": "link",
+        "title": "A primary source",
+        "url": "https://example.com/source?q=field&n=1",
+        "why": "The source for a claim",
+        "addedAt": 1791072000001
+      }
+    ],
+    "completedAt": 1791072000000,
+    "updatedAt": 1791072000002
+  },
+  "folios": [
+    {
+      "id": "folio-notes-non-uuid",
+      "name": "Field notes",
+      "type": "notes",
+      "createdAt": 1791071999995,
+      "updatedAt": 1791072000001,
+      "layout": {
+        "width": "normal",
+        "margin": "roomy",
+        "runningHeader": false,
+        "pageNumbers": false,
+        "pagination": "paginated"
+      },
+      "header": "",
+      "footer": ""
+    }
+  ],
+  "content": {
+    "html": "<h1>Legacy title</h1><p>Retain <em>these marks</em> and &amp; entities.</p>"
+  }
+}

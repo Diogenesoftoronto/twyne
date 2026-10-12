@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "status": "FROZEN_FOR_PARENT_REVIEW",
+  "scope": "NEW desktop/gpui/fixtures/dossier-multiply/source-stacking-audit only",
+  "newRuntimeEdits": [],
+  "unappliedPatches": [],
+  "newExecution": {
+    "tests": false,
+    "cargo": false,
+    "devenv": false,
+    "browser": false,
+    "native": false,
+    "network": false,
+    "providers": false
+  },
+  "authorshipOperations": [
+    "read source and retained receipt",
+    "author documentation/JSON inventory",
+    "decode authored JSON during hash inventory",
+    "compute exact file/excerpt hashes"
+  ],
+  "outputs": [
+    {
+      "path": "README.md",
+      "bytes": 7778,
+      "sha256": "7c1110cd76c94548f4f99c78c32fadd19a91591bd6e1f98db95e46d149375ab2"
+    },
+    {
+      "path": "inventory.json",
+      "bytes": 8188,
+      "sha256": "bff11d93b19ae005551c08d76af39c2205eeb99e99bb85db9a6a1e22aa512d94"
+    },
+    {
+      "path": "proof-cases.json",
+      "bytes": 4401,
+      "sha256": "bf00e341fa2ad21d8a361d120e8c8bfbf7c5cf74fbe97c58455e0bf099769354"
+    },
+    {
+      "path": "input-pins.json",
+      "bytes": 20852,
+      "sha256": "fed2ee91d02bf2d43d83674bbfed16cca94dc17d66e0707ab085e969bd438a9e"
+    }
+  ],
+  "proofBoundary": "Static source declarations/code order and qualified CSS inferences only. Pending actual cases are not executed; existing single-window multiply probe remains at its original scope."
+}

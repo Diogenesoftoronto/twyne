@@ -1,0 +1,463 @@
+{
+  "system": "actual Linux Cosmic/Swash text system",
+  "boundary": "direct native shaping probe; actual Root File control screenshot is separate",
+  "browserEvidence": "fixtures/source_view/font-evidence/file-arrow-actual-app.json",
+  "rows": [
+    {
+      "requestedFamily": "Twyne Button Sans",
+      "weight": 400.0,
+      "requestedFontId": "FontId(0)",
+      "source": "File",
+      "fontSizePx": 12.0,
+      "widthPx": 19.979999542236328,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(0)",
+          "glyphs": [
+            {
+              "id": 35,
+              "index": 0,
+              "xPx": 0.0
+            },
+            {
+              "id": 167,
+              "index": 1,
+              "xPx": 6.63599967956543
+            },
+            {
+              "id": 183,
+              "index": 2,
+              "xPx": 9.815999984741211
+            },
+            {
+              "id": 148,
+              "index": 3,
+              "xPx": 12.88800048828125
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Twyne Button Sans",
+      "weight": 400.0,
+      "requestedFontId": "FontId(0)",
+      "source": "▾",
+      "fontSizePx": 12.0,
+      "widthPx": 7.200000286102295,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(1)",
+          "glyphs": [
+            {
+              "id": 3090,
+              "index": 0,
+              "xPx": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Twyne Button Sans",
+      "weight": 600.0,
+      "requestedFontId": "FontId(0)",
+      "source": "File",
+      "fontSizePx": 12.0,
+      "widthPx": 19.979999542236328,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(0)",
+          "glyphs": [
+            {
+              "id": 35,
+              "index": 0,
+              "xPx": 0.0
+            },
+            {
+              "id": 167,
+              "index": 1,
+              "xPx": 6.63599967956543
+            },
+            {
+              "id": 183,
+              "index": 2,
+              "xPx": 9.815999984741211
+            },
+            {
+              "id": 148,
+              "index": 3,
+              "xPx": 12.88800048828125
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Twyne Button Sans",
+      "weight": 600.0,
+      "requestedFontId": "FontId(0)",
+      "source": "▾",
+      "fontSizePx": 12.0,
+      "widthPx": 7.200000286102295,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(1)",
+          "glyphs": [
+            {
+              "id": 3090,
+              "index": 0,
+              "xPx": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 400.0,
+      "requestedFontId": "FontId(2)",
+      "source": "File",
+      "fontSizePx": 12.0,
+      "widthPx": 18.79199981689453,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(2)",
+          "glyphs": [
+            {
+              "id": 35,
+              "index": 0,
+              "xPx": 0.0
+            },
+            {
+              "id": 167,
+              "index": 1,
+              "xPx": 6.420000076293945
+            },
+            {
+              "id": 183,
+              "index": 2,
+              "xPx": 9.300000190734863
+            },
+            {
+              "id": 148,
+              "index": 3,
+              "xPx": 11.97599983215332
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 400.0,
+      "requestedFontId": "FontId(2)",
+      "source": "▾",
+      "fontSizePx": 12.0,
+      "widthPx": 8.027999877929688,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 3943,
+              "index": 0,
+              "xPx": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 600.0,
+      "requestedFontId": "FontId(4)",
+      "source": "File",
+      "fontSizePx": 12.0,
+      "widthPx": 20.38800048828125,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(4)",
+          "glyphs": [
+            {
+              "id": 35,
+              "index": 0,
+              "xPx": 0.0
+            },
+            {
+              "id": 167,
+              "index": 1,
+              "xPx": 6.671999931335449
+            },
+            {
+              "id": 183,
+              "index": 2,
+              "xPx": 9.960000038146973
+            },
+            {
+              "id": 148,
+              "index": 3,
+              "xPx": 13.163999557495117
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "DM Sans",
+      "weight": 600.0,
+      "requestedFontId": "FontId(4)",
+      "source": "▾",
+      "fontSizePx": 12.0,
+      "widthPx": 7.200000286102295,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(7)",
+          "glyphs": [
+            {
+              "id": 3090,
+              "index": 0,
+              "xPx": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Noto Sans Math",
+      "weight": 400.0,
+      "requestedFontId": "FontId(8)",
+      "source": "File",
+      "fontSizePx": 12.0,
+      "widthPx": 19.187999725341797,
+      "primaryContainsArrow": true,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(8)",
+          "glyphs": [
+            {
+              "id": 9,
+              "index": 0,
+              "xPx": 0.0
+            },
+            {
+              "id": 90,
+              "index": 1,
+              "xPx": 6.227999687194824
+            },
+            {
+              "id": 95,
+              "index": 2,
+              "xPx": 9.323999404907227
+            },
+            {
+              "id": 86,
+              "index": 3,
+              "xPx": 12.419999122619629
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Noto Sans Math",
+      "weight": 400.0,
+      "requestedFontId": "FontId(8)",
+      "source": "▾",
+      "fontSizePx": 12.0,
+      "widthPx": 5.544000148773193,
+      "primaryContainsArrow": true,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(8)",
+          "glyphs": [
+            {
+              "id": 4754,
+              "index": 0,
+              "xPx": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Noto Sans Math",
+      "weight": 600.0,
+      "requestedFontId": "FontId(8)",
+      "source": "File",
+      "fontSizePx": 12.0,
+      "widthPx": 19.187999725341797,
+      "primaryContainsArrow": true,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(8)",
+          "glyphs": [
+            {
+              "id": 9,
+              "index": 0,
+              "xPx": 0.0
+            },
+            {
+              "id": 90,
+              "index": 1,
+              "xPx": 6.227999687194824
+            },
+            {
+              "id": 95,
+              "index": 2,
+              "xPx": 9.323999404907227
+            },
+            {
+              "id": 86,
+              "index": 3,
+              "xPx": 12.419999122619629
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Noto Sans Math",
+      "weight": 600.0,
+      "requestedFontId": "FontId(8)",
+      "source": "▾",
+      "fontSizePx": 12.0,
+      "widthPx": 5.544000148773193,
+      "primaryContainsArrow": true,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(8)",
+          "glyphs": [
+            {
+              "id": 4754,
+              "index": 0,
+              "xPx": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Noto Sans",
+      "weight": 400.0,
+      "requestedFontId": "FontId(10)",
+      "source": "File",
+      "fontSizePx": 12.0,
+      "widthPx": 19.187999725341797,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(10)",
+          "glyphs": [
+            {
+              "id": 41,
+              "index": 0,
+              "xPx": 0.0
+            },
+            {
+              "id": 76,
+              "index": 1,
+              "xPx": 6.227999687194824
+            },
+            {
+              "id": 79,
+              "index": 2,
+              "xPx": 9.323999404907227
+            },
+            {
+              "id": 72,
+              "index": 3,
+              "xPx": 12.419999122619629
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Noto Sans",
+      "weight": 400.0,
+      "requestedFontId": "FontId(10)",
+      "source": "▾",
+      "fontSizePx": 12.0,
+      "widthPx": 8.027999877929688,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 3943,
+              "index": 0,
+              "xPx": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Noto Sans",
+      "weight": 600.0,
+      "requestedFontId": "FontId(10)",
+      "source": "File",
+      "fontSizePx": 12.0,
+      "widthPx": 19.187999725341797,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(10)",
+          "glyphs": [
+            {
+              "id": 41,
+              "index": 0,
+              "xPx": 0.0
+            },
+            {
+              "id": 76,
+              "index": 1,
+              "xPx": 6.227999687194824
+            },
+            {
+              "id": 79,
+              "index": 2,
+              "xPx": 9.323999404907227
+            },
+            {
+              "id": 72,
+              "index": 3,
+              "xPx": 12.419999122619629
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "requestedFamily": "Noto Sans",
+      "weight": 600.0,
+      "requestedFontId": "FontId(10)",
+      "source": "▾",
+      "fontSizePx": 12.0,
+      "widthPx": 8.027999877929688,
+      "primaryContainsArrow": false,
+      "selectedRuns": [
+        {
+          "fontId": "FontId(6)",
+          "glyphs": [
+            {
+              "id": 3943,
+              "index": 0,
+              "xPx": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

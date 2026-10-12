@@ -1,0 +1,31 @@
+{
+  "system": "Actual Linux Cosmic/Swash platform text system",
+  "dmSans600Resolves700": true,
+  "dmSansRows": [
+    {
+      "requestedWeight": 400.0,
+      "fontId": "FontId(0)",
+      "source": "Save note",
+      "widthPx": 54.407997131347656
+    },
+    {
+      "requestedWeight": 600.0,
+      "fontId": "FontId(2)",
+      "source": "Save note",
+      "widthPx": 57.39599609375
+    },
+    {
+      "requestedWeight": 700.0,
+      "fontId": "FontId(2)",
+      "source": "Save note",
+      "widthPx": 57.39599609375
+    }
+  ],
+  "specialElite": {
+    "source": "PLACE NOTE",
+    "fontSizePx": 11.2,
+    "untrackedWidthPx": 63.77109146118164,
+    "trackingPx": 2.016,
+    "cssAdvanceIncludingFinalTrackingPx": 83.93109130859375
+  }
+}

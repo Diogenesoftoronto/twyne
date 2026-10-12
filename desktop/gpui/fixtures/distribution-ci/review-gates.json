@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-05T02:19:36.239938+00:00",
+  "status": "frozen-unapplied",
+  "scope": "Linux-host static YAML/patch rehearsal and synthetic bootstrap guards; no actual CI/OS/distribution runtime proof",
+  "checks": {
+    "bun": {
+      "command": "rtk proxy bun test desktop/gpui/fixtures/distribution-ci",
+      "pass": 40,
+      "fail": 0,
+      "assertions": 162
+    },
+    "typescript": {
+      "scope": "Only owned distribution-ci TypeScript; strict, noEmit, existing cached dependencies",
+      "exitCode": 0
+    },
+    "format": {
+      "scope": "Only owned TypeScript/JSON/HANDOFF matched by scoped Prettier check",
+      "exitCode": 0
+    },
+    "patch": {
+      "command": "rtk proxy git apply --check desktop/gpui/fixtures/distribution-ci/workflow.patch",
+      "exitCode": 0,
+      "sharedWorkflowState": "before",
+      "scratchForwardAndReverseChecked": true
+    }
+  },
+  "primaryMetadata": {
+    "rtkVersion": "v0.36.0",
+    "selectedArchivePins": 5,
+    "checksumBytesFetched": 838,
+    "checksumSha256": "2206d1e92ce695ad8a210ffd629822cce457afffee908a4c09c33aabab435348"
+  },
+  "operations": {
+    "realReleaseArchivesDownloaded": 0,
+    "downloadedExecutablesRun": 0,
+    "installs": 0,
+    "cargoRuns": 0,
+    "devenvRuns": 0,
+    "sharedFilesChangedByThisSlice": 0
+  },
+  "pending": [
+    "Parent application of workflow.patch",
+    "Real RTK release archive listing/extraction and execution",
+    "Actual three-OS GitHub Actions run",
+    "macOS/Windows fixture execution",
+    "Bundle/install/signing/clean-host launch"
+  ],
+  "files": [
+    {
+      "path": "bootstrap-rtk.ts",
+      "sha256": "1677b0dbdc68760bdaacb180e34acf13ae5d53db16c391c44071f5cee0e7bb78",
+      "bytes": 8821
+    },
+    {
+      "path": "bootstrap-rtk.test.ts",
+      "sha256": "94a9b564e7edf18f3ae1ec8ec5cc733420571c2f4479e7d2e953c4b831e457ed",
+      "bytes": 11048
+    },
+    {
+      "path": "workflow-policy.ts",
+      "sha256": "dfc05366975adbe91151be5165946af93ee25837cf40bd1de71d0cad15f21794",
+      "bytes": 12041
+    },
+    {
+      "path": "workflow-check.test.ts",
+      "sha256": "664ae90e47c985b07ace30f740059dbc796240c10603a284ea8976a1c9ab9d18",
+      "bytes": 9193
+    },
+    {
+      "path": "workflow.before.yml",
+      "sha256": "01c41498f517c4597af538c1a99e4d7008149d7547f54df458da28d58f64572f",
+      "bytes": 2705
+    },
+    {
+      "path": "workflow.after.yml",
+      "sha256": "c60d7b0f3e4769265542e3883b3fbf1b65a64089f4ab7874a2e3daf5f3a752b3",
+      "bytes": 3979
+    },
+    {
+      "path": "workflow.patch",
+      "sha256": "cb3e863a967592f4c21bff9ef8fcbfb90f3e74efc41e9b46138f8300bfbb6591",
+      "bytes": 4224
+    },
+    {
+      "path": "rtk-release.json",
+      "sha256": "e99994eb2184b8d657d6bed2a775405adec4a4a59ae8523f5710975d0a6b91e4",
+      "bytes": 2290
+    },
+    {
+      "path": "rtk-checksums.txt",
+      "sha256": "2206d1e92ce695ad8a210ffd629822cce457afffee908a4c09c33aabab435348",
+      "bytes": 838
+    },
+    {
+      "path": "HANDOFF.md",
+      "sha256": "adfae88db4c6cd6e925ca001bc3d21bbe440d2ddab388047ca9feee1434b82b5",
+      "bytes": 7042
+    }
+  ]
+}

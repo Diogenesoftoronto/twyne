@@ -1,0 +1,74 @@
+You are an advisory Sakana Max coding subagent for the Twyne GPUI port. You are not alone in the codebase. Do not revert any other edits. Your exclusive responsibility is a proposal for the single file named below. No tools, network, or filesystem access is needed; all authoritative inputs are below. The coordinator owns integration, shared modules, UI host, cargo, and verification. Preserve exact source behavior, explain any limits, and do not claim runtime tests were executed.
+
+Own proposal only: desktop/gpui/src/gen_ui/budget.rs. Port the exact shared TypeScript request budget to a Rust struct SystemOneBudget using f64 milliseconds and a queue; public methods wait(now:f64)->f64, spend(now:f64), back_off(now:f64), reset(). Default starts empty and backoffUntil=0. Preserve <= expiry boundary, shared pause-driven users, backoff overwrite semantics, earliest insertion not sorting, and zero maximum behavior. Add a few meaningful unit tests. No wall-clock, async transport, serialization or global singleton in this file. The host will own one shared instance. Input timestamps are finite epoch milliseconds, but can move backwards. No new dependencies.
+
+Return ONLY one JSON object with keys code (complete Rust source as a string), notes (array of strings), and cases (array of concrete verification cases). No Markdown fences.
+
+AUTHORITATIVE INPUT src/utils/system-one-budget.ts (line slice (0, None)):
+/**
+ * One request budget for every System One caller that runs on a typing pause.
+ *
+ * Quick review and the in-flow tools both fire on pauses in the same editor.
+ * Separate limits would let the pair spend twice the rate either was sized
+ * for; one shared window keeps them honest with each other.
+ */
+const WINDOW_MS = 60_000;
+const MAX_PER_WINDOW = 12;
+const BACKOFF_MS = 30_000;
+
+const calls: number[] = [];
+let backoffUntil = 0;
+
+/** Milliseconds to wait before a call is allowed; 0 means go now. */
+export function systemOneWait(now = Date.now()): number {
+  while (calls.length && calls[0] <= now - WINDOW_MS) calls.shift();
+  return Math.max(
+    backoffUntil - now,
+    calls.length >= MAX_PER_WINDOW ? calls[0] + WINDOW_MS - now : 0,
+    0,
+  );
+}
+
+/** Record a call that is about to be made. */
+export function spendSystemOne(now = Date.now()): void {
+  calls.push(now);
+}
+
+/** A failed call quiets every pause-driven caller for a while. */
+export function backOffSystemOne(now = Date.now()): void {
+  backoffUntil = now + BACKOFF_MS;
+}
+
+export function __resetSystemOneBudgetForTests(): void {
+  calls.length = 0;
+  backoffUntil = 0;
+}
+
+AUTHORITATIVE INPUT src/utils/system-one-budget.test.ts (line slice (0, None)):
+import { beforeEach, describe, expect, test } from "bun:test";
+import {
+  __resetSystemOneBudgetForTests,
+  backOffSystemOne,
+  spendSystemOne,
+  systemOneWait,
+} from "./system-one-budget";
+
+beforeEach(() => __resetSystemOneBudgetForTests());
+
+describe("shared System One budget", () => {
+  test("allows twelve calls a minute across every caller", () => {
+    for (let i = 0; i < 12; i++) {
+      expect(systemOneWait(1000 + i)).toBe(0);
+      spendSystemOne(1000 + i);
+    }
+    expect(systemOneWait(1012)).toBe(60_000 - 12);
+    expect(systemOneWait(61_001)).toBe(0);
+  });
+
+  test("a failure quiets every caller for thirty seconds", () => {
+    backOffSystemOne(5000);
+    expect(systemOneWait(5000)).toBe(30_000);
+    expect(systemOneWait(35_000)).toBe(0);
+  });
+});
+

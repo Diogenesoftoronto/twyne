@@ -1,0 +1,12 @@
+--- desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/parent-remount-capture-adoption/check-native.py
++++ desktop/gpui/fixtures/dossier-image-lifecycle/native-proof/parent-drawer-capture-adoption/check-native.py
+@@ -611,6 +611,9 @@
+             state = ui.state()
+             if ui.node(state, "drawer") is None:
+                 ui.click("toggle-library")
++            ui.wait_state("actual opened library scroll owner", lambda state:
++                ui.node(state, "drawer") is not None
++                and ui.visible(state, ui.node(state, "drawer-content")))
+             ui.scroll_to("drawer-settings", "drawer-content")
+             ui.click("drawer-settings")
+             ui.wait_state("actual Settings route", lambda state: ui.node(state, "settings-page") is not None)

@@ -1,0 +1,1525 @@
+{
+  "purpose": "Current Source CSS natural inline-span/glyph diagnostic only. No wrapper, paragraph, display-line, native GPUI or raster parity.",
+  "provenance": {
+    "engineVersion": "0.18.1",
+    "sourceCssVersion": "0.16.47",
+    "sourceCssSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+    "engineCssSha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b"
+  },
+  "browser": {
+    "protocolVersion": "1.3",
+    "product": "Chrome/150.0.7871.46",
+    "revision": "@5b586c06e0d27582900f17e2d59c5370d8d6e0bb",
+    "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+    "jsVersion": "15.0.245.13"
+  },
+  "browserReceiptSha256": "28cacb450519f7096b64882b51962c7e1d25ee4edc92ce0f1d823ce839112ac6",
+  "profiles": {
+    "accepted": 11,
+    "refused": 4
+  },
+  "maximumErrorsPx": {
+    "x": 0,
+    "baseline": 0,
+    "advance": 0.0005845947265470386
+  },
+  "comparisons": [
+    {
+      "id": "ordinary",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "x",
+            "x": 0,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 12.449981689453125,
+            "occupiedWidth": 12.453125
+          },
+          "actual": {
+            "text": "x",
+            "x": 0,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 12.449937499999999
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00004418945312600897
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 17.28125,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 17.28125,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "1",
+            "x": 39.046875,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "1",
+            "x": 39.046875,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        }
+      ]
+    },
+    {
+      "id": "fraction",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "1",
+            "x": 2.609375,
+            "baseline": 7.515625,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "1",
+            "x": 2.609375,
+            "baseline": 7.515625,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 13.5,
+            "baseline": 7.515625,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 13.5,
+            "baseline": 7.515625,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "x",
+            "x": 30.4375,
+            "baseline": 7.515625,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 12.449981689453125,
+            "occupiedWidth": 12.453125
+          },
+          "actual": {
+            "text": "x",
+            "x": 30.4375,
+            "baseline": 7.515625,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 12.449937499999999
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00004418945312600897
+        },
+        {
+          "expected": {
+            "text": "2",
+            "x": 42.890625,
+            "baseline": 1.28125,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "2",
+            "x": 42.890625,
+            "baseline": 1.28125,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        },
+        {
+          "expected": {
+            "text": "1",
+            "x": 23.515625,
+            "baseline": -8.578125,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "1",
+            "x": 23.515625,
+            "baseline": -8.578125,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        }
+      ]
+    },
+    {
+      "id": "radical",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "x",
+            "x": 21.765625,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 12.449981689453125,
+            "occupiedWidth": 12.453125
+          },
+          "actual": {
+            "text": "x",
+            "x": 21.765625,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 12.449937499999999
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00004418945312600897
+        },
+        {
+          "expected": {
+            "text": "2",
+            "x": 34.21875,
+            "baseline": -6.296875,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "2",
+            "x": 34.21875,
+            "baseline": -6.296875,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 51.015625,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 51.015625,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "y",
+            "x": 72.78125,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 10.665191650390625,
+            "occupiedWidth": 10.671875
+          },
+          "actual": {
+            "text": "y",
+            "x": 72.78125,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 10.665156249999999
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00003540039062599476
+        },
+        {
+          "expected": {
+            "text": "2",
+            "x": 84.234375,
+            "baseline": -6.296875,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "2",
+            "x": 84.234375,
+            "baseline": -6.296875,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        }
+      ]
+    },
+    {
+      "id": "scripts",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "x",
+            "x": 0,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 12.449981689453125,
+            "occupiedWidth": 12.453125
+          },
+          "actual": {
+            "text": "x",
+            "x": 0,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 12.449937499999999
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00004418945312600897
+        },
+        {
+          "expected": {
+            "text": "i",
+            "x": 12.453125,
+            "baseline": 6.03125,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 7.5091705322265625,
+            "occupiedWidth": 7.515625
+          },
+          "actual": {
+            "text": "i",
+            "x": 12.453125,
+            "baseline": 6.03125,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 7.509140625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000029907226562819744
+        },
+        {
+          "expected": {
+            "text": "n",
+            "x": 12.453125,
+            "baseline": -8.78125,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 13.059432983398438,
+            "occupiedWidth": 13.0625
+          },
+          "actual": {
+            "text": "n",
+            "x": 12.453125,
+            "baseline": -8.78125,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 13.059375
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00005798339843821054
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 25.515625,
+            "baseline": -8.78125,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 25.515625,
+            "baseline": -8.78125,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "1",
+            "x": 42.453125,
+            "baseline": -8.78125,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "1",
+            "x": 42.453125,
+            "baseline": -8.78125,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        }
+      ]
+    },
+    {
+      "id": "block",
+      "refused": [
+        {
+          "kind": "current-css-display-flow",
+          "message": "Current Source block/display line flow is not implemented; the inline natural-span diagnostic cannot stand in for it."
+        }
+      ],
+      "glyphRuns": []
+    },
+    {
+      "id": "unicode",
+      "refused": [
+        {
+          "kind": "current-css-structure",
+          "message": "Current-CSS overlap, delimiter, operator or decoration not implemented: katex-accent",
+          "path": "root/0/0/1/1"
+        }
+      ],
+      "glyphRuns": []
+    },
+    {
+      "id": "invalid",
+      "refused": [
+        {
+          "kind": "source",
+          "message": "Unexpected end of input in a macro argument, expected '}' at end of input: \\frac{"
+        }
+      ],
+      "glyphRuns": []
+    },
+    {
+      "id": "empty",
+      "refused": [
+        {
+          "kind": "source",
+          "message": "Enter LaTeX to render this equation."
+        }
+      ],
+      "glyphRuns": []
+    },
+    {
+      "id": "inline-matrix",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "(",
+            "x": 0,
+            "baseline": 0,
+            "font": "Size3-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.019561767578125,
+            "occupiedWidth": 16.03125
+          },
+          "actual": {
+            "text": "(",
+            "x": 0,
+            "baseline": 0,
+            "font": "Size3-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.0195
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00006176757812426104
+        },
+        {
+          "expected": {
+            "text": "a",
+            "x": 16.03125,
+            "baseline": -13.296875,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 11.514053344726562,
+            "occupiedWidth": 11.515625
+          },
+          "actual": {
+            "text": "a",
+            "x": 16.03125,
+            "baseline": -13.296875,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 11.514015625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000037719726561746825
+        },
+        {
+          "expected": {
+            "text": "c",
+            "x": 17.0625,
+            "baseline": 12.84375,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 9.424545288085938,
+            "occupiedWidth": 9.4375
+          },
+          "actual": {
+            "text": "c",
+            "x": 17.0625,
+            "baseline": 12.84375,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 9.424515625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000029663085937770006
+        },
+        {
+          "expected": {
+            "text": "b",
+            "x": 50.28125,
+            "baseline": -13.296875,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 9.337493896484375,
+            "occupiedWidth": 9.34375
+          },
+          "actual": {
+            "text": "b",
+            "x": 50.28125,
+            "baseline": -13.296875,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 9.337453125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00004077148437531264
+        },
+        {
+          "expected": {
+            "text": "d",
+            "x": 49.296875,
+            "baseline": 12.84375,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 11.31817626953125,
+            "occupiedWidth": 11.328125
+          },
+          "actual": {
+            "text": "d",
+            "x": 49.296875,
+            "baseline": 12.84375,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 11.318125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00005126953124978684
+        },
+        {
+          "expected": {
+            "text": ")",
+            "x": 60.625,
+            "baseline": 0,
+            "font": "Size3-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.019561767578125,
+            "occupiedWidth": 16.03125
+          },
+          "actual": {
+            "text": ")",
+            "x": 60.625,
+            "baseline": 0,
+            "font": "Size3-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.0195
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00006176757812426104
+        }
+      ]
+    },
+    {
+      "id": "ascii-text",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "a small equation",
+            "x": 0,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 153.09999084472656,
+            "occupiedWidth": 153.109375
+          },
+          "actual": {
+            "text": "a small equation",
+            "x": 0,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 153.09940625000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0005845947265470386
+        },
+        {
+          "expected": {
+            "text": "α",
+            "x": 174.875,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 13.9300537109375,
+            "occupiedWidth": 13.9375
+          },
+          "actual": {
+            "text": "α",
+            "x": 174.875,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 13.93
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00005371093750028422
+        }
+      ]
+    },
+    {
+      "id": "small-fraction",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "c",
+            "x": 1.765625,
+            "baseline": 5,
+            "font": "Math-Italic",
+            "cssFontSize": 14.52,
+            "advance": 6.2852783203125,
+            "occupiedWidth": 6.296875
+          },
+          "actual": {
+            "text": "c",
+            "x": 1.765625,
+            "baseline": 5,
+            "font": "Math-Italic",
+            "fontSize": 14.515625,
+            "advance": 6.285265625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00001269531249992184
+        },
+        {
+          "expected": {
+            "text": "−",
+            "x": 8.0625,
+            "baseline": 5,
+            "font": "Main-Regular",
+            "cssFontSize": 14.52,
+            "advance": 11.293167114257812,
+            "occupiedWidth": 11.296875
+          },
+          "actual": {
+            "text": "−",
+            "x": 8.0625,
+            "baseline": 5,
+            "font": "Main-Regular",
+            "fontSize": 14.515625,
+            "advance": 11.293156250000001
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000010864257811604716
+        },
+        {
+          "expected": {
+            "text": "d",
+            "x": 19.359375,
+            "baseline": 5,
+            "font": "Math-Italic",
+            "cssFontSize": 14.52,
+            "advance": 7.548126220703125,
+            "occupiedWidth": 7.5625
+          },
+          "actual": {
+            "text": "d",
+            "x": 19.359375,
+            "baseline": 5,
+            "font": "Math-Italic",
+            "fontSize": 14.515625,
+            "advance": 7.548125000000001
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000012207031243605115
+        },
+        {
+          "expected": {
+            "text": "a",
+            "x": 1.734375,
+            "baseline": -5.71875,
+            "font": "Math-Italic",
+            "cssFontSize": 14.52,
+            "advance": 7.67877197265625,
+            "occupiedWidth": 7.6875
+          },
+          "actual": {
+            "text": "a",
+            "x": 1.734375,
+            "baseline": -5.71875,
+            "font": "Math-Italic",
+            "fontSize": 14.515625,
+            "advance": 7.6787656250000005
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000006347656249516831
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 9.421875,
+            "baseline": -5.71875,
+            "font": "Main-Regular",
+            "cssFontSize": 14.52,
+            "advance": 11.293167114257812,
+            "occupiedWidth": 11.296875
+          },
+          "actual": {
+            "text": "+",
+            "x": 9.421875,
+            "baseline": -5.71875,
+            "font": "Main-Regular",
+            "fontSize": 14.515625,
+            "advance": 11.293156250000001
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000010864257811604716
+        },
+        {
+          "expected": {
+            "text": "b",
+            "x": 20.71875,
+            "baseline": -5.71875,
+            "font": "Math-Italic",
+            "cssFontSize": 14.52,
+            "advance": 6.227203369140625,
+            "occupiedWidth": 6.234375
+          },
+          "actual": {
+            "text": "b",
+            "x": 20.71875,
+            "baseline": -5.71875,
+            "font": "Math-Italic",
+            "fontSize": 14.515625,
+            "advance": 6.227203125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -2.44140625049738e-7
+        }
+      ]
+    },
+    {
+      "id": "large-scripts",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "u",
+            "x": 0,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "cssFontSize": 38.72,
+            "advance": 22.1470947265625,
+            "occupiedWidth": 22.15625
+          },
+          "actual": {
+            "text": "u",
+            "x": 0,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "fontSize": 38.71875,
+            "advance": 22.147125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": 0.000030273437499062084
+        },
+        {
+          "expected": {
+            "text": "i",
+            "x": 22.15625,
+            "baseline": 10.71875,
+            "font": "Math-Italic",
+            "cssFontSize": 38.72,
+            "advance": 13.357955932617188,
+            "occupiedWidth": 13.359375
+          },
+          "actual": {
+            "text": "i",
+            "x": 22.15625,
+            "baseline": 10.71875,
+            "font": "Math-Italic",
+            "fontSize": 38.71875,
+            "advance": 13.35796875
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": 0.00001281738281200262
+        },
+        {
+          "expected": {
+            "text": "n",
+            "x": 22.15625,
+            "baseline": -15.609375,
+            "font": "Math-Italic",
+            "cssFontSize": 38.72,
+            "advance": 23.231216430664062,
+            "occupiedWidth": 23.234375
+          },
+          "actual": {
+            "text": "n",
+            "x": 22.15625,
+            "baseline": -15.609375,
+            "font": "Math-Italic",
+            "fontSize": 38.71875,
+            "advance": 23.23125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": 0.00003356933593678946
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 45.390625,
+            "baseline": -15.609375,
+            "font": "Main-Regular",
+            "cssFontSize": 38.72,
+            "advance": 30.123153686523438,
+            "occupiedWidth": 30.125
+          },
+          "actual": {
+            "text": "+",
+            "x": 45.390625,
+            "baseline": -15.609375,
+            "font": "Main-Regular",
+            "fontSize": 38.71875,
+            "advance": 30.1231875
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": 0.000033813476562727374
+        },
+        {
+          "expected": {
+            "text": "1",
+            "x": 75.515625,
+            "baseline": -15.609375,
+            "font": "Main-Regular",
+            "cssFontSize": 38.72,
+            "advance": 19.359344482421875,
+            "occupiedWidth": 19.359375
+          },
+          "actual": {
+            "text": "1",
+            "x": 75.515625,
+            "baseline": -15.609375,
+            "font": "Main-Regular",
+            "fontSize": 38.71875,
+            "advance": 19.359375
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": 0.000030517578125
+        }
+      ]
+    },
+    {
+      "id": "nested-fraction",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "1",
+            "x": 21.3125,
+            "baseline": 8.296875,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "1",
+            "x": 21.3125,
+            "baseline": 8.296875,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 32.203125,
+            "baseline": 8.296875,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 32.203125,
+            "baseline": 8.296875,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "y",
+            "x": 49.140625,
+            "baseline": 8.296875,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 10.665191650390625,
+            "occupiedWidth": 10.671875
+          },
+          "actual": {
+            "text": "y",
+            "x": 49.140625,
+            "baseline": 8.296875,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 10.665156249999999
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00003540039062599476
+        },
+        {
+          "expected": {
+            "text": "b",
+            "x": 6.296875,
+            "baseline": -4.515625,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 9.337493896484375,
+            "occupiedWidth": 9.34375
+          },
+          "actual": {
+            "text": "b",
+            "x": 6.296875,
+            "baseline": -4.515625,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 9.337453125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00004077148437531264
+        },
+        {
+          "expected": {
+            "text": "a",
+            "x": 5.21875,
+            "baseline": -20.375,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 11.514053344726562,
+            "occupiedWidth": 11.515625
+          },
+          "actual": {
+            "text": "a",
+            "x": 5.21875,
+            "baseline": -20.375,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 11.514015625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000037719726561746825
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 19.34375,
+            "baseline": -12,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 19.34375,
+            "baseline": -12,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "x",
+            "x": 36.28125,
+            "baseline": -12,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 12.449981689453125,
+            "occupiedWidth": 12.453125
+          },
+          "actual": {
+            "text": "x",
+            "x": 36.28125,
+            "baseline": -12,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 12.449937499999999
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00004418945312600897
+        },
+        {
+          "expected": {
+            "text": "2",
+            "x": 48.734375,
+            "baseline": -21.390625,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 10.882858276367188,
+            "occupiedWidth": 10.890625
+          },
+          "actual": {
+            "text": "2",
+            "x": 48.734375,
+            "baseline": -21.390625,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 10.8828125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        }
+      ]
+    },
+    {
+      "id": "delimited-fraction",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "(",
+            "x": 0,
+            "baseline": 0,
+            "font": "Size1-Regular",
+            "cssFontSize": 21.78,
+            "advance": 9.96868896484375,
+            "occupiedWidth": 9.96875
+          },
+          "actual": {
+            "text": "(",
+            "x": 0,
+            "baseline": 0,
+            "font": "Size1-Regular",
+            "fontSize": 21.765625,
+            "advance": 9.96865625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000032714843749559464
+        },
+        {
+          "expected": {
+            "text": "c",
+            "x": 12.625,
+            "baseline": 7.515625,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 9.424545288085938,
+            "occupiedWidth": 9.4375
+          },
+          "actual": {
+            "text": "c",
+            "x": 12.625,
+            "baseline": 7.515625,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 9.424515625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000029663085937770006
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 22.0625,
+            "baseline": 7.515625,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 22.0625,
+            "baseline": 7.515625,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "d",
+            "x": 39,
+            "baseline": 7.515625,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 11.31817626953125,
+            "occupiedWidth": 11.328125
+          },
+          "actual": {
+            "text": "d",
+            "x": 39,
+            "baseline": 7.515625,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 11.318125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00005126953124978684
+        },
+        {
+          "expected": {
+            "text": "a",
+            "x": 12.578125,
+            "baseline": -8.578125,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 11.514053344726562,
+            "occupiedWidth": 11.515625
+          },
+          "actual": {
+            "text": "a",
+            "x": 12.578125,
+            "baseline": -8.578125,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 11.514015625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000037719726561746825
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 24.09375,
+            "baseline": -8.578125,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 24.09375,
+            "baseline": -8.578125,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "b",
+            "x": 41.03125,
+            "baseline": -8.578125,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 9.337493896484375,
+            "occupiedWidth": 9.34375
+          },
+          "actual": {
+            "text": "b",
+            "x": 41.03125,
+            "baseline": -8.578125,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 9.337453125
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00004077148437531264
+        },
+        {
+          "expected": {
+            "text": ")",
+            "x": 52.984375,
+            "baseline": 0,
+            "font": "Size1-Regular",
+            "cssFontSize": 21.78,
+            "advance": 9.96868896484375,
+            "occupiedWidth": 9.96875
+          },
+          "actual": {
+            "text": ")",
+            "x": 52.984375,
+            "baseline": 0,
+            "font": "Size1-Regular",
+            "fontSize": 21.765625,
+            "advance": 9.96865625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000032714843749559464
+        }
+      ]
+    },
+    {
+      "id": "unicode-math",
+      "widthError": 0,
+      "ascentError": 0,
+      "descentError": 0,
+      "spanHeightError": 0,
+      "glyphRuns": [
+        {
+          "expected": {
+            "text": "A",
+            "x": 0,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.32427978515625,
+            "occupiedWidth": 16.328125
+          },
+          "actual": {
+            "text": "A",
+            "x": 0,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.32421875
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00006103515625
+        },
+        {
+          "expected": {
+            "text": "α",
+            "x": 38.09375,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 13.9300537109375,
+            "occupiedWidth": 13.9375
+          },
+          "actual": {
+            "text": "α",
+            "x": 38.09375,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 13.93
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.00005371093750028422
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 56.9375,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 56.9375,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "β",
+            "x": 78.703125,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "cssFontSize": 21.78,
+            "advance": 12.31939697265625,
+            "occupiedWidth": 12.328125
+          },
+          "actual": {
+            "text": "β",
+            "x": 78.703125,
+            "baseline": 0,
+            "font": "Math-Italic",
+            "fontSize": 21.765625,
+            "advance": 12.319343749999998
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000532226562519611
+        },
+        {
+          "expected": {
+            "text": "+",
+            "x": 97,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 16.9337158203125,
+            "occupiedWidth": 16.9375
+          },
+          "actual": {
+            "text": "+",
+            "x": 97,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 16.933656250000002
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.000059570312497925215
+        },
+        {
+          "expected": {
+            "text": "Γ",
+            "x": 118.765625,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "cssFontSize": 21.78,
+            "advance": 13.603561401367188,
+            "occupiedWidth": 13.609375
+          },
+          "actual": {
+            "text": "Γ",
+            "x": 118.765625,
+            "baseline": 0,
+            "font": "Main-Regular",
+            "fontSize": 21.765625,
+            "advance": 13.603515625
+          },
+          "maxInternalBaselineError": 0,
+          "xError": 0,
+          "baselineError": 0,
+          "advanceError": -0.0000457763671875
+        }
+      ]
+    }
+  ]
+}

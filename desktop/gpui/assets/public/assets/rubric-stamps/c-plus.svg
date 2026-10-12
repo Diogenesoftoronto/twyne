@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linejoin="round">
+    <path d="M90 7l82 55-82 55L8 62z" stroke-width="4"/>
+    <path d="M90 17l68 45-68 45-68-45z" stroke-width="1.5" stroke-dasharray="44 3 21 4"/>
+    <path d="M90 7v13M90 104v13M8 62h17M155 62h17" stroke-width="2"/>
+  </g>
+  <text x="90" y="74" fill="#000" font-family="Georgia,serif" font-size="54" font-style="italic" font-weight="700" text-anchor="middle">C+</text>
+  <text x="90" y="94" fill="#000" font-family="monospace" font-size="7.5" font-weight="700" letter-spacing="2.4" text-anchor="middle">DEVELOPING</text>
+</svg>

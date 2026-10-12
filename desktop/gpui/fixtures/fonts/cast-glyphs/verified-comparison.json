@@ -1,0 +1,132 @@
+{
+  "source": "Actual original Twyne .cast-icon; DM Sans 400, 11.2px/16.8px, 21.6px bordered circle",
+  "browser": "Chrome/150.0.7871.46",
+  "integration": "theme::cast_badge_font() applied only to Cast glyph Font; style/source symbols unchanged",
+  "cachedFallbacks": [
+    "Inter",
+    "Liberation Sans",
+    "Adwaita Mono"
+  ],
+  "nativeSystemFontsDisabled": true,
+  "allFiveOriginalGlyphIdsAndNonzeroMasks": true,
+  "currentLinuxAutomaticFiveSymbolsUnchangedAfterRegistration": true,
+  "maxBundledAdvanceDifferencePx": 0.006249904632568359,
+  "boundary": "Exact glyph/advance and real Linux masks establish font selection/renderability. This does not establish Chromium pixel identity, actual assembled Cast painting, or other OS proof.",
+  "rows": [
+    {
+      "text": "♠",
+      "sourceFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "actualBrowserFace": {
+        "familyName": "Liberation Sans",
+        "postScriptName": "LiberationSans",
+        "isCustomFont": false,
+        "glyphCount": 1
+      },
+      "originalDomAdvancePx": 5.953125,
+      "nativeAutomaticBeforePx": 7.011199951171875,
+      "automaticGapPx": 1.058074951171875,
+      "bundledOnlyAdvancePx": 5.949999809265137,
+      "bundledGapPx": -0.0031251907348632812,
+      "bundledGlyphId": 2230,
+      "actualNativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+        "size": "Size { 6 px (device) × 7 px (device) }",
+        "byteCount": 42,
+        "nonzeroBytes": 32,
+        "maskFnv1a64": "05594ecd2791ca65"
+      }
+    },
+    {
+      "text": "♥",
+      "sourceFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "actualBrowserFace": {
+        "familyName": "Inter",
+        "postScriptName": "Inter-Regular",
+        "isCustomFont": false,
+        "glyphCount": 1
+      },
+      "originalDomAdvancePx": 11.453125,
+      "nativeAutomaticBeforePx": 7.772799968719482,
+      "automaticGapPx": -3.6803250312805176,
+      "bundledOnlyAdvancePx": 11.45156192779541,
+      "bundledGapPx": -0.0015630722045898438,
+      "bundledGlyphId": 1867,
+      "actualNativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -9 px (device) }, size: Size { 11 px (device) × 10 px (device) } }",
+        "size": "Size { 11 px (device) × 10 px (device) }",
+        "byteCount": 110,
+        "nonzeroBytes": 72,
+        "maskFnv1a64": "f75d61b1f7348d0d"
+      }
+    },
+    {
+      "text": "♦",
+      "sourceFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "actualBrowserFace": {
+        "familyName": "Liberation Sans",
+        "postScriptName": "LiberationSans",
+        "isCustomFont": false,
+        "glyphCount": 1
+      },
+      "originalDomAdvancePx": 5.71875,
+      "nativeAutomaticBeforePx": 6.664000034332275,
+      "automaticGapPx": 0.9452500343322754,
+      "bundledOnlyAdvancePx": 5.71484375,
+      "bundledGapPx": -0.00390625,
+      "bundledGlyphId": 2233,
+      "actualNativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 6 px (device) × 7 px (device) } }",
+        "size": "Size { 6 px (device) × 7 px (device) }",
+        "byteCount": 42,
+        "nonzeroBytes": 28,
+        "maskFnv1a64": "9d4481a5c284bfa1"
+      }
+    },
+    {
+      "text": "✦",
+      "sourceFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "actualBrowserFace": {
+        "familyName": "Adwaita Mono",
+        "postScriptName": "Adwaita-Mono",
+        "isCustomFont": false,
+        "glyphCount": 1
+      },
+      "originalDomAdvancePx": 6.71875,
+      "nativeAutomaticBeforePx": 6.742968559265137,
+      "automaticGapPx": 0.02421855926513672,
+      "bundledOnlyAdvancePx": 6.720000267028809,
+      "bundledGapPx": 0.0012502670288085938,
+      "bundledGlyphId": 6836,
+      "actualNativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 7 px (device) } }",
+        "size": "Size { 7 px (device) × 7 px (device) }",
+        "byteCount": 49,
+        "nonzeroBytes": 23,
+        "maskFnv1a64": "dfdd3e979b0b310e"
+      }
+    },
+    {
+      "text": "♣",
+      "sourceFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "actualBrowserFace": {
+        "familyName": "Liberation Sans",
+        "postScriptName": "LiberationSans",
+        "isCustomFont": false,
+        "glyphCount": 1
+      },
+      "originalDomAdvancePx": 7.34375,
+      "nativeAutomaticBeforePx": 8.691200256347656,
+      "automaticGapPx": 1.3474502563476562,
+      "bundledOnlyAdvancePx": 7.349999904632568,
+      "bundledGapPx": 0.006249904632568359,
+      "bundledGlyphId": 2231,
+      "actualNativeMask": {
+        "bounds": "Bounds { origin: Point { x: 0 px (device), y: -7 px (device) }, size: Size { 7 px (device) × 7 px (device) } }",
+        "size": "Size { 7 px (device) × 7 px (device) }",
+        "byteCount": 49,
+        "nonzeroBytes": 36,
+        "maskFnv1a64": "974139623d6fc9d2"
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "desktop/gpui/src/chrome.rs": {
+    "sha256": "4f4f3612b575e41b4982fe4cd21cf9c9c2a05e621ad771c7874b4714fc325e7d"
+  },
+  "desktop/gpui/src/theme.rs": {
+    "sha256": "ce3eea0bc31c01d41c49c7c44bd11db6dc931cc7d437e92f86ea02a2e7f0977c"
+  },
+  "src/components/in-flow/tool-renderer.tsx": {
+    "sha256": "9732ada5353d1573d61b1954620a49e6aee1b9788edfeb440893dbd0a04eaf0f"
+  },
+  "src/global.css": {
+    "sha256": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2"
+  }
+}

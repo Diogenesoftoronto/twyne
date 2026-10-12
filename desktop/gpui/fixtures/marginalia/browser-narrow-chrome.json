@@ -1,0 +1,256 @@
+{
+  "viewport": {
+    "width": 620,
+    "height": 860
+  },
+  "nodes": {
+    "header": {
+      "rect": {
+        "x": 2,
+        "y": 0,
+        "width": 618,
+        "height": 112
+      },
+      "styles": "Element: header.border-b-2\nBox: x=2 y=0 w=618 h=112\nChildren: 2  Text length: 106\nScroll Y: size=110 client=110 overflowing=false top=0\nScroll X: size=618 client=618 overflowing=false left=0\nStyles: display=block font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px margin=0px gap=normal flex-wrap=nowrap min-width=auto"
+    },
+    "headerMain": {
+      "rect": {
+        "x": 2,
+        "y": 0,
+        "width": 618,
+        "height": 86
+      },
+      "styles": "Element: div.flex\nBox: x=2 y=0 w=618 h=86\nChildren: 3  Text length: 105\nScroll Y: size=86 client=86 overflowing=false top=0\nScroll X: size=618 client=618 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=12px 20px 6px margin=0px gap=16px flex-wrap=nowrap min-width=0px"
+    },
+    "drawer": {
+      "rect": {
+        "x": 22,
+        "y": 31,
+        "width": 30,
+        "height": 30
+      },
+      "styles": "Element: button.icon-btn\nBox: x=22 y=31 w=30 h=30\nChildren: 1  Text length: 0\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=30 client=30 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=6px margin=0px gap=normal flex-wrap=nowrap min-width=28px\nAria: aria-expanded=false"
+    },
+    "department": {
+      "rect": {
+        "x": 117.390625,
+        "y": 12,
+        "width": 256.90625,
+        "height": 15
+      },
+      "styles": "Element: p.dept-label\nBox: x=117 y=12 w=257 h=15\nChildren: 0  Text length: 29\nScroll Y: size=15 client=15 overflowing=false top=0\nScroll X: size=257 client=257 overflowing=false left=0\nStyles: display=block font-family=\"Special Elite\", \"Courier New\", monospace font-size=10px font-weight=400 line-height=15px letter-spacing=3.2px padding=0px margin=0px gap=normal flex-wrap=nowrap min-width=auto"
+    },
+    "wordmark": {
+      "rect": {
+        "x": 168.47193908691406,
+        "y": 28.983057022094727,
+        "width": 154.76844787597656,
+        "height": 32.01365852355957
+      },
+      "styles": "Element: a.press\nBox: x=168 y=29 w=155 h=32\nChildren: 0  Text length: 5\nScroll Y: size=36 client=32 overflowing=true top=0\nScroll X: size=155 client=155 overflowing=false left=0\nStyles: display=block font-family=\"Libre Baskerville\", \"Playfair Display\", Georgia, serif font-size=32px font-weight=700 line-height=32px letter-spacing=1.92px padding=0px margin=2px 0px 0px gap=normal flex-wrap=nowrap min-width=auto"
+    },
+    "dossier": {
+      "rect": null,
+      "styles": "Element: button.btn-paper\nBox: not visible\nChildren: 1  Text length: 14\nScroll Y: size=0 client=0 overflowing=false top=0\nScroll X: size=0 client=0 overflowing=false left=0\nStyles: display=none font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=12px font-weight=600 line-height=18px letter-spacing=normal padding=7.2px 14.4px margin=0px gap=6px flex-wrap=nowrap min-width=0px\nVisibility: not rendered"
+    },
+    "file": {
+      "rect": {
+        "x": 439.6875,
+        "y": 29.8125,
+        "width": 84.3125,
+        "height": 32.375
+      },
+      "styles": "Element: button.btn-paper\nBox: x=440 y=30 w=84 h=32\nChildren: 2  Text length: 6\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=82 client=82 overflowing=false left=0\nStyles: display=inline-flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=12px font-weight=600 line-height=16px letter-spacing=normal padding=7.2px 14.4px margin=0px gap=6px flex-wrap=nowrap min-width=0px\nAria: aria-expanded=false"
+    },
+    "account": {
+      "rect": {
+        "x": 532,
+        "y": 30.5,
+        "width": 30,
+        "height": 30
+      },
+      "styles": "Element: button.icon-btn\nBox: x=532 y=31 w=30 h=30\nChildren: 1  Text length: 0\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=30 client=30 overflowing=false left=0\nStyles: display=inline-flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=6px margin=0px gap=normal flex-wrap=nowrap min-width=28px\nAria: aria-expanded=false"
+    },
+    "board": {
+      "rect": {
+        "x": 570,
+        "y": 31,
+        "width": 30,
+        "height": 30
+      },
+      "styles": "Element: button.icon-btn\nBox: x=570 y=31 w=30 h=30\nChildren: 1  Text length: 0\nScroll Y: size=30 client=30 overflowing=false top=0\nScroll X: size=30 client=30 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=6px margin=0px gap=normal flex-wrap=nowrap min-width=28px\nAria: aria-expanded=false"
+    },
+    "controls": {
+      "rect": {
+        "x": 2,
+        "y": 112,
+        "width": 618,
+        "height": 41
+      },
+      "styles": "Element: div.editor-desk-controls\nBox: x=2 y=112 w=618 h=41\nChildren: 4  Text length: 347\nScroll Y: size=40 client=40 overflowing=false top=0\nScroll X: size=618 client=618 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=16px font-weight=400 line-height=24px letter-spacing=normal padding=0px 4px margin=0px gap=0px 2px flex-wrap=wrap min-width=0px"
+    },
+    "footer": {
+      "rect": {
+        "x": 2,
+        "y": 823,
+        "width": 618,
+        "height": 37
+      },
+      "styles": "Element: footer.typst-statusbar\nBox: x=2 y=823 w=618 h=37\nChildren: 7  Text length: 62\nScroll Y: size=36 client=36 overflowing=false top=0\nScroll X: size=618 client=618 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=11px font-weight=400 line-height=16.5px letter-spacing=normal padding=2px 8px margin=0px gap=6.4px flex-wrap=nowrap min-width=auto"
+    },
+    "words": {
+      "rect": {
+        "x": 10,
+        "y": 833.75,
+        "width": 46.78125,
+        "height": 16.5
+      },
+      "styles": "Element: span.editor-word-count\nBox: x=10 y=834 w=47 h=17\nChildren: 0  Text length: 8\nScroll Y: size=17 client=17 overflowing=false top=0\nScroll X: size=47 client=47 overflowing=false left=0\nStyles: display=block font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=11px font-weight=400 line-height=16.5px letter-spacing=normal padding=0px margin=0px gap=normal flex-wrap=nowrap min-width=auto"
+    },
+    "pages": {
+      "rect": {
+        "x": 63.171875,
+        "y": 828,
+        "width": 51,
+        "height": 28
+      },
+      "styles": "Element: select.editor-page-navigation\nBox: x=63 y=828 w=51 h=28\nChildren: 1  Text length: 5\nScroll Y: size=28 client=28 overflowing=false top=0\nScroll X: size=51 client=51 overflowing=false left=0\nStyles: display=block font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=11px font-weight=400 line-height=normal letter-spacing=normal padding=0px margin=0px gap=normal flex-wrap=nowrap min-width=0px\nInput: value=\"0\" disabled"
+    },
+    "flow": {
+      "rect": null,
+      "styles": "Element: span.flow-ribbon\nBox: not visible\nChildren: 2  Text length: 7\nScroll Y: size=0 client=0 overflowing=false top=0\nScroll X: size=0 client=0 overflowing=false left=0\nStyles: display=none font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=11px font-weight=400 line-height=16.5px letter-spacing=1.1px padding=0px margin=0px gap=6.4px flex-wrap=nowrap min-width=0px\nVisibility: not rendered"
+    },
+    "zen": {
+      "rect": {
+        "x": 565.5625,
+        "y": 826,
+        "width": 46.4375,
+        "height": 32
+      },
+      "styles": "Element: button.tool-btn\nBox: x=566 y=826 w=46 h=32\nChildren: 1  Text length: 3\nScroll Y: size=32 client=32 overflowing=false top=0\nScroll X: size=46 client=46 overflowing=false left=0\nStyles: display=flex font-family=\"DM Sans\", Inter, system-ui, sans-serif font-size=11px font-weight=400 line-height=16.5px letter-spacing=normal padding=0px 4px margin=0px 0px 0px 430.609px gap=4.8px flex-wrap=nowrap min-width=auto\nAria: aria-pressed=false"
+    }
+  },
+  "footerHtml": "<span>79 words</span>\n<select aria-label=\"Go to page\">\n <option value=\"0\">Pages</option>\n</select>\n<span data-mode=\"working\" role=\"status\" aria-label=\"writing. Twyne is reading your pace. The margin brings things in freely.\" title=\"Twyne is reading your pace. The margin brings things in freely.\">\n <span>writing</span>\n</span>\n<span>Not saved yet</span>\n<button type=\"button\" aria-label=\"Toggle Zen mode\" title=\"Toggle distraction-free writing\" aria-pressed=\"false\"> Zen</button>\n<span role=\"status\">Proof updates when opened</span>\n",
+  "headerHtml": "<div>\n <button title=\"Open the drawer\" aria-label=\"Toggle the drawer sidebar\" aria-expanded=\"false\"></button>\n <div>\n  <p>An Anti-Tabula-Rasa Quarterly</p>\n  <a href=\"/\">TWYNE</a>\n  <p>Vol. I · No. 277 · Sunday, the 4th of October, 2026</p>\n </div>\n <div>\n  <button title=\"Create dossier\">Create dossier</button>\n  <div data-folio-menu=\"true\">\n   <button aria-expanded=\"false\" title=\"Export, import, share\">File </button>\n  </div>\n  <button type=\"button\" aria-expanded=\"false\" aria-label=\"Open the editor's office (account)\" title=\"Editor's office\"></button>\n  <button title=\"Toggle the editorial board\" aria-label=\"Toggle the editorial board panel\" aria-expanded=\"false\"></button>\n </div>\n</div>\n<span>✦</span>\n",
+  "footerChildren": [
+    {
+      "tag": "SPAN",
+      "class": "editor-word-count",
+      "text": "79 words",
+      "ariaLabel": null,
+      "rect": {
+        "x": 10,
+        "y": 833.75,
+        "width": 46.78125,
+        "height": 16.5
+      },
+      "display": "block",
+      "font": "",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px"
+    },
+    {
+      "tag": "SELECT",
+      "class": "editor-page-navigation",
+      "text": "Pages",
+      "ariaLabel": "Go to page",
+      "rect": {
+        "x": 63.171875,
+        "y": 828,
+        "width": 51,
+        "height": 28
+      },
+      "display": "block",
+      "font": "",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px"
+    },
+    {
+      "tag": "SPAN",
+      "class": "flow-ribbon",
+      "text": "writing",
+      "ariaLabel": "writing. Twyne is reading your pace. The margin brings things in freely.",
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "display": "none",
+      "font": "",
+      "padding": "0px",
+      "gap": "6.4px",
+      "margin": "0px"
+    },
+    {
+      "tag": "SPAN",
+      "class": "editor-last-saved",
+      "text": "Not saved yet",
+      "ariaLabel": null,
+      "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      },
+      "display": "none",
+      "font": "",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px"
+    },
+    {
+      "tag": "SPAN",
+      "class": "inline-block w-2 h-2 rounded-full",
+      "text": "",
+      "ariaLabel": "Local only — sign in to sync across devices",
+      "rect": {
+        "x": 120.5625,
+        "y": 838,
+        "width": 8,
+        "height": 8
+      },
+      "display": "block",
+      "font": "",
+      "padding": "0px",
+      "gap": "normal",
+      "margin": "0px"
+    },
+    {
+      "tag": "BUTTON",
+      "class": "tool-btn editor-zen-toggle",
+      "text": " Zen",
+      "ariaLabel": "Toggle Zen mode",
+      "rect": {
+        "x": 565.5625,
+        "y": 826,
+        "width": 46.4375,
+        "height": 32
+      },
+      "display": "flex",
+      "font": "",
+      "padding": "0px 4px",
+      "gap": "4.8px",
+      "margin": "0px 0px 0px 430.609px"
+    },
+    {
+      "tag": "SPAN",
+      "class": "typst-status sr-only",
+      "text": "Proof updates when opened",
+      "ariaLabel": null,
+      "rect": {
+        "x": 9,
+        "y": 841.5,
+        "width": 1,
+        "height": 1
+      },
+      "display": "flex",
+      "font": "",
+      "padding": "0px",
+      "gap": "6.4px",
+      "margin": "-1px"
+    }
+  ]
+}

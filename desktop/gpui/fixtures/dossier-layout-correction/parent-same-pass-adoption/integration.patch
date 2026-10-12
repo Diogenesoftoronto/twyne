@@ -1,0 +1,144 @@
+--- a/desktop/gpui/src/dossier_view.rs
++++ b/desktop/gpui/src/dossier_view.rs
+@@ -164,8 +164,6 @@
+     reviewed_stamps: Option<Arc<DossierStampSet>>,
+     foxing: Option<Arc<DossierMultiply>>,
+     foxing_paint: Rc<Cell<DossierFoxingPaintReceipt>>,
+-    question_leaf_height: Pixels,
+-    question_height: Option<(usize, Pixels)>,
+     _subscriptions: Vec<Subscription>,
+     probe_subscriptions: Vec<Subscription>,
+ }
+@@ -356,8 +354,6 @@
+             reviewed_stamps: None,
+             foxing: None,
+             foxing_paint: Rc::new(Cell::new(DossierFoxingPaintReceipt::default())),
+-            question_leaf_height: px(0.),
+-            question_height: None,
+             _subscriptions: subscriptions,
+             probe_subscriptions: Vec::new(),
+         };
+@@ -2345,35 +2341,12 @@
+             StepKind::Import => self.prior_material_input(cx),
+             StepKind::Attachments => self.references(cx),
+         };
+-        let question_measure_view = cx.entity().downgrade();
+-        let question_measure = canvas(
+-            |_, _, _| (),
+-            move |bounds, _, _, cx| {
+-                let _ = question_measure_view.update(cx, |this, cx| {
+-                    if this.session.draft.step == index
+-                        && this.question_height != Some((index, bounds.size.height))
+-                    {
+-                        this.question_height = Some((index, bounds.size.height));
+-                        #[cfg(feature = "ui-tests")]
+-                        eprintln!(
+-                            "TWYNE_CAPTURE_DOSSIER_QUESTION_HEIGHT: {}",
+-                            f32::from(bounds.size.height)
+-                        );
+-                        cx.notify();
+-                    }
+-                });
+-            },
+-        )
+-        .absolute()
+-        .size_full()
+-        .inset_0();
+         let question = div()
+             .id("dossier-active-question")
+             .test_support()
+             .relative()
+             .flex()
+             .flex_col()
+-            .child(question_measure)
+             .child(
+                 div()
+                     .flex()
+@@ -2447,36 +2420,6 @@
+                 )
+                 .child(div().flex().flex_wrap().gap(px(2.)).children(suggestions))
+             });
+-        let measure_view = cx.entity().downgrade();
+-        let question_leaf_measure = canvas(
+-            |_, _, _| (),
+-            move |bounds, _, _, cx| {
+-                let _ = measure_view.update(cx, |this, cx| {
+-                    if this.question_leaf_height != bounds.size.height {
+-                        this.question_leaf_height = bounds.size.height;
+-                        #[cfg(feature = "ui-tests")]
+-                        eprintln!(
+-                            "TWYNE_CAPTURE_DOSSIER_LEAF_HEIGHT: {}",
+-                            f32::from(bounds.size.height)
+-                        );
+-                        cx.notify();
+-                    }
+-                });
+-            },
+-        )
+-        .absolute()
+-        .size_full()
+-        .inset_0();
+-        let question_height = self
+-            .question_height
+-            .filter(|(step, _)| *step == index)
+-            .map_or(px(0.), |(_, height)| height);
+-        let neighbour_height = px(if index == 0 || index == 9 { 64. } else { 88. });
+-        let sheet_height = self
+-            .question_leaf_height
+-            .max(question_height + neighbour_height + px(32.));
+-        let question_spacer_height =
+-            (sheet_height - question_height - neighbour_height - px(32.)).max(px(0.)) / 2.;
+         let leaf = div()
+             .flex()
+             .flex_col()
+@@ -2527,32 +2470,29 @@
+                     .flex_1()
+                     .min_h_0()
+                     .relative()
+-                    .child(question_leaf_measure)
+                     .child(
+                         div()
+                             .absolute()
+                             .inset_0()
+                             .id("dossier-question-scroll")
++                            .test_support()
+                             .overflow_y_scroll()
+                             .child(
+                                 div()
+                                     .id("dossier-question-sheet")
+                                     .test_support()
+-                                    // Share the sheet's remaining space
+-                                    // equally around the natural question.
+-                                    // GPUI currently assigns the entire
+-                                    // remainder to each auto margin, so
+-                                    // resolve both spacers explicitly.
+-                                    // Long sheets still grow and scroll.
+-                                    .h(sheet_height)
++                                    // Resolve equal free space in native layout on
++                                    // the first draw, retaining the actual question.
++                                    // Natural tall content grows and scrolls.
++                                    .min_h_full()
+                                     .flex()
+                                     .flex_col()
+                                     .px(px(20.))
+                                     .py(px(16.))
+                                     .child(self.ghost(index.checked_sub(1), true, cx))
+-                                    .child(div().h(question_spacer_height).flex_shrink_0())
++                                    .child(div().flex_1().min_h_0())
+                                     .child(question.flex_shrink_0())
+-                                    .child(div().h(question_spacer_height).flex_shrink_0())
++                                    .child(div().flex_1().min_h_0())
+                                     .child(self.ghost(Some(index + 1), false, cx)),
+                             ),
+                     ),
+@@ -3322,6 +3262,10 @@
+             env!("CARGO_MANIFEST_DIR"),
+             "/fixtures/dossier-layout-correction/mounted_tests.rs"
+         ));
++        include!(concat!(
++            env!("CARGO_MANIFEST_DIR"),
++            "/fixtures/dossier-layout-correction/optional_tests.rs"
++        ));
+     }
+ }
+ 

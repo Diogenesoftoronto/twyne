@@ -1,0 +1,372 @@
+{
+  "status": "authored independent policy vectors; not executable GPU observations",
+  "byteChannelPolicy": "Both target and polychrome atlas must be exactly Bgra8Unorm or Rgba8Unorm",
+  "formatCases": [
+    {
+      "target": "Bgra8Unorm",
+      "atlas": "Bgra8Unorm",
+      "formatEligible": true
+    },
+    {
+      "target": "Bgra8Unorm",
+      "atlas": "Rgba8Unorm",
+      "formatEligible": true
+    },
+    {
+      "target": "Bgra8Unorm",
+      "atlas": "Bgra8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8Unorm",
+      "atlas": "Rgba8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8Unorm",
+      "atlas": "Rgba16Float",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8Unorm",
+      "atlas": "Rgb10a2Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8Unorm",
+      "atlas": "Rgba8Uint",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8Unorm",
+      "atlas": "R8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Unorm",
+      "atlas": "Bgra8Unorm",
+      "formatEligible": true
+    },
+    {
+      "target": "Rgba8Unorm",
+      "atlas": "Rgba8Unorm",
+      "formatEligible": true
+    },
+    {
+      "target": "Rgba8Unorm",
+      "atlas": "Bgra8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Unorm",
+      "atlas": "Rgba8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Unorm",
+      "atlas": "Rgba16Float",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Unorm",
+      "atlas": "Rgb10a2Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Unorm",
+      "atlas": "Rgba8Uint",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Unorm",
+      "atlas": "R8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8UnormSrgb",
+      "atlas": "Bgra8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8UnormSrgb",
+      "atlas": "Rgba8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8UnormSrgb",
+      "atlas": "Bgra8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8UnormSrgb",
+      "atlas": "Rgba8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8UnormSrgb",
+      "atlas": "Rgba16Float",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8UnormSrgb",
+      "atlas": "Rgb10a2Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8UnormSrgb",
+      "atlas": "Rgba8Uint",
+      "formatEligible": false
+    },
+    {
+      "target": "Bgra8UnormSrgb",
+      "atlas": "R8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8UnormSrgb",
+      "atlas": "Bgra8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8UnormSrgb",
+      "atlas": "Rgba8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8UnormSrgb",
+      "atlas": "Bgra8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8UnormSrgb",
+      "atlas": "Rgba8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8UnormSrgb",
+      "atlas": "Rgba16Float",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8UnormSrgb",
+      "atlas": "Rgb10a2Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8UnormSrgb",
+      "atlas": "Rgba8Uint",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8UnormSrgb",
+      "atlas": "R8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba16Float",
+      "atlas": "Bgra8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba16Float",
+      "atlas": "Rgba8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba16Float",
+      "atlas": "Bgra8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba16Float",
+      "atlas": "Rgba8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba16Float",
+      "atlas": "Rgba16Float",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba16Float",
+      "atlas": "Rgb10a2Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba16Float",
+      "atlas": "Rgba8Uint",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba16Float",
+      "atlas": "R8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgb10a2Unorm",
+      "atlas": "Bgra8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgb10a2Unorm",
+      "atlas": "Rgba8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgb10a2Unorm",
+      "atlas": "Bgra8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgb10a2Unorm",
+      "atlas": "Rgba8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgb10a2Unorm",
+      "atlas": "Rgba16Float",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgb10a2Unorm",
+      "atlas": "Rgb10a2Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgb10a2Unorm",
+      "atlas": "Rgba8Uint",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgb10a2Unorm",
+      "atlas": "R8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Uint",
+      "atlas": "Bgra8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Uint",
+      "atlas": "Rgba8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Uint",
+      "atlas": "Bgra8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Uint",
+      "atlas": "Rgba8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Uint",
+      "atlas": "Rgba16Float",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Uint",
+      "atlas": "Rgb10a2Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Uint",
+      "atlas": "Rgba8Uint",
+      "formatEligible": false
+    },
+    {
+      "target": "Rgba8Uint",
+      "atlas": "R8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "R8Unorm",
+      "atlas": "Bgra8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "R8Unorm",
+      "atlas": "Rgba8Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "R8Unorm",
+      "atlas": "Bgra8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "R8Unorm",
+      "atlas": "Rgba8UnormSrgb",
+      "formatEligible": false
+    },
+    {
+      "target": "R8Unorm",
+      "atlas": "Rgba16Float",
+      "formatEligible": false
+    },
+    {
+      "target": "R8Unorm",
+      "atlas": "Rgb10a2Unorm",
+      "formatEligible": false
+    },
+    {
+      "target": "R8Unorm",
+      "atlas": "Rgba8Uint",
+      "formatEligible": false
+    },
+    {
+      "target": "R8Unorm",
+      "atlas": "R8Unorm",
+      "formatEligible": false
+    }
+  ],
+  "admissionCases": [
+    {
+      "backend": "unimplemented/default",
+      "nonempty": true,
+      "opacity": 0.7,
+      "expected": "Err before atlas/scene mutation"
+    },
+    {
+      "backend": "unimplemented/default",
+      "nonempty": true,
+      "opacity": 0.0,
+      "expected": "Ok no-op; no atlas/scene mutation"
+    },
+    {
+      "backend": "unimplemented/default",
+      "nonempty": false,
+      "opacity": 0.7,
+      "expected": "Ok no-op; no atlas/scene mutation"
+    },
+    {
+      "backend": "WGPU Unconfigured or Released",
+      "formatEligible": true,
+      "expected": "capability false"
+    },
+    {
+      "backend": "WGPU Ready device-lost",
+      "formatEligible": true,
+      "expected": "capability false"
+    },
+    {
+      "backend": "WGPU Ready mismatched configured/pipeline target",
+      "formatEligible": true,
+      "expected": "capability false"
+    },
+    {
+      "backend": "WGPU Ready missing pipeline",
+      "formatEligible": true,
+      "expected": "capability false"
+    },
+    {
+      "backend": "WGPU Ready configured target matches pipeline, live eligible atlas, actual pipeline present, not lost",
+      "formatEligible": true,
+      "expected": "backend capability true; caller constraints still required"
+    }
+  ],
+  "proofLimits": "Vector membership and uncompiled tests are not backend/GPU/lifecycle proof"
+}

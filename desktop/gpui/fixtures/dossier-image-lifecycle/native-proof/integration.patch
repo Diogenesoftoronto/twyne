@@ -1,0 +1,220 @@
+diff --git a/desktop/gpui/src/dossier_image_lifecycle.rs b/desktop/gpui/src/dossier_image_lifecycle.rs
+--- a/desktop/gpui/src/dossier_image_lifecycle.rs
++++ b/desktop/gpui/src/dossier_image_lifecycle.rs
+@@ -16,6 +16,10 @@
+     rc::{Rc, Weak},
+     sync::{Arc, Weak as SyncWeak},
+ };
++
++#[cfg(feature = "ui-tests")]
++#[path = "../fixtures/dossier-image-lifecycle/native-proof/diagnostic_hooks.rs"]
++mod native_proof;
+ 
+ pub const MAX_CONSUMERS: usize = 4;
+ pub const MAX_IMAGES_PER_CONSUMER: usize = 10; // paper + eight stamps + optional foxing
+@@ -263,6 +267,8 @@
+     window: WindowId,
+     text_system: SyncWeak<TextSystem>,
+     ledger: Ledger,
++    #[cfg(feature = "ui-tests")]
++    native_proof: native_proof::Trace,
+ }
+ impl State {
+     fn matches(&self, window: &Window, cx: &App) -> bool {
+@@ -298,6 +304,8 @@
+             window: window.window_handle().window_id(),
+             text_system: Arc::downgrade(cx.text_system()),
+             ledger: Ledger::default(),
++            #[cfg(feature = "ui-tests")]
++            native_proof: native_proof::Trace::default(),
+         }));
+         let weak = Rc::downgrade(&state);
+         let subscription = cx.on_window_closed(move |_, window| {
+@@ -332,9 +340,14 @@
+             state.matches(window, cx),
+             "Dossier image registry belongs to a different window/application"
+         );
++        let consumer = state.ledger.allocate()?;
++        #[cfg(feature = "ui-tests")]
++        state.proof_record(window, "lease_allocated", serde_json::json!({
++            "consumerId": consumer.to_string(),
++        }));
+         Ok(DossierImageLease {
+             state: Rc::downgrade(&self.state),
+-            consumer: state.ledger.allocate()?,
++            consumer,
+         })
+     }
+ 
+@@ -358,7 +371,14 @@
+                 state.matches(window, cx),
+                 "Dossier image registry belongs to a different window/application"
+             );
+-            state.ledger.retain_only(keep.map(|lease| lease.consumer))?
++            let changed = state.ledger.retain_only(keep.map(|lease| lease.consumer))?;
++            #[cfg(feature = "ui-tests")]
++            if changed {
++                state.proof_record(window, "mount_set_accepted", serde_json::json!({
++                    "keptConsumerId": keep.map(|lease| lease.consumer.to_string()),
++                }));
++            }
++            changed
+         };
+         if changed {
+             queue_refresh(&self.state, window, cx);
+@@ -383,7 +403,14 @@
+                     if !shared.matches(window, cx) {
+                         return;
+                     }
+-                    shared.ledger.paint_receipt()
++                    let receipt = shared.ledger.paint_receipt();
++                    #[cfg(feature = "ui-tests")]
++                    if let Some(receipt) = receipt {
++                        shared.proof_record(window, "marker_receipt", serde_json::json!({
++                            "receipt": receipt.to_string(),
++                        }));
++                    }
++                    receipt
+                 };
+                 let Some(receipt) = receipt else {
+                     return;
+@@ -400,10 +427,28 @@
+                         if !shared.matches(window, cx) {
+                             return;
+                         }
+-                        shared.ledger.retire_after_frame(receipt)
++                        let images = shared.ledger.retire_after_frame(receipt);
++                        #[cfg(feature = "ui-tests")]
++                        shared.proof_record(window, "deferred_retirement", serde_json::json!({
++                            "receipt": receipt.to_string(),
++                            "removedImageIds": images.iter().map(|image| image.id.0.to_string()).collect::<Vec<_>>(),
++                        }));
++                        images
+                     };
+                     for image in images {
+-                        if let Err(error) = window.drop_image(image.clone()) {
++                        #[cfg(feature = "ui-tests")]
++                        let present_before = window.has_image_atlas_entry(&image);
++                        // Exactly the existing production eviction, once.
++                        let result = window.drop_image(image.clone());
++                        #[cfg(feature = "ui-tests")]
++                        shared.borrow_mut().proof_record(window, "atlas_drop", serde_json::json!({
++                            "receipt": receipt.to_string(),
++                            "imageId": image.id.0.to_string(),
++                            "presentBefore": present_before,
++                            "presentAfter": window.has_image_atlas_entry(&image),
++                            "dropSucceeded": result.is_ok(),
++                        }));
++                        if let Err(error) = result {
+                             // Pinned drop_image currently always returns Ok. Keep
+                             // an honest retry should a later implementation fail.
+                             let mut state = shared.borrow_mut();
+@@ -459,7 +504,14 @@
+                 state.matches(window, cx),
+                 "Dossier image lease belongs to a different window/application"
+             );
+-            state.ledger.replace(self.consumer, incoming)?
++            let changed = state.ledger.replace(self.consumer, incoming)?;
++            #[cfg(feature = "ui-tests")]
++            if changed {
++                state.proof_record(window, "prepared_set_accepted", serde_json::json!({
++                    "consumerId": self.consumer.to_string(),
++                }));
++            }
++            changed
+         };
+         if changed {
+             queue_refresh(&state, window, cx);
+@@ -475,6 +527,8 @@
+             return;
+         }
+         state.ledger.invalidation_queued = true;
++        #[cfg(feature = "ui-tests")]
++        state.proof_record(window, "refresh_queued", serde_json::json!({}));
+     }
+     let weak = Rc::downgrade(state);
+     window.defer(cx, move |window, cx| {
+@@ -490,6 +544,8 @@
+         window.refresh();
+         state.ledger.invalidation_queued = false;
+         state.ledger.invalidated_epoch = Some(state.ledger.epoch);
++        #[cfg(feature = "ui-tests")]
++        state.proof_record(window, "refresh_applied", serde_json::json!({}));
+     });
+ }
+ 
+diff --git a/desktop/gpui/src/app.rs b/desktop/gpui/src/app.rs
+--- a/desktop/gpui/src/app.rs
++++ b/desktop/gpui/src/app.rs
+@@ -386,6 +386,17 @@
+             }
+         }
+         cx.notify();
++    }
++
++    #[cfg(feature = "ui-tests")]
++    pub fn capture_dossier_image_lifecycle(&self, window: &Window, cx: &App) -> Option<serde_json::Value> {
++        let mut snapshot = self.dossier_images.as_ref()?.diagnostic_snapshot(window, cx)?;
++        snapshot["surface"] = serde_json::json!({
++            "dossierRetained": self.dossier.is_some(),
++            "dossierMounted": self.dossier.is_some() && !self.standalone_route(),
++            "standaloneRoute": self.standalone_route(),
++        });
++        Some(snapshot)
+     }
+ 
+     pub fn open_first_dossier(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+diff --git a/desktop/gpui/src/capture_geometry.rs b/desktop/gpui/src/capture_geometry.rs
+--- a/desktop/gpui/src/capture_geometry.rs
++++ b/desktop/gpui/src/capture_geometry.rs
+@@ -15,24 +15,26 @@
+         if frames > 0 {
+             schedule(window, path, frames - 1, watch, room);
+         } else {
+-            match write_geometry(window, &path, cx, &room) {
++            match write_geometry(window, &path, cx, &room, 1) {
+                 Ok(()) => println!("TWYNE_CAPTURE_GEOMETRY_READY"),
+                 Err(error) => eprintln!("TWYNE_CAPTURE_GEOMETRY_ERROR: {error:#}"),
+             }
+             if watch {
+-                observe_next_frame(window, path, room);
++                observe_next_frame(window, path, room, 2);
+             }
+         }
+     });
+     window.refresh();
+ }
+ 
+-fn observe_next_frame(window: &mut Window, path: PathBuf, room: WeakEntity<WritingRoom>) {
++fn observe_next_frame(window: &mut Window, path: PathBuf, room: WeakEntity<WritingRoom>, sequence: u64) {
+     window.on_next_frame(move |window, cx| {
+-        if let Err(error) = write_geometry(window, &path, cx, &room) {
++        if let Err(error) = write_geometry(window, &path, cx, &room, sequence) {
+             eprintln!("TWYNE_CAPTURE_GEOMETRY_ERROR: {error:#}");
++        } else if let Some(next) = sequence.checked_add(1) {
++            observe_next_frame(window, path, room, next);
+         } else {
+-            observe_next_frame(window, path, room);
++            eprintln!("TWYNE_CAPTURE_GEOMETRY_ERROR: observation sequence exhausted");
+         }
+     });
+ }
+@@ -42,6 +44,7 @@
+     path: &std::path::Path,
+     cx: &App,
+     room: &WeakEntity<WritingRoom>,
++    sequence: u64,
+ ) -> anyhow::Result<()> {
+     let elements = gpui_kit::base::test_support::snapshots(window)
+         .into_iter()
+@@ -65,6 +68,10 @@
+         .collect::<Vec<_>>();
+     let viewport = window.viewport_size();
+     let record = serde_json::json!({
++        "captureSequence": sequence.to_string(),
++        "windowId": window.window_handle().window_id().as_u64().to_string(),
++        "scaleFactor": window.scale_factor(),
++        "dossierImageLifecycle": room.upgrade().and_then(|room| room.read(cx).capture_dossier_image_lifecycle(window, cx)),
+         "viewport": {"width": f32::from(viewport.width), "height": f32::from(viewport.height)},
+         "windowOrigin": {"x": f32::from(window.bounds().left()), "y": f32::from(window.bounds().top())},
+         "elements": elements,

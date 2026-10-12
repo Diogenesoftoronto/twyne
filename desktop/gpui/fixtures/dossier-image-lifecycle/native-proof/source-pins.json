@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "purpose": "Read-only source/API provenance and isolated helper pin, not a compiled-binary receipt",
+  "sourceSha256": {
+    "desktop/gpui/src/dossier_image_lifecycle.rs": "0e98b8d1bc1f3b977cfd9dcb8e83c2fb94fe30df1668ecb52f5c66621e44d775",
+    "desktop/gpui/src/dossier_view.rs": "b9a27db900b6624055a3cd1b293bab93bfd1c2c26f37847ffebf366d281ba274",
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3",
+    "desktop/gpui/src/dossier.rs": "3e01062a4c160e377593cdc48e82b5564dcdee14ff43d680b9d2318cb035e893",
+    "desktop/gpui/src/app.rs": "9d5a26d84408c1a2a113934963ae6b524da3ba82f7632b772ca43d301ade134b",
+    "desktop/gpui/src/app/settings_coordinator.rs": "45c9b59f70aa997e34479f91784248ccf77a9d4b233eb525ec6f11f98cfeda09",
+    "desktop/gpui/src/app/house_coordinator.rs": "40be6aebc418f62b28ce7f98ed69531d22ee39ab7b533971b6503b10d55049e3",
+    "desktop/gpui/src/capture_geometry.rs": "fbb77c371762dc50bc357440441666f8daa9cb91ec061cf1a5a4b99580916300",
+    "desktop/gpui/src/main.rs": "37f247da470fd19cdbd2450c9165f2239269b2be667320672a63d0b146a2c0e0",
+    "desktop/gpui/src/settings_view.rs": "66dba10e89b215809c769717aac352263c8d50133e54ab1c9069ecf91ba3eb39",
+    "desktop/gpui/src/chrome.rs": "4f4f3612b575e41b4982fe4cd21cf9c9c2a05e621ad771c7874b4714fc325e7d",
+    "desktop/gpui/src/house_view.rs": "c764bd352bacd542ca299c0f5569a3af89ba49c1302f477c95d5d5a00db89a61",
+    "desktop/gpui/src/theme.rs": "2d04ffd22eb01a4f7f6c45e3dd64424e9a5a4e6c91860f01079923de2722320e",
+    "desktop/gpui/Cargo.toml": "72400ce488eb644e1aeca961548cbfe3fa068fda2be5ba020dc249205d1318b8",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "c92daa1dd3a3bdcb477bed4d9368f7c47851453c6a387d31aa793860abefbc9b",
+    "desktop/gpui/vendor/gpui-pre-wgpu/src/wgpu_atlas.rs": "d7cb05a221d5ce976fe82a8ecf37f094eb0a65336cadeb5b7f998f5354991ca9",
+    "desktop/gpui/fixtures/dossier-native/check-native.py": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27",
+    "desktop/gpui/fixtures/dossier-native/retained.typ": "8a9cc13b4f2c084a54759e9a4a4699e246224363aec8a8af0c99957c2a6a6479",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/parent-gates.json": "66fb6a05217cad2b90c3579ba8d1822448f1797f7ce4e9b7b7fe5a098bd39633",
+    "desktop/gpui/fixtures/dossier-image-lifecycle/lifecycle_tests.rs": "973aaa4e5622199db66722ac8994e01c5e94d8f8f35e3483b313df7b798f4353"
+  }
+}

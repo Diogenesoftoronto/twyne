@@ -1,0 +1,129 @@
+{
+  "url": "http://localhost:5180/editor/",
+  "pageMode": "Source",
+  "documentMode": "CSS1Compat",
+  "geometry": {
+    "text": "File ▾",
+    "bounds": {
+      "x": 1099.6875,
+      "y": 29.8125,
+      "width": 84.3125,
+      "height": 32.375,
+      "top": 29.8125,
+      "right": 1184,
+      "bottom": 62.1875,
+      "left": 1099.6875
+    },
+    "style": {
+      "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+      "fontSize": "12px",
+      "fontWeight": "600",
+      "fontStyle": "normal",
+      "fontOpticalSizing": "auto",
+      "fontVariationSettings": "normal",
+      "letterSpacing": "normal",
+      "lineHeight": "16px",
+      "padding": "7.2px 14.4px",
+      "border": "1px solid rgb(221, 208, 177)",
+      "gap": "6px"
+    },
+    "children": [
+      {
+        "nodeType": 1,
+        "text": "",
+        "bounds": {
+          "x": 1115.078125,
+          "y": 38,
+          "width": 16,
+          "height": 16,
+          "top": 38,
+          "right": 1131.078125,
+          "bottom": 54,
+          "left": 1115.078125
+        },
+        "style": {
+          "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "600",
+          "fontStyle": "normal",
+          "fontOpticalSizing": "auto",
+          "fontVariationSettings": "normal",
+          "letterSpacing": "normal",
+          "lineHeight": "12px",
+          "padding": "0px",
+          "border": "0px solid rgb(31, 27, 22)",
+          "gap": "normal"
+        }
+      },
+      {
+        "nodeType": 3,
+        "text": "File ",
+        "bounds": {
+          "x": 1137.078125,
+          "y": 38,
+          "width": 19.984375,
+          "height": 16,
+          "top": 38,
+          "right": 1157.0625,
+          "bottom": 54,
+          "left": 1137.078125
+        }
+      },
+      {
+        "nodeType": 1,
+        "text": "▾",
+        "bounds": {
+          "x": 1163.0625,
+          "y": 38,
+          "width": 5.546875,
+          "height": 16,
+          "top": 38,
+          "right": 1168.609375,
+          "bottom": 54,
+          "left": 1163.0625
+        },
+        "style": {
+          "fontFamily": "\"DM Sans\", Inter, system-ui, sans-serif",
+          "fontSize": "12px",
+          "fontWeight": "600",
+          "fontStyle": "normal",
+          "fontOpticalSizing": "auto",
+          "fontVariationSettings": "normal",
+          "letterSpacing": "normal",
+          "lineHeight": "16px",
+          "padding": "0px",
+          "border": "0px solid rgb(31, 27, 22)",
+          "gap": "normal"
+        }
+      }
+    ]
+  },
+  "fonts": {
+    "fonts": [
+      {
+        "familyName": "DM Sans 9pt",
+        "postScriptName": "DMSans-9ptRegular",
+        "isCustomFont": true,
+        "glyphCount": 4
+      },
+      {
+        "familyName": "Noto Sans Math",
+        "postScriptName": "NotoSansMath-Regular",
+        "isCustomFont": false,
+        "glyphCount": 1
+      }
+    ]
+  },
+  "arrowFonts": {
+    "fonts": [
+      {
+        "familyName": "Noto Sans Math",
+        "postScriptName": "NotoSansMath-Regular",
+        "isCustomFont": false,
+        "glyphCount": 1
+      }
+    ]
+  },
+  "sourceUnchanged": true,
+  "probeNodesAdded": 0
+}

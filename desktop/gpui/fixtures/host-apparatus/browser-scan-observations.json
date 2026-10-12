@@ -1,0 +1,247 @@
+{
+  "surface": "about:blank",
+  "originalEditorPresent": false,
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+  "rows": [
+    {
+      "name": "paragraphs join only in Board",
+      "html": "<p>See https://example.com/one</p><p>next [3]</p>",
+      "surface": "board",
+      "expected": {
+        "text": "See https://example.com/onenext [3]",
+        "citations": [
+          {
+            "id": "url-4",
+            "text": "https://example.com/onenext",
+            "from": 4,
+            "to": 31,
+            "type": "url",
+            "lookupUrl": "https://example.com/onenext"
+          },
+          {
+            "id": "fn-32",
+            "text": "[3]",
+            "from": 32,
+            "to": 35,
+            "type": "footnote"
+          }
+        ]
+      }
+    },
+    {
+      "name": "paragraphs join only in Board",
+      "html": "<p>See https://example.com/one</p><p>next [3]</p>",
+      "surface": "page",
+      "expected": {
+        "text": " See https://example.com/one  next [3] ",
+        "citations": [
+          {
+            "id": "url-5",
+            "text": "https://example.com/one",
+            "from": 5,
+            "to": 28,
+            "type": "url",
+            "lookupUrl": "https://example.com/one"
+          },
+          {
+            "id": "fn-35",
+            "text": "[3]",
+            "from": 35,
+            "to": 38,
+            "type": "footnote"
+          }
+        ]
+      }
+    },
+    {
+      "name": "marks and DOM entity decoding",
+      "html": "<p>(Lee&nbsp;2020) &amp; <em>https://example.com/p?a=1&amp;b=2</em></p>",
+      "surface": "board",
+      "expected": {
+        "text": "(Lee 2020) & https://example.com/p?a=1&b=2",
+        "citations": [
+          {
+            "id": "ay-0",
+            "text": "(Lee 2020)",
+            "from": 0,
+            "to": 10,
+            "type": "author-year",
+            "lookupUrl": "https://scholar.google.com/scholar?q=Lee%202020",
+            "metadata": {
+              "author": "Lee",
+              "year": "2020"
+            }
+          },
+          {
+            "id": "url-13",
+            "text": "https://example.com/p?a=1&b=2",
+            "from": 13,
+            "to": 42,
+            "type": "url",
+            "lookupUrl": "https://example.com/p?a=1&b=2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "marks and DOM entity decoding",
+      "html": "<p>(Lee&nbsp;2020) &amp; <em>https://example.com/p?a=1&amp;b=2</em></p>",
+      "surface": "page",
+      "expected": {
+        "text": " (Lee&nbsp;2020) &amp;  https://example.com/p?a=1&amp;b=2  ",
+        "citations": [
+          {
+            "id": "url-24",
+            "text": "https://example.com/p?a=1&amp;b=2",
+            "from": 24,
+            "to": 57,
+            "type": "url",
+            "lookupUrl": "https://example.com/p?a=1&amp;b=2"
+          }
+        ]
+      }
+    },
+    {
+      "name": "hard breaks and inline note text",
+      "html": "<p>A<br>https://example.com/one<sup data-type=\"footnote\" data-endnote-text=\"not scanned 10.1234/note\">1</sup></p>",
+      "surface": "board",
+      "expected": {
+        "text": "Ahttps://example.com/one1",
+        "citations": [
+          {
+            "id": "url-1",
+            "text": "https://example.com/one1",
+            "from": 1,
+            "to": 25,
+            "type": "url",
+            "lookupUrl": "https://example.com/one1"
+          }
+        ]
+      }
+    },
+    {
+      "name": "hard breaks and inline note text",
+      "html": "<p>A<br>https://example.com/one<sup data-type=\"footnote\" data-endnote-text=\"not scanned 10.1234/note\">1</sup></p>",
+      "surface": "page",
+      "expected": {
+        "text": " A https://example.com/one 1  ",
+        "citations": [
+          {
+            "id": "url-3",
+            "text": "https://example.com/one",
+            "from": 3,
+            "to": 26,
+            "type": "url",
+            "lookupUrl": "https://example.com/one"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Unicode offsets and opaque attributes",
+      "html": "<p>🌿 café <span data-private=\"https://never.example\">doi:10.1234/paper</span></p>",
+      "surface": "board",
+      "expected": {
+        "text": "🌿 café doi:10.1234/paper",
+        "citations": [
+          {
+            "id": "doi-13",
+            "text": "10.1234/paper",
+            "from": 13,
+            "to": 26,
+            "type": "doi",
+            "lookupUrl": "https://doi.org/10.1234/paper"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Unicode offsets and opaque attributes",
+      "html": "<p>🌿 café <span data-private=\"https://never.example\">doi:10.1234/paper</span></p>",
+      "surface": "page",
+      "expected": {
+        "text": " 🌿 café  doi:10.1234/paper  ",
+        "citations": [
+          {
+            "id": "doi-15",
+            "text": "10.1234/paper",
+            "from": 15,
+            "to": 28,
+            "type": "doi",
+            "lookupUrl": "https://doi.org/10.1234/paper"
+          }
+        ]
+      }
+    },
+    {
+      "name": "comments omitted from DOM scan",
+      "html": "<p>https://example.com/a<!-- source --> [4]</p>",
+      "surface": "board",
+      "expected": {
+        "text": "https://example.com/a [4]",
+        "citations": [
+          {
+            "id": "url-0",
+            "text": "https://example.com/a",
+            "from": 0,
+            "to": 21,
+            "type": "url",
+            "lookupUrl": "https://example.com/a"
+          },
+          {
+            "id": "fn-22",
+            "text": "[4]",
+            "from": 22,
+            "to": 25,
+            "type": "footnote"
+          }
+        ]
+      }
+    },
+    {
+      "name": "comments omitted from DOM scan",
+      "html": "<p>https://example.com/a<!-- source --> [4]</p>",
+      "surface": "page",
+      "expected": {
+        "text": " https://example.com/a  [4] ",
+        "citations": [
+          {
+            "id": "url-1",
+            "text": "https://example.com/a",
+            "from": 1,
+            "to": 22,
+            "type": "url",
+            "lookupUrl": "https://example.com/a"
+          },
+          {
+            "id": "fn-24",
+            "text": "[4]",
+            "from": 24,
+            "to": 27,
+            "type": "footnote"
+          }
+        ]
+      }
+    },
+    {
+      "name": "empty document",
+      "html": "<p></p>",
+      "surface": "board",
+      "expected": {
+        "text": "",
+        "citations": []
+      }
+    },
+    {
+      "name": "empty document",
+      "html": "<p></p>",
+      "surface": "page",
+      "expected": {
+        "text": "  ",
+        "citations": []
+      }
+    }
+  ],
+  "source": "Original Board textContent and Apparatus route tag-replacement expressions with unmodified detectCitations.",
+  "capturedAt": "2026-10-04T19:14:31.931Z"
+}

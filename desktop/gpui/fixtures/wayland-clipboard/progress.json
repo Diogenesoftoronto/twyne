@@ -1,0 +1,104 @@
+{
+  "phase": "native_and_normal_application_acceptance_passed_remaining_regressions",
+  "interface": "Actual GPUI Wayland connection/calloop bridge; bounded asynchronous pipes; focus-epoch actual-press publication; native envelope/HTML adapter; Root-applied integration.patch and owned Sway driver",
+  "runtimeIntegrated": true,
+  "cargoRun": true,
+  "protocolChecks": {
+    "passed": 14,
+    "failed": 0,
+    "report": "/tmp/twyne-wayland-protocol-report.json"
+  },
+  "semanticChecks": {
+    "passed": 5,
+    "failed": 0,
+    "sameReport": true
+  },
+  "ownedCompositorSmoke": {
+    "passed": 2,
+    "failed": 0,
+    "report": "/tmp/twyne-wayland-owned-driver-smoke.json",
+    "nativeRuntimeTested": false
+  },
+  "environment": "Root-provisioned pinned Sway1.12 + wtype0.4; external wl-copy/wl-paste; new private headless/pixman display only",
+  "remaining": [
+    "Current X11 clipboard and all-target strict Clippy after backend fixes",
+    "Pending note-frame shutdown, other compositors/devices and primary-selection proof",
+    "Malicious actual-compositor slow/oversized source; bounded pipe checks are separate"
+  ],
+  "integratedChecks": {
+    "allTargetsUi": {
+      "passed": true,
+      "durationSeconds": 24.29,
+      "sourceLog": "/tmp/twyne-wayland-integrated-all-targets.log"
+    },
+    "coreWithoutDesktop": {
+      "passed": true,
+      "durationSeconds": 6.14,
+      "sourceLog": "/tmp/twyne-wayland-integrated-core.log"
+    },
+    "nativeExampleBuild": {
+      "passed": true,
+      "durationSeconds": 35.74,
+      "sourceLog": "/tmp/twyne-wayland-integrated-native-build.log"
+    },
+    "strictAllTargetsUiClippy": {
+      "passed": true,
+      "durationSeconds": 21.99,
+      "scope": "Integrated Wayland before keyboard-keymap repair"
+    },
+    "keymapGuardExampleBuild": {
+      "passed": true,
+      "durationSeconds": 16.32
+    },
+    "shutdownRepairExampleBuild": {
+      "passed": true,
+      "durationSeconds": 14.16
+    },
+    "noKeymapTransitionExampleBuild": {
+      "passed": true,
+      "durationSeconds": 13.25
+    },
+    "normalDesktopBuild": {
+      "passed": true,
+      "durationSeconds": 42.6,
+      "features": "default desktop, no ui-tests"
+    }
+  },
+  "nativeAcceptance": {
+    "passed": 5,
+    "finished": false,
+    "report": "/tmp/twyne-wayland-native-before-keymap-fix.json",
+    "failure": "Second GPUI client panics on wl_keyboard.modifiers when keymap_state is None",
+    "log": "/tmp/twyne-owned-wayland-y2h369n7/native-consumer.log",
+    "keymapRepairedRun": {
+      "passed": 13,
+      "finished": false,
+      "report": "/tmp/twyne-wayland-native-keymap-repaired.json",
+      "failure": "Focused RichEditorView input handler retained after event loop stops, leaking entity on native close",
+      "log": "/tmp/twyne-owned-wayland-hzzozsb8/focus-return-cut.log"
+    },
+    "shutdownRepairedRun": {
+      "passed": 29,
+      "finished": true,
+      "report": "/tmp/twyne-wayland-native-full-after-shutdown.json",
+      "root": "/tmp/twyne-owned-wayland-xh1r768i"
+    },
+    "finalRun": {
+      "passed": 29,
+      "finished": true,
+      "receipt": "native-acceptance.json",
+      "report": "/tmp/twyne-wayland-native-integrated.json",
+      "binarySha256": "1c34acf4ed11bdd4029753cb06b56ead919824d25471f1e51251a3a7be048147",
+      "completedAt": "2026-10-04T22:42:25Z"
+    }
+  },
+  "ordinaryApplication": {
+    "passed": 8,
+    "finished": true,
+    "receipt": "ordinary-app-acceptance.json",
+    "report": "/tmp/twyne-wayland-ordinary-app.json",
+    "buildFeatures": "default desktop, no ui-tests",
+    "binarySha256": "123a6430bf5bb950e3bc1dfa1b1a8f06b63778207f0044289f59c88f491fe549",
+    "completedAt": "2026-10-04T22:44:48Z"
+  }
+}

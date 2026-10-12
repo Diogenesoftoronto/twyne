@@ -1,0 +1,232 @@
+{
+  "method": "Owned actual original browser WOFF2 responses, reconstructed by FontTools/Bun Brotli; exact shared character advance units and decomposed static outline coordinates",
+  "noNetworkOrSourceMutation": true,
+  "source": "Actual original application's Google font responses captured by owned browser",
+  "comparisons": [
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIhMX1D_JOuMw_LIftL.woff2",
+      "responseSha256": "d824d807d4d832d12c87932d0b8ec1314dcfd502157a56dee6bb04cf8a3768ae",
+      "version": "Version 3.008",
+      "nativeFile": "fonts/TwyneBody-Italic.ttf",
+      "nativeSha256": "04d5cf8074062d46056ad2534c7f4df7dc5e3821b2663bd19d7f9fd83c13d346",
+      "weight": 400,
+      "sharedCodepoints": 226,
+      "advanceDifferences": [],
+      "decomposedOutlineDifferences": []
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIhMX1D_JOuMw_LIftL.woff2",
+      "responseSha256": "d824d807d4d832d12c87932d0b8ec1314dcfd502157a56dee6bb04cf8a3768ae",
+      "version": "Version 3.008",
+      "nativeFile": "fonts/TwyneBody-BoldItalic.ttf",
+      "nativeSha256": "1b5768a4698ca163106305f466f14bfb729809ee96a94d2925b3326373d34ec4",
+      "weight": 700,
+      "sharedCodepoints": 226,
+      "advanceDifferences": [],
+      "decomposedOutlineDifferences": [
+        {
+          "character": "~",
+          "codepoint": 126
+        }
+      ]
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuMwr7Iw.woff2",
+      "responseSha256": "ddb8c66035104e233fc024669183aad3738b6daa16deee2ebb1241bd0f98ace1",
+      "version": "Version 3.008",
+      "nativeFile": "fonts/TwyneBody-Regular.ttf",
+      "nativeSha256": "64eef465428ae32ca4b50df6f812c12ea1d5e5e3575fca74356aa4273128953a",
+      "weight": 400,
+      "sharedCodepoints": 226,
+      "advanceDifferences": [],
+      "decomposedOutlineDifferences": []
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuMwr7Iw.woff2",
+      "responseSha256": "ddb8c66035104e233fc024669183aad3738b6daa16deee2ebb1241bd0f98ace1",
+      "version": "Version 3.008",
+      "nativeFile": "fonts/TwyneBody-Bold.ttf",
+      "nativeSha256": "281e9c2fa50c8512cc36495c492f47be11979669c995807e03d77dab9ed1c4da",
+      "weight": 700,
+      "sharedCodepoints": 226,
+      "advanceDifferences": [],
+      "decomposedOutlineDifferences": [
+        {
+          "character": ".",
+          "codepoint": 46
+        },
+        {
+          "character": ":",
+          "codepoint": 58
+        },
+        {
+          "character": ";",
+          "codepoint": 59
+        },
+        {
+          "character": "i",
+          "codepoint": 105
+        },
+        {
+          "character": "j",
+          "codepoint": 106
+        },
+        {
+          "character": "~",
+          "codepoint": 126
+        },
+        {
+          "character": "¨",
+          "codepoint": 168
+        },
+        {
+          "character": "¬",
+          "codepoint": 172
+        },
+        {
+          "character": "·",
+          "codepoint": 183
+        },
+        {
+          "character": "Ä",
+          "codepoint": 196
+        },
+        {
+          "character": "Ë",
+          "codepoint": 203
+        },
+        {
+          "character": "Ï",
+          "codepoint": 207
+        },
+        {
+          "character": "Ö",
+          "codepoint": 214
+        },
+        {
+          "character": "Ü",
+          "codepoint": 220
+        },
+        {
+          "character": "ä",
+          "codepoint": 228
+        },
+        {
+          "character": "ë",
+          "codepoint": 235
+        },
+        {
+          "character": "ï",
+          "codepoint": 239
+        },
+        {
+          "character": "ö",
+          "codepoint": 246
+        },
+        {
+          "character": "÷",
+          "codepoint": 247
+        },
+        {
+          "character": "ü",
+          "codepoint": 252
+        },
+        {
+          "character": "ÿ",
+          "codepoint": 255
+        },
+        {
+          "character": "̈",
+          "codepoint": 776
+        },
+        {
+          "character": "̣",
+          "codepoint": 803
+        },
+        {
+          "character": "•",
+          "codepoint": 8226
+        },
+        {
+          "character": "…",
+          "codepoint": 8230
+        }
+      ]
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuM3b7I-NP.woff2",
+      "responseSha256": "a8c4cb778ab6202d22bdea2ccc8d7e7caf802cfe0a7ce37df7b212f82341468f",
+      "version": "Version 3.008",
+      "nativeFile": "fonts/TwyneBody-Regular.ttf",
+      "nativeSha256": "64eef465428ae32ca4b50df6f812c12ea1d5e5e3575fca74356aa4273128953a",
+      "weight": 400,
+      "sharedCodepoints": 141,
+      "advanceDifferences": [],
+      "decomposedOutlineDifferences": []
+    },
+    {
+      "url": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuM3b7I-NP.woff2",
+      "responseSha256": "a8c4cb778ab6202d22bdea2ccc8d7e7caf802cfe0a7ce37df7b212f82341468f",
+      "version": "Version 3.008",
+      "nativeFile": "fonts/TwyneBody-Bold.ttf",
+      "nativeSha256": "281e9c2fa50c8512cc36495c492f47be11979669c995807e03d77dab9ed1c4da",
+      "weight": 700,
+      "sharedCodepoints": 141,
+      "advanceDifferences": [],
+      "decomposedOutlineDifferences": [
+        {
+          "character": ".",
+          "codepoint": 46
+        },
+        {
+          "character": ":",
+          "codepoint": 58
+        },
+        {
+          "character": ";",
+          "codepoint": 59
+        },
+        {
+          "character": "i",
+          "codepoint": 105
+        },
+        {
+          "character": "j",
+          "codepoint": 106
+        },
+        {
+          "character": "~",
+          "codepoint": 126
+        },
+        {
+          "character": "¬",
+          "codepoint": 172
+        },
+        {
+          "character": "÷",
+          "codepoint": 247
+        },
+        {
+          "character": "̇",
+          "codepoint": 775
+        },
+        {
+          "character": "̈",
+          "codepoint": 776
+        },
+        {
+          "character": "℮",
+          "codepoint": 8494
+        },
+        {
+          "character": "∙",
+          "codepoint": 8729
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Glyph advances/outlines are separate from full-run shaping, CSS weight selection, line breaking, hinting and rasterization",
+    "Original Google CSS declares normal400/500/600 and italic400/500; checking the700 axis does not prove its CSS face selection"
+  ]
+}

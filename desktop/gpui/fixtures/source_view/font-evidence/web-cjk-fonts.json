@@ -1,0 +1,212 @@
+{
+  "browser": "154.0.8037.57",
+  "networkRequests": 0,
+  "reference": "Original CodeMirror, global.css, Tailwind preflight, and actual platform fallback faces; no injected CJK or monospace font",
+  "sourceSha256": "d0c6ceac873e113bce9ab8fe83e5d0730f32deba0fd07601f71b8daedc99accd",
+  "fonts": [
+    {
+      "fonts": [
+        {
+          "familyName": "Droid Sans Fallback",
+          "postScriptName": "DroidSansFallback",
+          "isCustomFont": false,
+          "glyphCount": 11
+        },
+        {
+          "familyName": "Noto Sans Mono",
+          "postScriptName": "NotoSansMono-Regular",
+          "isCustomFont": false,
+          "glyphCount": 26
+        },
+        {
+          "familyName": "Noto Sans CJK JP",
+          "postScriptName": "NotoSansCJKjp-Thin",
+          "isCustomFont": false,
+          "glyphCount": 2
+        },
+        {
+          "familyName": "Noto Color Emoji",
+          "postScriptName": "NotoColorEmoji",
+          "isCustomFont": false,
+          "glyphCount": 1
+        }
+      ]
+    },
+    {
+      "fonts": [
+        {
+          "familyName": "Noto Sans Mono SemiBold",
+          "postScriptName": "NotoSansMono-SemiBold",
+          "isCustomFont": false,
+          "glyphCount": 14
+        }
+      ]
+    },
+    {
+      "fonts": [
+        {
+          "familyName": "Noto Sans Mono",
+          "postScriptName": "NotoSansMono-Regular",
+          "isCustomFont": false,
+          "glyphCount": 36
+        }
+      ]
+    },
+    {
+      "fonts": []
+    }
+  ],
+  "geometry": {
+    "compatMode": "CSS1Compat",
+    "doctype": "html",
+    "source": "#text(\"Café 東京こんにちは世界 한글 中文 Ελληνικά 🦊\")\n= A source row\n// Source comment: Café = #text(\"m\")\n",
+    "sourceUnchanged": true,
+    "undo": 0,
+    "redo": 0,
+    "lines": [
+      {
+        "text": "#text(\"Café 東京こんにちは世界 한글 中文 Ελληνικά 🦊\")",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": "13px",
+        "lineHeight": "21.45px",
+        "bounds": {
+          "x": 30.8125,
+          "y": 16,
+          "width": 609.1875,
+          "height": 21.4375
+        },
+        "glyphs": [
+          {
+            "character": "é",
+            "sourceByteOffset": 10,
+            "x": 124.828125,
+            "y": 17,
+            "width": 7.828125,
+            "height": 18
+          },
+          {
+            "character": "東",
+            "sourceByteOffset": 13,
+            "x": 140.4375,
+            "y": 17,
+            "width": 13.015625,
+            "height": 18
+          },
+          {
+            "character": "京",
+            "sourceByteOffset": 16,
+            "x": 153.4375,
+            "y": 17,
+            "width": 13.015625,
+            "height": 18
+          }
+        ]
+      },
+      {
+        "text": "= A source row",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": "13px",
+        "lineHeight": "21.45px",
+        "bounds": {
+          "x": 30.8125,
+          "y": 37.4375,
+          "width": 609.1875,
+          "height": 21.4375
+        },
+        "glyphs": [
+          {
+            "character": "=",
+            "sourceByteOffset": 0,
+            "x": 46.8125,
+            "y": 38.4375,
+            "width": 7.8125,
+            "height": 18
+          }
+        ]
+      },
+      {
+        "text": "// Source comment: Café = #text(\"m\")",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": "13px",
+        "lineHeight": "21.45px",
+        "bounds": {
+          "x": 30.8125,
+          "y": 58.875,
+          "width": 609.1875,
+          "height": 21.4375
+        },
+        "glyphs": [
+          {
+            "character": "/",
+            "sourceByteOffset": 0,
+            "x": 46.8125,
+            "y": 59.875,
+            "width": 7.8125,
+            "height": 18
+          },
+          {
+            "character": "/",
+            "sourceByteOffset": 1,
+            "x": 54.609375,
+            "y": 59.875,
+            "width": 7.8125,
+            "height": 18
+          },
+          {
+            "character": "m",
+            "sourceByteOffset": 12,
+            "x": 140.40625,
+            "y": 59.875,
+            "width": 7.8125,
+            "height": 18
+          },
+          {
+            "character": "m",
+            "sourceByteOffset": 13,
+            "x": 148.203125,
+            "y": 59.875,
+            "width": 7.8125,
+            "height": 18
+          },
+          {
+            "character": "é",
+            "sourceByteOffset": 22,
+            "x": 218.40625,
+            "y": 59.875,
+            "width": 7.8125,
+            "height": 18
+          },
+          {
+            "character": "=",
+            "sourceByteOffset": 25,
+            "x": 234,
+            "y": 59.875,
+            "width": 7.828125,
+            "height": 18
+          },
+          {
+            "character": "m",
+            "sourceByteOffset": 34,
+            "x": 304.203125,
+            "y": 59.875,
+            "width": 7.8125,
+            "height": 18
+          }
+        ]
+      },
+      {
+        "text": "",
+        "fontFamily": "\"JetBrains Mono\", \"Fira Code\", monospace",
+        "fontSize": "13px",
+        "lineHeight": "21.45px",
+        "bounds": {
+          "x": 30.8125,
+          "y": 80.3125,
+          "width": 609.1875,
+          "height": 21.4375
+        },
+        "glyphs": []
+      }
+    ]
+  }
+}

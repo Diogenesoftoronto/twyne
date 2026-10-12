@@ -1,0 +1,35 @@
+{
+  "status": "pass",
+  "gate": "actual mounted math-source form",
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --lib editor::math_source_editor::tests",
+  "log": "desktop/gpui/target/verification/math-source-form-browser-matched-tests.log",
+  "passed": 9,
+  "failed": 0,
+  "ignored": 0,
+  "elapsedTestSeconds": 3.08,
+  "sourceBrowserDefaultCases": 10,
+  "mountedDefaultCases": 20,
+  "sakanaDecisionCasesReviewed": 32,
+  "limits": [
+    "Form registered; product host mounting not yet adopted.",
+    "Linux Chrome fixture keyboard defaults; no other operating system keyboard proof.",
+    "Native textarea line height rounds logical Source19.6px to20px.",
+    "Injected diagnostic preview only; no canonical conversion, persistent save, renderer fidelity, or OS IME proof from this form gate."
+  ],
+  "hashes": {
+    "desktop/gpui/src/editor/math_source_editor.rs": "319451d69ed42fc41f0d25749f50e41c714824f7fdcea372e6e0bb50f95f960a",
+    "desktop/gpui/src/editor/mod.rs": "efa568bc71073c85cfe03ccddaed56b26fe17f42905bc92e03b77e11ec5dd6d8",
+    "desktop/gpui/src/editor/view.rs": "ea8561e6e9e8f3cb2e7a00e8c338f41f68041e3ad5f05d0596a4947ee0c021ed",
+    "desktop/gpui/fixtures/math-write/native-source-form/view_tests.rs": "f5920da660fbd5048f19c19cddc4cea18317e4459e3a67dac1d4b6d56a494c3f",
+    "desktop/gpui/fixtures/math-write/native-source-form/browser-default-keys.json": "668d3c447d3c446f69bbba4302a0eef8a7e732024bc0046ea4fa2e2c73975085",
+    "desktop/gpui/fixtures/math-write/native-source-form/sakana-key-decisions.json": "695d3c745b78e2ce799e42b02d69830f2d2c042d7e007d53b8053ad2b4c90267"
+  },
+  "reviewedStrictClippy": {
+    "status": "pass",
+    "command": "rtk proxy devenv shell -- rtk proxy cargo clippy --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests,native-audio --all-targets -- -D warnings",
+    "log": "desktop/gpui/target/verification/math-form-dossier-clippy-reviewed.log",
+    "elapsedSeconds": 14.38,
+    "afterTestChange": "Only the fixture cancellation arm was rewritten as an equivalent guarded match for Clippy; nine-test gate has not been repeated since that fixture-only rewrite."
+  },
+  "testedFixtureSha256": "caaad917145a7708bc3cdfea0a7f733503f920ff89c3e52fb3016250c8602cb0"
+}

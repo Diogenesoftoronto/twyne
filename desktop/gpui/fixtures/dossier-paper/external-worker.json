@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "task": "dossier_paper_layers",
+  "model": "sakana/fugu-max",
+  "cli": "crush",
+  "launcher": "/tmp/twyne-gpui-parallel-20261004/run.py",
+  "exitCode": -15,
+  "elapsedSeconds": 1030.66,
+  "credentialHandling": "Existing launcher Skate read; child environment only; no credential printed/copied/persisted by this work",
+  "resultBytes": 53,
+  "stderrBytes": 0,
+  "reviewedResultExcerpt": "Now I have all the source data. Building the fixture.",
+  "producedFiles": [],
+  "proof": "Requested model route attempted; stalled worker stopped; no model-produced extraction artifact or passing gate",
+  "fallback": "Locally authored/reviewed Source extraction and5-case Bun layer contract gate"
+}

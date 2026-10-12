@@ -1,0 +1,1565 @@
+{
+  "base": [
+    {
+      "id": "web/comment:café",
+      "folioId": "web/folio:café",
+      "text": "Check **this claim**.\n\nKeep the quotation.",
+      "author": "You",
+      "anchor": "The notebook was small enough",
+      "resolved": false,
+      "createdAt": 90,
+      "updatedAt": 100,
+      "audioId": "local-voice:original",
+      "audioDurationMs": 2450.25,
+      "transcriptProvider": "original-provider",
+      "futureThread": {
+        "provenance": "spoken"
+      },
+      "replies": [
+        {
+          "id": "reply:editor",
+          "author": "The Scholar",
+          "authorKind": "persona",
+          "personaId": "scholar",
+          "color": "#2c4a7c",
+          "text": "Keep the primary source.",
+          "createdAt": 95,
+          "futureReply": {
+            "model": "retained"
+          }
+        }
+      ]
+    },
+    {
+      "id": "foreign:note",
+      "folioId": "not-imported:folio",
+      "text": "Foreign note",
+      "author": "Elsewhere",
+      "resolved": true,
+      "createdAt": 20,
+      "updatedAt": 30,
+      "replies": [],
+      "unseenScope": [
+        "retain",
+        3
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "method": "upsertUserComment",
+      "args": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 999,
+          "replies": []
+        }
+      ],
+      "now": 1000,
+      "before": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "Check **this claim**.\n\nKeep the quotation.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 100,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 999,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "result": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 999,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "method": "appendUserCommentReply",
+      "args": [
+        "web/comment:café",
+        {
+          "id": "r-1000",
+          "author": "You",
+          "authorKind": "user",
+          "text": "  Café — keep these spaces.  ",
+          "createdAt": 1000
+        }
+      ],
+      "now": 1001,
+      "before": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 999,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1001,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "result": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1001,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "method": "toggleUserCommentResolved",
+      "args": [
+        "web/comment:café"
+      ],
+      "now": 1002,
+      "before": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1001,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": true,
+          "createdAt": 90,
+          "updatedAt": 1002,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "result": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": true,
+          "createdAt": 90,
+          "updatedAt": 1002,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "method": "toggleUserCommentResolved",
+      "args": [
+        "web/comment:café"
+      ],
+      "now": 1003,
+      "before": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": true,
+          "createdAt": 90,
+          "updatedAt": 1002,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1003,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "result": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1003,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "method": "deleteUserComments",
+      "args": [
+        []
+      ],
+      "now": 1004,
+      "before": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1003,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1003,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "result": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1003,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "method": "deleteUserComments",
+      "args": [
+        [
+          "web/comment:café",
+          "foreign:note",
+          "absent"
+        ]
+      ],
+      "now": 1005,
+      "before": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "A parent body edited after replies arrived.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 1003,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            },
+            {
+              "id": "r-1000",
+              "author": "You",
+              "authorKind": "user",
+              "text": "  Café — keep these spaces.  ",
+              "createdAt": 1000
+            }
+          ]
+        },
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        }
+      ],
+      "after": [],
+      "result": []
+    },
+    {
+      "method": "appendUserCommentReply",
+      "args": [
+        "web/comment:early",
+        {
+          "id": "persona:early",
+          "author": "The Editor",
+          "authorKind": "persona",
+          "personaId": "editor",
+          "text": "The reply arrived first.",
+          "createdAt": 800,
+          "color": "#d4a017"
+        }
+      ],
+      "now": 1006,
+      "before": [],
+      "after": [
+        {
+          "id": "web/comment:early",
+          "folioId": "",
+          "text": "",
+          "author": "The Editor",
+          "resolved": false,
+          "createdAt": 800,
+          "updatedAt": 1006,
+          "replies": [
+            {
+              "id": "persona:early",
+              "author": "The Editor",
+              "authorKind": "persona",
+              "personaId": "editor",
+              "text": "The reply arrived first.",
+              "createdAt": 800,
+              "color": "#d4a017"
+            }
+          ]
+        }
+      ],
+      "result": [
+        {
+          "id": "web/comment:early",
+          "folioId": "",
+          "text": "",
+          "author": "The Editor",
+          "resolved": false,
+          "createdAt": 800,
+          "updatedAt": 1006,
+          "replies": [
+            {
+              "id": "persona:early",
+              "author": "The Editor",
+              "authorKind": "persona",
+              "personaId": "editor",
+              "text": "The reply arrived first.",
+              "createdAt": 800,
+              "color": "#d4a017"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "method": "upsertUserComment",
+      "args": [
+        {
+          "id": "web/comment:early",
+          "folioId": "web/folio:café",
+          "text": "The parent arrived later.",
+          "author": "You",
+          "anchor": "A real original passage",
+          "resolved": false,
+          "createdAt": 799,
+          "updatedAt": 1007,
+          "replies": []
+        }
+      ],
+      "now": 1007,
+      "before": [
+        {
+          "id": "web/comment:early",
+          "folioId": "",
+          "text": "",
+          "author": "The Editor",
+          "resolved": false,
+          "createdAt": 800,
+          "updatedAt": 1006,
+          "replies": [
+            {
+              "id": "persona:early",
+              "author": "The Editor",
+              "authorKind": "persona",
+              "personaId": "editor",
+              "text": "The reply arrived first.",
+              "createdAt": 800,
+              "color": "#d4a017"
+            }
+          ]
+        }
+      ],
+      "after": [
+        {
+          "id": "web/comment:early",
+          "folioId": "web/folio:café",
+          "text": "The parent arrived later.",
+          "author": "You",
+          "resolved": false,
+          "createdAt": 799,
+          "updatedAt": 1007,
+          "replies": [
+            {
+              "id": "persona:early",
+              "author": "The Editor",
+              "authorKind": "persona",
+              "personaId": "editor",
+              "text": "The reply arrived first.",
+              "createdAt": 800,
+              "color": "#d4a017"
+            }
+          ],
+          "anchor": "A real original passage"
+        }
+      ],
+      "result": [
+        {
+          "id": "web/comment:early",
+          "folioId": "web/folio:café",
+          "text": "The parent arrived later.",
+          "author": "You",
+          "resolved": false,
+          "createdAt": 799,
+          "updatedAt": 1007,
+          "replies": [
+            {
+              "id": "persona:early",
+              "author": "The Editor",
+              "authorKind": "persona",
+              "personaId": "editor",
+              "text": "The reply arrived first.",
+              "createdAt": 800,
+              "color": "#d4a017"
+            }
+          ],
+          "anchor": "A real original passage"
+        }
+      ]
+    }
+  ],
+  "reconciliation": {
+    "threads": [
+      {
+        "id": "web/comment:café",
+        "folioId": "web/folio:café",
+        "text": "Check **this claim**.\n\nKeep the quotation.",
+        "author": "You",
+        "anchor": "The notebook was small enough",
+        "resolved": false,
+        "createdAt": 90,
+        "updatedAt": 100,
+        "audioId": "local-voice:original",
+        "audioDurationMs": 2450.25,
+        "transcriptProvider": "original-provider",
+        "futureThread": {
+          "provenance": "spoken"
+        },
+        "replies": [
+          {
+            "id": "reply:editor",
+            "author": "The Scholar",
+            "authorKind": "persona",
+            "personaId": "scholar",
+            "color": "#2c4a7c",
+            "text": "Keep the primary source.",
+            "createdAt": 95,
+            "futureReply": {
+              "model": "retained"
+            }
+          }
+        ]
+      },
+      {
+        "id": "foreign:note",
+        "folioId": "not-imported:folio",
+        "text": "Foreign note",
+        "author": "Elsewhere",
+        "resolved": true,
+        "createdAt": 20,
+        "updatedAt": 30,
+        "replies": [],
+        "unseenScope": [
+          "retain",
+          3
+        ]
+      },
+      {
+        "id": "same-quote-no-mark",
+        "folioId": "web/folio:café",
+        "text": "This is a ghost, despite identical anchor prose.",
+        "author": "You",
+        "anchor": "The notebook was small enough",
+        "resolved": false,
+        "createdAt": 90,
+        "updatedAt": 100,
+        "audioId": "local-voice:original",
+        "audioDurationMs": 2450.25,
+        "transcriptProvider": "original-provider",
+        "futureThread": {
+          "provenance": "spoken"
+        },
+        "replies": [
+          {
+            "id": "reply:editor",
+            "author": "The Scholar",
+            "authorKind": "persona",
+            "personaId": "scholar",
+            "color": "#2c4a7c",
+            "text": "Keep the primary source.",
+            "createdAt": 95,
+            "futureReply": {
+              "model": "retained"
+            }
+          }
+        ]
+      }
+    ],
+    "marks": [
+      "web/comment:café",
+      "headless:mark",
+      "web/comment:café",
+      "second-headless",
+      "headless:mark"
+    ],
+    "result": {
+      "live": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "Check **this claim**.\n\nKeep the quotation.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 100,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        }
+      ],
+      "ghost": [
+        {
+          "id": "foreign:note",
+          "folioId": "not-imported:folio",
+          "text": "Foreign note",
+          "author": "Elsewhere",
+          "resolved": true,
+          "createdAt": 20,
+          "updatedAt": 30,
+          "replies": [],
+          "unseenScope": [
+            "retain",
+            3
+          ]
+        },
+        {
+          "id": "same-quote-no-mark",
+          "folioId": "web/folio:café",
+          "text": "This is a ghost, despite identical anchor prose.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 100,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        }
+      ],
+      "headless": [
+        "headless:mark",
+        "second-headless"
+      ]
+    }
+  },
+  "callerReconciliation": {
+    "folioId": "web/folio:café",
+    "marks": [
+      "headless:actual-mark",
+      "web/comment:café",
+      "web/comment:café"
+    ],
+    "before": [
+      {
+        "id": "web/comment:café",
+        "folioId": "web/folio:café",
+        "text": "Check **this claim**.\n\nKeep the quotation.",
+        "author": "You",
+        "anchor": "The notebook was small enough",
+        "resolved": false,
+        "createdAt": 90,
+        "updatedAt": 100,
+        "audioId": "local-voice:original",
+        "audioDurationMs": 2450.25,
+        "transcriptProvider": "original-provider",
+        "futureThread": {
+          "provenance": "spoken"
+        },
+        "replies": [
+          {
+            "id": "reply:editor",
+            "author": "The Scholar",
+            "authorKind": "persona",
+            "personaId": "scholar",
+            "color": "#2c4a7c",
+            "text": "Keep the primary source.",
+            "createdAt": 95,
+            "futureReply": {
+              "model": "retained"
+            }
+          }
+        ]
+      },
+      {
+        "id": "same-quote-orphan",
+        "folioId": "web/folio:café",
+        "text": "Check **this claim**.\n\nKeep the quotation.",
+        "author": "You",
+        "anchor": "The notebook was small enough",
+        "resolved": false,
+        "createdAt": 90,
+        "updatedAt": 100,
+        "audioId": "local-voice:original",
+        "audioDurationMs": 2450.25,
+        "transcriptProvider": "original-provider",
+        "futureThread": {
+          "origin": "same quote; distinct ID"
+        },
+        "replies": [
+          {
+            "id": "reply:editor",
+            "author": "The Scholar",
+            "authorKind": "persona",
+            "personaId": "scholar",
+            "color": "#2c4a7c",
+            "text": "Keep the primary source.",
+            "createdAt": 95,
+            "futureReply": {
+              "model": "retained"
+            }
+          }
+        ]
+      },
+      {
+        "id": "struck-orphan",
+        "folioId": "web/folio:café",
+        "text": "Check **this claim**.\n\nKeep the quotation.",
+        "author": "You",
+        "anchor": "The notebook was small enough",
+        "resolved": true,
+        "createdAt": 90,
+        "updatedAt": 100,
+        "audioId": "local-voice:original",
+        "audioDurationMs": 2450.25,
+        "transcriptProvider": "original-provider",
+        "futureThread": {
+          "provenance": "spoken"
+        },
+        "replies": [
+          {
+            "id": "reply:editor",
+            "author": "The Scholar",
+            "authorKind": "persona",
+            "personaId": "scholar",
+            "color": "#2c4a7c",
+            "text": "Keep the primary source.",
+            "createdAt": 95,
+            "futureReply": {
+              "model": "retained"
+            }
+          }
+        ]
+      },
+      {
+        "id": "foreign:note",
+        "folioId": "not-imported:folio",
+        "text": "Foreign note",
+        "author": "Elsewhere",
+        "resolved": true,
+        "createdAt": 20,
+        "updatedAt": 30,
+        "replies": [],
+        "unseenScope": [
+          "retain",
+          3
+        ]
+      }
+    ],
+    "after": [
+      {
+        "id": "web/comment:café",
+        "folioId": "web/folio:café",
+        "text": "Check **this claim**.\n\nKeep the quotation.",
+        "author": "You",
+        "anchor": "The notebook was small enough",
+        "resolved": false,
+        "createdAt": 90,
+        "updatedAt": 100,
+        "audioId": "local-voice:original",
+        "audioDurationMs": 2450.25,
+        "transcriptProvider": "original-provider",
+        "futureThread": {
+          "provenance": "spoken"
+        },
+        "replies": [
+          {
+            "id": "reply:editor",
+            "author": "The Scholar",
+            "authorKind": "persona",
+            "personaId": "scholar",
+            "color": "#2c4a7c",
+            "text": "Keep the primary source.",
+            "createdAt": 95,
+            "futureReply": {
+              "model": "retained"
+            }
+          }
+        ]
+      },
+      {
+        "id": "foreign:note",
+        "folioId": "not-imported:folio",
+        "text": "Foreign note",
+        "author": "Elsewhere",
+        "resolved": true,
+        "createdAt": 20,
+        "updatedAt": 30,
+        "replies": [],
+        "unseenScope": [
+          "retain",
+          3
+        ]
+      }
+    ],
+    "result": {
+      "live": [
+        {
+          "id": "web/comment:café",
+          "folioId": "web/folio:café",
+          "text": "Check **this claim**.\n\nKeep the quotation.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 100,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        }
+      ],
+      "ghost": [
+        {
+          "id": "same-quote-orphan",
+          "folioId": "web/folio:café",
+          "text": "Check **this claim**.\n\nKeep the quotation.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": false,
+          "createdAt": 90,
+          "updatedAt": 100,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "origin": "same quote; distinct ID"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        },
+        {
+          "id": "struck-orphan",
+          "folioId": "web/folio:café",
+          "text": "Check **this claim**.\n\nKeep the quotation.",
+          "author": "You",
+          "anchor": "The notebook was small enough",
+          "resolved": true,
+          "createdAt": 90,
+          "updatedAt": 100,
+          "audioId": "local-voice:original",
+          "audioDurationMs": 2450.25,
+          "transcriptProvider": "original-provider",
+          "futureThread": {
+            "provenance": "spoken"
+          },
+          "replies": [
+            {
+              "id": "reply:editor",
+              "author": "The Scholar",
+              "authorKind": "persona",
+              "personaId": "scholar",
+              "color": "#2c4a7c",
+              "text": "Keep the primary source.",
+              "createdAt": 95,
+              "futureReply": {
+                "model": "retained"
+              }
+            }
+          ]
+        }
+      ],
+      "headless": [
+        "headless:actual-mark"
+      ]
+    },
+    "heldDrafts": {
+      "web/folio:café": {
+        "same-quote-orphan": "Unfiled last character… Café\nStill held.",
+        "web/comment:café": "Live draft"
+      },
+      "not-imported:folio": {
+        "foreign:note": "Foreign draft stays"
+      }
+    }
+  },
+  "legacy": {
+    "before": [
+      {
+        "id": "legacy:note",
+        "text": "Old panel note",
+        "selectedText": "Old passage",
+        "from": 4,
+        "to": 17,
+        "author": "You",
+        "timestamp": 50,
+        "resolved": false,
+        "futureLegacy": {
+          "keep": true
+        },
+        "replies": [
+          {
+            "id": "legacy:reply",
+            "author": "You",
+            "text": "Older reply",
+            "timestamp": 60,
+            "position": 2
+          }
+        ]
+      }
+    ],
+    "after": [
+      {
+        "id": "legacy:note",
+        "folioId": "",
+        "text": "Old panel note",
+        "author": "You",
+        "anchor": "Old passage",
+        "resolved": false,
+        "createdAt": 50,
+        "updatedAt": 50,
+        "replies": [
+          {
+            "id": "legacy:reply",
+            "author": "You",
+            "authorKind": "user",
+            "text": "Older reply",
+            "createdAt": 60
+          }
+        ]
+      }
+    ],
+    "legacyAfterLoad": []
+  }
+}

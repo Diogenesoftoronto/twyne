@@ -1,0 +1,5411 @@
+{
+  "notes": [
+    {
+      "id": "comment:web:live",
+      "anchors": [
+        "Keep the opening concrete."
+      ],
+      "createdAt": 1940000,
+      "kind": "comment",
+      "title": "You",
+      "body": "Note"
+    },
+    {
+      "id": "comment:older",
+      "anchors": [
+        "The notebook was small enough to carry."
+      ],
+      "createdAt": 800000,
+      "kind": "comment",
+      "title": "You",
+      "body": "Note"
+    },
+    {
+      "id": "comment:same-quote",
+      "anchors": [
+        "Keep the opening concrete."
+      ],
+      "createdAt": 1940000,
+      "kind": "comment",
+      "title": "You",
+      "body": "Note"
+    },
+    {
+      "id": "comment:café",
+      "anchors": [
+        "Café — a quotation, softened corners."
+      ],
+      "createdAt": 2000000,
+      "kind": "comment",
+      "title": "You",
+      "body": "Note"
+    },
+    {
+      "id": "comment:unicode",
+      "anchors": [
+        "ὈΔΌΣ 東京 १२३ ͅcombining"
+      ],
+      "createdAt": 2001000,
+      "kind": "comment",
+      "title": "You",
+      "body": "Note"
+    }
+  ],
+  "cases": [
+    {
+      "mode": "working",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:café",
+        "comment:unicode",
+        "comment:web:live"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:café",
+        "comment:unicode",
+        "comment:web:live"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode",
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode",
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:web:live",
+        "comment:same-quote",
+        "comment:café"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:web:live",
+        "comment:same-quote",
+        "comment:café"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:unicode",
+        "comment:older"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:unicode",
+        "comment:older"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older",
+        "comment:café",
+        "comment:unicode"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older",
+        "comment:café",
+        "comment:unicode"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older",
+        "comment:unicode",
+        "comment:same-quote"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older",
+        "comment:unicode",
+        "comment:same-quote"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:café",
+        "comment:unicode",
+        "comment:web:live"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:café",
+        "comment:unicode",
+        "comment:web:live"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode",
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode",
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode",
+        "comment:café",
+        "comment:web:live"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode",
+        "comment:café",
+        "comment:web:live"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode",
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "working",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode",
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 0,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "settling",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "flow",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:café"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:café"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:web:live"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:web:live"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:café"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:café"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode"
+      ],
+      "held": 4,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "stuck",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:unicode"
+      ],
+      "held": 2,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "Keep the opening concrete.",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 1,
+          "score": 2.659681974760255
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "Notebook enough remembered",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0.5,
+          "score": 1.6720472248001461
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "CAFÉ — café quotation",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0.5,
+          "score": 2.0344500000000005
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 5,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [],
+      "held": 3,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    },
+    {
+      "mode": "away",
+      "cursorText": "ὀδός 東京 १२३ ͅcombining",
+      "dismissed": [
+        "comment:web:live",
+        "comment:café"
+      ],
+      "shown": [
+        "comment:older",
+        "comment:same-quote"
+      ],
+      "now": 2000000,
+      "weight": 1.37,
+      "visibleAnchors": [
+        "The notebook was small enough to carry."
+      ],
+      "workingLimit": 3,
+      "visible": [
+        "comment:same-quote",
+        "comment:older"
+      ],
+      "held": 1,
+      "scores": [
+        {
+          "id": "comment:web:live",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:older",
+          "overlap": 0,
+          "score": 1.1653662475879807
+        },
+        {
+          "id": "comment:same-quote",
+          "overlap": 0,
+          "score": 1.3298409873801276
+        },
+        {
+          "id": "comment:café",
+          "overlap": 0,
+          "score": 1.3563000000000003
+        },
+        {
+          "id": "comment:unicode",
+          "overlap": 1,
+          "score": 2.7126000000000006
+        }
+      ]
+    }
+  ],
+  "stackCases": [
+    {
+      "cards": [
+        {
+          "id": "first",
+          "top": 100,
+          "height": 80
+        },
+        {
+          "id": "second",
+          "top": 100,
+          "height": 50
+        }
+      ],
+      "obstacles": [],
+      "expected": {
+        "first": 100,
+        "second": 190
+      }
+    },
+    {
+      "cards": [
+        {
+          "id": "late",
+          "top": 240,
+          "height": 100
+        },
+        {
+          "id": "early",
+          "top": -4,
+          "height": 50
+        },
+        {
+          "id": "same",
+          "top": -4,
+          "height": 80
+        }
+      ],
+      "obstacles": [
+        {
+          "top": 0,
+          "height": 100
+        },
+        {
+          "top": 150,
+          "height": 75
+        }
+      ],
+      "expected": {
+        "early": 235,
+        "same": 295,
+        "late": 385
+      }
+    },
+    {
+      "cards": [
+        {
+          "id": "thread",
+          "top": 100,
+          "height": 451
+        },
+        {
+          "id": "below",
+          "top": 150,
+          "height": 90
+        }
+      ],
+      "obstacles": [
+        {
+          "top": 600,
+          "height": 64
+        }
+      ],
+      "expected": {
+        "thread": 100,
+        "below": 674
+      }
+    },
+    {
+      "cards": [
+        {
+          "id": "touch",
+          "top": 110,
+          "height": 20
+        },
+        {
+          "id": "boundary",
+          "top": 150,
+          "height": 5
+        }
+      ],
+      "obstacles": [
+        {
+          "top": 50,
+          "height": 50
+        }
+      ],
+      "expected": {
+        "touch": 110,
+        "boundary": 150
+      }
+    }
+  ],
+  "clipCases": [
+    {
+      "text": "Café **plain preview**.\n\nNext paragraph.",
+      "limit": 280,
+      "expected": "Café **plain preview**.\n\nNext paragraph."
+    },
+    {
+      "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 😀 suffix",
+      "limit": 280,
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa…"
+    },
+    {
+      "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa  \nend",
+      "limit": 280,
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa…"
+    },
+    {
+      "text": "reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply ",
+      "limit": 420,
+      "expected": "reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply reply…"
+    },
+    {
+      "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa😀 suffix",
+      "limit": 280,
+      "expected": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa�…"
+    }
+  ],
+  "connectionCases": [
+    {
+      "room": "rail",
+      "hoverId": "comment:web:live",
+      "peekId": null,
+      "openId": null,
+      "canvas": {
+        "left": 100,
+        "top": 180,
+        "right": 804,
+        "bottom": 1380,
+        "width": 704,
+        "height": 1200
+      },
+      "text": {
+        "left": 132,
+        "top": 196,
+        "right": 772,
+        "bottom": 1096,
+        "width": 640,
+        "height": 900
+      },
+      "notes": [
+        {
+          "item": {
+            "id": "comment:web:live",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 66,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 66,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:same-quote",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 236,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 236,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:other",
+            "anchors": [
+              "A different quotation"
+            ],
+            "top": 416,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 416,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:unplaced",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 516,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 516,
+          "side": "room"
+        }
+      ],
+      "groups": {
+        "comment:web:live": [
+          [
+            {
+              "left": 142,
+              "top": 250,
+              "width": 90,
+              "height": 24,
+              "right": 232,
+              "bottom": 274
+            },
+            {
+              "left": 132,
+              "top": 274,
+              "width": 130,
+              "height": 24,
+              "right": 262,
+              "bottom": 298
+            }
+          ]
+        ],
+        "comment:same-quote": [
+          [
+            {
+              "left": 155,
+              "top": 420,
+              "width": 120,
+              "height": 22,
+              "right": 275,
+              "bottom": 442
+            }
+          ],
+          [
+            {
+              "left": 170,
+              "top": 490,
+              "width": 40,
+              "height": 22,
+              "right": 210,
+              "bottom": 512
+            }
+          ]
+        ],
+        "comment:other": [
+          [
+            {
+              "left": 132,
+              "top": 600,
+              "width": 200,
+              "height": 24,
+              "right": 332,
+              "bottom": 624
+            }
+          ]
+        ],
+        "comment:unplaced": []
+      },
+      "expected": {
+        "lines": [
+          {
+            "d": "M 732 86 C 696 86, 718 94, 685 94",
+            "color": "writer-note",
+            "dashed": false
+          },
+          {
+            "d": "M 732 256 C 696 256, 718 251, 685 251",
+            "color": "writer-note",
+            "dashed": true
+          },
+          {
+            "d": "M 732 256 C 696 256, 718 321, 685 321",
+            "color": "writer-note",
+            "dashed": true
+          }
+        ],
+        "brackets": [
+          {
+            "d": "M 677 70 H 682 V 118 H 677",
+            "color": "writer-note"
+          },
+          {
+            "d": "M 677 240 H 682 V 262 H 677",
+            "color": "writer-note"
+          },
+          {
+            "d": "M 677 310 H 682 V 332 H 677",
+            "color": "writer-note"
+          }
+        ],
+        "marks": [
+          {
+            "x": 42,
+            "y": 70,
+            "w": 90,
+            "h": 24,
+            "color": "writer-note"
+          },
+          {
+            "x": 32,
+            "y": 94,
+            "w": 130,
+            "h": 24,
+            "color": "writer-note"
+          }
+        ]
+      }
+    },
+    {
+      "room": "dock",
+      "hoverId": null,
+      "peekId": "comment:same-quote",
+      "openId": null,
+      "canvas": {
+        "left": 100,
+        "top": 180,
+        "right": 804,
+        "bottom": 1380,
+        "width": 704,
+        "height": 1200
+      },
+      "text": {
+        "left": 132,
+        "top": 196,
+        "right": 772,
+        "bottom": 1096,
+        "width": 640,
+        "height": 900
+      },
+      "notes": [
+        {
+          "item": {
+            "id": "comment:web:live",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 66,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 66,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:same-quote",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 236,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 236,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:other",
+            "anchors": [
+              "A different quotation"
+            ],
+            "top": 416,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 416,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:unplaced",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 516,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 516,
+          "side": "room"
+        }
+      ],
+      "groups": {
+        "comment:web:live": [
+          [
+            {
+              "left": 142,
+              "top": 250,
+              "width": 90,
+              "height": 24,
+              "right": 232,
+              "bottom": 274
+            },
+            {
+              "left": 132,
+              "top": 274,
+              "width": 130,
+              "height": 24,
+              "right": 262,
+              "bottom": 298
+            }
+          ]
+        ],
+        "comment:same-quote": [
+          [
+            {
+              "left": 155,
+              "top": 420,
+              "width": 120,
+              "height": 22,
+              "right": 275,
+              "bottom": 442
+            }
+          ],
+          [
+            {
+              "left": 170,
+              "top": 490,
+              "width": 40,
+              "height": 22,
+              "right": 210,
+              "bottom": 512
+            }
+          ]
+        ],
+        "comment:other": [
+          [
+            {
+              "left": 132,
+              "top": 600,
+              "width": 200,
+              "height": 24,
+              "right": 332,
+              "bottom": 624
+            }
+          ]
+        ],
+        "comment:unplaced": []
+      },
+      "expected": {
+        "lines": [],
+        "brackets": [
+          {
+            "d": "M 677 70 H 682 V 118 H 677",
+            "color": "writer-note"
+          },
+          {
+            "d": "M 677 240 H 682 V 262 H 677",
+            "color": "writer-note"
+          },
+          {
+            "d": "M 677 310 H 682 V 332 H 677",
+            "color": "writer-note"
+          }
+        ],
+        "marks": [
+          {
+            "x": 55,
+            "y": 240,
+            "w": 120,
+            "h": 22,
+            "color": "writer-note"
+          },
+          {
+            "x": 70,
+            "y": 310,
+            "w": 40,
+            "h": 22,
+            "color": "writer-note"
+          }
+        ]
+      }
+    },
+    {
+      "room": "rail",
+      "hoverId": null,
+      "peekId": null,
+      "openId": "comment:other",
+      "canvas": {
+        "left": 100,
+        "top": 180,
+        "right": 804,
+        "bottom": 1380,
+        "width": 704,
+        "height": 1200
+      },
+      "text": {
+        "left": 132,
+        "top": 196,
+        "right": 772,
+        "bottom": 1096,
+        "width": 640,
+        "height": 900
+      },
+      "notes": [
+        {
+          "item": {
+            "id": "comment:web:live",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 66,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 66,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:same-quote",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 236,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 236,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:other",
+            "anchors": [
+              "A different quotation"
+            ],
+            "top": 416,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 416,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:unplaced",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 516,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 516,
+          "side": "room"
+        }
+      ],
+      "groups": {
+        "comment:web:live": [
+          [
+            {
+              "left": 142,
+              "top": 250,
+              "width": 90,
+              "height": 24,
+              "right": 232,
+              "bottom": 274
+            },
+            {
+              "left": 132,
+              "top": 274,
+              "width": 130,
+              "height": 24,
+              "right": 262,
+              "bottom": 298
+            }
+          ]
+        ],
+        "comment:same-quote": [
+          [
+            {
+              "left": 155,
+              "top": 420,
+              "width": 120,
+              "height": 22,
+              "right": 275,
+              "bottom": 442
+            }
+          ],
+          [
+            {
+              "left": 170,
+              "top": 490,
+              "width": 40,
+              "height": 22,
+              "right": 210,
+              "bottom": 512
+            }
+          ]
+        ],
+        "comment:other": [
+          [
+            {
+              "left": 132,
+              "top": 600,
+              "width": 200,
+              "height": 24,
+              "right": 332,
+              "bottom": 624
+            }
+          ]
+        ],
+        "comment:unplaced": []
+      },
+      "expected": {
+        "lines": [
+          {
+            "d": "M 732 436 C 696 436, 718 432, 685 432",
+            "color": "writer-note",
+            "dashed": false
+          }
+        ],
+        "brackets": [
+          {
+            "d": "M 677 420 H 682 V 444 H 677",
+            "color": "writer-note"
+          }
+        ],
+        "marks": [
+          {
+            "x": 32,
+            "y": 420,
+            "w": 200,
+            "h": 24,
+            "color": "writer-note"
+          }
+        ]
+      }
+    },
+    {
+      "room": "rail",
+      "hoverId": null,
+      "peekId": null,
+      "openId": null,
+      "canvas": {
+        "left": 100,
+        "top": 180,
+        "right": 804,
+        "bottom": 1380,
+        "width": 704,
+        "height": 1200
+      },
+      "text": {
+        "left": 132,
+        "top": 196,
+        "right": 772,
+        "bottom": 1096,
+        "width": 640,
+        "height": 900
+      },
+      "notes": [
+        {
+          "item": {
+            "id": "comment:web:live",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 66,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 66,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:same-quote",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 236,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 236,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:other",
+            "anchors": [
+              "A different quotation"
+            ],
+            "top": 416,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 416,
+          "side": "room"
+        },
+        {
+          "item": {
+            "id": "comment:unplaced",
+            "anchors": [
+              "Repeated quotation"
+            ],
+            "top": 516,
+            "side": "room",
+            "kind": "comment"
+          },
+          "top": 516,
+          "side": "room"
+        }
+      ],
+      "groups": {
+        "comment:web:live": [
+          [
+            {
+              "left": 142,
+              "top": 250,
+              "width": 90,
+              "height": 24,
+              "right": 232,
+              "bottom": 274
+            },
+            {
+              "left": 132,
+              "top": 274,
+              "width": 130,
+              "height": 24,
+              "right": 262,
+              "bottom": 298
+            }
+          ]
+        ],
+        "comment:same-quote": [
+          [
+            {
+              "left": 155,
+              "top": 420,
+              "width": 120,
+              "height": 22,
+              "right": 275,
+              "bottom": 442
+            }
+          ],
+          [
+            {
+              "left": 170,
+              "top": 490,
+              "width": 40,
+              "height": 22,
+              "right": 210,
+              "bottom": 512
+            }
+          ]
+        ],
+        "comment:other": [
+          [
+            {
+              "left": 132,
+              "top": 600,
+              "width": 200,
+              "height": 24,
+              "right": 332,
+              "bottom": 624
+            }
+          ]
+        ],
+        "comment:unplaced": []
+      },
+      "expected": {
+        "lines": [],
+        "brackets": [],
+        "marks": []
+      }
+    }
+  ]
+}

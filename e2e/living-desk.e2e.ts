@@ -22,6 +22,7 @@ test("@demo a readable take of the local revision workflow", async ({
     await take.waitForTimeout(2600);
   };
   await take.goto("/editor/");
+  await editorReady(take);
   await expect(stance(take)).toContainText("3 editorial");
   await take.evaluate(() => {
     if (document.activeElement instanceof HTMLElement)
@@ -120,9 +121,16 @@ async function seed(page: Page) {
     );
   }, LIVING_DESK_MANUSCRIPT);
   await page.goto("/editor/");
+  await editorReady(page);
   await expect(stance(page)).toContainText("3 editorial");
   await expect(panel(page)).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
+}
+
+async function editorReady(page: Page) {
+  // Cold dev modules and restored IndexedDB content precede desk analysis.
+  // Keep that readiness budget separate from the editorial assertions below.
+  await expect(page.locator(".ProseMirror")).toBeVisible({ timeout: 60_000 });
 }
 
 async function capture(page: Page, info: TestInfo, name: string) {
@@ -197,6 +205,7 @@ test("preview, revise, undo and keep an intentional choice without a model", asy
   await expect(naming).toHaveAttribute("data-state", "deliberate");
   await capture(page, info, "04-deliberate");
   await page.reload();
+  await editorReady(page);
   await expect(naming).toHaveAttribute("data-state", "deliberate");
   await naming.locator(".ld-card__head").click();
   await naming
@@ -333,6 +342,7 @@ test("deliberate editorial we persists and only a new occurrence becomes drift",
   expect(await draftText(page)).toBe(acceptedDraft);
 
   await page.reload();
+  await editorReady(page);
   await expect(stance(page)).toHaveAttribute("data-state", "deliberate");
   await expect.poll(() => draftText(page)).toBe(acceptedDraft);
   await stance(page).locator(".ld-card__head").click();

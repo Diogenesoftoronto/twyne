@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "status": "APPLIED_WITH_PARENT_TEST_PATH_AND_FORMATTING",
+  "baseSha256": "12e65aed2cf2b21700cde7e0dc4a0aa8d87a8afbf6beeb75c6292802d3df8ff8",
+  "proposedSha256": "96ac1599073e29a44b0549d84462556b20edc60e4ce3cc867661114d4e2fc438",
+  "patchSha256": "79a6e6ae7eb0d8f154bae92aa8c1ad66a7a3d5f96a70f1dd377d373bab6eab97",
+  "originalProposalSha256": "bec9c6c2e78ea5cd5202a750ce7b097e29f0546046d3c81c6dc0aff0d063773c",
+  "preservedCurrentMount": true,
+  "testsUnexecuted": true,
+  "currentDossierSha256": "9b3c51e7938c05f112d644016c042c334945dc97ce041efc6fd2ac170e6265b3",
+  "testLog": "desktop/gpui/target/verification/dossier-same-pass-centering-mounted-tests.log",
+  "testLogSha256": "f104db2233006e7da6c9172e770fedac6d5c44a8c81e90a35dab56227b791a3a",
+  "testsPassed": 2,
+  "firstDrawAndNaturalTallScrollVerified": true,
+  "actualOsInputProof": false,
+  "sourcePixelParity": false
+}

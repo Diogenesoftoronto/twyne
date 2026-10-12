@@ -204,6 +204,7 @@ export function buildEditorialPolicyState(
           `Focus: ${text(persona.focus, 4_000)}`,
           `Doctrine: ${text(persona.criticalMethod, 4_000)}`,
           `Voice: ${text(persona.voice, 4_000)}`,
+          `Hallmarks:\n${list(persona.hallmarks)}`,
           `Avoidances:\n${list(persona.avoidances)}`,
         ].join("\n")
       : "(no persona supplied)",

@@ -1,0 +1,11 @@
+{
+  "originalUrl": "http://localhost:5180/dossier/create/",
+  "fixtureUrl": "http://localhost:5180/__native-math-write-reference",
+  "fixtureClosed": true,
+  "originalUrlAfter": "http://localhost:5180/dossier/create/",
+  "appStorageWrites": false,
+  "manuscriptWrites": false,
+  "sourceFileWrites": false,
+  "diagnosticStyleScope": "Task-created module fixture only; removed by closing that one page",
+  "otherTabsClosed": false
+}

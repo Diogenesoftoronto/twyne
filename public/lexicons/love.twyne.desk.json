@@ -1,0 +1,127 @@
+{
+  "lexicon": 1,
+  "id": "love.twyne.desk",
+  "description": "An explicitly published public Twyne desk snapshot. Optional statistics are omitted when private. No draft text, names, IDs, private activity details, or AI usage. The account repository DID identifies the author; this is self-published activity, not a third-party attestation.",
+  "defs": {
+    "main": {
+      "type": "record",
+      "key": "literal:self",
+      "record": {
+        "type": "object",
+        "required": ["version", "visibility", "publicationId"],
+        "properties": {
+          "version": {
+            "type": "integer",
+            "const": 1
+          },
+          "handle": {
+            "type": "string",
+            "maxLength": 30
+          },
+          "displayName": {
+            "type": "string",
+            "maxLength": 240,
+            "maxGraphemes": 60
+          },
+          "bio": {
+            "type": "string",
+            "maxLength": 1120,
+            "maxGraphemes": 280
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "datetime"
+          },
+          "stats": {
+            "type": "ref",
+            "ref": "#stats"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": ["public", "private"],
+            "maxLength": 7
+          },
+          "publicationId": {
+            "type": "string",
+            "maxLength": 36,
+            "minLength": 36,
+            "description": "Random UUID identifying this consent or snapshot generation. Unique private markers fence delayed older writes."
+          }
+        },
+        "description": "Public snapshots require handle, url, updatedAt, and stats. Private markers must omit those fields, displayName, and bio; their presence must never make a private marker render publicly. Withdrawal replaces details with a private marker instead of deleting the singleton."
+      }
+    },
+    "stats": {
+      "type": "object",
+      "description": "Only owner-selected fields. Truncated counts are lower bounds. Heatmap counts represent saved writing activity; the 30-day window uses UTC.",
+      "properties": {
+        "writingHeatmap": {
+          "type": "array",
+          "maxLength": 371,
+          "items": {
+            "type": "ref",
+            "ref": "#writingDay"
+          }
+        },
+        "writingHeatmapTruncated": {
+          "type": "boolean"
+        },
+        "daysWritten30": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 30
+        },
+        "streak": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 371
+        },
+        "streakKind": {
+          "type": "string",
+          "enum": ["current", "longest"],
+          "maxLength": 7
+        },
+        "streakTruncated": {
+          "type": "boolean"
+        },
+        "publicPieceCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "publicPieceCountTruncated": {
+          "type": "boolean"
+        },
+        "folioCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "folioCountTruncated": {
+          "type": "boolean"
+        }
+      }
+    },
+    "writingDay": {
+      "type": "object",
+      "required": ["day", "count"],
+      "properties": {
+        "day": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 10,
+          "description": "UTC date in YYYY-MM-DD format."
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      }
+    }
+  }
+}

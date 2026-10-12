@@ -1,0 +1,319 @@
+[
+  {
+    "id": "insert.image",
+    "label": "Image",
+    "description": "Insert a plate from a file or URL.",
+    "group": "Insert",
+    "order": 10,
+    "searchTerms": [
+      "picture",
+      "photo",
+      "plate",
+      "media"
+    ],
+    "keywords": [
+      "picture",
+      "plate"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "insert.table",
+    "label": "Table",
+    "description": "Insert a table into the manuscript.",
+    "group": "Insert",
+    "order": 20,
+    "searchTerms": [
+      "grid",
+      "tabular",
+      "rows",
+      "columns"
+    ],
+    "keywords": [
+      "grid",
+      "tabular"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "insert.mermaid",
+    "label": "Mermaid diagram",
+    "description": "Insert a diagram from Mermaid source.",
+    "group": "Insert",
+    "order": 30,
+    "searchTerms": [
+      "chart",
+      "flowchart",
+      "graph"
+    ],
+    "keywords": [
+      "chart",
+      "graph"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "insert.math-inline",
+    "label": "Inline equation",
+    "description": "Insert a LaTeX equation within a paragraph.",
+    "group": "Insert",
+    "order": 40,
+    "searchTerms": [
+      "math",
+      "latex",
+      "formula"
+    ],
+    "keywords": [
+      "math",
+      "latex",
+      "formula"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "insert.math-block",
+    "label": "Equation block",
+    "description": "Insert a display LaTeX equation.",
+    "group": "Insert",
+    "order": 50,
+    "searchTerms": [
+      "math",
+      "latex",
+      "formula",
+      "display"
+    ],
+    "keywords": [
+      "math",
+      "latex",
+      "display"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "insert.endnote",
+    "label": "Endnote",
+    "description": "Insert a note collected at the end of the manuscript.",
+    "group": "Insert",
+    "order": 60,
+    "searchTerms": [
+      "note",
+      "citation"
+    ],
+    "keywords": [
+      "note",
+      "reference"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "insert.footnote",
+    "label": "Footnote",
+    "description": "Insert a note attached to the current page.",
+    "group": "Insert",
+    "order": 70,
+    "searchTerms": [
+      "note",
+      "citation"
+    ],
+    "keywords": [
+      "note",
+      "reference"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "paragraph.heading-1",
+    "label": "Heading 1",
+    "description": "Turn the current block into a top-level heading.",
+    "group": "Structure",
+    "order": 10,
+    "searchTerms": [
+      "title",
+      "h1"
+    ],
+    "keywords": [
+      "h1",
+      "title"
+    ],
+    "availability": "editable",
+    "shortcut": "⌘⌥1",
+    "keybinding": "Mod-Alt-1"
+  },
+  {
+    "id": "paragraph.heading-2",
+    "label": "Heading 2",
+    "description": "Turn the current block into a second-level heading.",
+    "group": "Structure",
+    "order": 20,
+    "searchTerms": [
+      "subtitle",
+      "h2"
+    ],
+    "keywords": [
+      "h2",
+      "subtitle"
+    ],
+    "availability": "editable",
+    "shortcut": "⌘⌥2",
+    "keybinding": "Mod-Alt-2"
+  },
+  {
+    "id": "paragraph.heading-3",
+    "label": "Heading 3",
+    "description": "Turn the current block into a third-level heading.",
+    "group": "Structure",
+    "order": 30,
+    "searchTerms": [
+      "subheading",
+      "h3"
+    ],
+    "keywords": [
+      "h3",
+      "subheading"
+    ],
+    "availability": "editable",
+    "shortcut": "⌘⌥3",
+    "keybinding": "Mod-Alt-3"
+  },
+  {
+    "id": "insert.horizontal-rule",
+    "label": "Section break",
+    "description": "Insert an ornamental section divider.",
+    "group": "Structure",
+    "order": 50,
+    "searchTerms": [
+      "horizontal rule",
+      "divider",
+      "hr"
+    ],
+    "keywords": [
+      "rule",
+      "divider"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "insert.page-break",
+    "label": "Page break",
+    "description": "Begin the following content on a new page.",
+    "group": "Structure",
+    "order": 60,
+    "searchTerms": [
+      "new page",
+      "pagination"
+    ],
+    "keywords": [
+      "new page"
+    ],
+    "availability": "editable",
+    "shortcut": "⌘↩",
+    "keybinding": "Mod-Enter"
+  },
+  {
+    "id": "paragraph.bullet-list",
+    "label": "Bullet list",
+    "description": "Start or toggle a bulleted list.",
+    "group": "Write",
+    "order": 30,
+    "searchTerms": [
+      "unordered list",
+      "bullets"
+    ],
+    "keywords": [
+      "unordered",
+      "bullets"
+    ],
+    "availability": "editable",
+    "shortcut": "⌘⇧8",
+    "keybinding": "Mod-Shift-8"
+  },
+  {
+    "id": "paragraph.numbered-list",
+    "label": "Numbered list",
+    "description": "Start or toggle a numbered list.",
+    "group": "Write",
+    "order": 40,
+    "searchTerms": [
+      "ordered list",
+      "numbers"
+    ],
+    "keywords": [
+      "ordered",
+      "numbers"
+    ],
+    "availability": "editable",
+    "shortcut": "⌘⇧7",
+    "keybinding": "Mod-Shift-7"
+  },
+  {
+    "id": "paragraph.task-list",
+    "label": "Checklist",
+    "description": "Start or toggle a checklist.",
+    "group": "Write",
+    "order": 50,
+    "searchTerms": [
+      "task list",
+      "todo",
+      "checkbox"
+    ],
+    "keywords": [
+      "tasks",
+      "todo"
+    ],
+    "availability": "editable",
+    "shortcut": null,
+    "keybinding": null
+  },
+  {
+    "id": "paragraph.blockquote",
+    "label": "Pull quote",
+    "description": "Set the current block as a quotation.",
+    "group": "Write",
+    "order": 60,
+    "searchTerms": [
+      "blockquote",
+      "quote"
+    ],
+    "keywords": [
+      "blockquote",
+      "quote"
+    ],
+    "availability": "editable",
+    "shortcut": "⌘⇧B",
+    "keybinding": "Mod-Shift-b"
+  },
+  {
+    "id": "paragraph.code-block",
+    "label": "Code block",
+    "description": "Set the current block as preformatted code.",
+    "group": "Write",
+    "order": 70,
+    "searchTerms": [
+      "preformatted",
+      "source"
+    ],
+    "keywords": [
+      "source",
+      "pre"
+    ],
+    "availability": "editable",
+    "shortcut": "⌘⌥C",
+    "keybinding": "Mod-Alt-c"
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "url": "http://localhost:5180/dossier/create/",
+  "dimensions": {
+    "width": 1280,
+    "height": 860
+  },
+  "keys": [
+    {
+      "store": "folios",
+      "key": "original/path/folio:café"
+    },
+    {
+      "store": "folio-content",
+      "key": "original/path/folio:café"
+    },
+    {
+      "store": "meta",
+      "key": "active-folio-id"
+    },
+    {
+      "store": "meta",
+      "key": "signin-toast-dismissed"
+    },
+    {
+      "store": "meta",
+      "key": "apparatus-settings"
+    },
+    {
+      "store": "lix-blob",
+      "key": "current"
+    }
+  ],
+  "localKeys": [
+    "twyne:editor:view:v1",
+    "twyne.apparatus-settings.current"
+  ],
+  "exactReadBack": true,
+  "taskRecoveryKey": "twyne:brief-form:v1:[\"create:original/path/folio:café\",null]",
+  "scopedRecoveryRemoved": true
+}

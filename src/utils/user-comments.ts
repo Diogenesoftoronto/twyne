@@ -222,11 +222,16 @@ export async function deleteUserComment(
  */
 export async function deleteUserComments(
   commentIds: Iterable<string>,
+  /** Recheck source and scope after the storage read before pruning a thread. */
+  canDelete?: (comment: UserComment) => boolean,
 ): Promise<UserComment[]> {
   const ids = new Set(commentIds);
   if (ids.size === 0) return loadUserComments();
   const all = await loadUserComments();
-  const next = all.filter((x) => !ids.has(x.id));
+  const next = all.filter(
+    (comment) => !ids.has(comment.id) || (canDelete && !canDelete(comment)),
+  );
+  if (next.length === all.length) return all;
   await saveUserComments(next);
   return next;
 }

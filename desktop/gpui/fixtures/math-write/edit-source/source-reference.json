@@ -1,0 +1,1401 @@
+{
+  "provenance": "Executed original MathExtensions updateMathSource, current Tiptap/PM selection mapping and real Undo/Redo in the original isolated JSDOM harness. No source copy, browser process, provider, network, user manuscript or storage access.",
+  "sourceHashes": {
+    "src/components/editor/extensions/math.ts": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+    "src/components/editor/math/math-source-editor.ts": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+    "src/components/editor/test-harness.ts": "194a73b082beb89e19168f7e425746c61b8e10ab4ec17f99e9d2b6e3a9532953"
+  },
+  "cases": [
+    {
+      "name": "inline authored whitespace",
+      "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\">x+1</span> after é.</p>",
+      "raw": "  \\frac{a}{b}  ",
+      "before": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "after": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"  \\frac{a}{b}  \" data-math-display=\"inline\" aria-label=\"Inline equation:   \\frac{a}{b}  \" class=\"twyne-math twyne-math-inline\">  \\frac{a}{b}  </span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "  \\frac{a}{b}  "
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      },
+      "undone": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "redone": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"  \\frac{a}{b}  \" data-math-display=\"inline\" aria-label=\"Inline equation:   \\frac{a}{b}  \" class=\"twyne-math twyne-math-inline\">  \\frac{a}{b}  </span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "  \\frac{a}{b}  "
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      }
+    },
+    {
+      "name": "inline marked atom",
+      "html": "<p>Before 🦊 <strong><span data-type=\"inline-math\" data-latex=\"x+1\">x+1</span></strong> after é.</p>",
+      "raw": "\\text{A & \"B\" — 東京 🦊 é}",
+      "before": {
+        "html": "<p>Before 🦊 <strong><span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span></strong> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  },
+                  "marks": [
+                    {
+                      "type": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "after": {
+        "html": "<p>Before 🦊 <strong><span data-type=\"inline-math\" data-latex=\"\\text{A &amp; &quot;B&quot; — 東京 🦊 é}\" data-math-display=\"inline\" aria-label=\"Inline equation: \\text{A &amp; &quot;B&quot; — 東京 🦊 é}\" class=\"twyne-math twyne-math-inline\">\\text{A &amp; \"B\" — 東京 🦊 é}</span></strong> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "\\text{A & \"B\" — 東京 🦊 é}"
+                  },
+                  "marks": [
+                    {
+                      "type": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      },
+      "undone": {
+        "html": "<p>Before 🦊 <strong><span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span></strong> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  },
+                  "marks": [
+                    {
+                      "type": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "redone": {
+        "html": "<p>Before 🦊 <strong><span data-type=\"inline-math\" data-latex=\"\\text{A &amp; &quot;B&quot; — 東京 🦊 é}\" data-math-display=\"inline\" aria-label=\"Inline equation: \\text{A &amp; &quot;B&quot; — 東京 🦊 é}\" class=\"twyne-math twyne-math-inline\">\\text{A &amp; \"B\" — 東京 🦊 é}</span></strong> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "\\text{A & \"B\" — 東京 🦊 é}"
+                  },
+                  "marks": [
+                    {
+                      "type": "bold"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      }
+    },
+    {
+      "name": "block final newline",
+      "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"x+1\">x+1</div><p>After é.</p>",
+      "raw": "\\frac{1}{x}\n",
+      "before": {
+        "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"x+1\" data-math-display=\"block\" aria-label=\"Block equation: x+1\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">x+1</div><p>After é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Prelude 🦊."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "x+1"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 13
+        },
+        "nativeUtf16Selection": {
+          "anchor": 12,
+          "head": 13
+        },
+        "nativeUtf16Length": 23
+      },
+      "after": {
+        "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"\\frac{1}{x}\n\" data-math-display=\"block\" aria-label=\"Block equation: \\frac{1}{x}\n\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">\\frac{1}{x}\n</div><p>After é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Prelude 🦊."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "\\frac{1}{x}\n"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 13
+        },
+        "nativeUtf16Selection": {
+          "anchor": 12,
+          "head": 13
+        },
+        "nativeUtf16Length": 23
+      },
+      "undone": {
+        "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"x+1\" data-math-display=\"block\" aria-label=\"Block equation: x+1\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">x+1</div><p>After é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Prelude 🦊."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "x+1"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 13
+        },
+        "nativeUtf16Selection": {
+          "anchor": 12,
+          "head": 13
+        },
+        "nativeUtf16Length": 23
+      },
+      "redone": {
+        "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"\\frac{1}{x}\n\" data-math-display=\"block\" aria-label=\"Block equation: \\frac{1}{x}\n\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">\\frac{1}{x}\n</div><p>After é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Prelude 🦊."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "\\frac{1}{x}\n"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 13
+        },
+        "nativeUtf16Selection": {
+          "anchor": 12,
+          "head": 13
+        },
+        "nativeUtf16Length": 23
+      }
+    },
+    {
+      "name": "inline empty source",
+      "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\">x+1</span> after é.</p>",
+      "raw": "",
+      "before": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "after": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"\" data-math-display=\"inline\" aria-label=\"Inline equation: empty\" class=\"twyne-math twyne-math-inline\"></span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": ""
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      },
+      "undone": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "redone": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"\" data-math-display=\"inline\" aria-label=\"Inline equation: empty\" class=\"twyne-math twyne-math-inline\"></span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": ""
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      }
+    },
+    {
+      "name": "block empty source",
+      "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"x+1\">x+1</div><p>After é.</p>",
+      "raw": "",
+      "before": {
+        "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"x+1\" data-math-display=\"block\" aria-label=\"Block equation: x+1\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">x+1</div><p>After é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Prelude 🦊."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "x+1"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 13
+        },
+        "nativeUtf16Selection": {
+          "anchor": 12,
+          "head": 13
+        },
+        "nativeUtf16Length": 23
+      },
+      "after": {
+        "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"\" data-math-display=\"block\" aria-label=\"Block equation: empty\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\"></div><p>After é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Prelude 🦊."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": ""
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 13
+        },
+        "nativeUtf16Selection": {
+          "anchor": 12,
+          "head": 13
+        },
+        "nativeUtf16Length": 23
+      },
+      "undone": {
+        "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"x+1\" data-math-display=\"block\" aria-label=\"Block equation: x+1\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">x+1</div><p>After é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Prelude 🦊."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "x+1"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 13
+        },
+        "nativeUtf16Selection": {
+          "anchor": 12,
+          "head": 13
+        },
+        "nativeUtf16Length": 23
+      },
+      "redone": {
+        "html": "<p>Prelude 🦊.</p><div data-type=\"block-math\" data-latex=\"\" data-math-display=\"block\" aria-label=\"Block equation: empty\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\"></div><p>After é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Prelude 🦊."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": ""
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 13
+        },
+        "nativeUtf16Selection": {
+          "anchor": 12,
+          "head": 13
+        },
+        "nativeUtf16Length": 23
+      }
+    },
+    {
+      "name": "inline whitespace is raw truthy data",
+      "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\">x+1</span> after é.</p>",
+      "raw": " \n\t ",
+      "before": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "after": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\" \n\t \" data-math-display=\"inline\" aria-label=\"Inline equation:  \n\t \" class=\"twyne-math twyne-math-inline\"> \n\t </span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": " \n\t "
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      },
+      "undone": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "redone": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\" \n\t \" data-math-display=\"inline\" aria-label=\"Inline equation:  \n\t \" class=\"twyne-math twyne-math-inline\"> \n\t </span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": " \n\t "
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      }
+    },
+    {
+      "name": "inline invalid LaTeX remains authored source",
+      "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\">x+1</span> after é.</p>",
+      "raw": "\\notACommand{",
+      "before": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "after": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"\\notACommand{\" data-math-display=\"inline\" aria-label=\"Inline equation: \\notACommand{\" class=\"twyne-math twyne-math-inline\">\\notACommand{</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "\\notACommand{"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      },
+      "undone": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"x+1\" data-math-display=\"inline\" aria-label=\"Inline equation: x+1\" class=\"twyne-math twyne-math-inline\">x+1</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "x+1"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 11
+        },
+        "nativeUtf16Length": 22
+      },
+      "redone": {
+        "html": "<p>Before 🦊 <span data-type=\"inline-math\" data-latex=\"\\notACommand{\" data-math-display=\"inline\" aria-label=\"Inline equation: \\notACommand{\" class=\"twyne-math twyne-math-inline\">\\notACommand{</span> after é.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before 🦊 "
+                },
+                {
+                  "type": "inlineMath",
+                  "attrs": {
+                    "source": "\\notACommand{"
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": " after é."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "text",
+          "anchor": 11,
+          "head": 11
+        },
+        "nativeUtf16Selection": {
+          "anchor": 10,
+          "head": 10
+        },
+        "nativeUtf16Length": 22
+      }
+    },
+    {
+      "name": "block only draft before",
+      "html": "<div data-type=\"block-math\" data-latex=\"x+1\">x+1</div><p>After.</p>",
+      "raw": "y+2",
+      "before": {
+        "html": "<div data-type=\"block-math\" data-latex=\"x+1\" data-math-display=\"block\" aria-label=\"Block equation: x+1\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">x+1</div><p>After.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "x+1"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 0
+        },
+        "nativeUtf16Selection": {
+          "anchor": 0,
+          "head": 1
+        },
+        "nativeUtf16Length": 8
+      },
+      "after": {
+        "html": "<div data-type=\"block-math\" data-latex=\"y+2\" data-math-display=\"block\" aria-label=\"Block equation: y+2\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">y+2</div><p>After.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "y+2"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 0
+        },
+        "nativeUtf16Selection": {
+          "anchor": 0,
+          "head": 1
+        },
+        "nativeUtf16Length": 8
+      },
+      "undone": {
+        "html": "<div data-type=\"block-math\" data-latex=\"x+1\" data-math-display=\"block\" aria-label=\"Block equation: x+1\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">x+1</div><p>After.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "x+1"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 0
+        },
+        "nativeUtf16Selection": {
+          "anchor": 0,
+          "head": 1
+        },
+        "nativeUtf16Length": 8
+      },
+      "redone": {
+        "html": "<div data-type=\"block-math\" data-latex=\"y+2\" data-math-display=\"block\" aria-label=\"Block equation: y+2\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">y+2</div><p>After.</p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "y+2"
+              }
+            },
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "After."
+                }
+              ]
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 0
+        },
+        "nativeUtf16Selection": {
+          "anchor": 0,
+          "head": 1
+        },
+        "nativeUtf16Length": 8
+      }
+    },
+    {
+      "name": "block only draft after",
+      "html": "<p>Before.</p><div data-type=\"block-math\" data-latex=\"x+1\">x+1</div>",
+      "raw": "y+2",
+      "before": {
+        "html": "<p>Before.</p><div data-type=\"block-math\" data-latex=\"x+1\" data-math-display=\"block\" aria-label=\"Block equation: x+1\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">x+1</div><p></p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "x+1"
+              }
+            },
+            {
+              "type": "paragraph"
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 9
+        },
+        "nativeUtf16Selection": {
+          "anchor": 8,
+          "head": 9
+        },
+        "nativeUtf16Length": 10
+      },
+      "after": {
+        "html": "<p>Before.</p><div data-type=\"block-math\" data-latex=\"y+2\" data-math-display=\"block\" aria-label=\"Block equation: y+2\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">y+2</div><p></p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "y+2"
+              }
+            },
+            {
+              "type": "paragraph"
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 9
+        },
+        "nativeUtf16Selection": {
+          "anchor": 8,
+          "head": 9
+        },
+        "nativeUtf16Length": 10
+      },
+      "undone": {
+        "html": "<p>Before.</p><div data-type=\"block-math\" data-latex=\"x+1\" data-math-display=\"block\" aria-label=\"Block equation: x+1\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">x+1</div><p></p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "x+1"
+              }
+            },
+            {
+              "type": "paragraph"
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 9
+        },
+        "nativeUtf16Selection": {
+          "anchor": 8,
+          "head": 9
+        },
+        "nativeUtf16Length": 10
+      },
+      "redone": {
+        "html": "<p>Before.</p><div data-type=\"block-math\" data-latex=\"y+2\" data-math-display=\"block\" aria-label=\"Block equation: y+2\" class=\"twyne-math twyne-math-block\" style=\"break-inside: avoid; page-break-inside: avoid;\">y+2</div><p></p>",
+        "json": {
+          "type": "doc",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "Before."
+                }
+              ]
+            },
+            {
+              "type": "blockMath",
+              "attrs": {
+                "source": "y+2"
+              }
+            },
+            {
+              "type": "paragraph"
+            }
+          ]
+        },
+        "selection": {
+          "type": "node",
+          "anchor": 9
+        },
+        "nativeUtf16Selection": {
+          "anchor": 8,
+          "head": 9
+        },
+        "nativeUtf16Length": 10
+      }
+    }
+  ]
+}

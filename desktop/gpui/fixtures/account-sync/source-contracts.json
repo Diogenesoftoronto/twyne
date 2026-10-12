@@ -1,0 +1,620 @@
+{
+  "schemaVersion": 1,
+  "kind": "synthetic-source-execution-not-authentication",
+  "sourceSha256": {
+    "src/utils/convex-sync.ts": "8bb0ee7f38de5f5fbfeda777c01bf0d10f36406ebc5d6124f9158a069ec5871a",
+    "src/utils/notorganic-connect.ts": "5b16937cc7f9e86fd40e1ba34bd505306f1858b1fe88572e3153205efedf4a2c"
+  },
+  "selectedFunctions": {
+    "sync": [
+      "serialize",
+      "changedRows",
+      "removedRows",
+      "diffPushPayload"
+    ],
+    "auth": [
+      "NOTORGANIC_CALLBACK_PATH",
+      "encode",
+      "safeReturnTo",
+      "beginNotOrganicSignIn",
+      "readNotOrganicCallback"
+    ]
+  },
+  "syncCases": [
+    {
+      "name": "unchanged-empty-account",
+      "baseline": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "desired": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "expected": null
+    },
+    {
+      "name": "exact-source-and-projection",
+      "baseline": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "desired": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "html": "<p>A draft.</p>",
+            "format": "typst",
+            "typstSource": "﻿// fixture\r\n#text[雪]  \n$ x^2 $\n"
+          }
+        ],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "expected": {
+        "folioContent": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "html": "<p>A draft.</p>",
+            "format": "typst",
+            "typstSource": "﻿// fixture\r\n#text[雪]  \n$ x^2 $\n"
+          }
+        ]
+      }
+    },
+    {
+      "name": "clear-replacement-collections",
+      "baseline": {
+        "briefs": [],
+        "folios": [
+          {
+            "id": "old",
+            "name": "Old"
+          }
+        ],
+        "folioContent": [],
+        "customPersonas": [
+          {
+            "id": "old-persona"
+          }
+        ],
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": [
+          {
+            "id": "old-bib"
+          }
+        ]
+      },
+      "desired": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": [],
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "expected": {
+        "folios": [],
+        "customPersonas": [],
+        "bibliography": []
+      }
+    },
+    {
+      "name": "content-and-dossier-deletions",
+      "baseline": {
+        "briefs": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "brief": {
+              "answers": {
+                "workingTitle": "Old"
+              }
+            }
+          }
+        ],
+        "folios": [],
+        "folioContent": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "html": "<p>A draft.</p>",
+            "format": "typst",
+            "typstSource": "kept bytes"
+          }
+        ],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "desired": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "expected": {
+        "removedBriefFolioIds": [
+          "folio-not-a-uuid"
+        ],
+        "removedFolioContentIds": [
+          "folio-not-a-uuid"
+        ]
+      }
+    },
+    {
+      "name": "upsert-and-remove-thread-rows",
+      "baseline": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "noteId": "note-old",
+            "personaId": "fixture-persona",
+            "personaName": "Fixture",
+            "personaColor": "#735446",
+            "type": "perspective",
+            "feedback": "Old",
+            "createdAt": 123
+          },
+          {
+            "folioId": "folio-not-a-uuid",
+            "noteId": "note-stays",
+            "personaId": "fixture-persona",
+            "personaName": "Fixture",
+            "personaColor": "#735446",
+            "type": "perspective",
+            "feedback": "Same",
+            "createdAt": 123
+          }
+        ],
+        "personaReplies": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "replyId": "reply-old",
+            "noteId": "note-old",
+            "author": "Writer",
+            "authorKind": "user",
+            "text": "reply",
+            "createdAt": 124
+          }
+        ],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "desired": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "noteId": "note-stays",
+            "personaId": "fixture-persona",
+            "personaName": "Fixture",
+            "personaColor": "#735446",
+            "type": "perspective",
+            "feedback": "Same",
+            "createdAt": 123
+          },
+          {
+            "folioId": "folio-not-a-uuid",
+            "noteId": "note-new",
+            "personaId": "fixture-persona",
+            "personaName": "Fixture",
+            "personaColor": "#735446",
+            "type": "perspective",
+            "feedback": "New",
+            "createdAt": 123
+          }
+        ],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "expected": {
+        "personaNotes": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "noteId": "note-new",
+            "personaId": "fixture-persona",
+            "personaName": "Fixture",
+            "personaColor": "#735446",
+            "type": "perspective",
+            "feedback": "New",
+            "createdAt": 123
+          }
+        ],
+        "removedPersonaNoteIds": [
+          "note-old"
+        ],
+        "removedPersonaReplyIds": [
+          "reply-old"
+        ]
+      }
+    },
+    {
+      "name": "v-any-folio-metadata",
+      "baseline": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "desired": {
+        "briefs": [],
+        "folios": [
+          {
+            "id": "folio-foreign",
+            "name": "Kept",
+            "unknownEdition": {
+              "paper": "old",
+              "nested": [
+                1,
+                true
+              ]
+            }
+          }
+        ],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": []
+      },
+      "expected": {
+        "folios": [
+          {
+            "id": "folio-foreign",
+            "name": "Kept",
+            "unknownEdition": {
+              "paper": "old",
+              "nested": [
+                1,
+                true
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "rubric-replacement-and-deletion",
+      "baseline": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [
+          {
+            "folioId": "old",
+            "result": {
+              "scores": [
+                1
+              ]
+            }
+          }
+        ],
+        "bibliography": []
+      },
+      "desired": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [
+          {
+            "folioId": "new",
+            "result": {
+              "scores": [
+                2
+              ]
+            }
+          }
+        ],
+        "bibliography": []
+      },
+      "expected": {
+        "rubricResults": [
+          {
+            "folioId": "new",
+            "result": {
+              "scores": [
+                2
+              ]
+            }
+          }
+        ],
+        "removedRubricFolioIds": [
+          "old"
+        ]
+      }
+    },
+    {
+      "name": "unchanged-canonical-row-not-resent",
+      "baseline": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "html": "<p>A draft.</p>",
+            "format": "typst",
+            "typstSource": "#let untouched = 1\r\n"
+          }
+        ],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": [
+          {
+            "id": "entry",
+            "title": "Old"
+          }
+        ]
+      },
+      "desired": {
+        "briefs": [],
+        "folios": [],
+        "folioContent": [
+          {
+            "folioId": "folio-not-a-uuid",
+            "html": "<p>A draft.</p>",
+            "format": "typst",
+            "typstSource": "#let untouched = 1\r\n"
+          }
+        ],
+        "customPersonas": null,
+        "personaNotes": [],
+        "personaReplies": [],
+        "rubricResults": [],
+        "bibliography": [
+          {
+            "id": "entry",
+            "title": "New"
+          }
+        ]
+      },
+      "expected": {
+        "bibliography": [
+          {
+            "id": "entry",
+            "title": "New"
+          }
+        ]
+      }
+    }
+  ],
+  "auth": {
+    "nowMs": 1700000000000,
+    "verifierEntropyByte": 1,
+    "stateEntropyByte": 2,
+    "attempt": {
+      "state": "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI",
+      "verifier": "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE",
+      "expiresAt": 1700000600000,
+      "origin": "http://127.0.0.1:42177",
+      "returnTo": "/editor?folio=fixture"
+    },
+    "authorizationUrl": "https://id.notorganic.info/authorize?response_type=code&client_id=http%3A%2F%2F127.0.0.1%3A42177&redirect_uri=http%3A%2F%2F127.0.0.1%3A42177%2Fauth%2Fnotorganic%2F&code_challenge_method=S256&code_challenge=VtX6czP210fbQsI5QH5dpMMvTHnzXQkrE0_TWkAtnFw&state=AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI&scope=wallet%3Aread&product=twyne&prompt=select_account",
+    "callbackCases": [
+      {
+        "name": "valid",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000600000,
+        "accepted": true,
+        "origin": "http://127.0.0.1:42177",
+        "pathname": "/auth/notorganic/",
+        "fragment": "",
+        "errorPresent": false,
+        "codes": [
+          "fixture-code"
+        ],
+        "states": [
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI"
+        ]
+      },
+      {
+        "name": "wrong-origin",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000600000,
+        "accepted": false,
+        "origin": "http://127.0.0.1:42178",
+        "pathname": "/auth/notorganic/",
+        "fragment": "",
+        "errorPresent": false,
+        "codes": [
+          "fixture-code"
+        ],
+        "states": [
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI"
+        ]
+      },
+      {
+        "name": "wrong-path",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000600000,
+        "accepted": false,
+        "origin": "http://127.0.0.1:42177",
+        "pathname": "/settings/",
+        "fragment": "",
+        "errorPresent": false,
+        "codes": [
+          "fixture-code"
+        ],
+        "states": [
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI"
+        ]
+      },
+      {
+        "name": "duplicate-code",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000600000,
+        "accepted": false,
+        "origin": "http://127.0.0.1:42177",
+        "pathname": "/auth/notorganic/",
+        "fragment": "",
+        "errorPresent": false,
+        "codes": [
+          "a",
+          "b"
+        ],
+        "states": [
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI"
+        ]
+      },
+      {
+        "name": "duplicate-state",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000600000,
+        "accepted": false,
+        "origin": "http://127.0.0.1:42177",
+        "pathname": "/auth/notorganic/",
+        "fragment": "",
+        "errorPresent": false,
+        "codes": [
+          "a"
+        ],
+        "states": [
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI",
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI"
+        ]
+      },
+      {
+        "name": "error-present-empty",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000600000,
+        "accepted": false,
+        "origin": "http://127.0.0.1:42177",
+        "pathname": "/auth/notorganic/",
+        "fragment": "",
+        "errorPresent": true,
+        "codes": [
+          "a"
+        ],
+        "states": [
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI"
+        ]
+      },
+      {
+        "name": "fragment",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000600000,
+        "accepted": false,
+        "origin": "http://127.0.0.1:42177",
+        "pathname": "/auth/notorganic/",
+        "fragment": "#fragment",
+        "errorPresent": false,
+        "codes": [
+          "a"
+        ],
+        "states": [
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI"
+        ]
+      },
+      {
+        "name": "expired-at-boundary",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000000000,
+        "accepted": false,
+        "origin": "http://127.0.0.1:42177",
+        "pathname": "/auth/notorganic/",
+        "fragment": "",
+        "errorPresent": false,
+        "codes": [
+          "a"
+        ],
+        "states": [
+          "AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI"
+        ]
+      },
+      {
+        "name": "wrong-state",
+        "nowMs": 1700000000000,
+        "expiresAt": 1700000600000,
+        "accepted": false,
+        "origin": "http://127.0.0.1:42177",
+        "pathname": "/auth/notorganic/",
+        "fragment": "",
+        "errorPresent": false,
+        "codes": [
+          "a"
+        ],
+        "states": [
+          "wrong"
+        ]
+      }
+    ],
+    "returnPaths": [
+      {
+        "input": "/editor",
+        "expected": "/editor"
+      },
+      {
+        "input": "//external.example",
+        "expected": "/"
+      },
+      {
+        "input": "/\\external",
+        "expected": "/"
+      },
+      {
+        "input": "/ok\nno",
+        "expected": "/"
+      },
+      {
+        "input": "https://external.example",
+        "expected": "/"
+      },
+      {
+        "input": "/",
+        "expected": "/"
+      }
+    ]
+  }
+}

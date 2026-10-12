@@ -1,0 +1,346 @@
+{
+  "recordedAt": "2026-10-05T05:14:48.691266+00:00",
+  "scope": "Read-only inspection/hashes. New pure model/patch tests are authored, not executed. No product admission.",
+  "files": {
+    "desktop/gpui/src/math_write.rs": {
+      "sha256": "9a33ecb6418cf02b5c06866840be64be4f926d00da0b5344aa124bb5676ac051",
+      "bytes": 53873
+    },
+    "desktop/gpui/src/inline_proof.rs": {
+      "sha256": "5d3650ae4f3bc4c3a084792e0be697f243afbb5f7d7f527129240bd9252821f7",
+      "bytes": 35571
+    },
+    "desktop/gpui/src/editor/view.rs": {
+      "sha256": "1c28c171b352067067d4e48526388d2043a555076995de32fae405a304a027b1",
+      "bytes": 130208
+    },
+    "desktop/gpui/src/editor/paragraph_flow.rs": {
+      "sha256": "639088b3e64a7786d97dc89c9c1188e1d67f66f0a9db00daf5205a02559df421",
+      "bytes": 18970
+    },
+    "desktop/gpui/src/editor/math_source_flow.rs": {
+      "sha256": "6ce620a0d0787ea837c786147b9d7b8c4324f93556b6ed353a6d07e0f7951036",
+      "bytes": 15665
+    },
+    "desktop/gpui/tools/math-write.ts": {
+      "sha256": "c0ac8abc602f237c27c0f58bb3c344bfef5df4e40201021afd556311a3be8900",
+      "bytes": 61725
+    },
+    "desktop/gpui/tools/math-css-provenance.ts": {
+      "sha256": "008d84d57301ba41059aa3ec244d145d098fba516d553522cc0183944c7b51b5",
+      "bytes": 2926
+    },
+    "src/components/editor/math/math.css": {
+      "sha256": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+      "bytes": 3950
+    },
+    "src/components/editor/math/katex.min.css": {
+      "sha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+      "bytes": 27211
+    },
+    "src/components/editor/math/math-renderer.ts": {
+      "sha256": "0babc59d53aaf2ae9d3e23cf7dc7b2a98243e9d6682fecf622eda1eaddb02472",
+      "bytes": 2369
+    },
+    "src/components/editor/math/math-source-editor.ts": {
+      "sha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+      "bytes": 6477
+    },
+    "src/components/editor/extensions/math.ts": {
+      "sha256": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+      "bytes": 9377
+    },
+    "node_modules/katex/dist/katex.css": {
+      "sha256": "67c6047f54406dbeae30c180d39cc9db1238eded330ae76e362d13368761395b",
+      "bytes": 33005
+    },
+    "desktop/gpui/fixtures/math-write/current-css/results.json": {
+      "sha256": "696d98555c0d4e84b853d52fdc36a1770dd170bd6581b7fcaa37f6f398c5afba",
+      "bytes": 120294
+    },
+    "desktop/gpui/fixtures/math-write/current-css/browser-glyphs.json": {
+      "sha256": "28cacb450519f7096b64882b51962c7e1d25ee4edc92ce0f1d823ce839112ac6",
+      "bytes": 498271
+    },
+    "desktop/gpui/fixtures/math-write/current-css/comparison.json": {
+      "sha256": "1da8117a46194ad53dbbaf2a30f59de40301d30ace18bdf969dea5649e11d90e",
+      "bytes": 42769
+    },
+    "desktop/gpui/fixtures/math-write/current-css/fonts-and-css.json": {
+      "sha256": "10863c84bdf353b413f7c4bb575e44a700e0bbc7335780b677c8da21e9fa9b90",
+      "bytes": 9453
+    },
+    "desktop/gpui/fixtures/math-write/current-css/browser-provenance.json": {
+      "sha256": "deabbbf1bd5a58661f8d26865de342e7026723f7639eba707e1aa0e482ae0aac",
+      "bytes": 4346
+    },
+    "desktop/gpui/fixtures/math-write/current-css/parent-gates.json": {
+      "sha256": "a59163a52999b1b93f27484848a459c53931d719571b31206424747f151a864b",
+      "bytes": 2172
+    },
+    "desktop/gpui/fixtures/math-write/current-source-results.json": {
+      "sha256": "637e1d5c32d43356c08a7396068bb331dd81f608c885683bdabe7fa4f5c74b0b",
+      "bytes": 61550
+    },
+    "desktop/gpui/fixtures/math-write/diagnostic-results.json": {
+      "sha256": "eb0d751a68e8fee6badc6b44305756e9198a8727f00f4bacfe5b9206030e8464",
+      "bytes": 218915
+    },
+    "desktop/gpui/fixtures/math-write/nodeview/original-nodes.json": {
+      "sha256": "50b746079244c65c1edb5e1bb03f237108189d268e69118f83b1475c28b90dc6",
+      "bytes": 88099
+    },
+    "desktop/gpui/fixtures/math-write/nodeview/original-nodes-620.json": {
+      "sha256": "3e28f6d2fbaf12fb73140bc000a60532ab5cfcf0a39e1ca7bab09a5120bf58cf",
+      "bytes": 88053
+    },
+    "desktop/gpui/fixtures/math-write/nodeview/original-previews.json": {
+      "sha256": "7a549ee1d5b2bda2c2ac3d64c775f613b60b020b4eb4edf62359598562df6b3b",
+      "bytes": 106246
+    },
+    "desktop/gpui/fixtures/math-write/nodeview/candidate-nodes.json": {
+      "sha256": "0e8fe63b3eaafe8db59f10c0e5ef998ff96dfe8ffd72d46fd8b660852ce9a1c0",
+      "bytes": 88462
+    },
+    "desktop/gpui/fixtures/math-write/nodeview/candidate-overlay.css": {
+      "sha256": "3e2e88735f142f96355d12cd0eaaad13e740a62ba7df77800852ec0a7d40f9c8",
+      "bytes": 36364
+    },
+    "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-pre-0.3.7/src/elements/img.rs": {
+      "sha256": "c196cb1ed3db30ab3141b036c84288a22e04de2b53b687e1d86fe732420374e3",
+      "bytes": 35463
+    },
+    "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-pre-0.3.7/src/platform.rs": {
+      "sha256": "9de7e0b0f29c51b149263b9bc9b4061bfbe41849e296b75df9cf259d9bbbdc4c",
+      "bytes": 119336
+    },
+    "/home/diogenes/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/gpui-pre-0.3.7/src/svg_renderer.rs": {
+      "sha256": "fb12dae87c0cd4c5f5a1fbbd2f9548d52fde9440c21e3d576dfeb0233eda88a6",
+      "bytes": 18565
+    },
+    "src/components/editor/math/fonts/KaTeX_AMS-Regular.ttf": {
+      "sha256": "68534840bcfdd2bffb6f0e8deb48684dd01e7f04ea2813267577afb906de1d13",
+      "bytes": 63632
+    },
+    "src/components/editor/math/fonts/KaTeX_Caligraphic-Bold.ttf": {
+      "sha256": "07d8e303ce4fc12b4bb54f1004170dd190a1f3db45d400fe68060df3e0897268",
+      "bytes": 12368
+    },
+    "src/components/editor/math/fonts/KaTeX_Caligraphic-Regular.ttf": {
+      "sha256": "ed0b74372feefcbb9c0666b2e210da37b7e49fa7fbbf3eeb11db5f693dacfbb7",
+      "bytes": 12344
+    },
+    "src/components/editor/math/fonts/KaTeX_Fraktur-Bold.ttf": {
+      "sha256": "9163df9c7122432e6495b4229fa9071cf9ae86a758ae5efc4924ec2e1a6dbce1",
+      "bytes": 19584
+    },
+    "src/components/editor/math/fonts/KaTeX_Fraktur-Regular.ttf": {
+      "sha256": "1e6f9579e90e2cac37f8f60a597c436e075c114385652b7cbeb0dec0421291b3",
+      "bytes": 19572
+    },
+    "src/components/editor/math/fonts/KaTeX_Main-Bold.ttf": {
+      "sha256": "138ac28d1663b3037e9c5f52371fa5c63d8324f4a38d22cd573e6ea3a3fd0cf8",
+      "bytes": 51336
+    },
+    "src/components/editor/math/fonts/KaTeX_Main-BoldItalic.ttf": {
+      "sha256": "70ee1f64a20f2048c21940ef46d0144fd215baa953ca69afd1e31e98544f708f",
+      "bytes": 32968
+    },
+    "src/components/editor/math/fonts/KaTeX_Main-Italic.ttf": {
+      "sha256": "0d85ae7cc30f23790a7f1a58c4a112fdca8aae769b6ba11429af1d98b1b6cb3a",
+      "bytes": 33580
+    },
+    "src/components/editor/math/fonts/KaTeX_Main-Regular.ttf": {
+      "sha256": "d0332f52868370fd83ae7fa46470f90c8f2eab2fcf12bc4f88080b340c95a830",
+      "bytes": 53580
+    },
+    "src/components/editor/math/fonts/KaTeX_Math-BoldItalic.ttf": {
+      "sha256": "f9377ab0271cda59af24bcffbd46a4d0c8a3572ffafdbb38de2ad5ea7b0d5ee5",
+      "bytes": 31196
+    },
+    "src/components/editor/math/fonts/KaTeX_Math-Italic.ttf": {
+      "sha256": "08ce98e51b04d58945a301e639e02b6998af29fdfd61a7b8afdd07bbfc479d4a",
+      "bytes": 31308
+    },
+    "src/components/editor/math/fonts/KaTeX_SansSerif-Bold.ttf": {
+      "sha256": "1ece03f79f95277d57dc7f6b435a74e1379b0d46104a8530286b60ff49369ea0",
+      "bytes": 24504
+    },
+    "src/components/editor/math/fonts/KaTeX_SansSerif-Italic.ttf": {
+      "sha256": "3931dd81faed86ba021bb2bbdc36f5bed9a38d6b4f4077aca59b265aa1b02083",
+      "bytes": 22364
+    },
+    "src/components/editor/math/fonts/KaTeX_SansSerif-Regular.ttf": {
+      "sha256": "f36ea897e19f4a2e571d1e900e4e3710e438deb05a842486045ba0a3e616a4ad",
+      "bytes": 19436
+    },
+    "src/components/editor/math/fonts/KaTeX_Script-Regular.ttf": {
+      "sha256": "1c67f068fea8bb09bf099c088b1cf64bd27516a6e07f4684344873564bb66a67",
+      "bytes": 16648
+    },
+    "src/components/editor/math/fonts/KaTeX_Size1-Regular.ttf": {
+      "sha256": "95b6d2f1a50173bfedb8c63e1d1c99b10427d0a4df4201cb44513b226951a22b",
+      "bytes": 12228
+    },
+    "src/components/editor/math/fonts/KaTeX_Size2-Regular.ttf": {
+      "sha256": "a6b2099fb555c60e3a0db3a08842ebf1d732c6eb4e4bf44913613bed4fc4e39b",
+      "bytes": 11508
+    },
+    "src/components/editor/math/fonts/KaTeX_Size3-Regular.ttf": {
+      "sha256": "500e04d54f0d51666332c9d2089aa803be22aa878eca539e59fa53c6e522b082",
+      "bytes": 7588
+    },
+    "src/components/editor/math/fonts/KaTeX_Size4-Regular.ttf": {
+      "sha256": "c647367d1dd4e162468717d020e1fc0f1dc5c26ebfdffbe55261713bf88c5877",
+      "bytes": 10364
+    },
+    "src/components/editor/math/fonts/KaTeX_Typewriter-Regular.ttf": {
+      "sha256": "f01f3e87d9c6a61c0c081ceb577abd864eb00a612f7ac1620dd6915fad2ef5aa",
+      "bytes": 27556
+    }
+  },
+  "actualSourceCaptureHashChecks": {
+    "src/root.tsx": {
+      "retainedBrowserSha256": "782141e806ce60765944cfbe70a9d8c497e8b37b1b09c5e8a46e971c4a99839b",
+      "currentSha256": "782141e806ce60765944cfbe70a9d8c497e8b37b1b09c5e8a46e971c4a99839b",
+      "equal": true
+    },
+    "src/components/editor/extensions/math.ts": {
+      "retainedBrowserSha256": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+      "currentSha256": "5645bd4f36934251ee4bcac704da0bbea498ebd2c5b190fb9316d67b33e82cf2",
+      "equal": true
+    },
+    "src/components/editor/math/math-source-editor.ts": {
+      "retainedBrowserSha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+      "currentSha256": "fda215e96eb33b63a53feede96bffe9827a3d3d426377e44a24beb9eb4eedabb",
+      "equal": true
+    },
+    "src/components/editor/math/math-renderer.ts": {
+      "retainedBrowserSha256": "0babc59d53aaf2ae9d3e23cf7dc7b2a98243e9d6682fecf622eda1eaddb02472",
+      "currentSha256": "0babc59d53aaf2ae9d3e23cf7dc7b2a98243e9d6682fecf622eda1eaddb02472",
+      "equal": true
+    },
+    "src/components/editor/math/math.css": {
+      "retainedBrowserSha256": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+      "currentSha256": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+      "equal": true
+    },
+    "src/components/editor/math/katex.min.css": {
+      "retainedBrowserSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+      "currentSha256": "1d0be692cde606a132f39e5150d8c81d83649ab0e6825329e93c2a6dcffcbe0d",
+      "equal": true
+    },
+    "dist/assets/CxHd3gM_-style.css": {
+      "retainedBrowserSha256": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+      "currentSha256": "71ddc6c68996dc01fed4c53b636dac92d573440504478b8cda76a4778ae701b7",
+      "equal": true
+    },
+    "node_modules/katex/dist/katex.min.css": {
+      "retainedBrowserSha256": "0fb711c9c74cb1718661933948b653fbc09a627da5dde8926b4d10585370993e",
+      "currentSha256": "0fb711c9c74cb1718661933948b653fbc09a627da5dde8926b4d10585370993e",
+      "equal": true
+    }
+  },
+  "sourceFontManifestHashChecks": [
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_AMS-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Caligraphic-Bold.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Caligraphic-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Fraktur-Bold.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Fraktur-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Main-Bold.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Main-BoldItalic.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Main-Italic.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Main-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Math-BoldItalic.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Math-Italic.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_SansSerif-Bold.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_SansSerif-Italic.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_SansSerif-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Script-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Size1-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Size2-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Size3-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Size4-Regular.ttf",
+      "equal": true
+    },
+    {
+      "path": "src/components/editor/math/fonts/KaTeX_Typewriter-Regular.ttf",
+      "equal": true
+    }
+  ],
+  "sourceCssVersion": "0.16.47",
+  "engineVersion": "0.18.1",
+  "patchBase": {
+    "path": "desktop/gpui/src/math_write.rs",
+    "sha256": "9a33ecb6418cf02b5c06866840be64be4f926d00da0b5344aa124bb5676ac051",
+    "bytes": 53873
+  },
+  "patchChanges": [
+    "desktop/gpui/src/math_write.rs diagnostic geometry API only"
+  ],
+  "applied": false,
+  "gitApplyCheckExecuted": false,
+  "newBunTests": {
+    "authored": 13,
+    "executed": 0
+  },
+  "newRustTests": {
+    "authored": 3,
+    "executed": 0
+  }
+}

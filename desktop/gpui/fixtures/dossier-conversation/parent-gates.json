@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "moduleRegistered": true,
+  "scope": "Compiled desktop library Dossier family including new native conversation lifecycle cases and manual import/recovery regressions",
+  "command": "rtk proxy devenv shell -- rtk proxy cargo test --locked --offline --manifest-path desktop/gpui/Cargo.toml --features ui-tests --lib dossier",
+  "log": "/tmp/twyne-gpui-dossier-retirement-conversation-gate-corrected.log",
+  "logSha256": "ea2e409cbafa6ff3668b4635abb9894511796a6b30e9d32677f577ab63cc485c",
+  "result": {
+    "passed": 58,
+    "failed": 0,
+    "ignored": 0,
+    "filtered": 458,
+    "seconds": 7.08
+  },
+  "nativeConversationLifecycleCases": 10,
+  "integrationRepair": "Added missing Sizable and Disableable GPUI Kit trait imports to view.rs; first gate failed compilation.",
+  "sourceFiles": {
+    "desktop/gpui/src/dossier_conversation/protocol.rs": "f02af0f2530d022c98c0f6bbc3c7539a80694e8d4003cb81d2db98b2aeb6541c",
+    "desktop/gpui/src/dossier_conversation/gathering.rs": "486a54cee38f7212b23fd3fdb9e1e670d8457e842cc50e5114a9a11d942f2897",
+    "desktop/gpui/src/dossier_conversation/amendment.rs": "458838705f175eec8c1feae4e7fc73fe5bd9f9d31ceac57b888d254e25388780",
+    "desktop/gpui/src/dossier_conversation/seam.rs": "dd794141135e0111ee05bae5eadd000daf70bbf65b59c1a7029b2c389067ed51",
+    "desktop/gpui/src/dossier_conversation/mod.rs": "a77a839a6e5b35bf00ab82ad3dc4106344796f1e089af5fe4861e4cdba90286f",
+    "desktop/gpui/src/dossier_conversation/view.rs": "4521c9520d83346277ce18e6b3b6c06e8794f9676bb1c2ad3053299f35d77c63",
+    "desktop/gpui/src/dossier_conversation/session.rs": "48d6a4f8bf17c374410530cc70192e4a692ab6a85c98053cb92eec5807bdd9f1",
+    "desktop/gpui/src/lib.rs": "142aab9ca3446d684d58cc61dae78ec66820e5b79ec3dfd2fd3ee6948079b2e5"
+  },
+  "boundaries": [
+    "Conversation view remains unmounted.",
+    "No live provider request or actual OS input.",
+    "Typed probe/review/stream UI and full conversation recovery remain pending."
+  ],
+  "aggregateFollowup": {
+    "receipt": "../parallel-port/parent-gates.json",
+    "passed": 621,
+    "ignored": 8,
+    "newAmendmentRejectionTest": true,
+    "clippyStrict": true
+  },
+  "integrationRepairs": [
+    "Imported GPUI Kit Sizable/Disableable traits.",
+    "Retained optional probes through Box for bounded enum size.",
+    "Used map_or_else compatible with declared Rust1.92 minimum.",
+    "Grouped authored amendment fields and validated blank edits before dismissing observations.",
+    "Removed redundant iteration/control-flow and host cancellation borrows."
+  ]
+}

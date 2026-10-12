@@ -4,6 +4,8 @@ export interface Persona {
   role: string;
   color: string;
   icon: string;
+  /** Optional custom portrait (a small data URL) for editors without an engraving. */
+  imageUrl?: string;
   description: string;
   focus: string;
   /**
@@ -26,6 +28,11 @@ export interface Persona {
   voice?: string;
   /** Recurring rhetorical habits that make this editor recognizable. */
   signatureMoves?: string[];
+  /**
+   * Visible tics on the page — an opening word, a punctuation habit, a
+   * sign-off — so a note can be attributed at a glance, before it is read.
+   */
+  hallmarks?: string[];
   /** Words, tones, structures, and other-persona behaviors this editor avoids. */
   avoidances?: string[];
   /** One or two few-shot lines written in this persona's voice. */

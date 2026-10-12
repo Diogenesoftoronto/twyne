@@ -1,24 +1,193 @@
+/*
+ * The jaw's opening, 0–1. Registered so the read-aloud keyframes can tween
+ * it; Live voice writes it straight from the audio every frame instead.
+ */
+@property --pp-level {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
 .persona-portrait {
+  --pp-ring: max(1.5px, calc(var(--persona-portrait-size, 64px) * 0.035));
   position: relative;
   display: block;
   flex: 0 0 var(--persona-portrait-size, 64px);
   width: var(--persona-portrait-size, 64px);
   height: var(--persona-portrait-size, 64px);
   overflow: hidden;
-  border-radius: 2px;
-  background: var(--color-paper-2);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 38%,
+    color-mix(in srgb, var(--pp-color) 16%, var(--color-paper)) 0 52%,
+    color-mix(in srgb, var(--pp-color) 40%, var(--color-paper)) 100%
+  );
+  box-shadow:
+    0 0 0 var(--pp-ring) var(--color-paper),
+    0 0 0 calc(var(--pp-ring) * 2 + var(--pp-level) * var(--pp-ring) * 1.6)
+      var(--pp-color),
+    0 0 calc(var(--pp-level) * var(--persona-portrait-size, 64px) * 0.22)
+      calc(var(--pp-ring) * 2)
+      color-mix(in srgb, var(--pp-color) 45%, transparent);
+  isolation: isolate;
 }
 
-/* Use the approved transparent full portraits as a static head/shoulder crop. */
+.persona-portrait__stage {
+  position: absolute;
+  width: calc(var(--persona-portrait-size, 64px) * var(--pp-zoom, 2.35));
+  aspect-ratio: 4 / 5;
+  left: calc(
+    50% - var(--persona-portrait-size, 64px) * var(--pp-zoom, 2.35) *
+      var(--fx, 0.5)
+  );
+  top: calc(
+    53% - var(--persona-portrait-size, 64px) * var(--pp-zoom, 2.35) * 1.25 *
+      var(--fy, 0.3)
+  );
+  transform-origin: calc(var(--fx, 0.5) * 100%) calc(var(--fy, 0.3) * 100%);
+  transition: transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
 .persona-portrait img {
   position: absolute;
-  top: 0;
-  left: 50%;
+  inset: 0;
   display: block;
-  width: 145%;
+  width: 100%;
   max-width: none;
+  height: 100%;
+}
+
+/* The dark of an open mouth, under the jaw, hinged on the lip line. */
+.persona-portrait__mouth {
+  position: absolute;
+  left: calc(var(--mx) * 100%);
+  top: calc(var(--my) * 100% + 0.15%);
+  width: calc(var(--mw) * 62%);
+  height: 1.2%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse 50% 60% at 50% 35%,
+    #3d1814 0 55%,
+    rgb(61 24 20 / 0) 100%
+  );
+  translate: -50% 0;
+  rotate: var(--tilt);
+  scale: 1 var(--pp-level);
+  transform-origin: 50% 0;
+  visibility: hidden;
+}
+
+/*
+ * The chin: the same engraving, cut along the lip line, feathered at the
+ * cheeks and dropped along the head's own tilt. At rest it is pixel-for-pixel
+ * the picture beneath, so it only appears while the editor speaks.
+ */
+.persona-portrait__jaw {
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  clip-path: polygon(0 var(--jaw-y0), 100% var(--jaw-y1), 100% 100%, 0 100%);
+  -webkit-mask-image: radial-gradient(
+    ellipse calc(var(--mw) * 185%) 9% at calc(var(--mx) * 100%)
+      calc(var(--my) * 100% + 3%),
+    #000 55%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse calc(var(--mw) * 185%) 9% at calc(var(--mx) * 100%)
+      calc(var(--my) * 100% + 3%),
+    #000 55%,
+    transparent 100%
+  );
+  transform: rotate(var(--tilt)) translateY(calc(var(--pp-level) * 1.1%))
+    rotate(calc(var(--tilt) * -1));
+  visibility: hidden;
+}
+
+.persona-portrait[data-speaking] .persona-portrait__mouth,
+.persona-portrait[data-speaking] .persona-portrait__jaw {
+  visibility: visible;
+}
+
+/* Read-aloud has no amplitude to follow, so the jaw keeps a speech-like,
+   deliberately uneven rhythm: syllables, a stressed beat, a breath. */
+.persona-portrait[data-speaking="tts"] {
+  animation: pp-talk 1.7s linear infinite;
+}
+
+@keyframes pp-talk {
+  0% {
+    --pp-level: 0.1;
+  }
+  7% {
+    --pp-level: 0.75;
+  }
+  14% {
+    --pp-level: 0.2;
+  }
+  22% {
+    --pp-level: 0.95;
+  }
+  29% {
+    --pp-level: 0.35;
+  }
+  36% {
+    --pp-level: 0.65;
+  }
+  43% {
+    --pp-level: 0.12;
+  }
+  51% {
+    --pp-level: 0.85;
+  }
+  58% {
+    --pp-level: 0.3;
+  }
+  66% {
+    --pp-level: 0.55;
+  }
+  73% {
+    --pp-level: 0.08;
+  }
+  82%,
+  100% {
+    --pp-level: 0;
+  }
+}
+
+.persona-portrait[data-speaking] .persona-portrait__stage {
+  transform: scale(1.04);
+}
+
+@media (hover: hover) {
+  .persona-portrait[data-framing="face"]:hover .persona-portrait__stage {
+    transform: scale(1.06);
+  }
+}
+
+/* The whole engraved editor, standing on whatever colour plate holds it. */
+.persona-portrait[data-framing="figure"] {
+  /* A container may size the figure for itself; inline size is the default. */
+  flex-basis: var(--pp-figure-width, var(--persona-portrait-size, 64px));
+  width: var(--pp-figure-width, var(--persona-portrait-size, 64px));
   height: auto;
-  transform: translateX(-50%);
+  aspect-ratio: 4 / 5;
+  overflow: visible;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.persona-portrait[data-framing="figure"] .persona-portrait__stage {
+  inset: 0;
+  width: 100%;
+  filter: drop-shadow(0 14px 18px rgb(0 0 0 / 0.16));
+}
+
+.persona-portrait[data-framing="figure"][data-speaking]
+  .persona-portrait__stage {
+  transform: scale(1.015);
 }
 
 .persona-portrait__initials {
@@ -26,10 +195,28 @@
   width: 100%;
   height: 100%;
   place-items: center;
-  border: 1px solid var(--color-paper-3);
-  color: var(--color-ink);
-  font: 600 1.125rem/1 var(--font-display);
+  color: color-mix(in srgb, var(--pp-color) 70%, var(--color-ink));
+  font: 600 calc(var(--persona-portrait-size, 64px) * 0.34) / 1
+    var(--font-display);
   letter-spacing: 0.025em;
+}
+
+.persona-portrait[data-framing="figure"] .persona-portrait__initials {
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pp-color) 22%, var(--color-paper));
+  aspect-ratio: 1;
+  height: auto;
+  font-size: calc(var(--persona-portrait-size, 64px) * 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .persona-portrait[data-speaking="tts"] {
+    animation: none;
+    --pp-level: 0.6;
+  }
+  .persona-portrait__stage {
+    transition: none;
+  }
 }
 
 .persona-masthead {

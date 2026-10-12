@@ -19,10 +19,16 @@
  * `ctx.auth.getUserIdentity()`. There is no `userId` argument.
  */
 
-import { mutation, query } from "./_generated/server";
-import { v } from "convex/values";
+import {
+  mutation,
+  query,
+  type MutationCtx,
+  type QueryCtx,
+} from "./_generated/server";
+import { ConvexError, v } from "convex/values";
 import type { Doc } from "./_generated/dataModel";
 import { consumeRateLimit, RATE_LIMITS } from "./lib/rateLimit";
+import { EXTRA_ALIAS_PRICE_MICROUSD } from "../src/utils/alias-policy";
 
 /* ── Validation ─────────────────────────────────────────────────── */
 
@@ -40,8 +46,10 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   "analysis",
   "api",
   "apparatus",
+  "at",
   "blog",
   "dossier",
+  "desk",
   "docs",
   "download",
   "downloads",
@@ -71,6 +79,11 @@ export const RESERVED_HANDLES: ReadonlySet<string> = new Set([
   "profile",
   "about",
   "help",
+  "house",
+  "og",
+  "privacy-ledger",
+  "revisions",
+  "writing-tools",
   "support",
   "contact",
   "account",
@@ -162,24 +175,49 @@ async function findHandleRow(
     .unique();
 }
 
+export async function ownedHandles(
+  ctx: QueryCtx | MutationCtx,
+  userId: string,
+): Promise<Doc<"handles">[]> {
+  const rows: Doc<"handles">[] = await ctx.db
+    .query("handles")
+    .withIndex("by_userId", (q) => q.eq("userId", userId))
+    .collect();
+  // Legacy multi-alias owners keep every row; oldest claim is the primary view.
+  return rows.sort(
+    (a, b) =>
+      a.claimedAt - b.claimedAt ||
+      a._creationTime - b._creationTime ||
+      a._id.localeCompare(b._id),
+  );
+}
+
 /* ── Authed mutations ───────────────────────────────────────────── */
 
 /**
- * Claim or change the signed-in user's writer handle. Replaces any existing
- * handle: the old handle is freed immediately so another writer can take it.
- * The caller's existing published pieces are NOT retroactively re-slugged —
- * `ownerHandle` on each published row is rewritten in place on next publish,
- * and the reader route renders content at whatever URL it was requested at
- * (the `/p/[slug]` legacy path still works and 301-redirects to the new
- * handle-based URL when possible).
- *
- * Also re-denormalizes `ownerHandle` across the caller's existing published
- * pieces when the handle changes, so old share links resolve to the new URL.
+ * Claim the included standard alias once, within one serializable mutation.
+ * Read both owner and alias index ranges before inserting so competing claims
+ * conflict and are retried by Convex. Existing aliases are never released.
  */
 export const claimHandle = mutation({
   args: { handle: v.string() },
+  returns: v.object({ handle: v.string(), changed: v.boolean() }),
   handler: async (ctx, { handle }) => {
     const userId = await requireIdentity(ctx);
+
+    const normalized = normalizeHandle(handle);
+    const owned = await ownedHandles(ctx, userId);
+    if (owned.some((row) => row.handle === normalized)) {
+      return { handle: owned[0]!.handle, changed: false as const };
+    }
+    const error = validateHandle(handle);
+    if (error) throw new Error(error);
+    if (owned.length) {
+      throw new ConvexError({
+        code: "STANDARD_ALIAS_ALREADY_CLAIMED",
+        message: `Your included alias is /${owned[0]!.handle}. Additional aliases require a request and US$250 in credits.`,
+      });
+    }
 
     // Rate limit: claim attempts are cheap but the uniqueness check is a
     // DB round-trip. 5 per minute is plenty for typing-then-claiming.
@@ -189,41 +227,20 @@ export const claimHandle = mutation({
       ...RATE_LIMITS.handleClaim,
     });
 
-    const error = validateHandle(handle);
-    if (error) throw new Error(error);
-    const normalized = normalizeHandle(handle);
-
-    // Uniqueness on the by_handle index. The race window is tiny (the
-    // caller's claim is one mutation) but the `unique()` query enforces
-    // at most one row per handle.
+    // The indexed read and insertion share a Convex transaction.
     const conflicting = await findHandleRow(ctx, normalized);
     if (conflicting && conflicting.userId !== userId) {
       throw new Error(`"${normalized}" is already taken.`);
     }
 
     const now = Date.now();
-    const existing = await ctx.db
-      .query("handles")
-      .withIndex("by_userId", (q: any) => q.eq("userId", userId))
-      .unique();
-
-    if (existing) {
-      if (existing.handle === normalized) {
-        return { handle: normalized, changed: false as const };
-      }
-      await ctx.db.patch(existing._id, {
-        handle: normalized,
-        updatedAt: now,
-      });
-    } else {
-      await ctx.db.insert("handles", {
-        userId,
-        handle: normalized,
-        publicStats: PRIVATE_PUBLIC_STATS,
-        claimedAt: now,
-        updatedAt: now,
-      });
-    }
+    await ctx.db.insert("handles", {
+      userId,
+      handle: normalized,
+      publicStats: PRIVATE_PUBLIC_STATS,
+      claimedAt: now,
+      updatedAt: now,
+    });
 
     // Re-denormalize `ownerHandle` across the caller's published pieces so
     // existing share links resolve to the new handle-based URL.
@@ -238,6 +255,64 @@ export const claimHandle = mutation({
     }
 
     return { handle: normalized, changed: true as const };
+  },
+});
+
+/** Request only: review and any separately authorized payment happen later. */
+export const requestAdditionalAlias = mutation({
+  args: { handle: v.string() },
+  returns: v.object({
+    requestId: v.id("aliasRequests"),
+    handle: v.string(),
+    status: v.literal("pending"),
+    priceMicrousd: v.number(),
+    currency: v.literal("USD"),
+  }),
+  handler: async (ctx, { handle }) => {
+    const userId = await requireIdentity(ctx);
+    const error = validateHandle(handle);
+    if (error) throw new Error(error);
+    const normalized = normalizeHandle(handle);
+    const owned = await ownedHandles(ctx, userId);
+    if (!owned.length) throw new Error("Claim your included alias first.");
+    if (owned.some((row) => row.handle === normalized))
+      throw new Error("You already own this alias.");
+    const existing = await ctx.db
+      .query("aliasRequests")
+      .withIndex("by_userId_and_handle", (q) =>
+        q.eq("userId", userId).eq("handle", normalized),
+      )
+      .unique();
+    if (existing)
+      return {
+        requestId: existing._id,
+        handle: existing.handle,
+        status: existing.status,
+        priceMicrousd: existing.priceMicrousd,
+        currency: existing.currency,
+      };
+    await consumeRateLimit(ctx, {
+      action: "profile:requestAdditionalAlias",
+      identifier: userId,
+      ...RATE_LIMITS.handleClaim,
+    });
+    if (await findHandleRow(ctx, normalized))
+      throw new Error("This alias is already taken.");
+    const requestId = await ctx.db.insert("aliasRequests", {
+      userId,
+      handle: normalized,
+      status: "pending",
+      priceMicrousd: EXTRA_ALIAS_PRICE_MICROUSD,
+      currency: "USD",
+      requestedAt: Date.now(),
+    });
+    return {
+      requestId,
+      handle: normalized,
+      status: "pending" as const,
+      priceMicrousd: EXTRA_ALIAS_PRICE_MICROUSD,
+      currency: "USD" as const,
+    };
   },
 });
 
@@ -257,15 +332,21 @@ export const updatePublicStats = mutation({
   returns: v.object({ ok: v.boolean() }),
   handler: async (ctx, publicStats) => {
     const userId = await requireIdentity(ctx);
-    const existing = await ctx.db
-      .query("handles")
-      .withIndex("by_userId", (q: any) => q.eq("userId", userId))
-      .unique();
+    const existing = (await ownedHandles(ctx, userId))[0];
     if (!existing) {
       throw new Error("Claim a handle before changing public statistics.");
     }
     await ctx.db.patch(existing._id, {
       publicStats,
+      ...(existing.deskPublication?.enabled
+        ? {
+            deskPublication: {
+              ...existing.deskPublication,
+              revision: existing.deskPublication.revision + 1,
+              payload: undefined,
+            },
+          }
+        : {}),
       updatedAt: Date.now(),
     });
     return { ok: true };
@@ -274,7 +355,7 @@ export const updatePublicStats = mutation({
 
 /**
  * Update the optional display name and bio shown on the profile page. The
- * handle itself is changed via `claimHandle`, not here.
+ * alias itself is preserved after its initial claim.
  */
 export const updateProfile = mutation({
   args: {
@@ -288,10 +369,7 @@ export const updateProfile = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireIdentity(ctx);
-    const existing = await ctx.db
-      .query("handles")
-      .withIndex("by_userId", (q: any) => q.eq("userId", userId))
-      .unique();
+    const existing = (await ownedHandles(ctx, userId))[0];
     if (!existing) {
       throw new Error("Claim a handle before setting a profile.");
     }
@@ -315,6 +393,12 @@ export const updateProfile = mutation({
       }
       patch.avatarStorageId = args.avatarStorageId ?? undefined;
     }
+    if (existing.deskPublication?.enabled)
+      patch.deskPublication = {
+        ...existing.deskPublication,
+        revision: existing.deskPublication.revision + 1,
+        payload: undefined,
+      };
     await ctx.db.patch(existing._id, patch);
     return { ok: true };
   },
@@ -335,10 +419,7 @@ export const generateAvatarUploadUrl = mutation({
       identifier: userId,
       ...RATE_LIMITS.avatarUpload,
     });
-    const existing = await ctx.db
-      .query("handles")
-      .withIndex("by_userId", (q: any) => q.eq("userId", userId))
-      .unique();
+    const existing = (await ownedHandles(ctx, userId))[0];
     if (!existing) {
       throw new Error("Claim a handle before adding a profile picture.");
     }
@@ -354,13 +435,23 @@ export const getMyHandle = query({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
-    const row = await ctx.db
-      .query("handles")
-      .withIndex("by_userId", (q: any) =>
-        q.eq("userId", identity.tokenIdentifier),
-      )
-      .unique();
-    return row ? await serializeHandle(ctx, row) : null;
+    const owned = await ownedHandles(ctx, identity.tokenIdentifier);
+    if (!owned.length) return null;
+    const requests = await ctx.db
+      .query("aliasRequests")
+      .withIndex("by_userId", (q) => q.eq("userId", identity.tokenIdentifier))
+      .order("desc")
+      .take(50);
+    return {
+      ...(await serializeHandle(ctx, owned[0]!)),
+      ownedAliases: owned.map((row) => row.handle),
+      additionalAliasRequests: requests.map((row) => ({
+        handle: row.handle,
+        status: row.status,
+        priceMicrousd: row.priceMicrousd,
+        currency: row.currency,
+      })),
+    };
   },
 });
 

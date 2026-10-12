@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "status": "FROZEN_AUTHORED_UNEXECUTED",
+  "ownership": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review",
+  "outputs": [
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/analyze.py",
+      "bytes": 35158,
+      "sha256": "cceaefd7383e1cfb76ec0a1f26b4fe09d4afa13a448bd05f7c451a7d0fe1ac2d"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/test_analyze.py",
+      "bytes": 15832,
+      "sha256": "21044b5c1697c7146b8c0c85988c4c1f080244f41befbbade3e97e086c673472"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/source-inputs.json",
+      "bytes": 5684,
+      "sha256": "e1fe61d9b9a88408881c728c2e086a0a32cf0f35540e24d4c209f05c0d9deccd"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/reviewed-inputs.json",
+      "bytes": 14028,
+      "sha256": "2acfcecfeabdb4397e4fc89433994e78937bae06d42a686840b977150ea544e9"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/README.md",
+      "bytes": 7803,
+      "sha256": "ebd7cfcc8f11fd85d23a0f1c98f260c37fd6a848c80cb3385300046d9f558f14"
+    },
+    {
+      "path": "desktop/gpui/fixtures/math-write/source-inline-geometry/admission-review/field-evidence-proposal.md",
+      "bytes": 1830,
+      "sha256": "d8948b9cc044d0b643dde9d6e3c51f33f8c798491722301901097d766343abf0"
+    }
+  ],
+  "workerChecks": [
+    "Python compile(source, path, exec) syntax only for two files",
+    "Source/case/provenance/artifact SHA-256 and JSON read inspection only"
+  ],
+  "authoredTests": 13,
+  "testExecution": "UNRUN_PARENT_OWNED",
+  "analyzerExecution": "UNRUN_PARENT_OWNED",
+  "runtimeChanges": false,
+  "integrationPatch": "NONE; offline analyzer only",
+  "proofScope": "Supplied original scaffold JSON consistency only; partial prose/first-label contract, independent missing field typography/caret, no native/pixel/full-app/TeX adoption."
+}

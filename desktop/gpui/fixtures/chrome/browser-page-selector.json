@@ -1,0 +1,289 @@
+{
+  "reference": "Original Twyne TypstWorkspace in owned anonymous intercepted browser",
+  "viewport": {
+    "width": 1280,
+    "height": 860
+  },
+  "evidence": {
+    "before": {
+      "value": "0",
+      "text": "1 page",
+      "options": [
+        {
+          "value": "0",
+          "text": "1 page"
+        },
+        {
+          "value": "1",
+          "text": "Page 1 of 1"
+        }
+      ],
+      "width": 71
+    },
+    "selected": {
+      "value": "1",
+      "text": "Page 1 of 1",
+      "width": 71,
+      "proof": "true"
+    },
+    "write": {
+      "value": "1",
+      "text": "Page 1 of 1",
+      "proof": "false"
+    },
+    "reset": {
+      "value": "0",
+      "text": "1 page",
+      "proof": "false"
+    },
+    "grown": {
+      "value": "1",
+      "text": "Page 1 of 2",
+      "options": [
+        {
+          "value": "0",
+          "text": "2 pages"
+        },
+        {
+          "value": "1",
+          "text": "Page 1 of 2"
+        },
+        {
+          "value": "2",
+          "text": "Page 2 of 2"
+        }
+      ]
+    },
+    "second": {
+      "value": "2",
+      "text": "Page 2 of 2",
+      "proof": "true"
+    },
+    "shrunk": {
+      "value": "0",
+      "index": 0,
+      "text": "1 page",
+      "options": [
+        {
+          "value": "0",
+          "text": "1 page"
+        },
+        {
+          "value": "1",
+          "text": "Page 1 of 1"
+        }
+      ]
+    },
+    "sourceRestored": true,
+    "keyboardDown": {
+      "value": "1",
+      "text": "Page 1 of 1",
+      "focused": true,
+      "proof": "true"
+    },
+    "keyboardUp": {
+      "value": "0",
+      "text": "1 page",
+      "focused": true,
+      "proof": "true"
+    },
+    "keyboardEnd": {
+      "value": "1",
+      "text": "Page 1 of 1",
+      "focused": true
+    },
+    "extraClosedKeys": [
+      {
+        "key": "ArrowRight",
+        "value": "1",
+        "text": "Page 1 of 1",
+        "focused": true
+      },
+      {
+        "key": "ArrowLeft",
+        "value": "0",
+        "text": "1 page",
+        "focused": true
+      },
+      {
+        "key": "PageDown",
+        "value": "1",
+        "text": "Page 1 of 1",
+        "focused": true
+      },
+      {
+        "key": "PageUp",
+        "value": "0",
+        "text": "1 page",
+        "focused": true
+      },
+      {
+        "key": "p",
+        "value": "1",
+        "text": "Page 1 of 1",
+        "focused": true
+      },
+      {
+        "key": "1",
+        "value": "0",
+        "text": "1 page",
+        "focused": true
+      }
+    ],
+    "keyboardHome": {
+      "value": "0",
+      "text": "1 page",
+      "focused": true
+    },
+    "multiPageClosedKeys": {
+      "options": 14,
+      "cases": [
+        {
+          "key": "PageDown",
+          "from": "0",
+          "value": "3",
+          "text": "Page 3 of 13",
+          "focused": true
+        },
+        {
+          "key": "PageDown",
+          "from": "1",
+          "value": "4",
+          "text": "Page 4 of 13",
+          "focused": true
+        },
+        {
+          "key": "PageUp",
+          "from": "12",
+          "value": "9",
+          "text": "Page 9 of 13",
+          "focused": true
+        },
+        {
+          "key": "PageUp",
+          "from": "3",
+          "value": "0",
+          "text": "13 pages",
+          "focused": true
+        }
+      ],
+      "sourceRestored": true
+    },
+    "closedTypeahead": {
+      "browser": "HeadlessChrome/150.0.0.0 Linux x86_64",
+      "options": 14,
+      "cases": [
+        {
+          "name": "repeat:p",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "repeat:p",
+          "value": "2",
+          "text": "Page 2 of 13",
+          "focused": true
+        },
+        {
+          "name": "repeat:p",
+          "value": "3",
+          "text": "Page 3 of 13",
+          "focused": true
+        },
+        {
+          "name": "prefix:p",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "prefix:a",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "prefix:g",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "prefix:e",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "prefix: ",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "prefix:1",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "prefix:2",
+          "value": "12",
+          "text": "Page 12 of 13",
+          "focused": true
+        },
+        {
+          "name": "count:1",
+          "value": "0",
+          "text": "13 pages",
+          "focused": true
+        },
+        {
+          "name": "count:3",
+          "value": "0",
+          "text": "13 pages",
+          "focused": true
+        },
+        {
+          "name": "no-match:p",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "no-match:x",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        },
+        {
+          "name": "no-match:p",
+          "value": "1",
+          "text": "Page 1 of 13",
+          "focused": true
+        }
+      ],
+      "timeout": {
+        "options": 2,
+        "cases": [
+          {
+            "delay": 800,
+            "sequence": "page 1 then 1",
+            "value": "1",
+            "text": "Page 1 of 1",
+            "focused": true
+          },
+          {
+            "delay": 1100,
+            "sequence": "page 1 then 1",
+            "value": "0",
+            "text": "1 page",
+            "focused": true
+          }
+        ]
+      },
+      "sourceRestored": true
+    }
+  }
+}

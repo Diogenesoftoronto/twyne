@@ -1,0 +1,5501 @@
+{
+  "evidence": "Projection of retained actual inspect/CDP records. Node rectangles are Source NodeView/line boxes, not a standalone TeX advance/ink baseline. Empty/invalid previews intentionally have no KaTeX box.",
+  "rows": [
+    {
+      "profile": "original",
+      "width": 1280,
+      "id": "ordinary",
+      "source": "x+1",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 181,
+          "width": 49.9375,
+          "height": 32.390625,
+          "quad": [
+            228.640625,
+            181,
+            278.578125,
+            181,
+            278.578125,
+            213.390625,
+            228.640625,
+            213.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 184.8125,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            228.640625,
+            184.8125,
+            228.640625,
+            184.8125,
+            228.640625,
+            210.8125,
+            228.640625,
+            210.8125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 228.640625,
+          "y": 187,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            228.640625,
+            187,
+            241.09375,
+            187,
+            241.09375,
+            208,
+            228.640625,
+            208
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 181,
+          "width": 942,
+          "height": 32.390625,
+          "quad": [
+            169,
+            181,
+            1111,
+            181,
+            1111,
+            213.390625,
+            169,
+            213.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 181,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            181,
+            580.640625,
+            181,
+            580.640625,
+            384.546875,
+            228.640625,
+            384.546875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 383.5625,
+          "y": 294.40625,
+          "width": 42.15625,
+          "height": 27.359375,
+          "quad": [
+            383.5625,
+            294.40625,
+            425.71875,
+            294.40625,
+            425.71875,
+            321.765625,
+            383.5625,
+            321.765625
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 383.5625,
+          "y": 297.9375,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            383.5625,
+            297.9375,
+            383.5625,
+            297.9375,
+            383.5625,
+            319.9375,
+            383.5625,
+            319.9375
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 1280,
+      "id": "fraction",
+      "source": "\\frac{1}{1+x^2}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 299.484375,
+          "width": 57.9375,
+          "height": 36.90625,
+          "quad": [
+            228.640625,
+            299.484375,
+            286.578125,
+            299.484375,
+            286.578125,
+            336.390625,
+            228.640625,
+            336.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 310.265625,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            228.640625,
+            310.265625,
+            228.640625,
+            310.265625,
+            228.640625,
+            336.265625,
+            228.640625,
+            336.265625
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 231.25,
+          "y": 309,
+          "width": 52.71875,
+          "height": 28.125,
+          "quad": [
+            231.25,
+            309,
+            283.96875,
+            309,
+            283.96875,
+            337.125,
+            231.25,
+            337.125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "formulaFont": {
+        "box": {
+          "x": 259.078125,
+          "y": 313,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            259.078125,
+            313,
+            271.53125,
+            313,
+            271.53125,
+            334,
+            259.078125,
+            334
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 299.484375,
+          "width": 942,
+          "height": 36.90625,
+          "quad": [
+            169,
+            299.484375,
+            1111,
+            299.484375,
+            1111,
+            336.390625,
+            169,
+            336.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 299.484375,
+          "width": 352,
+          "height": 207.65625,
+          "quad": [
+            228.640625,
+            299.484375,
+            580.640625,
+            299.484375,
+            580.640625,
+            507.140625,
+            228.640625,
+            507.140625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 380.1875,
+          "y": 412.890625,
+          "width": 48.90625,
+          "height": 31.46875,
+          "quad": [
+            380.1875,
+            412.890625,
+            429.09375,
+            412.890625,
+            429.09375,
+            444.359375,
+            380.1875,
+            444.359375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 380.1875,
+          "y": 422.296875,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            380.1875,
+            422.296875,
+            380.1875,
+            422.296875,
+            380.1875,
+            444.296875,
+            380.1875,
+            444.296875
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 382.390625,
+          "y": 421.234375,
+          "width": 44.5,
+          "height": 24.0625,
+          "quad": [
+            382.390625,
+            421.234375,
+            426.890625,
+            421.234375,
+            426.890625,
+            445.296875,
+            382.390625,
+            445.296875
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      }
+    },
+    {
+      "profile": "original",
+      "width": 1280,
+      "id": "radical",
+      "source": "\\sqrt{x^2+y^2}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 422.484375,
+          "width": 96.203125,
+          "height": 34.265625,
+          "quad": [
+            228.640625,
+            422.484375,
+            324.84375,
+            422.484375,
+            324.84375,
+            456.75,
+            228.640625,
+            456.75
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 430.625,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            228.640625,
+            430.625,
+            228.640625,
+            430.625,
+            228.640625,
+            456.625,
+            228.640625,
+            456.625
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 262.859375,
+          "y": 418.1875,
+          "width": 10.890625,
+          "height": 26.125,
+          "quad": [
+            262.859375,
+            418.1875,
+            273.75,
+            418.1875,
+            273.75,
+            444.3125,
+            262.859375,
+            444.3125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": [
+          {
+            "familyName": "KaTeX_Main",
+            "postScriptName": "KaTeX_Main-Regular",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "formulaFont": {
+        "box": {
+          "x": 250.40625,
+          "y": 428.484375,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            250.40625,
+            428.484375,
+            262.859375,
+            428.484375,
+            262.859375,
+            449.484375,
+            250.40625,
+            449.484375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 422.484375,
+          "width": 942,
+          "height": 34.265625,
+          "quad": [
+            169,
+            422.484375,
+            1111,
+            422.484375,
+            1111,
+            456.75,
+            169,
+            456.75
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 422.484375,
+          "width": 352,
+          "height": 205.4375,
+          "quad": [
+            228.640625,
+            422.484375,
+            580.640625,
+            422.484375,
+            580.640625,
+            627.921875,
+            228.640625,
+            627.921875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 364.03125,
+          "y": 535.890625,
+          "width": 81.21875,
+          "height": 29.25,
+          "quad": [
+            364.03125,
+            535.890625,
+            445.25,
+            535.890625,
+            445.25,
+            565.140625,
+            364.03125,
+            565.140625
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 364.03125,
+          "y": 543.078125,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            364.03125,
+            543.078125,
+            364.03125,
+            543.078125,
+            364.03125,
+            565.078125,
+            364.03125,
+            565.078125
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 392.9375,
+          "y": 532.578125,
+          "width": 9.1875,
+          "height": 22.0625,
+          "quad": [
+            392.9375,
+            532.578125,
+            402.125,
+            532.578125,
+            402.125,
+            554.640625,
+            392.9375,
+            554.640625
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": [
+          {
+            "familyName": "KaTeX_Main",
+            "postScriptName": "KaTeX_Main-Regular",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      }
+    },
+    {
+      "profile": "original",
+      "width": 1280,
+      "id": "scripts",
+      "source": "x^{n+1}_{i}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 542.84375,
+          "width": 54.421875,
+          "height": 34.140625,
+          "quad": [
+            228.640625,
+            542.84375,
+            283.0625,
+            542.84375,
+            283.0625,
+            576.984375,
+            228.640625,
+            576.984375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 550.859375,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            228.640625,
+            550.859375,
+            228.640625,
+            550.859375,
+            228.640625,
+            576.859375,
+            228.640625,
+            576.859375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 241.09375,
+          "y": 550.875,
+          "width": 7.515625,
+          "height": 28.125,
+          "quad": [
+            241.09375,
+            550.875,
+            248.609375,
+            550.875,
+            248.609375,
+            579,
+            241.09375,
+            579
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "formulaFont": {
+        "box": {
+          "x": 228.640625,
+          "y": 548.84375,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            228.640625,
+            548.84375,
+            241.09375,
+            548.84375,
+            241.09375,
+            569.84375,
+            228.640625,
+            569.84375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 542.84375,
+          "width": 942,
+          "height": 34.140625,
+          "quad": [
+            169,
+            542.84375,
+            1111,
+            542.84375,
+            1111,
+            576.984375,
+            169,
+            576.984375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 542.84375,
+          "width": 352,
+          "height": 205.328125,
+          "quad": [
+            228.640625,
+            542.84375,
+            580.640625,
+            542.84375,
+            580.640625,
+            748.171875,
+            228.640625,
+            748.171875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 381.671875,
+          "y": 656.25,
+          "width": 45.9375,
+          "height": 29.140625,
+          "quad": [
+            381.671875,
+            656.25,
+            427.609375,
+            656.25,
+            427.609375,
+            685.390625,
+            381.671875,
+            685.390625
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 381.671875,
+          "y": 663.328125,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            381.671875,
+            663.328125,
+            381.671875,
+            663.328125,
+            381.671875,
+            685.328125,
+            381.671875,
+            685.328125
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 392.1875,
+          "y": 663.34375,
+          "width": 6.34375,
+          "height": 24.0625,
+          "quad": [
+            392.1875,
+            663.34375,
+            398.53125,
+            663.34375,
+            398.53125,
+            687.40625,
+            392.1875,
+            687.40625
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      }
+    },
+    {
+      "profile": "original",
+      "width": 1280,
+      "id": "block",
+      "source": "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}",
+      "display": "block",
+      "node": {
+        "box": {
+          "x": 169,
+          "y": 711.46875,
+          "width": 942,
+          "height": 118.390625,
+          "quad": [
+            169,
+            711.46875,
+            1111,
+            711.46875,
+            1111,
+            829.859375,
+            169,
+            829.859375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 601.671875,
+          "y": 773.734375,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            601.671875,
+            773.734375,
+            601.671875,
+            773.734375,
+            601.671875,
+            799.734375,
+            601.671875,
+            799.734375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 617.703125,
+          "y": 743.75,
+          "width": 11.515625,
+          "height": 21,
+          "quad": [
+            617.703125,
+            743.75,
+            629.21875,
+            743.75,
+            629.21875,
+            764.75,
+            617.703125,
+            764.75
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 663.078125,
+          "width": 942,
+          "height": 215.171875,
+          "quad": [
+            169,
+            663.078125,
+            1111,
+            663.078125,
+            1111,
+            878.25,
+            169,
+            878.25
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 25
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 185,
+          "y": 723.46875,
+          "width": 910,
+          "height": 275.34375,
+          "quad": [
+            185,
+            723.46875,
+            1095,
+            723.46875,
+            1095,
+            998.8125,
+            185,
+            998.8125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 607.625,
+          "y": 856.46875,
+          "width": 64.734375,
+          "height": 79.5625,
+          "quad": [
+            607.625,
+            856.46875,
+            672.359375,
+            856.46875,
+            672.359375,
+            936.03125,
+            607.625,
+            936.03125
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 607.625,
+          "y": 898.78125,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            607.625,
+            898.78125,
+            607.625,
+            898.78125,
+            607.625,
+            920.78125,
+            607.625,
+            920.78125
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 1280,
+      "id": "unicode",
+      "source": "\\text{Café}\\quad\\alpha",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 964.34375,
+          "width": 79.9375,
+          "height": 32.390625,
+          "quad": [
+            228.640625,
+            964.34375,
+            308.578125,
+            964.34375,
+            308.578125,
+            996.734375,
+            228.640625,
+            996.734375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 966.34375,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            228.640625,
+            966.34375,
+            228.640625,
+            966.34375,
+            228.640625,
+            992.34375,
+            228.640625,
+            992.34375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 294.5625,
+          "y": 970.34375,
+          "width": 13.9375,
+          "height": 21,
+          "quad": [
+            294.5625,
+            970.34375,
+            308.5,
+            970.34375,
+            308.5,
+            991.34375,
+            294.5625,
+            991.34375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 964.34375,
+          "width": 942,
+          "height": 32.390625,
+          "quad": [
+            169,
+            964.34375,
+            1111,
+            964.34375,
+            1111,
+            996.734375,
+            169,
+            996.734375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 740.34375,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            740.34375,
+            580.640625,
+            740.34375,
+            580.640625,
+            943.890625,
+            228.640625,
+            943.890625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 370.890625,
+          "y": 853.75,
+          "width": 67.484375,
+          "height": 27.359375,
+          "quad": [
+            370.890625,
+            853.75,
+            438.375,
+            853.75,
+            438.375,
+            881.109375,
+            370.890625,
+            881.109375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 370.890625,
+          "y": 855.75,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            370.890625,
+            855.75,
+            370.890625,
+            855.75,
+            370.890625,
+            877.75,
+            370.890625,
+            877.75
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 1280,
+      "id": "invalid",
+      "source": "\\frac{",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 1082.828125,
+          "width": 205.796875,
+          "height": 37.46875,
+          "quad": [
+            228.640625,
+            1082.828125,
+            434.4375,
+            1082.828125,
+            434.4375,
+            1120.296875,
+            228.640625,
+            1120.296875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {},
+      "sizing": {},
+      "formulaFont": {},
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 1082.828125,
+          "width": 942,
+          "height": 37.46875,
+          "quad": [
+            169,
+            1082.828125,
+            1111,
+            1082.828125,
+            1111,
+            1120.296875,
+            169,
+            1120.296875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 749.828125,
+          "width": 770.5625,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            749.828125,
+            999.203125,
+            749.828125,
+            999.203125,
+            953.375,
+            228.640625,
+            953.375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {},
+      "previewStrut": {},
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 1280,
+      "id": "empty",
+      "source": "",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 1206.390625,
+          "width": 255.6875,
+          "height": 37.46875,
+          "quad": [
+            228.640625,
+            1206.390625,
+            484.328125,
+            1206.390625,
+            484.328125,
+            1243.859375,
+            228.640625,
+            1243.859375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {},
+      "sizing": {},
+      "formulaFont": {},
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 1206.390625,
+          "width": 942,
+          "height": 37.46875,
+          "quad": [
+            169,
+            1206.390625,
+            1111,
+            1206.390625,
+            1111,
+            1243.859375,
+            169,
+            1243.859375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 761.390625,
+          "width": 383.40625,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            761.390625,
+            612.046875,
+            761.390625,
+            612.046875,
+            964.9375,
+            228.640625,
+            964.9375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {},
+      "previewStrut": {},
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 620,
+      "id": "ordinary",
+      "source": "x+1",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 201,
+          "width": 49.9375,
+          "height": 32.390625,
+          "quad": [
+            100.640625,
+            201,
+            150.578125,
+            201,
+            150.578125,
+            233.390625,
+            100.640625,
+            233.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 204.8125,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            100.640625,
+            204.8125,
+            100.640625,
+            204.8125,
+            100.640625,
+            230.8125,
+            100.640625,
+            230.8125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 100.640625,
+          "y": 207,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            100.640625,
+            207,
+            113.09375,
+            207,
+            113.09375,
+            228,
+            100.640625,
+            228
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 201,
+          "width": 538,
+          "height": 32.390625,
+          "quad": [
+            41,
+            201,
+            579,
+            201,
+            579,
+            233.390625,
+            41,
+            233.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 201,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            201,
+            452.640625,
+            201,
+            452.640625,
+            404.546875,
+            100.640625,
+            404.546875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 255.5625,
+          "y": 314.40625,
+          "width": 42.15625,
+          "height": 27.359375,
+          "quad": [
+            255.5625,
+            314.40625,
+            297.71875,
+            314.40625,
+            297.71875,
+            341.765625,
+            255.5625,
+            341.765625
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 255.5625,
+          "y": 317.9375,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            255.5625,
+            317.9375,
+            255.5625,
+            317.9375,
+            255.5625,
+            339.9375,
+            255.5625,
+            339.9375
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 620,
+      "id": "fraction",
+      "source": "\\frac{1}{1+x^2}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 319.484375,
+          "width": 57.9375,
+          "height": 36.90625,
+          "quad": [
+            100.640625,
+            319.484375,
+            158.578125,
+            319.484375,
+            158.578125,
+            356.390625,
+            100.640625,
+            356.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 330.265625,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            100.640625,
+            330.265625,
+            100.640625,
+            330.265625,
+            100.640625,
+            356.265625,
+            100.640625,
+            356.265625
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 103.25,
+          "y": 329,
+          "width": 52.71875,
+          "height": 28.125,
+          "quad": [
+            103.25,
+            329,
+            155.96875,
+            329,
+            155.96875,
+            357.125,
+            103.25,
+            357.125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "formulaFont": {
+        "box": {
+          "x": 131.078125,
+          "y": 333,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            131.078125,
+            333,
+            143.53125,
+            333,
+            143.53125,
+            354,
+            131.078125,
+            354
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 319.484375,
+          "width": 538,
+          "height": 36.90625,
+          "quad": [
+            41,
+            319.484375,
+            579,
+            319.484375,
+            579,
+            356.390625,
+            41,
+            356.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 319.484375,
+          "width": 352,
+          "height": 207.65625,
+          "quad": [
+            100.640625,
+            319.484375,
+            452.640625,
+            319.484375,
+            452.640625,
+            527.140625,
+            100.640625,
+            527.140625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 252.1875,
+          "y": 432.890625,
+          "width": 48.90625,
+          "height": 31.46875,
+          "quad": [
+            252.1875,
+            432.890625,
+            301.09375,
+            432.890625,
+            301.09375,
+            464.359375,
+            252.1875,
+            464.359375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 252.1875,
+          "y": 442.296875,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            252.1875,
+            442.296875,
+            252.1875,
+            442.296875,
+            252.1875,
+            464.296875,
+            252.1875,
+            464.296875
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 254.390625,
+          "y": 441.234375,
+          "width": 44.5,
+          "height": 24.0625,
+          "quad": [
+            254.390625,
+            441.234375,
+            298.890625,
+            441.234375,
+            298.890625,
+            465.296875,
+            254.390625,
+            465.296875
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      }
+    },
+    {
+      "profile": "original",
+      "width": 620,
+      "id": "radical",
+      "source": "\\sqrt{x^2+y^2}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 442.484375,
+          "width": 96.203125,
+          "height": 34.265625,
+          "quad": [
+            100.640625,
+            442.484375,
+            196.84375,
+            442.484375,
+            196.84375,
+            476.75,
+            100.640625,
+            476.75
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 450.625,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            100.640625,
+            450.625,
+            100.640625,
+            450.625,
+            100.640625,
+            476.625,
+            100.640625,
+            476.625
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 134.859375,
+          "y": 438.1875,
+          "width": 10.890625,
+          "height": 26.125,
+          "quad": [
+            134.859375,
+            438.1875,
+            145.75,
+            438.1875,
+            145.75,
+            464.3125,
+            134.859375,
+            464.3125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": [
+          {
+            "familyName": "KaTeX_Main",
+            "postScriptName": "KaTeX_Main-Regular",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "formulaFont": {
+        "box": {
+          "x": 122.40625,
+          "y": 448.484375,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            122.40625,
+            448.484375,
+            134.859375,
+            448.484375,
+            134.859375,
+            469.484375,
+            122.40625,
+            469.484375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 442.484375,
+          "width": 538,
+          "height": 34.265625,
+          "quad": [
+            41,
+            442.484375,
+            579,
+            442.484375,
+            579,
+            476.75,
+            41,
+            476.75
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 442.484375,
+          "width": 352,
+          "height": 205.4375,
+          "quad": [
+            100.640625,
+            442.484375,
+            452.640625,
+            442.484375,
+            452.640625,
+            647.921875,
+            100.640625,
+            647.921875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 236.03125,
+          "y": 555.890625,
+          "width": 81.21875,
+          "height": 29.25,
+          "quad": [
+            236.03125,
+            555.890625,
+            317.25,
+            555.890625,
+            317.25,
+            585.140625,
+            236.03125,
+            585.140625
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 236.03125,
+          "y": 563.078125,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            236.03125,
+            563.078125,
+            236.03125,
+            563.078125,
+            236.03125,
+            585.078125,
+            236.03125,
+            585.078125
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 264.9375,
+          "y": 552.578125,
+          "width": 9.1875,
+          "height": 22.0625,
+          "quad": [
+            264.9375,
+            552.578125,
+            274.125,
+            552.578125,
+            274.125,
+            574.640625,
+            264.9375,
+            574.640625
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": [
+          {
+            "familyName": "KaTeX_Main",
+            "postScriptName": "KaTeX_Main-Regular",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      }
+    },
+    {
+      "profile": "original",
+      "width": 620,
+      "id": "scripts",
+      "source": "x^{n+1}_{i}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 562.84375,
+          "width": 54.421875,
+          "height": 34.140625,
+          "quad": [
+            100.640625,
+            562.84375,
+            155.0625,
+            562.84375,
+            155.0625,
+            596.984375,
+            100.640625,
+            596.984375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 570.859375,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            100.640625,
+            570.859375,
+            100.640625,
+            570.859375,
+            100.640625,
+            596.859375,
+            100.640625,
+            596.859375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 113.09375,
+          "y": 570.875,
+          "width": 7.515625,
+          "height": 28.125,
+          "quad": [
+            113.09375,
+            570.875,
+            120.609375,
+            570.875,
+            120.609375,
+            599,
+            113.09375,
+            599
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "formulaFont": {
+        "box": {
+          "x": 100.640625,
+          "y": 568.84375,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            100.640625,
+            568.84375,
+            113.09375,
+            568.84375,
+            113.09375,
+            589.84375,
+            100.640625,
+            589.84375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 562.84375,
+          "width": 538,
+          "height": 34.140625,
+          "quad": [
+            41,
+            562.84375,
+            579,
+            562.84375,
+            579,
+            596.984375,
+            41,
+            596.984375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 562.84375,
+          "width": 352,
+          "height": 205.328125,
+          "quad": [
+            100.640625,
+            562.84375,
+            452.640625,
+            562.84375,
+            452.640625,
+            768.171875,
+            100.640625,
+            768.171875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 253.671875,
+          "y": 676.25,
+          "width": 45.9375,
+          "height": 29.140625,
+          "quad": [
+            253.671875,
+            676.25,
+            299.609375,
+            676.25,
+            299.609375,
+            705.390625,
+            253.671875,
+            705.390625
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 253.671875,
+          "y": 683.328125,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            253.671875,
+            683.328125,
+            253.671875,
+            683.328125,
+            253.671875,
+            705.328125,
+            253.671875,
+            705.328125
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 264.1875,
+          "y": 683.34375,
+          "width": 6.34375,
+          "height": 24.0625,
+          "quad": [
+            264.1875,
+            683.34375,
+            270.53125,
+            683.34375,
+            270.53125,
+            707.40625,
+            264.1875,
+            707.40625
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      }
+    },
+    {
+      "profile": "original",
+      "width": 620,
+      "id": "block",
+      "source": "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}",
+      "display": "block",
+      "node": {
+        "box": {
+          "x": 41,
+          "y": 731.46875,
+          "width": 538,
+          "height": 118.390625,
+          "quad": [
+            41,
+            731.46875,
+            579,
+            731.46875,
+            579,
+            849.859375,
+            41,
+            849.859375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 271.671875,
+          "y": 793.734375,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            271.671875,
+            793.734375,
+            271.671875,
+            793.734375,
+            271.671875,
+            819.734375,
+            271.671875,
+            819.734375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 287.703125,
+          "y": 763.75,
+          "width": 11.515625,
+          "height": 21,
+          "quad": [
+            287.703125,
+            763.75,
+            299.21875,
+            763.75,
+            299.21875,
+            784.75,
+            287.703125,
+            784.75
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 683.078125,
+          "width": 538,
+          "height": 215.171875,
+          "quad": [
+            41,
+            683.078125,
+            579,
+            683.078125,
+            579,
+            898.25,
+            41,
+            898.25
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 25
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 57,
+          "y": 743.46875,
+          "width": 506,
+          "height": 275.34375,
+          "quad": [
+            57,
+            743.46875,
+            563,
+            743.46875,
+            563,
+            1018.8125,
+            57,
+            1018.8125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 277.625,
+          "y": 876.46875,
+          "width": 64.734375,
+          "height": 79.5625,
+          "quad": [
+            277.625,
+            876.46875,
+            342.359375,
+            876.46875,
+            342.359375,
+            956.03125,
+            277.625,
+            956.03125
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 277.625,
+          "y": 918.78125,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            277.625,
+            918.78125,
+            277.625,
+            918.78125,
+            277.625,
+            940.78125,
+            277.625,
+            940.78125
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 620,
+      "id": "unicode",
+      "source": "\\text{Café}\\quad\\alpha",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 984.34375,
+          "width": 79.9375,
+          "height": 32.390625,
+          "quad": [
+            100.640625,
+            984.34375,
+            180.578125,
+            984.34375,
+            180.578125,
+            1016.734375,
+            100.640625,
+            1016.734375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 986.34375,
+          "width": 0,
+          "height": 26,
+          "quad": [
+            100.640625,
+            986.34375,
+            100.640625,
+            986.34375,
+            100.640625,
+            1012.34375,
+            100.640625,
+            1012.34375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 166.5625,
+          "y": 990.34375,
+          "width": 13.9375,
+          "height": 21,
+          "quad": [
+            166.5625,
+            990.34375,
+            180.5,
+            990.34375,
+            180.5,
+            1011.34375,
+            166.5625,
+            1011.34375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 984.34375,
+          "width": 538,
+          "height": 32.390625,
+          "quad": [
+            41,
+            984.34375,
+            579,
+            984.34375,
+            579,
+            1016.734375,
+            41,
+            1016.734375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 740.34375,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            740.34375,
+            452.640625,
+            740.34375,
+            452.640625,
+            943.890625,
+            100.640625,
+            943.890625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 242.890625,
+          "y": 853.75,
+          "width": 67.484375,
+          "height": 27.359375,
+          "quad": [
+            242.890625,
+            853.75,
+            310.375,
+            853.75,
+            310.375,
+            881.109375,
+            242.890625,
+            881.109375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 242.890625,
+          "y": 855.75,
+          "width": 0,
+          "height": 22,
+          "quad": [
+            242.890625,
+            855.75,
+            242.890625,
+            855.75,
+            242.890625,
+            877.75,
+            242.890625,
+            877.75
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 620,
+      "id": "invalid",
+      "source": "\\frac{",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 1102.828125,
+          "width": 205.796875,
+          "height": 37.46875,
+          "quad": [
+            100.640625,
+            1102.828125,
+            306.4375,
+            1102.828125,
+            306.4375,
+            1140.296875,
+            100.640625,
+            1140.296875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {},
+      "sizing": {},
+      "formulaFont": {},
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 1102.828125,
+          "width": 538,
+          "height": 37.46875,
+          "quad": [
+            41,
+            1102.828125,
+            579,
+            1102.828125,
+            579,
+            1140.296875,
+            41,
+            1140.296875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 41,
+          "y": 782.21875,
+          "width": 538,
+          "height": 256,
+          "quad": [
+            41,
+            782.21875,
+            579,
+            782.21875,
+            579,
+            1038.21875,
+            41,
+            1038.21875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {},
+      "previewStrut": {},
+      "previewSizing": {}
+    },
+    {
+      "profile": "original",
+      "width": 620,
+      "id": "empty",
+      "source": "",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 1226.390625,
+          "width": 255.6875,
+          "height": 37.46875,
+          "quad": [
+            100.640625,
+            1226.390625,
+            356.328125,
+            1226.390625,
+            356.328125,
+            1263.859375,
+            100.640625,
+            1263.859375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {},
+      "sizing": {},
+      "formulaFont": {},
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 1226.390625,
+          "width": 538,
+          "height": 37.46875,
+          "quad": [
+            41,
+            1226.390625,
+            579,
+            1226.390625,
+            579,
+            1263.859375,
+            41,
+            1263.859375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 761.390625,
+          "width": 383.40625,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            761.390625,
+            484.046875,
+            761.390625,
+            484.046875,
+            964.9375,
+            100.640625,
+            964.9375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {},
+      "previewStrut": {},
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 1280,
+      "id": "ordinary",
+      "source": "x+1",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 181,
+          "width": 49.9375,
+          "height": 32.390625,
+          "quad": [
+            228.640625,
+            181,
+            278.578125,
+            181,
+            278.578125,
+            213.390625,
+            228.640625,
+            213.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 190.296875,
+          "width": 0,
+          "height": 14.515625,
+          "quad": [
+            228.640625,
+            190.296875,
+            228.640625,
+            190.296875,
+            228.640625,
+            204.8125,
+            228.640625,
+            204.8125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 228.640625,
+          "y": 187,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            228.640625,
+            187,
+            241.09375,
+            187,
+            241.09375,
+            208,
+            228.640625,
+            208
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 181,
+          "width": 942,
+          "height": 32.390625,
+          "quad": [
+            169,
+            181,
+            1111,
+            181,
+            1111,
+            213.390625,
+            169,
+            213.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 181,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            181,
+            580.640625,
+            181,
+            580.640625,
+            384.546875,
+            228.640625,
+            384.546875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 383.5625,
+          "y": 294.40625,
+          "width": 42.15625,
+          "height": 27.359375,
+          "quad": [
+            383.5625,
+            294.40625,
+            425.71875,
+            294.40625,
+            425.71875,
+            321.765625,
+            383.5625,
+            321.765625
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 383.5625,
+          "y": 302.6875,
+          "width": 0,
+          "height": 12.25,
+          "quad": [
+            383.5625,
+            302.6875,
+            383.5625,
+            302.6875,
+            383.5625,
+            314.9375,
+            383.5625,
+            314.9375
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 1280,
+      "id": "fraction",
+      "source": "\\frac{1}{1+x^2}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 299.484375,
+          "width": 39.9375,
+          "height": 32.390625,
+          "quad": [
+            228.640625,
+            299.484375,
+            268.578125,
+            299.484375,
+            268.578125,
+            331.875,
+            228.640625,
+            331.875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 303.078125,
+          "width": 0,
+          "height": 27.1875,
+          "quad": [
+            228.640625,
+            303.078125,
+            228.640625,
+            303.078125,
+            228.640625,
+            330.265625,
+            228.640625,
+            330.265625
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 231.25,
+          "y": 315,
+          "width": 34.71875,
+          "height": 19.296875,
+          "quad": [
+            231.25,
+            315,
+            265.96875,
+            315,
+            265.96875,
+            334.296875,
+            231.25,
+            334.296875
+          ]
+        },
+        "fontSize": "15.246px",
+        "lineHeight": "18.2952px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "formulaFont": {
+        "box": {
+          "x": 250.734375,
+          "y": 318,
+          "width": 8.71875,
+          "height": 14,
+          "quad": [
+            250.734375,
+            318,
+            259.453125,
+            318,
+            259.453125,
+            332,
+            250.734375,
+            332
+          ]
+        },
+        "fontSize": "15.246px",
+        "lineHeight": "18.2952px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 299.484375,
+          "width": 942,
+          "height": 32.390625,
+          "quad": [
+            169,
+            299.484375,
+            1111,
+            299.484375,
+            1111,
+            331.875,
+            169,
+            331.875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 299.484375,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            299.484375,
+            580.640625,
+            299.484375,
+            580.640625,
+            503.03125,
+            228.640625,
+            503.03125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 387.78125,
+          "y": 412.890625,
+          "width": 33.71875,
+          "height": 27.359375,
+          "quad": [
+            387.78125,
+            412.890625,
+            421.5,
+            412.890625,
+            421.5,
+            440.25,
+            387.78125,
+            440.25
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 387.78125,
+          "y": 416.34375,
+          "width": 0,
+          "height": 22.953125,
+          "quad": [
+            387.78125,
+            416.34375,
+            387.78125,
+            416.34375,
+            387.78125,
+            439.296875,
+            387.78125,
+            439.296875
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 389.984375,
+          "y": 427.234375,
+          "width": 29.3125,
+          "height": 16.4375,
+          "quad": [
+            389.984375,
+            427.234375,
+            419.296875,
+            427.234375,
+            419.296875,
+            443.671875,
+            389.984375,
+            443.671875
+          ]
+        },
+        "fontSize": "12.8744px",
+        "lineHeight": "15.4493px",
+        "display": "inline-block",
+        "faces": []
+      }
+    },
+    {
+      "profile": "candidate",
+      "width": 1280,
+      "id": "radical",
+      "source": "\\sqrt{x^2+y^2}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 417.96875,
+          "width": 89.671875,
+          "height": 32.390625,
+          "quad": [
+            228.640625,
+            417.96875,
+            318.3125,
+            417.96875,
+            318.3125,
+            450.359375,
+            228.640625,
+            450.359375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 419.109375,
+          "width": 0,
+          "height": 27,
+          "quad": [
+            228.640625,
+            419.109375,
+            228.640625,
+            419.109375,
+            228.640625,
+            446.109375,
+            228.640625,
+            446.109375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 262.859375,
+          "y": 419.671875,
+          "width": 7.625,
+          "height": 18.296875,
+          "quad": [
+            262.859375,
+            419.671875,
+            270.484375,
+            419.671875,
+            270.484375,
+            437.96875,
+            262.859375,
+            437.96875
+          ]
+        },
+        "fontSize": "15.246px",
+        "lineHeight": "18.2952px",
+        "display": "inline-block",
+        "faces": [
+          {
+            "familyName": "KaTeX_Main",
+            "postScriptName": "KaTeX_Main-Regular",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "formulaFont": {
+        "box": {
+          "x": 250.40625,
+          "y": 423.96875,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            250.40625,
+            423.96875,
+            262.859375,
+            423.96875,
+            262.859375,
+            444.96875,
+            250.40625,
+            444.96875
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 417.96875,
+          "width": 942,
+          "height": 32.390625,
+          "quad": [
+            169,
+            417.96875,
+            1111,
+            417.96875,
+            1111,
+            450.359375,
+            169,
+            450.359375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 417.96875,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            417.96875,
+            580.640625,
+            417.96875,
+            580.640625,
+            621.515625,
+            228.640625,
+            621.515625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 366.78125,
+          "y": 531.375,
+          "width": 75.71875,
+          "height": 27.359375,
+          "quad": [
+            366.78125,
+            531.375,
+            442.5,
+            531.375,
+            442.5,
+            558.734375,
+            366.78125,
+            558.734375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 366.78125,
+          "y": 532.765625,
+          "width": 0,
+          "height": 22.796875,
+          "quad": [
+            366.78125,
+            532.765625,
+            366.78125,
+            532.765625,
+            366.78125,
+            555.5625,
+            366.78125,
+            555.5625
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 395.6875,
+          "y": 534.0625,
+          "width": 6.4375,
+          "height": 15.4375,
+          "quad": [
+            395.6875,
+            534.0625,
+            402.125,
+            534.0625,
+            402.125,
+            549.5,
+            395.6875,
+            549.5
+          ]
+        },
+        "fontSize": "12.8744px",
+        "lineHeight": "15.4493px",
+        "display": "inline-block",
+        "faces": [
+          {
+            "familyName": "KaTeX_Main",
+            "postScriptName": "KaTeX_Main-Regular",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      }
+    },
+    {
+      "profile": "candidate",
+      "width": 1280,
+      "id": "scripts",
+      "source": "x^{n+1}_{i}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 536.453125,
+          "width": 42.171875,
+          "height": 32.390625,
+          "quad": [
+            228.640625,
+            536.453125,
+            270.8125,
+            536.453125,
+            270.8125,
+            568.84375,
+            228.640625,
+            568.84375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 539.84375,
+          "width": 0,
+          "height": 24.625,
+          "quad": [
+            228.640625,
+            539.84375,
+            228.640625,
+            539.84375,
+            228.640625,
+            564.46875,
+            228.640625,
+            564.46875
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 241.09375,
+          "y": 550.484375,
+          "width": 5.265625,
+          "height": 19.296875,
+          "quad": [
+            241.09375,
+            550.484375,
+            246.359375,
+            550.484375,
+            246.359375,
+            569.78125,
+            241.09375,
+            569.78125
+          ]
+        },
+        "fontSize": "15.246px",
+        "lineHeight": "18.2952px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "formulaFont": {
+        "box": {
+          "x": 228.640625,
+          "y": 542.453125,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            228.640625,
+            542.453125,
+            241.09375,
+            542.453125,
+            241.09375,
+            563.453125,
+            228.640625,
+            563.453125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 536.453125,
+          "width": 942,
+          "height": 32.390625,
+          "quad": [
+            169,
+            536.453125,
+            1111,
+            536.453125,
+            1111,
+            568.84375,
+            169,
+            568.84375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 536.453125,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            536.453125,
+            580.640625,
+            536.453125,
+            580.640625,
+            740,
+            228.640625,
+            740
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 386.84375,
+          "y": 649.859375,
+          "width": 35.59375,
+          "height": 27.359375,
+          "quad": [
+            386.84375,
+            649.859375,
+            422.4375,
+            649.859375,
+            422.4375,
+            677.21875,
+            386.84375,
+            677.21875
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 386.84375,
+          "y": 653.140625,
+          "width": 0,
+          "height": 20.796875,
+          "quad": [
+            386.84375,
+            653.140625,
+            386.84375,
+            653.140625,
+            386.84375,
+            673.9375,
+            386.84375,
+            673.9375
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 397.359375,
+          "y": 662.953125,
+          "width": 4.4375,
+          "height": 16.4375,
+          "quad": [
+            397.359375,
+            662.953125,
+            401.796875,
+            662.953125,
+            401.796875,
+            679.390625,
+            397.359375,
+            679.390625
+          ]
+        },
+        "fontSize": "12.8744px",
+        "lineHeight": "15.4493px",
+        "display": "inline-block",
+        "faces": []
+      }
+    },
+    {
+      "profile": "candidate",
+      "width": 1280,
+      "id": "block",
+      "source": "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}",
+      "display": "block",
+      "node": {
+        "box": {
+          "x": 169,
+          "y": 703.328125,
+          "width": 942,
+          "height": 112.265625,
+          "quad": [
+            169,
+            703.328125,
+            1111,
+            703.328125,
+            1111,
+            815.59375,
+            169,
+            815.59375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 601.671875,
+          "y": 733.328125,
+          "width": 0,
+          "height": 52.265625,
+          "quad": [
+            601.671875,
+            733.328125,
+            601.671875,
+            733.328125,
+            601.671875,
+            785.59375,
+            601.671875,
+            785.59375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 617.703125,
+          "y": 735.609375,
+          "width": 11.515625,
+          "height": 21,
+          "quad": [
+            617.703125,
+            735.609375,
+            629.21875,
+            735.609375,
+            629.21875,
+            756.609375,
+            617.703125,
+            756.609375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 654.9375,
+          "width": 942,
+          "height": 209.046875,
+          "quad": [
+            169,
+            654.9375,
+            1111,
+            654.9375,
+            1111,
+            863.984375,
+            169,
+            863.984375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 25
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 185,
+          "y": 715.328125,
+          "width": 910,
+          "height": 270.296875,
+          "quad": [
+            185,
+            715.328125,
+            1095,
+            715.328125,
+            1095,
+            985.625,
+            185,
+            985.625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 607.625,
+          "y": 848.328125,
+          "width": 64.734375,
+          "height": 74.515625,
+          "quad": [
+            607.625,
+            848.328125,
+            672.359375,
+            848.328125,
+            672.359375,
+            922.84375,
+            607.625,
+            922.84375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 607.625,
+          "y": 863.515625,
+          "width": 0,
+          "height": 44.140625,
+          "quad": [
+            607.625,
+            863.515625,
+            607.625,
+            863.515625,
+            607.625,
+            907.65625,
+            607.625,
+            907.65625
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 1280,
+      "id": "unicode",
+      "source": "\\text{Café}\\quad\\alpha",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 950.078125,
+          "width": 78.71875,
+          "height": 32.390625,
+          "quad": [
+            228.640625,
+            950.078125,
+            307.359375,
+            950.078125,
+            307.359375,
+            982.46875,
+            228.640625,
+            982.46875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 228.640625,
+          "y": 956.96875,
+          "width": 0,
+          "height": 15.109375,
+          "quad": [
+            228.640625,
+            956.96875,
+            228.640625,
+            956.96875,
+            228.640625,
+            972.078125,
+            228.640625,
+            972.078125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 293.34375,
+          "y": 956.078125,
+          "width": 13.9375,
+          "height": 21,
+          "quad": [
+            293.34375,
+            956.078125,
+            307.28125,
+            956.078125,
+            307.28125,
+            977.078125,
+            293.34375,
+            977.078125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 950.078125,
+          "width": 942,
+          "height": 32.390625,
+          "quad": [
+            169,
+            950.078125,
+            1111,
+            950.078125,
+            1111,
+            982.46875,
+            169,
+            982.46875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 739.078125,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            739.078125,
+            580.640625,
+            739.078125,
+            580.640625,
+            942.625,
+            228.640625,
+            942.625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 371.40625,
+          "y": 852.484375,
+          "width": 66.46875,
+          "height": 27.359375,
+          "quad": [
+            371.40625,
+            852.484375,
+            437.875,
+            852.484375,
+            437.875,
+            879.84375,
+            371.40625,
+            879.84375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 371.40625,
+          "y": 858.71875,
+          "width": 0,
+          "height": 12.765625,
+          "quad": [
+            371.40625,
+            858.71875,
+            371.40625,
+            858.71875,
+            371.40625,
+            871.484375,
+            371.40625,
+            871.484375
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 1280,
+      "id": "invalid",
+      "source": "\\frac{",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 1068.5625,
+          "width": 205.796875,
+          "height": 37.46875,
+          "quad": [
+            228.640625,
+            1068.5625,
+            434.4375,
+            1068.5625,
+            434.4375,
+            1106.03125,
+            228.640625,
+            1106.03125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {},
+      "sizing": {},
+      "formulaFont": {},
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 1068.5625,
+          "width": 942,
+          "height": 37.46875,
+          "quad": [
+            169,
+            1068.5625,
+            1111,
+            1068.5625,
+            1111,
+            1106.03125,
+            169,
+            1106.03125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 749.5625,
+          "width": 770.5625,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            749.5625,
+            999.203125,
+            749.5625,
+            999.203125,
+            953.109375,
+            228.640625,
+            953.109375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {},
+      "previewStrut": {},
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 1280,
+      "id": "empty",
+      "source": "",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 228.640625,
+          "y": 1192.125,
+          "width": 255.6875,
+          "height": 37.46875,
+          "quad": [
+            228.640625,
+            1192.125,
+            484.328125,
+            1192.125,
+            484.328125,
+            1229.59375,
+            228.640625,
+            1229.59375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {},
+      "sizing": {},
+      "formulaFont": {},
+      "prose": {
+        "box": {
+          "x": 169,
+          "y": 1192.125,
+          "width": 942,
+          "height": 37.46875,
+          "quad": [
+            169,
+            1192.125,
+            1111,
+            1192.125,
+            1111,
+            1229.59375,
+            169,
+            1229.59375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 228.640625,
+          "y": 761.125,
+          "width": 383.40625,
+          "height": 203.546875,
+          "quad": [
+            228.640625,
+            761.125,
+            612.046875,
+            761.125,
+            612.046875,
+            964.671875,
+            228.640625,
+            964.671875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {},
+      "previewStrut": {},
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 620,
+      "id": "ordinary",
+      "source": "x+1",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 201,
+          "width": 49.9375,
+          "height": 32.390625,
+          "quad": [
+            100.640625,
+            201,
+            150.578125,
+            201,
+            150.578125,
+            233.390625,
+            100.640625,
+            233.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 210.296875,
+          "width": 0,
+          "height": 14.515625,
+          "quad": [
+            100.640625,
+            210.296875,
+            100.640625,
+            210.296875,
+            100.640625,
+            224.8125,
+            100.640625,
+            224.8125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 100.640625,
+          "y": 207,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            100.640625,
+            207,
+            113.09375,
+            207,
+            113.09375,
+            228,
+            100.640625,
+            228
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 201,
+          "width": 538,
+          "height": 32.390625,
+          "quad": [
+            41,
+            201,
+            579,
+            201,
+            579,
+            233.390625,
+            41,
+            233.390625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 201,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            201,
+            452.640625,
+            201,
+            452.640625,
+            404.546875,
+            100.640625,
+            404.546875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 255.5625,
+          "y": 314.40625,
+          "width": 42.15625,
+          "height": 27.359375,
+          "quad": [
+            255.5625,
+            314.40625,
+            297.71875,
+            314.40625,
+            297.71875,
+            341.765625,
+            255.5625,
+            341.765625
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 255.5625,
+          "y": 322.6875,
+          "width": 0,
+          "height": 12.25,
+          "quad": [
+            255.5625,
+            322.6875,
+            255.5625,
+            322.6875,
+            255.5625,
+            334.9375,
+            255.5625,
+            334.9375
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 620,
+      "id": "fraction",
+      "source": "\\frac{1}{1+x^2}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 319.484375,
+          "width": 39.9375,
+          "height": 32.390625,
+          "quad": [
+            100.640625,
+            319.484375,
+            140.578125,
+            319.484375,
+            140.578125,
+            351.875,
+            100.640625,
+            351.875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 323.078125,
+          "width": 0,
+          "height": 27.1875,
+          "quad": [
+            100.640625,
+            323.078125,
+            100.640625,
+            323.078125,
+            100.640625,
+            350.265625,
+            100.640625,
+            350.265625
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 103.25,
+          "y": 335,
+          "width": 34.71875,
+          "height": 19.296875,
+          "quad": [
+            103.25,
+            335,
+            137.96875,
+            335,
+            137.96875,
+            354.296875,
+            103.25,
+            354.296875
+          ]
+        },
+        "fontSize": "15.246px",
+        "lineHeight": "18.2952px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "formulaFont": {
+        "box": {
+          "x": 122.734375,
+          "y": 338,
+          "width": 8.71875,
+          "height": 14,
+          "quad": [
+            122.734375,
+            338,
+            131.453125,
+            338,
+            131.453125,
+            352,
+            122.734375,
+            352
+          ]
+        },
+        "fontSize": "15.246px",
+        "lineHeight": "18.2952px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 319.484375,
+          "width": 538,
+          "height": 32.390625,
+          "quad": [
+            41,
+            319.484375,
+            579,
+            319.484375,
+            579,
+            351.875,
+            41,
+            351.875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 319.484375,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            319.484375,
+            452.640625,
+            319.484375,
+            452.640625,
+            523.03125,
+            100.640625,
+            523.03125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 259.78125,
+          "y": 432.890625,
+          "width": 33.71875,
+          "height": 27.359375,
+          "quad": [
+            259.78125,
+            432.890625,
+            293.5,
+            432.890625,
+            293.5,
+            460.25,
+            259.78125,
+            460.25
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 259.78125,
+          "y": 436.34375,
+          "width": 0,
+          "height": 22.953125,
+          "quad": [
+            259.78125,
+            436.34375,
+            259.78125,
+            436.34375,
+            259.78125,
+            459.296875,
+            259.78125,
+            459.296875
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 261.984375,
+          "y": 447.234375,
+          "width": 29.3125,
+          "height": 16.4375,
+          "quad": [
+            261.984375,
+            447.234375,
+            291.296875,
+            447.234375,
+            291.296875,
+            463.671875,
+            261.984375,
+            463.671875
+          ]
+        },
+        "fontSize": "12.8744px",
+        "lineHeight": "15.4493px",
+        "display": "inline-block",
+        "faces": []
+      }
+    },
+    {
+      "profile": "candidate",
+      "width": 620,
+      "id": "radical",
+      "source": "\\sqrt{x^2+y^2}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 437.96875,
+          "width": 89.671875,
+          "height": 32.390625,
+          "quad": [
+            100.640625,
+            437.96875,
+            190.3125,
+            437.96875,
+            190.3125,
+            470.359375,
+            100.640625,
+            470.359375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 439.109375,
+          "width": 0,
+          "height": 27,
+          "quad": [
+            100.640625,
+            439.109375,
+            100.640625,
+            439.109375,
+            100.640625,
+            466.109375,
+            100.640625,
+            466.109375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 134.859375,
+          "y": 439.671875,
+          "width": 7.625,
+          "height": 18.296875,
+          "quad": [
+            134.859375,
+            439.671875,
+            142.484375,
+            439.671875,
+            142.484375,
+            457.96875,
+            134.859375,
+            457.96875
+          ]
+        },
+        "fontSize": "15.246px",
+        "lineHeight": "18.2952px",
+        "display": "inline-block",
+        "faces": [
+          {
+            "familyName": "KaTeX_Main",
+            "postScriptName": "KaTeX_Main-Regular",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "formulaFont": {
+        "box": {
+          "x": 122.40625,
+          "y": 443.96875,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            122.40625,
+            443.96875,
+            134.859375,
+            443.96875,
+            134.859375,
+            464.96875,
+            122.40625,
+            464.96875
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 437.96875,
+          "width": 538,
+          "height": 32.390625,
+          "quad": [
+            41,
+            437.96875,
+            579,
+            437.96875,
+            579,
+            470.359375,
+            41,
+            470.359375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 437.96875,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            437.96875,
+            452.640625,
+            437.96875,
+            452.640625,
+            641.515625,
+            100.640625,
+            641.515625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 238.78125,
+          "y": 551.375,
+          "width": 75.71875,
+          "height": 27.359375,
+          "quad": [
+            238.78125,
+            551.375,
+            314.5,
+            551.375,
+            314.5,
+            578.734375,
+            238.78125,
+            578.734375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 238.78125,
+          "y": 552.765625,
+          "width": 0,
+          "height": 22.796875,
+          "quad": [
+            238.78125,
+            552.765625,
+            238.78125,
+            552.765625,
+            238.78125,
+            575.5625,
+            238.78125,
+            575.5625
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 267.6875,
+          "y": 554.0625,
+          "width": 6.4375,
+          "height": 15.4375,
+          "quad": [
+            267.6875,
+            554.0625,
+            274.125,
+            554.0625,
+            274.125,
+            569.5,
+            267.6875,
+            569.5
+          ]
+        },
+        "fontSize": "12.8744px",
+        "lineHeight": "15.4493px",
+        "display": "inline-block",
+        "faces": [
+          {
+            "familyName": "KaTeX_Main",
+            "postScriptName": "KaTeX_Main-Regular",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      }
+    },
+    {
+      "profile": "candidate",
+      "width": 620,
+      "id": "scripts",
+      "source": "x^{n+1}_{i}",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 556.453125,
+          "width": 42.171875,
+          "height": 32.390625,
+          "quad": [
+            100.640625,
+            556.453125,
+            142.8125,
+            556.453125,
+            142.8125,
+            588.84375,
+            100.640625,
+            588.84375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 559.84375,
+          "width": 0,
+          "height": 24.625,
+          "quad": [
+            100.640625,
+            559.84375,
+            100.640625,
+            559.84375,
+            100.640625,
+            584.46875,
+            100.640625,
+            584.46875
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {
+        "box": {
+          "x": 113.09375,
+          "y": 570.484375,
+          "width": 5.265625,
+          "height": 19.296875,
+          "quad": [
+            113.09375,
+            570.484375,
+            118.359375,
+            570.484375,
+            118.359375,
+            589.78125,
+            113.09375,
+            589.78125
+          ]
+        },
+        "fontSize": "15.246px",
+        "lineHeight": "18.2952px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "formulaFont": {
+        "box": {
+          "x": 100.640625,
+          "y": 562.453125,
+          "width": 12.453125,
+          "height": 21,
+          "quad": [
+            100.640625,
+            562.453125,
+            113.09375,
+            562.453125,
+            113.09375,
+            583.453125,
+            100.640625,
+            583.453125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 556.453125,
+          "width": 538,
+          "height": 32.390625,
+          "quad": [
+            41,
+            556.453125,
+            579,
+            556.453125,
+            579,
+            588.84375,
+            41,
+            588.84375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 556.453125,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            556.453125,
+            452.640625,
+            556.453125,
+            452.640625,
+            760,
+            100.640625,
+            760
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 258.84375,
+          "y": 669.859375,
+          "width": 35.59375,
+          "height": 27.359375,
+          "quad": [
+            258.84375,
+            669.859375,
+            294.4375,
+            669.859375,
+            294.4375,
+            697.21875,
+            258.84375,
+            697.21875
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 258.84375,
+          "y": 673.140625,
+          "width": 0,
+          "height": 20.796875,
+          "quad": [
+            258.84375,
+            673.140625,
+            258.84375,
+            673.140625,
+            258.84375,
+            693.9375,
+            258.84375,
+            693.9375
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {
+        "box": {
+          "x": 269.359375,
+          "y": 682.953125,
+          "width": 4.4375,
+          "height": 16.4375,
+          "quad": [
+            269.359375,
+            682.953125,
+            273.796875,
+            682.953125,
+            273.796875,
+            699.390625,
+            269.359375,
+            699.390625
+          ]
+        },
+        "fontSize": "12.8744px",
+        "lineHeight": "15.4493px",
+        "display": "inline-block",
+        "faces": []
+      }
+    },
+    {
+      "profile": "candidate",
+      "width": 620,
+      "id": "block",
+      "source": "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}",
+      "display": "block",
+      "node": {
+        "box": {
+          "x": 41,
+          "y": 723.328125,
+          "width": 538,
+          "height": 112.265625,
+          "quad": [
+            41,
+            723.328125,
+            579,
+            723.328125,
+            579,
+            835.59375,
+            41,
+            835.59375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 271.671875,
+          "y": 753.328125,
+          "width": 0,
+          "height": 52.265625,
+          "quad": [
+            271.671875,
+            753.328125,
+            271.671875,
+            753.328125,
+            271.671875,
+            805.59375,
+            271.671875,
+            805.59375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 287.703125,
+          "y": 755.609375,
+          "width": 11.515625,
+          "height": 21,
+          "quad": [
+            287.703125,
+            755.609375,
+            299.21875,
+            755.609375,
+            299.21875,
+            776.609375,
+            287.703125,
+            776.609375
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 674.9375,
+          "width": 538,
+          "height": 209.046875,
+          "quad": [
+            41,
+            674.9375,
+            579,
+            674.9375,
+            579,
+            883.984375,
+            41,
+            883.984375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 25
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 57,
+          "y": 735.328125,
+          "width": 506,
+          "height": 270.296875,
+          "quad": [
+            57,
+            735.328125,
+            563,
+            735.328125,
+            563,
+            1005.625,
+            57,
+            1005.625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 277.625,
+          "y": 868.328125,
+          "width": 64.734375,
+          "height": 74.515625,
+          "quad": [
+            277.625,
+            868.328125,
+            342.359375,
+            868.328125,
+            342.359375,
+            942.84375,
+            277.625,
+            942.84375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 277.625,
+          "y": 883.515625,
+          "width": 0,
+          "height": 44.140625,
+          "quad": [
+            277.625,
+            883.515625,
+            277.625,
+            883.515625,
+            277.625,
+            927.65625,
+            277.625,
+            927.65625
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 620,
+      "id": "unicode",
+      "source": "\\text{Café}\\quad\\alpha",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 970.078125,
+          "width": 78.71875,
+          "height": 32.390625,
+          "quad": [
+            100.640625,
+            970.078125,
+            179.359375,
+            970.078125,
+            179.359375,
+            1002.46875,
+            100.640625,
+            1002.46875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {
+        "box": {
+          "x": 100.640625,
+          "y": 976.96875,
+          "width": 0,
+          "height": 15.109375,
+          "quad": [
+            100.640625,
+            976.96875,
+            100.640625,
+            976.96875,
+            100.640625,
+            992.078125,
+            100.640625,
+            992.078125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "sizing": {},
+      "formulaFont": {
+        "box": {
+          "x": 165.34375,
+          "y": 976.078125,
+          "width": 13.9375,
+          "height": 21,
+          "quad": [
+            165.34375,
+            976.078125,
+            179.28125,
+            976.078125,
+            179.28125,
+            997.078125,
+            165.34375,
+            997.078125
+          ]
+        },
+        "fontSize": "21.78px",
+        "lineHeight": "26.136px",
+        "display": "inline",
+        "faces": [
+          {
+            "familyName": "KaTeX_Math",
+            "postScriptName": "KaTeX_Math-Italic",
+            "isCustomFont": true,
+            "glyphCount": 1
+          }
+        ]
+      },
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 970.078125,
+          "width": 538,
+          "height": 32.390625,
+          "quad": [
+            41,
+            970.078125,
+            579,
+            970.078125,
+            579,
+            1002.46875,
+            41,
+            1002.46875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 739.078125,
+          "width": 352,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            739.078125,
+            452.640625,
+            739.078125,
+            452.640625,
+            942.625,
+            100.640625,
+            942.625
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {
+        "box": {
+          "x": 243.40625,
+          "y": 852.484375,
+          "width": 66.46875,
+          "height": 27.359375,
+          "quad": [
+            243.40625,
+            852.484375,
+            309.875,
+            852.484375,
+            309.875,
+            879.84375,
+            243.40625,
+            879.84375
+          ]
+        },
+        "fontSize": "15.2px",
+        "lineHeight": "27.36px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewStrut": {
+        "box": {
+          "x": 243.40625,
+          "y": 858.71875,
+          "width": 0,
+          "height": 12.765625,
+          "quad": [
+            243.40625,
+            858.71875,
+            243.40625,
+            858.71875,
+            243.40625,
+            871.484375,
+            243.40625,
+            871.484375
+          ]
+        },
+        "fontSize": "18.392px",
+        "lineHeight": "22.0704px",
+        "display": "inline-block",
+        "faces": []
+      },
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 620,
+      "id": "invalid",
+      "source": "\\frac{",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 1088.5625,
+          "width": 205.796875,
+          "height": 37.46875,
+          "quad": [
+            100.640625,
+            1088.5625,
+            306.4375,
+            1088.5625,
+            306.4375,
+            1126.03125,
+            100.640625,
+            1126.03125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {},
+      "sizing": {},
+      "formulaFont": {},
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 1088.5625,
+          "width": 538,
+          "height": 37.46875,
+          "quad": [
+            41,
+            1088.5625,
+            579,
+            1088.5625,
+            579,
+            1126.03125,
+            41,
+            1126.03125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 41,
+          "y": 781.953125,
+          "width": 538,
+          "height": 256,
+          "quad": [
+            41,
+            781.953125,
+            579,
+            781.953125,
+            579,
+            1037.953125,
+            41,
+            1037.953125
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {},
+      "previewStrut": {},
+      "previewSizing": {}
+    },
+    {
+      "profile": "candidate",
+      "width": 620,
+      "id": "empty",
+      "source": "",
+      "display": "inline",
+      "node": {
+        "box": {
+          "x": 100.640625,
+          "y": 1212.125,
+          "width": 255.6875,
+          "height": 37.46875,
+          "quad": [
+            100.640625,
+            1212.125,
+            356.328125,
+            1212.125,
+            356.328125,
+            1249.59375,
+            100.640625,
+            1249.59375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "inline-flex",
+        "faces": []
+      },
+      "strut": {},
+      "sizing": {},
+      "formulaFont": {},
+      "prose": {
+        "box": {
+          "x": 41,
+          "y": 1212.125,
+          "width": 538,
+          "height": 37.46875,
+          "quad": [
+            41,
+            1212.125,
+            579,
+            1212.125,
+            579,
+            1249.59375,
+            41,
+            1249.59375
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "block",
+        "faces": [
+          {
+            "familyName": "Lora",
+            "postScriptName": "Lora-Regular",
+            "isCustomFont": true,
+            "glyphCount": 14
+          }
+        ]
+      },
+      "form": {
+        "box": {
+          "x": 100.640625,
+          "y": 761.125,
+          "width": 383.40625,
+          "height": 203.546875,
+          "quad": [
+            100.640625,
+            761.125,
+            484.046875,
+            761.125,
+            484.046875,
+            964.671875,
+            100.640625,
+            964.671875
+          ]
+        },
+        "fontSize": "18px",
+        "lineHeight": "32.4px",
+        "display": "flex",
+        "faces": []
+      },
+      "preview": {},
+      "previewStrut": {},
+      "previewSizing": {}
+    }
+  ]
+}

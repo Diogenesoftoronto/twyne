@@ -1,0 +1,946 @@
+{
+  "format": "twyne-gpui-rubric",
+  "version": 1,
+  "generation": 6,
+  "folios": {
+    "ab9bda05-b709-45a7-8cf7-2d65b6b4246b": {
+      "result": {
+        "folioId": "row-alias-is-not-scope",
+        "criteria": [
+          {
+            "id": "thesis",
+            "label": "Argument",
+            "description": "A clear case",
+            "score": 8,
+            "maxScore": 10,
+            "feedback": "Retained fixture reasoning.",
+            "futureCriterion": {
+              "keep": null
+            }
+          },
+          {
+            "id": "custom-second-person",
+            "label": "Stay in second person",
+            "description": "Keep the reader present.",
+            "score": 5,
+            "maxScore": 10,
+            "feedback": "Retained custom fixture reasoning."
+          }
+        ],
+        "overallScore": 65,
+        "overallGrade": "C+",
+        "summary": "Retained synthetic Galley result; this is fixture data, not a provider reading.",
+        "timestamp": 1770000000000,
+        "judges": [],
+        "scoringMethod": "judgement",
+        "draftFingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+        "staticScore": {
+          "features": {
+            "wordCount": 7,
+            "paragraphCount": 2,
+            "sentenceCount": 2,
+            "avgSentenceLength": 3.5,
+            "sentenceLengthStdDev": 0.5,
+            "citationCount": 0,
+            "citationDensity": 0,
+            "avgWordLength": 6.714285714285714,
+            "uniqueWordsRatio": 0.7142857142857143,
+            "shortParagraphRatio": 1,
+            "longParagraphRatio": 0,
+            "duplicateParagraphRatio": 0,
+            "fillerWordRatio": 0,
+            "vagueWordRatio": 0,
+            "unsupportedUniversalClaimCount": 0
+          },
+          "perFeature": {
+            "length": 1,
+            "structure": 3,
+            "pacing": 1.465866225401308,
+            "evidence": 1,
+            "vocabulary": 8,
+            "paragraphShape": 6,
+            "integrity": 4
+          },
+          "total": 3.169879933810196,
+          "feedback": [
+            "At 7 words the draft is short. Scores settle down past about 400.",
+            "Few claims are backed up: 0 references found.",
+            "Sentence lengths don't vary much (about 4 words each). Mix short sentences with long ones.",
+            "Only 2 paragraphs. Give it a beginning, a turn and an ending.",
+            "Some padding: 0 sweeping claims with nothing behind them, and 0% filler or vague words."
+          ]
+        },
+        "judgementGrade": {
+          "at": 1770000000000,
+          "model": "fixture-only",
+          "criteria": {
+            "thesis": {
+              "id": "thesis",
+              "score": 8,
+              "level": 3.2,
+              "confidence": 0.8,
+              "probabilities": {
+                "0": 0,
+                "1": 0.1,
+                "2": 0.15,
+                "3": 0.75
+              },
+              "legend": {
+                "0": "Poor",
+                "1": "Weak",
+                "2": "Adequate",
+                "3": "Strong",
+                "future": "Future rating"
+              },
+              "bimodal": false,
+              "modal": 3,
+              "futureMark": null
+            },
+            "voice": {
+              "id": "voice",
+              "score": 9,
+              "level": 3.6,
+              "confidence": 0.8,
+              "probabilities": {
+                "0": 0,
+                "1": 0.1,
+                "2": 0.15,
+                "3": 0.75
+              },
+              "legend": {
+                "0": "Poor",
+                "1": "Weak",
+                "2": "Adequate",
+                "3": "Strong",
+                "future": "Future rating"
+              },
+              "bimodal": false,
+              "modal": 3,
+              "futureMark": null
+            },
+            "custom-second-person": {
+              "id": "custom-second-person",
+              "score": 5,
+              "level": 2,
+              "confidence": 0.8,
+              "probabilities": {
+                "0": 0,
+                "1": 0.1,
+                "2": 0.15,
+                "3": 0.75
+              },
+              "legend": {
+                "0": "Poor",
+                "1": "Weak",
+                "2": "Adequate",
+                "3": "Strong",
+                "future": "Future rating"
+              },
+              "bimodal": false,
+              "modal": 3,
+              "futureMark": null
+            }
+          },
+          "usage": {
+            "input_tokens": 123,
+            "output_tokens": 0,
+            "retainedUsage": null
+          },
+          "costUsd": 6e-05,
+          "futureGrade": {
+            "untouched": true
+          }
+        },
+        "review": null,
+        "reviewProvider": null,
+        "targetFit": null,
+        "futureResult": {
+          "untouched": true
+        }
+      },
+      "criteria": [
+        {
+          "id": "targetFit",
+          "label": "On brief",
+          "description": "Is the draft about what the brief asks, for the reader it names? Judged apart from how well it's written.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "thesis",
+          "label": "Argument",
+          "description": "Is the main point clear, and does the draft make the case for it?",
+          "source": "spine",
+          "enabled": true,
+          "weight": 1
+        },
+        {
+          "id": "evidence",
+          "label": "Evidence",
+          "description": "Are the claims backed by sources, examples or figures that actually fit them?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "sufficiency",
+          "label": "Development",
+          "description": "Is there enough on-topic material to earn the main point?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "integrity",
+          "label": "Straight talk",
+          "description": "Free of padding, vague words, repetition and claims stated more strongly than shown.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "structure",
+          "label": "Structure",
+          "description": "Does each part follow from the last, with clear turns between them?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "pacing",
+          "label": "Rhythm",
+          "description": "Do sentence lengths vary enough to keep the reader moving?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "voice",
+          "label": "Voice",
+          "description": "Does it sound like one writer, pitched at the reader the brief names?",
+          "source": "spine",
+          "enabled": true,
+          "weight": 1
+        },
+        {
+          "id": "vocabulary",
+          "label": "Word choice",
+          "description": "Precise, varied words rather than repeats, abstractions and jargon.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "paragraph",
+          "label": "Paragraphs",
+          "description": "A readable mix of short and long paragraphs, each doing one job.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "engagement",
+          "label": "Reader pull",
+          "description": "Would the reader stay to the end? Follows the overall grade rather than being marked on its own.",
+          "source": "spine",
+          "enabled": true,
+          "weight": 1
+        },
+        {
+          "id": "custom-second-person",
+          "label": "Stay in second person",
+          "description": "Keep the reader present.",
+          "source": "custom",
+          "enabled": true,
+          "weight": 3
+        }
+      ],
+      "history": [
+        {
+          "at": 1,
+          "overall": 61,
+          "grade": "C",
+          "perCriterion": {
+            "thesis": 6
+          }
+        },
+        {
+          "at": 2,
+          "overall": 72,
+          "grade": "B",
+          "perCriterion": {
+            "thesis": 7
+          },
+          "scoringMethod": "judgement"
+        },
+        {
+          "at": 3,
+          "overall": 67,
+          "grade": "C+",
+          "perCriterion": {
+            "thesis": 7
+          },
+          "scoringMethod": "room"
+        },
+        {
+          "at": 4,
+          "overall": 67,
+          "grade": "C+",
+          "perCriterion": {
+            "thesis": 7
+          },
+          "scoringMethod": null
+        },
+        {
+          "at": 5,
+          "overall": 69,
+          "grade": "C+",
+          "perCriterion": {
+            "thesis": 7
+          },
+          "scoringMethod": "future-method"
+        }
+      ],
+      "liveReview": {
+        "folioId": "another-row-alias",
+        "fingerprint": "retained-live-fingerprint",
+        "at": 1770000000000,
+        "rubric": null,
+        "brief": null,
+        "coverage": "One retained fixture passage.",
+        "lenses": {
+          "futureLens": {
+            "opaque": true
+          }
+        },
+        "passages": [
+          {
+            "passage": {
+              "id": "passage-1",
+              "text": "Retained quoted passage.",
+              "from": 0,
+              "to": 24
+            },
+            "kind": "question",
+            "confidence": null,
+            "criticality": null,
+            "priority": 0.5,
+            "futurePassage": true
+          }
+        ],
+        "notes": [
+          {
+            "id": "note-1",
+            "author": "Future editor",
+            "verdict": null
+          }
+        ],
+        "futureLiveReview": null
+      },
+      "localCriteria": [
+        {
+          "id": "targetFit",
+          "label": "On brief",
+          "description": "Is the draft about what the brief asks, for the reader it names? Judged apart from how well it's written.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "thesis",
+          "label": "Argument",
+          "description": "Is the main point clear, and does the draft make the case for it?",
+          "source": "spine",
+          "enabled": true,
+          "weight": 3.0
+        },
+        {
+          "id": "evidence",
+          "label": "Evidence",
+          "description": "Are the claims backed by sources, examples or figures that actually fit them?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "sufficiency",
+          "label": "Development",
+          "description": "Is there enough on-topic material to earn the main point?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "integrity",
+          "label": "Straight talk",
+          "description": "Free of padding, vague words, repetition and claims stated more strongly than shown.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "structure",
+          "label": "Structure",
+          "description": "Does each part follow from the last, with clear turns between them?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "pacing",
+          "label": "Rhythm",
+          "description": "Do sentence lengths vary enough to keep the reader moving?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "voice",
+          "label": "Voice",
+          "description": "Does it sound like one writer, pitched at the reader the brief names?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "vocabulary",
+          "label": "Word choice",
+          "description": "Precise, varied words rather than repeats, abstractions and jargon.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "paragraph",
+          "label": "Paragraphs",
+          "description": "A readable mix of short and long paragraphs, each doing one job.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1.0
+        },
+        {
+          "id": "engagement",
+          "label": "Reader pull",
+          "description": "Would the reader stay to the end? Follows the overall grade rather than being marked on its own.",
+          "source": "spine",
+          "enabled": true,
+          "weight": 1.0
+        },
+        {
+          "id": "custom-second-person",
+          "label": "Stay in second person",
+          "description": "Keep the reader present.",
+          "source": "custom",
+          "enabled": true,
+          "weight": 3.0
+        }
+      ],
+      "futureArtifact": {
+        "retain": null
+      }
+    },
+    "unmounted/foreign": {
+      "result": {
+        "folioId": "row-alias-is-not-scope",
+        "criteria": [
+          {
+            "id": "thesis",
+            "label": "Argument",
+            "description": "A clear case",
+            "score": 8,
+            "maxScore": 10,
+            "feedback": "Retained fixture reasoning.",
+            "futureCriterion": {
+              "keep": null
+            }
+          },
+          {
+            "id": "custom-second-person",
+            "label": "Stay in second person",
+            "description": "Keep the reader present.",
+            "score": 5,
+            "maxScore": 10,
+            "feedback": "Retained custom fixture reasoning."
+          }
+        ],
+        "overallScore": 65,
+        "overallGrade": "C+",
+        "summary": "Retained synthetic Galley result; this is fixture data, not a provider reading.",
+        "timestamp": 1770000000000,
+        "judges": [],
+        "scoringMethod": "judgement",
+        "draftFingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+        "staticScore": {
+          "features": {
+            "wordCount": 7,
+            "paragraphCount": 2,
+            "sentenceCount": 2,
+            "avgSentenceLength": 3.5,
+            "sentenceLengthStdDev": 0.5,
+            "citationCount": 0,
+            "citationDensity": 0,
+            "avgWordLength": 6.714285714285714,
+            "uniqueWordsRatio": 0.7142857142857143,
+            "shortParagraphRatio": 1,
+            "longParagraphRatio": 0,
+            "duplicateParagraphRatio": 0,
+            "fillerWordRatio": 0,
+            "vagueWordRatio": 0,
+            "unsupportedUniversalClaimCount": 0
+          },
+          "perFeature": {
+            "length": 1,
+            "structure": 3,
+            "pacing": 1.465866225401308,
+            "evidence": 1,
+            "vocabulary": 8,
+            "paragraphShape": 6,
+            "integrity": 4
+          },
+          "total": 3.169879933810196,
+          "feedback": [
+            "At 7 words the draft is short. Scores settle down past about 400.",
+            "Few claims are backed up: 0 references found.",
+            "Sentence lengths don't vary much (about 4 words each). Mix short sentences with long ones.",
+            "Only 2 paragraphs. Give it a beginning, a turn and an ending.",
+            "Some padding: 0 sweeping claims with nothing behind them, and 0% filler or vague words."
+          ]
+        },
+        "judgementGrade": {
+          "at": 1770000000000,
+          "model": "fixture-only",
+          "criteria": {
+            "thesis": {
+              "id": "thesis",
+              "score": 8,
+              "level": 3.2,
+              "confidence": 0.8,
+              "probabilities": {
+                "0": 0,
+                "1": 0.1,
+                "2": 0.15,
+                "3": 0.75
+              },
+              "legend": {
+                "0": "Poor",
+                "1": "Weak",
+                "2": "Adequate",
+                "3": "Strong",
+                "future": "Future rating"
+              },
+              "bimodal": false,
+              "modal": 3,
+              "futureMark": null
+            },
+            "voice": {
+              "id": "voice",
+              "score": 9,
+              "level": 3.6,
+              "confidence": 0.8,
+              "probabilities": {
+                "0": 0,
+                "1": 0.1,
+                "2": 0.15,
+                "3": 0.75
+              },
+              "legend": {
+                "0": "Poor",
+                "1": "Weak",
+                "2": "Adequate",
+                "3": "Strong",
+                "future": "Future rating"
+              },
+              "bimodal": false,
+              "modal": 3,
+              "futureMark": null
+            },
+            "custom-second-person": {
+              "id": "custom-second-person",
+              "score": 5,
+              "level": 2,
+              "confidence": 0.8,
+              "probabilities": {
+                "0": 0,
+                "1": 0.1,
+                "2": 0.15,
+                "3": 0.75
+              },
+              "legend": {
+                "0": "Poor",
+                "1": "Weak",
+                "2": "Adequate",
+                "3": "Strong",
+                "future": "Future rating"
+              },
+              "bimodal": false,
+              "modal": 3,
+              "futureMark": null
+            }
+          },
+          "usage": {
+            "input_tokens": 123,
+            "output_tokens": 0,
+            "retainedUsage": null
+          },
+          "costUsd": 6e-05,
+          "futureGrade": {
+            "untouched": true
+          }
+        },
+        "review": null,
+        "reviewProvider": null,
+        "targetFit": null,
+        "futureResult": {
+          "untouched": true
+        }
+      },
+      "criteria": [
+        {
+          "id": "targetFit",
+          "label": "On brief",
+          "description": "Is the draft about what the brief asks, for the reader it names? Judged apart from how well it's written.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "thesis",
+          "label": "Argument",
+          "description": "Is the main point clear, and does the draft make the case for it?",
+          "source": "spine",
+          "enabled": true,
+          "weight": 1
+        },
+        {
+          "id": "evidence",
+          "label": "Evidence",
+          "description": "Are the claims backed by sources, examples or figures that actually fit them?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "sufficiency",
+          "label": "Development",
+          "description": "Is there enough on-topic material to earn the main point?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "integrity",
+          "label": "Straight talk",
+          "description": "Free of padding, vague words, repetition and claims stated more strongly than shown.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "structure",
+          "label": "Structure",
+          "description": "Does each part follow from the last, with clear turns between them?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "pacing",
+          "label": "Rhythm",
+          "description": "Do sentence lengths vary enough to keep the reader moving?",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "voice",
+          "label": "Voice",
+          "description": "Does it sound like one writer, pitched at the reader the brief names?",
+          "source": "spine",
+          "enabled": true,
+          "weight": 1
+        },
+        {
+          "id": "vocabulary",
+          "label": "Word choice",
+          "description": "Precise, varied words rather than repeats, abstractions and jargon.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "paragraph",
+          "label": "Paragraphs",
+          "description": "A readable mix of short and long paragraphs, each doing one job.",
+          "source": "spine",
+          "enabled": false,
+          "weight": 1
+        },
+        {
+          "id": "engagement",
+          "label": "Reader pull",
+          "description": "Would the reader stay to the end? Follows the overall grade rather than being marked on its own.",
+          "source": "spine",
+          "enabled": true,
+          "weight": 1
+        },
+        {
+          "id": "custom-second-person",
+          "label": "Stay in second person",
+          "description": "Keep the reader present.",
+          "source": "custom",
+          "enabled": true,
+          "weight": 3
+        }
+      ],
+      "history": [
+        {
+          "at": 1,
+          "overall": 61,
+          "grade": "C",
+          "perCriterion": {
+            "thesis": 6
+          }
+        },
+        {
+          "at": 2,
+          "overall": 72,
+          "grade": "B",
+          "perCriterion": {
+            "thesis": 7
+          },
+          "scoringMethod": "judgement"
+        },
+        {
+          "at": 3,
+          "overall": 67,
+          "grade": "C+",
+          "perCriterion": {
+            "thesis": 7
+          },
+          "scoringMethod": "room"
+        },
+        {
+          "at": 4,
+          "overall": 67,
+          "grade": "C+",
+          "perCriterion": {
+            "thesis": 7
+          },
+          "scoringMethod": null
+        },
+        {
+          "at": 5,
+          "overall": 69,
+          "grade": "C+",
+          "perCriterion": {
+            "thesis": 7
+          },
+          "scoringMethod": "future-method"
+        }
+      ],
+      "liveReview": {
+        "folioId": "another-row-alias",
+        "fingerprint": "retained-live-fingerprint",
+        "at": 1770000000000,
+        "rubric": null,
+        "brief": null,
+        "coverage": "One retained fixture passage.",
+        "lenses": {
+          "futureLens": {
+            "opaque": true
+          }
+        },
+        "passages": [
+          {
+            "passage": {
+              "id": "passage-1",
+              "text": "Retained quoted passage.",
+              "from": 0,
+              "to": 24
+            },
+            "kind": "question",
+            "confidence": null,
+            "criticality": null,
+            "priority": 0.5,
+            "futurePassage": true
+          }
+        ],
+        "notes": [
+          {
+            "id": "note-1",
+            "author": "Future editor",
+            "verdict": null
+          }
+        ],
+        "futureLiveReview": null
+      },
+      "futureArtifact": {
+        "retain": null
+      }
+    }
+  },
+  "legacy": {
+    "result": {
+      "folioId": "row-alias-is-not-scope",
+      "criteria": [
+        {
+          "id": "thesis",
+          "label": "Argument",
+          "description": "A clear case",
+          "score": 8,
+          "maxScore": 10,
+          "feedback": "Retained fixture reasoning.",
+          "futureCriterion": {
+            "keep": null
+          }
+        },
+        {
+          "id": "custom-second-person",
+          "label": "Stay in second person",
+          "description": "Keep the reader present.",
+          "score": 5,
+          "maxScore": 10,
+          "feedback": "Retained custom fixture reasoning."
+        }
+      ],
+      "overallScore": 65,
+      "overallGrade": "C+",
+      "summary": "Retained synthetic Galley result; this is fixture data, not a provider reading.",
+      "timestamp": 1770000000000,
+      "judges": [],
+      "scoringMethod": "judgement",
+      "draftFingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+      "staticScore": {
+        "features": {
+          "wordCount": 7,
+          "paragraphCount": 2,
+          "sentenceCount": 2,
+          "avgSentenceLength": 3.5,
+          "sentenceLengthStdDev": 0.5,
+          "citationCount": 0,
+          "citationDensity": 0,
+          "avgWordLength": 6.714285714285714,
+          "uniqueWordsRatio": 0.7142857142857143,
+          "shortParagraphRatio": 1,
+          "longParagraphRatio": 0,
+          "duplicateParagraphRatio": 0,
+          "fillerWordRatio": 0,
+          "vagueWordRatio": 0,
+          "unsupportedUniversalClaimCount": 0
+        },
+        "perFeature": {
+          "length": 1,
+          "structure": 3,
+          "pacing": 1.465866225401308,
+          "evidence": 1,
+          "vocabulary": 8,
+          "paragraphShape": 6,
+          "integrity": 4
+        },
+        "total": 3.169879933810196,
+        "feedback": [
+          "At 7 words the draft is short. Scores settle down past about 400.",
+          "Few claims are backed up: 0 references found.",
+          "Sentence lengths don't vary much (about 4 words each). Mix short sentences with long ones.",
+          "Only 2 paragraphs. Give it a beginning, a turn and an ending.",
+          "Some padding: 0 sweeping claims with nothing behind them, and 0% filler or vague words."
+        ]
+      },
+      "judgementGrade": {
+        "at": 1770000000000,
+        "model": "fixture-only",
+        "criteria": {
+          "thesis": {
+            "id": "thesis",
+            "score": 8,
+            "level": 3.2,
+            "confidence": 0.8,
+            "probabilities": {
+              "0": 0,
+              "1": 0.1,
+              "2": 0.15,
+              "3": 0.75
+            },
+            "legend": {
+              "0": "Poor",
+              "1": "Weak",
+              "2": "Adequate",
+              "3": "Strong",
+              "future": "Future rating"
+            },
+            "bimodal": false,
+            "modal": 3,
+            "futureMark": null
+          },
+          "voice": {
+            "id": "voice",
+            "score": 9,
+            "level": 3.6,
+            "confidence": 0.8,
+            "probabilities": {
+              "0": 0,
+              "1": 0.1,
+              "2": 0.15,
+              "3": 0.75
+            },
+            "legend": {
+              "0": "Poor",
+              "1": "Weak",
+              "2": "Adequate",
+              "3": "Strong",
+              "future": "Future rating"
+            },
+            "bimodal": false,
+            "modal": 3,
+            "futureMark": null
+          },
+          "custom-second-person": {
+            "id": "custom-second-person",
+            "score": 5,
+            "level": 2,
+            "confidence": 0.8,
+            "probabilities": {
+              "0": 0,
+              "1": 0.1,
+              "2": 0.15,
+              "3": 0.75
+            },
+            "legend": {
+              "0": "Poor",
+              "1": "Weak",
+              "2": "Adequate",
+              "3": "Strong",
+              "future": "Future rating"
+            },
+            "bimodal": false,
+            "modal": 3,
+            "futureMark": null
+          }
+        },
+        "usage": {
+          "input_tokens": 123,
+          "output_tokens": 0,
+          "retainedUsage": null
+        },
+        "costUsd": 6e-05,
+        "futureGrade": {
+          "untouched": true
+        }
+      },
+      "review": null,
+      "reviewProvider": null,
+      "targetFit": null,
+      "futureResult": {
+        "untouched": true
+      }
+    },
+    "criteria": null,
+    "futureLegacy": true
+  },
+  "futureEnvelope": [
+    null,
+    "keep",
+    23
+  ]
+}

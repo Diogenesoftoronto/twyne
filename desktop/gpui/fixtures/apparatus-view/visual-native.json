@@ -1,0 +1,128 @@
+{
+  "format": "twyne-gpui-apparatus",
+  "version": 1,
+  "generation": 0,
+  "bibliography": [
+    {
+      "id": "source-existing",
+      "folioId": "original/path/folio:café",
+      "title": "Retained source title",
+      "author": "An older attribution",
+      "publisher": "A retained publisher",
+      "date": "2022",
+      "year": "2022",
+      "doi": "10.1000/retained",
+      "url": "https://EXAMPLE.org/report/?old=1#retained",
+      "accessedAt": 1769999999990,
+      "note": null,
+      "citationKey": "writer-key",
+      "style": "chicago",
+      "formattedCitation": "Cached original fixture citation.",
+      "snippet": "Retained snippet",
+      "why": "Retained relevance",
+      "pageHint": "27",
+      "provenance": "writer",
+      "accepted": null,
+      "target": null,
+      "createdAt": 1769999999980,
+      "citationInsertedAt": 1769999999995,
+      "futureSource": {
+        "retained": [
+          null,
+          true,
+          "opaque"
+        ]
+      }
+    },
+    {
+      "id": "background-retained",
+      "folioId": "original/path/folio:café",
+      "title": "Retained background source",
+      "url": "https://example.net/claim",
+      "accessedAt": 1769999999988,
+      "provenance": "background",
+      "accepted": false,
+      "backgroundQuery": "retained query",
+      "date": null,
+      "target": {
+        "kind": "future-kind",
+        "anchor": "Verbatim supporting passage.",
+        "query": "retained query",
+        "reason": null,
+        "futureTarget": true
+      },
+      "futureSource": null
+    },
+    {
+      "id": "source-existing",
+      "folioId": "unmounted/foreign",
+      "title": "Foreign source with the same ID and URL",
+      "author": "An older attribution",
+      "publisher": "A retained publisher",
+      "date": "2022",
+      "year": "2022",
+      "doi": "10.1000/retained",
+      "url": "https://EXAMPLE.org/report/?old=1#retained",
+      "accessedAt": 1769999999990,
+      "note": null,
+      "citationKey": "writer-key",
+      "style": "chicago",
+      "formattedCitation": "Cached original fixture citation.",
+      "snippet": "Retained snippet",
+      "why": "Retained relevance",
+      "pageHint": "27",
+      "provenance": "writer",
+      "accepted": null,
+      "target": null,
+      "createdAt": 1769999999980,
+      "citationInsertedAt": 1769999999995,
+      "futureSource": {
+        "retained": [
+          null,
+          true,
+          "opaque"
+        ]
+      },
+      "foreignOnly": true
+    }
+  ],
+  "settings": {
+    "defaultCitationStyle": "chicago",
+    "aiEnhanceCitations": false,
+    "flagMissingSources": false,
+    "autoInsertFootnotes": false,
+    "researchProvider": "future-provider",
+    "maxResults": 19,
+    "searchBackend": {
+      "id": "custom",
+      "apiKey": "fixture-only-not-a-secret",
+      "baseUrl": "https://fixture.invalid/search",
+      "resultsPath": "data.rows",
+      "futureBackend": null
+    },
+    "mcpServers": [
+      {
+        "id": "fixture-server",
+        "label": "Retained fixture",
+        "url": "https://fixture.invalid/mcp",
+        "transport": "future-transport",
+        "enabled": false,
+        "futureServer": [
+          null,
+          5
+        ]
+      }
+    ],
+    "tinyfishApiKey": null,
+    "futureSettings": {
+      "unchanged": true
+    }
+  },
+  "futureEnvelope": {
+    "kept": [
+      null,
+      17
+    ]
+  },
+  "fixturePurpose": "Synthetic source-rendering fixture, not discovered sources. Two owned valid rows and one retained foreign row; malformed import recovery is tested separately."
+}

@@ -1,0 +1,24 @@
+{
+  "status": "Unapplied rebased integration proposal; Parent owns compile/GPUI/host acceptance",
+  "files": [
+    {
+      "path": "desktop/gpui/src/lib.rs",
+      "beforeSha256": "6ed186c4af612d4458a7341850d9570df5da1eb625d69920711bc02c13929566",
+      "proposedSha256": "ee9038e3dead18e0bf05fcae8d53ebfbfa514b361257eeb9f22b5f11a9e5b87a"
+    },
+    {
+      "path": "desktop/gpui/src/theme.rs",
+      "beforeSha256": "0878e9e1e431f4a49329e91c60d3cdf2cc24d5b39082ff054437d343bc66d72e",
+      "proposedSha256": "2d04ffd22eb01a4f7f6c45e3dd64424e9a5a4e6c91860f01079923de2722320e"
+    },
+    {
+      "path": "desktop/gpui/src/dossier_view.rs",
+      "beforeSha256": "95ba2d725556a47013209243a85edcc561c28f554ec10ae950dcfdedfabc974a",
+      "proposedSha256": "4eb494ef0bd4aa261fe46b6ec844dfe445f7997c7e3340ab8fcfbbbe32fefec3"
+    }
+  ],
+  "preparation": "constructor + observe_window_bounds + NativePalette observer only; no render/InputEvent/paint rasterization; identical key returns before notify",
+  "scaleTransition": "Real platform/Wayland resize publishes both viewport and DPR before bounds observer; public prepare_paper handles manual test-only set_scale_factor",
+  "preserved": "Latest Root equal explicit centering spacers and focused underline; proposal onlyadds background/lifecycle",
+  "foxing": "No normal-alpha substitution for unsupported Source multiply"
+}

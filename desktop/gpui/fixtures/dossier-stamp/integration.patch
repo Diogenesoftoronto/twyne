@@ -1,0 +1,125 @@
+--- a/desktop/gpui/src/lib.rs
++++ b/desktop/gpui/src/lib.rs
+@@ -19,6 +19,8 @@
+ pub mod dossier_filing;
+ #[cfg(feature = "desktop")]
+ pub mod dossier_paper;
++#[cfg(feature = "desktop")]
++pub mod dossier_stamp;
+ #[cfg(feature = "desktop")]
+ pub mod dossier_view;
+ pub mod editor;
+--- a/desktop/gpui/src/dossier_view.rs
++++ b/desktop/gpui/src/dossier_view.rs
+@@ -11,6 +11,7 @@
+         WRITING_FORMAT_SUGGESTIONS,
+     },
+     dossier_paper::{DossierPaper, DossierPaperMetrics},
++    dossier_stamp::DossierStampSet,
+     manuscript::timestamp,
+     theme::{self, DISPLAY_FONT, SANS_FONT, SERIF_FONT, TYPEWRITER_FONT},
+     workspace::{AttachmentKind, BriefField, ProbeAnswer, ProbeKind},
+@@ -135,6 +136,7 @@
+     dirty: bool,
+     start_over_confirm: bool,
+     paper: Option<Arc<DossierPaper>>,
++    reviewed_stamps: Option<Arc<DossierStampSet>>,
+     question_leaf_height: Pixels,
+     question_height: Option<(usize, Pixels)>,
+     _subscriptions: Vec<Subscription>,
+@@ -323,6 +325,7 @@
+             dirty: false,
+             start_over_confirm: false,
+             paper: None,
++            reviewed_stamps: None,
+             question_leaf_height: px(0.),
+             question_height: None,
+             _subscriptions: subscriptions,
+@@ -340,6 +343,7 @@
+     // InputEvent::Change or a paint callback. Public for manual DPR test/host
+     // transitions that do not invoke GPUI's platform bounds callbacks.
+     pub fn prepare_paper(&mut self, window: &Window, cx: &mut Context<Self>) {
++        self.prepare_reviewed_stamps(window, cx);
+         let viewport = window.viewport_size();
+         let colors = *theme::palette(cx);
+         let metrics = DossierPaperMetrics::new(
+@@ -359,6 +363,24 @@
+             Err(error) => {
+                 self.paper = None;
+                 eprintln!("Could not prepare Dossier paper: {error:#}");
++            }
++        }
++        cx.notify();
++    }
++
++    // All eight count variants are retained at the existing constructor,
++    // theme and DPR boundaries. Count changes never shape/rasterize in Render.
++    fn prepare_reviewed_stamps(&mut self, window: &Window, cx: &mut Context<Self>) {
++        let color = theme::palette(cx).vermilion;
++        let scale = window.scale_factor();
++        if self.reviewed_stamps.as_ref().is_some_and(|set| set.matches(color, scale)) {
++            return;
++        }
++        match DossierStampSet::prepare(color, scale, window.text_system(), cx) {
++            Ok(set) => self.reviewed_stamps = Some(set),
++            Err(error) => {
++                self.reviewed_stamps = None;
++                eprintln!("Could not prepare reviewed stamp: {error:#}");
+             }
+         }
+         cx.notify();
+@@ -985,6 +1007,30 @@
+         } else {
+             self.session.draft.step.min(7)
+         };
++        let reviewed_stamp = self.reviewed_stamps.as_ref()
++            .and_then(|set| set.stamp(reviewed))
++            .map(|stamp| stamp.element())
++            .unwrap_or_else(|| {
++                // Preserve the existing readable count if preparation fails.
++                // This fallback is deliberately not claimed as rotated parity.
++                div()
++                    .border_2()
++                    .border_color(rgb(colors.vermilion))
++                    .rounded(px(2.))
++                    .bg(rgb(colors.vermilion).opacity(0.04))
++                    .px(px(8.))
++                    .py(px(2.4))
++                    .font_family(TYPEWRITER_FONT)
++                    .text_color(rgb(colors.vermilion))
++                    .text_size(px(8.8))
++                    .child(tracked_typewriter(
++                        &format!("{reviewed} / 7 REVIEWED"),
++                        8.8,
++                        1.936,
++                        colors.vermilion,
++                    ))
++                    .into_any_element()
++            });
+         let title = self.answers[0].preview(cx, 120);
+         let cards: Vec<_> = (0..7)
+             .map(|index| {
+@@ -1083,22 +1129,7 @@
+                             ),
+                     )
+                     .child(
+-                        div()
+-                            .border_2()
+-                            .border_color(rgb(colors.vermilion))
+-                            .rounded(px(2.))
+-                            .bg(rgb(colors.vermilion).opacity(0.04))
+-                            .px(px(8.))
+-                            .py(px(2.4))
+-                            .font_family(TYPEWRITER_FONT)
+-                            .text_color(rgb(colors.vermilion))
+-                            .text_size(px(8.8))
+-                            .child(tracked_typewriter(
+-                                &format!("{reviewed} / 7 REVIEWED"),
+-                                8.8,
+-                                1.936,
+-                                colors.vermilion,
+-                            )),
++                        reviewed_stamp,
+                     ),
+             )
+             .child(

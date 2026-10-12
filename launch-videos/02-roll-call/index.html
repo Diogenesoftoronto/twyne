@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Twyne — Roll Call</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <link rel="stylesheet" href="assets/twyne-base.css" />
+    <style>
+      /* ── Opening slate ── */
+      .slate { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .slate .label { color: var(--ink-muted); font-size: 28px; }
+      .slate h1 { margin: 26px 0 0; font-family: var(--display); font-style: italic; font-weight: 400; font-size: 190px; line-height: 1; color: var(--ink); }
+      .slate .suits { margin-top: 44px; display: flex; gap: 46px; font-family: var(--sans); font-size: 60px; line-height: 1; }
+      .slate .suits span { display: block; width: 60px; text-align: center; }
+
+      /* ── Personnel file ── */
+      .shade { position: absolute; top: 0; bottom: 0; right: 0; width: 55%; background: linear-gradient(to left, rgba(12, 9, 6, 0.7), rgba(12, 9, 6, 0)); }
+      .file {
+        position: absolute; right: 110px; top: 130px; width: 720px; height: 820px; box-sizing: border-box; padding: 46px 54px;
+        background: var(--paper-soft) url("assets/img/paper-texture.jpg") center / cover;
+        box-shadow: 0 40px 80px rgba(0, 0, 0, 0.45), 0 2px 0 rgba(0, 0, 0, 0.1);
+        border-top: 12px solid var(--pc);
+      }
+      .file-top { display: flex; justify-content: space-between; align-items: center; }
+      .file-top .label { font-size: 22px; color: var(--ink-muted); }
+      .suit { font-family: var(--sans); font-size: 64px; line-height: 1; color: var(--pc-ink); }
+      .name { margin-top: 26px; font-family: var(--display); font-style: italic; font-size: 64px; line-height: 1.08; color: var(--ink); }
+      .role { margin-top: 14px; font-size: 24px; color: var(--pc-ink); }
+      .rule { margin-top: 26px; height: 2px; background: #d9ccad; }
+      .focus-k { margin-top: 24px; font-family: var(--type); font-size: 20px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-muted); }
+      .focus-v { margin-top: 6px; font-family: var(--serif); font-size: 30px; line-height: 1.3; color: var(--ink-light); }
+      .quote { margin-top: 38px; padding-left: 28px; border-left: 6px solid var(--pc); font-family: var(--serif); font-style: italic; font-size: 42px; line-height: 1.36; color: var(--ink); }
+      .quote .w { display: inline; }
+      .quote .strikeable .tk-strike { height: 5px; top: 55%; }
+
+      /* ── Close ── */
+      .close { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      .close .line { font-family: var(--display); font-size: 84px; line-height: 1.15; color: var(--ink); min-height: 98px; }
+      .row5 { margin-top: 54px; display: flex; gap: 70px; }
+      .row5 .ed { display: flex; flex-direction: column; align-items: center; width: 180px; }
+      .row5 .s { font-family: var(--sans); font-size: 64px; line-height: 1; }
+      .row5 .n { margin-top: 14px; font-family: var(--type); font-size: 17px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-light); text-align: center; }
+      .brand { margin-top: 64px; display: flex; align-items: center; gap: 30px; }
+      .brand img { width: 110px; height: 110px; }
+      .brand .wm { font-family: var(--display); font-weight: 700; font-size: 110px; line-height: 1; letter-spacing: 0.08em; color: var(--ink); }
+      .brand-url { margin-top: 22px; font-family: var(--sans); font-weight: 500; font-size: 34px; letter-spacing: 0.06em; color: var(--vermilion); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="46" data-width="1920" data-height="1080" data-fps="30">
+      <!-- ═════ Footage ═════ -->
+      <div class="layer" id="w-sceptique" data-layout-allow-overflow><video id="v-sceptique" class="fill" src="assets/video/v-sceptique.mp4" data-start="3" data-duration="6" data-playback-rate="0.83" data-track-index="0" muted playsinline></video></div>
+      <div class="layer" id="w-encourageante" data-layout-allow-overflow><video id="v-encourageante" class="fill" src="assets/video/v-encourageante.mp4" data-start="9" data-duration="7.6" data-playback-rate="0.65" data-track-index="0" muted playsinline></video></div>
+      <div class="layer" id="w-athenaeum" data-layout-allow-overflow><video id="v-athenaeum" class="fill" src="assets/video/v-athenaeum.mp4" data-start="16.6" data-duration="7.6" data-playback-rate="0.65" data-track-index="0" muted playsinline></video></div>
+      <div class="layer" id="w-lestylo" data-layout-allow-overflow><video id="v-lestylo" class="fill" src="assets/video/v-lestylo.mp4" data-start="24.2" data-duration="8.2" data-playback-rate="0.6" data-track-index="0" muted playsinline></video></div>
+      <div class="layer" id="w-lecteur" data-layout-allow-overflow><video id="v-lecteur" class="fill" src="assets/video/v-lecteur.mp4" data-start="32.4" data-duration="5.8" data-playback-rate="0.86" data-track-index="0" muted playsinline></video></div>
+      <div class="layer" id="w-bullpen" data-layout-allow-overflow><video id="v-bullpen" class="fill" src="assets/video/v-bullpen.mp4" data-start="38.2" data-duration="3.2" data-media-start="1" data-track-index="0" muted playsinline></video></div>
+
+      <!-- ═════ Slate ═════ -->
+      <section id="s-slate" class="clip" data-start="0" data-duration="3.2" data-track-index="1">
+        <div class="paper-bg"></div>
+        <div class="slate">
+          <div class="label" id="slate-label">The Editorial Room · Staff</div>
+          <h1 id="slate-title">Roll Call</h1>
+          <div class="suits" id="slate-suits"><span style="color: var(--vermilion)">♠</span><span style="color: #6f7f3f">♥</span><span style="color: #4a58a8">♦</span><span style="color: #8a6507">✦</span><span style="color: #2c4a7c">♣</span></div>
+        </div>
+      </section>
+
+      <!-- ═════ Personnel files ═════ -->
+      <section id="f-sceptique" class="clip" data-start="3" data-duration="6" data-track-index="1">
+        <div class="shade"></div>
+        <div class="file" style="--pc: var(--vermilion); --pc-ink: var(--vermilion)">
+          <div class="file-top"><span class="label">Personnel file · No. 1</span><span class="suit">♠</span></div>
+          <div class="name">Mlle. Sceptique</div>
+          <div class="label role">The Devil's Advocate</div>
+          <div class="rule"></div>
+          <div class="focus-k">Reads for</div>
+          <div class="focus-v">Logic, argument, the load-bearing weakness</div>
+          <div class="quote" data-vo="rc-sceptique" data-accent="Earn,it."></div>
+        </div>
+      </section>
+      <section id="f-encourageante" class="clip" data-start="9" data-duration="7.6" data-track-index="1">
+        <div class="shade"></div>
+        <div class="file" style="--pc: #8a9a5b; --pc-ink: #5d6b30">
+          <div class="file-top"><span class="label">Personnel file · No. 2</span><span class="suit">♥</span></div>
+          <div class="name">Sœur Encourageante</div>
+          <div class="label role">The Patron of Strengths</div>
+          <div class="rule"></div>
+          <div class="focus-k">Reads for</div>
+          <div class="focus-v">Strengths, resonance, what to keep at all costs</div>
+          <div class="quote" data-vo="rc-encourageante" data-accent="pulse."></div>
+        </div>
+      </section>
+      <section id="f-athenaeum" class="clip" data-start="16.6" data-duration="7.6" data-track-index="1">
+        <div class="shade"></div>
+        <div class="file" style="--pc: #5c6bc0; --pc-ink: #4251a0">
+          <div class="file-top"><span class="label">Personnel file · No. 3</span><span class="suit">♦</span></div>
+          <div class="name">Professeur Athenæum</div>
+          <div class="label role">The Scholar</div>
+          <div class="rule"></div>
+          <div class="focus-k">Reads for</div>
+          <div class="focus-v">Evidence, citation, scholarly rigor</div>
+          <div class="quote" data-vo="rc-athenaeum" data-accent="evidence,"></div>
+        </div>
+      </section>
+      <section id="f-lestylo" class="clip" data-start="24.2" data-duration="8.2" data-track-index="1">
+        <div class="shade"></div>
+        <div class="file" style="--pc: #d4a017; --pc-ink: #8a6507">
+          <div class="file-top"><span class="label">Personnel file · No. 4</span><span class="suit">✦</span></div>
+          <div class="name">M. Le Stylo</div>
+          <div class="label role">The Copy Chief</div>
+          <div class="rule"></div>
+          <div class="focus-k">Reads for</div>
+          <div class="focus-v">Style, rhythm, concision, the cut</div>
+          <div class="quote" data-vo="rc-lestylo" data-strike="In,order,to." data-strike-on="Cut"></div>
+        </div>
+      </section>
+      <section id="f-lecteur" class="clip" data-start="32.4" data-duration="5.8" data-track-index="1">
+        <div class="shade"></div>
+        <div class="file" style="--pc: #2c4a7c; --pc-ink: #2c4a7c">
+          <div class="file-top"><span class="label">Personnel file · No. 5</span><span class="suit">♣</span></div>
+          <div class="name">Le Lecteur</div>
+          <div class="label role">The Target Reader</div>
+          <div class="rule"></div>
+          <div class="focus-k">Reads for</div>
+          <div class="focus-v">Comprehension, engagement, whether to keep going</div>
+          <div class="quote" data-vo="rc-lecteur" data-accent="lost,the,thread."></div>
+        </div>
+      </section>
+
+      <!-- ═════ Close ═════ -->
+      <section id="s-close" class="clip" data-start="41.2" data-duration="4.8" data-track-index="1">
+        <div class="paper-bg"></div>
+        <div class="close">
+          <div class="row5" id="row5">
+            <div class="ed"><span class="s" style="color: var(--vermilion)">♠</span><span class="n">Sceptique</span></div>
+            <div class="ed"><span class="s" style="color: #6f7f3f">♥</span><span class="n">Encourageante</span></div>
+            <div class="ed"><span class="s" style="color: #4a58a8">♦</span><span class="n">Athenæum</span></div>
+            <div class="ed"><span class="s" style="color: #8a6507">✦</span><span class="n">Le Stylo</span></div>
+            <div class="ed"><span class="s" style="color: #2c4a7c">♣</span><span class="n">Le Lecteur</span></div>
+          </div>
+          <div class="brand" id="brand"><img src="assets/img/griffin-red.svg" alt="" /><span class="wm">TWYNE</span></div>
+          <div class="brand-url" id="brand-url">twyne.love</div>
+        </div>
+      </section>
+      <section id="s-bullpen-cap" class="clip" data-start="38.2" data-duration="3.2" data-track-index="2">
+        <div class="scrim-bottom"></div>
+        <div class="captions" id="captions"></div>
+      </section>
+
+      <!-- ═════ Sound ═════ -->
+      <audio id="music" src="assets/audio/m-rollcall.wav" data-start="0" data-media-start="12" data-duration="46" data-track-index="10"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0},{"t":0.4,"v":0.95},{"t":3.1,"v":0.95},{"t":3.4,"v":0.45},{"t":8.7,"v":0.45},{"t":9.3,"v":0.45},{"t":37.9,"v":0.45},{"t":38.3,"v":0.8},{"t":38.6,"v":0.5},{"t":42.2,"v":0.5},{"t":42.6,"v":1.0},{"t":45.5,"v":1.0},{"t":45.95,"v":0}]}]}'></audio>
+      <audio id="vo-sceptique" src="assets/audio/rc-sceptique.wav" data-start="3.1" data-duration="5.7" data-track-index="11"></audio>
+      <audio id="vo-encourageante" src="assets/audio/rc-encourageante.wav" data-start="9.0" data-duration="7.54" data-track-index="11"></audio>
+      <audio id="vo-athenaeum" src="assets/audio/rc-athenaeum.wav" data-start="16.6" data-duration="7.58" data-track-index="11"></audio>
+      <audio id="vo-lestylo" src="assets/audio/rc-lestylo.wav" data-start="24.2" data-duration="8.18" data-track-index="11"></audio>
+      <audio id="vo-lecteur" src="assets/audio/rc-lecteur.wav" data-start="32.4" data-duration="5.66" data-track-index="11"></audio>
+      <audio id="vo-end" src="assets/audio/rc-end.wav" data-start="38.4" data-duration="3.98" data-track-index="11"></audio>
+      <audio id="sfx-c1" src="assets/sfx/click.mp3" data-start="3.05" data-duration="0.36" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="sfx-c2" src="assets/sfx/click.mp3" data-start="9.05" data-duration="0.36" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="sfx-c3" src="assets/sfx/click.mp3" data-start="16.65" data-duration="0.36" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="sfx-c4" src="assets/sfx/click.mp3" data-start="24.25" data-duration="0.36" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="sfx-c5" src="assets/sfx/click.mp3" data-start="32.45" data-duration="0.36" data-track-index="12" data-volume="0.45"></audio>
+    </div>
+
+    <script src="assets/js/twyne-kit.js"></script>
+    <script src="assets/js/words.js"></script>
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const $ = (s) => document.querySelector(s);
+      const W = window.WORDS;
+
+      // Slate
+      tl.fromTo("#slate-label", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.5 }, 0.2);
+      tl.fromTo("#slate-title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 0.35);
+      tl.fromTo("#slate-suits span", { opacity: 0, y: 16, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.4, ease: "back.out(2)", stagger: 0.12 }, 0.9);
+
+      // Personnel files: card lands, quote fills in as it's spoken
+      const files = [["sceptique", 3, 3.1, 6], ["encourageante", 9, 9.0, 7.6], ["athenaeum", 16.6, 16.6, 7.6], ["lestylo", 24.2, 24.2, 8.2], ["lecteur", 32.4, 32.4, 5.8]];
+      files.forEach(([id, at, vo, dur]) => {
+        const sec = `#f-${id}`;
+        tl.fromTo(`#w-${id}`, { scale: 1.02, xPercent: 0 }, { scale: 1.1, xPercent: -3, duration: dur, ease: "none" }, at);
+        tl.fromTo(`${sec} .file`, { opacity: 0, x: 90, rotation: 2 }, { opacity: 1, x: 0, rotation: 0.5, duration: 0.55, ease: "power3.out" }, at + 0.05);
+        tl.fromTo(`${sec} .name, ${sec} .role`, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.1 }, at + 0.35);
+        tl.fromTo(`${sec} .focus-k, ${sec} .focus-v`, { opacity: 0 }, { opacity: 1, duration: 0.4 }, at + 0.6);
+
+        const q = $(`${sec} .quote`);
+        const words = W[q.dataset.vo];
+        const accent = (q.dataset.accent || "").split(",").filter(Boolean);
+        const strike = (q.dataset.strike || "").split(",").filter(Boolean);
+        let strikeWrap = null;
+        words.forEach((w, i) => {
+          const span = document.createElement("span");
+          span.className = "w";
+          span.textContent = w.text + " ";
+          if (strike.length && strike.includes(w.text) && i < strike.length) {
+            if (!strikeWrap) {
+              strikeWrap = document.createElement("span");
+              strikeWrap.className = "strikeable";
+              q.appendChild(strikeWrap);
+            }
+            strikeWrap.appendChild(span);
+            if (i === strike.length - 1) {
+              const rule = document.createElement("span");
+              rule.className = "tk-strike";
+              strikeWrap.appendChild(rule);
+              q.appendChild(document.createTextNode(" "));
+            }
+          } else {
+            q.appendChild(span);
+          }
+          tl.fromTo(span, { opacity: 0.12 }, { opacity: 1, duration: 0.12 }, vo + w.start - 0.03);
+          if (accent.includes(w.text)) tl.to(span, { color: "var(--pc-ink)", duration: 0.2 }, vo + w.start);
+          if (q.dataset.strikeOn === w.text && strikeWrap) TK.strike(tl, strikeWrap, vo + w.start, { dur: 0.3 });
+        });
+        tl.to(`${sec} .file`, { opacity: 0, x: 40, duration: 0.3, ease: "power1.in" }, at + dur - 0.32);
+      });
+
+      // Bullpen + line
+      tl.fromTo("#w-bullpen", { scale: 1.0 }, { scale: 1.08, duration: 3.2, ease: "none" }, 38.2);
+      TK.captions(tl, $("#captions"), [{ at: 38.4, words: W["rc-end"], tone: "light" }], { maxWords: 3 });
+
+      // Close
+      tl.fromTo("#row5 .ed", { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.8)", stagger: 0.1 }, 41.35);
+      tl.fromTo("#brand", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, 42.2);
+      tl.fromTo("#brand-url", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 42.9);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

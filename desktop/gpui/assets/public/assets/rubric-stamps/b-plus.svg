@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linecap="square">
+    <path d="M13 20l151-5 4 91-153 3z" stroke-width="4"/>
+    <path d="M21 28l135-4 3 73-136 3z" stroke-width="1.5" stroke-dasharray="55 3 28 4"/>
+    <path d="M7 37h14M157 85h16M45 12v12M132 101v13" stroke-width="2"/>
+  </g>
+  <text x="90" y="76" fill="#000" font-family="Georgia,serif" font-size="57" font-style="italic" font-weight="700" text-anchor="middle">B+</text>
+  <text x="90" y="95" fill="#000" font-family="monospace" font-size="8" font-weight="700" letter-spacing="3" text-anchor="middle">VERY GOOD</text>
+</svg>

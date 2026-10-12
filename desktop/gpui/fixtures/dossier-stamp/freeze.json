@@ -1,0 +1,48 @@
+{
+  "state": "FROZEN_FOR_PARENT_REVIEW",
+  "ownership": "Only new src/dossier_stamp.rs and fixtures/dossier-stamp; shared integration.patch unapplied",
+  "verified": {
+    "sourceBun": {
+      "pass": 4,
+      "fail": 0,
+      "assertions": 148
+    },
+    "exactFontOutlineAndLicenseRegeneration": "PASS, installed fontTools4.61.1",
+    "pythonSyntax": "PASS AST only, no bytecode writes",
+    "rustfmt": "PASS syntax-format only",
+    "integrationPatchApplyCheck": "PASS, unapplied"
+  },
+  "authoredRustTests": 7,
+  "rustCompilation": "NOT RUN; Root owns Cargo",
+  "mountedTests": "NOT RUN",
+  "nativeGpuPixels": "NOT RUN",
+  "freshBrowser": "NOT RUN; retained prior Source receipt only",
+  "dependenciesChanged": false,
+  "fontAssetsChanged": false,
+  "sourceCountSemanticsChanged": false,
+  "geometry": {
+    "declaredLineHeightPx": 13.2,
+    "declaredPaddingYPx": 2.4,
+    "declaredBorderHeightPx": 22,
+    "usedLineHeightPx": 13.1875,
+    "usedPaddingYPx": 2.390625,
+    "usedBorderHeightPx": 21.96875,
+    "width": "Actual registered original-font shape advance plus14trailing-inclusive tracking and20px padding/border; no receipt-count assumption"
+  },
+  "pending": [
+    "Root compile/scoped mounted tests",
+    "Root actual themed/DPR/native pixel and overflow comparison",
+    "Chrome hinting/resvg raster and Source horizontal inline quantization/GPUI fractional layout comparison"
+  ],
+  "sha256": {
+    "desktop/gpui/src/dossier_stamp.rs": "02e148677556cf5db9a4f0b13aef4373171a93c6e34888e901a510b1a6376ed3",
+    "desktop/gpui/fixtures/dossier-stamp/README.md": "c8b57c06d5d95be7f7bc60d6751bf39d370100a3cff482d9d6242f59747f8730",
+    "desktop/gpui/fixtures/dossier-stamp/Special-Elite-LICENSE.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "desktop/gpui/fixtures/dossier-stamp/extract-font.py": "bf9da74cafe1409cc43cead7e0b8d06b953a6d82c586e1ff34091b0b2ada44eb",
+    "desktop/gpui/fixtures/dossier-stamp/integration.patch": "56fc19efc5f5e6897c3c15dfb6bea3abe55f5b60e453d9f046d984ff2801eada",
+    "desktop/gpui/fixtures/dossier-stamp/outlines.json": "89df759aee3a8ccaeca831b79aa2580ace14bdb7679123d39e1db6acaecbd062",
+    "desktop/gpui/fixtures/dossier-stamp/source.json": "6c6325b55afd428cdf744892a1905c426075a8e899b511bebe1901c041037dc9",
+    "desktop/gpui/fixtures/dossier-stamp/source.test.ts": "41096b071379fb018c82d988b59807a8faebb0a4e8594f9666ab201f0fcd70ab",
+    "desktop/gpui/fixtures/dossier-stamp/stamp_tests.rs": "4fe0638e0a17343ee9cb40db751f481c779c03153ce56df5aba0a1e4bb5a96a3"
+  }
+}

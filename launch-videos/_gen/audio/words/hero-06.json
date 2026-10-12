@@ -1,0 +1,67 @@
+[
+ {
+  "text": "A",
+  "start": 0.38,
+  "end": 0.44
+ },
+ {
+  "text": "rubric",
+  "start": 0.52,
+  "end": 1.16
+ },
+ {
+  "text": "grades",
+  "start": 1.22,
+  "end": 1.6
+ },
+ {
+  "text": "you",
+  "start": 1.68,
+  "end": 1.84
+ },
+ {
+  "text": "on",
+  "start": 1.9,
+  "end": 1.98
+ },
+ {
+  "text": "the",
+  "start": 2.02,
+  "end": 2.1
+ },
+ {
+  "text": "target.",
+  "start": 2.18,
+  "end": 2.66
+ },
+ {
+  "text": "Not",
+  "start": 3.24,
+  "end": 3.5
+ },
+ {
+  "text": "on",
+  "start": 3.58,
+  "end": 3.72
+ },
+ {
+  "text": "how",
+  "start": 3.78,
+  "end": 4
+ },
+ {
+  "text": "fluent",
+  "start": 4.1,
+  "end": 4.56
+ },
+ {
+  "text": "you",
+  "start": 4.62,
+  "end": 4.7
+ },
+ {
+  "text": "sound.",
+  "start": 4.78,
+  "end": 5.12
+ }
+]

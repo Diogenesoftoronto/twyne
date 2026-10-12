@@ -1,0 +1,140 @@
+[
+  {
+    "path": "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
+    "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+    "ttcIndex": 0,
+    "family": "Liberation Sans",
+    "postscript": "LiberationSans",
+    "version": "Version 2.1.5",
+    "unitsPerEm": 2048,
+    "glyphs": [
+      {
+        "text": "\u2660",
+        "glyphName": "spade",
+        "glyphId": 2230,
+        "advanceUnits": 1088,
+        "advancePx": 5.949999999999999
+      },
+      {
+        "text": "\u2665",
+        "glyphName": "heart",
+        "glyphId": 2232,
+        "advanceUnits": 1216,
+        "advancePx": 6.6499999999999995
+      },
+      {
+        "text": "\u2666",
+        "glyphName": "diamond",
+        "glyphId": 2233,
+        "advanceUnits": 1045,
+        "advancePx": 5.71484375
+      },
+      {
+        "text": "\u2726",
+        "glyphName": null,
+        "glyphId": null,
+        "advanceUnits": null,
+        "advancePx": null
+      },
+      {
+        "text": "\u2663",
+        "glyphName": "club",
+        "glyphId": 2231,
+        "advanceUnits": 1344,
+        "advancePx": 7.35
+      }
+    ]
+  },
+  {
+    "path": "/nix/store/ji2jhzskgqcy3k199cv44fg2fiyplk7v-home-manager-path/share/fonts/truetype/Inter.ttc",
+    "sha256": "ea4e3d9970b9b6b566110a1b0e13635fe235280b83dd2443dcb3faca1e2456ef",
+    "ttcIndex": 0,
+    "family": "Inter",
+    "postscript": "Inter-Regular",
+    "version": "Version 4.001;git-9221beed3",
+    "unitsPerEm": 2048,
+    "glyphs": [
+      {
+        "text": "\u2660",
+        "glyphName": null,
+        "glyphId": null,
+        "advanceUnits": null,
+        "advancePx": null
+      },
+      {
+        "text": "\u2665",
+        "glyphName": "heart",
+        "glyphId": 1867,
+        "advanceUnits": 2094,
+        "advancePx": 11.4515625
+      },
+      {
+        "text": "\u2666",
+        "glyphName": null,
+        "glyphId": null,
+        "advanceUnits": null,
+        "advancePx": null
+      },
+      {
+        "text": "\u2726",
+        "glyphName": null,
+        "glyphId": null,
+        "advanceUnits": null,
+        "advancePx": null
+      },
+      {
+        "text": "\u2663",
+        "glyphName": null,
+        "glyphId": null,
+        "advanceUnits": null,
+        "advancePx": null
+      }
+    ]
+  },
+  {
+    "path": "/usr/share/fonts/adwaita-mono-fonts/AdwaitaMono-Regular.ttf",
+    "sha256": "4d3185765317b011b959ad2f6a404cd1e5d542ed13f120d1e8d1f5c7b9c99562",
+    "ttcIndex": 0,
+    "family": "Adwaita Mono",
+    "postscript": "Adwaita-Mono",
+    "version": "Version 32.4.0; ttfautohint (v1.8.4)",
+    "unitsPerEm": 1000,
+    "glyphs": [
+      {
+        "text": "\u2660",
+        "glyphName": "spade",
+        "glyphId": 2741,
+        "advanceUnits": 600,
+        "advancePx": 6.72
+      },
+      {
+        "text": "\u2665",
+        "glyphName": "heart",
+        "glyphId": 2746,
+        "advanceUnits": 600,
+        "advancePx": 6.72
+      },
+      {
+        "text": "\u2666",
+        "glyphName": "diamond",
+        "glyphId": 2747,
+        "advanceUnits": 600,
+        "advancePx": 6.72
+      },
+      {
+        "text": "\u2726",
+        "glyphName": "uni2726",
+        "glyphId": 6836,
+        "advanceUnits": 600,
+        "advancePx": 6.72
+      },
+      {
+        "text": "\u2663",
+        "glyphName": "club",
+        "glyphId": 2744,
+        "advanceUnits": 600,
+        "advancePx": 6.72
+      }
+    ]
+  }
+]

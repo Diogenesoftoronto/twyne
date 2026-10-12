@@ -1,0 +1,203 @@
+{
+  "source": "#text(\"Café 東京こんにちは世界 한글 中文 Ελληνικά 🦊\")\n= A source row\n// Source comment: Café = #text(\"m\")\n",
+  "sourceUnchanged": true,
+  "family": "Twyne Source",
+  "sourceSelectionBytes": {
+    "start": 94,
+    "end": 131
+  },
+  "canUndo": false,
+  "canRedo": false,
+  "commentBytesUnchanged": true,
+  "readonly": true,
+  "lines": [
+    {
+      "row": 0,
+      "glyphs": [
+        {
+          "character": "é",
+          "sourceByteOffset": 10,
+          "nativeCaret": {
+            "origin": {
+              "x": 124.80000305175781,
+              "y": 16.0
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 124.828125
+        },
+        {
+          "character": "東",
+          "sourceByteOffset": 13,
+          "nativeCaret": {
+            "origin": {
+              "x": 140.40000915527344,
+              "y": 16.0
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 140.4375
+        },
+        {
+          "character": "京",
+          "sourceByteOffset": 16,
+          "nativeCaret": {
+            "origin": {
+              "x": 153.40000915527344,
+              "y": 16.0
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 153.4375
+        }
+      ]
+    },
+    {
+      "row": 1,
+      "glyphs": [
+        {
+          "character": "=",
+          "sourceByteOffset": 79,
+          "nativeCaret": {
+            "origin": {
+              "x": 46.79999923706055,
+              "y": 37.4375
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 46.8125
+        }
+      ]
+    },
+    {
+      "row": 2,
+      "glyphs": [
+        {
+          "character": "/",
+          "sourceByteOffset": 94,
+          "nativeCaret": {
+            "origin": {
+              "x": 46.79999923706055,
+              "y": 58.875
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 46.8125
+        },
+        {
+          "character": "/",
+          "sourceByteOffset": 95,
+          "nativeCaret": {
+            "origin": {
+              "x": 54.599998474121094,
+              "y": 58.875
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 54.609375
+        },
+        {
+          "character": "m",
+          "sourceByteOffset": 106,
+          "nativeCaret": {
+            "origin": {
+              "x": 140.40000915527344,
+              "y": 58.875
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 140.40625
+        },
+        {
+          "character": "m",
+          "sourceByteOffset": 107,
+          "nativeCaret": {
+            "origin": {
+              "x": 148.20001220703125,
+              "y": 58.875
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 148.203125
+        },
+        {
+          "character": "é",
+          "sourceByteOffset": 116,
+          "nativeCaret": {
+            "origin": {
+              "x": 218.40003967285156,
+              "y": 58.875
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 218.40625
+        },
+        {
+          "character": "=",
+          "sourceByteOffset": 119,
+          "nativeCaret": {
+            "origin": {
+              "x": 234.0000457763672,
+              "y": 58.875
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 234.0
+        },
+        {
+          "character": "m",
+          "sourceByteOffset": 128,
+          "nativeCaret": {
+            "origin": {
+              "x": 304.2000427246094,
+              "y": 58.875
+            },
+            "size": {
+              "width": 0.0,
+              "height": 21.4375
+            }
+          },
+          "browserX": 304.203125
+        }
+      ]
+    },
+    {
+      "row": 3,
+      "glyphs": []
+    }
+  ],
+  "actualEditorRaster": true,
+  "selectedFaceProof": "native-selected-faces.json",
+  "boundary": "Quarter-shear native oblique; actual Chromium synthetic AA/hint raster remains distinct. Droid CJK/kana explicit; Hangul/emoji platform-dependent.",
+  "deviceScaleFactor": 2.0
+}

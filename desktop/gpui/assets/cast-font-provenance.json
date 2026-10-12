@@ -1,0 +1,216 @@
+{
+  "usage": "Cast symbol controls only, after unchanged DM Sans400 primary",
+  "helper": "theme::cast_badge_font()",
+  "fallbackOrder": [
+    "Inter",
+    "Liberation Sans",
+    "Adwaita Mono"
+  ],
+  "fontToolsVersion": "4.61.1",
+  "fonts": [
+    {
+      "file": "fonts/LiberationSans-Regular.ttf",
+      "sha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+      "source": "/usr/share/fonts/liberation-sans-fonts/LiberationSans-Regular.ttf",
+      "package": "Fedora liberation-sans-fonts, original face Version2.1.5",
+      "sourceSha256": "76d04c18ea243f426b7de1f3ad208e927008f961dc5945e5aad352d0dfde8ee8",
+      "licenseFile": "licenses/cast-liberation-sans-OFL.txt",
+      "licenseSha256": "93fed46019c38bbe566b479d22148e2e8a1e85ada614accb0211c37b2c61c19b",
+      "licenseSource": "/usr/share/licenses/liberation-sans-fonts/LICENSE",
+      "copy": "Byte-identical original TTF; no derivation",
+      "bytes": 410712,
+      "family": "Liberation Sans",
+      "postScriptName": "LiberationSans",
+      "version": "Version 2.1.5",
+      "copyright": "Digitized data copyright (c) 2010 Google Corporation. \nCopyright (c) 2012 Red Hat, Inc.",
+      "weight": 400,
+      "style": "normal",
+      "unitsPerEm": 2048,
+      "testGlyphs": {
+        "♠": {
+          "glyphId": 2230,
+          "advanceUnits": 1088
+        },
+        "♥": {
+          "glyphId": 2232,
+          "advanceUnits": 1216
+        },
+        "♦": {
+          "glyphId": 2233,
+          "advanceUnits": 1045
+        },
+        "✦": null,
+        "♣": {
+          "glyphId": 2231,
+          "advanceUnits": 1344
+        }
+      },
+      "tableSha256": {
+        "FFTM": "8efcceffca4ab101faf866e18e86a2c9396aee259735bcf061081e3b8b3afd2b",
+        "GDEF": "1693581d503201987f32f75794b5a442346d4544b444cda06018cdc032daf307",
+        "GPOS": "fa101b9b6874d48d3500203f8092820852178818b0fabe38776edbff97b2bb6a",
+        "GSUB": "6689d7e614c2070399df69f90b320c7077d1a48f01adb1e58d4a32b5e3873193",
+        "OS/2": "0fe422f83851ef360f9212fe862777d89b62ad3f05ed78f14a5baca670d57b82",
+        "cmap": "a2d9dbaa94232dbb2b811dae35320d7ba4c2bdc37d863d287c350bd0c5b5c8c5",
+        "cvt ": "71e7daad079c2bea66ddbc2c54492c1d937c60252ed38b257190b34917fe3c5b",
+        "fpgm": "84187f628d2064cf07fee7d7b3570d091b19ad75727c8f191c5e6e82fab3b907",
+        "gasp": "ed0c69fa6b09906a5907f5f21d01eb5f968ecb14e10f606ef09910a5d113419d",
+        "glyf": "907f66ed3fea9b4c6e44b5670cfb867ec31592036ae3884e3676228d51e5deab",
+        "head": "f81cbb165452661b398dc3ec39fb440a8fb9f2dff73abdca7392d58b1af4ec33",
+        "hhea": "e770211be3c39496f347d88e35a41f075436586aa67dac6b458d8f4e53840419",
+        "hmtx": "c9f473a8fd4df095d13fbffafccec051d1c33e69c690589dec702bdab327dda0",
+        "kern": "459c94be90c17daee93dc98d66c3b6da4ab66fc27f0323af5b35eb66eae96570",
+        "loca": "ffc8abde0c8e93ae33d599f4da107c50a8511927f0ee1bc7024bb975b99aafe9",
+        "maxp": "af199c256f40ded7f12f409e121dfbeb048c4ff079b31100e6f04c753423ad64",
+        "name": "403148ab3bee1c6f9930451e4ff3c40a2ce64c11cd0e822d6ed6e92d88de1e6c",
+        "post": "c7f3bf3f3bfa31f10918088363eb99bb75ccf741d91ba414b796dfc9a877798e",
+        "prep": "e55ed7af8410ac133a114e4a45357c172980999d29ba87cb2439cda7d04929c4"
+      }
+    },
+    {
+      "file": "fonts/Inter-Regular.ttf",
+      "sha256": "60bd88b53049e6951bdb056e49ed44b201da650e1f096c10453d961ee378c66d",
+      "source": "/nix/store/92yfgbmc9q083waxxg1nq5dncmjfpwfk-inter-4.1/share/fonts/truetype/Inter.ttc#face0",
+      "package": "Nix inter4.1; Regular face reports Version4.001/git9221beed3",
+      "sourceSha256": "ea4e3d9970b9b6b566110a1b0e13635fe235280b83dd2443dcb3faca1e2456ef",
+      "licenseFile": "licenses/cast-inter-OFL.txt",
+      "licenseSha256": "262481e844521b326f5ecd053e59b98c8b2da78c8ee1bdbb6e8174305e54935a",
+      "licenseSource": "https://raw.githubusercontent.com/rsms/inter/v4.1/LICENSE.txt",
+      "copy": "Original TTC face0 extracted to standalone TTF; every source table byte retained except required head.checkSumAdjustment",
+      "bytes": 411640,
+      "family": "Inter",
+      "postScriptName": "Inter-Regular",
+      "version": "Version 4.001;git-9221beed3",
+      "copyright": "Copyright 2016 The Inter Project Authors",
+      "weight": 400,
+      "style": "normal",
+      "unitsPerEm": 2048,
+      "testGlyphs": {
+        "♠": null,
+        "♥": {
+          "glyphId": 1867,
+          "advanceUnits": 2094
+        },
+        "♦": null,
+        "✦": null,
+        "♣": null
+      },
+      "tableSha256": {
+        "GDEF": "6d92538d22eb4d421c5bb782976efc2dbf339f46780a6ae0bc68294cbf4ca366",
+        "GPOS": "d6dce3fc1b1f88bd8f228c3ccbc257738bb34030060911dcaaa7ba085a350aee",
+        "GSUB": "1a1f9150d14b93bf32d7f2947624d80c732e5800294770808ce92e07b5e119de",
+        "OS/2": "f8e7f79e060685788fb8964d96c07ac7c0e07cd1845990d2a508c43e257e6ed2",
+        "cmap": "d191730840f297c90a9543ddd22e6920d3f02a246423e586bca3e38d01ae6943",
+        "cvt ": "a76f481d2928461595b149abb1b9a4ba18ffb2db1d00a2285760470341e6a1db",
+        "fpgm": "5864048b492a618ce83ae5ab1558d9c2ce49e54ee3a86323d6df54549d6ee1ac",
+        "gasp": "4ca731f86ad506ac0e320283dc9461926346de3c4d91d539ea7f6620d3826940",
+        "glyf": "fce470c42321296758c428b99a063955db4638ccc7802c1957fcfec1cdecac7b",
+        "head": "41e177cb4992730a94bdaac91dcb8a67c4e972d0ba3ce0a2ae7a828fc764afd2",
+        "hhea": "3390d9e80be820a2a1ba1e7c99693931aafcd29764ba287cda8f02719fdcdb1c",
+        "hmtx": "cdecf9a51fdaa78fa7b64fc9549efe98d7549a50bf402507854bc008e2913cae",
+        "loca": "90db6539e20e32b1f7bdd47f05a56404a4d050af88cc188e5c248e61accbe16f",
+        "maxp": "af114205e6b3b559b989d6d313eb5d6f7a194152e49d0d8f494a7b0e38a976c7",
+        "name": "e66b0614c955257387377ae4495fdeb4c26b42f20e31c37662a2ffa271860406",
+        "post": "86599bed0b2365da05c596176dd3afee23dc292f9a2ed25d49b31f2ce15f5b35",
+        "prep": "fd94f0339caa5b32ee6950191a81596c68ee8c3bcf2d62c98de635ba1436369d"
+      }
+    },
+    {
+      "file": "fonts/AdwaitaMono-Regular.ttf",
+      "sha256": "4d3185765317b011b959ad2f6a404cd1e5d542ed13f120d1e8d1f5c7b9c99562",
+      "source": "/usr/share/fonts/adwaita-mono-fonts/AdwaitaMono-Regular.ttf",
+      "package": "Fedora adwaita-mono-fonts, original face Version32.4.0",
+      "sourceSha256": "4d3185765317b011b959ad2f6a404cd1e5d542ed13f120d1e8d1f5c7b9c99562",
+      "licenseFile": "licenses/cast-adwaita-mono-OFL.txt",
+      "licenseSha256": "52579dd4ebbda8e5a9d314e395dbfe40de82b4b7b3007ec8458876823af8dddd",
+      "licenseSource": "/usr/share/licenses/adwaita-mono-fonts/LICENSE.md",
+      "copy": "Byte-identical original TTF; no derivation",
+      "bytes": 1394892,
+      "family": "Adwaita Mono",
+      "postScriptName": "Adwaita-Mono",
+      "version": "Version 32.4.0; ttfautohint (v1.8.4)",
+      "copyright": "Copyright 2015-2025, Renzhi Li (aka. Belleve Invis, belleve@typeof.net).",
+      "weight": 400,
+      "style": "normal",
+      "unitsPerEm": 1000,
+      "testGlyphs": {
+        "♠": {
+          "glyphId": 2741,
+          "advanceUnits": 600
+        },
+        "♥": {
+          "glyphId": 2746,
+          "advanceUnits": 600
+        },
+        "♦": {
+          "glyphId": 2747,
+          "advanceUnits": 600
+        },
+        "✦": {
+          "glyphId": 6836,
+          "advanceUnits": 600
+        },
+        "♣": {
+          "glyphId": 2744,
+          "advanceUnits": 600
+        }
+      },
+      "tableSha256": {
+        "DSIG": "cbbc48750debb8535093b3deaf88ac7f4cff87425576a58de2bac754acdb4616",
+        "GDEF": "c71dc272261a91b5d82c5789304ffa9a3765ea35f80574fd991048cc9c21cbf8",
+        "GPOS": "327004f46cf4939f15d01e5d4d67aaf96bc8109235a008f1b961a338d8d01675",
+        "GSUB": "1a920cf4ca39e9449a03f13ddbd19886cfb874cf27c649610b8511a82a0d5c0c",
+        "OS/2": "ead9079aa0e26d4cbf066ba69d255b851b71fa9747039167f38fd41dd553eea1",
+        "cmap": "2570488b8365a205aeaee00e0087da4db228edf321a1ad93c9dab33557b98176",
+        "cvt ": "21bd80d0c2f594a14f9f2a906872b94df404f9600f0240721ff5535f7414cfe9",
+        "fpgm": "9f2370625fcc8792a7917e307d8e21d59b35953127c373e5a649208f362777b5",
+        "gasp": "4ca731f86ad506ac0e320283dc9461926346de3c4d91d539ea7f6620d3826940",
+        "glyf": "d1b138c823f1ed8ed8c0e68473ba099074903d2179751e57ee21f459ffaebce3",
+        "head": "935f228cb65a0a12e8a6269dd7c04fb1d1c20c703eff9737fdd09bf5419a196a",
+        "hhea": "e6e6ebb4754d527e8d1ffdb18da0c0688d42d346568139b4a573dcd97923a1e0",
+        "hmtx": "363555e1713c339ff24b8f6a6a08e7eba529934e2bd132ef92c136bba9dbae0e",
+        "loca": "365433a9c49ca17cde2edc487c1a986deada082757bec9dbd6e79cde3b03f4ed",
+        "maxp": "65527179c64445143a51915c5e3c0c7a75732b5963f2cef8ee6303a833403595",
+        "name": "f3ab12235f1dfc8871bab09c47f84db09897dc6334f2be1a0bc803f2e6d527ae",
+        "post": "e3bc54d34a11201fc44dea66f62657f6324b89c7da499353598349098b9519bc",
+        "prep": "935a7b8f5da38911231033707fd8692dd6be8b541d0b8c7cef931d5c44d262c2"
+      }
+    }
+  ],
+  "originalGlyphs": [
+    {
+      "text": "♠",
+      "family": "Liberation Sans",
+      "glyphId": 2230,
+      "advanceAt11_2Px": 5.95
+    },
+    {
+      "text": "♥",
+      "family": "Inter",
+      "glyphId": 1867,
+      "advanceAt11_2Px": 11.4515625
+    },
+    {
+      "text": "♦",
+      "family": "Liberation Sans",
+      "glyphId": 2233,
+      "advanceAt11_2Px": 5.71484375
+    },
+    {
+      "text": "✦",
+      "family": "Adwaita Mono",
+      "glyphId": 6836,
+      "advanceAt11_2Px": 6.72
+    },
+    {
+      "text": "♣",
+      "family": "Liberation Sans",
+      "glyphId": 2231,
+      "advanceAt11_2Px": 7.35
+    }
+  ],
+  "browserEvidence": "fixtures/fonts/cast-glyphs/actual-app-fonts.json",
+  "sourceCss": "src/components/personas/personas-panel.tsx .cast-icon:11.2px/16.8px in21.6px bordered circle",
+  "sourceAndDefaultFamiliesAndTypstUnchanged": true,
+  "rasterBoundary": "Exact selected glyph/advance and actual nonzero Linux masks are checked. Chromium hinting/GPU pixels, other OS rendering, and actual assembled Cast painting are separate proof boundaries."
+}

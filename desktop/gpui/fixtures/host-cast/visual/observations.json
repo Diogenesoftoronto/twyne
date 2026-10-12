@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-04",
+  "native": "actual GPUI main ui-tests binary with frozen Cast typography correction, isolated Xvfb, source-derived fonts",
+  "reference": "owned anonymous original Chrome150 app, provider/account/sync traffic blocked",
+  "sizes": [
+    {
+      "width": 1280,
+      "height": 860
+    },
+    {
+      "width": 620,
+      "height": 860
+    }
+  ],
+  "fixture": "../../cast/native-retained.json",
+  "manuscript": "../../marginalia/browser-manuscript.html",
+  "observations": {
+    "manager_1280": "Assistance outer top161/bottom519 match reference after source line heights. Native first card bottom770 vs original766; New button starts699 vs original696.",
+    "manager_620": "Header action and assistance wrapping differ. Source Reset defaults stays two lines; native wraps defaults within word. Native second assistance May propose wraps to another row while source fits.",
+    "board": "Panel/control geometry is inspectable. Reference provider actions remain enabled while native actions are capability-disabled. Compositor command-row states differ, so manuscript vertical coordinates are not a matched-state comparison.",
+    "analysis": "Native retained-analysis snapshots only; no same-data original analysis screenshot here."
+  },
+  "acceptance": "Partial visual evidence only. No exact pixel parity or provider/device/install proof claimed."
+}

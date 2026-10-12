@@ -1,0 +1,75 @@
+{
+  "suffix": "Cinematic 35mm film look, fine grain, warm tungsten light. Subtle, physically plausible motion only. Any writing stays illegible. No faces, no text overlays, no new objects appearing.",
+  "videos": [
+    {
+      "id": "v-desk",
+      "image": "desk-typewriter",
+      "resolution": "1080p",
+      "duration": "8",
+      "prompt": "Very slow cinematic push-in toward the typewriter. The brass lamp's warm light flickers almost imperceptibly, thin steam curls up from the coffee cup, dust motes drift through the lamp light. The sheet in the typewriter stays blank. The room is empty and quiet, faint clock ticking."
+    },
+    {
+      "id": "v-bullpen",
+      "image": "bullpen",
+      "resolution": "1080p",
+      "duration": "8",
+      "prompt": "Slow steady dolly forward along the long oak table toward the tall windows. Dust motes drift in the warm light, the lamps glow, a curtain stirs slightly. The room stays empty; no people appear. Soft distant city ambience."
+    },
+    {
+      "id": "v-manuscript",
+      "image": "finished-manuscript",
+      "resolution": "1080p",
+      "duration": "6",
+      "prompt": "Dawn light slowly brightens and warms across the manuscript stack, shadows gently shorten, a very slow push-in. No people. Peaceful morning ambience with faint birdsong."
+    },
+    {
+      "id": "v-press",
+      "image": "press",
+      "resolution": "720p",
+      "duration": "6",
+      "prompt": "The rotary press runs at full speed, the ribbon of newsprint racing over the steel rollers, folded newspapers stacking rapidly on the conveyor while the gloved hand squares the stack. Black and white 1950s newsreel footage with film flicker. Loud rhythmic mechanical press sound. Monochrome only."
+    },
+    {
+      "id": "v-sceptique",
+      "image": "persona-sceptique",
+      "resolution": "720p",
+      "duration": "5",
+      "prompt": "The hand firmly draws a red pencil circle around one line of the typed page, then taps the pencil once on the paper. Only the hand moves. Static camera with a very slight push-in. Pencil scratching on paper."
+    },
+    {
+      "id": "v-encourageante",
+      "image": "persona-encourageante",
+      "resolution": "720p",
+      "duration": "5",
+      "prompt": "The hands gently lift the page a little higher toward the lamp, and the warm light glows through the paper. Tender, slow movement. Static camera. Soft paper rustle."
+    },
+    {
+      "id": "v-athenaeum",
+      "image": "persona-athenaeum",
+      "resolution": "720p",
+      "duration": "5",
+      "prompt": "The hand writes a short line on the index card with the fountain pen, unhurried and exact. Static camera. Nib scratching quietly, a clock ticking."
+    },
+    {
+      "id": "v-lestylo",
+      "image": "persona-lestylo",
+      "resolution": "720p",
+      "duration": "5",
+      "prompt": "The hand drags the blue pencil in one firm straight strike-through across a phrase on the galley proof, then lifts the pencil away. Static camera, hard overhead lamp. A crisp pencil stroke sound."
+    },
+    {
+      "id": "v-lecteur",
+      "image": "persona-lecteur",
+      "resolution": "720p",
+      "duration": "5",
+      "prompt": "The man turns the newspaper page on his knee while city lights stream past outside the train window. The carriage rocks gently. Train rumble and paper rustle."
+    },
+    {
+      "id": "v-blank-vertical",
+      "image": "blank-page-vertical",
+      "resolution": "720p",
+      "duration": "5",
+      "prompt": "Top-down view, very slow push-in on the blank sheet. The warm lamp light breathes slightly, and the red pencil rolls a few centimetres across the desk. The paper stays completely blank."
+    }
+  ]
+}

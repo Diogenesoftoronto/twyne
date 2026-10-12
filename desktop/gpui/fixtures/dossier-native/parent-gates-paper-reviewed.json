@@ -1,0 +1,34 @@
+{
+  "status": "pass",
+  "run": "2026-10-05 reviewed paper/textarea/pointer changes",
+  "output": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-padding-workflow-f54dee7de7",
+  "acceptance": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-padding-workflow-f54dee7de7/acceptance.json",
+  "binarySha256": "7a0c91bf9163996133fb43750721dbd48bcd30514683d06653520cdf60cebef8",
+  "fixtureSha256": "8a9cc13b4f2c084a54759e9a4a4699e246224363aec8a8af0c99957c2a6a6479",
+  "checks": [
+    "Actual imported copy preserves nonempty authored source, formatting, #let and exact whitespace",
+    "Unblurred final title survives actual Escape Cancel in exact create-scope recovery without filing",
+    "Actual local helper projects nonempty HTML through Write/Save while retaining authored source/body",
+    "Actual Create reopen restores the exact native input from the same recovery identity",
+    "All ten actual roman controls navigate the original questions and retain unblurred multiline recovery",
+    "Actual Send to press durably files Create and clears only its recovery; nonempty source/body/HTML stay exact",
+    "Same-base Refine Cancel/reopen restores actual pending title/goal and preserves the saved manuscript",
+    "Actual Refine filing updates brief metadata while canonical source/body/projected HTML/import bytes stay exact",
+    "Actual focused Ctrl-Q exits zero without entity leaks and durably retains the final unblurred textarea",
+    "Fresh actual process restores exact scoped draft and filed metadata with the same nonempty canonical manuscript",
+    "Second real Cancel/Ctrl-Q exits cleanly without altering the saved manuscript"
+  ],
+  "testedSourceHashes": {
+    "desktop/gpui/src/dossier_view.rs": "8018d5b3c3c482d974852f7179ff815a19ab6b3c8b4001c082ba55b2b6cb6a83",
+    "desktop/gpui/src/dossier_paper.rs": "b153dfc002f7ac60f53f64fde5e814d16396bb958a738cb136008e2f57d86e4e",
+    "desktop/gpui/src/editor/view_math_source.rs": "635f48f44f30f48d6eae81fef4f0bf4da6a73eeb6c1cb826ebf4ea422b1a47b5",
+    "desktop/gpui/src/app.rs": "6a28744af3e10c5ba225a9a774003b74ceb4278b9969fed32b0b0a9d94a163d5"
+  },
+  "driverSha256": "a5bdb6b9b905667af78c7faa9f23532946570f48cc6e576b21dc7a6f3a737f27",
+  "driverObservation": "Clicks require unchanged target/question/sheet bounds in two fresh captured native frames. One stale geometry file cannot satisfy stability.",
+  "boundaries": [
+    "Actual owned X11/XTEST form/filing/recovery and two clean process exits",
+    "Later application math-host integration is not in this binary",
+    "No native/browser pixel-parity, provider, Proof/PDF, Wayland or other OS claim"
+  ]
+}

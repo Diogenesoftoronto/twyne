@@ -84,9 +84,14 @@ async function loadMcpTools(): Promise<ToolSet> {
     const wanted = settings.mcpServers.some(
       (s) => s.enabled && s.exposeToModel && s.url.trim(),
     );
-    if (!wanted) return {};
+    const { accountKnowledgeTools } = await import("./account-knowledge");
+    const accountTools = await accountKnowledgeTools().catch(() => ({}));
+    if (!wanted) return accountTools;
     const { buildMcpToolSet, mcpConvexClient } = await import("./mcp-research");
-    return await buildMcpToolSet(settings, mcpConvexClient());
+    return {
+      ...accountTools,
+      ...(await buildMcpToolSet(settings, mcpConvexClient())),
+    };
   } catch {
     return {};
   }

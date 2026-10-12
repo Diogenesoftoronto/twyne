@@ -1,0 +1,281 @@
+{
+  "provenance": "Executed original TS detectCitations/formatCitation/footnoteCite/buildBibEntryFromFormattedCitation/targetKindLabel with isolated fixture data; no provider or browser.",
+  "sourceSha256": "a194b48176ba8ccef5a53b765d09cc23d59971cf3c4a59526c14f5ce0c560434",
+  "scope": "original/path/folio:café",
+  "text": "A retained example cites https://example.org/new-paper/ and DOI 10.1000/182. Another source is (Doe, 2024).",
+  "detected": [
+    {
+      "id": "url-25",
+      "text": "https://example.org/new-paper/",
+      "from": 25,
+      "to": 55,
+      "type": "url",
+      "lookupUrl": "https://example.org/new-paper/"
+    },
+    {
+      "id": "doi-64",
+      "text": "10.1000/182",
+      "from": 64,
+      "to": 75,
+      "type": "doi",
+      "lookupUrl": "https://doi.org/10.1000/182"
+    },
+    {
+      "id": "ay-95",
+      "text": "(Doe, 2024)",
+      "from": 95,
+      "to": 106,
+      "type": "author-year",
+      "lookupUrl": "https://scholar.google.com/scholar?q=Doe%202024",
+      "metadata": {
+        "author": "Doe",
+        "year": "2024"
+      }
+    }
+  ],
+  "formatted": {
+    "mla": [
+      {
+        "index": 0,
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "citation": "An older attribution. \"Retained source title.\" A retained publisher, 2022, example.org · accessed 2/1/2026.",
+        "footnote": "(An older attribution 27)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 1,
+        "id": "background-retained",
+        "folioId": "original/path/folio:café",
+        "citation": "\"Retained background source.\" example.net · accessed 2/1/2026.",
+        "footnote": "(Anonymous )",
+        "normalizedUrl": "example.net/claim"
+      },
+      {
+        "index": 2,
+        "id": "source-existing",
+        "folioId": "unmounted/foreign",
+        "citation": "An older attribution. \"Foreign source with the same ID and URL.\" A retained publisher, 2022, example.org · accessed 2/1/2026.",
+        "footnote": "(An older attribution 27)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 3,
+        "id": "unscoped",
+        "folioId": "",
+        "citation": "An older attribution. \"Explicitly unscoped.\" A retained publisher, 2022, example.org · accessed 2/1/2026.",
+        "footnote": "(An older attribution 27)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 6,
+        "id": "foreign-alias",
+        "folioId": "unmounted/foreign",
+        "citation": "An older attribution. \"Foreign source with the same ID and URL.\" A retained publisher, 2022, example.org · accessed 2/1/2026.",
+        "footnote": "(An older attribution 27)",
+        "normalizedUrl": "example.org/report"
+      }
+    ],
+    "apa": [
+      {
+        "index": 0,
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "citation": "An older attribution (2022). Retained source title. A retained publisher. Retrieved from https://EXAMPLE.org/report/?old=1#retained",
+        "footnote": "(An older attribution, 2022)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 1,
+        "id": "background-retained",
+        "folioId": "original/path/folio:café",
+        "citation": "Retained background source. Retrieved from https://example.net/claim",
+        "footnote": "(Anonymous, n.d.)",
+        "normalizedUrl": "example.net/claim"
+      },
+      {
+        "index": 2,
+        "id": "source-existing",
+        "folioId": "unmounted/foreign",
+        "citation": "An older attribution (2022). Foreign source with the same ID and URL. A retained publisher. Retrieved from https://EXAMPLE.org/report/?old=1#retained",
+        "footnote": "(An older attribution, 2022)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 3,
+        "id": "unscoped",
+        "folioId": "",
+        "citation": "An older attribution (2022). Explicitly unscoped. A retained publisher. Retrieved from https://EXAMPLE.org/report/?old=1#retained",
+        "footnote": "(An older attribution, 2022)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 6,
+        "id": "foreign-alias",
+        "folioId": "unmounted/foreign",
+        "citation": "An older attribution (2022). Foreign source with the same ID and URL. A retained publisher. Retrieved from https://EXAMPLE.org/report/?old=1#retained",
+        "footnote": "(An older attribution, 2022)",
+        "normalizedUrl": "example.org/report"
+      }
+    ],
+    "chicago": [
+      {
+        "index": 0,
+        "id": "source-existing",
+        "folioId": "original/path/folio:café",
+        "citation": "Cached original fixture citation.",
+        "footnote": "(An older attribution, 2022)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 1,
+        "id": "background-retained",
+        "folioId": "original/path/folio:café",
+        "citation": "\"Retained background source.\" https://example.net/claim. Accessed 2/1/2026.",
+        "footnote": "(Anonymous, n.d.)",
+        "normalizedUrl": "example.net/claim"
+      },
+      {
+        "index": 2,
+        "id": "source-existing",
+        "folioId": "unmounted/foreign",
+        "citation": "Cached original fixture citation.",
+        "footnote": "(An older attribution, 2022)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 3,
+        "id": "unscoped",
+        "folioId": "",
+        "citation": "Cached original fixture citation.",
+        "footnote": "(An older attribution, 2022)",
+        "normalizedUrl": "example.org/report"
+      },
+      {
+        "index": 6,
+        "id": "foreign-alias",
+        "folioId": "unmounted/foreign",
+        "citation": "Cached original fixture citation.",
+        "footnote": "(An older attribution, 2022)",
+        "normalizedUrl": "example.org/report"
+      }
+    ]
+  },
+  "copyAll": {
+    "mla": "An older attribution. \"Retained source title.\" A retained publisher, 2022, example.org · accessed 2/1/2026.\n\n\"Retained background source.\" example.net · accessed 2/1/2026.",
+    "apa": "An older attribution (2022). Retained source title. A retained publisher. Retrieved from https://EXAMPLE.org/report/?old=1#retained\n\nRetained background source. Retrieved from https://example.net/claim",
+    "chicago": "Cached original fixture citation.\n\n\"Retained background source.\" https://example.net/claim. Accessed 2/1/2026."
+  },
+  "built": [
+    {
+      "detectedId": "url-25",
+      "entry": {
+        "id": "ai-fmt-original-path-folio-caf--url-25",
+        "title": "https://example.org/new-paper/",
+        "url": "https://example.org/new-paper/",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000
+      }
+    },
+    {
+      "detectedId": "doi-64",
+      "entry": {
+        "id": "ai-fmt-original-path-folio-caf--doi-64",
+        "title": "10.1000/182",
+        "url": "https://doi.org/10.1000/182",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000
+      }
+    },
+    {
+      "detectedId": "ay-95",
+      "entry": {
+        "id": "ai-fmt-original-path-folio-caf--ay-95",
+        "title": "(Doe, 2024)",
+        "url": "https://scholar.google.com/scholar?q=Doe%202024",
+        "folioId": "original/path/folio:café",
+        "provenance": "writer",
+        "accessedAt": 1770000000000,
+        "createdAt": 1770000000000
+      }
+    }
+  ],
+  "boardAppend": {
+    "existing": [
+      {
+        "id": "url-25",
+        "text": "https://example.org/new-paper/",
+        "from": 25,
+        "to": 55,
+        "type": "url",
+        "lookupUrl": "https://example.org/new-paper/"
+      }
+    ],
+    "incoming": [
+      {
+        "id": "url-25",
+        "text": "https://example.org/new-paper/",
+        "from": 25,
+        "to": 55,
+        "type": "url",
+        "lookupUrl": "https://example.org/new-paper/"
+      },
+      {
+        "id": "doi-64",
+        "text": "10.1000/182",
+        "from": 64,
+        "to": 75,
+        "type": "doi",
+        "lookupUrl": "https://doi.org/10.1000/182"
+      },
+      {
+        "id": "doi-64",
+        "text": "10.1000/182",
+        "from": 64,
+        "to": 75,
+        "type": "doi",
+        "lookupUrl": "https://doi.org/10.1000/182"
+      }
+    ],
+    "expectedIds": [
+      "url-25",
+      "doi-64",
+      "doi-64"
+    ],
+    "originalSource": "const existingIds = new Set(store.citations.map((c) => c.id));\n        const newCitations = detail.filter((c) => !existingIds.has(c.id));"
+  },
+  "targetLabels": [
+    {
+      "kind": "quote",
+      "label": "Quote"
+    },
+    {
+      "kind": "work",
+      "label": "Film / book / work"
+    },
+    {
+      "kind": "person",
+      "label": "Person"
+    },
+    {
+      "kind": "statistic",
+      "label": "Statistic"
+    },
+    {
+      "kind": "claim",
+      "label": "Claim"
+    },
+    {
+      "kind": "event",
+      "label": "Event"
+    },
+    {
+      "kind": "future-kind",
+      "label": "Source"
+    }
+  ]
+}

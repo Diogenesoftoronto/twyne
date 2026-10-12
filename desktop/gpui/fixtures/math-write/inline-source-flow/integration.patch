@@ -1,0 +1,506 @@
+--- a/desktop/gpui/src/editor/view.rs
++++ b/desktop/gpui/src/editor/view.rs
+@@ -47,4 +47,6 @@
+ mod math_source;
+ pub use math_source::{MathSourceHostContext, MathSourcePreflight};
++#[path = "math_source_flow.rs"]
++mod math_source_flow;
+ #[path = "view_notes.rs"]
+ mod notes;
+@@ -288,4 +290,5 @@
+     comment_hover: Option<Arc<str>>,
+     notes: notes::NotesState,
++    inline_math_flow: math_source_flow::InlineMathFlow,
+     math_source: math_source::MathSourceHostState,
+     blocks: RefCell<HashMap<NodePath, Arc<RichBlock>>>,
+@@ -339,4 +342,5 @@
+             comment_hover: None,
+             notes: notes::NotesState::default(),
++            inline_math_flow: math_source_flow::InlineMathFlow::default(),
+             math_source: math_source::MathSourceHostState::default(),
+             blocks: RefCell::new(HashMap::new()),
+@@ -1108,4 +1112,5 @@
+             0
+         };
++        let math_form = self.inline_math_flow.for_block(block, self.document());
+         let matches_context = |cached: &CachedLayout| {
+             cached.node.shares_storage_with(&block.node)
+@@ -1114,4 +1119,5 @@
+                 && cached.opening == self.opening
+                 && cached.atom_revision == atom_revision
++                && cached.math_form == math_form
+                 && cached.carry == carry
+                 && cached.typography == typography
+@@ -1143,4 +1149,5 @@
+                 note_counts,
+                 hyphenation: &hyphenation,
++                math_form: math_form.as_ref(),
+             },
+             window,
+@@ -1169,4 +1176,5 @@
+                 opening: self.opening,
+                 atom_revision,
++                math_form,
+                 carry,
+                 typography,
+@@ -1599,9 +1607,10 @@
+ impl Render for RichEditorView {
+     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
++        self.sync_math_source_target(cx);
++        self.sync_math_source_read_only(cx);
++        self.prepare_inline_math_form(window, cx);
+         self.prepare_pagination_frame();
+         self.prepare_drag_frame(window, cx);
+         self.prepare_note_frame(window, cx);
+-        self.sync_math_source_target(cx);
+-        self.sync_math_source_read_only(cx);
+         let first_paragraph = self.document().nodes().iter().position(|node| {
+             node.as_element()
+@@ -1758,4 +1767,5 @@
+     opening: OpeningInitial,
+     atom_revision: u64,
++    math_form: Option<math_source_flow::BlockFormReservation>,
+     carry: FloatReservation,
+     typography: TypographyContext,
+@@ -1796,4 +1806,7 @@
+     paint_height: Option<Pixels>,
+     image: Option<AtomRenderImage>,
++    math_form: Option<math_source_flow::InlineMathPiece>,
++    /// The intrinsic run box is used only on rows containing an open form.
++    math_row_height: Option<Pixels>,
+     /// Original scalar boundaries in the shaped, view-only display string.
+     display_boundaries: Option<Arc<[usize]>>,
+@@ -1982,5 +1995,6 @@
+             if offset >= piece.range.start && offset <= piece.range.end {
+                 let x = piece.x_for_offset(offset - piece.range.start);
+-                return Some(point(piece.origin.x + x, self.lines[piece.line].y));
++                let (y, _) = math_source_flow::caret_y_height(piece, &self.lines[piece.line]);
++                return Some(point(piece.origin.x + x, y));
+             }
+         }
+@@ -1988,4 +2002,9 @@
+     }
+     fn line_height_at(&self, offset: usize) -> Pixels {
++        if let Some(piece) = self.pieces.iter().find(|piece| {
++            !piece.range.is_empty() && offset >= piece.range.start && offset <= piece.range.end
++        }) {
++            return math_source_flow::caret_y_height(piece, &self.lines[piece.line]).1;
++        }
+         self.lines
+             .iter()
+@@ -2009,4 +2028,5 @@
+     comment_buttons: Vec<AnyElement>,
+     note_buttons: Vec<AnyElement>,
++    inline_math_form: Option<math_source_flow::InlineMathChild>,
+     math_buttons: Vec<AnyElement>,
+ }
+@@ -2168,5 +2188,10 @@
+                     + point(
+                         piece.origin.x + chip.font_size * 0.25,
+-                        line.y + line.height / 2. - chip.font_size * 0.25,
++                        piece
++                            .math_row_height
++                            .map_or(line.y + line.height / 2., |height| {
++                                piece.origin.y + height / 2.
++                            })
++                            - chip.font_size * 0.25,
+                     );
+                 if !quiet {
+@@ -2234,4 +2259,11 @@
+         let math_buttons =
+             math_source::anchor_buttons(&self.view, &layout, self.global_start, bounds, window, cx);
++        let mut inline_math_form = {
++            let view = self.view.read(cx);
++            view.inline_math_child(&layout, bounds.origin, cx)
++        };
++        if let Some(form) = &mut inline_math_form {
++            form.prepaint(window, cx);
++        }
+         BlockPrepaint {
+             bounds,
+@@ -2240,4 +2272,5 @@
+             comment_buttons,
+             note_buttons,
++            inline_math_form,
+             math_buttons,
+         }
+@@ -2293,8 +2326,9 @@
+                 let mut color: Hsla = rgb(colors.vermilion).into();
+                 color.a = 0.18;
++                let ink = math_source_flow::selection_bounds(piece, line);
+                 window.paint_quad(fill(
+                     Bounds::new(
+-                        bounds.origin + point(piece.origin.x + x(from), line.y),
+-                        size((x(to) - x(from)).max(px(1.)), line.height),
++                        bounds.origin + point(piece.origin.x + x(from), ink.origin.y),
++                        size((x(to) - x(from)).max(px(1.)), ink.size.height),
+                     ),
+                     color,
+@@ -2303,5 +2337,8 @@
+             let origin = bounds.origin + piece.origin + point(piece.inset, px(0.));
+             let line = &state.layout.lines[piece.line];
+-            let paint_height = piece.paint_height.unwrap_or(line.height);
++            let paint_height = piece
++                .paint_height
++                .or(piece.math_row_height)
++                .unwrap_or(line.height);
+             let note_shape = piece.note.as_ref().map(|marker| {
+                 notes::paint_marker(
+@@ -2323,9 +2360,30 @@
+                 .and_then(|(_, tracking)| tracking.as_ref())
+                 .or(piece.tracking.as_ref());
+-            if let Some(tracking) = tracking {
+-                for part in &tracking.parts {
+-                    let part_origin = origin + point(part.x, px(0.));
+-                    let _ = part.shape.paint_background(
+-                        part_origin,
++            // The real child paints an open form. Its placeholder carries
++            // inherited font metrics, never manuscript or preview text.
++            if piece.math_form.is_none() {
++                if let Some(tracking) = tracking {
++                    for part in &tracking.parts {
++                        let part_origin = origin + point(part.x, px(0.));
++                        let _ = part.shape.paint_background(
++                            part_origin,
++                            paint_height,
++                            TextAlign::Left,
++                            None,
++                            window,
++                            cx,
++                        );
++                        let _ = part.shape.paint(
++                            part_origin,
++                            paint_height,
++                            TextAlign::Left,
++                            None,
++                            window,
++                            cx,
++                        );
++                    }
++                } else {
++                    let _ = shape.paint_background(
++                        origin,
+                         paint_height,
+                         TextAlign::Left,
+@@ -2334,17 +2392,6 @@
+                         cx,
+                     );
+-                    let _ = part.shape.paint(
+-                        part_origin,
+-                        paint_height,
+-                        TextAlign::Left,
+-                        None,
+-                        window,
+-                        cx,
+-                    );
++                    let _ = shape.paint(origin, paint_height, TextAlign::Left, None, window, cx);
+                 }
+-            } else {
+-                let _ =
+-                    shape.paint_background(origin, paint_height, TextAlign::Left, None, window, cx);
+-                let _ = shape.paint(origin, paint_height, TextAlign::Left, None, window, cx);
+             }
+             if marked.as_ref().is_some_and(|range| {
+@@ -2353,5 +2400,9 @@
+                 window.paint_quad(fill(
+                     Bounds::new(
+-                        bounds.origin + point(piece.origin.x, line.y + line.height - px(2.)),
++                        bounds.origin
++                            + point(
++                                piece.origin.x,
++                                math_source_flow::selection_bounds(piece, line).bottom() - px(2.),
++                            ),
+                         size(piece.width(), px(1.)),
+                     ),
+@@ -2368,4 +2419,7 @@
+         for button in &mut state.note_buttons {
+             button.paint(window, cx);
++        }
++        if let Some(form) = &mut state.inline_math_form {
++            form.paint(window, cx);
+         }
+         for button in &mut state.math_buttons {
+@@ -2895,4 +2949,5 @@
+     note_counts: [usize; 2],
+     hyphenation: &'a Arc<Hyphenation>,
++    math_form: Option<&'a math_source_flow::BlockFormReservation>,
+ }
+ 
+@@ -2912,4 +2967,5 @@
+         mut note_counts,
+         hyphenation,
++        math_form: reserved_form,
+     } = options;
+     let colors = *theme::palette(cx);
+@@ -3091,4 +3147,5 @@
+         }
+         let mut image = None;
++        let mut math_form = None;
+         let mut note = false;
+         let mut note_reference = None;
+@@ -3105,5 +3162,12 @@
+                     continue;
+                 }
+-                if let NodeKind::Note(kind) = element.kind {
++                if let Some(reserved) =
++                    reserved_form.filter(|reserved| reserved.matches_atom(cursor, node))
++                {
++                    math_form = Some(reserved.measured.clone());
++                    // Keep inherited run metrics for the source caret. The
++                    // saved equation renderer and fallback are both hidden.
++                    (String::new(), true)
++                } else if let NodeKind::Note(kind) = element.kind {
+                     note = true;
+                     face.family = TYPEWRITER_FONT.into();
+@@ -3278,5 +3342,5 @@
+                 continue;
+             }
+-            let whitespace = token.chars().all(char::is_whitespace);
++            let whitespace = math_form.is_none() && token.chars().all(char::is_whitespace);
+             let (rendered, mut display_boundaries) = if uppercase && !object {
+                 let mut rendered = String::with_capacity(token.len());
+@@ -3303,19 +3367,27 @@
+                 strikethrough: strike,
+             };
+-            let shape = contextual_shapes
+-                .get_mut(token_index)
+-                .and_then(Option::take)
+-                .map(|context| {
+-                    display_boundaries = context.display_boundaries;
+-                    context.shape
+-                })
+-                .unwrap_or_else(|| {
+-                    window.text_system().shape_line(
+-                        SharedString::from(rendered),
+-                        px(font_size),
+-                        std::slice::from_ref(&text_run),
+-                        None,
+-                    )
+-                });
++            let shape = if math_form.is_some() {
++                let mut strut_run = text_run.clone();
++                strut_run.len = 1;
++                window
++                    .text_system()
++                    .shape_line(" ".into(), px(font_size), &[strut_run], None)
++            } else {
++                contextual_shapes
++                    .get_mut(token_index)
++                    .and_then(Option::take)
++                    .map(|context| {
++                        display_boundaries = context.display_boundaries;
++                        context.shape
++                    })
++                    .unwrap_or_else(|| {
++                        window.text_system().shape_line(
++                            SharedString::from(rendered),
++                            px(font_size),
++                            std::slice::from_ref(&text_run),
++                            None,
++                        )
++                    })
++            };
+             let tracking = (spacing != px(0.)).then(|| Arc::new(TrackedText::new(&shape, spacing)));
+             let text_width = shape.width
+@@ -3323,7 +3395,12 @@
+                     .as_ref()
+                     .map_or(px(0.), |tracking| tracking.shift_at(shape.text.len()));
+-            let piece_width = image
+-                .as_ref()
+-                .map_or(text_width + inset * 2., |image| px(image.width_px));
++            let piece_width = math_form.as_ref().map_or_else(
++                || {
++                    image
++                        .as_ref()
++                        .map_or(text_width + inset * 2., |image| px(image.width_px))
++                },
++                |form| form.size.width,
++            );
+             let float_initial = initial
+                 .as_ref()
+@@ -3357,9 +3434,14 @@
+                 );
+             }
+-            let height = image
+-                .as_ref()
+-                .map_or(px(font_size * base_height / base_size), |image| {
+-                    px(image.height_px).max(px(font_size * base_height / base_size))
+-                });
++            let intrinsic_height = px(font_size * base_height / base_size);
++            let caret = math_source_flow::NativeStrut::from_shape(&shape, intrinsic_height);
++            let height = math_form.as_ref().map_or_else(
++                || {
++                    image.as_ref().map_or(intrinsic_height, |image| {
++                        px(image.height_px).max(intrinsic_height)
++                    })
++                },
++                |form| form.size.height,
++            );
+             let styled = StyledPiece {
+                 piece: Piece {
+@@ -3388,5 +3470,5 @@
+                     visual_width: if hidden_initial {
+                         Some(reserve)
+-                    } else if tracking.is_some() || note || image.is_some() {
++                    } else if tracking.is_some() || note || image.is_some() || math_form.is_some() {
+                         Some(piece_width)
+                     } else {
+@@ -3400,4 +3482,11 @@
+                     }),
+                     image: image.clone(),
++                    math_form: math_form
++                        .as_ref()
++                        .map(|form| math_source_flow::InlineMathPiece {
++                            measured: form.clone(),
++                            caret,
++                        }),
++                    math_row_height: None,
+                     display_boundaries,
+                     tracking,
+@@ -3454,4 +3543,5 @@
+         reserve_height,
+         cursor,
++        reserved_form.is_some(),
+         window,
+     );
+@@ -3494,4 +3584,5 @@
+     reserve: Pixels,
+     reserve_height: Pixels,
++    math_baseline: Option<math_source_flow::RowBaseline>,
+ ) {
+     let last = pieces.len();
+@@ -3536,5 +3627,18 @@
+         };
+         piece.origin.x += shift;
+-        if let Some(image) = &piece.image {
++        if let Some(row) = math_baseline {
++            let baseline = y + row.above;
++            if let Some(form) = &piece.math_form {
++                piece.origin.y = baseline - form.measured.baseline;
++            } else if let Some(image) = &piece.image {
++                piece.origin.y = baseline - px(image.baseline_px);
++            } else {
++                let strut = math_source_flow::NativeStrut::from_shape(
++                    &piece.shape,
++                    piece.math_row_height.unwrap_or(height),
++                );
++                piece.origin.y = baseline - strut.baseline + piece.baseline_shift;
++            }
++        } else if let Some(image) = &piece.image {
+             piece.origin.y = y + (height - ascent - descent) / 2. + ascent - px(image.baseline_px);
+         } else {
+--- a/desktop/gpui/src/editor/paragraph_flow.rs
++++ b/desktop/gpui/src/editor/paragraph_flow.rs
+@@ -301,4 +301,7 @@
+     pieces: Vec<Piece>,
+     lines: Vec<VisualLine>,
++    measure_inline_form: bool,
++    math_row: super::math_source_flow::InlineRow,
++    intrinsic_heights: Vec<Pixels>,
+ }
+ 
+@@ -315,4 +318,8 @@
+ 
+     fn place(&mut self, mut styled: StyledPiece) {
++        if self.measure_inline_form {
++            self.math_row.include(&styled.piece, styled.line_height);
++            self.intrinsic_heights.push(styled.line_height);
++        }
+         let piece = &mut styled.piece;
+         let indent = if self.y < self.reserve_height {
+@@ -335,4 +342,16 @@
+ 
+     fn finish(&mut self, end: usize, wrapped: bool) {
++        let math_baseline = self.math_row.finish();
++        if let Some(row) = math_baseline {
++            self.height = self.height.max(row.height());
++            for (piece, height) in self.pieces[self.first..]
++                .iter_mut()
++                .zip(&self.intrinsic_heights[self.first..])
++            {
++                if !piece.float_initial {
++                    piece.math_row_height = Some(*height);
++                }
++            }
++        }
+         finish_line(
+             &mut self.pieces,
+@@ -347,4 +366,5 @@
+             self.reserve,
+             self.reserve_height,
++            math_baseline,
+         );
+     }
+@@ -357,4 +377,5 @@
+         self.start = next;
+         self.height = self.base_height;
++        self.math_row = super::math_source_flow::InlineRow::default();
+     }
+ 
+@@ -495,4 +516,5 @@
+     reserve_height: Pixels,
+     end: usize,
++    measure_inline_form: bool,
+     window: &mut Window,
+ ) -> Flow {
+@@ -510,4 +532,7 @@
+         pieces: Vec::new(),
+         lines: Vec::new(),
++        measure_inline_form,
++        math_row: super::math_source_flow::InlineRow::default(),
++        intrinsic_heights: Vec::new(),
+     };
+     let mut items: VecDeque<_> = items.into();
+--- a/desktop/gpui/src/editor/view_comments.rs
++++ b/desktop/gpui/src/editor/view_comments.rs
+@@ -199,4 +199,6 @@
+             float_initial: false,
+             image: None,
++            math_form: None,
++            math_row_height: None,
+             paint_height: None,
+             tracking: None,
+@@ -245,5 +247,9 @@
+         .max(px(1.));
+     Bounds::new(
+-        piece.origin + point(px(0.), (line.height - height) / 2.),
++        piece.origin
++            + point(
++                px(0.),
++                (piece.math_row_height.unwrap_or(line.height) - height) / 2.,
++            ),
+         size(piece.width(), height),
+     )
+--- a/desktop/gpui/src/editor/view_notes.rs
++++ b/desktop/gpui/src/editor/view_notes.rs
+@@ -328,5 +328,9 @@
+     let ink_height = piece.shape.ascent + piece.shape.descent;
+     Bounds::new(
+-        piece.origin + point(px(0.), (line.height - ink_height) / 2.),
++        piece.origin
++            + point(
++                px(0.),
++                (piece.math_row_height.unwrap_or(line.height) - ink_height) / 2.,
++            ),
+         size(piece.width(), ink_height),
+     )
+--- a/desktop/gpui/src/editor/view_pagination.rs
++++ b/desktop/gpui/src/editor/view_pagination.rs
+@@ -409,4 +409,5 @@
+     opening: OpeningInitial,
+     atom_revision: u64,
++    inline_math: Option<Arc<super::math_source_flow::InlineMathReservation>>,
+     language: Arc<str>,
+     ink: u32,
+@@ -419,4 +420,5 @@
+             && self.opening == other.opening
+             && self.atom_revision == other.atom_revision
++            && self.inline_math == other.inline_math
+             && self.language == other.language
+             && self.ink == other.ink
+@@ -589,4 +591,5 @@
+             opening: view.opening,
+             atom_revision: view.atom_revision,
++            inline_math: view.inline_math_flow.frame_key(),
+             language: view.language.clone(),
+             ink: theme::palette(cx).ink,

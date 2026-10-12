@@ -50,7 +50,10 @@ async function seed(page: Page) {
     );
   }, INSTRUMENT_MANUSCRIPT);
   await page.goto("/editor/");
-  await expect(manuscript(page)).toContainText(INSTRUMENT_SENTENCE);
+  // Cold development hydration imports the editor before this functional mission starts.
+  await expect(manuscript(page)).toContainText(INSTRUMENT_SENTENCE, {
+    timeout: 60_000,
+  });
   await page.evaluate(() => document.fonts.ready);
 }
 
@@ -273,6 +276,10 @@ test("Threads uses real spans, removes a repeat, undoes and closes with Escape",
   await expect(repeat).toContainText(INSTRUMENT_REPEAT);
   await repeat.hover();
   await expect(page.locator(".twyne-thread-span")).toHaveCount(2);
+  // Hover scrolls this overflow panel to the pair; capture the instrument's header too.
+  await threads(page).evaluate((panel) => {
+    panel.scrollTop = 0;
+  });
   await capture(page, info, "05-real-span-thread");
   await expect(threads(page)).toHaveScreenshot("threads-desktop.png");
   await repeat

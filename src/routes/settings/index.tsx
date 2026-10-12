@@ -1,3 +1,4 @@
+import { PublicDeskSettings } from "../../components/desk/public-desk";
 import { AccountKnowledge } from "../../components/knowledge/account-knowledge";
 import { component$, useStore, useVisibleTask$, $ } from "@qwik.dev/core";
 import { Link, type DocumentHead } from "@qwik.dev/router";
@@ -10,6 +11,7 @@ import { SearchableModelSelect } from "../../components/ui/searchable-model-sele
 import { ThemedDialog } from "../../components/ui/themed-dialog";
 import { NumericStepper } from "../../components/ui/numeric-stepper";
 import { useConvexClient } from "../../utils/convex-context";
+import { EXTRA_ALIAS_PRICE_LABEL } from "../../utils/alias-policy";
 import { useAuth } from "../../utils/auth-context";
 import { signOut } from "../../utils/auth-client";
 import { clearConvexSyncContext } from "../../utils/convex-sync";
@@ -208,6 +210,9 @@ interface SettingsStore {
   handleLoaded: boolean;
   handle: string | null;
   handleDraft: string;
+  ownedAliases: string[];
+  additionalAliasDraft: string;
+  additionalAliasRequests: string[];
   handleBusy: boolean;
   handleError: AppError | string | null;
   handleToast: string | null;
@@ -524,6 +529,9 @@ export default component$(() => {
     handleLoaded: false,
     handle: null,
     handleDraft: "",
+    ownedAliases: [],
+    additionalAliasDraft: "",
+    additionalAliasRequests: [],
     handleBusy: false,
     handleError: null,
     handleToast: null,
@@ -1346,16 +1354,29 @@ export default component$(() => {
   // ── Writer handle (public identity) ──────────────────────────────
   // The handle is the writer's addressable name on Twyne — it appears in
   // share URLs (/<handle>/<slug>) and profile pages (/<handle>). Claimed
-  // once per account; can be changed (the old handle is freed). The
+  // once per account; additional aliases require a separate request. The
   // availability check is debounced and runs server-side via
   // `profiles.checkHandleAvailable`.
 
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(async ({ track }) => {
+  useVisibleTask$(async ({ track, cleanup }) => {
     track(() => auth.value.user?.id);
     track(() => convexClientSig.value);
     const client = convexClientSig.value;
     const user = auth.value.user;
+    let cancelled = false;
+    cleanup(() => {
+      cancelled = true;
+    });
+    store.handle = null;
+    store.handleDraft = "";
+    store.ownedAliases = [];
+    store.additionalAliasDraft = "";
+    store.additionalAliasRequests = [];
+    store.handleBusy = false;
+    store.handleToast = null;
+    store.handleError = null;
+    store.handleLoaded = false;
     if (!client || !user) {
       store.handleLoaded = true;
       return;
@@ -1367,13 +1388,24 @@ export default component$(() => {
     try {
       const row = (await client.query(api.profiles.getMyHandle, {})) as {
         handle: string;
+        ownedAliases: string[];
+        additionalAliasRequests: Array<{ handle: string }>;
         displayName: string | null;
         bio: string | null;
         avatarUrl: string | null;
         publicStats: PublicStatsPreferences;
       } | null;
+      if (
+        cancelled ||
+        auth.value.user?.id !== user.id ||
+        convexClientSig.value !== client
+      )
+        return;
       store.handle = row?.handle ?? null;
       store.handleDraft = row?.handle ?? "";
+      store.ownedAliases = row?.ownedAliases ?? (row ? [row.handle] : []);
+      store.additionalAliasRequests =
+        row?.additionalAliasRequests.map((request) => request.handle) ?? [];
       store.profileDisplayName = row?.displayName ?? "";
       store.profileBio = row?.bio ?? "";
       store.profileAvatarUrl = row?.avatarUrl ?? null;
@@ -1388,7 +1420,12 @@ export default component$(() => {
     } catch {
       // The Convex client may be in mid-reconnect; we'll retry on next track.
     } finally {
-      store.handleLoaded = true;
+      if (
+        !cancelled &&
+        auth.value.user?.id === user.id &&
+        convexClientSig.value === client
+      )
+        store.handleLoaded = true;
     }
   });
 
@@ -1437,6 +1474,8 @@ export default component$(() => {
 
   const handleClaim = $(async () => {
     const client = convexClientSig.value;
+    const ownerId = auth.value.user?.id;
+    if (!ownerId || store.handleBusy) return;
     if (!client) {
       store.handleError = createAppError("NETWORK_UNAVAILABLE", {
         source: "convex",
@@ -1451,14 +1490,20 @@ export default component$(() => {
       const result = (await client.mutation(api.profiles.claimHandle, {
         handle: store.handleDraft,
       })) as { handle: string; changed: boolean };
+      if (auth.value.user?.id !== ownerId || convexClientSig.value !== client)
+        return;
       store.handle = result.handle;
       store.handleDraft = result.handle;
+      if (result.changed || !store.ownedAliases.length)
+        store.ownedAliases = [result.handle];
       store.handleCheck = null;
       store.handleToast = result.changed
-        ? `Your handle is now @${result.handle}`
-        : "Handle unchanged.";
+        ? `Your Twyne alias is /${result.handle}`
+        : "Your existing alias is unchanged.";
       setTimeout(() => (store.handleToast = null), 4000);
     } catch (error) {
+      if (auth.value.user?.id !== ownerId || convexClientSig.value !== client)
+        return;
       reportApplicationDiagnostic("twyne:settings:claim-handle", error, {
         operation: "claim-handle",
       });
@@ -1467,7 +1512,38 @@ export default component$(() => {
         metadata: { operation: "claim-handle" },
       });
     } finally {
-      store.handleBusy = false;
+      if (auth.value.user?.id === ownerId && convexClientSig.value === client)
+        store.handleBusy = false;
+    }
+  });
+
+  const requestAdditionalAlias = $(async () => {
+    const client = convexClientSig.value;
+    const ownerId = auth.value.user?.id;
+    if (!client || !ownerId || store.handleBusy) return;
+    store.handleBusy = true;
+    store.handleError = null;
+    try {
+      const result = await client.mutation(
+        api.profiles.requestAdditionalAlias,
+        { handle: store.additionalAliasDraft },
+      );
+      if (auth.value.user?.id !== ownerId || convexClientSig.value !== client)
+        return;
+      if (!store.additionalAliasRequests.includes(result.handle))
+        store.additionalAliasRequests.push(result.handle);
+      store.additionalAliasDraft = "";
+      store.handleToast = `Request for /${result.handle} is pending review. The price is ${EXTRA_ALIAS_PRICE_LABEL}; no credits have been charged.`;
+    } catch (error) {
+      if (auth.value.user?.id !== ownerId || convexClientSig.value !== client)
+        return;
+      store.handleError = normalizeApplicationError(error, {
+        source: "convex",
+        metadata: { operation: "request-additional-alias" },
+      });
+    } finally {
+      if (auth.value.user?.id === ownerId && convexClientSig.value === client)
+        store.handleBusy = false;
     }
   });
 
@@ -4698,7 +4774,7 @@ export default component$(() => {
                   style={{ fontFamily: "var(--font-typewriter)" }}
                   for="writer-handle"
                 >
-                  Handle
+                  Twyne public alias
                 </label>
                 <div class="flex items-stretch gap-2 mb-1">
                   <span
@@ -4711,6 +4787,7 @@ export default component$(() => {
                     id="writer-handle"
                     type="text"
                     value={store.handleDraft}
+                    readOnly={!!store.handle}
                     onInput$={(e) => {
                       store.handleDraft = (e.target as HTMLInputElement).value;
                       store.handleError = null;
@@ -4760,7 +4837,7 @@ export default component$(() => {
                         class="text-[var(--color-ink-muted)]"
                         style={{ fontFamily: "var(--font-typewriter)" }}
                       >
-                        Current handle: @{store.handle}.
+                        Your included alias: /{store.handle}.
                       </span>
                     )}
                 </div>
@@ -4768,6 +4845,7 @@ export default component$(() => {
                   onClick$={handleClaim}
                   disabled={
                     store.handleBusy ||
+                    !!store.handle ||
                     !store.handleDraft.trim() ||
                     store.handleDraft.trim() === store.handle
                   }
@@ -4780,9 +4858,61 @@ export default component$(() => {
                   {store.handleBusy
                     ? "Saving…"
                     : store.handle
-                      ? "Change handle"
-                      : "Claim handle"}
+                      ? "Alias claimed"
+                      : "Claim included alias"}
                 </button>
+
+                {store.handle && (
+                  <div class="mt-4 space-y-2 text-sm">
+                    <p>
+                      Owned Twyne aliases:{" "}
+                      {store.ownedAliases.map((alias) => (
+                        <Link
+                          key={alias}
+                          href={`/${alias}/`}
+                          class="mr-2 underline"
+                        >
+                          /{alias}
+                        </Link>
+                      ))}
+                    </p>
+                    <p>
+                      One standard alias is included. Additional aliases are
+                      available on request for {EXTRA_ALIAS_PRICE_LABEL} each.
+                    </p>
+                    <label class="block" for="additional-alias">
+                      Request an additional alias
+                    </label>
+                    <input
+                      id="additional-alias"
+                      value={store.additionalAliasDraft}
+                      placeholder="another-name"
+                      class="border px-2 py-1"
+                      onInput$={(event) => {
+                        store.additionalAliasDraft = (
+                          event.target as HTMLInputElement
+                        ).value;
+                      }}
+                    />
+                    <button
+                      type="button"
+                      class="btn-press text-xs"
+                      disabled={
+                        store.handleBusy || !store.additionalAliasDraft.trim()
+                      }
+                      onClick$={requestAdditionalAlias}
+                    >
+                      Submit request
+                    </button>
+                    <p class="text-xs">
+                      Requests are reviewed before payment and assignment.
+                      Submission does not reserve the alias or charge credits.
+                    </p>
+                    {store.additionalAliasRequests.map((alias) => (
+                      <p key={alias}>/{alias} — pending review</p>
+                    ))}
+                  </div>
+                )}
 
                 {/* Optional profile metadata — shown only after a handle is claimed. */}
                 {store.handle && (
@@ -5094,6 +5224,7 @@ export default component$(() => {
                           />
                         </div>
                       </div>
+                      <PublicDeskSettings />
                       {store.publicStatsToast && (
                         <p
                           class="mt-3 text-[0.65rem] tracking-[0.15em] uppercase text-[var(--color-accent-green)]"

@@ -1,0 +1,50 @@
+{
+  "detect": [
+    {"name":"empty", "text":""},
+    {"name":"DOI wins overlapping URL", "text":"See https://doi.org/10.1000/xyz. and doi: 10.5555/abc_(def)."},
+    {"name":"balanced URL punctuation", "text":"Use (https://example.com/a_(b)). Then https://example.org/p?q=1, https://example.net/x];"},
+    {"name":"UTF16 and base offset", "text":"🌿 Café https://example.com/é. [12]", "baseOffset":11},
+    {"name":"ISBN source pattern", "text":"ISBN 0-306-40615-2; ISBN 978-1-4028-9462-6; 123456789X"},
+    {"name":"authors and month exclusions", "text":"(Smith & Doe, 2024a: 12–18). Smith (2022). June (2020). (January 2021). (de Vries, 2019)."},
+    {"name":"footnote word boundary", "text":"x[1] _[2] [3] ([4]). 9[5] [42]"},
+    {"name":"newlines and DOI case", "text":"DOE (2024)\nDOI: 10.5555/a,b.\nhttps://example.com/a#frag.\n(Smith et al., 2023)"}
+  ],
+  "format": [
+    {"name":"all original fields", "entry":{"id":"writer-full","folioId":"folio/notes:café🌿","title":"  A\n  title  ","author":" Doe, Jane ","publisher":" A  Press ","date":"14 February 2024","year":"2024","url":"https://www.Example.com/paper/?q=1#part","accessedAt":1700000000000,"pageHint":"18–20","note":"not formatted","future":null}},
+    {"name":"cached provider text only matching style", "entry":{"id":"cached","folioId":"folio/notes:café🌿","title":"Other title","author":"Roe, John","year":"2022","url":"https://example.org/a","accessedAt":1700000000000,"style":"apa","formattedCitation":"Provider text\nkept exactly.","provenance":"background","accepted":false}},
+    {"name":"empty URL and nullable optional fields", "entry":{"id":"no-url","folioId":"folio/notes:café🌿","title":"A source without a link","url":"","accessedAt":-1,"author":null,"date":null,"year":null,"pageHint":null}},
+    {"name":"fractional signed date", "entry":{"id":"fractional","folioId":"folio/notes:café🌿","title":"Before epoch","author":"Smith, A.","url":"not a valid url/","accessedAt":-1.75}},
+    {"name":"empty date remains empty", "entry":{"id":"empty-date","folioId":"folio/notes:café🌿","title":"Sparse","author":"Doe, Jane; Roe, John","date":"","year":"1999","url":"https://bücher.example/Case/","accessedAt":1.75}},
+    {"name":"URL query hash and case normalization", "entry":{"id":"url-case","folioId":"folio/notes:café🌿","title":"URL test","url":"HTTP://WWW.Example.COM/Case///?q=one#two","accessedAt":8640000000000001}}
+  ],
+  "build": [
+    {
+      "name":"exact scoped normalized URL merge and undefined clearing",
+      "folioId":"folio/notes:café🌿", "now":1700000000000.75,
+      "citation":{"id":"url-4/🌿","text":"https://example.com/paper#new","from":4,"to":33,"type":"url","lookupUrl":"https://example.com/paper#new"},
+      "bibliography":[
+        {"id":"foreign-first","folioId":"foreign/folio","title":"Foreign","url":"https://example.com/paper","accessedAt":1,"futureForeign":{"keep":true}},
+        {"id":"keep-original-id","folioId":"folio/notes:café🌿","title":"Old title","url":"http://WWW.Example.COM/paper/?old=yes","accessedAt":2,"author":"Old author","publisher":"Old press","date":"2020","year":"2020","doi":"old-doi","style":"apa","formattedCitation":"old provider format","note":"writer note","citationKey":"stable-key","pageHint":"10","target":{"kind":"claim","anchor":"Exact claim","query":"original"},"citationInsertedAt":3,"future":{"raw":null}},
+        {"id":"later-duplicate","folioId":"folio/notes:café🌿","title":"Later","url":"https://example.com/paper/","accessedAt":4}
+      ]
+    },
+    {
+      "name":"foreign same URL never aliases active folio",
+      "folioId":"folio/notes:café🌿", "now":-1.75,
+      "citation":{"id":"url-0","text":"https://example.org/source","from":0,"to":26,"type":"url","lookupUrl":"https://example.org/source"},
+      "bibliography":[{"id":"foreign","folioId":"foreign/folio","title":"Foreign","url":"https://example.org/source","accessedAt":7}]
+    },
+    {
+      "name":"empty URL does not dedupe footnotes",
+      "folioId":"folio/notes:café🌿", "now":1.75,
+      "citation":{"id":"fn-0","text":"[3]","from":0,"to":3,"type":"footnote"},
+      "bibliography":[{"id":"prior-no-url","folioId":"folio/notes:café🌿","title":"Prior","url":"","accessedAt":9}]
+    },
+    {
+      "name":"path case remains significant",
+      "folioId":"folio/notes:café🌿", "now":1700000000000,
+      "citation":{"id":"url-0","text":"https://example.com/Paper","from":0,"to":25,"type":"url","lookupUrl":"https://example.com/Paper"},
+      "bibliography":[{"id":"lower-case-path","folioId":"folio/notes:café🌿","title":"Prior","url":"https://example.com/paper","accessedAt":10}]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+diff --git a/desktop/gpui/src/lib.rs b/desktop/gpui/src/lib.rs
+--- a/desktop/gpui/src/lib.rs
++++ b/desktop/gpui/src/lib.rs
+@@ -35,5 +35,6 @@ pub mod marginalia;
+ #[cfg(feature = "desktop")]
+ pub mod marginalia_view;
++pub mod math_write;
+ #[cfg(feature = "native-typst")]
+ pub mod native_typst;
+ #[cfg(feature = "desktop")]
+diff --git a/desktop/gpui/tools/build-helper.ts b/desktop/gpui/tools/build-helper.ts
+--- a/desktop/gpui/tools/build-helper.ts
++++ b/desktop/gpui/tools/build-helper.ts
+@@ -352,6 +352,22 @@ if (await build.exited)
+ await mkdir(resolve(root, "target/release"), { recursive: true });
+ await copyFile(output, resolve(root, "target/release", name));
+ 
++// Registration/build only: no editor routing or Source stylesheet promotion.
++const mathName = process.platform === "win32"
++  ? "twyne-math-write.exe" : "twyne-math-write";
++const mathOutput = resolve(root, "target/math-write", mathName);
++await mkdir(resolve(root, "target/math-write"), { recursive: true });
++const mathBuild = Bun.spawn(
++  [
++    process.execPath, "build", "--compile", "--minify",
++    resolve(import.meta.dir, "math-write.ts"), "--outfile", mathOutput,
++  ],
++  { stdout: "inherit", stderr: "inherit" },
++);
++if (await mathBuild.exited)
++  throw new Error("The local diagnostic math helper did not build.");
++await copyFile(mathOutput, resolve(root, "target/release", mathName));
++
+ // Build/run orchestration uses argument arrays, with no command shell.
+ if (process.argv[2] === "build" || process.argv[2] === "run") {
+   const command = process.argv[2];

@@ -38,6 +38,7 @@ export interface AgentPersona {
   voice?: string;
   /** Recurring rhetorical habits that make the editor recognizable. */
   signatureMoves?: string[];
+  hallmarks?: string[];
   /** Language and behaviors this editor must not borrow from the others. */
   avoidances?: string[];
   /** A few sample lines in this persona's voice, used as light few-shot. */
@@ -115,6 +116,7 @@ function buildVoiceBlock(persona: AgentPersona): string {
     !persona.criticalMethod &&
     !persona.voice &&
     (!persona.signatureMoves || persona.signatureMoves.length === 0) &&
+    (!persona.hallmarks || persona.hallmarks.length === 0) &&
     (!persona.avoidances || persona.avoidances.length === 0) &&
     (!persona.sampleLines || persona.sampleLines.length === 0)
   ) {
@@ -136,6 +138,13 @@ function buildVoiceBlock(persona: AgentPersona): string {
     lines.push(
       `SIGNATURE MOVES (use one or two when natural, not all mechanically):\n${persona.signatureMoves
         .map((move) => `- ${move}`)
+        .join("\n")}`,
+    );
+  }
+  if (persona.hallmarks && persona.hallmarks.length > 0) {
+    lines.push(
+      `HALLMARKS (visible on the page in every note and reply, so the writer knows it is you before reading a word; in rewrites they shape your explanation, never the writer's prose):\n${persona.hallmarks
+        .map((mark) => `- ${mark}`)
         .join("\n")}`,
     );
   }
@@ -730,6 +739,7 @@ export function toAgentPersona(p: Persona): AgentPersona {
     criticalMethod: p.criticalMethod,
     voice: p.voice,
     signatureMoves: p.signatureMoves,
+    hallmarks: p.hallmarks,
     avoidances: p.avoidances,
     sampleLines: p.sampleLines,
     providerId: p.providerId,

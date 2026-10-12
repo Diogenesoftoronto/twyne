@@ -1,0 +1,41 @@
+{
+  "source": "src/components/editor/math/math.css",
+  "sha256": "f29bbdea2806650b758422416d2a8e08a5a985f908feeddc8442362c412308b0",
+  "lineRange": [
+    61,
+    174
+  ],
+  "css": ".twyne-math-source-editor {\n  display: flex;\n  min-width: min(28rem, 80vw);\n  flex-direction: column;\n  gap: 0.5rem;\n  padding: 0.65rem;\n  border: 1px solid currentColor;\n  border-radius: 0.4rem;\n  background: Canvas;\n  color: CanvasText;\n  text-align: left;\n}\n\n.twyne-math-inline .twyne-math-source-editor {\n  display: inline-flex;\n  min-width: min(22rem, 70vw);\n  vertical-align: middle;\n}\n\n.twyne-math-source-label {\n  display: flex;\n  flex-direction: column;\n  gap: 0.3rem;\n  font-size: 0.8rem;\n  font-weight: 600;\n}\n\n.twyne-math-source-input {\n  width: 100%;\n  resize: vertical;\n  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);\n  border-radius: 0.25rem;\n  padding: 0.5rem;\n  background: Canvas;\n  color: CanvasText;\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  font-size: 0.875rem;\n  font-weight: 400;\n  line-height: 1.4;\n}\n\n.twyne-math-source-input:focus-visible,\n.twyne-math-source-save:focus-visible,\n.twyne-math-source-cancel:focus-visible {\n  outline: 2px solid currentColor;\n  outline-offset: 2px;\n}\n\n.twyne-math-source-actions {\n  display: flex;\n  flex-wrap: wrap;\n  justify-content: flex-end;\n  gap: 0.4rem;\n}\n\n.twyne-math-source-save,\n.twyne-math-source-cancel {\n  min-height: 2rem;\n  border: 1px solid currentColor;\n  border-radius: 0.25rem;\n  padding-inline: 0.65rem;\n  background: Canvas;\n  color: CanvasText;\n  font: inherit;\n  cursor: pointer;\n}\n\n.twyne-math-source-save {\n  background: CanvasText;\n  color: Canvas;\n}\n\n/* Live preview inside the LaTeX source editor: same KaTeX output the\n   NodeView renders after save, so the writer sees the equation while typing.\n   Purely presentational — saving still goes through the form submit. */\n.twyne-math-source-preview {\n  overflow: auto;\n  max-height: 12rem;\n  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);\n  border-radius: 0.25rem;\n  padding: 0.5rem 0.65rem;\n  background: Canvas;\n  color: CanvasText;\n  font-size: 0.95rem;\n  text-align: center;\n}\n\n.twyne-math-source-preview-hint {\n  color: color-mix(in srgb, currentColor 60%, transparent);\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  font-size: 0.8rem;\n}\n\n.twyne-math-source-preview-output {\n  display: inline-block;\n  max-width: 100%;\n}\n\n.twyne-math-source-preview-error {\n  display: flex;\n  flex-wrap: wrap;\n  align-items: baseline;\n  gap: 0.4rem;\n  border-color: #a84632;\n  background: #fff2ee;\n  color: #742718;\n  text-align: left;\n}\n\n.twyne-math-source-preview-message {\n  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;\n  font-size: 0.8rem;\n  overflow-wrap: anywhere;\n}\n\n",
+  "nativeValues": {
+    "inlineMinimum": [
+      352,
+      0.7
+    ],
+    "blockMinimum": [
+      448,
+      0.8
+    ],
+    "formGap": 8,
+    "formPadding": 10.4,
+    "labelFontSize": 12.8,
+    "labelWeight": 600,
+    "labelGap": 4.8,
+    "textareaFontSize": 14,
+    "textareaLineHeight": 19.6,
+    "textareaPadding": 8,
+    "textareaBorder": 1,
+    "inlineRows": 2,
+    "blockRows": 3,
+    "inlineTextareaHeight": 57.2,
+    "blockTextareaHeight": 76.8,
+    "previewFontSize": 15.2,
+    "previewMaximumHeight": 192,
+    "previewPadding": [
+      8,
+      10.4
+    ],
+    "actionsGap": 6.4,
+    "buttonMinimumHeight": 32,
+    "buttonHorizontalPadding": 10.4
+  }
+}

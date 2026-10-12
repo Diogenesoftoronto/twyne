@@ -1,3 +1,4 @@
+import { cancelAccountResearchReview } from "./account-knowledge";
 /**
  * Background agents — the Apparatus runs in the background, watching the
  * draft and building an automatic bibliography without the writer having to
@@ -497,6 +498,7 @@ export function onDraftChanged(draftText: string): void {
 }
 
 export function stopBackgroundResearch(): void {
+  cancelAccountResearchReview();
   if (debounceTimer) {
     clearTimeout(debounceTimer);
     debounceTimer = null;
@@ -513,6 +515,7 @@ export function startBackgroundResearch(args: {
   brief: ProjectBrief | null;
   folioId: string | null;
 }): void {
+  cancelAccountResearchReview();
   researchGeneration += 1;
   activeClient = args.client;
   // Share the client with the MCP layer, which also needs it for the relay
@@ -783,18 +786,34 @@ async function searchViaMcp(
   context: string,
   settings: ApparatusSettings,
 ): Promise<SearchOutcome | null> {
-  if (!settings.mcpServers.some((s) => s.enabled && s.url.trim())) {
-    return {
-      ok: false,
-      message: "No MCP servers in Settings — add one to search claims.",
-    };
-  }
   try {
-    const res = await searchMcpServers(
+    const { searchAccountKnowledge, accountKnowledgeGeneration } = await import(
+      "./account-knowledge"
+    );
+    const accountGeneration = accountKnowledgeGeneration();
+    const account = await searchAccountKnowledge({
+      query,
+      context,
+      maxResults: settings.maxResults,
+    });
+    const local = await searchMcpServers(
       { query, context },
       settings,
       activeClient,
     );
+    if (accountGeneration !== accountKnowledgeGeneration())
+      return {
+        ok: false,
+        message: "Account changed. Research results were discarded.",
+      };
+    const res = {
+      results: [...account.results, ...local.results].slice(
+        0,
+        settings.maxResults,
+      ),
+      warnings: [...account.warnings, ...local.warnings],
+      provider: [account.provider, local.provider].join(";"),
+    };
     if (!res.results.length) {
       return {
         ok: false,

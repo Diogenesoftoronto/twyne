@@ -1,0 +1,1152 @@
+You own an advisory-only Source contract extraction, with no product writes. Other workers are implementing title and slash integration; do not revert their work. Read the provided TypeScript and return ONLY valid JSON (no markdown fences) containing: commands (each slash-visible command id, label, description, group, order, searchTerms, keywords, availability), triggerRules (literal regex and exclusion rules), keyboardRules, visualMetrics, and at most three tricky cases. Do not add commands absent from Source, and explicitly report if Link is not slash-visible. Treat conditional availability correctly (selection commands cannot show at a collapsed slash caret). Keep exact labels and descriptions. This is a bounded extraction task; do not redesign or propose code.
+
+FILE src/utils/editor-commands.ts
+/**
+ * The editor's command catalogue.
+ *
+ * This is deliberately UI-agnostic. Toolbars, the slash menu, the shortcut
+ * reference, and the Manual all need the same names and search vocabulary,
+ * but none of those surfaces should have to import Qwik or TipTap to ask
+ * "which commands exist?".
+ */
+
+export type EditorCommandGroup =
+  | "text"
+  | "paragraph"
+  | "structure"
+  | "insert"
+  | "review"
+  | "navigation"
+  | "table"
+  | "history"
+  | "view";
+
+export interface EditorCommandContext {
+  hasSelection?: boolean;
+  inTable?: boolean;
+  canMergeCells?: boolean;
+  canSplitCell?: boolean;
+  canUndo?: boolean;
+  canRedo?: boolean;
+  hasDocument?: boolean;
+  paginationActive?: boolean;
+  readOnly?: boolean;
+}
+
+export type EditorCommandAvailability =
+  | "always"
+  | "editable"
+  | "selection"
+  | "table"
+  | "mergeable-cells"
+  | "splittable-cell"
+  | "undo"
+  | "redo"
+  | "document"
+  | "paginated";
+
+export type EditorCommandSurface =
+  | "toolbar"
+  | "slash"
+  | "shortcut-dialog"
+  | "manual";
+
+export interface SlashCommandMetadata {
+  /** Label used for grouping in the slash menu. */
+  group: "Write" | "Structure" | "Insert" | "Review";
+  /** Extra fuzzy-search words that do not belong in the visible label. */
+  keywords?: readonly string[];
+  /** Lower values sort first within a group. */
+  order: number;
+}
+
+export interface EditorCommandDefinition {
+  id: string;
+  label: string;
+  description: string;
+  group: EditorCommandGroup;
+  searchTerms: readonly string[];
+  availability: EditorCommandAvailability;
+  surfaces: readonly EditorCommandSurface[];
+  slash?: SlashCommandMetadata;
+}
+
+const TOOLBAR_AND_REFERENCE = ["toolbar", "shortcut-dialog", "manual"] as const;
+const REFERENCE_ONLY = ["shortcut-dialog", "manual"] as const;
+const INSERT_SURFACES = [
+  "toolbar",
+  "slash",
+  "shortcut-dialog",
+  "manual",
+] as const;
+
+/**
+ * Stable command IDs.
+ *
+ * IDs describe intent rather than a particular TipTap method so the editor can
+ * change implementation without invalidating persisted command preferences or
+ * documentation anchors.
+ */
+export const EDITOR_COMMANDS = [
+  {
+    id: "format.bold",
+    label: "Bold",
+    description: "Make the selected text bold.",
+    group: "text",
+    searchTerms: ["strong", "weight"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "format.italic",
+    label: "Italic",
+    description: "Italicize the selected text.",
+    group: "text",
+    searchTerms: ["emphasis"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "format.underline",
+    label: "Underline",
+    description: "Underline the selected text.",
+    group: "text",
+    searchTerms: ["line"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "format.strike",
+    label: "Strikethrough",
+    description: "Strike through the selected text.",
+    group: "text",
+    searchTerms: ["delete", "cross out"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "format.highlight",
+    label: "Highlight",
+    description: "Apply the current highlight colour.",
+    group: "text",
+    searchTerms: ["marker", "background", "colour", "color"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "format.superscript",
+    label: "Superscript",
+    description: "Raise the selected text above the baseline.",
+    group: "text",
+    searchTerms: ["exponent", "raised"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "format.subscript",
+    label: "Subscript",
+    description: "Lower the selected text below the baseline.",
+    group: "text",
+    searchTerms: ["chemical", "lowered"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "format.clear",
+    label: "Clear formatting",
+    description: "Return text and paragraphs to manuscript defaults.",
+    group: "text",
+    searchTerms: ["remove styles", "reset"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "paragraph.heading-1",
+    label: "Heading 1",
+    description: "Turn the current block into a top-level heading.",
+    group: "structure",
+    searchTerms: ["title", "h1"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Structure", order: 10, keywords: ["h1", "title"] },
+  },
+  {
+    id: "paragraph.heading-2",
+    label: "Heading 2",
+    description: "Turn the current block into a second-level heading.",
+    group: "structure",
+    searchTerms: ["subtitle", "h2"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Structure", order: 20, keywords: ["h2", "subtitle"] },
+  },
+  {
+    id: "paragraph.heading-3",
+    label: "Heading 3",
+    description: "Turn the current block into a third-level heading.",
+    group: "structure",
+    searchTerms: ["subheading", "h3"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Structure", order: 30, keywords: ["h3", "subheading"] },
+  },
+  {
+    id: "paragraph.bullet-list",
+    label: "Bullet list",
+    description: "Start or toggle a bulleted list.",
+    group: "paragraph",
+    searchTerms: ["unordered list", "bullets"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Write", order: 30, keywords: ["unordered", "bullets"] },
+  },
+  {
+    id: "paragraph.numbered-list",
+    label: "Numbered list",
+    description: "Start or toggle a numbered list.",
+    group: "paragraph",
+    searchTerms: ["ordered list", "numbers"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Write", order: 40, keywords: ["ordered", "numbers"] },
+  },
+  {
+    id: "paragraph.task-list",
+    label: "Checklist",
+    description: "Start or toggle a checklist.",
+    group: "paragraph",
+    searchTerms: ["task list", "todo", "checkbox"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Write", order: 50, keywords: ["tasks", "todo"] },
+  },
+  {
+    id: "paragraph.blockquote",
+    label: "Pull quote",
+    description: "Set the current block as a quotation.",
+    group: "paragraph",
+    searchTerms: ["blockquote", "quote"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Write", order: 60, keywords: ["blockquote", "quote"] },
+  },
+  {
+    id: "paragraph.code-block",
+    label: "Code block",
+    description: "Set the current block as preformatted code.",
+    group: "paragraph",
+    searchTerms: ["preformatted", "source"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Write", order: 70, keywords: ["source", "pre"] },
+  },
+  {
+    id: "paragraph.align-left",
+    label: "Align left",
+    description: "Align the current paragraph to the left.",
+    group: "paragraph",
+    searchTerms: ["alignment"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "paragraph.align-center",
+    label: "Align center",
+    description: "Center the current paragraph.",
+    group: "paragraph",
+    searchTerms: ["alignment", "centre"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "paragraph.align-right",
+    label: "Align right",
+    description: "Align the current paragraph to the right.",
+    group: "paragraph",
+    searchTerms: ["alignment"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "paragraph.justify",
+    label: "Justify",
+    description: "Align the paragraph evenly to both margins.",
+    group: "paragraph",
+    searchTerms: ["alignment", "full"],
+    availability: "editable",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "paragraph.indent",
+    label: "Increase indent",
+    description: "Move the current paragraph one tab stop inward.",
+    group: "paragraph",
+    searchTerms: ["tab", "nest"],
+    availability: "editable",
+    surfaces: REFERENCE_ONLY,
+  },
+  {
+    id: "paragraph.outdent",
+    label: "Decrease indent",
+    description: "Move the current paragraph one tab stop outward.",
+    group: "paragraph",
+    searchTerms: ["shift tab", "unnest"],
+    availability: "editable",
+    surfaces: REFERENCE_ONLY,
+  },
+  {
+    id: "insert.horizontal-rule",
+    label: "Section break",
+    description: "Insert an ornamental section divider.",
+    group: "insert",
+    searchTerms: ["horizontal rule", "divider", "hr"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Structure", order: 50, keywords: ["rule", "divider"] },
+  },
+  {
+    id: "insert.page-break",
+    label: "Page break",
+    description: "Begin the following content on a new page.",
+    group: "insert",
+    searchTerms: ["new page", "pagination"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Structure", order: 60, keywords: ["new page"] },
+  },
+  {
+    id: "insert.image",
+    label: "Image",
+    description: "Insert a plate from a file or URL.",
+    group: "insert",
+    searchTerms: ["picture", "photo", "plate", "media"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Insert", order: 10, keywords: ["picture", "plate"] },
+  },
+  {
+    id: "insert.table",
+    label: "Table",
+    description: "Insert a table into the manuscript.",
+    group: "insert",
+    searchTerms: ["grid", "tabular", "rows", "columns"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Insert", order: 20, keywords: ["grid", "tabular"] },
+  },
+  {
+    id: "insert.mermaid",
+    label: "Mermaid diagram",
+    description: "Insert a diagram from Mermaid source.",
+    group: "insert",
+    searchTerms: ["chart", "flowchart", "graph"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Insert", order: 30, keywords: ["chart", "graph"] },
+  },
+  {
+    id: "insert.math-inline",
+    label: "Inline equation",
+    description: "Insert a LaTeX equation within a paragraph.",
+    group: "insert",
+    searchTerms: ["math", "latex", "formula"],
+    availability: "editable",
+    surfaces: ["slash", "shortcut-dialog", "manual"],
+    slash: {
+      group: "Insert",
+      order: 40,
+      keywords: ["math", "latex", "formula"],
+    },
+  },
+  {
+    id: "insert.math-block",
+    label: "Equation block",
+    description: "Insert a display LaTeX equation.",
+    group: "insert",
+    searchTerms: ["math", "latex", "formula", "display"],
+    availability: "editable",
+    surfaces: ["slash", "shortcut-dialog", "manual"],
+    slash: {
+      group: "Insert",
+      order: 50,
+      keywords: ["math", "latex", "display"],
+    },
+  },
+  {
+    id: "insert.endnote",
+    label: "Endnote",
+    description: "Insert a note collected at the end of the manuscript.",
+    group: "insert",
+    searchTerms: ["note", "citation"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Insert", order: 60, keywords: ["note", "reference"] },
+  },
+  {
+    id: "insert.footnote",
+    label: "Footnote",
+    description: "Insert a note attached to the current page.",
+    group: "insert",
+    searchTerms: ["note", "citation"],
+    availability: "editable",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Insert", order: 70, keywords: ["note", "reference"] },
+  },
+  {
+    id: "review.comment",
+    label: "Add comment",
+    description: "Attach a writer comment to the selected text.",
+    group: "review",
+    searchTerms: ["annotation", "marginalia", "note"],
+    availability: "selection",
+    surfaces: INSERT_SURFACES,
+    slash: { group: "Review", order: 10, keywords: ["annotation", "note"] },
+  },
+  {
+    id: "review.read-aloud",
+    label: "Read aloud",
+    description: "Read the selection, or the manuscript, using narration.",
+    group: "review",
+    searchTerms: ["voice", "speak", "listen", "audio"],
+    availability: "document",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "navigate.find",
+    label: "Find",
+    description: "Find text in the manuscript.",
+    group: "navigation",
+    searchTerms: ["search", "locate"],
+    availability: "document",
+    surfaces: REFERENCE_ONLY,
+  },
+  {
+    id: "navigate.replace",
+    label: "Find and replace",
+    description: "Find text and replace one or every occurrence.",
+    group: "navigation",
+    searchTerms: ["search", "substitute"],
+    availability: "document",
+    surfaces: REFERENCE_ONLY,
+  },
+  {
+    id: "navigate.outline",
+    label: "Document outline",
+    description: "Open the heading outline.",
+    group: "navigation",
+    searchTerms: ["headings", "table of contents", "toc"],
+    availability: "document",
+    surfaces: REFERENCE_ONLY,
+  },
+  {
+    id: "view.shortcuts",
+    label: "Keyboard shortcuts",
+    description: "Open the searchable shortcut reference.",
+    group: "view",
+    searchTerms: ["help", "keys", "bindings"],
+    availability: "always",
+    surfaces: REFERENCE_ONLY,
+  },
+  {
+    id: "view.zen",
+    label: "Zen mode",
+    description: "Hide surrounding panels and focus on the manuscript.",
+    group: "view",
+    searchTerms: ["focus", "distraction free"],
+    availability: "always",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "history.undo",
+    label: "Undo",
+    description: "Undo the last manuscript change.",
+    group: "history",
+    searchTerms: ["revert", "back"],
+    availability: "undo",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "history.redo",
+    label: "Redo",
+    description: "Redo the last undone manuscript change.",
+    group: "history",
+    searchTerms: ["repeat", "forward"],
+    availability: "redo",
+    surfaces: TOOLBAR_AND_REFERENCE,
+  },
+  {
+    id: "table.add-row-before",
+    label: "Add row above",
+    description: "Add a table row above the active cell.",
+    group: "table",
+    searchTerms: ["table", "row", "above"],
+    availability: "table",
+    surfaces: ["shortcut-dialog", "manual"],
+  },
+  {
+    id: "table.add-row-after",
+    label: "Add row below",
+    description: "Add a table row below the active cell.",
+    group: "table",
+    searchTerms: ["table", "row", "below"],
+    availability: "table",
+    surfaces: ["shortcut-dialog", "manual"],
+  },
+  {
+    id: "table.add-column-before",
+    label: "Add column left",
+    description: "Add a table column left of the active cell.",
+    group: "table",
+    searchTerms: ["table", "column", "left"],
+    availability: "table",
+    surfaces: ["shortcut-dialog", "manual"],
+  },
+  {
+    id: "table.add-column-after",
+    label: "Add column right",
+    description: "Add a table column right of the active cell.",
+    group: "table",
+    searchTerms: ["table", "column", "right"],
+    availability: "table",
+    surfaces: ["shortcut-dialog", "manual"],
+  },
+  {
+    id: "table.merge-cells",
+    label: "Merge cells",
+    description: "Merge the selected table cells.",
+    group: "table",
+    searchTerms: ["table", "combine"],
+    availability: "mergeable-cells",
+    surfaces: ["shortcut-dialog", "manual"],
+  },
+  {
+    id: "table.split-cell",
+    label: "Split cell",
+    description: "Split the active merged table cell.",
+    group: "table",
+    searchTerms: ["table", "divide"],
+    availability: "splittable-cell",
+    surfaces: ["shortcut-dialog", "manual"],
+  },
+  // The removals carry the `slash` surface the additions do not. The floating
+  // toolbar is a wide, horizontally scrolling strip, so its trailing buttons
+  // are easy to miss — writers reported being unable to get rid of a table at
+  // all. The slash menu gives them a second, searchable way in.
+  {
+    id: "table.delete-row",
+    label: "Delete row",
+    description: "Delete the table row containing the active cell.",
+    group: "table",
+    searchTerms: ["table", "row", "delete", "remove"],
+    availability: "table",
+    surfaces: ["slash", "shortcut-dialog", "manual"],
+    slash: {
+      group: "Structure",
+      order: 60,
+      keywords: ["remove", "drop", "table"],
+    },
+  },
+  {
+    id: "table.delete-column",
+    label: "Delete column",
+    description: "Delete the table column containing the active cell.",
+    group: "table",
+    searchTerms: ["table", "column", "delete", "remove"],
+    availability: "table",
+    surfaces: ["slash", "shortcut-dialog", "manual"],
+    slash: {
+      group: "Structure",
+      order: 61,
+      keywords: ["remove", "drop", "table"],
+    },
+  },
+  {
+    id: "table.delete-table",
+    label: "Delete table",
+    description: "Remove the whole table from the manuscript.",
+    group: "table",
+    searchTerms: ["table", "delete", "remove", "destroy"],
+    availability: "table",
+    surfaces: ["slash", "shortcut-dialog", "manual"],
+    slash: {
+      group: "Structure",
+      order: 62,
+      keywords: ["remove", "drop", "get rid of"],
+    },
+  },
+] as const satisfies readonly EditorCommandDefinition[];
+
+export type EditorCommandId = (typeof EDITOR_COMMANDS)[number]["id"];
+
+export interface FilterEditorCommandsOptions {
+  query?: string;
+  group?: EditorCommandGroup;
+  surface?: EditorCommandSurface;
+  context?: EditorCommandContext;
+  /** Include unavailable commands rather than hiding them. */
+  includeUnavailable?: boolean;
+}
+
+const commandById = new Map<string, EditorCommandDefinition>(
+  EDITOR_COMMANDS.map((command) => [command.id, command]),
+);
+
+export function getEditorCommand(
+  id: EditorCommandId | string,
+): EditorCommandDefinition | undefined {
+  return commandById.get(id);
+}
+
+/** Availability is data-driven and can be evaluated outside a rendered UI. */
+export function isEditorCommandAvailable(
+  command: EditorCommandDefinition,
+  context: EditorCommandContext = {},
+): boolean {
+  switch (command.availability) {
+    case "always":
+      return true;
+    case "editable":
+      return context.readOnly !== true;
+    case "selection":
+      return context.readOnly !== true && context.hasSelection === true;
+    case "table":
+      return context.readOnly !== true && context.inTable === true;
+    case "mergeable-cells":
+      return (
+        context.readOnly !== true &&
+        context.inTable === true &&
+        context.canMergeCells === true
+      );
+    case "splittable-cell":
+      return (
+        context.readOnly !== true &&
+        context.inTable === true &&
+        context.canSplitCell === true
+      );
+    case "undo":
+      return context.readOnly !== true && context.canUndo === true;
+    case "redo":
+      return context.readOnly !== true && context.canRedo === true;
+    case "document":
+      return context.hasDocument !== false;
+    case "paginated":
+      return context.paginationActive === true;
+  }
+}
+
+function searchableText(command: EditorCommandDefinition): string {
+  return [
+    command.id,
+    command.label,
+    command.description,
+    command.group,
+    ...command.searchTerms,
+    ...(command.slash?.keywords ?? []),
+  ]
+    .join(" ")
+    .toLocaleLowerCase();
+}
+
+/**
+ * Search and filter the catalogue.
+ *
+ * Every whitespace-separated query term must match somewhere, so "table row"
+ * narrows correctly without requiring an exact phrase.
+ */
+export function filterEditorCommands(
+  options: FilterEditorCommandsOptions = {},
+): EditorCommandDefinition[] {
+  const terms = (options.query ?? "")
+    .trim()
+    .toLocaleLowerCase()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  return EDITOR_COMMANDS.filter((command) => {
+    if (options.group && command.group !== options.group) return false;
+    if (
+      options.surface &&
+      !command.surfaces.includes(options.surface as never)
+    ) {
+      return false;
+    }
+    if (
+      !options.includeUnavailable &&
+      !isEditorCommandAvailable(command, options.context)
+    ) {
+      return false;
+    }
+    const haystack = searchableText(command);
+    return terms.every((term) => haystack.includes(term));
+  });
+}
+
+/** Slash commands are sorted by their declared group/order, never DOM order. */
+export function getSlashCommands(
+  query = "",
+  context: EditorCommandContext = {},
+): EditorCommandDefinition[] {
+  return filterEditorCommands({
+    query,
+    surface: "slash",
+    context,
+  }).sort((a, b) => {
+    const group = (a.slash?.group ?? "").localeCompare(b.slash?.group ?? "");
+    if (group !== 0) return group;
+    return (a.slash?.order ?? 0) - (b.slash?.order ?? 0);
+  });
+}
+
+
+FILE src/components/editor/extensions/slash-command.ts
+import { Extension, type CommandProps } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+
+export interface SlashCommandState {
+  open: boolean;
+  query: string;
+  /** Range containing the slash and query, removed before command execution. */
+  from: number;
+  to: number;
+}
+
+const CLOSED: SlashCommandState = { open: false, query: "", from: 0, to: 0 };
+export const slashCommandPluginKey = new PluginKey<SlashCommandState>(
+  "slashCommand",
+);
+
+declare module "@tiptap/core" {
+  interface Commands<ReturnType> {
+    slashCommand: {
+      closeSlashCommand: () => ReturnType;
+      removeSlashCommandQuery: () => ReturnType;
+    };
+  }
+}
+
+function stateAtCursor(state: {
+  selection: { empty: boolean; from: number; $from: any };
+}): SlashCommandState {
+  const selection = state.selection;
+  if (!selection.empty) return CLOSED;
+  const $from = selection.$from;
+  if (!$from.parent.isTextblock) return CLOSED;
+  const before = $from.parent.textBetween(
+    0,
+    $from.parentOffset,
+    undefined,
+    "\0",
+  );
+  const match = /(?:^|\s)\/([^\s/]*)$/.exec(before);
+  if (!match) return CLOSED;
+  const query = match[1] ?? "";
+  const slashOffset = before.length - query.length - 1;
+  return {
+    open: true,
+    query,
+    from: $from.start() + slashOffset,
+    to: selection.from,
+  };
+}
+
+/**
+ * Detects a slash query without adding content or decorations to the document.
+ *
+ * The UI reads plugin state and executes registry command IDs. When a command
+ * is chosen, `removeSlashCommandQuery` removes only `/query`; the command then
+ * acts at the retained cursor position.
+ */
+export const SlashCommand = Extension.create({
+  name: "slashCommand",
+
+  addCommands() {
+    return {
+      closeSlashCommand:
+        () =>
+        ({ tr }: CommandProps) => {
+          tr.setMeta(slashCommandPluginKey, { close: true });
+          return true;
+        },
+      removeSlashCommandQuery:
+        () =>
+        ({ state, tr, dispatch }: CommandProps) => {
+          const current = slashCommandPluginKey.getState(state);
+          if (!current?.open) return false;
+          tr.delete(current.from, current.to);
+          tr.setMeta(slashCommandPluginKey, { close: true });
+          if (dispatch) dispatch(tr);
+          return true;
+        },
+    };
+  },
+
+  addKeyboardShortcuts() {
+    return {
+      Escape: () => {
+        const current = slashCommandPluginKey.getState(this.editor.state);
+        if (!current?.open) return false;
+        return this.editor.commands.closeSlashCommand();
+      },
+    };
+  },
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin<SlashCommandState>({
+        key: slashCommandPluginKey,
+        state: {
+          init: (_, state) => stateAtCursor(state),
+          apply: (tr, previous, _oldState, newState) => {
+            if (tr.getMeta(slashCommandPluginKey)?.close) return CLOSED;
+            if (!tr.docChanged && !tr.selectionSet) return previous;
+            return stateAtCursor(newState);
+          },
+        },
+      }),
+    ];
+  },
+});
+
+export function getSlashCommandState(
+  state: Parameters<typeof slashCommandPluginKey.getState>[0],
+): SlashCommandState {
+  return slashCommandPluginKey.getState(state) ?? CLOSED;
+}
+
+
+FILE src/utils/slash-command-filter.ts
+import type { EditorCommandContext } from "./editor-commands";
+import {
+  getSlashCommands,
+  type EditorCommandDefinition,
+} from "./editor-commands";
+import { shortcutHints, type ShortcutPlatform } from "./keybindings";
+
+export interface SlashCommandCandidate {
+  command: EditorCommandDefinition;
+  score: number;
+  shortcut: string | null;
+}
+
+function normalise(value: string): string {
+  return value
+    .toLocaleLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+/**
+ * Small fuzzy scorer tuned for command menus.
+ *
+ * Exact prefixes win, then word prefixes, then ordered subsequences. A query
+ * that cannot be found in order is excluded rather than returning every
+ * command with an arbitrary low score.
+ */
+export function fuzzyCommandScore(
+  command: EditorCommandDefinition,
+  query: string,
+): number | null {
+  const needle = normalise(query);
+  if (!needle) return 0;
+
+  const label = normalise(command.label);
+  const haystack = normalise(
+    [
+      command.label,
+      command.description,
+      command.id,
+      ...command.searchTerms,
+      ...(command.slash?.keywords ?? []),
+    ].join(" "),
+  );
+
+  if (label === needle) return 1000;
+  if (label.startsWith(needle)) return 800 - (label.length - needle.length);
+  const wordPrefix = label
+    .split(" ")
+    .findIndex((word) => word.startsWith(needle));
+  if (wordPrefix >= 0) return 650 - wordPrefix * 10;
+  const contained = haystack.indexOf(needle);
+  if (contained >= 0) return 500 - Math.min(contained, 200);
+
+  let cursor = 0;
+  let gapPenalty = 0;
+  for (const character of needle.replace(/\s/g, "")) {
+    const found = haystack.indexOf(character, cursor);
+    if (found < 0) return null;
+    gapPenalty += found - cursor;
+    cursor = found + 1;
+  }
+  return 250 - Math.min(gapPenalty, 200);
+}
+
+export function fuzzySlashCommands(
+  query: string,
+  context: EditorCommandContext = {},
+  platform: ShortcutPlatform = "mac",
+): SlashCommandCandidate[] {
+  return getSlashCommands("", context)
+    .flatMap((command): SlashCommandCandidate[] => {
+      const score = fuzzyCommandScore(command, query);
+      if (score == null) return [];
+      return [
+        {
+          command,
+          score,
+          shortcut: shortcutHints(command.id as never, platform)[0] ?? null,
+        },
+      ];
+    })
+    .sort((a, b) => {
+      if (a.score !== b.score) return b.score - a.score;
+      const group = (a.command.slash?.group ?? "").localeCompare(
+        b.command.slash?.group ?? "",
+      );
+      if (group !== 0) return group;
+      return (a.command.slash?.order ?? 0) - (b.command.slash?.order ?? 0);
+    });
+}
+
+
+FILE src/components/editor/slash-command-menu.tsx
+import {
+  component$,
+  useSignal,
+  useVisibleTask$,
+  type PropFunction,
+} from "@qwik.dev/core";
+import type {
+  EditorCommandContext,
+  EditorCommandId,
+} from "../../utils/editor-commands";
+import {
+  fuzzySlashCommands,
+  type SlashCommandCandidate,
+} from "../../utils/slash-command-filter";
+import type { ShortcutPlatform } from "../../utils/keybindings";
+
+interface SlashCommandMenuProps {
+  open: boolean;
+  query: string;
+  context?: EditorCommandContext;
+  platform?: ShortcutPlatform;
+  /** Fixed viewport coordinates supplied by the TipTap integration. */
+  left: number;
+  top: number;
+  onSelect$: PropFunction<(commandId: EditorCommandId) => void>;
+  onClose$: PropFunction<() => void>;
+}
+
+function slashGroup(candidate: SlashCommandCandidate): string {
+  return candidate.command.slash?.group ?? "Commands";
+}
+
+type SlashSelectionId = EditorCommandId | null;
+
+/** Keep selection attached to a command, even when filtering reorders rows. */
+export function reconcileSlashSelection(
+  candidates: SlashCommandCandidate[],
+  selectedCommandId: SlashSelectionId,
+): SlashSelectionId {
+  if (
+    selectedCommandId &&
+    candidates.some((candidate) => candidate.command.id === selectedCommandId)
+  ) {
+    return selectedCommandId;
+  }
+  return (candidates[0]?.command.id as EditorCommandId | undefined) ?? null;
+}
+
+/** Move through the visible result set rather than the unfiltered registry. */
+export function moveSlashSelection(
+  candidates: SlashCommandCandidate[],
+  selectedCommandId: SlashSelectionId,
+  direction: 1 | -1,
+): SlashSelectionId {
+  if (candidates.length === 0) return null;
+  const currentId = reconcileSlashSelection(candidates, selectedCommandId);
+  const currentIndex = candidates.findIndex(
+    (candidate) => candidate.command.id === currentId,
+  );
+  const nextIndex =
+    (currentIndex + direction + candidates.length) % candidates.length;
+  return candidates[nextIndex].command.id as EditorCommandId;
+}
+
+function optionId(commandId: string): string {
+  return `slash-command-${commandId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+}
+
+/** Keyboard-navigable slash menu, driven entirely by the command registry. */
+export const SlashCommandMenu = component$<SlashCommandMenuProps>((props) => {
+  const selectedCommandId = useSignal<SlashSelectionId>(null);
+  const candidates: SlashCommandCandidate[] = fuzzySlashCommands(
+    props.query,
+    props.context,
+    props.platform ?? "mac",
+  );
+  const visibleSelection = reconcileSlashSelection(
+    candidates,
+    selectedCommandId.value,
+  );
+
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup, track }) => {
+    const open = track(() => props.open);
+    const query = track(() => props.query);
+    const currentCandidates = fuzzySlashCommands(
+      query,
+      props.context,
+      props.platform ?? "mac",
+    );
+    selectedCommandId.value = reconcileSlashSelection(
+      currentCandidates,
+      selectedCommandId.value,
+    );
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        void props.onClose$();
+        return;
+      }
+      // Resolve results at keypress time. A rapid query change must never leave
+      // Enter acting on the candidate array from the prior render.
+      const visibleCandidates = fuzzySlashCommands(
+        props.query,
+        props.context,
+        props.platform ?? "mac",
+      );
+      if (visibleCandidates.length === 0) return;
+      if (event.key === "ArrowDown") {
+        event.preventDefault();
+        selectedCommandId.value = moveSlashSelection(
+          visibleCandidates,
+          selectedCommandId.value,
+          1,
+        );
+      } else if (event.key === "ArrowUp") {
+        event.preventDefault();
+        selectedCommandId.value = moveSlashSelection(
+          visibleCandidates,
+          selectedCommandId.value,
+          -1,
+        );
+      } else if (event.key === "Enter") {
+        if (event.isComposing) return;
+        event.preventDefault();
+        const currentSelection = reconcileSlashSelection(
+          visibleCandidates,
+          selectedCommandId.value,
+        );
+        const selected = visibleCandidates.find(
+          (candidate) => candidate.command.id === currentSelection,
+        );
+        if (selected)
+          void props.onSelect$(selected.command.id as EditorCommandId);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown, true);
+    cleanup(() => window.removeEventListener("keydown", onKeyDown, true));
+  });
+
+  if (!props.open) return null;
+
+  return (
+    <div
+      class="fixed w-72 overflow-hidden border border-[var(--color-paper-3)] bg-[var(--color-paper)] shadow-lg"
+      style={{
+        left: `${props.left}px`,
+        top: `${props.top}px`,
+        zIndex: "var(--z-dropdown)",
+        borderRadius: "2px",
+      }}
+      role="listbox"
+      aria-label="Insert command"
+      aria-activedescendant={
+        visibleSelection ? optionId(visibleSelection) : undefined
+      }
+    >
+      <p
+        class="border-b border-[var(--color-paper-3)] px-3 py-2 text-[0.62rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)]"
+        style={{ fontFamily: "var(--font-typewriter)" }}
+      >
+        Insert {props.query ? `“${props.query}”` : "a block"}
+      </p>
+
+      {candidates.length === 0 ? (
+        <p
+          class="px-3 py-5 text-center text-sm text-[var(--color-ink-muted)]"
+          style={{ fontFamily: "var(--font-serif)" }}
+        >
+          No commands match.
+        </p>
+      ) : (
+        <div class="max-h-80 overflow-y-auto py-1">
+          {candidates.map((candidate, index) => {
+            const group = slashGroup(candidate);
+            const showGroup =
+              index === 0 || slashGroup(candidates[index - 1]) !== group;
+            const isSelected = candidate.command.id === visibleSelection;
+            return (
+              <div key={candidate.command.id}>
+                {showGroup && (
+                  <p
+                    class="border-y border-[var(--color-paper-3)] bg-[var(--color-paper-soft)] px-3 py-1 text-[0.58rem] uppercase tracking-[0.16em] text-[var(--color-ink-muted)] first:border-t-0"
+                    style={{ fontFamily: "var(--font-typewriter)" }}
+                  >
+                    {group}
+                  </p>
+                )}
+                <button
+                  id={optionId(candidate.command.id)}
+                  type="button"
+                  role="option"
+                  aria-selected={isSelected}
+                  class={`flex w-full items-center gap-3 px-3 py-2 text-left ${
+                    isSelected
+                      ? "bg-[var(--color-paper-2)] text-[var(--color-vermilion)]"
+                      : "text-[var(--color-ink)] hover:bg-[var(--color-paper-soft)]"
+                  }`}
+                  onMouseEnter$={() => {
+                    selectedCommandId.value = candidate.command
+                      .id as EditorCommandId;
+                  }}
+                  onMouseDown$={(event) => event.preventDefault()}
+                  onClick$={() =>
+                    props.onSelect$(candidate.command.id as EditorCommandId)
+                  }
+                >
+                  <span class="min-w-0 flex-1">
+                    <span
+                      class="block truncate text-sm font-medium"
+                      style={{ fontFamily: "var(--font-sans)" }}
+                    >
+                      {candidate.command.label}
+                    </span>
+                    <span
+                      class="mt-0.5 block truncate text-xs text-[var(--color-ink-muted)]"
+                      style={{ fontFamily: "var(--font-serif)" }}
+                    >
+                      {candidate.command.description}
+                    </span>
+                  </span>
+                  {candidate.shortcut && (
+                    <kbd
+                      class="text-[0.62rem] text-[var(--color-ink-muted)]"
+                      style={{ fontFamily: "var(--font-typewriter)" }}
+                    >
+                      {candidate.shortcut}
+                    </kbd>
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+});
+

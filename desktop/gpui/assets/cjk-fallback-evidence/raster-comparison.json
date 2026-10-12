@@ -1,0 +1,134 @@
+{
+  "method": "Actual unchanged screenshots; left-aligned final-row cells; integer ink-bounds translation only; no resampling",
+  "browser": "154.0.8037.57",
+  "networkRequests": 0,
+  "nativeBackend": "X11",
+  "nativeClientOriginPx": [
+    2,
+    0
+  ],
+  "sourceUnchanged": true,
+  "glyphs": [
+    {
+      "character": "東",
+      "sourceUtf16": 103,
+      "webCell": [
+        0,
+        615,
+        18,
+        33
+      ],
+      "nativeCell": [
+        42,
+        625,
+        18,
+        33
+      ],
+      "webInkBoundsPx": [
+        18,
+        17
+      ],
+      "nativeInkBoundsPx": [
+        18,
+        17
+      ],
+      "nativeToWebDarknessRatio": 0.9386093962684412,
+      "beforeToWebDarknessRatio": 0.40281310582832625,
+      "webInkPixels": 178,
+      "nativeInkPixels": 179,
+      "alignedInkMae8Bit": 10.471677559912855
+    },
+    {
+      "character": "京",
+      "sourceUtf16": 104,
+      "webCell": [
+        18,
+        615,
+        18,
+        33
+      ],
+      "nativeCell": [
+        60,
+        625,
+        18,
+        33
+      ],
+      "webInkBoundsPx": [
+        16,
+        17
+      ],
+      "nativeInkBoundsPx": [
+        17,
+        17
+      ],
+      "nativeToWebDarknessRatio": 0.9392230576441103,
+      "beforeToWebDarknessRatio": 0.3562378167641326,
+      "webInkPixels": 144,
+      "nativeInkPixels": 157,
+      "alignedInkMae8Bit": null
+    },
+    {
+      "character": "東",
+      "sourceUtf16": 105,
+      "webCell": [
+        36,
+        615,
+        18,
+        33
+      ],
+      "nativeCell": [
+        78,
+        625,
+        18,
+        33
+      ],
+      "webInkBoundsPx": [
+        18,
+        17
+      ],
+      "nativeInkBoundsPx": [
+        18,
+        17
+      ],
+      "nativeToWebDarknessRatio": 0.9386093962684412,
+      "beforeToWebDarknessRatio": 0.40281310582832625,
+      "webInkPixels": 178,
+      "nativeInkPixels": 179,
+      "alignedInkMae8Bit": 10.471677559912855
+    },
+    {
+      "character": "京",
+      "sourceUtf16": 106,
+      "webCell": [
+        54,
+        615,
+        18,
+        33
+      ],
+      "nativeCell": [
+        96,
+        625,
+        18,
+        33
+      ],
+      "webInkBoundsPx": [
+        16,
+        17
+      ],
+      "nativeInkBoundsPx": [
+        17,
+        17
+      ],
+      "nativeToWebDarknessRatio": 0.9392230576441103,
+      "beforeToWebDarknessRatio": 0.3562378167641326,
+      "webInkPixels": 144,
+      "nativeInkPixels": 157,
+      "alignedInkMae8Bit": null
+    }
+  ],
+  "limitations": [
+    "Chrome and native FreeType/WGPU use different rasterization and pixel phases; these pixels are not identical",
+    "This fixture proves Lora18 regular plus the exact original Droid CJK face, not other weights, platforms or Typst fonts",
+    "CJK inter-character justification and long-URL line layout are separate editor geometry gaps"
+  ]
+}

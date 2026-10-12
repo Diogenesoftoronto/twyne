@@ -1,0 +1,14 @@
+{
+  "status": "parent_reviewed",
+  "model": "sakana/fugu-max",
+  "responseSha256": "20a096fd032de1e2be698b1cca6a32b64da727163a322083dc61ab600737f850",
+  "sourceJob": "sakana-genui-seed-worker-6632c37f1b79",
+  "productionAdopted": true,
+  "parentCorrections": [
+    "Removed invented space in sentence regex",
+    "Corrected default slot vector type",
+    "Matched JavaScript JSON integral number serialization",
+    "Matched offline ReaderQuestions wrapper construction"
+  ],
+  "checksRun": false
+}

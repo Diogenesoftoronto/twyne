@@ -1,0 +1,32 @@
+[
+  {
+    "id": "ee1a4fcc-a91b-4be9-8063-116e211e4496",
+    "folioId": "twyne-gpui-parity",
+    "text": "Keep the opening concrete.\n\nThe notebook should feel **handled**, not described.",
+    "author": "You",
+    "anchor": "small enough to carry in a coat pocket.",
+    "resolved": false,
+    "createdAt": 1791115659644,
+    "updatedAt": 1791115698343,
+    "replies": [
+      {
+        "id": "ucr-1791115698343-0hfh",
+        "author": "You",
+        "authorKind": "user",
+        "text": "You can keep the softened corners.",
+        "createdAt": 1791115698343
+      }
+    ]
+  },
+  {
+    "id": "a2e634dd-4ca5-4963-b145-e787ab4bab0c",
+    "folioId": "twyne-gpui-parity",
+    "text": "The ending can stay in the room.",
+    "author": "You",
+    "anchor": "Let the change in the room carry the ending.",
+    "resolved": true,
+    "createdAt": 1791115746175,
+    "updatedAt": 1791115807013,
+    "replies": []
+  }
+]

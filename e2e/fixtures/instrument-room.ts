@@ -474,7 +474,10 @@ export async function seedRoom(page: Page) {
     },
   );
   await page.goto("/editor/");
-  await expect(manuscript(page)).toContainText(INSTRUMENT_SENTENCE);
+  // Cold development hydration imports the editor before this functional mission starts.
+  await expect(manuscript(page)).toContainText(INSTRUMENT_SENTENCE, {
+    timeout: 60_000,
+  });
   await page.evaluate(() => document.fonts.ready);
 }
 

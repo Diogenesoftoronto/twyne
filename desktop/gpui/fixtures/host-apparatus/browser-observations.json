@@ -1,0 +1,877 @@
+{
+  "observedAt": "2026-10-04T18:48:25.925Z",
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/150.0.0.0 Safari/537.36",
+  "locale": {
+    "locale": "en-US",
+    "calendar": "gregory",
+    "numberingSystem": "latn",
+    "timeZone": "America/Toronto",
+    "year": "numeric",
+    "month": "numeric",
+    "day": "numeric"
+  },
+  "origin": "http://localhost:5180",
+  "detection": [
+    {
+      "name": "empty",
+      "text": "",
+      "expected": {
+        "citations": []
+      }
+    },
+    {
+      "name": "DOI wins overlapping URL",
+      "text": "See https://doi.org/10.1000/xyz. and doi: 10.5555/abc_(def).",
+      "expected": {
+        "citations": [
+          {
+            "id": "doi-20",
+            "text": "10.1000/xyz",
+            "from": 20,
+            "to": 31,
+            "type": "doi",
+            "lookupUrl": "https://doi.org/10.1000/xyz"
+          },
+          {
+            "id": "doi-42",
+            "text": "10.5555/abc_(def)",
+            "from": 42,
+            "to": 59,
+            "type": "doi",
+            "lookupUrl": "https://doi.org/10.5555/abc_(def)"
+          }
+        ]
+      }
+    },
+    {
+      "name": "balanced URL punctuation",
+      "text": "Use (https://example.com/a_(b)). Then https://example.org/p?q=1, https://example.net/x];",
+      "expected": {
+        "citations": [
+          {
+            "id": "url-5",
+            "text": "https://example.com/a_(b)",
+            "from": 5,
+            "to": 30,
+            "type": "url",
+            "lookupUrl": "https://example.com/a_(b)"
+          },
+          {
+            "id": "url-38",
+            "text": "https://example.org/p?q=1",
+            "from": 38,
+            "to": 63,
+            "type": "url",
+            "lookupUrl": "https://example.org/p?q=1"
+          },
+          {
+            "id": "url-65",
+            "text": "https://example.net/x",
+            "from": 65,
+            "to": 86,
+            "type": "url",
+            "lookupUrl": "https://example.net/x"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UTF16 and base offset",
+      "text": "🌿 Café https://example.com/é. [12]",
+      "baseOffset": 11,
+      "expected": {
+        "citations": [
+          {
+            "id": "url-19",
+            "text": "https://example.com/é",
+            "from": 19,
+            "to": 40,
+            "type": "url",
+            "lookupUrl": "https://example.com/é"
+          },
+          {
+            "id": "fn-42",
+            "text": "[12]",
+            "from": 42,
+            "to": 46,
+            "type": "footnote"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ISBN source pattern",
+      "text": "ISBN 0-306-40615-2; ISBN 978-1-4028-9462-6; 123456789X",
+      "expected": {
+        "citations": [
+          {
+            "id": "isbn-0",
+            "text": "ISBN 0-306-40615-2",
+            "from": 0,
+            "to": 18,
+            "type": "isbn",
+            "lookupUrl": "https://www.worldcat.org/search?q=isbn:ISBN0306406152"
+          },
+          {
+            "id": "isbn-29",
+            "text": "1-4028-9462-6",
+            "from": 29,
+            "to": 42,
+            "type": "isbn",
+            "lookupUrl": "https://www.worldcat.org/search?q=isbn:1402894626"
+          },
+          {
+            "id": "isbn-44",
+            "text": "123456789X",
+            "from": 44,
+            "to": 54,
+            "type": "isbn",
+            "lookupUrl": "https://www.worldcat.org/search?q=isbn:123456789X"
+          }
+        ]
+      }
+    },
+    {
+      "name": "authors and month exclusions",
+      "text": "(Smith & Doe, 2024a: 12–18). Smith (2022). June (2020). (January 2021). (de Vries, 2019).",
+      "expected": {
+        "citations": [
+          {
+            "id": "ay-0",
+            "text": "(Smith & Doe, 2024a: 12–18)",
+            "from": 0,
+            "to": 27,
+            "type": "author-year",
+            "lookupUrl": "https://scholar.google.com/scholar?q=Smith%20%26%20Doe%202024a",
+            "metadata": {
+              "author": "Smith & Doe",
+              "year": "2024a"
+            }
+          },
+          {
+            "id": "ay-29",
+            "text": "Smith (2022)",
+            "from": 29,
+            "to": 41,
+            "type": "author-year",
+            "lookupUrl": "https://scholar.google.com/scholar?q=Smith%202022",
+            "metadata": {
+              "author": "Smith",
+              "year": "2022"
+            }
+          },
+          {
+            "id": "ay-72",
+            "text": "(de Vries, 2019)",
+            "from": 72,
+            "to": 88,
+            "type": "author-year",
+            "lookupUrl": "https://scholar.google.com/scholar?q=de%20Vries%202019",
+            "metadata": {
+              "author": "de Vries",
+              "year": "2019"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "footnote word boundary",
+      "text": "x[1] _[2] [3] ([4]). 9[5] [42]",
+      "expected": {
+        "citations": [
+          {
+            "id": "fn-10",
+            "text": "[3]",
+            "from": 10,
+            "to": 13,
+            "type": "footnote"
+          },
+          {
+            "id": "fn-15",
+            "text": "[4]",
+            "from": 15,
+            "to": 18,
+            "type": "footnote"
+          },
+          {
+            "id": "fn-26",
+            "text": "[42]",
+            "from": 26,
+            "to": 30,
+            "type": "footnote"
+          }
+        ]
+      }
+    },
+    {
+      "name": "newlines and DOI case",
+      "text": "DOE (2024)\nDOI: 10.5555/a,b.\nhttps://example.com/a#frag.\n(Smith et al., 2023)",
+      "expected": {
+        "citations": [
+          {
+            "id": "ay-0",
+            "text": "DOE (2024)",
+            "from": 0,
+            "to": 10,
+            "type": "author-year",
+            "lookupUrl": "https://scholar.google.com/scholar?q=DOE%202024",
+            "metadata": {
+              "author": "DOE",
+              "year": "2024"
+            }
+          },
+          {
+            "id": "doi-16",
+            "text": "10.5555/a",
+            "from": 16,
+            "to": 25,
+            "type": "doi",
+            "lookupUrl": "https://doi.org/10.5555/a"
+          },
+          {
+            "id": "url-29",
+            "text": "https://example.com/a#frag",
+            "from": 29,
+            "to": 55,
+            "type": "url",
+            "lookupUrl": "https://example.com/a#frag"
+          },
+          {
+            "id": "ay-57",
+            "text": "(Smith et al., 2023)",
+            "from": 57,
+            "to": 77,
+            "type": "author-year",
+            "lookupUrl": "https://scholar.google.com/scholar?q=Smith%20et%20al.%202023",
+            "metadata": {
+              "author": "Smith et al.",
+              "year": "2023"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "formatting": [
+    {
+      "name": "all original fields",
+      "entry": {
+        "id": "writer-full",
+        "folioId": "folio/notes:café🌿",
+        "title": "  A\n  title  ",
+        "author": " Doe, Jane ",
+        "publisher": " A  Press ",
+        "date": "14 February 2024",
+        "year": "2024",
+        "url": "https://www.Example.com/paper/?q=1#part",
+        "accessedAt": 1700000000000,
+        "pageHint": "18–20",
+        "note": "not formatted",
+        "future": null
+      },
+      "style": "mla",
+      "expected": {
+        "index": 0,
+        "id": "writer-full",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Doe, Jane. \"A title.\" A Press, 14 February 2024, example.com · accessed 11/14/2023.",
+        "footnote": "(Doe 18–20)",
+        "normalizedUrl": "example.com/paper"
+      }
+    },
+    {
+      "name": "all original fields",
+      "entry": {
+        "id": "writer-full",
+        "folioId": "folio/notes:café🌿",
+        "title": "  A\n  title  ",
+        "author": " Doe, Jane ",
+        "publisher": " A  Press ",
+        "date": "14 February 2024",
+        "year": "2024",
+        "url": "https://www.Example.com/paper/?q=1#part",
+        "accessedAt": 1700000000000,
+        "pageHint": "18–20",
+        "note": "not formatted",
+        "future": null
+      },
+      "style": "apa",
+      "expected": {
+        "index": 0,
+        "id": "writer-full",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Doe, Jane (14 February 2024). A title. A Press. Retrieved from https://www.Example.com/paper/?q=1#part",
+        "footnote": "(Doe, 2024)",
+        "normalizedUrl": "example.com/paper"
+      }
+    },
+    {
+      "name": "all original fields",
+      "entry": {
+        "id": "writer-full",
+        "folioId": "folio/notes:café🌿",
+        "title": "  A\n  title  ",
+        "author": " Doe, Jane ",
+        "publisher": " A  Press ",
+        "date": "14 February 2024",
+        "year": "2024",
+        "url": "https://www.Example.com/paper/?q=1#part",
+        "accessedAt": 1700000000000,
+        "pageHint": "18–20",
+        "note": "not formatted",
+        "future": null
+      },
+      "style": "chicago",
+      "expected": {
+        "index": 0,
+        "id": "writer-full",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Doe, Jane. \"A title.\" A Press. 14 February 2024. https://www.Example.com/paper/?q=1#part. Accessed 11/14/2023.",
+        "footnote": "(Doe, 2024)",
+        "normalizedUrl": "example.com/paper"
+      }
+    },
+    {
+      "name": "cached provider text only matching style",
+      "entry": {
+        "id": "cached",
+        "folioId": "folio/notes:café🌿",
+        "title": "Other title",
+        "author": "Roe, John",
+        "year": "2022",
+        "url": "https://example.org/a",
+        "accessedAt": 1700000000000,
+        "style": "apa",
+        "formattedCitation": "Provider text\nkept exactly.",
+        "provenance": "background",
+        "accepted": false
+      },
+      "style": "mla",
+      "expected": {
+        "index": 0,
+        "id": "cached",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Roe, John. \"Other title.\" example.org · accessed 11/14/2023.",
+        "footnote": "(Roe )",
+        "normalizedUrl": "example.org/a"
+      }
+    },
+    {
+      "name": "cached provider text only matching style",
+      "entry": {
+        "id": "cached",
+        "folioId": "folio/notes:café🌿",
+        "title": "Other title",
+        "author": "Roe, John",
+        "year": "2022",
+        "url": "https://example.org/a",
+        "accessedAt": 1700000000000,
+        "style": "apa",
+        "formattedCitation": "Provider text\nkept exactly.",
+        "provenance": "background",
+        "accepted": false
+      },
+      "style": "apa",
+      "expected": {
+        "index": 0,
+        "id": "cached",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Provider text\nkept exactly.",
+        "footnote": "(Roe, 2022)",
+        "normalizedUrl": "example.org/a"
+      }
+    },
+    {
+      "name": "cached provider text only matching style",
+      "entry": {
+        "id": "cached",
+        "folioId": "folio/notes:café🌿",
+        "title": "Other title",
+        "author": "Roe, John",
+        "year": "2022",
+        "url": "https://example.org/a",
+        "accessedAt": 1700000000000,
+        "style": "apa",
+        "formattedCitation": "Provider text\nkept exactly.",
+        "provenance": "background",
+        "accepted": false
+      },
+      "style": "chicago",
+      "expected": {
+        "index": 0,
+        "id": "cached",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Roe, John. \"Other title.\" 2022. https://example.org/a. Accessed 11/14/2023.",
+        "footnote": "(Roe, 2022)",
+        "normalizedUrl": "example.org/a"
+      }
+    },
+    {
+      "name": "empty URL and nullable optional fields",
+      "entry": {
+        "id": "no-url",
+        "folioId": "folio/notes:café🌿",
+        "title": "A source without a link",
+        "url": "",
+        "accessedAt": -1,
+        "author": null,
+        "date": null,
+        "year": null,
+        "pageHint": null
+      },
+      "style": "mla",
+      "expected": {
+        "index": 0,
+        "id": "no-url",
+        "folioId": "folio/notes:café🌿",
+        "citation": "\"A source without a link.\"",
+        "footnote": "(Anonymous )",
+        "normalizedUrl": ""
+      }
+    },
+    {
+      "name": "empty URL and nullable optional fields",
+      "entry": {
+        "id": "no-url",
+        "folioId": "folio/notes:café🌿",
+        "title": "A source without a link",
+        "url": "",
+        "accessedAt": -1,
+        "author": null,
+        "date": null,
+        "year": null,
+        "pageHint": null
+      },
+      "style": "apa",
+      "expected": {
+        "index": 0,
+        "id": "no-url",
+        "folioId": "folio/notes:café🌿",
+        "citation": "A source without a link.",
+        "footnote": "(Anonymous, n.d.)",
+        "normalizedUrl": ""
+      }
+    },
+    {
+      "name": "empty URL and nullable optional fields",
+      "entry": {
+        "id": "no-url",
+        "folioId": "folio/notes:café🌿",
+        "title": "A source without a link",
+        "url": "",
+        "accessedAt": -1,
+        "author": null,
+        "date": null,
+        "year": null,
+        "pageHint": null
+      },
+      "style": "chicago",
+      "expected": {
+        "index": 0,
+        "id": "no-url",
+        "folioId": "folio/notes:café🌿",
+        "citation": "\"A source without a link.\" Accessed 12/31/1969.",
+        "footnote": "(Anonymous, n.d.)",
+        "normalizedUrl": ""
+      }
+    },
+    {
+      "name": "fractional signed date",
+      "entry": {
+        "id": "fractional",
+        "folioId": "folio/notes:café🌿",
+        "title": "Before epoch",
+        "author": "Smith, A.",
+        "url": "not a valid url/",
+        "accessedAt": -1.75
+      },
+      "style": "mla",
+      "expected": {
+        "index": 0,
+        "id": "fractional",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Smith, A.. \"Before epoch.\" not a valid url/ · accessed 12/31/1969.",
+        "footnote": "(Smith )",
+        "normalizedUrl": "not a valid url"
+      }
+    },
+    {
+      "name": "fractional signed date",
+      "entry": {
+        "id": "fractional",
+        "folioId": "folio/notes:café🌿",
+        "title": "Before epoch",
+        "author": "Smith, A.",
+        "url": "not a valid url/",
+        "accessedAt": -1.75
+      },
+      "style": "apa",
+      "expected": {
+        "index": 0,
+        "id": "fractional",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Smith, A. (n.d.). Before epoch. Retrieved from not a valid url/",
+        "footnote": "(Smith, n.d.)",
+        "normalizedUrl": "not a valid url"
+      }
+    },
+    {
+      "name": "fractional signed date",
+      "entry": {
+        "id": "fractional",
+        "folioId": "folio/notes:café🌿",
+        "title": "Before epoch",
+        "author": "Smith, A.",
+        "url": "not a valid url/",
+        "accessedAt": -1.75
+      },
+      "style": "chicago",
+      "expected": {
+        "index": 0,
+        "id": "fractional",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Smith, A.. \"Before epoch.\" not a valid url/. Accessed 12/31/1969.",
+        "footnote": "(Smith, n.d.)",
+        "normalizedUrl": "not a valid url"
+      }
+    },
+    {
+      "name": "empty date remains empty",
+      "entry": {
+        "id": "empty-date",
+        "folioId": "folio/notes:café🌿",
+        "title": "Sparse",
+        "author": "Doe, Jane; Roe, John",
+        "date": "",
+        "year": "1999",
+        "url": "https://bücher.example/Case/",
+        "accessedAt": 1.75
+      },
+      "style": "mla",
+      "expected": {
+        "index": 0,
+        "id": "empty-date",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Doe, Jane; Roe, John. \"Sparse.\" xn--bcher-kva.example · accessed 12/31/1969.",
+        "footnote": "(Doe )",
+        "normalizedUrl": "xn--bcher-kva.example/Case"
+      }
+    },
+    {
+      "name": "empty date remains empty",
+      "entry": {
+        "id": "empty-date",
+        "folioId": "folio/notes:café🌿",
+        "title": "Sparse",
+        "author": "Doe, Jane; Roe, John",
+        "date": "",
+        "year": "1999",
+        "url": "https://bücher.example/Case/",
+        "accessedAt": 1.75
+      },
+      "style": "apa",
+      "expected": {
+        "index": 0,
+        "id": "empty-date",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Doe, Jane; Roe, John (). Sparse. Retrieved from https://bücher.example/Case/",
+        "footnote": "(Doe, 1999)",
+        "normalizedUrl": "xn--bcher-kva.example/Case"
+      }
+    },
+    {
+      "name": "empty date remains empty",
+      "entry": {
+        "id": "empty-date",
+        "folioId": "folio/notes:café🌿",
+        "title": "Sparse",
+        "author": "Doe, Jane; Roe, John",
+        "date": "",
+        "year": "1999",
+        "url": "https://bücher.example/Case/",
+        "accessedAt": 1.75
+      },
+      "style": "chicago",
+      "expected": {
+        "index": 0,
+        "id": "empty-date",
+        "folioId": "folio/notes:café🌿",
+        "citation": "Doe, Jane; Roe, John. \"Sparse.\" https://bücher.example/Case/. Accessed 12/31/1969.",
+        "footnote": "(Doe, 1999)",
+        "normalizedUrl": "xn--bcher-kva.example/Case"
+      }
+    },
+    {
+      "name": "URL query hash and case normalization",
+      "entry": {
+        "id": "url-case",
+        "folioId": "folio/notes:café🌿",
+        "title": "URL test",
+        "url": "HTTP://WWW.Example.COM/Case///?q=one#two",
+        "accessedAt": 8640000000000001
+      },
+      "style": "mla",
+      "expected": {
+        "index": 0,
+        "id": "url-case",
+        "folioId": "folio/notes:café🌿",
+        "citation": "\"URL test.\" example.com · accessed Invalid Date.",
+        "footnote": "(Anonymous )",
+        "normalizedUrl": "example.com/Case"
+      }
+    },
+    {
+      "name": "URL query hash and case normalization",
+      "entry": {
+        "id": "url-case",
+        "folioId": "folio/notes:café🌿",
+        "title": "URL test",
+        "url": "HTTP://WWW.Example.COM/Case///?q=one#two",
+        "accessedAt": 8640000000000001
+      },
+      "style": "apa",
+      "expected": {
+        "index": 0,
+        "id": "url-case",
+        "folioId": "folio/notes:café🌿",
+        "citation": "URL test. Retrieved from HTTP://WWW.Example.COM/Case///?q=one#two",
+        "footnote": "(Anonymous, n.d.)",
+        "normalizedUrl": "example.com/Case"
+      }
+    },
+    {
+      "name": "URL query hash and case normalization",
+      "entry": {
+        "id": "url-case",
+        "folioId": "folio/notes:café🌿",
+        "title": "URL test",
+        "url": "HTTP://WWW.Example.COM/Case///?q=one#two",
+        "accessedAt": 8640000000000001
+      },
+      "style": "chicago",
+      "expected": {
+        "index": 0,
+        "id": "url-case",
+        "folioId": "folio/notes:café🌿",
+        "citation": "\"URL test.\" HTTP://WWW.Example.COM/Case///?q=one#two. Accessed Invalid Date.",
+        "footnote": "(Anonymous, n.d.)",
+        "normalizedUrl": "example.com/Case"
+      }
+    }
+  ],
+  "build": [
+    {
+      "name": "exact scoped normalized URL merge and undefined clearing",
+      "folioId": "folio/notes:café🌿",
+      "now": 1700000000000.75,
+      "citation": {
+        "id": "url-4/🌿",
+        "text": "https://example.com/paper#new",
+        "from": 4,
+        "to": 33,
+        "type": "url",
+        "lookupUrl": "https://example.com/paper#new"
+      },
+      "bibliography": [
+        {
+          "id": "foreign-first",
+          "folioId": "foreign/folio",
+          "title": "Foreign",
+          "url": "https://example.com/paper",
+          "accessedAt": 1,
+          "futureForeign": {
+            "keep": true
+          }
+        },
+        {
+          "id": "keep-original-id",
+          "folioId": "folio/notes:café🌿",
+          "title": "Old title",
+          "url": "http://WWW.Example.COM/paper/?old=yes",
+          "accessedAt": 2,
+          "author": "Old author",
+          "publisher": "Old press",
+          "date": "2020",
+          "year": "2020",
+          "doi": "old-doi",
+          "style": "apa",
+          "formattedCitation": "old provider format",
+          "note": "writer note",
+          "citationKey": "stable-key",
+          "pageHint": "10",
+          "target": {
+            "kind": "claim",
+            "anchor": "Exact claim",
+            "query": "original"
+          },
+          "citationInsertedAt": 3,
+          "future": {
+            "raw": null
+          }
+        },
+        {
+          "id": "later-duplicate",
+          "folioId": "folio/notes:café🌿",
+          "title": "Later",
+          "url": "https://example.com/paper/",
+          "accessedAt": 4
+        }
+      ],
+      "expected": {
+        "entry": {
+          "id": "keep-original-id",
+          "folioId": "folio/notes:café🌿",
+          "title": "https://example.com/paper#new",
+          "url": "https://example.com/paper#new",
+          "accessedAt": 1700000000000.75,
+          "note": "writer note",
+          "citationKey": "stable-key",
+          "pageHint": "10",
+          "target": {
+            "kind": "claim",
+            "anchor": "Exact claim",
+            "query": "original"
+          },
+          "citationInsertedAt": 3,
+          "future": {
+            "raw": null
+          },
+          "provenance": "writer",
+          "createdAt": 1700000000000.75
+        },
+        "mergeTarget": {
+          "index": 1,
+          "expectedRawRow": {
+            "id": "keep-original-id",
+            "folioId": "folio/notes:café🌿",
+            "title": "Old title",
+            "url": "http://WWW.Example.COM/paper/?old=yes",
+            "accessedAt": 2,
+            "author": "Old author",
+            "publisher": "Old press",
+            "date": "2020",
+            "year": "2020",
+            "doi": "old-doi",
+            "style": "apa",
+            "formattedCitation": "old provider format",
+            "note": "writer note",
+            "citationKey": "stable-key",
+            "pageHint": "10",
+            "target": {
+              "kind": "claim",
+              "anchor": "Exact claim",
+              "query": "original"
+            },
+            "citationInsertedAt": 3,
+            "future": {
+              "raw": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "foreign same URL never aliases active folio",
+      "folioId": "folio/notes:café🌿",
+      "now": -1.75,
+      "citation": {
+        "id": "url-0",
+        "text": "https://example.org/source",
+        "from": 0,
+        "to": 26,
+        "type": "url",
+        "lookupUrl": "https://example.org/source"
+      },
+      "bibliography": [
+        {
+          "id": "foreign",
+          "folioId": "foreign/folio",
+          "title": "Foreign",
+          "url": "https://example.org/source",
+          "accessedAt": 7
+        }
+      ],
+      "expected": {
+        "entry": {
+          "id": "ai-fmt-folio-notes-caf----url-0",
+          "title": "https://example.org/source",
+          "url": "https://example.org/source",
+          "folioId": "folio/notes:café🌿",
+          "provenance": "writer",
+          "accessedAt": -1.75,
+          "createdAt": -1.75
+        },
+        "mergeTarget": null
+      }
+    },
+    {
+      "name": "empty URL does not dedupe footnotes",
+      "folioId": "folio/notes:café🌿",
+      "now": 1.75,
+      "citation": {
+        "id": "fn-0",
+        "text": "[3]",
+        "from": 0,
+        "to": 3,
+        "type": "footnote"
+      },
+      "bibliography": [
+        {
+          "id": "prior-no-url",
+          "folioId": "folio/notes:café🌿",
+          "title": "Prior",
+          "url": "",
+          "accessedAt": 9
+        }
+      ],
+      "expected": {
+        "entry": {
+          "id": "ai-fmt-folio-notes-caf----fn-0",
+          "title": "[3]",
+          "url": "",
+          "folioId": "folio/notes:café🌿",
+          "provenance": "writer",
+          "accessedAt": 1.75,
+          "createdAt": 1.75
+        },
+        "mergeTarget": null
+      }
+    },
+    {
+      "name": "path case remains significant",
+      "folioId": "folio/notes:café🌿",
+      "now": 1700000000000,
+      "citation": {
+        "id": "url-0",
+        "text": "https://example.com/Paper",
+        "from": 0,
+        "to": 25,
+        "type": "url",
+        "lookupUrl": "https://example.com/Paper"
+      },
+      "bibliography": [
+        {
+          "id": "lower-case-path",
+          "folioId": "folio/notes:café🌿",
+          "title": "Prior",
+          "url": "https://example.com/paper",
+          "accessedAt": 10
+        }
+      ],
+      "expected": {
+        "entry": {
+          "id": "ai-fmt-folio-notes-caf----url-0",
+          "title": "https://example.com/Paper",
+          "url": "https://example.com/Paper",
+          "folioId": "folio/notes:café🌿",
+          "provenance": "writer",
+          "accessedAt": 1700000000000,
+          "createdAt": 1700000000000
+        },
+        "mergeTarget": null
+      }
+    }
+  ],
+  "originalEditorHtmlUnchanged": true
+}

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>love.twyne.gpui</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Proprietary</project_license>
+  <name>Twyne</name>
+  <summary>Offline-first writing desk with a native Typst proof</summary>
+  <description>
+    <p>
+      Twyne is a local-first writing desk with an AI-assisted room of editors.
+      The native desktop build renders the manuscript, the editorial board, and
+      the Typst proof with Twyne's original styling and assets, and keeps the
+      library on disk for offline work.
+    </p>
+  </description>
+  <launchable type="desktop-id">love.twyne.gpui.desktop</launchable>
+  <provides>
+    <binary>twyne-desktop</binary>
+    <mediatype>application/x-typst</mediatype>
+    <mediatype>application/json</mediatype>
+    <mediatype>text/html</mediatype>
+    <mediatype>text/markdown</mediatype>
+    <mediatype>text/plain</mediatype>
+  </provides>
+  <categories>
+    <category>Office</category>
+    <category>WordProcessor</category>
+  </categories>
+  <content_rating type="oars-1.1"/>
+  <url type="homepage">https://twyne.love</url>
+  <releases>
+    <release version="0.1.0" date="2026-10-04"/>
+  </releases>
+</component>

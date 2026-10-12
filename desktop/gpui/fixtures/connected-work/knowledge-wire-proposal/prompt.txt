@@ -1,0 +1,285 @@
+You are an isolated Sakana advisory worker on Twyne GPUI. You are not alone in the codebase: Root and other workers own runtime/UI/auth. Do not revert other work. NO shell/files/network/credential/account/deployment authority. Only propose native_accounts/knowledge_wire.rs, <=150 Rust lines, no UI or consent engine. The prior broad consent-engine proposal timed out; this is a distinct bounded wire DTO task. Return valid JSON {files:[{path,content}],checks:[],limitations:[]}, no fences. Existing deps serde,serde_json,anyhow only. Define exact source catalog wrapper, account source, tool, resource wrapper, resource DTOs and action input DTOs. Preserve unknown catalog/tool/resource fields via flattened Map<String,Value> for future compatibility. Source tools inputSchema optional, title optional, description optional, resources_allowed snake_case; use Source exact names. Avoid inferring schema or granting consent; catalog presence alone does not authorize calls. Validate request IDs/tool strings nonempty <=256 (JS UTF16 units), resourceURI nonempty<=4096, args object only and JSON encoding<=60000 UTF16 units matching server; highlight serialization-order nuance. Pure tests for limits/astral text/unknownfields/wrappers. No manifest/barrel/host edits and no guessed auth APIs. Root integrates after review.
+
+SOURCE convex/knowledge.ts
+"use node";
+
+import { action, type ActionCtx } from "./_generated/server";
+import { makeFunctionReference } from "convex/server";
+import { ConvexError, v } from "convex/values";
+import {
+  issueNotOrganicAccessToken,
+  notOrganicIssuer,
+  providerJsonRequest,
+} from "./lib/notorganic";
+
+const linkRef = makeFunctionReference<
+  "query",
+  { productSubject: string },
+  { did: string; sessionVersion: number } | null
+>("providerIdentity:getLinkedDidBySubject");
+const sourceId = v.string();
+function segment(value: string) {
+  if (!value || value.length > 256)
+    throw new ConvexError("Invalid knowledge source.");
+  return encodeURIComponent(value);
+}
+async function request(
+  ctx: ActionCtx,
+  path: string,
+  call = false,
+  body?: unknown,
+): Promise<unknown> {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity)
+    throw new ConvexError("Sign in with Not Organic to use account sources.");
+  const link = await ctx.runQuery(linkRef, {
+    productSubject: identity.subject || identity.tokenIdentifier,
+  });
+  if (!link)
+    throw new ConvexError(
+      "Reconnect your Not Organic account to use account sources.",
+    );
+  try {
+    const token = await issueNotOrganicAccessToken({
+      did: link.did,
+      sessionVersion: link.sessionVersion,
+      feature: "knowledge",
+      capabilities: [call ? "knowledge:tools" : "knowledge:read"],
+    });
+    return await providerJsonRequest<unknown>(
+      path,
+      token,
+      body === undefined
+        ? { signal: AbortSignal.timeout(30_000) }
+        : {
+            method: "POST",
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(30_000),
+          },
+      { issuer: notOrganicIssuer(), feature: "knowledge" },
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (/\(403\)|knowledge_access_denied/.test(message))
+      throw new ConvexError(
+        "Access to this source was revoked. Share it with Twyne in Not Organic, then refresh sources.",
+      );
+    if (/\(409\)|knowledge_tool_changed/.test(message))
+      throw new ConvexError(
+        "This tool changed. Review its sharing permissions in Not Organic, then refresh sources.",
+      );
+    if (/\(401\)|session_revoked/.test(message))
+      throw new ConvexError(
+        "Your account session expired. Sign in with Not Organic again.",
+      );
+    throw new ConvexError(
+      "Account sources are unavailable. Try refreshing sources later. Tool calls are never retried automatically.",
+    );
+  }
+}
+
+export const sources = action({
+  args: {},
+  returns: v.any(),
+  handler: (ctx) => request(ctx, "/v1/knowledge/sources"),
+});
+export const resources = action({
+  args: { sourceId },
+  returns: v.any(),
+  handler: (ctx, args) =>
+    request(ctx, `/v1/knowledge/sources/${segment(args.sourceId)}/resources`),
+});
+export const read = action({
+  args: { sourceId, uri: v.string() },
+  returns: v.any(),
+  handler: (ctx, args) => {
+    if (!args.uri || args.uri.length > 4096)
+      throw new ConvexError("Choose a listed resource.");
+    return request(
+      ctx,
+      `/v1/knowledge/sources/${segment(args.sourceId)}/resources/read`,
+      false,
+      { uri: args.uri },
+    );
+  },
+});
+export const call = action({
+  args: { sourceId, tool: v.string(), arguments: v.any() },
+  returns: v.any(),
+  handler: (ctx, args) => {
+    if (
+      !args.arguments ||
+      typeof args.arguments !== "object" ||
+      Array.isArray(args.arguments) ||
+      JSON.stringify(args.arguments).length > 60_000
+    )
+      throw new ConvexError("Supply a tool arguments object.");
+    return request(
+      ctx,
+      `/v1/knowledge/sources/${segment(args.sourceId)}/tools/${segment(args.tool)}/call`,
+      true,
+      { arguments: args.arguments },
+    );
+  },
+});
+
+END SOURCE
+
+SOURCE src/utils/account-knowledge.ts
+import { makeFunctionReference } from "convex/server";
+import type { ToolSet } from "ai";
+import type { ConvexClient } from "convex/browser";
+import type { Source } from "../../convex/research";
+import type { McpToolInfo } from "./mcp-client";
+import { toSources } from "./research-backends";
+
+export interface AccountSource {
+  id: string;
+  label: string;
+  tools: McpToolInfo[];
+  resources_allowed: boolean;
+}
+export interface AccountSourceChoice {
+  research: boolean;
+  model: boolean;
+  resources: boolean;
+  searchTool?: string;
+  modelTools?: string[];
+  toolDefinitions?: Record<string, string>;
+}
+export interface AccountResource {
+  uri: string;
+  name: string;
+  title?: string;
+  mimeType?: string;
+}
+export interface AccountKnowledgeSnapshot {
+  account: string | null;
+  sources: AccountSource[];
+  choices: Record<string, AccountSourceChoice>;
+  review?: {
+    sourceId: string;
+    label: string;
+    tool: string;
+    argumentsJson: string;
+    mode: "research" | "model";
+  };
+  loading: boolean;
+  error: string;
+}
+const refs = {
+  sources: makeFunctionReference<"action", Record<string, never>, unknown>(
+    "knowledge:sources",
+  ),
+  resources: makeFunctionReference<"action", { sourceId: string }, unknown>(
+    "knowledge:resources",
+  ),
+  read: makeFunctionReference<
+    "action",
+    { sourceId: string; uri: string },
+    unknown
+  >("knowledge:read"),
+  call: makeFunctionReference<
+    "action",
+    { sourceId: string; tool: string; arguments: Record<string, unknown> },
+export async function refreshAccountKnowledge(): Promise<AccountSource[]> {
+  const active = client,
+    epoch = generation,
+    request = ++catalogRequest;
+  if (!active || !snapshot.account) return [];
+  snapshot.loading = true;
+  snapshot.error = "";
+  publish();
+  try {
+    const raw = (await active.action(refs.sources, {})) as { data?: unknown };
+    if (epoch !== generation || active !== client || request !== catalogRequest)
+      return [];
+    if (!Array.isArray(raw?.data)) throw new Error("Invalid sources response");
+    if (JSON.stringify(raw.data).length > 1_048_576)
+      throw new Error("Source catalog is too large");
+    if (raw.data.length > 100) throw new Error("Source catalog is too large");
+    const seen = new Set<string>();
+    const sources: AccountSource[] = raw.data.map((value) => {
+      if (!value || typeof value !== "object")
+        throw new Error("Invalid source catalog");
+      const source = value as AccountSource;
+      if (
+        typeof source.id !== "string" ||
+        !source.id ||
+        source.id.length > 256 ||
+        seen.has(source.id) ||
+        typeof source.label !== "string" ||
+        source.label.length > 200 ||
+        !Array.isArray(source.tools) ||
+        source.tools.length > 128 ||
+        typeof source.resources_allowed !== "boolean"
+      )
+        throw new Error("Invalid source catalog");
+      seen.add(source.id);
+      const toolNames = new Set<string>();
+      for (const tool of source.tools) {
+        if (
+          !tool ||
+          typeof tool.name !== "string" ||
+          !tool.name ||
+          tool.name.length > 256 ||
+          toolNames.has(tool.name) ||
+export async function accountResources(id: string): Promise<AccountResource[]> {
+  const { source, active, epoch } = selected(id, "resources");
+  if (!source.resources_allowed)
+    throw new Error("Resource access is not approved for Twyne.");
+  try {
+    const result = (await active.action(refs.resources, { sourceId: id })) as {
+      resources?: AccountResource[];
+    };
+    current(epoch);
+    selected(id, "resources");
+    if (!Array.isArray(result?.resources) || result.resources.length > 200)
+      throw new Error("Invalid resource list");
+    return result.resources.filter(
+      (resource) =>
+        resource &&
+        typeof resource.uri === "string" &&
+        resource.uri.length > 0 &&
+        resource.uri.length <= 4096 &&
+        typeof resource.name === "string" &&
+        resource.name.length <= 1024,
+    );
+  } catch (error) {
+    return failed(error, epoch, id);
+  }
+}
+export async function readAccountResource(
+  id: string,
+  uri: string,
+): Promise<string> {
+  const { active, epoch } = selected(id, "resources");
+  if (!(await accountResources(id)).some((resource) => resource.uri === uri))
+    throw new Error("Choose a listed resource.");
+  current(epoch);
+  selected(id, "resources");
+  try {
+    const result = (await active.action(refs.read, { sourceId: id, uri })) as {
+      contents?: { text?: string }[];
+    };
+    current(epoch);
+    selected(id, "resources");
+    return (result.contents ?? [])
+END SOURCE
+
+SOURCE src/utils/mcp-client.ts
+export interface McpToolInfo {
+  name: string;
+  title?: string;
+  description?: string;
+  inputSchema?: Record<string, unknown>;
+}
+
+export interface McpResourceInfo {
+  uri: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  mimeType?: string;
+  /** Set when this came from resources/templates/list rather than a concrete list. */
+END SOURCE

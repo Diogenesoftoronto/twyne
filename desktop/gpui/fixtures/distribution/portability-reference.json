@@ -1,0 +1,118 @@
+{
+  "report": {
+    "schemaVersion": 1,
+    "generator": "desktop/gpui/packaging/portability.ts",
+    "platform": "linux",
+    "scope": "Real local release build (twyne-desktop, twyne-document). twyne-math-write was absent from this build.",
+    "binaries": [
+      {
+        "id": "desktop",
+        "path": "twyne-desktop",
+        "format": "elf",
+        "architecture": "x86_64",
+        "interpreter": "/lib64/ld-linux-x86-64.so.2",
+        "nonPortableInterpreter": false,
+        "runpaths": [],
+        "dependencies": [
+          {
+            "library": "libxcb.so.1",
+            "classification": "system-x11",
+            "requiresHostInstall": true,
+            "note": "Host must provide X11/xkbcommon development or runtime packages."
+          },
+          {
+            "library": "libxkbcommon.so.0",
+            "classification": "system-x11",
+            "requiresHostInstall": true,
+            "note": "Host must provide X11/xkbcommon development or runtime packages."
+          },
+          {
+            "library": "libxkbcommon-x11.so.0",
+            "classification": "system-x11",
+            "requiresHostInstall": true,
+            "note": "Host must provide X11/xkbcommon development or runtime packages."
+          },
+          {
+            "library": "libgcc_s.so.1",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          },
+          {
+            "library": "libm.so.6",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          },
+          {
+            "library": "libc.so.6",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          },
+          {
+            "library": "ld-linux-x86-64.so.2",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          }
+        ]
+      },
+      {
+        "id": "document",
+        "path": "twyne-document",
+        "format": "elf",
+        "architecture": "x86_64",
+        "interpreter": "/nix/store/h4wfwic161kxrr74jlzla5lsm28hgary-glibc-2.44-25/lib/ld-linux-x86-64.so.2",
+        "nonPortableInterpreter": true,
+        "runpaths": [],
+        "dependencies": [
+          {
+            "library": "libc.so.6",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          },
+          {
+            "library": "ld-linux-x86-64.so.2",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          },
+          {
+            "library": "libpthread.so.0",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          },
+          {
+            "library": "libdl.so.2",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          },
+          {
+            "library": "libm.so.6",
+            "classification": "system-glibc",
+            "requiresHostInstall": false,
+            "note": "Provided by the host C library; a minimum glibc/musl version is still required."
+          }
+        ]
+      }
+    ],
+    "updateSignature": {
+      "requiresCodeSigning": [],
+      "updateMechanismImplemented": false,
+      "note": "No update mechanism or signing is implemented. The reference Electrobun shell self-updates; the native port has no updater, so any update channel and its signature requirements are still to be designed and are out of scope here."
+    },
+    "limits": [
+      "This report describes loader metadata only. It is not proof the staged binaries run.",
+      "It does not establish a portable Linux build, a clean install, macOS/Windows runtime behavior, signing, or updates.",
+      "A minimum host glibc/musl version is not verified here.",
+      "Wayland/X11 runtime selection and GPU driver availability are not verified here.",
+      "The Bun-compiled document helper links the build machine's dynamic loader; a release build must be produced against a stable baseline loader."
+    ]
+  },
+  "hostRequirementCount": 3,
+  "missingFromStandardDirs": []
+}

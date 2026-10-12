@@ -1,0 +1,61 @@
+{
+  "status": "frozen-unregistered-unapplied-proposal",
+  "moduleSha256": "fee08f1898d6068f91de577d6284fdd2760e827bcab8d1f7f9cc027a7780a439",
+  "patchSha256": "f2d1ae7ef0d3ddca91c1cf56675473180de4d61c73db3eaaa952df2107e02404",
+  "gpui": "gpui-pre 0.3.7",
+  "wgpu": "29.0.4",
+  "ownedFiles": {
+    "desktop/gpui/fixtures/dossier-multiply/README.md": "ca34335bc68505514d27a545f4b5c480328edafeb65eb92b1eb253e253471e41",
+    "desktop/gpui/fixtures/dossier-multiply/apply-check.json": "0a9a9430b23ca1f01acbaf70ba4256abef9e05ea8416901366384985f12b0d96",
+    "desktop/gpui/fixtures/dossier-multiply/broadsheet-1280-group.svg": "8bd4962836be7e4940ef7be251d4cc2c883fe0625a11d9c328adbb38991effa8",
+    "desktop/gpui/fixtures/dossier-multiply/broadsheet-4-group.svg": "0ceea41aa3268299d731d899f11c7796a74b4bc8feb30b042af1464e1285f10d",
+    "desktop/gpui/fixtures/dossier-multiply/broadsheet-620-group.svg": "88e160423aa58d6631cce1908c28d8bdad2be4c7fffd13f2e26f1c5b660300b5",
+    "desktop/gpui/fixtures/dossier-multiply/build-patch.py": "5a974fa47caa0d14f363ef05f5859562c998c912cf119204fa6cb0a323c9749b",
+    "desktop/gpui/fixtures/dossier-multiply/check-patch.py": "adbd98cc721513cbd6f04b9ae698d78bfbf15e00a26519200fc7bd65e92f892a",
+    "desktop/gpui/fixtures/dossier-multiply/contract.test.ts": "043b8d883657a004274fe5bc31d4346d5bf028b505704c0b1b1652b77a80443e",
+    "desktop/gpui/fixtures/dossier-multiply/editorial-1280-group.svg": "b405e6fe0fa0c69ea3b07f19009bc666aa71421fe6c923ea0a5a6c5a6d2b9b51",
+    "desktop/gpui/fixtures/dossier-multiply/editorial-4-group.svg": "3add895f34f4f485485752b93407bf91cc903ead62271f3046e8b14b4c746c06",
+    "desktop/gpui/fixtures/dossier-multiply/editorial-620-group.svg": "2695643bda65ea3d3d116980d41d1215d0e8924fed8d2432c78165dad7fda061",
+    "desktop/gpui/fixtures/dossier-multiply/foolscap-1280-group.svg": "b07ca59e936e7fb0742ccc970fa3b1107e378d8b63cd50274132eeb698c9033d",
+    "desktop/gpui/fixtures/dossier-multiply/foolscap-4-group.svg": "cfb6e3d92c40971133d456fb9d0d45fef045fc2e8ab48370a194a81b9a207243",
+    "desktop/gpui/fixtures/dossier-multiply/foolscap-620-group.svg": "26ab7c64c7d9584959e7e718156de614157a62d7b531b78b0f6a0f5ee5041f01",
+    "desktop/gpui/fixtures/dossier-multiply/freeze.py": "38d8f8e658ceb2c5f6eaaf725b3fe07ec9b7711e764c65482e0b143ed7d2e04b",
+    "desktop/gpui/fixtures/dossier-multiply/generate.ts": "9e9830d11853880f8658d517b9d4194e76109061cb0b8cdd9b9fe747efe8a658",
+    "desktop/gpui/fixtures/dossier-multiply/integration.patch": "f2d1ae7ef0d3ddca91c1cf56675473180de4d61c73db3eaaa952df2107e02404",
+    "desktop/gpui/fixtures/dossier-multiply/kernel.ts": "973e026514a3da43d4226577b12c045997f7fc6afc3f56d0cb948c7b76c9d7c4",
+    "desktop/gpui/fixtures/dossier-multiply/multiply-fragment.wgsl": "0a4cfc70fbd24c87e86d1b35da077d3c5040646e359bff9e532a35c7e9121a27",
+    "desktop/gpui/fixtures/dossier-multiply/multiply-pipeline.rs": "12e7d96707bea2b89226722556400f69b6b117422fd2dbd071b0d19b161a62f2",
+    "desktop/gpui/fixtures/dossier-multiply/nightpress-1280-group.svg": "0b7b85940f78d944012b7db37e2ff1a59d3c582d77a402a43264eaa9dde267f2",
+    "desktop/gpui/fixtures/dossier-multiply/nightpress-4-group.svg": "41e30f7c32b959ba1cf04b3492fac93b2a617ed7a7f4fb6fbcd9cadb473e2bf9",
+    "desktop/gpui/fixtures/dossier-multiply/nightpress-620-group.svg": "9863baf0d3bc5b57acd6e1583081b6c75d7bed99c31976cc049d2f17858a41dd",
+    "desktop/gpui/fixtures/dossier-multiply/paint-multiply.rs": "50478495e63e9e781ce2feb6b3392d27affa5b1f32e629caff4d51cd25f86035",
+    "desktop/gpui/fixtures/dossier-multiply/patch-receipt.json": "68fad9c0525e06a512d67de88d4371a30d471eb8d9f07e4b4c8183b67ff5f219",
+    "desktop/gpui/fixtures/dossier-multiply/render-group.rs": "38f96013a5e093d7ec1424baac915daa3571b893ab2c98f1e29020a0312e72bd",
+    "desktop/gpui/fixtures/dossier-multiply/scene-tests.rs": "c0e82a5ede8fffacfc9150fab5217baa00eedf4927e6421be7593883919e97b6",
+    "desktop/gpui/fixtures/dossier-multiply/source-vectors.json": "ef17cafdd6ec62febeb3152835b4cd3737e6374a27efc8ebe5f2be574e18aa4f",
+    "desktop/gpui/src/dossier_multiply.rs": "fee08f1898d6068f91de577d6284fdd2760e827bcab8d1f7f9cc027a7780a439"
+  },
+  "executed": {
+    "BunTests": 11,
+    "BunAssertions": 63,
+    "SourceScalarPairs": 252,
+    "maxOpaqueScalarEquationError": 1.1102230246251565e-16,
+    "groupSVGs": 12,
+    "isolatedGitApplyCheck": "PASS-all5-unapplied",
+    "rustfmt": "PASS-syntax-and-format-only"
+  },
+  "authoredNotRun": {
+    "newModuleRustTests": 5,
+    "patchedCoreSceneTests": 3
+  },
+  "limits": [
+    "No registered/mounted multiply",
+    "No Rust type/Clippy/shader compilation",
+    "No native GPU/OS/browser/device pixel proof",
+    "No Source CSS or background edits",
+    "Opaque backdrop + unfaded ancestor + non-sRGB byte-channel target/atlas only",
+    "Integral device extent/origin/content mask only",
+    "Chromium vs resvg raster remains unverified",
+    "Parent owns vendor override/export/mount and GPU atlas retirement"
+  ]
+}

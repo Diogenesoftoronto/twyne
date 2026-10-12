@@ -1,0 +1,96 @@
+// Execute the unchanged original catalog without network or browser calls.
+import { createToolStream, validateToolSpec } from "../../../../src/components/in-flow/catalog.ts";
+
+const make = (type: string, props: unknown): any => ({ root: "tool", elements: { tool: { type, props, children: [] } } });
+const sentence = () => make("SentenceLab", { sentence: "It decided nothing.", attempts: [], variants: [] });
+const reader = () => make("ReaderQuestions", { angle: "", questions: [] });
+const rhythm = () => make("RhythmStrip", { sentences: [{ text: "A sentence.", words: 3 }], targetMin: 8, targetMax: 28 });
+const claim = () => make("ClaimCheck", { claim: "A claim.", slots: [{ label: "A source", filled: false }] });
+const validations: any[] = [];
+function validation(id: string, value: any, change?: (value: any) => void) {
+  change?.(value);
+  validations.push({ id, input: value, expected: validateToolSpec(value) });
+}
+for (const [name, seed] of [["sentence", sentence], ["reader", reader], ["rhythm", rhythm], ["claim", claim]] as const) validation(name, seed());
+validation("unknown-component", sentence(), s => s.elements.tool.type = "Iframe");
+validation("empty-sentence", sentence(), s => s.elements.tool.props.sentence = "");
+validation("empty-attempt", sentence(), s => s.elements.tool.props.attempts = [""]);
+validation("empty-variant", sentence(), s => s.elements.tool.props.variants = [""]);
+validation("seven-attempts", sentence(), s => s.elements.tool.props.attempts = Array(7).fill("x"));
+validation("four-variants", sentence(), s => s.elements.tool.props.variants = Array(4).fill("x"));
+validation("unicode-sentence-boundary", sentence(), s => s.elements.tool.props.sentence = "😀".repeat(600));
+validation("unicode-sentence-overflow", sentence(), s => s.elements.tool.props.sentence = "😀".repeat(601));
+validation("unknown-props", sentence(), s => s.elements.tool.props.extra = { kept: true });
+validation("wrapper-metadata", sentence(), s => { s.extra = true; s.elements.tool.extra = true; });
+validation("other-root", sentence(), s => s.root = "other");
+validation("empty-root", sentence(), s => s.root = "");
+validation("numeric-root", sentence(), s => s.root = 3);
+validation("missing-children", sentence(), s => delete s.elements.tool.children);
+validation("numeric-child", sentence(), s => s.elements.tool.children = [3]);
+validation("unresolved-child", sentence(), s => s.elements.tool.children = ["absent"]);
+validation("extra-loose-element", sentence(), s => s.elements.other = { type: "ClaimCheck", props: { claim: false }, children: [] });
+validation("extra-invalid-element", sentence(), s => s.elements.other = { type: "Iframe", props: {}, children: [] });
+validation("extra-null-props", sentence(), s => s.elements.other = { type: "ClaimCheck", props: null, children: [] });
+validation("rhythm-empty", rhythm(), s => s.elements.tool.props.sentences = []);
+validation("rhythm-forty", rhythm(), s => s.elements.tool.props.sentences = Array(40).fill({ text: "", words: 0 }));
+validation("rhythm-forty-one", rhythm(), s => s.elements.tool.props.sentences = Array(41).fill({ text: "", words: 0 }));
+validation("rhythm-negative", rhythm(), s => s.elements.tool.props.sentences[0].words = -1);
+validation("rhythm-fractional", rhythm(), s => s.elements.tool.props.sentences[0].words = 1.25);
+validation("rhythm-no-cross-field-rule", rhythm(), s => { s.elements.tool.props.targetMin = 80; s.elements.tool.props.targetMax = 2; });
+validation("rhythm-huge-integral", rhythm(), s => s.elements.tool.props.sentences[0].words = 1e100);
+validation("rhythm-safe-integer-boundary", rhythm(), s => s.elements.tool.props.sentences[0].words = Number.MAX_SAFE_INTEGER);
+validation("rhythm-unsafe-integer", rhythm(), s => s.elements.tool.props.sentences[0].words = Number.MAX_SAFE_INTEGER + 1);
+validation("claim-empty-slots", claim(), s => s.elements.tool.props.slots = []);
+validation("claim-five-slots", claim(), s => s.elements.tool.props.slots = Array(5).fill({ label: "x", filled: true }));
+validation("claim-six-slots", claim(), s => s.elements.tool.props.slots = Array(6).fill({ label: "x", filled: true }));
+validation("claim-unicode-label", claim(), s => s.elements.tool.props.slots[0].label = "😀".repeat(30));
+validation("claim-unicode-label-overflow", claim(), s => s.elements.tool.props.slots[0].label = "😀".repeat(31));
+validation("claim-filled-type", claim(), s => s.elements.tool.props.slots[0].filled = "false");
+validation("reader-unicode-angle", reader(), s => s.elements.tool.props.angle = "😀".repeat(100));
+validation("reader-unicode-angle-overflow", reader(), s => s.elements.tool.props.angle = "😀".repeat(101));
+validation("reader-question-short", reader(), s => s.elements.tool.props.questions = ["no"]);
+validation("reader-question-unicode", reader(), s => s.elements.tool.props.questions = ["😀".repeat(120)]);
+validation("reader-question-unicode-overflow", reader(), s => s.elements.tool.props.questions = ["😀".repeat(121)]);
+validation("reader-four-questions", reader(), s => s.elements.tool.props.questions = ["one", "two", "three", "four"]);
+validation("reader-five-questions", reader(), s => s.elements.tool.props.questions = ["one", "two", "three", "four", "five"]);
+
+const V = "/elements/tool/props/variants/-";
+const Q = "/elements/tool/props/questions/-";
+const line = (value: unknown, path = V, op = "add") => JSON.stringify({ op, path, value });
+const streams: any[] = [];
+function stream(id: string, seed: any, max: number, steps: ({ text: string } | { finish: true })[]) {
+  const compiler = createToolStream(structuredClone(seed), max);
+  const expected = steps.map(step => structuredClone("text" in step ? compiler.push(step.text) : compiler.finish()));
+  streams.push({ id, seed, max, steps, expected });
+}
+const full = line("Café 😀 reads.") + "\n";
+const cut = full.indexOf("😀") + 2;
+stream("unicode-cumulative", sentence(), 3, [{ text: full.slice(0, cut) }, { text: full }, { text: full }]);
+stream("finish-once", sentence(), 3, [{ text: line("A final variant.") }, { finish: true }, { finish: true }]);
+const denied = ["prose", "```json", line("No.", V, "replace"), line("No.", "/elements/tool/props/sentence"), line(3), "{invalid}", line("Kept.")].join("\n") + "\n";
+stream("allowlist", sentence(), 3, [{ text: denied }, { finish: true }]);
+const cap = [line("One."), line("Two."), line("Three."), line("Four.")].join("\n") + "\n";
+stream("cap", sentence(), 2, [{ text: cap }, { finish: true }]);
+stream("zero-cap", sentence(), 0, [{ text: cap }]);
+const poison = line("") + "\n";
+stream("invalid-candidate-persists", sentence(), 3, [{ text: poison }, { text: poison + line("Good.") + "\n" }]);
+const excluded = line("Good.") + "\n";
+stream("invalid-after-cap", sentence(), 1, [{ text: excluded }, { text: excluded + line("") + "\n" }]);
+stream("feff-trim", sentence(), 3, [{ text: "\uFEFF" + line("Good.") + "\uFEFF\n" }]);
+stream("u0085-is-not-js-whitespace", sentence(), 3, [{ text: "\u0085" + line("Ignored.") + "\u0085\n" }]);
+stream("crlf", sentence(), 3, [{ text: line("Good.") + "\r\n" }]);
+stream("reader-append-only", reader(), 3, [{ text: line("Why does this matter?", Q) + "\n" + line("Ignored.", V) + "\n" }]);
+stream("reader-invalid-poisons", reader(), 3, [{ text: line("no", Q) + "\n" + line("Why does this matter?", Q) + "\n" }]);
+stream("rhythm-no-stream", rhythm(), 3, [{ text: line("Ignored.") + "\n" }]);
+stream("claim-no-stream", claim(), 3, [{ text: line("Ignored.") + "\n" }]);
+const metadata = sentence(); metadata.extra = true; metadata.elements.tool.extra = true; metadata.elements.tool.props.extra = true;
+stream("normalization-after-update", metadata, 3, [{ text: "" }, { text: line("Good.") + "\n" }]);
+stream("shorter-cumulative-snapshot", sentence(), 3, [{ text: full }, { text: full.slice(0, 10) }, { text: full }]);
+const longSeed=sentence(); longSeed.elements.tool.props.sentence="x".repeat(1201);
+stream("long-writer-seed-still-visible",longSeed,3,[{text:""},{text:line("A model suggestion.")+"\n"},{finish:true}]);
+const emptyRhythm=rhythm();emptyRhythm.elements.tool.props.sentences=[];
+stream("empty-deterministic-rhythm",emptyRhythm,3,[{text:line("Ignored.")+"\n"},{finish:true}]);
+
+if (!process.argv[2]) throw new Error("Owned output path is required");
+await Bun.write(process.argv[2], JSON.stringify({ source: "src/components/in-flow/catalog.ts", validations, streams }, null, 2) + "\n");
+console.log(JSON.stringify({ validations: validations.length, streams: streams.length, streamSnapshots: streams.reduce((n, s) => n + s.expected.length, 0) }));

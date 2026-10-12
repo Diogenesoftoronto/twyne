@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "status": "superseded_before_freeze",
+  "patch_target": "desktop/gpui/src/dossier_view.rs",
+  "inspected_inputs": {
+    "desktop/gpui/src/dossier_view.rs": "f63ae1e867a961237b12241e84b5ea0e364f71a0b408ca3985491f7f258adddb",
+    "src/components/onboarding/dossier-folio.tsx": "77c1fb9bce10345add264b57c4389c9b7a90d629ddd652b0ef8ef0a0cbb8a281",
+    "src/components/onboarding/dossier-top-bar.tsx": "ca2f2f14ef7abdb58b116268ae1c0524ca5ac5957bc2fe63b9f646aa43cd6492",
+    "src/components/onboarding/anti-tabula-rasa.tsx": "bd8162f3e0ca95ebdb8e4b817f3b1cc92099e7a1c0f489d9215d7ae9d4a4706c",
+    "src/components/brief/dossier-preview.tsx": "8388ee9fd9d16ceed1445eb55a32c2ffb4edf94189988d740c4b252084b5bf0e",
+    "src/global.css": "718d4908aa9c87462cb0b70dabc567708e0f1f531426b671750a51825ef86da2",
+    "desktop/gpui/vendor/gpui-pre/src/elements/div.rs": "10f334243fae305666e48d4939ed63495ce01b13534db22a751062a6f76fa59b",
+    "desktop/gpui/vendor/gpui-pre/src/styled.rs": "c6e62fe136bedf887ee755c886df5466d5fe0b398a004b35d1a3530fef809c8d",
+    "desktop/gpui/vendor/gpui-pre/src/window.rs": "802a2ef83a5cca1efa95eee62556f9f38a98afc1f500e10b19dbec3eeeac23fc",
+    "desktop/gpui/vendor/gpui-pre/src/element.rs": "1eea2303609c4aca23e44e623a9d44eded93ad8b70f86e3e4c7446b3e0238b4c"
+  },
+  "proposed_view_hashes": {
+    "local_presentation": "a4a084d840d3aaf0cfae35ac5dec7e56544255805dd3b7f08415403fa0d55fe1",
+    "local_plus_optional_same_pass": "4cfb094986fbdab4948e585412c28412ac5ee1c6e2557defb18b5cb0cd4cac47"
+  },
+  "reason": "Parent changed the shared Dossier view during this proposal; original audit receipts are unchanged."
+}

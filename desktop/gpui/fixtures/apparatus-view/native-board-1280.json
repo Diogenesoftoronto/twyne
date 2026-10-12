@@ -1,0 +1,1867 @@
+{
+  "viewport": {
+    "width": 1280.0,
+    "height": 860.0
+  },
+  "windowOrigin": {
+    "x": 2.0,
+    "y": 2.0
+  },
+  "elements": [
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"apparatus-source-0\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-cite-0\")"
+      ],
+      "rect": {
+        "x": 805.0,
+        "y": 566.0,
+        "width": 102.0,
+        "height": 20.0
+      },
+      "visible": true,
+      "label": "✓ footnoted",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": true,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "Name(\"manuscript-page-canvas\")"
+      ],
+      "rect": {
+        "x": 9.0,
+        "y": 175.0,
+        "width": 768.0,
+        "height": 678.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 393.0,
+        "width": 495.0,
+        "height": 467.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"source-mode\")"
+      ],
+      "rect": {
+        "x": 192.0,
+        "y": 112.0,
+        "width": 80.0,
+        "height": 36.0
+      },
+      "visible": true,
+      "label": "Source",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"research-steering\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 163.0,
+        "width": 495.0,
+        "height": 146.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"focus\")"
+      ],
+      "rect": {
+        "x": 725.0,
+        "y": 830.0,
+        "width": 47.0,
+        "height": 28.0
+      },
+      "visible": true,
+      "label": "Toggle Zen mode",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"apparatus-source-1\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-cite-1\")"
+      ],
+      "rect": {
+        "x": 805.0,
+        "y": 779.0,
+        "width": 124.0,
+        "height": 20.0
+      },
+      "visible": true,
+      "label": "✎ cite in draft",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"editorial-board-contexts\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"board-tab-Tools\")"
+      ],
+      "rect": {
+        "x": 950.0,
+        "y": 112.0,
+        "width": 165.0,
+        "height": 50.0
+      },
+      "visible": true,
+      "label": "Tools",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "View(EntityId(18v1))",
+        "Name(\"flow-ribbon\")"
+      ],
+      "rect": {
+        "x": 136.0,
+        "y": 836.0,
+        "width": 98.0,
+        "height": 16.0
+      },
+      "visible": true,
+      "label": "writing. Twyne is reading your pace. The margin brings things in freely.",
+      "role": "Status",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")"
+      ],
+      "rect": {
+        "x": 784.0,
+        "y": 0.0,
+        "width": 496.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"research-steering\")",
+        "Name(\"steering-composer\")"
+      ],
+      "rect": {
+        "x": 795.0,
+        "y": 217.0,
+        "width": 475.0,
+        "height": 81.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"apparatus-source-0\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-drop-0\")"
+      ],
+      "rect": {
+        "x": 1238.0,
+        "y": 566.0,
+        "width": 22.0,
+        "height": 20.0
+      },
+      "visible": true,
+      "label": "Remove from the bibliography",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"apparatus-source-1\")"
+      ],
+      "rect": {
+        "x": 797.0,
+        "y": 608.0,
+        "width": 471.0,
+        "height": 205.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "Name(\"manuscript-word-count\")"
+      ],
+      "rect": {
+        "x": 14.0,
+        "y": 836.0,
+        "width": 47.0,
+        "height": 16.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-signal\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 342.0,
+        "width": 495.0,
+        "height": 51.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"research-steering\")",
+        "Name(\"steering-composer\")",
+        "Name(\"steering-input\")"
+      ],
+      "rect": {
+        "x": 796.0,
+        "y": 218.0,
+        "width": 473.0,
+        "height": 37.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"apparatus-source-1\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-open-1\")"
+      ],
+      "rect": {
+        "x": 931.0,
+        "y": 779.0,
+        "width": 62.0,
+        "height": 20.0
+      },
+      "visible": true,
+      "label": "⌖ open",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": true,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "View(EntityId(26v1))",
+        "Name(\"page-ruler\")"
+      ],
+      "rect": {
+        "x": 9.0,
+        "y": 149.0,
+        "width": 768.0,
+        "height": 22.0
+      },
+      "visible": true,
+      "label": "Page margins",
+      "role": "Group",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")"
+      ],
+      "rect": {
+        "x": 784.0,
+        "y": 0.0,
+        "width": 496.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "Name(\"manuscript-page-canvas\")",
+        "Name(\"manuscript-page-content\")"
+      ],
+      "rect": {
+        "x": 41.0,
+        "y": 191.0,
+        "width": 704.0,
+        "height": 516.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "Name(\"manuscript-page-canvas\")",
+        "Name(\"manuscript-page-content\")",
+        "View(EntityId(19v1))",
+        "Name(\"twyne-rich-manuscript\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"twyne-comment-chip-1-0\")"
+      ],
+      "rect": {
+        "x": 688.0,
+        "y": 335.0,
+        "width": 9.0,
+        "height": 9.0
+      },
+      "visible": true,
+      "label": "Open comment",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "Name(\"gpui_component::menu::dropdown_menu::DropdownMenuPopover<twyne_desktop::chrome::page_selector::PageSelectorTrigger>\")",
+        "Name(\"dropdown-menu:Name(\\\"go-to-page\\\")\")",
+        "Name(\"gpui_component::popover::Popover\")",
+        "Name(\"gpui_base::popover::Popover\")",
+        "Name(\"gpui_base::popup::Popup\")",
+        "Name(\"popover:dropdown-menu:Name(\\\"go-to-page\\\")\")",
+        "Name(\"twyne_desktop::chrome::page_selector::PageSelectorTrigger\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"go-to-page\")"
+      ],
+      "rect": {
+        "x": 73.0,
+        "y": 830.0,
+        "width": 51.0,
+        "height": 28.0
+      },
+      "visible": true,
+      "label": "Go to page",
+      "role": "ComboBox",
+      "value": "Pages",
+      "expanded": false,
+      "disabled": true,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-signal\")",
+        "Name(\"apparatus-signal-head\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 342.0,
+        "width": 495.0,
+        "height": 50.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-masthead\")"
+      ],
+      "rect": {
+        "x": 2.0,
+        "y": 0.0,
+        "width": 782.0,
+        "height": 112.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "Name(\"manuscript-page-canvas\")",
+        "Name(\"manuscript-page-content\")",
+        "View(EntityId(19v1))",
+        "Name(\"twyne-rich-manuscript\")",
+        "Name(\"twyne-section-drag-0\")"
+      ],
+      "rect": {
+        "x": 17.0,
+        "y": 194.0,
+        "width": 8.0,
+        "height": 32.0
+      },
+      "visible": true,
+      "label": "Move section: The notebook",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"apparatus-source-0\")"
+      ],
+      "rect": {
+        "x": 797.0,
+        "y": 467.0,
+        "width": 471.0,
+        "height": 133.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"close-notebook\")"
+      ],
+      "rect": {
+        "x": 1220.0,
+        "y": 8.0,
+        "width": 44.0,
+        "height": 44.0
+      },
+      "visible": true,
+      "label": "Close the Editorial Board",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "Name(\"manuscript-page-canvas\")",
+        "Name(\"manuscript-page-content\")",
+        "View(EntityId(19v1))",
+        "Name(\"twyne-rich-manuscript\")",
+        "Name(\"twyne-section-drag-3\")"
+      ],
+      "rect": {
+        "x": 17.0,
+        "y": 504.0,
+        "width": 8.0,
+        "height": 32.0
+      },
+      "visible": true,
+      "label": "Move section: A note for the next draft",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"proof-mode\")"
+      ],
+      "rect": {
+        "x": 274.0,
+        "y": 112.0,
+        "width": 71.0,
+        "height": 36.0
+      },
+      "visible": true,
+      "label": "Proof",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"research-steering\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"steering-disclosure\")"
+      ],
+      "rect": {
+        "x": 1234.0,
+        "y": 167.0,
+        "width": 36.0,
+        "height": 36.0
+      },
+      "visible": true,
+      "label": "Collapse research steering",
+      "role": "Button",
+      "value": null,
+      "expanded": true,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"split-view\")"
+      ],
+      "rect": {
+        "x": 350.0,
+        "y": 112.0,
+        "width": 62.0,
+        "height": 36.0
+      },
+      "visible": true,
+      "label": "Split",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"editorial-board-contexts\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 61.0,
+        "width": 495.0,
+        "height": 101.0
+      },
+      "visible": true,
+      "label": "Board context",
+      "role": "Navigation",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-signal\")",
+        "Name(\"apparatus-signal-head\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-signal-toggle\")"
+      ],
+      "rect": {
+        "x": 1232.0,
+        "y": 349.0,
+        "width": 36.0,
+        "height": 36.0
+      },
+      "visible": true,
+      "label": "Collapse Signal Desk",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"apparatus-source-0\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-open-0\")"
+      ],
+      "rect": {
+        "x": 909.0,
+        "y": 566.0,
+        "width": 62.0,
+        "height": 20.0
+      },
+      "visible": true,
+      "label": "⌖ open",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": true,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-masthead\")",
+        "Name(\"masthead\")",
+        "Name(\"gpui_component::menu::dropdown_menu::DropdownMenuPopover<gpui_component::button::button::Button>\")",
+        "Name(\"dropdown-menu:Name(\\\"file-menu\\\")\")",
+        "Name(\"gpui_component::popover::Popover\")",
+        "Name(\"gpui_base::popover::Popover\")",
+        "Name(\"gpui_base::popup::Popup\")",
+        "Name(\"popover:dropdown-menu:Name(\\\"file-menu\\\")\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"file-menu\")"
+      ],
+      "rect": {
+        "x": 604.0,
+        "y": 30.0,
+        "width": 84.0,
+        "height": 32.0
+      },
+      "visible": true,
+      "label": "File",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-drawer\")",
+        "Name(\"collapsed-drawer-rail\")"
+      ],
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 2.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"research-steering\")",
+        "Name(\"steering-composer\")",
+        "Name(\"steering-input\")",
+        "Name(\"gpui_component::input::textarea::Textarea\")",
+        "Name(\"gpui_component::input::input::Input\")",
+        "NamedInteger(\"input\", 4294967312)"
+      ],
+      "rect": {
+        "x": 806.0,
+        "y": 229.0,
+        "width": 453.0,
+        "height": 24.0
+      },
+      "visible": true,
+      "label": "Research direction",
+      "role": "MultilineTextInput",
+      "value": "",
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-sources-header\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 309.0,
+        "width": 495.0,
+        "height": 33.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "View(EntityId(18v1))",
+        "Name(\"flow-ribbon\")",
+        "Name(\"flow-ribbon-label\")"
+      ],
+      "rect": {
+        "x": 182.0,
+        "y": 836.0,
+        "width": 52.0,
+        "height": 16.0
+      },
+      "visible": true,
+      "label": "writing",
+      "role": "Label",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-masthead\")",
+        "Name(\"masthead\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"account-menu\")"
+      ],
+      "rect": {
+        "x": 696.0,
+        "y": 31.0,
+        "width": 30.0,
+        "height": 30.0
+      },
+      "visible": true,
+      "label": "Open the editor's office (account)",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": true,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")"
+      ],
+      "rect": {
+        "x": 2.0,
+        "y": 827.0,
+        "width": 782.0,
+        "height": 33.0
+      },
+      "visible": true,
+      "label": "Manuscript status",
+      "role": "Group",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"editorial-board-contexts\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"board-tab-Apparatus\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 112.0,
+        "width": 165.0,
+        "height": 50.0
+      },
+      "visible": true,
+      "label": "Apparatus",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")"
+      ],
+      "rect": {
+        "x": 2.0,
+        "y": 149.0,
+        "width": 782.0,
+        "height": 678.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"write-mode\")"
+      ],
+      "rect": {
+        "x": 118.0,
+        "y": 112.0,
+        "width": 72.0,
+        "height": 36.0
+      },
+      "visible": true,
+      "label": "Write",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"editorial-board-contexts\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"board-tab-Versions\")"
+      ],
+      "rect": {
+        "x": 1115.0,
+        "y": 112.0,
+        "width": 165.0,
+        "height": 50.0
+      },
+      "visible": true,
+      "label": "Versions",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "View(EntityId(26v1))",
+        "Name(\"page-ruler\")",
+        "Name(\"page-ruler-right\")"
+      ],
+      "rect": {
+        "x": 736.0,
+        "y": 154.0,
+        "width": 18.0,
+        "height": 12.0
+      },
+      "visible": true,
+      "label": "Right margin",
+      "role": "Slider",
+      "value": "Right margin 2.00 rem",
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"apparatus-source-1\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-drop-1\")"
+      ],
+      "rect": {
+        "x": 1238.0,
+        "y": 779.0,
+        "width": 22.0,
+        "height": 20.0
+      },
+      "visible": true,
+      "label": "Remove from the bibliography",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "Name(\"local-sync-status\")"
+      ],
+      "rect": {
+        "x": 325.0,
+        "y": 840.0,
+        "width": 8.0,
+        "height": 8.0
+      },
+      "visible": true,
+      "label": "Local only — account sync is not connected",
+      "role": "Status",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"gpui_component::checkbox::Checkbox\")",
+        "Name(\"gpui_base::checkbox::Checkbox\")",
+        "Name(\"apparatus-auto-footnote\")"
+      ],
+      "rect": {
+        "x": 1248.0,
+        "y": 443.0,
+        "width": 16.0,
+        "height": 16.0
+      },
+      "visible": true,
+      "label": "Automatically insert researched sources as footnotes",
+      "role": "CheckBox",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "View(EntityId(26v1))",
+        "Name(\"page-ruler\")",
+        "Name(\"page-ruler-left\")"
+      ],
+      "rect": {
+        "x": 32.0,
+        "y": 154.0,
+        "width": 18.0,
+        "height": 12.0
+      },
+      "visible": true,
+      "label": "Left margin",
+      "role": "Slider",
+      "value": "Left margin 2.00 rem",
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-masthead\")",
+        "Name(\"masthead\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"create-dossier\")"
+      ],
+      "rect": {
+        "x": 458.0,
+        "y": 29.0,
+        "width": 138.0,
+        "height": 34.0
+      },
+      "visible": true,
+      "label": "Create dossier",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "View(EntityId(35v1))",
+        "Name(\"margin-rail-surface\")"
+      ],
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 1280.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-drawer\")"
+      ],
+      "rect": {
+        "x": 0.0,
+        "y": 0.0,
+        "width": 2.0,
+        "height": 860.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-sources-header\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-full-view\")"
+      ],
+      "rect": {
+        "x": 1181.0,
+        "y": 317.0,
+        "width": 83.0,
+        "height": 16.0
+      },
+      "visible": true,
+      "label": "Full view ↗",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"editorial-board-contexts\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"board-tab-Marginalia\")"
+      ],
+      "rect": {
+        "x": 1115.0,
+        "y": 63.0,
+        "width": 165.0,
+        "height": 49.0
+      },
+      "visible": true,
+      "label": "Marginalia",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-masthead\")",
+        "Name(\"masthead\")"
+      ],
+      "rect": {
+        "x": 2.0,
+        "y": 0.0,
+        "width": 782.0,
+        "height": 112.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"research-steering\")",
+        "Name(\"steering-composer\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"steering-send\")"
+      ],
+      "rect": {
+        "x": 1231.0,
+        "y": 260.0,
+        "width": 30.0,
+        "height": 30.0
+      },
+      "visible": true,
+      "label": "Steer",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": true,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"editorial-board-contexts\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"board-tab-Cast\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 63.0,
+        "width": 165.0,
+        "height": 49.0
+      },
+      "visible": true,
+      "label": "Cast",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "View(EntityId(18v1))",
+        "Name(\"flow-ribbon\")",
+        "Name(\"flow-ribbon-spool\")"
+      ],
+      "rect": {
+        "x": 136.0,
+        "y": 839.0,
+        "width": 40.0,
+        "height": 10.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "Name(\"save-status\")"
+      ],
+      "rect": {
+        "x": 246.0,
+        "y": 836.0,
+        "width": 67.0,
+        "height": 16.0
+      },
+      "visible": true,
+      "label": "Saved locally",
+      "role": "Status",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-masthead\")",
+        "Name(\"masthead\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"toggle-notebook\")"
+      ],
+      "rect": {
+        "x": 734.0,
+        "y": 31.0,
+        "width": 30.0,
+        "height": 30.0
+      },
+      "visible": true,
+      "label": "Toggle the editorial board panel",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "Name(\"manuscript-page-canvas\")",
+        "Name(\"manuscript-page-content\")",
+        "View(EntityId(19v1))",
+        "Name(\"twyne-rich-manuscript\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"twyne-comment-chip-4-0\")"
+      ],
+      "rect": {
+        "x": 655.0,
+        "y": 581.0,
+        "width": 9.0,
+        "height": 9.0
+      },
+      "visible": true,
+      "label": "Open comment",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")",
+        "Name(\"apparatus-scroll\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"apparatus-open-page\")"
+      ],
+      "rect": {
+        "x": 1197.0,
+        "y": 409.0,
+        "width": 67.0,
+        "height": 26.0
+      },
+      "visible": true,
+      "label": "Open ↗",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "View(EntityId(27v1))",
+        "Name(\"apparatus-root\")"
+      ],
+      "rect": {
+        "x": 785.0,
+        "y": 309.0,
+        "width": 495.0,
+        "height": 551.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-masthead\")",
+        "Name(\"masthead\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"toggle-library\")"
+      ],
+      "rect": {
+        "x": 22.0,
+        "y": 31.0,
+        "width": 30.0,
+        "height": 30.0
+      },
+      "visible": true,
+      "label": "Toggle the drawer sidebar",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"toggle-compositor\")"
+      ],
+      "rect": {
+        "x": 10.0,
+        "y": 112.0,
+        "width": 103.0,
+        "height": 36.0
+      },
+      "visible": true,
+      "label": "Toggle compositor",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"body-field\")",
+        "Name(\"manuscript-page-canvas\")",
+        "Name(\"manuscript-page-content\")",
+        "View(EntityId(19v1))",
+        "Name(\"twyne-rich-manuscript\")"
+      ],
+      "rect": {
+        "x": 41.0,
+        "y": 191.0,
+        "width": 704.0,
+        "height": 419.0
+      },
+      "visible": true,
+      "label": null,
+      "role": null,
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"flow-board\")",
+        "Name(\"editorial-board\")",
+        "Name(\"editorial-board-contexts\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"board-tab-Rubric\")"
+      ],
+      "rect": {
+        "x": 950.0,
+        "y": 63.0,
+        "width": 165.0,
+        "height": 49.0
+      },
+      "visible": true,
+      "label": "Rubric",
+      "role": "Button",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": false
+    },
+    {
+      "path": [
+        "View(EntityId(28v1))",
+        "Name(\"gpui_component::window_border::WindowBorder\")",
+        "Name(\"root\")",
+        "View(EntityId(1v1))",
+        "Name(\"writing-room\")",
+        "Name(\"manuscript-status\")",
+        "Name(\"gpui_component::menu::dropdown_menu::DropdownMenuPopover<twyne_desktop::chrome::page_selector::PageSelectorTrigger>\")",
+        "Name(\"dropdown-menu:Name(\\\"go-to-page\\\")\")",
+        "Name(\"gpui_component::popover::Popover\")",
+        "Name(\"gpui_base::popover::Popover\")",
+        "Name(\"gpui_base::popup::Popup\")",
+        "Name(\"popover:dropdown-menu:Name(\\\"go-to-page\\\")\")",
+        "Name(\"twyne_desktop::chrome::page_selector::PageSelectorTrigger\")",
+        "Name(\"gpui_component::button::button::Button\")",
+        "Name(\"gpui_base::button::Button\")",
+        "Name(\"go-to-page\")",
+        "Name(\"label\")",
+        "Name(\"page-selection-label\")"
+      ],
+      "rect": {
+        "x": 73.0,
+        "y": 836.0,
+        "width": 31.0,
+        "height": 16.0
+      },
+      "visible": true,
+      "label": "Pages",
+      "role": "Label",
+      "value": null,
+      "expanded": null,
+      "disabled": null,
+      "focused": null
+    }
+  ],
+  "keyboardInput": false,
+  "windowActive": false,
+  "captureReady": true
+}

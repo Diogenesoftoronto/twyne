@@ -1,0 +1,25 @@
+{
+  "url": "http://localhost:5180/dossier/create/",
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "keys": [
+    {
+      "key": "rubric-result:twyne-gpui-parity",
+      "absent": true
+    },
+    {
+      "key": "rubric-criteria:twyne-gpui-parity",
+      "absent": true
+    },
+    {
+      "key": "rubric-history:twyne-gpui-parity",
+      "absent": true
+    },
+    {
+      "key": "live-review:twyne-gpui-parity",
+      "absent": true
+    }
+  ]
+}

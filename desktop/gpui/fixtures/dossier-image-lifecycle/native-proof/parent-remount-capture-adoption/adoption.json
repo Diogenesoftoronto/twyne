@@ -1,0 +1,39 @@
+{
+  "status": "actual_native_refused",
+  "driverSha256": "1af68ba13e65745eeccf9d8abc5bdf63f8d648e872eb8336b2781bcac861c72b",
+  "priorDriverSha256": "be4fc2b7c5869a84a2516013d2a3632ebc8ff2b3e63bced2c260a56a239f75f8",
+  "priorRun": "dossier-atlas-actual-controls-native-ecd1c7de449b",
+  "actualPriorEvidence": {
+    "checksPassed": 7,
+    "failureGeometryFormMounted": false,
+    "failureGeometryFoxing": null,
+    "ownedChildrenCleaned": true
+  },
+  "change": "Wait for the actual dossier-form before asking the strict product preparation predicate; preserve all mandatory hook/font/upload/retirement guards",
+  "productionChanged": false,
+  "pixelParity": false,
+  "nativeExecution": {
+    "schemaVersion": 1,
+    "binary": {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/current-layout-multiply-math-build-b33c0c5da035/twyne-desktop",
+      "sha256": "721d799dc6404af5666d38093fad57081b7603a1fb3cce9a0155f8af02450c59"
+    },
+    "helper": {
+      "path": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/current-layout-multiply-math-build-b33c0c5da035/twyne-document",
+      "sha256": "cc8144ceeb96cb519f026414aa332f35d54b33e5fb640d0c1076d85b3a39c9de"
+    },
+    "driverSha256": "1af68ba13e65745eeccf9d8abc5bdf63f8d648e872eb8336b2781bcac861c72b",
+    "output": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-atlas-remount-capture-native-a6dc7329d653",
+    "log": "/home/diogenes/Projects/twyne/desktop/gpui/target/verification/dossier-atlas-remount-capture-native-a6dc7329d653.log",
+    "status": "fail",
+    "expectedBackend": "supported",
+    "mandatoryOrdinaryImages": 9,
+    "mandatoryActualStamps": 8,
+    "ownedPrivateDisplay": true,
+    "unavailableRoute": "File\u2192House while Dossier mounted is not OS-tested",
+    "exitCode": 1,
+    "acceptanceSha256": "5a5b80a49262f890ddb5e35d3408106141815908e5b054e682c9ef65878fdb3b",
+    "checks": 9,
+    "ownedChildrenCleaned": true
+  }
+}

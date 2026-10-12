@@ -1,0 +1,9 @@
+Twyne Source: Source-only native adapter of original Noto Sans Mono 2.014.
+2026-10-04: Retain exact Regular400/SemiBold600 OFL files selected by original browser.
+Rename native UI family; regular and heading outlines/hints/metrics are unchanged.
+Oblique applies x'=x+y/4 to decomposed original Regular outlines, removes original
+autohint instructions, and retains all glyph IDs and advance widths. This matches
+Chromium's documented synthetic-skew mechanism; real raster parity is separate.
+Shared mono/code/canonical Source text/Typst font bytes and ordering stay unchanged.
+Source Label400 derives original DM4.004 at opsz11 for Source helper/footer11px labels.
+Original copyright and SIL OFL 1.1 accompany exact originals and derivations.

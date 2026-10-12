@@ -1,0 +1,97 @@
+{
+  "generatedBy": "src/utils/anti-tabula-rasa.ts and src/utils/form-probes.ts",
+  "now": 1700000000000,
+  "defaults": {
+    "workingTitle": "Untitled project",
+    "format": "Essay",
+    "audience": "A thoughtful reader who needs the point made clearly",
+    "goal": "Make the central argument feel inevitable and worth caring about",
+    "tone": "Clear, exact, and generous",
+    "constraints": "Keep the piece grounded in evidence and avoid generic filler",
+    "successSignal": "A reader should know what this is, who it is for, and why it matters"
+  },
+  "localProbes": [
+    {
+      "id": "local-particular-reader-change",
+      "kind": "blanks",
+      "prompt": "For A thoughtful reader who needs the point made clearly, what should change by the end of “Untitled project”?",
+      "template": "They begin ___ and leave ___",
+      "relatesTo": "successSignal"
+    },
+    {
+      "id": "local-particular-goal",
+      "kind": "choice",
+      "prompt": "Which result matters most for this goal: Make the central argument feel inevitable and worth caring about?",
+      "options": [
+        "Understand the central idea",
+        "Change a belief",
+        "Take a specific action",
+        "Feel the stakes"
+      ],
+      "relatesTo": "goal"
+    },
+    {
+      "id": "local-particular-protection",
+      "kind": "scale",
+      "prompt": "How firmly should the room protect “Clear, exact, and generous” while honoring Keep the piece grounded in evidence and avoid generic filler?",
+      "min": 1,
+      "max": 5,
+      "minLabel": "Flexible",
+      "maxLabel": "Non-negotiable",
+      "relatesTo": "tone"
+    }
+  ],
+  "rawAnswers": {
+    "workingTitle": "﻿  ",
+    "format": "  Dispatch  ",
+    "audience": "\n",
+    "goal": "Make the central argument feel inevitable and worth caring about",
+    "tone": "  Quiet and exact  ",
+    "constraints": "Keep the piece grounded in evidence and avoid generic filler",
+    "successSignal": "A reader should know what this is, who it is for, and why it matters"
+  },
+  "folioName": "  The named folio  ",
+  "creation": {
+    "answers": {
+      "workingTitle": "The named folio",
+      "format": "Dispatch",
+      "audience": "A thoughtful reader who needs the point made clearly",
+      "goal": "Make the central argument feel inevitable and worth caring about",
+      "tone": "Quiet and exact",
+      "constraints": "Keep the piece grounded in evidence and avoid generic filler",
+      "successSignal": "A reader should know what this is, who it is for, and why it matters"
+    },
+    "attachments": [],
+    "completedAt": 1700000000000,
+    "updatedAt": 1700000000000
+  },
+  "refinement": {
+    "answers": {
+      "workingTitle": "Untitled project",
+      "format": "Essay",
+      "audience": "A thoughtful reader who needs the point made clearly",
+      "goal": "Make the central argument feel inevitable and worth caring about",
+      "tone": "Clear, exact, and generous",
+      "constraints": "Keep the piece grounded in evidence and avoid generic filler",
+      "successSignal": "A reader should know what this is, who it is for, and why it matters"
+    },
+    "attachments": [],
+    "probes": [
+      {
+        "id": "local-particular-goal",
+        "kind": "choice",
+        "prompt": "Which result matters most for this goal: Make the central argument feel inevitable and worth caring about?",
+        "options": [
+          "Understand the central idea",
+          "Change a belief",
+          "Take a specific action",
+          "Feel the stakes"
+        ],
+        "relatesTo": "goal",
+        "answer": "Change a belief"
+      }
+    ],
+    "completedAt": 42,
+    "updatedAt": 1700000000000
+  }
+}

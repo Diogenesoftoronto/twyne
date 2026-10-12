@@ -1,0 +1,118 @@
+[
+  {
+    "name": "marked text keeps contiguous positions",
+    "quote": "A calm",
+    "blocks": [
+      {
+        "position": -1,
+        "children": [
+          { "offset": 0, "text": "A" },
+          { "offset": 1, "text": "   calm" }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "literal regex punctuation",
+    "quote": "a+b? [x].",
+    "blocks": [
+      {
+        "position": -1,
+        "children": [{ "offset": 0, "text": "prefix a+b? [x]. suffix" }]
+      }
+    ]
+  },
+  {
+    "name": "JS whitespace including NBSP and BOM",
+    "quote": "A calm",
+    "blocks": [
+      {
+        "position": -1,
+        "children": [{ "offset": 0, "text": "A\u00a0\ufeff\tcalm" }]
+      }
+    ]
+  },
+  {
+    "name": "atom gap is retained while text concatenates",
+    "quote": "leftright",
+    "blocks": [
+      {
+        "position": -1,
+        "children": [
+          { "offset": 0, "text": "left" },
+          { "offset": 5, "text": "right" }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "atom does not invent query whitespace",
+    "quote": "left right",
+    "blocks": [
+      {
+        "position": -1,
+        "children": [
+          { "offset": 0, "text": "left" },
+          { "offset": 5, "text": "right" }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "first matched block wins",
+    "quote": "needle",
+    "blocks": [
+      { "position": -1, "children": [{ "offset": 0, "text": "first needle" }] },
+      { "position": 12, "children": [{ "offset": 0, "text": "needle" }] }
+    ]
+  },
+  {
+    "name": "case is exact",
+    "quote": "Needle",
+    "blocks": [
+      { "position": -1, "children": [{ "offset": 0, "text": "needle" }] }
+    ]
+  },
+  {
+    "name": "no cross paragraph match",
+    "quote": "first second",
+    "blocks": [
+      { "position": -1, "children": [{ "offset": 0, "text": "first" }] },
+      { "position": 5, "children": [{ "offset": 0, "text": "second" }] }
+    ]
+  },
+  {
+    "name": "emoji and combining sequence stay UTF16",
+    "quote": "café target",
+    "blocks": [
+      {
+        "position": -1,
+        "children": [{ "offset": 0, "text": "🌿 café target" }]
+      }
+    ]
+  },
+  {
+    "name": "whitespace-only query has no range",
+    "quote": " \u00a0\ufeff\t",
+    "blocks": [
+      { "position": -1, "children": [{ "offset": 0, "text": "some text" }] }
+    ]
+  },
+  {
+    "name": "empty query has no range",
+    "quote": "",
+    "blocks": [
+      { "position": -1, "children": [{ "offset": 0, "text": "some text" }] }
+    ]
+  },
+  {
+    "name": "URL lookup remains case sensitive",
+    "quote": "https://example.com/Paper",
+    "blocks": [
+      {
+        "position": -1,
+        "children": [{ "offset": 0, "text": "See HTTPS://example.com/Paper" }]
+      }
+    ]
+  }
+]

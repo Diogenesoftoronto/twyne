@@ -1,0 +1,78 @@
+{
+  "status": "authored expectations, not executed native observations",
+  "sourceGroupOpacity": 0.7,
+  "applicationPoints": 1,
+  "preparedGroupContainsOpacity": false,
+  "cases": [
+    {
+      "case": "editorial opaque supported frame",
+      "expectedPreparedImages": 10,
+      "expectedPaintStatus": "Recorded",
+      "actualUploadedKeys": "subset of tracked set, depending on stamp counts actually painted"
+    },
+    {
+      "case": "Broadsheet transparent foxing",
+      "expectedPreparedImages": 9,
+      "expectedGroupImage": null,
+      "expectedPaintStatus": "Transparent"
+    },
+    {
+      "case": "unsupported backend/format",
+      "expectedPaintStatus": "UnsupportedBackend",
+      "expectedGroupAtlasKey": false,
+      "ordinaryControlsRemainUsable": true
+    },
+    {
+      "case": "old canvas after accepted replacement with same lease",
+      "expected": "no upload; does not overwrite newer receipt"
+    },
+    {
+      "case": "retired lease retained by dormant form",
+      "expectedPaintStatus": "Untracked",
+      "expectedGroupAtlasKey": "no new upload"
+    },
+    {
+      "case": "retired form receives theme observer",
+      "expected": "retained pointers unchanged until explicit resume"
+    },
+    {
+      "case": "explicit Settings resume",
+      "expected": "prepare current palette/DPR, attach new lease; retired lease remains retired"
+    },
+    {
+      "case": "lease replacement/resume refusal",
+      "expected": "paper, all stamps, foxing, receipt and previous lease restored as applicable"
+    },
+    {
+      "case": "same-sized manual scale transition without preparation",
+      "expectedPaintStatus": "StalePreparation",
+      "expectedGroupAtlasKey": "no upload of stale preparation"
+    },
+    {
+      "case": "foreign-window canvas replay",
+      "expected": "no upload and no current-window receipt mutation"
+    },
+    {
+      "case": "620x860 at DPR1.25",
+      "expected": "integral extents 775x1075 eligible, subject to origin/mask/format/backdrop checks"
+    },
+    {
+      "case": "621x861 at DPR1.25",
+      "expectedPaintStatus": "Unprepared",
+      "reason": "fractional device extents refused during preparation"
+    },
+    {
+      "case": "integral size with fractional device origin or mask",
+      "expectedPaintStatus": "PaintRefused",
+      "reason": "core exact device-grid constraint; no rounded substitute"
+    },
+    {
+      "case": "transparent window or faded ancestor",
+      "expectedPaintStatus": "PaintRefused",
+      "reason": "opaque backdrop assumption not certified; core refuses"
+    }
+  ],
+  "sceneOrder": "ordinary background/shadows/frame descendants, then one multiply canvas using existing DrawOrder barrier",
+  "captureAuthority": "Parent actual product host and lifecycle marker; no screen/backdrop baking",
+  "boundaries": "Prepared/Recorded/status and tracked IDs do not acknowledge GPU completion or Source radial raster equivalence."
+}

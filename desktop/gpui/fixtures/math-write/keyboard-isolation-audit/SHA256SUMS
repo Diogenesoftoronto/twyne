@@ -1,0 +1,6 @@
+5f50a059f94ea484432fc0adb243a45b145941780e6ccdd6d8452df6724c0cd2  desktop/gpui/fixtures/math-write/keyboard-isolation-audit/README.md
+6fceaec42404385a1fe14982ad03d662c688793d892bf0e946f0bb1cbdafd60a  desktop/gpui/fixtures/math-write/keyboard-isolation-audit/audit.json
+e0262bb99a8b46ed34ce0dc0ec817ae137de04700946bde796cdbf6fada058a5  desktop/gpui/fixtures/math-write/keyboard-isolation-audit/freeze.json
+e47ebcc9b2e41120cd9b5c089001402a8ecc0ef3012228c089c7649a0eaee7ca  desktop/gpui/fixtures/math-write/keyboard-isolation-audit/integration.patch
+b5b672d68ba17f6393b9a9641a1ff77542e1e950ef0dda83621af6b2ac242cbe  desktop/gpui/fixtures/math-write/keyboard-isolation-audit/native_tests.rs
+806ec2954b0b409057ef835251a0fd4ed3254d1190306b323603a10ae5d38fdc  desktop/gpui/fixtures/math-write/keyboard-isolation-audit/source-contract.test.ts

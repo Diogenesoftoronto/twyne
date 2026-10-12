@@ -1,0 +1,37 @@
+[
+ {
+  "text": "The",
+  "start": 0.38,
+  "end": 0.48
+ },
+ {
+  "text": "blank",
+  "start": 0.54,
+  "end": 0.9
+ },
+ {
+  "text": "one.",
+  "start": 1,
+  "end": 1.2
+ },
+ {
+  "text": "The",
+  "start": 2.16,
+  "end": 2.28
+ },
+ {
+  "text": "one",
+  "start": 2.4,
+  "end": 2.82
+ },
+ {
+  "text": "that",
+  "start": 2.88,
+  "end": 3.06
+ },
+ {
+  "text": "waits.",
+  "start": 3.12,
+  "end": 3.58
+ }
+]

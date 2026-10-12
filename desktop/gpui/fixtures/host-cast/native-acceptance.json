@@ -1,0 +1,17 @@
+{
+  "display": "new isolated Xvfb, terminated",
+  "backend": "X11",
+  "input": "separate-process XTEST",
+  "fixture": "explicit retained test metadata; no provider activity",
+  "checks": [
+    "Owned X11 window is actually activated before text input",
+    "Actual Board opening mounts local Cast; provider controls are disabled",
+    "Actual final keystroke is durable before Manager opens; local New editor is enabled",
+    "Actual New editor opens its local form and Cancel returns without changing the roster",
+    "A real failed metadata write keeps Cast open and preserves accepted disk bytes and manuscript",
+    "Actual Retry files the held request including its final character",
+    "Actual Manager and retained Full Analysis return to the same Cast Board",
+    "File only adds one real writer reply; note IDs, raw fields and foreign data remain exact",
+    "Actual Ctrl-Q captures the unblurred reply draft and preserves the exact canonical manuscript"
+  ]
+}

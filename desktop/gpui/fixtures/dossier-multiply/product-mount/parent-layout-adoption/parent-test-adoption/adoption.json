@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "originalFixtureUnmodified": true,
+  "originalSha256": "d216b11dd492328ce48ab8e91a6d793d5c5787d0fcd190dd90a75005a212c693",
+  "parentSha256": "7028cd58cc04bf1f2e8b77bca6c0963befcfcbe3e4edb811a7f492a060a3ad65",
+  "failureLog": "desktop/gpui/target/verification/dossier-product-multiply-mounted-tests.log",
+  "change": "Hide the new overlay before theme preparation so the adversarial retained-canvas test truly checks an unpainted Prepared receipt; keep original status/identity/upload assertions",
+  "formattedParentTestSha256": "a3db189a3dfffb35bc6c591e9cb82ec478e3cd26723d0b1ac83f49f5f078d86a",
+  "retainedCanvasTest": {
+    "passed": true,
+    "log": "desktop/gpui/target/verification/dossier-product-multiply-retained-canvas-parent-tests.log",
+    "logSha256": "2f044c399a2df0a0a1d41c6ba26a5ad7dd7f64b18e35fd1fe7bfe5fa77e15a29"
+  },
+  "remainingFiveMountedTests": {
+    "passedInOriginalRun": true,
+    "log": "desktop/gpui/target/verification/dossier-product-multiply-mounted-tests.log",
+    "limits": "Compiled before subsequent same-pass centering/ui-tests preparation diagnostics"
+  },
+  "sourcePixelParity": false
+}

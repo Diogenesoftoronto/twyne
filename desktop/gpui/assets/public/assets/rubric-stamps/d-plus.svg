@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 124">
+  <g fill="none" stroke="#000" stroke-linejoin="bevel">
+    <path d="M34 10h112l25 24v57l-27 24H34L9 91V34z" stroke-width="4"/>
+    <path d="M40 19h98l23 20v47l-22 20H40L19 86V39z" stroke-width="1.5" stroke-dasharray="39 4 23 3"/>
+  </g>
+  <text x="90" y="72" fill="#000" font-family="Georgia,serif" font-size="55" font-style="italic" font-weight="700" text-anchor="middle">D+</text>
+  <text x="90" y="94" fill="#000" font-family="monospace" font-size="8" font-weight="700" letter-spacing="3" text-anchor="middle">REWORK</text>
+</svg>

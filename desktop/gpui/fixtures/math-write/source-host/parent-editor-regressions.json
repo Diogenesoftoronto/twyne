@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "filter": "editor::view",
+  "result": {
+    "passed": 76,
+    "failed": 0,
+    "ignored": 0
+  },
+  "log": "desktop/gpui/target/verification/math-source-editor-regressions-reviewed.log",
+  "hashes": {
+    "desktop/gpui/src/editor/view_math_source.rs": "139eca38cf52aab6d729e4e10fe8d5f79cd30cb8a61d995a5c6e498d54fe6674",
+    "desktop/gpui/src/editor/view_tests.rs": "27f6962097d7e6656700d919abb4ab61dde0bb8f01df840b27bffb0becb4f74c",
+    "desktop/gpui/src/editor/view.rs": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14",
+    "desktop/gpui/src/editor/math_source_flow.rs": "dd9c351c85922a703aee9d2648a8b18d6e3d66beb37631d705a2fb60902ab373"
+  },
+  "repairs": [
+    "Do not install equation hit targets without an actual source host context.",
+    "Keep pointer-down propagation for real complete-block dragging.",
+    "Regression test waits for actual emitted Cancel to reach the owner before checking restored focus and manuscript Undo."
+  ],
+  "boundaries": [
+    "Mounted editor interaction regression gate only",
+    "No operating-system drag/input, provider or pixel parity proof"
+  ]
+}

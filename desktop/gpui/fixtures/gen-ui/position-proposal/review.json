@@ -1,0 +1,9 @@
+{
+  "status": "parent_reviewed_pending_oracle_and_host_verification",
+  "model": "sakana/fugu-max",
+  "corrections": [
+    "Remove an unrequested JSON serialization helper and its imports. Original geometry unchanged."
+  ],
+  "proposalSha256": "f04b6407343b44e9f449f69f2a50ef79fa99b7ebf4328566d350bda48e2ed2f8",
+  "acceptedPath": "desktop/gpui/src/gen_ui/position.rs"
+}

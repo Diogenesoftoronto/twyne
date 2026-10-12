@@ -10,7 +10,7 @@ import {
   buildIntegrityJudgePrompt,
   toAgentPersona,
 } from "../../convex/agentPrompts";
-import { PERSONAS } from "./personas";
+import { PERSONAS, withResidentHallmarks } from "./personas";
 
 describe("persona voices", () => {
   test("every default persona ships a distinct voice spec", () => {
@@ -42,6 +42,43 @@ describe("persona voices", () => {
     expect(new Set(PERSONAS.map((p) => p.criticalMethod)).size).toBe(
       PERSONAS.length,
     );
+  });
+
+  test("every resident signs their notes with distinct hallmarks", () => {
+    for (const p of PERSONAS)
+      expect(
+        (p.hallmarks ?? []).length,
+        `${p.id} should have hallmarks`,
+      ).toBeGreaterThanOrEqual(3);
+    const marks = PERSONAS.flatMap((p) => p.hallmarks ?? []);
+    expect(new Set(marks).size).toBe(marks.length);
+    // The opening tic is what a writer sees first; no two may share one.
+    const openers = PERSONAS.map((p) => p.hallmarks![0]);
+    expect(new Set(openers).size).toBe(PERSONAS.length);
+  });
+
+  test("hallmarks reach the model as a labelled block", () => {
+    const editor = PERSONAS.find((p) => p.id === "editor")!;
+    const prompt = buildSystemPrompt(toAgentPersona(editor));
+    expect(prompt).toContain("HALLMARKS");
+    expect(prompt).toContain(editor.hallmarks![0]);
+  });
+
+  test("saved casts gain hallmarks unless the writer rewrote the voice", () => {
+    const strip = (p: (typeof PERSONAS)[number]) => {
+      return { ...p, hallmarks: undefined, sampleLines: ["Old line."] };
+    };
+    const [stock, edited] = withResidentHallmarks([
+      strip(PERSONAS[0]),
+      { ...strip(PERSONAS[1]), voice: "My own voice." },
+    ]);
+    expect(stock.hallmarks).toEqual(PERSONAS[0].hallmarks);
+    expect(stock.sampleLines).toEqual(PERSONAS[0].sampleLines);
+    expect(edited.hallmarks).toBeUndefined();
+    expect(edited.sampleLines).toEqual(["Old line."]);
+    // A custom editor is never touched.
+    const custom = { ...strip(PERSONAS[2]), id: "custom-1" };
+    expect(withResidentHallmarks([custom])[0]).toBe(custom);
   });
 
   test("the system prompt injects the persona's voice and lore", () => {

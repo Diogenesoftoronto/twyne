@@ -1,0 +1,51 @@
+{
+  "provenance": "Byte-exact prior authorized Source Chrome font responses; reused locally, no network calls. Source root.tsx Google CSS retained. Only previously captured faces needed by this ASCII/Café/math fixture are replayed; unused unavailable ranges/families are omitted.",
+  "originalCssUrl": "https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Special+Elite&display=swap",
+  "originalCssSha256": "b5c5990a16e7103cc145f332a58b3e4fb0e34b19ff0a2e3f0c7d8b69062b78d5",
+  "localCssSha256": "5c246196d8cbfd3f37845f4539c07d5dc0d9a763c6097e441ec398df18b0de56",
+  "keptFaces": 16,
+  "files": [
+    {
+      "originalUrl": "https://fonts.gstatic.com/s/librebaskerville/v24/kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SjNNluc.woff2",
+      "file": "kmKWZrc3Hgbbcjq75U4uslyuy4kn0qNccR04_RUJeby2OU36SjNNluc.woff2",
+      "sha256": "efb7e5f4376a557314f5bb9f5197ef837d86c0ab38e1a50a0ff5c60c3400c629",
+      "bytes": 21564
+    },
+    {
+      "originalUrl": "https://fonts.gstatic.com/s/specialelite/v20/XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+      "file": "XLYgIZbkc4JPUL5CVArUVL0ntnAOSA.woff2",
+      "sha256": "770493d84cbb753cd0573d0f014550583138f40469d137e310d239593a1949d8",
+      "bytes": 53296
+    },
+    {
+      "originalUrl": "https://fonts.gstatic.com/s/dmsans/v17/rP2Hp2ywxg089UriCZOIHQ.woff2",
+      "file": "rP2Hp2ywxg089UriCZOIHQ.woff2",
+      "sha256": "ca72d2bcea8f4daa783dbdfa2d9b46068c3ce38168e05918fb867aa453b4f890",
+      "bytes": 62724
+    },
+    {
+      "originalUrl": "https://fonts.gstatic.com/s/librebaskerville/v24/kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2",
+      "file": "kmKnZrc3Hgbbcjq75U4uslyuy4kn0qNZaxM.woff2",
+      "sha256": "22219fb90e3b9bd28debd1825fe8d9a0154a0e31f8b3fa601ac1a0a5aa5e6d1b",
+      "bytes": 33872
+    },
+    {
+      "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIhMX1D_JOuMw_LIftL.woff2",
+      "file": "0QIhMX1D_JOuMw_LIftL.woff2",
+      "sha256": "d824d807d4d832d12c87932d0b8ec1314dcfd502157a56dee6bb04cf8a3768ae",
+      "bytes": 40772
+    },
+    {
+      "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuMwr7Iw.woff2",
+      "file": "0QIvMX1D_JOuMwr7Iw.woff2",
+      "sha256": "ddb8c66035104e233fc024669183aad3738b6daa16deee2ebb1241bd0f98ace1",
+      "bytes": 37788
+    },
+    {
+      "originalUrl": "https://fonts.gstatic.com/s/lora/v37/0QIvMX1D_JOuM3b7I-NP.woff2",
+      "file": "0QIvMX1D_JOuM3b7I-NP.woff2",
+      "sha256": "a8c4cb778ab6202d22bdea2ccc8d7e7caf802cfe0a7ce37df7b212f82341468f",
+      "bytes": 29240
+    }
+  ]
+}

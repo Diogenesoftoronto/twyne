@@ -1,0 +1,13 @@
+{
+  "applied": false,
+  "boundary": "Only atom setter/request/completion/owner hooks; inline flow fields/geometry/cache/render changes retained unchanged",
+  "before": {
+    "desktop/gpui/src/editor/view.rs": "aef8332e5b2915a479a7c7ffad2624897f38186f91e62cdeee5ced35eabf5b14",
+    "desktop/gpui/src/editor/view_math_source.rs": "139eca38cf52aab6d729e4e10fe8d5f79cd30cb8a61d995a5c6e498d54fe6674"
+  },
+  "proposedAfter": {
+    "desktop/gpui/src/editor/view.rs": "fbfc4115a54d921224ea1652a1777e690fb3e3a51bca745e77dbec13136f8b70",
+    "desktop/gpui/src/editor/view_math_source.rs": "5edb0412eee1c5cf023182ab2dd2e5570994624220e9a10acee4d011b001bb0d"
+  },
+  "patchSha256": "212333b15c544d9dc0a4283587c16bd1907ee4f032cb5268a198fe8b298d50b6"
+}

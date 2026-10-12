@@ -1,0 +1,40 @@
+{
+  "folioId": "twyne-gpui-parity",
+  "id": "ee1a4fcc-a91b-4be9-8063-116e211e4496",
+  "viewport": {
+    "width": 1280,
+    "height": 860
+  },
+  "baseline": {
+    "card": {
+      "x": 964,
+      "y": 635.640625,
+      "width": 300,
+      "height": 179.359375
+    },
+    "close": {
+      "opacity": "0",
+      "transform": "none",
+      "borderTopColor": "rgb(138, 126, 108)"
+    }
+  },
+  "hover": {
+    "card": {
+      "x": 964,
+      "y": 634.640625,
+      "width": 300,
+      "height": 179.359375
+    },
+    "close": {
+      "opacity": "1",
+      "transform": "none",
+      "borderTopColor": "rgb(138, 126, 108)"
+    }
+  },
+  "setAside": {
+    "previewAbsent": true
+  },
+  "savedHtmlUnchanged": true,
+  "originalFlatCommentsUnchanged": true,
+  "comments": 2
+}

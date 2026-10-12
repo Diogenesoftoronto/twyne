@@ -1,0 +1,99 @@
+{
+  "bugs": [
+    {
+      "file": "desktop/gpui/src/insert_menu/markdown.rs",
+      "claim": "Prefix replacement strips a Markdown marker from the assembled line even when it occurs after the slash query, deleting suffix content. For `/heading - item`, it produces ` # item` instead of preserving `- item`.",
+      "reproductionInput": {
+        "text": "/heading - item",
+        "query": { "query": "heading", "range": [0, 8] },
+        "id": "paragraph.heading-1"
+      },
+      "expected": "The replacement preserves the suffix `- item`; only a prefix that existed before the query is replaced.",
+      "fix": "Only strip an existing prefix when its range precedes the query; otherwise preserve the suffix verbatim."
+    },
+    {
+      "file": "desktop/gpui/src/insert_menu/markdown.rs",
+      "claim": "The stale-query guard accepts a query that has become a prefix of a longer query. With text `/hello` and stale range `0..3` for `/he`, it passes validation and leaves `llo` after insertion.",
+      "reproductionInput": {
+        "text": "/hello",
+        "query": { "query": "he", "range": [0, 3] },
+        "id": "insert.horizontal-rule",
+        "values": "None"
+      },
+      "expected": "Reject the stale query because the slash token now continues beyond `range.end`.",
+      "fix": "Verify that the range still ends at the current slash token boundary, or bind the query to a current caret/revision."
+    },
+    {
+      "file": "desktop/gpui/src/insert_menu/markdown.rs",
+      "claim": "`paragraph.code-block` chooses a four-backtick fence whenever the line contains any triple-backtick run. A body line containing four backticks therefore closes the generated fence early.",
+      "reproductionInput": {
+        "text": "/code ````",
+        "query": { "query": "code", "range": [0, 5] },
+        "id": "paragraph.code-block"
+      },
+      "expected": "The generated fenced block parses with the entire original body, including the four-backtick run.",
+      "fix": "Choose a fence longer than the longest backtick run in the body, or use a safe alternate fence."
+    },
+    {
+      "file": "desktop/gpui/src/insert_menu/markdown.rs",
+      "claim": "`insert.mermaid` always wraps source in triple backticks. A triple-backtick line in the source closes the generated fence early, so the Markdown no longer contains the full Mermaid block.",
+      "reproductionInput": {
+        "text": "/mermaid",
+        "query": { "query": "mermaid", "range": [0, 8] },
+        "id": "insert.mermaid",
+        "values": { "Text": "graph TD\n```\nA --> B" }
+      },
+      "expected": "The generated Markdown parses as one Mermaid block containing the complete source.",
+      "fix": "Choose a fence longer than the longest backtick run in the source."
+    },
+    {
+      "file": "desktop/gpui/src/insert_menu/markdown.rs",
+      "claim": "`insert.math-inline` interpolates source without protecting its `$` delimiter. Source `x$y` produces `$x$y$`, which splits the intended inline math at the source dollar.",
+      "reproductionInput": {
+        "text": "/math",
+        "query": { "query": "math", "range": [0, 5] },
+        "id": "insert.math-inline",
+        "values": { "Text": "x$y" }
+      },
+      "expected": "Markdown that round-trips as one inline math node with source `x$y`.",
+      "fix": "Use parser-compatible escaping or a delimiter strategy that cannot be terminated by the source."
+    }
+  ],
+  "tests": [
+    {
+      "name": "unicode_offsets_use_bytes_for_markdown_and_scalars_for_rich",
+      "input": "Detect `/x` in `é /x` with both adapters.",
+      "expected": "Markdown range is 3..5 bytes; rich range is 2..4 Unicode scalars."
+    },
+    {
+      "name": "stale_query_cannot_match_prefix_of_extended_token",
+      "input": "Plan against `/hello` using stale query `he` at range 0..3.",
+      "expected": "Return the changed-position error without producing an edit."
+    },
+    {
+      "name": "prefix_replacement_preserves_suffix_marker",
+      "input": "Apply `paragraph.heading-1` to `/heading - item` with query range 0..8.",
+      "expected": "Preserve `- item` in the replacement; do not strip it as an existing prefix."
+    },
+    {
+      "name": "code_block_fence_exceeds_body_backtick_run",
+      "input": "Apply `paragraph.code-block` to `/code ````` with query range 0..5.",
+      "expected": "The generated Markdown parses as a fenced block whose body retains the four-backtick run."
+    },
+    {
+      "name": "mermaid_fence_exceeds_source_backtick_run",
+      "input": "Insert Mermaid source `graph TD\\n```\\nA --> B`.",
+      "expected": "The generated Markdown parses as one Mermaid block containing the complete source."
+    },
+    {
+      "name": "inline_math_dollar_round_trip",
+      "input": "Insert inline math source `x$y`.",
+      "expected": "Parsing the generated Markdown yields one inline math node with source `x$y`."
+    },
+    {
+      "name": "rich_insert_is_one_undo_transaction",
+      "input": "Apply a valid rich link insertion over a slash query, then undo once.",
+      "expected": "One undo restores the original document containing the slash query."
+    }
+  ]
+}
