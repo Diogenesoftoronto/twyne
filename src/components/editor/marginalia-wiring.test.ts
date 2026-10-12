@@ -46,10 +46,8 @@ describe("marginalia interaction wiring", () => {
       "src/components/editor/twyne-editor.tsx",
     ).text();
 
-    expect(editor).toContain(
-      "const result = reconcileCommentAnchors(threads, markIds)",
-    );
-    expect(editor).toContain("await deleteUserComments(deletedIds)");
+    expect(editor).toContain("await reconcileCurrentCommentAnchors({");
+    expect(editor).toContain("await deleteUserComments(");
     expect(editor).toContain("api.userComments.deleteComment");
   });
 
