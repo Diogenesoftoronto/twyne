@@ -192,6 +192,12 @@ export function validateWorkflow(
       ["rtk proxy bun test desktop/gpui/fixtures/distribution-ci"],
     ],
     [
+      "Set Windows fixture time zone",
+      [
+        `rtk proxy pwsh -NoProfile -NonInteractive -Command "Set-TimeZone -Id 'Eastern Standard Time' -ErrorAction Stop"`,
+      ],
+    ],
+    [
       "Build and test local document helper",
       [
         "rtk proxy bun run desktop.gpui.build-helper",
@@ -279,6 +285,9 @@ export function validateWorkflow(
   for (const name of expected.keys()) named(name);
   const [install, installIndex] = named("Install document helper dependencies");
   const [, contractsIndex] = named("Test distribution workflow contracts");
+  const [windowsZone, windowsZoneIndex] = named(
+    "Set Windows fixture time zone",
+  );
   const [, helperIndex] = named("Build and test local document helper");
   const [, rustIndex] = action("dtolnay/rust-toolchain@stable");
   const [linux, linuxIndex] = named("Install Linux libraries");
@@ -294,6 +303,7 @@ export function validateWorkflow(
     bootstrapIndex,
     installIndex,
     contractsIndex,
+    windowsZoneIndex,
     helperIndex,
     rustIndex,
     linuxIndex,
@@ -315,8 +325,12 @@ export function validateWorkflow(
     !install.if && linux.if === "runner.os == 'Linux'",
     "Dependency installation gating changed.",
   );
+  requireContract(
+    windowsZone.if === "runner.os == 'Windows'",
+    "The fixture system time zone must be set only on Windows.",
+  );
   for (const step of steps) {
-    if (step !== linux)
+    if (step !== linux && step !== windowsZone)
       requireContract(!step.if, "Required step cannot be conditional.");
     if (step !== stage)
       requireContract(!step.env, "Unreviewed step environment override.");

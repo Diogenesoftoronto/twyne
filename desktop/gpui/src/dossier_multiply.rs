@@ -15,9 +15,11 @@
 //! separate pixel-proof requirements. Fractional device-grid extents/origins,
 //! transparent windows, faded ancestors and unsupported color formats refuse.
 
+#[cfg(any(target_os = "linux", target_os = "freebsd"))]
+use crate::dossier_paper::FOXING_GROUP_OPACITY;
 use crate::{
     assets::TwyneAssets,
-    dossier_paper::{DossierPaperMetrics, FOXING_GROUP_OPACITY, FOXING_SPOTS},
+    dossier_paper::{DossierPaperMetrics, FOXING_SPOTS},
     theme::{self, Palette},
 };
 use gpui_kit::prelude::*;
