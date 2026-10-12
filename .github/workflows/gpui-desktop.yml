@@ -38,6 +38,11 @@ jobs:
         run: rtk proxy bun install --frozen-lockfile
       - name: Test distribution workflow contracts
         run: rtk proxy bun test desktop/gpui/fixtures/distribution-ci
+      - name: Set Windows fixture time zone
+        if: runner.os == 'Windows'
+        # Bun on Windows uses the system zone for local dates. These retained
+        # browser fixtures were recorded in Toronto; production stays local.
+        run: rtk proxy pwsh -NoProfile -NonInteractive -Command "Set-TimeZone -Id 'Eastern Standard Time' -ErrorAction Stop"
       - name: Build and test local document helper
         run: |
           rtk proxy bun run desktop.gpui.build-helper

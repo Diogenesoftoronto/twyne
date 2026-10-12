@@ -17,6 +17,10 @@ const REPO = join(HERE, "../../../..");
 const SHARED = join(REPO, ".github/workflows/gpui-desktop.yml");
 const BEFORE = await readFile(join(HERE, "workflow.before.yml"), "utf8");
 const AFTER = await readFile(join(HERE, "workflow.after.yml"), "utf8");
+const CURRENT = await readFile(
+  join(HERE, "workflow.after-current.yml"),
+  "utf8",
+);
 const PATCH = join(HERE, "workflow.patch");
 const CONTRACT = JSON.parse(
   await readFile(
@@ -26,7 +30,7 @@ const CONTRACT = JSON.parse(
 ) as ExecutableContract;
 
 function changed(edit: (workflow: Workflow) => void): string {
-  const workflow = parse(AFTER) as Workflow;
+  const workflow = parse(CURRENT) as Workflow;
   edit(workflow);
   return stringify(workflow);
 }
@@ -39,10 +43,10 @@ function named(workflow: Workflow, name: string) {
   return step;
 }
 
-describe("unapplied CI proposal: structural and scratch-patch checks only", () => {
-  test("retained after fixture satisfies required commands, ordering and actual packaging IDs", () => {
-    const workflow = validateWorkflow(AFTER, CONTRACT);
-    expect(workflow.jobs.desktop.steps).toHaveLength(16);
+describe("current CI policy and retained historical patch", () => {
+  test("current receipt satisfies required commands, ordering and actual packaging IDs", () => {
+    const workflow = validateWorkflow(CURRENT, CONTRACT);
+    expect(workflow.jobs.desktop.steps).toHaveLength(17);
     expect(workflow.permissions).toEqual({ contents: "read" });
     expect(CONTRACT.executables.map((spec) => spec.id)).toEqual([
       "desktop",
@@ -51,16 +55,17 @@ describe("unapplied CI proposal: structural and scratch-patch checks only", () =
     ]);
   });
 
-  test("current workflow may be either exact reviewed before or exact applied after", async () => {
-    expect(["before", "after"]).toContain(
-      sharedWorkflowState(await readFile(SHARED, "utf8"), BEFORE, AFTER),
-    );
+  test("published workflow matches the current receipt and retains historical states", async () => {
+    expect(
+      sharedWorkflowState(await readFile(SHARED, "utf8"), BEFORE, CURRENT),
+    ).toBe("after");
     expect(sharedWorkflowState(BEFORE, BEFORE, AFTER)).toBe("before");
     expect(sharedWorkflowState(AFTER, BEFORE, AFTER)).toBe("after");
     expect(() =>
       sharedWorkflowState(`${BEFORE}\n# unrelated drift\n`, BEFORE, AFTER),
     ).toThrow("drifted");
     expect(() => validateWorkflow(BEFORE, CONTRACT)).toThrow();
+    expect(() => validateWorkflow(AFTER, CONTRACT)).toThrow();
   });
 
   test("patch applies/reverses in a fresh copied tree and never writes the shared workflow", async () => {
@@ -118,6 +123,54 @@ describe("unapplied CI proposal: structural and scratch-patch checks only", () =
   });
 
   const negatives: [string, (workflow: Workflow) => void][] = [
+    [
+      "unconditional Windows system time zone",
+      (w) => {
+        delete named(w, "Set Windows fixture time zone").if;
+      },
+    ],
+    [
+      "system time zone applied to another platform",
+      (w) => {
+        named(w, "Set Windows fixture time zone").if = "runner.os == 'Linux'";
+      },
+    ],
+    [
+      "different fixture time zone",
+      (w) => {
+        const zone = named(w, "Set Windows fixture time zone");
+        zone.run = zone.run!.replace("Eastern Standard Time", "UTC");
+      },
+    ],
+    [
+      "fixture time zone failure ignored",
+      (w) => {
+        const zone = named(w, "Set Windows fixture time zone");
+        zone.run = zone.run!.replace(
+          "-ErrorAction Stop",
+          "-ErrorAction Continue",
+        );
+      },
+    ],
+    [
+      "fixture time zone after helper tests",
+      (w) => {
+        const steps = w.jobs.desktop.steps;
+        const zone = steps.findIndex(
+          (s) => s.name === "Set Windows fixture time zone",
+        );
+        const helper = steps.findIndex(
+          (s) => s.name === "Build and test local document helper",
+        );
+        [steps[zone], steps[helper]] = [steps[helper]!, steps[zone]!];
+      },
+    ],
+    [
+      "fixture environment overrides production date behavior",
+      (w) => {
+        named(w, "Set Windows fixture time zone").env = { TZ: "UTC" };
+      },
+    ],
     [
       "additional write permission",
       (w) => {
@@ -202,7 +255,13 @@ describe("unapplied CI proposal: structural and scratch-patch checks only", () =
       "stage before release build",
       (w) => {
         const s = w.jobs.desktop.steps;
-        [s[13], s[14]] = [s[14]!, s[13]!];
+        const build = s.findIndex(
+          (step) => step.name === "Build release executable",
+        );
+        const stage = s.findIndex(
+          (step) => step.name === "Stage and verify the distribution tree",
+        );
+        [s[build], s[stage]] = [s[stage]!, s[build]!];
       },
     ],
     [
@@ -301,7 +360,7 @@ describe("unapplied CI proposal: structural and scratch-patch checks only", () =
       windowsExtension: ".exe",
       required: true,
     });
-    expect(() => validateWorkflow(AFTER, extra)).toThrow(
+    expect(() => validateWorkflow(CURRENT, extra)).toThrow(
       "Missing new-helper artifact",
     );
   });

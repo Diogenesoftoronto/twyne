@@ -1,0 +1,104 @@
+name: GPUI desktop
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "desktop/gpui/**"
+      - ".github/workflows/gpui-desktop.yml"
+  pull_request:
+    paths:
+      - "desktop/gpui/**"
+      - ".github/workflows/gpui-desktop.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: Native desktop (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-14, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v5
+      - uses: oven-sh/setup-bun@v2
+      - name: Provision pinned RTK for command filtering
+        id: rtk
+        # RTK cannot prefix its own bootstrap; Bun is already on PATH.
+        # Node crypto verifies exact embedded hashes without a host hash CLI.
+        run: bun desktop/gpui/fixtures/distribution-ci/bootstrap-rtk.ts
+      - name: Install document helper dependencies
+        run: rtk proxy bun install --frozen-lockfile
+      - name: Test distribution workflow contracts
+        run: rtk proxy bun test desktop/gpui/fixtures/distribution-ci
+      - name: Set Windows fixture time zone
+        if: runner.os == 'Windows'
+        # Bun on Windows uses the system zone for local dates. These retained
+        # browser fixtures were recorded in Toronto; production stays local.
+        run: rtk proxy pwsh -NoProfile -NonInteractive -Command "Set-TimeZone -Id 'Eastern Standard Time' -ErrorAction Stop"
+      - name: Build and test local document helper
+        run: |
+          rtk proxy bun run desktop.gpui.build-helper
+          rtk proxy bun test desktop/gpui/tools/semantic-worker.test.ts
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Install Linux libraries
+        if: runner.os == 'Linux'
+        run: |
+          rtk proxy sudo apt-get update
+          rtk proxy sudo apt-get install -y \
+            clang pkg-config libfontconfig1-dev libfreetype6-dev \
+            libxkbcommon-dev libxkbcommon-x11-dev libxcb1-dev \
+            libwayland-dev libssl-dev
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "desktop/gpui -> target"
+      - name: Check formatting
+        run: rtk proxy cargo fmt --manifest-path desktop/gpui/Cargo.toml --check
+      - name: Check native app
+        run: rtk proxy cargo clippy --locked --manifest-path desktop/gpui/Cargo.toml -- -D warnings
+      - name: Test local storage and exchange
+        run: rtk proxy cargo test --locked --no-default-features --manifest-path desktop/gpui/Cargo.toml
+      - name: Test native UI
+        run: rtk proxy cargo test --locked --features ui-tests --manifest-path desktop/gpui/Cargo.toml
+      - name: Build release executable
+        run: rtk proxy cargo build --locked --release --manifest-path desktop/gpui/Cargo.toml
+      - name: Stage and verify the distribution tree
+        # The bootstrap exports an absent child of its fresh mkdtemp workspace.
+        env:
+          TWYNE_DISTRIBUTION_REQUIRE_REAL: "1"
+        run: |
+          rtk proxy bun test desktop/gpui/fixtures/distribution/stage.test.ts
+          rtk proxy bun desktop/gpui/packaging/stage.ts stage \
+            --out "${{ steps.rtk.outputs.stage_path }}"
+          rtk proxy bun desktop/gpui/packaging/stage.ts verify \
+            --out "${{ steps.rtk.outputs.stage_path }}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: twyne-gpui-${{ runner.os }}
+          path: |
+            desktop/gpui/target/release/twyne-desktop
+            desktop/gpui/target/release/twyne-desktop.exe
+            desktop/gpui/target/release/twyne-document
+            desktop/gpui/target/release/twyne-document.exe
+            desktop/gpui/target/release/twyne-math-write
+            desktop/gpui/target/release/twyne-math-write.exe
+            ${{ steps.rtk.outputs.stage_path }}/**
+            desktop/gpui/README.md
+            desktop/gpui/PORT_PLAN.md
+            desktop/gpui/assets/NOTICE.md
+            desktop/gpui/assets/licenses/**
+            desktop/gpui/assets/fonts/*OFL.txt
+            desktop/gpui/assets/fonts/*LICENSE.txt
+            desktop/gpui/assets/fonts/NOTICE
+            desktop/gpui/vendor/gpui-base/LICENSE-APACHE
+            desktop/gpui/licenses/
+          if-no-files-found: error

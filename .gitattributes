@@ -1,1 +1,5 @@
 desktop/gpui/fixtures/distribution-ci/rtk-checksums.txt -text
+
+# Exact Source receipts use LF bytes on every native runner.
+src/utils/background-research.ts text eol=lf
+src/routes/editor/index.tsx text eol=lf
